@@ -1,0 +1,440 @@
+// iomanip standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _IOMANIP_
+#define _IOMANIP_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <istream>
+#include <type_traits>
+#include <xlocmon>
+#include <xloctime>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+// STRUCT TEMPLATE _Fillobj
+template <class _Elem>
+struct _Fillobj { // store fill character
+    _Fillobj(_Elem _Ch) : _Fill(_Ch) {}
+
+    _Elem _Fill; // the fill character
+};
+
+// FUNCTION TEMPLATE setfill
+template <class _Elem>
+_NODISCARD _Fillobj<_Elem> setfill(_Elem _Ch) {
+    return _Fillobj<_Elem>(_Ch);
+}
+
+template <class _Elem, class _Traits, class _Elem2>
+basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+    const _Fillobj<_Elem2>& _Manip) { // set fill character in input stream
+    static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for setfill");
+
+    _Istr.fill(_Manip._Fill);
+    return _Istr;
+}
+
+template <class _Elem, class _Traits, class _Elem2>
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+    const _Fillobj<_Elem2>& _Manip) { // set fill character in output stream
+    static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for setfill");
+
+    _Ostr.fill(_Manip._Fill);
+    return _Ostr;
+}
+
+// STRUCT TEMPLATE _Monobj
+template <class _Money>
+struct _Monobj { // store reference to monetary amount
+    _Monobj(_Money& _Val_arg, bool _Intl_arg) : _Val(_Val_arg), _Intl(_Intl_arg) {}
+
+    _Money& _Val; // the monetary amount reference
+    bool _Intl; // international flag
+
+    _Monobj& operator=(const _Monobj&) = delete;
+};
+
+// FUNCTION TEMPLATE get_money
+template <class _Money>
+_NODISCARD _Monobj<_Money> get_money(_Money& _Val_arg, bool _Intl_arg = false) {
+    return _Monobj<_Money>(_Val_arg, _Intl_arg);
+}
+
+template <class _Elem, class _Traits, class _Money>
+basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+    const _Monobj<_Money>& _Manip) { // get monetary amount from input stream
+    using _Myis   = basic_istream<_Elem, _Traits>;
+    using _Iter   = istreambuf_iterator<_Elem, _Traits>;
+    using _Mymget = money_get<_Elem, _Iter>;
+
+    ios_base::iostate _State = ios_base::goodbit;
+    const typename _Myis::sentry _Ok(_Istr);
+
+    if (_Ok) { // state okay, extract monetary amount
+        const _Mymget& _Mget_fac = _STD use_facet<_Mymget>(_Istr.getloc());
+        _TRY_IO_BEGIN
+        _Mget_fac.get(_Iter(_Istr.rdbuf()), _Iter(nullptr), _Manip._Intl, _Istr, _State, _Manip._Val);
+        _CATCH_IO_(ios_base, _Istr)
+    }
+
+    _Istr.setstate(_State);
+    return _Istr;
+}
+
+// FUNCTION TEMPLATE put_money
+template <class _Money>
+_NODISCARD _Monobj<const _Money> put_money(const _Money& _Val_arg, bool _Intl_arg = false) {
+    return _Monobj<const _Money>(_Val_arg, _Intl_arg);
+}
+
+template <class _Elem, class _Traits, class _Money>
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+    const _Monobj<_Money>& _Manip) { // put monetary amount to output stream
+    using _Myos   = basic_ostream<_Elem, _Traits>;
+    using _Iter   = ostreambuf_iterator<_Elem, _Traits>;
+    using _Mymput = money_put<_Elem, _Iter>;
+
+    ios_base::iostate _State = ios_base::goodbit;
+    const typename _Myos::sentry _Ok(_Ostr);
+
+    if (_Ok) { // state okay, insert monetary amount
+        const _Mymput& _Mput_fac = _STD use_facet<_Mymput>(_Ostr.getloc());
+        _TRY_IO_BEGIN
+        if (_Mput_fac.put(_Iter(_Ostr.rdbuf()), _Manip._Intl, _Ostr, _Ostr.fill(), _Manip._Val).failed()) {
+            _State |= ios_base::badbit;
+        }
+        _CATCH_IO_(ios_base, _Ostr)
+    }
+
+    _Ostr.setstate(_State);
+    return _Ostr;
+}
+
+// STRUCT TEMPLATE _Timeobj
+template <class _Elem, class _Ptr>
+struct _Timeobj { // store reference to tm object and format
+    _Timeobj(_Ptr _Tptr_arg, const _Elem* _Fmt_arg) : _Tptr(_Tptr_arg), _Fmtfirst(_Fmt_arg) {
+        for (_Fmtlast = _Fmtfirst; *_Fmtlast != 0; ++_Fmtlast) { // find end of format string
+        }
+    }
+
+    _Ptr _Tptr; // the tm struct pointer
+    const _Elem* _Fmtfirst; // format string start
+    const _Elem* _Fmtlast; // format string end
+};
+
+// FUNCTION TEMPLATE get_time
+template <class _Elem>
+_NODISCARD _Timeobj<_Elem, tm*> get_time(tm* _Tptr_arg, const _Elem* _Fmt_arg) {
+    return _Timeobj<_Elem, tm*>(_Tptr_arg, _Fmt_arg);
+}
+
+template <class _Elem, class _Traits, class _Elem2>
+basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+    const _Timeobj<_Elem2, tm*>& _Manip) { // get time information from input stream
+    using _Myis   = basic_istream<_Elem, _Traits>;
+    using _Iter   = istreambuf_iterator<_Elem, _Traits>;
+    using _Mytget = time_get<_Elem2, _Iter>;
+
+    static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for get_time");
+
+    ios_base::iostate _State = ios_base::goodbit;
+    const typename _Myis::sentry _Ok(_Istr);
+
+    if (_Ok) { // state okay, extract time amounts
+        const _Mytget& _Tget_fac = _STD use_facet<_Mytget>(_Istr.getloc());
+        _TRY_IO_BEGIN
+        _Tget_fac.get(
+            _Iter(_Istr.rdbuf()), _Iter(nullptr), _Istr, _State, _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast);
+        _CATCH_IO_(ios_base, _Istr)
+    }
+
+    _Istr.setstate(_State);
+    return _Istr;
+}
+
+// FUNCTION TEMPLATE put_time
+template <class _Elem>
+_NODISCARD _Timeobj<_Elem, const tm*> put_time(const tm* _Tptr_arg, const _Elem* _Fmt_arg) {
+    return _Timeobj<_Elem, const tm*>(_Tptr_arg, _Fmt_arg);
+}
+
+template <class _Elem, class _Traits, class _Elem2>
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+    const _Timeobj<_Elem2, const tm*>& _Manip) { // put time information to output stream
+    using _Myos   = basic_ostream<_Elem, _Traits>;
+    using _Iter   = ostreambuf_iterator<_Elem, _Traits>;
+    using _Mytput = time_put<_Elem2, _Iter>;
+
+    static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for put_time");
+
+    ios_base::iostate _State = ios_base::goodbit;
+    const typename _Myos::sentry _Ok(_Ostr);
+
+    if (_Ok) { // state okay, insert monetary amount
+        const _Mytput& _Tput_fac = _STD use_facet<_Mytput>(_Ostr.getloc());
+        _TRY_IO_BEGIN
+        if (_Tput_fac.put(_Iter(_Ostr.rdbuf()), _Ostr, _Ostr.fill(), _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast)
+                .failed()) {
+            _State |= ios_base::badbit;
+        }
+        _CATCH_IO_(ios_base, _Ostr)
+    }
+
+    _Ostr.setstate(_State);
+    return _Ostr;
+}
+
+// STRUCT TEMPLATE _Quote_in
+template <class _Elem, class _Traits, class _Alloc>
+struct _Quote_in { // store reference to string
+    using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
+
+    _Quote_in(_Mystr& _Str_obj, _Elem _Delim_obj, _Elem _Escape_obj)
+        : _Str(_Str_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
+
+    _Mystr& _Str; // reference to string
+    _Elem _Delim; // delimiter element
+    _Elem _Escape; // escape element
+
+    _Quote_in& operator=(const _Quote_in&) = delete;
+};
+
+// STRUCT TEMPLATE _Quote_out
+template <class _Elem, class _Traits, class _Sizet>
+struct _Quote_out { // store pointer/length for string
+    _Quote_out(const _Elem* _Ptr_obj, _Sizet _Size_obj, _Elem _Delim_obj, _Elem _Escape_obj)
+        : _Ptr(_Ptr_obj), _Size(_Size_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
+
+    const _Elem* _Ptr; // pointer to string
+    _Sizet _Size; // length of string
+    _Elem _Delim; // delimiter element
+    _Elem _Escape; // escape element
+
+    _Quote_out& operator=(const _Quote_out&) = delete;
+};
+
+// FUNCTION TEMPLATE quoted
+template <class _Elem>
+_NODISCARD _Quote_out<_Elem, void, size_t> quoted(
+    const _Elem* _Ptr, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
+    size_t _Size = 0;
+    while (_Ptr[_Size] != _Elem(0)) {
+        ++_Size;
+    }
+
+    return _Quote_out<_Elem, void, size_t>(_Ptr, _Size, _Delim, _Escape);
+}
+
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD _Quote_out<_Elem, _Traits, typename basic_string<_Elem, _Traits, _Alloc>::size_type> quoted(
+    const basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
+    using _Qobj = _Quote_out<_Elem, _Traits, typename basic_string<_Elem, _Traits, _Alloc>::size_type>;
+    return _Qobj(_Str.c_str(), _Str.size(), _Delim, _Escape);
+}
+
+#if _HAS_CXX17
+template <class _Elem, class _Traits>
+_NODISCARD _Quote_out<_Elem, _Traits, size_t> quoted(
+    const basic_string_view<_Elem, _Traits> _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
+    using _Qobj = _Quote_out<_Elem, _Traits, size_t>;
+    return _Qobj(_Str.data(), _Str.size(), _Delim, _Escape);
+}
+#endif // _HAS_CXX17
+
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
+    basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
+    return _Quote_in<_Elem, _Traits, _Alloc>(_Str, _Delim, _Escape);
+}
+
+// quoted INSERTER
+template <class _Elem, class _Traits, class _QuTraits, class _Sizet>
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+    const _Quote_out<_Elem, _QuTraits, _Sizet>& _Manip) { // put quoted string to output stream
+    static_assert(
+        is_void_v<_QuTraits> || is_same_v<_QuTraits, _Traits>, "quoted() traits must match basic_ostream traits");
+
+    using _Myos = basic_ostream<_Elem, _Traits>;
+
+    const _Elem* const _Last = _Manip._Ptr + _Manip._Size;
+
+    _Sizet _Size = _Manip._Size + 2; // allow for delimiters
+    for (const _Elem* _Ptr = _Manip._Ptr; _Ptr != _Last; ++_Ptr) {
+        if (_Traits::eq(*_Ptr, _Manip._Delim) || _Traits::eq(*_Ptr, _Manip._Escape)) {
+            ++_Size; // count escapes
+        }
+    }
+
+    ios_base::iostate _State = ios_base::goodbit;
+
+    _Sizet _Pad;
+    if (_Ostr.width() <= 0 || static_cast<_Sizet>(_Ostr.width()) <= _Size) {
+        _Pad = 0;
+    } else {
+        _Pad = static_cast<_Sizet>(_Ostr.width()) - _Size;
+    }
+
+    const typename _Myos::sentry _Ok(_Ostr);
+
+    if (!_Ok) {
+        _State |= ios_base::badbit;
+    } else { // state okay, insert characters
+        _TRY_IO_BEGIN
+        if ((_Ostr.flags() & ios_base::adjustfield) != ios_base::left) {
+            for (; 0 < _Pad; --_Pad) { // pad on left
+                if (_Traits::eq_int_type(_Traits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {
+                    _State |= ios_base::badbit; // insertion failed, quit
+                    break;
+                }
+            }
+        }
+
+        if (_State == ios_base::goodbit
+            && _Traits::eq_int_type(_Traits::eof(),
+                _Ostr.rdbuf()->sputc(_Manip._Delim))) { // put delimiter
+            _State |= ios_base::badbit;
+        }
+
+        for (const _Elem* _Ptr = _Manip._Ptr; _Ptr != _Last; ++_Ptr) { // put (possibly escaped) element
+            if ((_Traits::eq(*_Ptr, _Manip._Delim) || _Traits::eq(*_Ptr, _Manip._Escape)) && _State == ios_base::goodbit
+                && _Traits::eq_int_type(_Traits::eof(),
+                    _Ostr.rdbuf()->sputc(_Manip._Escape))) { // put escape
+                _State |= ios_base::badbit; // insertion failed, quit
+                break;
+            }
+
+            if (_State == ios_base::goodbit
+                && _Traits::eq_int_type(_Traits::eof(),
+                    _Ostr.rdbuf()->sputc(*_Ptr))) { // put element
+                _State |= ios_base::badbit; // insertion failed, quit
+                break;
+            }
+        }
+
+        if (_State == ios_base::goodbit
+            && _Traits::eq_int_type(_Traits::eof(),
+                _Ostr.rdbuf()->sputc(_Manip._Delim))) { // put delimiter
+            _State |= ios_base::badbit;
+        }
+
+        if (_State == ios_base::goodbit) {
+            for (; 0 < _Pad; --_Pad) { // pad on right
+                if (_Traits::eq_int_type(_Traits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {
+                    _State |= ios_base::badbit; // insertion failed, quit
+                    break;
+                }
+            }
+        }
+
+        _Ostr.width(0);
+        _CATCH_IO_(ios_base, _Ostr)
+    }
+
+    _Ostr.setstate(_State);
+    return _Ostr;
+}
+
+template <class _Elem, class _Traits, class _Alloc>
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+    const _Quote_in<_Elem, _Traits, _Alloc>& _Manip) { // put quoted string to output stream
+    using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
+
+    const _Mystr& _Ref = _Manip._Str;
+    return _Ostr << _STD quoted(_Ref, _Manip._Delim, _Manip._Escape);
+}
+
+// quoted EXTRACTOR
+template <class _Elem, class _Traits, class _Alloc>
+basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+    const _Quote_in<_Elem, _Traits, _Alloc>& _Manip) { // get quoted string from input stream
+    ios_base::iostate _State = ios_base::goodbit;
+    const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr);
+
+    if (_Ok) { // state okay, extract characters
+        _TRY_IO_BEGIN
+        const auto _Buf   = _Istr.rdbuf();
+        auto& _Str        = _Manip._Str;
+        const auto _Delim = _Traits::to_int_type(_Manip._Delim);
+        auto _Meta        = _Buf->sgetc();
+
+        if (!_Traits::eq_int_type(_Meta, _Delim)) { // no leading delimiter
+            return _Istr >> _Str;
+        }
+
+        const auto _Escape = _Traits::to_int_type(_Manip._Escape);
+        _Str.clear();
+        for (;;) {
+            _Meta = _Buf->snextc();
+            if (_Traits::eq_int_type(_Traits::eof(), _Meta)) { // no trailing delimiter; fail
+                _State = ios_base::eofbit | ios_base::failbit;
+                break;
+            } else if (_Traits::eq_int_type(_Meta, _Escape)) { // escape; read next character literally
+                _Meta = _Buf->snextc();
+                if (_Traits::eq_int_type(_Traits::eof(), _Meta)) { // bad escape; fail
+                    _State = ios_base::eofbit | ios_base::failbit;
+                    break;
+                }
+            } else if (_Traits::eq_int_type(_Meta, _Delim)) { // found trailing delimiter
+                if (_Traits::eq_int_type(_Traits::eof(), _Buf->sbumpc())) { // consume trailing delimiter
+                    _State = ios_base::eofbit;
+                }
+
+                break;
+            }
+
+            _Str.push_back(_Traits::to_char_type(_Meta));
+        }
+        _CATCH_IO_(ios_base, _Istr)
+    }
+
+    _Istr.setstate(_State);
+    return _Istr;
+}
+
+// STRUCT TEMPLATE _Smanip
+template <class _Arg>
+struct _Smanip { // store function pointer and argument value
+    _Smanip(void(__cdecl* _Left)(ios_base&, _Arg), _Arg _Val) : _Pfun(_Left), _Manarg(_Val) {}
+
+    void(__cdecl* _Pfun)(ios_base&, _Arg); // the function pointer
+    _Arg _Manarg; // the argument value
+};
+
+template <class _Elem, class _Traits, class _Arg>
+basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+    const _Smanip<_Arg>& _Manip) { // extract by calling function with input stream and argument
+    (*_Manip._Pfun)(_Istr, _Manip._Manarg);
+    return _Istr;
+}
+
+template <class _Elem, class _Traits, class _Arg>
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+    const _Smanip<_Arg>& _Manip) { // insert by calling function with output stream and argument
+    (*_Manip._Pfun)(_Ostr, _Manip._Manarg);
+    return _Ostr;
+}
+
+// INSTANTIATIONS
+_NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
+_NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
+_NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);
+_NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setprecision(streamsize);
+_NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setw(streamsize);
+_STD_END
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _IOMANIP_

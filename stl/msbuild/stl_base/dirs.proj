@@ -1,0 +1,20 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt-common.settings.targets" />
+
+    <ItemGroup Condition="'$(BuildExePhase)' == '1'">
+        <ProjectFile Condition="'$(CrtBuildMD)'  != 'false'" Include="md\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildXMD)' != 'false'" Include="xmd\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildMT)'  != 'false'" Include="mt\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildMT)'  != 'false'" Include="mt1\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false'" Include="xmt\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')" Include="xmt0\dirs.proj" />
+        <ProjectFile Condition="'$(CrtBuildXMT)' != 'false' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')" Include="xmt1\dirs.proj" />
+    </ItemGroup>
+
+    <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Traversal.targets" />
+</Project>

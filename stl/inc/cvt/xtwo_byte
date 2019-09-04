@@ -1,0 +1,213 @@
+// xtwo_byte -- convert one- or two-byte code to 16-bit wide
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CVT_XTWO_BYTE_
+#define _CVT_XTWO_BYTE_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <cwchar>
+#include <locale>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+#if !_HAS_IF_CONSTEXPR
+#pragma warning(disable : 4127) // conditional expression is constant
+#endif // !_HAS_IF_CONSTEXPR
+
+namespace stdext {
+    namespace cvt {
+
+        using _Statype = _CSTD mbstate_t;
+
+        // CLASS TEMPLATE _Cvt_two_byte
+        template <class _Elem, class _Table, unsigned long _Maxcode = 0xffff>
+        class _Cvt_two_byte
+            : public _STD
+                  codecvt<_Elem, char, _Statype> { // facet for converting between _Elem and one- or two-byte sequences
+        public:
+            using _Mybase     = _STD codecvt<_Elem, char, _Statype>;
+            using result      = typename _Mybase::result;
+            using _Byte       = char;
+            using intern_type = _Elem;
+            using extern_type = _Byte;
+            using state_type  = _Statype;
+
+            explicit _Cvt_two_byte(size_t _Refs = 0) : _Mybase(_Refs) {}
+
+            virtual ~_Cvt_two_byte() noexcept {}
+
+        protected:
+            virtual result do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
+                _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const override {
+                // convert bytes [_First1, _Last1) to [_First2, _Last)
+                _Mid1 = _First1;
+                _Mid2 = _First2;
+                for (; _Mid1 != _Last1 && _Mid2 != _Last2; ++_Mid1) { // get a byte and map it
+                    unsigned char _Bytecode = static_cast<unsigned char>(*_Mid1);
+                    unsigned short _Widecode;
+
+                    if (_Bytecode < _Table::_Nlow) {
+                        _Widecode = _Bytecode; // map byte to same wide value
+                    } else if ((_Widecode = _Table::_Btw[_Bytecode - _Table::_Nlow]) == 0) {
+                        if
+                            _CONSTEXPR_IF(_Table::_Nbytes < 2) {
+                                return _Mybase::error; // no single-byte mapping
+                            }
+                        else {
+                            if (_Mid1 + 1 == _Last1) {
+                                break; // need another input byte
+                            }
+
+                            // form double-byte code and search for a valid mapping
+                            _Widecode =
+                                static_cast<unsigned short>(_Bytecode << 8 | static_cast<unsigned char>(*++_Mid1));
+                            unsigned long _Lo = 0;
+                            unsigned long _Hi = sizeof(_Table::_Dbvalid) / sizeof(_Table::_Dbvalid[0]);
+
+                            while (_Lo < _Hi) { // test midpoint of remaining interval
+                                unsigned long _Mid = (_Hi + _Lo) / 2;
+
+                                if (_Widecode < _Table::_Dbvalid[_Mid]) {
+                                    _Hi = _Mid;
+                                } else if (_Widecode == _Table::_Dbvalid[_Mid]) { // found the code, map it
+                                    _Widecode = _Table::_Dbtw[_Mid];
+                                    break;
+                                } else {
+                                    _Lo = _Mid + 1;
+                                }
+                            }
+
+                            if (_Hi <= _Lo) {
+                                return _Mybase::error;
+                            }
+                        }
+                    }
+
+                    if (_Maxcode < _Widecode) {
+                        return _Mybase::error; // value too large
+                    }
+
+                    *_Mid2++ = static_cast<_Elem>(_Widecode);
+                }
+
+                return _First1 == _Mid1 ? _Mybase::partial : _Mybase::ok;
+            }
+
+            virtual result do_out(_Statype&, const _Elem* _First1, const _Elem* _Last1, const _Elem*& _Mid1,
+                _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const override {
+                // convert [_First1, _Last1) to bytes [_First2, _Last)
+                _Mid1 = _First1;
+                _Mid2 = _First2;
+                for (; _Mid1 != _Last1 && _Mid2 != _Last2; ++_Mid1) { // get an element and map it
+                    unsigned long _Hugecode  = static_cast<unsigned long>(*_Mid1);
+                    unsigned short _Widecode = static_cast<unsigned short>(_Hugecode);
+
+                    if (_Maxcode < _Widecode) {
+                        return _Mybase::error; // value too large
+                    }
+
+                    if (_Widecode >= _Table::_Nlow
+                        && (_Widecode >= 0x100
+                            || _Table::_Btw[_Widecode - _Table::_Nlow] != _Widecode)) { // search for a valid mapping
+                        unsigned long _Lo = 0;
+                        unsigned long _Hi = sizeof(_Table::_Wvalid) / sizeof(_Table::_Wvalid[0]);
+
+                        while (_Lo < _Hi) { // test midpoint of remaining interval
+                            unsigned long _Mid = (_Hi + _Lo) / 2;
+
+                            if (_Widecode < _Table::_Wvalid[_Mid]) {
+                                _Hi = _Mid;
+                            } else if (_Widecode == _Table::_Wvalid[_Mid]) { // found the code, map it
+                                _Widecode = _Table::_Wtb[_Mid];
+                                break;
+                            } else {
+                                _Lo = _Mid + 1;
+                            }
+                        }
+
+                        if (_Hi <= _Lo) {
+                            return _Mybase::error;
+                        }
+                    }
+
+                    if (_Widecode >= 0x100) {
+                        if (_Mid2 + 1 == _Last2) {
+                            return _Mybase::partial; // need room for another byte
+                        }
+
+                        *_Mid2++ = static_cast<_Byte>(_Widecode >> 8); // put ms byte
+                    }
+
+                    *_Mid2++ = static_cast<_Byte>(_Widecode);
+                }
+
+                return _First1 == _Mid1 ? _Mybase::partial : _Mybase::ok;
+            }
+
+            virtual result do_unshift(_Statype&, _Byte* _First2, _Byte*, _Byte*& _Mid2) const override {
+                // generate bytes to return to default shift state
+                _Mid2 = _First2;
+                return _Mybase::ok;
+            }
+
+            virtual int do_length(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
+                noexcept override {
+                // return min(_Count, converted length of bytes [_First1, _Last1))
+                size_t _Wchars    = 0;
+                _Statype _Mystate = _State;
+
+                while (_Wchars < _Count && _First1 != _Last1) { // convert another wide character
+                    const _Byte* _Mid1;
+                    _Elem* _Mid2;
+                    _Elem _Ch;
+
+                    switch (do_in(_Mystate, _First1, _Last1, _Mid1, &_Ch, &_Ch + 1,
+                        _Mid2)) { // test result of single wide-char conversion
+                    case _Mybase::noconv:
+                        return static_cast<int>(_Wchars + (_Last1 - _First1));
+
+                    case _Mybase::ok:
+                        if (_Mid2 == &_Ch + 1) {
+                            ++_Wchars; // replacement do_in might not convert one
+                        }
+
+                        _First1 = _Mid1;
+                        break;
+
+                    default:
+                        return static_cast<int>(_Wchars); // error or partial
+                    }
+                }
+                return static_cast<int>(_Wchars);
+            }
+
+            virtual bool do_always_noconv() const noexcept override { // return true if conversions never change input
+                return false;
+            }
+
+            virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
+                return _Table::_Nbytes; // length of sequence
+            }
+
+            virtual int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
+                return 0; // 0 => varying length
+            }
+        };
+    } // namespace cvt
+} // namespace stdext
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CVT_XTWO_BYTE_

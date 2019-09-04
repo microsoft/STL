@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <PropertyGroup>
+        <FinalBinary>p</FinalBinary>
+        <TargetType>LIBRARY</TargetType>
+        <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
+        <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
+        <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
+
+    <PropertyGroup>
+        <OutputName Condition="'$(CrtBuildModel)' == 'mt'">libcpmt</OutputName>
+        <OutputName Condition="'$(CrtBuildModel)' == 'mt1'">libcpmt1</OutputName>
+        <OutputName Condition="'$(CrtBuildModel)' == 'xmt'">libcpmtd</OutputName>
+        <OutputName Condition="'$(CrtBuildModel)' == 'xmt0'">libcpmtd0</OutputName>
+        <OutputName Condition="'$(CrtBuildModel)' == 'xmt1'">libcpmtd1</OutputName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ClProgramDataBaseFileName>$(OutputLibPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
+        <ClDefines Condition="'$(DependsOnConcRT)' == 'true'">$(ClDefines);_STL_CONCRT_SUPPORT</ClDefines>
+        <ClDefines>$(ClDefines);_VCRT_ALLOW_INTERNALS</ClDefines>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)\stl.files.settings.targets"/>
+
+    <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
+    <Target Name="GetBaseAddress"/>
+
+</Project>

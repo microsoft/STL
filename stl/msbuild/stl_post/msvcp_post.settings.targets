@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <PropertyGroup>
+        <FinalBinary>p_post</FinalBinary>
+
+        <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
+        <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
+        <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
+
+        <TargetType>LIBRARY</TargetType>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
+
+    <PropertyGroup>
+        <ClrLibSuffix Condition="'$(MsvcpFlavor)' == 'netfx'">_clr</ClrLibSuffix>
+
+        <MsvcpFlavorSuffix Condition="'$(MsvcpFlavor)' == 'app'">_app</MsvcpFlavorSuffix>
+        <MsvcpFlavorSuffix Condition="'$(MsvcpFlavor)' == 'netfx'">_clr$(NetFxVerX)</MsvcpFlavorSuffix>
+
+        <LibOutputFileName>msvcprt$(BuildSuffix)$(ClrLibSuffix)</LibOutputFileName>
+        <LibOutputFile>$(LibOutputFileName).lib</LibOutputFile>
+
+        <UseMsvcrt>false</UseMsvcrt>
+
+        <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
+        <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+
+        <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-nodefaultlib:$(LibOutputFile) $(LinkAdditionalOptions)</LinkAdditionalOptions>
+
+        <LinkGenerateMapFile>true</LinkGenerateMapFile>
+        <LinkRelease>true</LinkRelease>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+            Include="$(CrtRoot)\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.nativeproj"/>
+        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+            Include="$(CrtRoot)\github\stl\msbuild\stl_1\$(CrtBuildModel)\msvcp_1_$(MsvcpFlavor)\msvcp_1.nativeproj"/>
+        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+            Include="$(CrtRoot)\github\stl\msbuild\stl_2\$(CrtBuildModel)\msvcp_2_$(MsvcpFlavor)\msvcp_2.nativeproj"/>
+        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+            Include="$(CrtRoot)\github\stl\msbuild\stl_codecvt_ids\$(CrtBuildModel)\msvcp_codecvt_ids_$(MsvcpFlavor)\msvcp_codecvt_ids.nativeproj"/>
+        <Lib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <Lib Include="$(CrtLibPath)\msvcprt_1$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <Lib Include="$(CrtLibPath)\msvcprt_2$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <Lib Include="$(CrtLibPath)\msvcprt$(BuildSuffix)_codecvt_ids$(ClrLibSuffix).lib"/>
+    </ItemGroup>
+
+    <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
+
+</Project>

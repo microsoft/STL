@@ -1,0 +1,15 @@
+// climits standard header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CLIMITS_
+#define _CLIMITS_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <limits.h>
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CLIMITS_

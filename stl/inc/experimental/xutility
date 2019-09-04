@@ -1,0 +1,69 @@
+// xutility experimental header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _EXPERIMENTAL_XUTILITY_
+#define _EXPERIMENTAL_XUTILITY_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <algorithm>
+#include <xutility>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+namespace experimental {
+    inline namespace fundamentals_v2 {
+
+        // FUNCTION TEMPLATE _Erase_nodes_if
+        template <class _Container, class _Pr>
+        void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+            auto _First      = _Cont.begin();
+            const auto _Last = _Cont.end();
+            while (_First != _Last) {
+                if (_Pred(*_First)) {
+                    _First = _Cont.erase(_First);
+                } else {
+                    ++_First;
+                }
+            }
+        }
+
+
+        // FUNCTION TEMPLATE _Erase_remove_if
+        template <class _Container, class _Pr>
+        void _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+            auto _First      = _Cont.begin();
+            const auto _Last = _Cont.end();
+            _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
+            _Cont.erase(_First, _Last);
+        }
+
+        // FUNCTION TEMPLATE _Erase_remove
+        template <class _Container, class _Uty>
+        void _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
+            auto _First      = _Cont.begin();
+            const auto _Last = _Cont.end();
+            _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
+            _Cont.erase(_First, _Last);
+        }
+
+    } // namespace fundamentals_v2
+} // namespace experimental
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _EXPERIMENTAL_XUTILITY_

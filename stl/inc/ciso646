@@ -1,0 +1,15 @@
+// ciso646 standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CISO646_
+#define _CISO646_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <iso646.h>
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CISO646_

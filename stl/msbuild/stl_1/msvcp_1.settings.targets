@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <PropertyGroup>
+        <FinalBinary>p_1</FinalBinary>
+
+        <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
+        <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
+        <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
+
+        <TargetType>DYNLINK</TargetType>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
+
+    <PropertyGroup>
+        <ClrLibSuffix Condition="'$(MsvcpFlavor)' == 'netfx'">_clr</ClrLibSuffix>
+
+        <MsvcpFlavorSuffix Condition="'$(MsvcpFlavor)' == 'app'">_app</MsvcpFlavorSuffix>
+        <MsvcpFlavorSuffix Condition="'$(MsvcpFlavor)' == 'netfx'">_clr$(NetFxVerX)</MsvcpFlavorSuffix>
+
+        <OutputName>msvcp$(VCToolsProdVerSuffix)_1$(BuildSuffix)$(MsvcpFlavorSuffix)</OutputName>
+        <LibOutputFileName>msvcprt_1$(BuildSuffix)$(ClrLibSuffix)</LibOutputFileName>
+        <LibOutputFile>$(LibOutputFileName).lib</LibOutputFile>
+
+        <ClDefines>_VCRT_ALLOW_INTERNALS;$(ClDefines)</ClDefines>
+        <ClDefines Condition="'$(MsvcpFlavor)' == 'app'">$(ClDefines);_CRT_APP</ClDefines>
+
+        <UseMsvcrt>false</UseMsvcrt>
+        <GenerateImportLib>true</GenerateImportLib>
+        <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
+        <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt_1$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
+        <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
+        <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
+
+        <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
+        <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+
+        <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkAdditionalOptions>-nodefaultlib:$(LibOutputFile) $(LinkAdditionalOptions)</LinkAdditionalOptions>
+
+        <LinkGenerateMapFile>true</LinkGenerateMapFile>
+        <LinkRelease>true</LinkRelease>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <CppPreprocess Include="$(MSBuildThisFileDirectory)\msvcprt_1.src">
+            <Defines>LIBRARYNAME=$(OutputName.ToUpper());$(DllCppDefines)</Defines>
+        </CppPreprocess>
+        <DefFromI Include="$(IntermediateOutputDirectory)\msvcprt_1.i">
+            <DestFolder1>$(IntermediateOutputDirectory)</DestFolder1>
+            <DestFolder2>$(IntermediateOutputDirectory)</DestFolder2>
+            <DestFile>$(DllDefName)</DestFile>
+        </DefFromI>
+        <RCResourceFile Include="$(MSBuildThisFileDirectory)\msvcprt_1.rc"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd')" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.nativeproj"/>
+        <TargetLib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <TargetLib Include="$(UniversalCRTLib)"/>
+    </ItemGroup>
+
+    <!-- Copy the output dll and pdb to various destinations -->
+    <ItemGroup>
+        <CopyFilesForCrossTools Condition="'$(MsvcpFlavor)' == 'kernel32'" Include="
+           $(LinkOutputFile);
+           $(LinkProgramDataBaseFileName);
+        "/>
+        <CopyFilesForNetFx Condition="'$(MsvcpFlavor)' == 'netfx'" Include="
+           $(LinkOutputFile);
+           $(LinkProgramDataBaseFileName);
+        "/>
+    </ItemGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)\stl_1.files.settings.targets"/>
+
+    <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
+    <Target Name="GetBaseAddress"/>
+
+</Project>

@@ -1,0 +1,39 @@
+// cinttypes standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CINTTYPES_
+#define _CINTTYPES_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <cstdint>
+#include <inttypes.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+using _CSTD imaxdiv_t; // from <inttypes.h>
+
+using _CSTD imaxabs;
+using _CSTD imaxdiv;
+using _CSTD strtoimax;
+using _CSTD strtoumax;
+using _CSTD wcstoimax;
+using _CSTD wcstoumax;
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CINTTYPES_

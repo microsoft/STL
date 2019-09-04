@@ -1,0 +1,15 @@
+// cerrno standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CERRNO_
+#define _CERRNO_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <errno.h>
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CERRNO_

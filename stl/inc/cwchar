@@ -1,0 +1,105 @@
+// cwchar standard header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CWCHAR_
+#define _CWCHAR_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <cstdio> // TRANSITION, VSO#661721
+#include <wchar.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+using _Mbstatet = mbstate_t;
+
+_STD_BEGIN
+#pragma warning(push)
+#pragma warning(disable : 4995) // name was marked as #pragma deprecated
+
+using _CSTD _Mbstatet;
+
+using _CSTD mbstate_t;
+using _CSTD size_t;
+using _CSTD tm;
+using _CSTD wint_t;
+
+using _CSTD btowc;
+using _CSTD fgetwc;
+using _CSTD fgetws;
+using _CSTD fputwc;
+using _CSTD fputws;
+using _CSTD fwide;
+using _CSTD fwprintf;
+using _CSTD fwscanf;
+using _CSTD getwc;
+using _CSTD getwchar;
+using _CSTD mbrlen;
+using _CSTD mbrtowc;
+using _CSTD mbsrtowcs;
+using _CSTD mbsinit;
+using _CSTD putwc;
+using _CSTD putwchar;
+using _CSTD swprintf;
+using _CSTD swscanf;
+using _CSTD ungetwc;
+using _CSTD vfwprintf;
+using _CSTD vswprintf;
+using _CSTD vwprintf;
+using _CSTD wcrtomb;
+using _CSTD wprintf;
+using _CSTD wscanf;
+using _CSTD wcsrtombs;
+using _CSTD wcstol;
+using _CSTD wcscat;
+using _CSTD wcschr;
+using _CSTD wcscmp;
+using _CSTD wcscoll;
+using _CSTD wcscpy;
+using _CSTD wcscspn;
+using _CSTD wcslen;
+using _CSTD wcsncat;
+using _CSTD wcsncmp;
+using _CSTD wcsncpy;
+using _CSTD wcspbrk;
+using _CSTD wcsrchr;
+using _CSTD wcsspn;
+using _CSTD wcstod;
+using _CSTD wcstoul;
+using _CSTD wcsstr;
+using _CSTD wcstok;
+using _CSTD wcsxfrm;
+using _CSTD wctob;
+using _CSTD wmemchr;
+using _CSTD wmemcmp;
+using _CSTD wmemcpy;
+using _CSTD wmemmove;
+using _CSTD wmemset;
+using _CSTD wcsftime;
+
+using _CSTD vfwscanf;
+using _CSTD vswscanf;
+using _CSTD vwscanf;
+using _CSTD wcstof;
+using _CSTD wcstold;
+using _CSTD wcstoll;
+using _CSTD wcstoull;
+
+#pragma warning(pop)
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CWCHAR_

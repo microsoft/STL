@@ -1,0 +1,121 @@
+// 8859_6 -- one- or two-byte/wide-character tables
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+
+#ifndef _CVT_8859_6_
+#define _CVT_8859_6_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+//
+//  Name:             ISO 8859-6:1999 to Unicode
+//  Unicode version:  3.0
+//  Table version:    1.0
+//  Table format:     Format A
+//  Date:             1999 July 27
+//  Authors:          Ken Whistler
+//
+//  Copyright (c) 1991-1999 Unicode, Inc.  All Rights reserved.
+//
+//  This file is provided as-is by Unicode, Inc. (The Unicode Consortium).
+//  No claims are made as to fitness for any particular purpose.  No
+//  warranties of any kind are expressed or implied.  The recipient
+//  agrees to determine applicability of information provided.  If this
+//  file has been provided on optical media by Unicode, Inc., the sole
+//  remedy for any claim will be exchange of defective media within 90
+//  days of receipt.
+//
+//  Unicode, Inc. hereby grants the right to freely use the information
+//  supplied in this file in the creation of products supporting the
+//  Unicode Standard, and to make copies of this file in any form for
+//  internal or external distribution as long as this notice remains
+//  attached.
+//
+//  General notes:
+//
+//  This table contains the data the Unicode Consortium has on how
+//        ISO/IEC 8859-6:1999 characters map into Unicode.
+//
+//  Format:  Three tab-separated columns
+//    Column #1 is the ISO/IEC 8859-6 code (in hex as 0xXX)
+//    Column #2 is the Unicode (in hex as 0xXXXX)
+//    Column #3 the Unicode name (follows a comment sign, '#')
+//
+//  The entries are in ISO/IEC 8859-6 order.
+//
+//  Version history
+//  1.0 version updates 0.1 version by adding mappings for all
+//  control characters.
+//  0x30..0x39 remapped to the ASCII digits (U+0030..U+0039) instead
+//  of the Arabic digits (U+0660..U+0669).
+//
+//  Updated versions of this file may be found in:
+//   <ftp://ftp.unicode.org/Public/MAPPINGS/>
+//
+//  Use the Unicode reporting form <https://www.unicode.org/reporting.html>
+//    for any questions or comments or to report errors in the data.
+//
+#include <cvt/xone_byte>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+namespace stdext {
+    namespace cvt {
+        template <class _Dummy>
+        struct _tab_8859_6 {
+            enum { _Nlow = 0xa1, _Nbytes = 1 };
+            static const unsigned short _Btw[0x5f];
+            static const unsigned short _Dbvalid[0x01];
+            static const unsigned short _Dbtw[0x01];
+            static const unsigned short _Wvalid[0x30];
+            static const unsigned char _Wtb[0x30];
+        };
+
+        template <class _Dummy>
+        const unsigned short _tab_8859_6<_Dummy>::_Btw[0x5f] = { // map single bytes to words
+            0x0000, 0x0000, 0x0000, 0x00a4, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x060c, 0x00ad,
+            0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x061b, 0x0000, 0x0000, 0x0000, 0x061f, 0x0000, 0x0621, 0x0622, 0x0623, 0x0624, 0x0625, 0x0626, 0x0627,
+            0x0628, 0x0629, 0x062a, 0x062b, 0x062c, 0x062d, 0x062e, 0x062f, 0x0630, 0x0631, 0x0632, 0x0633, 0x0634,
+            0x0635, 0x0636, 0x0637, 0x0638, 0x0639, 0x063a, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0640, 0x0641,
+            0x0642, 0x0643, 0x0644, 0x0645, 0x0646, 0x0647, 0x0648, 0x0649, 0x064a, 0x064b, 0x064c, 0x064d, 0x064e,
+            0x064f, 0x0650, 0x0651, 0x0652, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x0000, 0x0000, 0x0000, 0x0000};
+
+        template <class _Dummy>
+        const unsigned short _tab_8859_6<_Dummy>::_Dbvalid[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_8859_6<_Dummy>::_Dbtw[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_8859_6<_Dummy>::_Wvalid[0x30] = { // words that map to single or double bytes
+            0x060c, 0x061b, 0x061f, 0x0621, 0x0622, 0x0623, 0x0624, 0x0625, 0x0626, 0x0627, 0x0628, 0x0629, 0x062a,
+            0x062b, 0x062c, 0x062d, 0x062e, 0x062f, 0x0630, 0x0631, 0x0632, 0x0633, 0x0634, 0x0635, 0x0636, 0x0637,
+            0x0638, 0x0639, 0x063a, 0x0640, 0x0641, 0x0642, 0x0643, 0x0644, 0x0645, 0x0646, 0x0647, 0x0648, 0x0649,
+            0x064a, 0x064b, 0x064c, 0x064d, 0x064e, 0x064f, 0x0650, 0x0651, 0x0652};
+
+        template <class _Dummy>
+        const unsigned char _tab_8859_6<_Dummy>::_Wtb[0x30] = { // map words to bytes
+            0x00ac, 0x00bb, 0x00bf, 0x00c1, 0x00c2, 0x00c3, 0x00c4, 0x00c5, 0x00c6, 0x00c7, 0x00c8, 0x00c9, 0x00ca,
+            0x00cb, 0x00cc, 0x00cd, 0x00ce, 0x00cf, 0x00d0, 0x00d1, 0x00d2, 0x00d3, 0x00d4, 0x00d5, 0x00d6, 0x00d7,
+            0x00d8, 0x00d9, 0x00da, 0x00e0, 0x00e1, 0x00e2, 0x00e3, 0x00e4, 0x00e5, 0x00e6, 0x00e7, 0x00e8, 0x00e9,
+            0x00ea, 0x00eb, 0x00ec, 0x00ed, 0x00ee, 0x00ef, 0x00f0, 0x00f1, 0x00f2};
+
+        template <class _Elem, unsigned long _Maxcode = 0xffff>
+        class codecvt_8859_6 : public _Cvt_one_byte<_Elem, _tab_8859_6<int>, _Maxcode> {};
+    } // namespace cvt
+} // namespace stdext
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CVT_8859_6_

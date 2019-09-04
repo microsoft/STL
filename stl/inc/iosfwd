@@ -1,0 +1,256 @@
+// iosfwd standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _IOSFWD_
+#define _IOSFWD_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <cstdio>
+#include <cstring>
+#include <cwchar>
+#include <xstddef>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+// I/O EXCEPTION MACROS
+
+#if _HAS_EXCEPTIONS
+#define _TRY_IO_BEGIN _TRY_BEGIN // begin try block
+
+#define _CATCH_IO_END                                                          \
+    _CATCH_ALL /* catch block for _Myios */                                    \
+        _Myios::setstate(ios_base::badbit, true); /* set badbit and rethrow */ \
+    _CATCH_END
+
+#define _CATCH_IO_(xtype, x)                                             \
+    _CATCH_ALL /* catch block for basic_ios x */                         \
+        (x)                                                              \
+            .setstate(xtype::badbit, true); /* set badbit and rethrow */ \
+    _CATCH_END
+
+#else // _HAS_EXCEPTIONS
+#define _TRY_IO_BEGIN { // begin try block
+#define _CATCH_IO_END } // catch block for _Myios
+#define _CATCH_IO_(xtype, x) } // catch block for basic_ios x
+#endif // _HAS_EXCEPTIONS
+
+// STREAM POSITIONING TYPES (from <streambuf>)
+using streamoff  = long long;
+using streamsize = long long;
+
+// CLASS TEMPLATE fpos (from <streambuf>)
+template <class _Statetype>
+class fpos { // store arbitrary file position
+public:
+    /* implicit */ fpos(streamoff _Off = 0) : _Myoff(_Off), _Fpos(0), _Mystate() {}
+
+    fpos(_Statetype _State, fpos_t _Fileposition) : _Myoff(_Fileposition), _Fpos(0), _Mystate(_State) {}
+
+    _NODISCARD _Statetype state() const {
+        return _Mystate;
+    }
+
+    void state(_Statetype _State) {
+        _Mystate = _State;
+    }
+
+    operator streamoff() const {
+        // TRANSITION, ABI: We currently always set _Fpos to 0 but older .objs containing old
+        // basic_filebuf would set _Fpos.
+        return _Myoff + _Fpos;
+    }
+
+#ifndef _REMOVE_FPOS_SEEKPOS
+    _DEPRECATE_FPOS_SEEKPOS fpos_t seekpos() const noexcept {
+        return {};
+    }
+#endif // _REMOVE_FPOS_SEEKPOS
+
+    _NODISCARD streamoff operator-(const fpos& _Right) const {
+        return static_cast<streamoff>(*this) - static_cast<streamoff>(_Right);
+    }
+
+    fpos& operator+=(streamoff _Off) { // add offset
+        _Myoff += _Off;
+        return *this;
+    }
+
+    fpos& operator-=(streamoff _Off) { // subtract offset
+        _Myoff -= _Off;
+        return *this;
+    }
+
+    _NODISCARD fpos operator+(streamoff _Off) const {
+        fpos _Tmp = *this;
+        _Tmp += _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD fpos operator-(streamoff _Off) const {
+        fpos _Tmp = *this;
+        _Tmp -= _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD bool operator==(const fpos& _Right) const {
+        return static_cast<streamoff>(*this) == static_cast<streamoff>(_Right);
+    }
+
+    template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
+    _NODISCARD friend bool operator==(const fpos& _Left, const _Int _Right) {
+        return static_cast<streamoff>(_Left) == _Right;
+    }
+
+    template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
+    _NODISCARD friend bool operator==(const _Int _Left, const fpos& _Right) {
+        return _Left == static_cast<streamoff>(_Right);
+    }
+
+    _NODISCARD bool operator!=(const fpos& _Right) const {
+        return static_cast<streamoff>(*this) != static_cast<streamoff>(_Right);
+    }
+
+    template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
+    _NODISCARD friend bool operator!=(const fpos& _Left, const _Int _Right) {
+        return static_cast<streamoff>(_Left) != _Right;
+    }
+
+    template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
+    _NODISCARD friend bool operator!=(const _Int _Left, const fpos& _Right) {
+        return _Left != static_cast<streamoff>(_Right);
+    }
+
+private:
+    streamoff _Myoff; // stream offset
+    fpos_t _Fpos; // TRANSITION, ABI. C file position, not currently used
+    _Statetype _Mystate; // current conversion state
+};
+
+using streampos  = fpos<_Mbstatet>;
+using wstreampos = streampos;
+
+// FORWARD REFERENCES
+class locale;
+template <class _Facet>
+const _Facet& __CRTDECL use_facet(const locale&);
+
+template <class _Elem>
+struct char_traits;
+template <>
+struct char_traits<char>;
+#ifdef __cpp_char8_t
+template <>
+struct char_traits<char8_t>;
+#endif // __cpp_char8_t
+template <>
+struct char_traits<char16_t>;
+template <>
+struct char_traits<char32_t>;
+template <>
+struct char_traits<wchar_t>;
+#ifdef _NATIVE_WCHAR_T_DEFINED
+template <>
+struct char_traits<unsigned short>;
+#endif // _NATIVE_WCHAR_T_DEFINED
+
+template <class _Ty>
+class allocator;
+class ios_base;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ios;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class istreambuf_iterator;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class ostreambuf_iterator;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_streambuf;
+
+#pragma vtordisp(push, 2) // compiler bug workaround
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_istream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ostream;
+#pragma vtordisp(pop) // compiler bug workaround
+
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_iostream;
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_stringbuf;
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_istringstream;
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_ostringstream;
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_stringstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_filebuf;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ifstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ofstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_fstream;
+
+#if defined(_DLL_CPPLIB)
+template <class _Elem, class _InIt>
+class num_get;
+template <class _Elem, class _OutIt>
+class num_put;
+template <class _Elem>
+class collate;
+#endif // defined(_DLL_CPPLIB)
+
+// char TYPEDEFS
+using ios           = basic_ios<char, char_traits<char>>;
+using streambuf     = basic_streambuf<char, char_traits<char>>;
+using istream       = basic_istream<char, char_traits<char>>;
+using ostream       = basic_ostream<char, char_traits<char>>;
+using iostream      = basic_iostream<char, char_traits<char>>;
+using stringbuf     = basic_stringbuf<char, char_traits<char>, allocator<char>>;
+using istringstream = basic_istringstream<char, char_traits<char>, allocator<char>>;
+using ostringstream = basic_ostringstream<char, char_traits<char>, allocator<char>>;
+using stringstream  = basic_stringstream<char, char_traits<char>, allocator<char>>;
+using filebuf       = basic_filebuf<char, char_traits<char>>;
+using ifstream      = basic_ifstream<char, char_traits<char>>;
+using ofstream      = basic_ofstream<char, char_traits<char>>;
+using fstream       = basic_fstream<char, char_traits<char>>;
+
+// wchar_t TYPEDEFS
+using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
+using wstreambuf     = basic_streambuf<wchar_t, char_traits<wchar_t>>;
+using wistream       = basic_istream<wchar_t, char_traits<wchar_t>>;
+using wostream       = basic_ostream<wchar_t, char_traits<wchar_t>>;
+using wiostream      = basic_iostream<wchar_t, char_traits<wchar_t>>;
+using wstringbuf     = basic_stringbuf<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+using wistringstream = basic_istringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+using wostringstream = basic_ostringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+using wstringstream  = basic_stringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+using wfilebuf       = basic_filebuf<wchar_t, char_traits<wchar_t>>;
+using wifstream      = basic_ifstream<wchar_t, char_traits<wchar_t>>;
+using wofstream      = basic_ofstream<wchar_t, char_traits<wchar_t>>;
+using wfstream       = basic_fstream<wchar_t, char_traits<wchar_t>>;
+
+#if defined(_CRTBLD)
+// unsigned short TYPEDEFS
+using ushistream = basic_istream<unsigned short, char_traits<unsigned short>>;
+using ushostream = basic_ostream<unsigned short, char_traits<unsigned short>>;
+using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;
+#endif // defined(_CRTBLD)
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _IOSFWD_

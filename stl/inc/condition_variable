@@ -1,0 +1,208 @@
+// condition_variable standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CONDITION_VARIABLE_
+#define _CONDITION_VARIABLE_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <chrono>
+#include <memory>
+#include <mutex>
+#include <xthreads.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+#ifdef _M_CEE
+#error <condition_variable> is not supported when compiling with /clr or /clr:pure.
+#endif // _M_CEE
+
+_STD_BEGIN
+class condition_variable_any { // class for waiting for conditions with any kind of mutex
+public:
+    condition_variable_any() {
+        _Myptr = _STD make_shared<mutex>();
+        _Cnd_init_in_situ(_Mycnd());
+    }
+
+    ~condition_variable_any() noexcept {
+        _Cnd_destroy_in_situ(_Mycnd());
+    }
+
+    condition_variable_any(const condition_variable_any&) = delete;
+    condition_variable_any& operator=(const condition_variable_any&) = delete;
+
+    void notify_one() noexcept { // wake up one waiter
+        lock_guard<mutex> _Lck(*_Myptr);
+        _Check_C_return(_Cnd_signal(_Mycnd()));
+    }
+
+    void notify_all() noexcept { // wake up all waiters
+        lock_guard<mutex> _Lck(*_Myptr);
+        _Check_C_return(_Cnd_broadcast(_Mycnd()));
+    }
+
+    template <class _Mutex>
+    void wait(_Mutex& _Xtrnl) { // wait for signal
+        {
+            shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+            lock_guard<mutex> _Lck(*_Ptr);
+            _Xtrnl.unlock(); // could throw
+            _Check_C_return(_Cnd_wait(_Mycnd(), _Ptr->_Mymtx()));
+        } // unlock
+
+        _Relock(_Xtrnl);
+    }
+
+    template <class _Mutex, class _Predicate>
+    void wait(_Mutex& _Xtrnl, _Predicate _Pred) { // wait for signal and check predicate
+        while (!_Pred()) {
+            wait(_Xtrnl);
+        }
+    }
+
+    template <class _Lock, class _Rep, class _Period>
+    cv_status wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
+        // wait for duration
+        if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
+            return cv_status::timeout;
+        }
+
+        // TRANSITION, ABI: The standard says that we should use a steady clock,
+        // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
+        _CSTD xtime _Tgt;
+        const bool _Clamped     = _To_xtime_10_day_clamped(_Tgt, _Rel_time);
+        const cv_status _Result = wait_until(_Lck, &_Tgt);
+        if (_Clamped) {
+            return cv_status::no_timeout;
+        }
+
+        return _Result;
+    }
+
+    template <class _Lock, class _Rep, class _Period, class _Predicate>
+    bool wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+        // wait for signal with timeout and check predicate
+        return _Wait_until1(_Lck, chrono::steady_clock::now() + _Rel_time, _Pred);
+    }
+
+    template <class _Lock, class _Clock, class _Duration>
+    cv_status wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // wait until time point
+        for (;;) {
+            const auto _Now = _Clock::now();
+            if (_Abs_time <= _Now) {
+                return cv_status::timeout;
+            }
+
+            _CSTD xtime _Tgt;
+            (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
+            const cv_status _Result = wait_until(_Lck, &_Tgt);
+            if (_Result == cv_status::no_timeout) {
+                return cv_status::no_timeout;
+            }
+        }
+    }
+
+    template <class _Lock, class _Clock, class _Duration, class _Predicate>
+    bool wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+        // wait for signal with timeout and check predicate
+        return _Wait_until1(_Lck, _Abs_time, _Pred);
+    }
+
+    template <class _Mutex>
+    cv_status wait_until(_Mutex& _Xtrnl, const xtime* _Abs_time) {
+        // wait for signal with timeout
+        int _Res;
+
+        {
+            shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+            lock_guard<mutex> _Lck(*_Ptr);
+            _Xtrnl.unlock(); // could throw
+            _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
+        } // unlock
+
+        _Relock(_Xtrnl);
+
+        switch (_Res) {
+        case _Thrd_success:
+            return cv_status::no_timeout;
+        case _Thrd_timedout:
+            return cv_status::timeout;
+        default:
+            _Throw_C_error(_Res);
+        }
+    }
+
+    template <class _Mutex, class _Predicate>
+    bool wait_until(_Mutex& _Xtrnl, const xtime* _Abs_time, _Predicate _Pred) {
+        // wait for signal with timeout and check predicate
+        return _Wait_until1(_Xtrnl, _Abs_time, _Pred);
+    }
+
+private:
+    shared_ptr<mutex> _Myptr;
+
+    aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
+
+    _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
+        return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
+    }
+
+    template <class _Mutex>
+    static void _Relock(_Mutex& _Xtrnl) noexcept /* terminates */ {
+        // relocks external mutex, terminate() on failure
+        // LWG 2135 says terminate rather than leaving the mutex unlocked;
+        // we slam into noexcept here for that for easier user debugging
+        _Xtrnl.lock();
+    }
+
+    template <class _Mutex, class _Predicate>
+    bool _Wait_until1(_Mutex& _Xtrnl, const xtime* _Abs_time, _Predicate& _Pred) {
+        // wait for signal with timeout and check predicate, without copying/moving the predicate
+        while (!_Pred()) {
+            if (wait_until(_Xtrnl, _Abs_time) == cv_status::timeout) {
+                return _Pred();
+            }
+        }
+
+        return true;
+    }
+
+    template <class _Mutex, class _Clock, class _Duration, class _Predicate>
+    bool _Wait_until1(_Mutex& _Xtrnl, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate& _Pred) {
+        while (!_Pred()) {
+            const auto _Now = _Clock::now();
+            if (_Abs_time <= _Now) {
+                return false;
+            }
+
+            _CSTD xtime _Tgt;
+            const bool _Clamped = _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
+            if (wait_until(_Xtrnl, &_Tgt) == cv_status::timeout && !_Clamped) {
+                return _Pred();
+            }
+        }
+
+        return true;
+    }
+};
+
+inline void notify_all_at_thread_exit(condition_variable& _Cnd, unique_lock<mutex> _Lck) {
+    // register _Cnd for release at thread exit
+    _Cnd._Register(_Lck, nullptr);
+}
+_STD_END
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CONDITION_VARIABLE_

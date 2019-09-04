@@ -1,0 +1,24 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\crt-common.settings.targets" />
+
+    <ItemGroup Condition="'$(BuildExePhase)' == '1' and
+                          ('$(SpectreBuildMode)' == '' or
+                           '$(SpectreBuildDebug)' == 'true' or
+                           '$(_BuildType)' == 'chk' or
+                           '$(_BuildType)' == 'dbg')">
+        <ProjectFile Include="msvcp_post_app\msvcp_post.nativeproj" />
+        <ProjectFile Include="msvcp_post_kernel32\msvcp_post.nativeproj" Condition="'$(BuildVCKernel32)' == 'true'" />
+        <ProjectFile Include="msvcp_post_onecore\msvcp_post.nativeproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(BuildExePhase)' == '1' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')">
+        <ProjectFile Include="msvcp_post_netfx\msvcp_post.nativeproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
+    </ItemGroup>
+
+    <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Traversal.targets" />
+</Project>

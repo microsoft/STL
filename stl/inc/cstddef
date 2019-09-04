@@ -1,0 +1,103 @@
+// cstddef standard header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CSTDDEF_
+#define _CSTDDEF_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <stddef.h>
+#include <xtr1common>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+using _CSTD ptrdiff_t;
+using _CSTD size_t;
+using max_align_t = double; // most aligned type
+
+#if _HAS_STD_BYTE
+                            // ENUM CLASS byte
+enum class byte : unsigned char {};
+
+template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_NODISCARD constexpr byte operator<<(
+    const byte _Arg, const _IntType _Shift) noexcept { // bitwise LEFT SHIFT, every static_cast is intentional
+    return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(_Arg) << _Shift));
+}
+
+template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_NODISCARD constexpr byte operator>>(
+    const byte _Arg, const _IntType _Shift) noexcept { // bitwise RIGHT SHIFT, every static_cast is intentional
+    return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(_Arg) >> _Shift));
+}
+
+_NODISCARD constexpr byte operator|(
+    const byte _Left, const byte _Right) noexcept { // bitwise OR, every static_cast is intentional
+    return static_cast<byte>(
+        static_cast<unsigned char>(static_cast<unsigned int>(_Left) | static_cast<unsigned int>(_Right)));
+}
+
+_NODISCARD constexpr byte operator&(
+    const byte _Left, const byte _Right) noexcept { // bitwise AND, every static_cast is intentional
+    return static_cast<byte>(
+        static_cast<unsigned char>(static_cast<unsigned int>(_Left) & static_cast<unsigned int>(_Right)));
+}
+
+_NODISCARD constexpr byte operator^(
+    const byte _Left, const byte _Right) noexcept { // bitwise XOR, every static_cast is intentional
+    return static_cast<byte>(
+        static_cast<unsigned char>(static_cast<unsigned int>(_Left) ^ static_cast<unsigned int>(_Right)));
+}
+
+_NODISCARD constexpr byte operator~(const byte _Arg) noexcept { // bitwise NOT, every static_cast is intentional
+    return static_cast<byte>(static_cast<unsigned char>(~static_cast<unsigned int>(_Arg)));
+}
+
+template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+constexpr byte& operator<<=(byte& _Arg, const _IntType _Shift) noexcept { // bitwise LEFT SHIFT
+    return _Arg = _Arg << _Shift;
+}
+
+template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+constexpr byte& operator>>=(byte& _Arg, const _IntType _Shift) noexcept { // bitwise RIGHT SHIFT
+    return _Arg = _Arg >> _Shift;
+}
+
+constexpr byte& operator|=(byte& _Left, const byte _Right) noexcept { // bitwise OR
+    return _Left = _Left | _Right;
+}
+
+constexpr byte& operator&=(byte& _Left, const byte _Right) noexcept { // bitwise AND
+    return _Left = _Left & _Right;
+}
+
+constexpr byte& operator^=(byte& _Left, const byte _Right) noexcept { // bitwise XOR
+    return _Left = _Left ^ _Right;
+}
+
+template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
+_NODISCARD constexpr _IntType to_integer(const byte _Arg) noexcept { // convert byte to integer
+    return static_cast<_IntType>(_Arg);
+}
+#endif // _HAS_STD_BYTE
+
+_STD_END
+
+using _STD max_align_t; // intentional, for historical reasons
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CSTDDEF_

@@ -1,0 +1,100 @@
+// 8859_1 -- one- or two-byte/wide-character tables
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+
+#ifndef _CVT_8859_1_
+#define _CVT_8859_1_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+//
+//  Name:             ISO/IEC 8859-1:1998 to Unicode
+//  Unicode version:  3.0
+//  Table version:    1.0
+//  Table format:     Format A
+//  Date:             1999 July 27
+//  Authors:          Ken Whistler
+//
+//  Copyright (c) 1991-1999 Unicode, Inc.  All Rights reserved.
+//
+//  This file is provided as-is by Unicode, Inc. (The Unicode Consortium).
+//  No claims are made as to fitness for any particular purpose.  No
+//  warranties of any kind are expressed or implied.  The recipient
+//  agrees to determine applicability of information provided.  If this
+//  file has been provided on optical media by Unicode, Inc., the sole
+//  remedy for any claim will be exchange of defective media within 90
+//  days of receipt.
+//
+//  Unicode, Inc. hereby grants the right to freely use the information
+//  supplied in this file in the creation of products supporting the
+//  Unicode Standard, and to make copies of this file in any form for
+//  internal or external distribution as long as this notice remains
+//  attached.
+//
+//  General notes:
+//
+//  This table contains the data the Unicode Consortium has on how
+//        ISO/IEC 8859-1:1998 characters map into Unicode.
+//
+//  Format:  Three tab-separated columns
+//    Column #1 is the ISO/IEC 8859-1 code (in hex as 0xXX)
+//    Column #2 is the Unicode (in hex as 0xXXXX)
+//    Column #3 the Unicode name (follows a comment sign, '#')
+//
+//  The entries are in ISO/IEC 8859-1 order.
+//
+//  Version history
+//  1.0 version updates 0.1 version by adding mappings for all
+//  control characters.
+//
+//  Updated versions of this file may be found in:
+//   <ftp://ftp.unicode.org/Public/MAPPINGS/>
+//
+//  Use the Unicode reporting form <https://www.unicode.org/reporting.html>
+//    for any questions or comments or to report errors in the data.
+//
+#include <cvt/xone_byte>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+namespace stdext {
+    namespace cvt {
+        template <class _Dummy>
+        struct _tab_8859_1 {
+            enum { _Nlow = 0x100, _Nbytes = 1 };
+            static const unsigned short _Btw[0x01];
+            static const unsigned short _Dbvalid[0x01];
+            static const unsigned short _Dbtw[0x01];
+            static const unsigned short _Wvalid[0x01];
+            static const unsigned char _Wtb[0x01];
+        };
+
+        template <class _Dummy>
+        const unsigned short _tab_8859_1<_Dummy>::_Btw[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_8859_1<_Dummy>::_Dbvalid[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_8859_1<_Dummy>::_Dbtw[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_8859_1<_Dummy>::_Wvalid[1] = {0};
+        template <class _Dummy>
+        const unsigned char _tab_8859_1<_Dummy>::_Wtb[1] = {0};
+        template <class _Elem, unsigned long _Maxcode = 0xffff>
+        class codecvt_8859_1 : public _Cvt_one_byte<_Elem, _tab_8859_1<int>, _Maxcode> {};
+    } // namespace cvt
+} // namespace stdext
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CVT_8859_1_

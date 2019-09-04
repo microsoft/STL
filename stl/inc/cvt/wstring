@@ -1,0 +1,230 @@
+// wstring -- convert wide strings using codecvt facet
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CVT_WSTRING_
+#define _CVT_WSTRING_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <cstring>
+#include <locale>
+#include <stdexcept>
+#include <xstring>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+namespace stdext {
+    namespace cvt {
+
+        // CLASS TEMPLATE wstring_convert
+        template <class _Codecvt, class _Elem = wchar_t>
+        class wstring_convert { // converts between _Elem (wide) and char (byte) strings
+            enum { _BUF_INC = 8, _BUF_MAX = 16 };
+
+            void _Init(_Codecvt* _Pcvt_arg = new _Codecvt) { // initialize the object
+                _Pcvt  = _Pcvt_arg;
+                _Loc   = _STD locale(_Loc, _Pcvt);
+                _Nconv = 0;
+            }
+
+        public:
+            using byte_string = _STD basic_string<char>;
+            using wide_string = _STD basic_string<_Elem>;
+            using state_type  = typename _Codecvt::state_type;
+            using int_type    = typename wide_string::traits_type::int_type;
+
+            wstring_convert() : _Has_state(false), _Has_berr(false), _Has_werr(false) {
+                _Init();
+            }
+
+            explicit wstring_convert(_Codecvt* _Pcvt_arg) : _Has_state(false), _Has_berr(false), _Has_werr(false) {
+                _Init(_Pcvt_arg);
+            }
+
+            wstring_convert(_Codecvt* _Pcvt_arg, state_type _State_arg)
+                : _Has_state(true), _Has_berr(false), _Has_werr(false) {
+                _Init(_Pcvt_arg);
+                _State = _State_arg;
+            }
+
+            explicit wstring_convert(const byte_string& _Berr_arg)
+                : _Berr(_Berr_arg), _Has_state(false), _Has_berr(true), _Has_werr(false) {
+                _Init();
+            }
+
+            wstring_convert(const byte_string& _Berr_arg, const wide_string& _Werr_arg)
+                : _Berr(_Berr_arg), _Werr(_Werr_arg), _Has_state(false), _Has_berr(true), _Has_werr(true) {
+                _Init();
+            }
+
+            virtual ~wstring_convert() noexcept {}
+
+            wstring_convert(const wstring_convert&) = delete;
+            wstring_convert& operator=(const wstring_convert&) = delete;
+
+            _NODISCARD size_t converted() const noexcept { // get conversion count
+                return _Nconv;
+            }
+
+            _NODISCARD state_type state() const {
+                return _State;
+            }
+
+            _NODISCARD wide_string from_bytes(char _Byte) { // convert a byte to a wide string
+                return from_bytes(&_Byte, &_Byte + 1);
+            }
+
+            _NODISCARD wide_string from_bytes(const char* _Ptr) { // convert a NTBS to a wide string
+                return from_bytes(_Ptr, _Ptr + _CSTD strlen(_Ptr));
+            }
+
+            _NODISCARD wide_string from_bytes(const byte_string& _Bstr) { // convert a byte string to a wide string
+                const char* _Ptr = _Bstr.c_str();
+                return from_bytes(_Ptr, _Ptr + _Bstr.size());
+            }
+
+            _NODISCARD wide_string from_bytes(
+                const char* _First, const char* _Last) { // convert byte sequence [_First, _Last) to a wide string
+                static state_type _State0;
+                wide_string _Wbuf;
+                wide_string _Wstr;
+                const char* _First_sav = _First;
+
+                if (!_Has_state) {
+                    _State = _State0; // reset state if not remembered
+                }
+
+                _Wbuf.append(_BUF_INC, _Elem{});
+                for (_Nconv = 0; _First != _Last; _Nconv = _First - _First_sav) { // convert one or more bytes
+                    _Elem* _Dest = &_Wbuf[0];
+                    _Elem* _Dnext;
+
+                    switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(),
+                        _Dnext)) { // test result of converting one or more bytes
+                    case _Codecvt::partial:
+                    case _Codecvt::ok:
+                        if (_Dest < _Dnext) {
+                            _Wstr.append(_Dest, static_cast<size_t>(_Dnext - _Dest));
+                        } else if (_Wbuf.size() < _BUF_MAX) {
+                            _Wbuf.append(_BUF_INC, _Elem{});
+                        } else if (_Has_werr) {
+                            return _Werr;
+                        } else {
+                            _STD _Throw_range_error("bad conversion");
+                        }
+
+                        break;
+
+                    case _Codecvt::noconv:
+                        for (; _First != _Last; ++_First) {
+                            _Wstr.push_back(static_cast<_Elem>(static_cast<unsigned char>(*_First)));
+                        }
+
+                        break; // no conversion, just copy code values
+
+                    default:
+                        if (_Has_werr) {
+                            return _Werr;
+                        } else {
+                            _STD _Throw_range_error("bad conversion");
+                        }
+                    }
+                }
+                return _Wstr;
+            }
+
+            _NODISCARD byte_string to_bytes(_Elem _Char) { // convert a wide char to a byte string
+                return to_bytes(&_Char, &_Char + 1);
+            }
+
+            _NODISCARD byte_string to_bytes(const _Elem* _Wptr) { // convert a NTWCS to a byte string
+                const _Elem* _Next = _Wptr;
+                while (*_Next != 0) {
+                    ++_Next;
+                }
+
+                return to_bytes(_Wptr, _Next);
+            }
+
+            _NODISCARD byte_string to_bytes(const wide_string& _Wstr) { // convert a wide string to a byte string
+                const _Elem* _Wptr = _Wstr.c_str();
+                return to_bytes(_Wptr, _Wptr + _Wstr.size());
+            }
+
+            _NODISCARD byte_string to_bytes(
+                const _Elem* _First, const _Elem* _Last) { // convert wide sequence [_First, _Last) to a byte string
+                static state_type _State0;
+                byte_string _Bbuf;
+                byte_string _Bstr;
+                const _Elem* _First_sav = _First;
+
+                if (!_Has_state) {
+                    _State = _State0; // reset state if not remembered
+                }
+
+                _Bbuf.append(_BUF_INC, '\0');
+                for (_Nconv = 0; _First != _Last; _Nconv = _First - _First_sav) { // convert one or more wide chars
+                    char* _Dest = &_Bbuf[0];
+                    char* _Dnext;
+
+                    switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(),
+                        _Dnext)) { // test result of converting one or more wide chars
+                    case _Codecvt::partial:
+                    case _Codecvt::ok:
+                        if (_Dest < _Dnext) {
+                            _Bstr.append(_Dest, static_cast<size_t>(_Dnext - _Dest));
+                        } else if (_Bbuf.size() < _BUF_MAX) {
+                            _Bbuf.append(_BUF_INC, '\0');
+                        } else if (_Has_berr) {
+                            return _Berr;
+                        } else {
+                            _STD _Throw_range_error("bad conversion");
+                        }
+
+                        break;
+
+                    case _Codecvt::noconv:
+                        for (; _First != _Last; ++_First) {
+                            _Bstr.push_back(static_cast<char>(static_cast<int_type>(*_First)));
+                        }
+
+                        break; // no conversion, just copy code values
+
+                    default:
+                        if (_Has_berr) {
+                            return _Berr;
+                        } else {
+                            _STD _Throw_range_error("bad conversion");
+                        }
+                    }
+                }
+                return _Bstr;
+            }
+
+        private:
+            _Codecvt* _Pcvt; // the codecvt facet
+            _STD locale _Loc; // manages reference to codecvt facet
+            byte_string _Berr;
+            wide_string _Werr;
+            state_type _State; // the remembered state
+            bool _Has_state;
+            bool _Has_berr;
+            bool _Has_werr;
+            size_t _Nconv;
+        };
+    } // namespace cvt
+} // namespace stdext
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CVT_WSTRING_

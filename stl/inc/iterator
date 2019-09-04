@@ -1,0 +1,579 @@
+// iterator standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _ITERATOR_
+#define _ITERATOR_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <istream>
+#include <xutility>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+// CLASS TEMPLATE front_insert_iterator
+template <class _Container>
+class front_insert_iterator { // wrap pushes to front of container as output iterator
+public:
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using difference_type   = void;
+    using pointer           = void;
+    using reference         = void;
+
+    using container_type = _Container;
+
+    explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
+
+    front_insert_iterator& operator=(const typename _Container::value_type& _Val) { // push value into container
+        container->push_front(_Val);
+        return *this;
+    }
+
+    front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+        container->push_front(_STD move(_Val));
+        return *this;
+    }
+
+    _NODISCARD front_insert_iterator& operator*() { // pretend to return designated value
+        return *this;
+    }
+
+    front_insert_iterator& operator++() { // pretend to preincrement
+        return *this;
+    }
+
+    front_insert_iterator operator++(int) { // pretend to postincrement
+        return *this;
+    }
+
+protected:
+    _Container* container; // pointer to container
+};
+
+// FUNCTION TEMPLATE front_inserter
+template <class _Container>
+_NODISCARD front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
+    return front_insert_iterator<_Container>(_Cont);
+}
+
+
+// CLASS TEMPLATE insert_iterator
+template <class _Container>
+class insert_iterator { // wrap inserts into container as output iterator
+public:
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using difference_type   = void;
+    using pointer           = void;
+    using reference         = void;
+
+    using container_type = _Container;
+
+    insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
+        : container(_STD addressof(_Cont)), iter(_Where) {}
+
+    insert_iterator& operator=(
+        const typename _Container::value_type& _Val) { // insert into container and increment stored iterator
+        iter = container->insert(iter, _Val);
+        ++iter;
+        return *this;
+    }
+
+    insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+
+        iter = container->insert(iter, _STD move(_Val));
+        ++iter;
+        return *this;
+    }
+
+    _NODISCARD insert_iterator& operator*() { // pretend to return designated value
+        return *this;
+    }
+
+    insert_iterator& operator++() { // pretend to preincrement
+        return *this;
+    }
+
+    insert_iterator& operator++(int) { // pretend to postincrement
+        return *this;
+    }
+
+protected:
+    _Container* container; // pointer to container
+    typename _Container::iterator iter; // iterator into container
+};
+
+// FUNCTION TEMPLATE inserter
+template <class _Container>
+_NODISCARD insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
+    return insert_iterator<_Container>(_Cont, _Where);
+}
+
+
+// CLASS TEMPLATE istream_iterator
+template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
+class istream_iterator { // wrap _Ty extracts from input stream as input iterator
+public:
+    using iterator_category = input_iterator_tag;
+    using value_type        = _Ty;
+    using difference_type   = _Diff;
+    using pointer           = const _Ty*;
+    using reference         = const _Ty&;
+
+    using char_type    = _Elem;
+    using traits_type  = _Traits;
+    using istream_type = basic_istream<_Elem, _Traits>;
+
+    constexpr istream_iterator() : _Myistr(nullptr), _Myval() {}
+
+    istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
+        _Getval();
+    }
+
+    _NODISCARD const _Ty& operator*() const {
+        return _Myval;
+    }
+
+    _NODISCARD const _Ty* operator->() const {
+        return _STD addressof(_Myval);
+    }
+
+    istream_iterator& operator++() {
+        _Getval();
+        return *this;
+    }
+
+    istream_iterator operator++(int) {
+        istream_iterator _Tmp = *this;
+        _Getval();
+        return _Tmp;
+    }
+
+    bool _Equal(const istream_iterator& _Right) const {
+        return _Myistr == _Right._Myistr;
+    }
+
+protected:
+    void _Getval() { // get a _Ty value if possible
+        if (_Myistr && !(*_Myistr >> _Myval)) {
+            _Myistr = nullptr;
+        }
+    }
+
+    istream_type* _Myistr; // pointer to input stream
+    _Ty _Myval; // lookahead value (valid if _Myistr is not null)
+};
+
+template <class _Ty, class _Elem, class _Traits, class _Diff>
+_NODISCARD bool operator==(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
+    const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
+    return _Left._Equal(_Right);
+}
+
+template <class _Ty, class _Elem, class _Traits, class _Diff>
+_NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
+    const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
+    return !(_Left == _Right);
+}
+
+
+// CLASS TEMPLATE ostream_iterator
+template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
+class ostream_iterator { // wrap _Ty inserts to output stream as output iterator
+public:
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using difference_type   = void;
+    using pointer           = void;
+    using reference         = void;
+
+    using char_type    = _Elem;
+    using traits_type  = _Traits;
+    using ostream_type = basic_ostream<_Elem, _Traits>;
+
+    ostream_iterator(ostream_type& _Ostr, const _Elem* const _Delim = nullptr)
+        : _Mydelim(_Delim), _Myostr(_STD addressof(_Ostr)) {}
+
+    ostream_iterator& operator=(const _Ty& _Val) { // insert value into output stream, followed by delimiter
+        *_Myostr << _Val;
+        if (_Mydelim) {
+            *_Myostr << _Mydelim;
+        }
+
+        return *this;
+    }
+
+    _NODISCARD ostream_iterator& operator*() { // pretend to return designated value
+        return *this;
+    }
+
+    ostream_iterator& operator++() { // pretend to preincrement
+        return *this;
+    }
+
+    ostream_iterator& operator++(int) { // pretend to postincrement
+        return *this;
+    }
+
+protected:
+    const _Elem* _Mydelim; // pointer to delimiter string (NB: not freed)
+    ostream_type* _Myostr; // pointer to output stream
+};
+_STD_END
+
+_STDEXT_BEGIN
+using _STD iterator_traits;
+using _STD size_t;
+
+// CLASS TEMPLATE checked_array_iterator
+template <class _Ptr>
+class checked_array_iterator { // wrap a pointer with checking
+    static_assert(_STD is_pointer_v<_Ptr>, "checked_array_iterator requires pointers");
+
+public:
+    using iterator_category = typename iterator_traits<_Ptr>::iterator_category;
+    using value_type        = typename iterator_traits<_Ptr>::value_type;
+    using difference_type   = typename iterator_traits<_Ptr>::difference_type;
+    using pointer           = typename iterator_traits<_Ptr>::pointer;
+    using reference         = typename iterator_traits<_Ptr>::reference;
+
+    constexpr checked_array_iterator() noexcept : _Myarray(nullptr), _Mysize(0), _Myindex(0) {}
+
+    constexpr checked_array_iterator(const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept
+        : _Myarray(_Array), _Mysize(_Size), _Myindex(_Index) {
+        _STL_VERIFY(_Index <= _Size, "checked_array_iterator construction index out of range");
+    }
+
+    _NODISCARD constexpr _Ptr base() const noexcept {
+        return _Myarray + _Myindex;
+    }
+
+    _NODISCARD constexpr reference operator*() const noexcept {
+        return *operator->();
+    }
+
+    _NODISCARD constexpr pointer operator->() const noexcept {
+        _STL_VERIFY(_Myarray, "cannot dereference value-initialized or null checked_array_iterator");
+        _STL_VERIFY(_Myindex < _Mysize, "cannot dereference end checked_array_iterator");
+        return _Myarray + _Myindex;
+    }
+
+    constexpr checked_array_iterator& operator++() noexcept {
+        _STL_VERIFY(_Myarray, "cannot increment value-initialized or null checked_array_iterator");
+        _STL_VERIFY(_Myindex < _Mysize, "cannot increment checked_array_iterator past end");
+        ++_Myindex;
+        return *this;
+    }
+
+    constexpr checked_array_iterator operator++(int) noexcept {
+        checked_array_iterator _Tmp = *this;
+        ++*this;
+        return _Tmp;
+    }
+
+    constexpr checked_array_iterator& operator--() noexcept {
+        _STL_VERIFY(_Myarray, "cannot decrement value-initialized or null checked_array_iterator");
+        _STL_VERIFY(_Myindex != 0, "cannot decrement checked_array_iterator before begin");
+        --_Myindex;
+        return *this;
+    }
+
+    constexpr checked_array_iterator operator--(int) noexcept {
+        checked_array_iterator _Tmp = *this;
+        --*this;
+        return _Tmp;
+    }
+
+    constexpr checked_array_iterator& operator+=(const difference_type _Off) noexcept {
+        if (_Off != 0) {
+            _STL_VERIFY(_Myarray, "cannot seek value-initialized or null checked_array_iterator");
+        }
+
+        if (_Off < 0) {
+#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
+            _STL_VERIFY(_Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
+        }
+
+        if (_Off > 0) {
+            _STL_VERIFY(
+                _Mysize - _Myindex >= static_cast<size_t>(_Off), "cannot seek checked_array_iterator after end");
+        }
+
+        _Myindex += _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr checked_array_iterator operator+(const difference_type _Off) const noexcept {
+        checked_array_iterator _Tmp = *this;
+        _Tmp += _Off;
+        return _Tmp;
+    }
+
+#ifndef __CUDACC__ // TRANSITION, VSO#568006
+    _NODISCARD
+#endif // TRANSITION, VSO#568006
+    friend constexpr checked_array_iterator operator+(
+        const difference_type _Off, const checked_array_iterator<_Ptr>& _Next) noexcept {
+        return _Next + _Off;
+    }
+
+    constexpr checked_array_iterator& operator-=(const difference_type _Off) noexcept {
+        if (_Off != 0) {
+            _STL_VERIFY(_Myarray, "cannot seek value-initialized or null checked_array_iterator");
+        }
+
+        if (_Off > 0) {
+            _STL_VERIFY(_Myindex >= static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
+        }
+
+        if (_Off < 0) {
+#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
+            _STL_VERIFY(
+                _Mysize - _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator after end");
+        }
+
+        _Myindex -= _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr checked_array_iterator operator-(const difference_type _Off) const noexcept {
+        checked_array_iterator _Tmp = *this;
+        _Tmp -= _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD constexpr difference_type operator-(const checked_array_iterator& _Right) const noexcept {
+        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
+            "cannot subtract incompatible checked_array_iterators");
+        return static_cast<difference_type>(_Myindex - _Right._Myindex);
+    }
+
+    _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
+        return *(*this + _Off);
+    }
+
+    _NODISCARD constexpr bool operator==(const checked_array_iterator& _Right) const noexcept {
+        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
+            "cannot compare incompatible checked_array_iterators for equality");
+        return _Myindex == _Right._Myindex;
+    }
+
+    _NODISCARD constexpr bool operator!=(const checked_array_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD constexpr bool operator<(const checked_array_iterator& _Right) const noexcept {
+        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
+            "cannot compare incompatible checked_array_iterators");
+        return _Myindex < _Right._Myindex;
+    }
+
+    _NODISCARD constexpr bool operator>(const checked_array_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD constexpr bool operator<=(const checked_array_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD constexpr bool operator>=(const checked_array_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+    friend constexpr void _Verify_range(
+        const checked_array_iterator& _First, const checked_array_iterator& _Last) noexcept {
+        _STL_VERIFY(_First._Myarray == _Last._Myarray && _First._Mysize == _Last._Mysize,
+            "mismatching checked_array_iterators");
+        _STL_VERIFY(_First._Myindex <= _Last._Myindex, "transposed checked_array_iterator range");
+    }
+
+    constexpr void _Verify_offset(const difference_type _Off) const noexcept {
+        if (_Off < 0) {
+#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
+            _STL_VERIFY(
+                _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator iterator before begin");
+        }
+
+        if (_Off > 0) {
+            _STL_VERIFY(_Mysize - _Myindex >= static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator iterator after end");
+        }
+    }
+
+    using _Prevent_inheriting_unwrap = checked_array_iterator;
+
+    _NODISCARD constexpr _Ptr _Unwrapped() const noexcept {
+        return _Myarray + _Myindex;
+    }
+
+    constexpr void _Seek_to(_Ptr _It) noexcept {
+        _Myindex = static_cast<size_t>(_It - _Myarray);
+    }
+
+private:
+    _Ptr _Myarray; // beginning of array
+    size_t _Mysize; // size of array
+    size_t _Myindex; // offset into array
+};
+
+template <class _Ptr>
+_NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
+    const _Ptr _Array, const size_t _Size, const size_t _Index = 0) {
+    return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
+}
+
+// CLASS TEMPLATE unchecked_array_iterator
+template <class _Ptr>
+class unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
+    static_assert(_STD is_pointer_v<_Ptr>, "unchecked_array_iterator requires pointers");
+
+public:
+    using iterator_category = typename iterator_traits<_Ptr>::iterator_category;
+    using value_type        = typename iterator_traits<_Ptr>::value_type;
+    using difference_type   = typename iterator_traits<_Ptr>::difference_type;
+    using pointer           = typename iterator_traits<_Ptr>::pointer;
+    using reference         = typename iterator_traits<_Ptr>::reference;
+
+    constexpr unchecked_array_iterator() noexcept : _Myptr(nullptr) {}
+
+    constexpr explicit unchecked_array_iterator(const _Ptr _Src) noexcept : _Myptr(_Src) {}
+
+    _NODISCARD constexpr _Ptr base() const noexcept {
+        return _Myptr;
+    }
+
+    _NODISCARD constexpr reference operator*() const noexcept {
+        return *_Myptr;
+    }
+
+    _NODISCARD constexpr pointer operator->() const noexcept {
+        return _Myptr;
+    }
+
+    constexpr unchecked_array_iterator& operator++() noexcept {
+        ++_Myptr;
+        return *this;
+    }
+
+    constexpr unchecked_array_iterator operator++(int) noexcept {
+        unchecked_array_iterator _Tmp = *this;
+        ++_Myptr;
+        return _Tmp;
+    }
+
+    constexpr unchecked_array_iterator& operator--() noexcept {
+        --_Myptr;
+        return *this;
+    }
+
+    constexpr unchecked_array_iterator operator--(int) noexcept {
+        unchecked_array_iterator _Tmp = *this;
+        --_Myptr;
+        return _Tmp;
+    }
+
+    constexpr unchecked_array_iterator& operator+=(const difference_type _Off) noexcept {
+        _Myptr += _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr unchecked_array_iterator operator+(const difference_type _Off) const noexcept {
+        unchecked_array_iterator _Tmp = *this;
+        _Tmp += _Off;
+        return _Tmp;
+    }
+
+#ifndef __CUDACC__ // TRANSITION, VSO#568006
+    _NODISCARD
+#endif // TRANSITION, VSO#568006
+    friend constexpr unchecked_array_iterator operator+(
+        const difference_type _Off, const unchecked_array_iterator& _Next) noexcept {
+        return _Next + _Off;
+    }
+
+    constexpr unchecked_array_iterator& operator-=(const difference_type _Off) noexcept {
+        return *this += -_Off;
+    }
+
+    _NODISCARD constexpr unchecked_array_iterator operator-(const difference_type _Off) const noexcept {
+        unchecked_array_iterator _Tmp = *this;
+        _Tmp -= _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD constexpr difference_type operator-(const unchecked_array_iterator& _Right) const noexcept {
+        return _Myptr - _Right._Myptr;
+    }
+
+    _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
+        return *(*this + _Off);
+    }
+
+    _NODISCARD constexpr bool operator==(const unchecked_array_iterator& _Right) const noexcept {
+        return _Myptr == _Right._Myptr;
+    }
+
+    _NODISCARD constexpr bool operator!=(const unchecked_array_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD constexpr bool operator<(const unchecked_array_iterator& _Right) const noexcept {
+        return _Myptr < _Right._Myptr;
+    }
+
+    _NODISCARD constexpr bool operator>(const unchecked_array_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD constexpr bool operator<=(const unchecked_array_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD constexpr bool operator>=(const unchecked_array_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+    friend constexpr void _Verify_range(
+        const unchecked_array_iterator _First, const unchecked_array_iterator _Last) noexcept {
+        _STD _Verify_range(_First._Myptr, _Last._Myptr);
+    }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+    using _Prevent_inheriting_unwrap = unchecked_array_iterator;
+
+    static constexpr bool _Unwrap_when_unverified = true;
+
+    _NODISCARD constexpr _Ptr _Unwrapped() const noexcept {
+        return _Myptr;
+    }
+
+    constexpr void _Seek_to(_Ptr _It) noexcept {
+        _Myptr = _It;
+    }
+
+private:
+    _Ptr _Myptr; // underlying pointer
+};
+
+template <class _Ptr>
+_NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(const _Ptr _It) noexcept {
+    return unchecked_array_iterator<_Ptr>(_It);
+}
+_STDEXT_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _ITERATOR_

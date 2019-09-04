@@ -1,0 +1,14 @@
+{
+    "Registrations": [
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/ulfjack/ryu.git",
+                    "commitHash": "59661c3f883dfd39cef6dc8eaf2fcbaae53597e8"
+                }
+            }
+        }
+    ],
+    "Version": 1
+}

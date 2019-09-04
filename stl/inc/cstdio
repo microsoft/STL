@@ -1,0 +1,99 @@
+// cstdio standard header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CSTDIO_
+#define _CSTDIO_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <stdio.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+// undef common macro overrides
+#undef clearerr
+#undef feof
+#undef ferror
+#undef getc
+#undef getchar
+#undef putc
+#undef putchar
+
+// TRANSITION: Boost nonconformingly uses this macro
+#define _FPOSOFF(fp) (static_cast<long long>(fp))
+
+_STD_BEGIN
+#pragma warning(push)
+#pragma warning(disable : 4995) // name was marked as #pragma deprecated
+
+using _CSTD FILE;
+using _CSTD _Mbstatet;
+
+using _CSTD size_t;
+using _CSTD fpos_t;
+using _CSTD FILE;
+using _CSTD clearerr;
+using _CSTD fclose;
+using _CSTD feof;
+using _CSTD ferror;
+using _CSTD fflush;
+using _CSTD fgetc;
+using _CSTD fgetpos;
+using _CSTD fgets;
+using _CSTD fopen;
+using _CSTD fprintf;
+using _CSTD fputc;
+using _CSTD fputs;
+using _CSTD fread;
+using _CSTD freopen;
+using _CSTD fscanf;
+using _CSTD fseek;
+using _CSTD fsetpos;
+using _CSTD ftell;
+using _CSTD fwrite;
+using _CSTD getc;
+using _CSTD getchar;
+using _CSTD perror;
+using _CSTD putc;
+using _CSTD putchar;
+using _CSTD printf;
+using _CSTD puts;
+using _CSTD remove;
+using _CSTD rename;
+using _CSTD rewind;
+using _CSTD scanf;
+using _CSTD setbuf;
+using _CSTD setvbuf;
+using _CSTD sprintf;
+using _CSTD sscanf;
+using _CSTD tmpfile;
+using _CSTD tmpnam;
+using _CSTD ungetc;
+using _CSTD vfprintf;
+using _CSTD vprintf;
+using _CSTD vsprintf;
+
+using _CSTD snprintf;
+using _CSTD vsnprintf;
+using _CSTD vfscanf;
+using _CSTD vscanf;
+using _CSTD vsscanf;
+
+#pragma warning(pop)
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CSTDIO_

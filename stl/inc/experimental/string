@@ -1,0 +1,48 @@
+// string experimental header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _EXPERIMENTAL_STRING_
+#define _EXPERIMENTAL_STRING_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <experimental/xutility>
+#include <xstring>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+namespace experimental {
+    inline namespace fundamentals_v2 {
+
+        // FUNCTION TEMPLATE erase_if
+        template <class _Elem, class _Traits, class _Alloc, class _Pr>
+        void erase_if(basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+            _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+        }
+
+        // FUNCTION TEMPLATE erase
+        template <class _Elem, class _Traits, class _Alloc, class _Uty>
+        void erase(basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) { // erase each element matching _Val
+            _Erase_remove(_Cont, _Val);
+        }
+
+    } // namespace fundamentals_v2
+} // namespace experimental
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _EXPERIMENTAL_STRING_

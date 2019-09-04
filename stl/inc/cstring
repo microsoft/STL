@@ -1,0 +1,58 @@
+// cstring standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CSTRING_
+#define _CSTRING_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <string.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+#pragma warning(push)
+#pragma warning(disable : 4995) // name was marked as #pragma deprecated
+
+using _CSTD size_t;
+using _CSTD memchr;
+using _CSTD memcmp;
+using _CSTD memcpy;
+using _CSTD memmove;
+using _CSTD memset;
+using _CSTD strcat;
+using _CSTD strchr;
+using _CSTD strcmp;
+using _CSTD strcoll;
+using _CSTD strcpy;
+using _CSTD strcspn;
+using _CSTD strerror;
+using _CSTD strlen;
+using _CSTD strncat;
+using _CSTD strncmp;
+using _CSTD strncpy;
+using _CSTD strpbrk;
+using _CSTD strrchr;
+using _CSTD strspn;
+using _CSTD strstr;
+using _CSTD strtok;
+using _CSTD strxfrm;
+
+#pragma warning(pop)
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CSTRING_

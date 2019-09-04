@@ -1,0 +1,13 @@
+; Copyright (c) Microsoft Corporation.
+; SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+;********************************************************************************
+;
+; This is the .DEF file for the Microsoft Visual C++ Run-Time Library "_1" DLL
+; The release version is MSVCPXX_1.DLL and the debug version MSVCPXX_1D.DLL.
+;
+;********************************************************************************
+
+LIBRARY LIBRARYNAME
+
+EXPORTS

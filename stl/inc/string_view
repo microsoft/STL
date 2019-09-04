@@ -1,0 +1,18 @@
+// string_view standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _STRING_VIEW_
+#define _STRING_VIEW_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#if _HAS_CXX17
+#include <xstring>
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#pragma message("string_view is only available with C++17 or later.")
+#endif // _HAS_CXX17
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _STRING_VIEW_

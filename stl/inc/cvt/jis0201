@@ -1,0 +1,140 @@
+// jis0201 -- one- or two-byte/wide-character tables
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+
+#ifndef _CVT_JIS0201_
+#define _CVT_JIS0201_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+//
+// NOTE:
+//  The conversion data in this header has been derived by Dinkumware
+//  from a Unicode, Inc. file with the preamble reproduced below, under
+//  the grant of right described in that preamble. This header contains
+//  no other material from that file.
+//
+// Name:             JIS X 0201 (1976) to Unicode 1.1 Table
+// Unicode version:  1.1
+// Table version:    1.0
+// Table format:     Format A
+// Date:             2011 October 14
+//
+// Copyright (c) 1994-2011 Unicode, Inc.  All Rights reserved.
+//
+// This file is provided as-is by Unicode, Inc. (The Unicode Consortium).
+// No claims are made as to fitness for any particular purpose.  No
+// warranties of any kind are expressed or implied.  The recipient
+// agrees to determine applicability of information provided.  If this
+// file has been provided on magnetic media by Unicode, Inc., the sole
+// remedy for any claim will be exchange of defective media within 90
+// days of receipt.
+//
+//  Unicode, Inc. hereby grants the right to freely use the information
+//  supplied in this file in the creation of products supporting the
+//  Unicode Standard, and to make copies of this file in any form for
+//  internal or external distribution as long as this notice remains
+//  attached.
+//
+// General notes:
+//
+//
+// This table contains one set of mappings from JIS X 0201 into Unicode.
+// Note that these data are *possible* mappings only and may not be the
+// same as those used by actual products, nor may they be the best suited
+// for all uses.  For more information on the mappings between various code
+// pages incorporating the repertoire of JIS X 0201 and Unicode, consult the
+// VENDORS mapping data.
+//
+//
+// Format:  Three tab-separated columns
+//  Column #1 is the shift JIS code (in hex as 0xXX)
+//  Column #2 is the Unicode (in hex as 0xXXXX)
+//  Column #3 the Unicode (ISO 10646) name (follows a comment sign)
+//
+// The entries are in JIS order
+//
+//  Revision History:
+//
+//    [v1.0, 2011 October 14]
+//    Updated terms of use to current wording.
+//    Updated contact information.
+//    No changes to the mapping data.
+//
+//    [v0.9, 8 March 1994]
+//    First release.
+//
+//  Use the Unicode reporting form <https://www.unicode.org/reporting.html>
+//    for any questions or comments or to report errors in the data.
+//
+#include <cvt/xone_byte>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+namespace stdext {
+    namespace cvt {
+        template <class _Dummy>
+        struct _tab_jis0201 {
+            enum { _Nlow = 0x5c, _Nbytes = 1 };
+            static const unsigned short _Btw[0xa4];
+            static const unsigned short _Dbvalid[0x01];
+            static const unsigned short _Dbtw[0x01];
+            static const unsigned short _Wvalid[0x41];
+            static const unsigned char _Wtb[0x41];
+        };
+
+        template <class _Dummy>
+        const unsigned short _tab_jis0201<_Dummy>::_Btw[0xa4] = { // map single bytes to words
+            0x00a5, 0x005d, 0x005e, 0x005f, 0x0060, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067, 0x0068,
+            0x0069, 0x006a, 0x006b, 0x006c, 0x006d, 0x006e, 0x006f, 0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075,
+            0x0076, 0x0077, 0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d, 0x203e, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x0000, 0x0000, 0x0000, 0x0000, 0xff61, 0xff62, 0xff63, 0xff64, 0xff65, 0xff66, 0xff67, 0xff68, 0xff69,
+            0xff6a, 0xff6b, 0xff6c, 0xff6d, 0xff6e, 0xff6f, 0xff70, 0xff71, 0xff72, 0xff73, 0xff74, 0xff75, 0xff76,
+            0xff77, 0xff78, 0xff79, 0xff7a, 0xff7b, 0xff7c, 0xff7d, 0xff7e, 0xff7f, 0xff80, 0xff81, 0xff82, 0xff83,
+            0xff84, 0xff85, 0xff86, 0xff87, 0xff88, 0xff89, 0xff8a, 0xff8b, 0xff8c, 0xff8d, 0xff8e, 0xff8f, 0xff90,
+            0xff91, 0xff92, 0xff93, 0xff94, 0xff95, 0xff96, 0xff97, 0xff98, 0xff99, 0xff9a, 0xff9b, 0xff9c, 0xff9d,
+            0xff9e, 0xff9f, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+            0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000};
+
+        template <class _Dummy>
+        const unsigned short _tab_jis0201<_Dummy>::_Dbvalid[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_jis0201<_Dummy>::_Dbtw[1] = {0};
+        template <class _Dummy>
+        const unsigned short _tab_jis0201<_Dummy>::_Wvalid[0x41] = { // words that map to single or double bytes
+            0x00a5, 0x203e, 0xff61, 0xff62, 0xff63, 0xff64, 0xff65, 0xff66, 0xff67, 0xff68, 0xff69, 0xff6a, 0xff6b,
+            0xff6c, 0xff6d, 0xff6e, 0xff6f, 0xff70, 0xff71, 0xff72, 0xff73, 0xff74, 0xff75, 0xff76, 0xff77, 0xff78,
+            0xff79, 0xff7a, 0xff7b, 0xff7c, 0xff7d, 0xff7e, 0xff7f, 0xff80, 0xff81, 0xff82, 0xff83, 0xff84, 0xff85,
+            0xff86, 0xff87, 0xff88, 0xff89, 0xff8a, 0xff8b, 0xff8c, 0xff8d, 0xff8e, 0xff8f, 0xff90, 0xff91, 0xff92,
+            0xff93, 0xff94, 0xff95, 0xff96, 0xff97, 0xff98, 0xff99, 0xff9a, 0xff9b, 0xff9c, 0xff9d, 0xff9e, 0xff9f};
+
+        template <class _Dummy>
+        const unsigned char _tab_jis0201<_Dummy>::_Wtb[0x41] = { // map words to bytes
+            0x005c, 0x007e, 0x00a1, 0x00a2, 0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7, 0x00a8, 0x00a9, 0x00aa, 0x00ab,
+            0x00ac, 0x00ad, 0x00ae, 0x00af, 0x00b0, 0x00b1, 0x00b2, 0x00b3, 0x00b4, 0x00b5, 0x00b6, 0x00b7, 0x00b8,
+            0x00b9, 0x00ba, 0x00bb, 0x00bc, 0x00bd, 0x00be, 0x00bf, 0x00c0, 0x00c1, 0x00c2, 0x00c3, 0x00c4, 0x00c5,
+            0x00c6, 0x00c7, 0x00c8, 0x00c9, 0x00ca, 0x00cb, 0x00cc, 0x00cd, 0x00ce, 0x00cf, 0x00d0, 0x00d1, 0x00d2,
+            0x00d3, 0x00d4, 0x00d5, 0x00d6, 0x00d7, 0x00d8, 0x00d9, 0x00da, 0x00db, 0x00dc, 0x00dd, 0x00de, 0x00df};
+
+        template <class _Elem, unsigned long _Maxcode = 0xffff>
+        class codecvt_jis0201 : public _Cvt_one_byte<_Elem, _tab_jis0201<int>, _Maxcode> {};
+    } // namespace cvt
+} // namespace stdext
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CVT_JIS0201_

@@ -1,0 +1,24 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// msvcprt_codecvt_ids.rc : Defines the version resource for the C++ Runtime Library
+// "_codecvt_ids" satellite DLL
+//
+//////////////////////////////////////////////////////////////////////////////////////
+
+#include "winver.h"                       // extract from windows header
+#include "verstamp.h"
+
+#define MKARGSTR2(X) #X
+#define MKARGSTR(X)  MKARGSTR2(X)
+
+#define VER_FILETYPE VFT_DLL
+#define VER_FILESUBTYPE VFT_UNKNOWN
+
+#define VER_FILEDESCRIPTION_STR  "Microsoft\256 C Runtime Library _codecvt_ids\0"
+#define VER_INTERNALNAME_STR     MKARGSTR(SXS_TARGET)
+#define VER_ORIGINALFILENAME_STR MKARGSTR(SXS_TARGET)
+
+#include <common.ver>

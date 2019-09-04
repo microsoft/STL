@@ -1,0 +1,78 @@
+// typeindex standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _TYPEINDEX_
+#define _TYPEINDEX_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <typeinfo>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+class type_index { // wraps a typeinfo for indexing
+public:
+    type_index(const type_info& _Tinfo) noexcept : _Tptr(&_Tinfo) {}
+
+    _NODISCARD size_t hash_code() const noexcept {
+        return _Tptr->hash_code();
+    }
+
+    _NODISCARD const char* name() const noexcept {
+        return _Tptr->name();
+    }
+
+    _NODISCARD bool operator==(const type_index& _Right) const noexcept {
+        return *_Tptr == *_Right._Tptr;
+    }
+
+    _NODISCARD bool operator!=(const type_index& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD bool operator<(const type_index& _Right) const noexcept {
+        return _Tptr->before(*_Right._Tptr);
+    }
+
+    _NODISCARD bool operator>=(const type_index& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+    _NODISCARD bool operator>(const type_index& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD bool operator<=(const type_index& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+private:
+    const type_info* _Tptr;
+};
+
+// STRUCT TEMPLATE SPECIALIZATION hash
+template <>
+struct hash<type_index> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+
+    _NODISCARD size_t operator()(const type_index& _Keyval) const noexcept {
+        return _Keyval.hash_code();
+    }
+};
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _TYPEINDEX_

@@ -1,0 +1,17 @@
+// coroutine experimental header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// Library support of coroutines TS, https://wg21.link/p0057
+
+#pragma once
+#ifndef _EXPERIMENTAL_COROUTINE_
+#define _EXPERIMENTAL_COROUTINE_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <experimental/resumable>
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _EXPERIMENTAL_COROUTINE_

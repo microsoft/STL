@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <PropertyGroup>
+        <CrtBuildModel>md</CrtBuildModel>
+        <MsvcpFlavor>netfx</MsvcpFlavor>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\msvcp_1.settings.targets"/>
+
+</Project>

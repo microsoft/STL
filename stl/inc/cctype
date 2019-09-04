@@ -1,0 +1,61 @@
+// cctype standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CCTYPE_
+#define _CCTYPE_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <ctype.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+// remove any (improper) macro overrides
+#undef isalnum
+#undef isalpha
+#undef isblank
+#undef iscntrl
+#undef isdigit
+#undef isgraph
+#undef islower
+#undef isprint
+#undef ispunct
+#undef isspace
+#undef isupper
+#undef isxdigit
+#undef tolower
+#undef toupper
+
+_STD_BEGIN
+using _CSTD isalnum;
+using _CSTD isalpha;
+using _CSTD iscntrl;
+using _CSTD isdigit;
+using _CSTD isgraph;
+using _CSTD islower;
+using _CSTD isprint;
+using _CSTD ispunct;
+using _CSTD isspace;
+using _CSTD isupper;
+using _CSTD isxdigit;
+using _CSTD tolower;
+using _CSTD toupper;
+
+using _CSTD isblank;
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CCTYPE_

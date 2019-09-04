@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <ItemGroup>
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\special_math.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+        </BuildFiles>
+    </ItemGroup>
+
+    <Choose>
+      <When Condition="'$(CrtBuildModel)' != 'md'">
+        <!-- Only check exports of release, DLL, builds -->
+      </When>
+
+      <When Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'chpe'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'amd64'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'arm'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'arm64'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+    </Choose>
+
+</Project>

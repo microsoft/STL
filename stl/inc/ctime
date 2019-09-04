@@ -1,0 +1,47 @@
+// ctime standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _CTIME_
+#define _CTIME_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#include <time.h>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+using _CSTD clock_t;
+using _CSTD size_t;
+using _CSTD time_t;
+using _CSTD tm;
+using _CSTD asctime;
+using _CSTD clock;
+using _CSTD ctime;
+using _CSTD difftime;
+using _CSTD gmtime;
+using _CSTD localtime;
+using _CSTD mktime;
+using _CSTD strftime;
+using _CSTD time;
+#if _HAS_CXX17
+using _CSTD timespec;
+using _CSTD timespec_get;
+#endif // _HAS_CXX17
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _CTIME_

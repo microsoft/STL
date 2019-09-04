@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <ItemGroup>
+        <!-- special_math.cpp includes lots of Boost headers and takes >6s
+             to compile. Put it at the beginning of the file list to avoid
+             long pole when /MP is used -->
+
+        <!-- Objs that exist only in libcpmt[d][01].lib. -->
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\special_math.cpp;
+            $(CrtRoot)\github\stl\src\memory_resource.cpp;
+            $(CrtRoot)\github\stl\src\ulocale.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInLib>true</IncludeInLib>
+            <IncludeInImportLib>false</IncludeInImportLib>
+        </BuildFiles>
+
+        <BuildFiles Include="$(CrtRoot)\github\stl\src\excptptr.cpp;">
+          <BuildAs>nativecpp</BuildAs>
+          <ExceptionHandling>async</ExceptionHandling>
+        </BuildFiles>
+
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\StlCompareStringA.cpp;
+            $(CrtRoot)\github\stl\src\StlCompareStringW.cpp;
+            $(CrtRoot)\github\stl\src\StlLCMapStringA.cpp;
+            $(CrtRoot)\github\stl\src\StlLCMapStringW.cpp;
+            $(CrtRoot)\github\stl\src\winapinls.cpp;
+            $(CrtRoot)\github\stl\src\_tolower.cpp;
+            $(CrtRoot)\github\stl\src\_toupper.cpp;
+            $(CrtRoot)\github\stl\src\atomic.cpp;
+            $(CrtRoot)\github\stl\src\cerr.cpp;
+            $(CrtRoot)\github\stl\src\cin.cpp;
+            $(CrtRoot)\github\stl\src\clog.cpp;
+            $(CrtRoot)\github\stl\src\cout.cpp;
+            $(CrtRoot)\github\stl\src\filesys.cpp;
+            $(CrtRoot)\github\stl\src\fiopen.cpp;
+            $(CrtRoot)\github\stl\src\future.cpp;
+            $(CrtRoot)\github\stl\src\iomanip.cpp;
+            $(CrtRoot)\github\stl\src\ios.cpp;
+            $(CrtRoot)\github\stl\src\iosptrs.cpp;
+            $(CrtRoot)\github\stl\src\iostream.cpp;
+            $(CrtRoot)\github\stl\src\locale.cpp;
+            $(CrtRoot)\github\stl\src\locale0.cpp;
+            $(CrtRoot)\github\stl\src\multprec.cpp;
+            $(CrtRoot)\github\stl\src\raisehan.cpp;
+            $(CrtRoot)\github\stl\src\stdhndlr.cpp;
+            $(CrtRoot)\github\stl\src\stdthrow.cpp;
+            $(CrtRoot)\github\stl\src\syserror.cpp;
+            $(CrtRoot)\github\stl\src\cond.cpp;
+            $(CrtRoot)\github\stl\src\cthread.cpp;
+            $(CrtRoot)\github\stl\src\mutex.cpp;
+            $(CrtRoot)\github\stl\src\pplerror.cpp;
+            $(CrtRoot)\github\stl\src\taskscheduler.cpp;
+            $(CrtRoot)\github\stl\src\xnotify.cpp;
+            $(CrtRoot)\github\stl\src\xtime.cpp;
+            $(CrtRoot)\github\stl\src\thread0.cpp;
+            $(CrtRoot)\github\stl\src\uncaught_exception.cpp;
+            $(CrtRoot)\github\stl\src\uncaught_exceptions.cpp;
+            $(CrtRoot)\github\stl\src\ushcerr.cpp;
+            $(CrtRoot)\github\stl\src\ushcin.cpp;
+            $(CrtRoot)\github\stl\src\ushclog.cpp;
+            $(CrtRoot)\github\stl\src\ushcout.cpp;
+            $(CrtRoot)\github\stl\src\ushiostr.cpp;
+            $(CrtRoot)\github\stl\src\wcerr.cpp;
+            $(CrtRoot)\github\stl\src\wcin.cpp;
+            $(CrtRoot)\github\stl\src\wclog.cpp;
+            $(CrtRoot)\github\stl\src\wcout.cpp;
+            $(CrtRoot)\github\stl\src\wiostrea.cpp;
+            $(CrtRoot)\github\stl\src\wlocale.cpp;
+            $(CrtRoot)\github\stl\src\xalloc.cpp;
+            $(CrtRoot)\github\stl\src\xcosh.cpp;
+            $(CrtRoot)\github\stl\src\xdateord.cpp;
+            $(CrtRoot)\github\stl\src\xdint.cpp;
+            $(CrtRoot)\github\stl\src\xdnorm.cpp;
+            $(CrtRoot)\github\stl\src\xdscale.cpp;
+            $(CrtRoot)\github\stl\src\xdtento.cpp;
+            $(CrtRoot)\github\stl\src\xdtest.cpp;
+            $(CrtRoot)\github\stl\src\xdunscal.cpp;
+            $(CrtRoot)\github\stl\src\xexp.cpp;
+            $(CrtRoot)\github\stl\src\xfcosh.cpp;
+            $(CrtRoot)\github\stl\src\xfdint.cpp;
+            $(CrtRoot)\github\stl\src\xfdnorm.cpp;
+            $(CrtRoot)\github\stl\src\xfdscale.cpp;
+            $(CrtRoot)\github\stl\src\xfdtento.cpp;
+            $(CrtRoot)\github\stl\src\xfdtest.cpp;
+            $(CrtRoot)\github\stl\src\xfdunsca.cpp;
+            $(CrtRoot)\github\stl\src\xferaise.cpp;
+            $(CrtRoot)\github\stl\src\xfexp.cpp;
+            $(CrtRoot)\github\stl\src\xfprec.cpp;
+            $(CrtRoot)\github\stl\src\xfsinh.cpp;
+            $(CrtRoot)\github\stl\src\xfvalues.cpp;
+            $(CrtRoot)\github\stl\src\xgetwctype.cpp;
+            $(CrtRoot)\github\stl\src\xlcosh.cpp;
+            $(CrtRoot)\github\stl\src\xldint.cpp;
+            $(CrtRoot)\github\stl\src\xldscale.cpp;
+            $(CrtRoot)\github\stl\src\xldtento.cpp;
+            $(CrtRoot)\github\stl\src\xldtest.cpp;
+            $(CrtRoot)\github\stl\src\xldunsca.cpp;
+            $(CrtRoot)\github\stl\src\xlexp.cpp;
+            $(CrtRoot)\github\stl\src\xlgamma.cpp;
+            $(CrtRoot)\github\stl\src\xlocale.cpp;
+            $(CrtRoot)\github\stl\src\xlock.cpp;
+            $(CrtRoot)\github\stl\src\xlpoly.cpp;
+            $(CrtRoot)\github\stl\src\xlprec.cpp;
+            $(CrtRoot)\github\stl\src\xlsinh.cpp;
+            $(CrtRoot)\github\stl\src\xlvalues.cpp;
+            $(CrtRoot)\github\stl\src\xmbtowc.cpp;
+            $(CrtRoot)\github\stl\src\xmtx.cpp;
+            $(CrtRoot)\github\stl\src\xonce.cpp;
+            $(CrtRoot)\github\stl\src\xpoly.cpp;
+            $(CrtRoot)\github\stl\src\xprec.cpp;
+            $(CrtRoot)\github\stl\src\xrngabort.cpp;
+            $(CrtRoot)\github\stl\src\xrngdev.cpp;
+            $(CrtRoot)\github\stl\src\xsinh.cpp;
+            $(CrtRoot)\github\stl\src\xstod.cpp;
+            $(CrtRoot)\github\stl\src\xstof.cpp;
+            $(CrtRoot)\github\stl\src\xstoflt.cpp;
+            $(CrtRoot)\github\stl\src\xstol.cpp;
+            $(CrtRoot)\github\stl\src\xstold.cpp;
+            $(CrtRoot)\github\stl\src\xstoll.cpp;
+            $(CrtRoot)\github\stl\src\xstopfx.cpp;
+            $(CrtRoot)\github\stl\src\xstoul.cpp;
+            $(CrtRoot)\github\stl\src\xstoull.cpp;
+            $(CrtRoot)\github\stl\src\xstoxflt.cpp;
+            $(CrtRoot)\github\stl\src\xstrcoll.cpp;
+            $(CrtRoot)\github\stl\src\xstrxfrm.cpp;
+            $(CrtRoot)\github\stl\src\xthrow.cpp;
+            $(CrtRoot)\github\stl\src\xtowlower.cpp;
+            $(CrtRoot)\github\stl\src\xtowupper.cpp;
+            $(CrtRoot)\github\stl\src\xvalues.cpp;
+            $(CrtRoot)\github\stl\src\xwcscoll.cpp;
+            $(CrtRoot)\github\stl\src\xwcsxfrm.cpp;
+            $(CrtRoot)\github\stl\src\xwctomb.cpp;
+            $(CrtRoot)\github\stl\src\xwstod.cpp;
+            $(CrtRoot)\github\stl\src\xwstof.cpp;
+            $(CrtRoot)\github\stl\src\xwstoflt.cpp;
+            $(CrtRoot)\github\stl\src\xwstold.cpp;
+            $(CrtRoot)\github\stl\src\xwstopfx.cpp;
+            $(CrtRoot)\github\stl\src\xwstoxfl.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+        </BuildFiles>
+
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\ppltasks.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+            <!-- ppltasks.cpp uses WRL, which is incompatible with /permissive- as of May 24, 2019 -->
+            <NeedsPermissiveMode>true</NeedsPermissiveMode>
+        </BuildFiles>
+
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\winapisupp.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+            <HasCrtInitializers>true</HasCrtInitializers>
+        </BuildFiles>
+
+        <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
+             (controlled by IncludeInLink and IncludeInImportLib). -->
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\filesystem.cpp;
+            $(CrtRoot)\github\stl\src\locale0_implib.cpp;
+            $(CrtRoot)\github\stl\src\nothrow.cpp;
+            $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
+            $(CrtRoot)\github\stl\src\sharedmutex.cpp;
+            $(CrtRoot)\github\stl\src\vector_algorithms.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInImportLib>true</IncludeInImportLib>
+        </BuildFiles>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(CrtBuildModelIsDll)' == 'true'">
+        <!-- The following files are linked in msvcpXXX[d][_clr].dll. -->
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\dllmain.cpp;
+            $(CrtRoot)\github\stl\src\instances.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+        </BuildFiles>
+    </ItemGroup>
+
+    <Choose>
+      <When Condition="'$(CrtBuildModel)' != 'md'">
+        <!-- Only check exports of release, DLL, builds -->
+      </When>
+
+      <When Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'chpe'">
+        <Choose>
+          <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
+            <PropertyGroup>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386.exports</ExpectedExportsList>
+            </PropertyGroup>
+          </When>
+          <Otherwise>
+            <PropertyGroup>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\i386_onecore.exports</ExpectedExportsList>
+            </PropertyGroup>
+          </Otherwise>
+        </Choose>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'amd64'">
+        <Choose>
+          <When Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'">
+            <PropertyGroup>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64.exports</ExpectedExportsList>
+            </PropertyGroup>
+          </When>
+          <Otherwise>
+            <PropertyGroup>
+              <ExpectedExportsList>$(MSBuildThisFileDirectory)\amd64_onecore.exports</ExpectedExportsList>
+            </PropertyGroup>
+          </Otherwise>
+        </Choose>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'arm'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+      <When Condition="'$(BuildArchitecture)' == 'arm64'">
+        <PropertyGroup>
+          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>
+        </PropertyGroup>
+      </When>
+    </Choose>
+
+</Project>
