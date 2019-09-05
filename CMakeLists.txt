@@ -13,23 +13,27 @@ endif()
 
 set(VCLIBS_SUFFIX "_oss")
 
-if(NOT VCPKG_TARGET_ARCHITECTURE)
-    message(FATAL_ERROR "You must set VCPKG_TARGET_ARCHITECTURE.")
+if(NOT VCPKG_TARGET_TRIPLET)
+    message(FATAL_ERROR "You must set VCPKG_TARGET_TRIPLET.")
 endif()
 
-if("${VCPKG_TARGET_ARCHITECTURE}" STREQUAL "x86")
+if(NOT VCLIBS_TARGET_ARCHITECTURE)
+string(REGEX MATCH "^[^-]+" VCLIBS_TARGET_ARCHITECTURE "${VCPKG_TARGET_TRIPLET}")
+endif()
+
+if("${VCLIBS_TARGET_ARCHITECTURE}" STREQUAL "x86")
     set(VCLIBS_I386_OR_AMD64 "i386")
     set(VCLIBS_X86_OR_X64 "x86")
     add_compile_definitions(_X86_)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x64")
     set(VCLIBS_I386_OR_AMD64 "amd64")
     set(VCLIBS_X86_OR_X64 "x64")
     add_compile_definitions(_AMD64_)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm")
     set(VCLIBS_I386_OR_AMD64 "arm")
     set(VCLIBS_X86_OR_X64 "arm")
     add_compile_definitions(_ARM_)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64")
     set(VCLIBS_I386_OR_AMD64 "arm64")
     set(VCLIBS_X86_OR_X64 "arm64")
     add_compile_definitions(_ARM64_)
@@ -51,7 +55,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "")
 # TRANSITION, /analyze ?
 # TRANSITION, /d2FH4- ?
 add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /d2Zi+ /Gm- /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit- /d2FH4-)
-add_compile_options($<$<STREQUAL:x86,${VCPKG_TARGET_ARCHITECTURE}>:/arch:IA32>)
+add_compile_options($<$<STREQUAL:x86,${VCLIBS_TARGET_ARCHITECTURE}>:/arch:IA32>)
 
 set(VCLIBS_DEBUG_OPTIONS "/Od")
 set(VCLIBS_RELEASE_FLAGS "/O2;/Os") # TRANSITION: Potentially remove /Os
