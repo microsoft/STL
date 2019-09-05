@@ -460,14 +460,11 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     target_link_options(msvcp${D_SUFFIX}_codecvt_ids PRIVATE "${THIS_CONFIG_LINK_OPTIONS}")
 
     # import library
-    add_custom_command(OUTPUT "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/msvcprt${D_SUFFIX}.lib"
-        COMMAND "${TOOLSET_BINARIES_DIR}/lib.exe" ARGS "/OUT:${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/msvcprt${D_SUFFIX}.lib" "/NOLOGO" "/NODEFAULTLIB" "/IGNORE:4006" $<TARGET_LINKER_FILE:msvcp${D_SUFFIX}> $<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}> $<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}> $<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids> $<TARGET_OBJECTS:msvcp${D_SUFFIX}_implib_objects>
-        DEPENDS $<TARGET_LINKER_FILE:msvcp${D_SUFFIX}> $<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}> $<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}> $<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids> $<TARGET_OBJECTS:msvcp${D_SUFFIX}_implib_objects>
-        COMMENT "Generating import library ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/msvcprt${D_SUFFIX}.lib"
-        COMMAND_EXPAND_LISTS
-    )
-
-    add_custom_target(msvcp${D_SUFFIX}_implib ALL DEPENDS "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/msvcprt${D_SUFFIX}.lib")
+    add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
+    target_link_libraries(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX}_implib_objects)
+    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_codecvt_ids)
+    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>")
+    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
 endfunction()
 
 add_stl_dlls("" "" "${VCLIBS_RELEASE_OPTIONS}" "/GL" "/LTCG;/opt:ref,icf")
