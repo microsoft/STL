@@ -148,14 +148,36 @@ mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true 
 It's okay if you report an apparent STL bug that turns out to be a compiler bug, or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
-# How to Build (COMING SOON)
+# How to Build with Visual Studio
 
-```
-Copy trnsctrl.h from vcruntime to your local VS inc directory. # TRANSITION, Unnecessary after VS 2019 16.3 Preview 3 or Preview 4 (depending on when PR 197564 lands)
-vcpkg install boost-math --triplet x64-windows
-cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg is located}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_TARGET_ARCHITECTURE={one of x86, x64, arm, arm64} -DVCLIBS_SUFFIX={whatever you want, defaults to "oss"} -S . -B {wherever_you_want_binaries}
-ninja -C {wherever_you_want_binaries}
-```
+The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend use of vcpkg to acquire
+this dependency.
+
+1. `git clone` vcpkg from https://github.com/Microsoft/vcpkg
+2. Open a command prompt to the vcpkg clone location, and invoke `.\bootstrap-vcpkg.bat`
+3. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost dependency.
+4. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
+   done this before, you may be prompted to elevate.
+5. Open Visual Studio 2019 16.3 or later, and choose the "Open a local folder" option. Choose the path to a clone
+   of this repository.
+6. Choose the architecure you wish to build in the IDE, and build as you would any other project. (All necessary cmake
+   settings are set by `CMakeSettings.json` and `vcpkg integrate`)
+
+# How to Build with a Native Tools Command Prompt
+
+These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
+architectures.
+
+1. Install cmake from https://cmake.org/download/, ninja from https://ninja-build.org/, and Visual Studio 2019 16.3 or
+   later.
+2. `git clone` vcpkg from https://github.com/Microsoft/vcpkg
+3. Open a command prompt to the vcpkg clone location, and invoke `.\bootstrap-vcpkg.bat`
+4. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost dependency.
+5. Open a "x64 Native Tools Command Prompt for VS 2019" prompt, and change directories to the location of a clone of
+   this repository.
+6. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever_you_want_binaries}`
+   to configure the project. (For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE="C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
+7. Invoke `ninja -C {wherever_you_want_binaries}` to build the project. (For example, `ninja -C build.x64`)
 
 # How to Consume (COMING SOON)
 
