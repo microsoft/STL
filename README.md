@@ -115,8 +115,6 @@ review a production-ready pull request.
 You can report STL bugs here, where they'll be directly reviewed by maintainers. You can also report STL bugs through
 [Developer Community][], or the VS IDE (Help > Send Feedback > Report a Problem...).
 
-[Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
-
 **Please help us** efficiently process bug reports by following these rules:
 
 * Only STL bugs should be reported here. If it's a bug in the compiler, CRT, or IDE, please report it through Developer
@@ -124,15 +122,11 @@ Community or Report A Problem. If it's a bug in the Windows SDK, please report i
 If you aren't sure, try to reduce your test case and see if you can eliminate the STL's involvement while still
 reproducing the bug.
 
-[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
 can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][] and [Wandbox][]. If you still aren't
 sure, ask the nearest C++ expert.
-
-[Compiler Explorer]: https://godbolt.org
-[Wandbox]: https://wandbox.org
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
 command line, what happened (e.g. a compiler error, runtime misbehavior), and what you expected to happen. By
@@ -148,19 +142,21 @@ mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true 
 It's okay if you report an apparent STL bug that turns out to be a compiler bug, or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
-# How to Build with Visual Studio
+# How to Build with the Visual Studio IDE
 
-The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend use of vcpkg to acquire
+The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg] to acquire
 this dependency.
 
-1. `git clone` vcpkg from https://github.com/Microsoft/vcpkg
-2. Open a command prompt to the vcpkg clone location, and invoke `.\bootstrap-vcpkg.bat`
-3. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost dependency.
-4. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
+1. Install Visual Studio 2019 16.3 or later.
+2. Invoke `git clone https://github.com/Microsoft/vcpkg`
+3. Invoke `.\bootstrap-vcpkg.bat`
+4. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+5. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
-5. Open Visual Studio 2019 16.3 or later, and choose the "Open a local folder" option. Choose the path to a clone
+6. Invoke `git clone https://github.com/Microsoft/STL`
+7. Open Visual Studio 2019 16.3 or later, and choose the "Open a local folder" option. Choose the path to a clone
    of this repository.
-6. Choose the architecure you wish to build in the IDE, and build as you would any other project. (All necessary cmake
+8. Choose the architecture you wish to build in the IDE, and build as you would any other project. (All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`)
 
 # How to Build with a Native Tools Command Prompt
@@ -168,16 +164,16 @@ this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install cmake from https://cmake.org/download/, ninja from https://ninja-build.org/, and Visual Studio 2019 16.3 or
-   later.
-2. `git clone` vcpkg from https://github.com/Microsoft/vcpkg
-3. Open a command prompt to the vcpkg clone location, and invoke `.\bootstrap-vcpkg.bat`
-4. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost dependency.
-5. Open a "x64 Native Tools Command Prompt for VS 2019" prompt, and change directories to the location of a clone of
-   this repository.
-6. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever_you_want_binaries}`
-   to configure the project. (For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE="C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
-7. Invoke `ninja -C {wherever_you_want_binaries}` to build the project. (For example, `ninja -C build.x64`)
+1. Install [CMake][] 3.15 or later, [Ninja][], and Visual Studio 2019 16.3 or later.
+2. Invoke `git clone https://github.com/Microsoft/vcpkg`
+3. Invoke `.\bootstrap-vcpkg.bat`
+4. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
+5. Open an "x64 Native Tools Command Prompt for VS 2019" prompt.
+6. Invoke `git clone https://github.com/Microsoft/STL`
+7. Invoke `cd STL`
+8. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}`
+   to configure the project. (For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
+9. Invoke `ninja -C {wherever you want binaries}` to build the project. (For example, `ninja -C build.x64`)
 
 # How to Consume (COMING SOON)
 
@@ -210,3 +206,11 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 Copyright (c) Microsoft Corporation.
 
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+[CMake]: https://cmake.org/download
+[Compiler Explorer]: https://godbolt.org
+[Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[Ninja]: https://ninja-build.org
+[Wandbox]: https://wandbox.org
+[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
+[vcpkg]: https://github.com/Microsoft/vcpkg
