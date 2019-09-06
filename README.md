@@ -162,9 +162,8 @@ architectures.
 8. Invoke `git clone https://github.com/Microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}` to configure the project. For example,
-`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
--DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`
+-S . -B {wherever you want binaries}` to configure the project. For example,
+`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
 11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
 # How to Consume (COMING SOON)
