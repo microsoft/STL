@@ -19,7 +19,7 @@ everything else).
 We're in the process of moving all of our work on the STL to GitHub. Current status:
 
 * Code: **Done.** Our source code is available under the Apache License v2.0 with LLVM Exception. (See
-[LICENSE.txt](LICENSE.txt) and [](NOTICE.txt) for more information.)
+[LICENSE.txt](LICENSE.txt) and [NOTICE.txt](NOTICE.txt) for more information.)
 
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
@@ -44,7 +44,7 @@ includes C++20 features, [LWG issues][], conformance bugs, performance improveme
 approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
 GitHub issues.
 
-* Plans: **In progress.** We're writing up our [Roadmap](wiki/Roadmap) and [Iteration Plans](wiki/Iteration-Plans).
+* Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
 
 # Goals
 
@@ -198,10 +198,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [CMake]: https://cmake.org/download
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
+[LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
+[N4830]: https://wg21.link/n4830
 [Ninja]: https://ninja-build.org
+[Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Wandbox]: https://wandbox.org
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
-[vcpkg]: https://github.com/Microsoft/vcpkg
-[N4830]: https://wg21.link/n4830
 [libcxx]: https://libcxx.llvm.org
-[LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
+[vcpkg]: https://github.com/Microsoft/vcpkg
