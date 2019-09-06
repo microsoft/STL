@@ -19,7 +19,7 @@ everything else).
 We're in the process of moving all of our work on the STL to GitHub. Current status:
 
 * Code: **Done.** Our source code is available under the Apache License v2.0 with LLVM Exception. (See
-[LICENSE.txt](LICENSE.txt) and [NOTICE.txt](NOTICE.txt) for more information.)
+[LICENSE.txt][] and [NOTICE.txt][] for more information.)
 
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
@@ -136,16 +136,16 @@ The STL uses boost-math headers to provide P0226R1 Mathematical Special Function
 this dependency.
 
 1. Install Visual Studio 2019 16.3 or later.
-2. Invoke `git clone https://github.com/Microsoft/vcpkg`
-3. Invoke `.\bootstrap-vcpkg.bat`
-4. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
-5. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
+2. Invoke `git clone https://github.com/Microsoft/vcpkg`.
+3. Invoke `cd vcpkg`.
+4. Invoke `.\bootstrap-vcpkg.bat`.
+5. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
-6. Invoke `git clone https://github.com/Microsoft/STL`
-7. Open Visual Studio 2019 16.3 or later, and choose the "Open a local folder" option. Choose the path to a clone
-   of this repository.
-8. Choose the architecture you wish to build in the IDE, and build as you would any other project. (All necessary CMake
-   settings are set by `CMakeSettings.json` and `vcpkg integrate`.)
+8. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the path to this
+   repository, typically `https://github.com/Microsoft/STL`.
+9. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+   settings are set by `CMakeSettings.json` and `vcpkg integrate`.
 
 # How to Build with a Native Tools Command Prompt
 
@@ -153,25 +153,26 @@ These instructions assume you're targeting `x64-windows`; you can change this co
 architectures.
 
 1. Install [CMake][] 3.15 or later, [Ninja][], and Visual Studio 2019 16.3 or later.
-2. Invoke `git clone https://github.com/Microsoft/vcpkg`
-3. Invoke `.\bootstrap-vcpkg.bat`
-4. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
-5. Open an "x64 Native Tools Command Prompt for VS 2019" prompt.
-6. Invoke `git clone https://github.com/Microsoft/STL`
-7. Invoke `cd STL`
-8. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}`
-   to configure the project. (For example, `cmake -G Ninja
--DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
--DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`.)
-9. Invoke `ninja -C {wherever you want binaries}` to build the project. (For example, `ninja -C build.x64`.)
+2. Invoke `git clone https://github.com/Microsoft/vcpkg`.
+3. Invoke `cd vcpkg`.
+4. Invoke `.\bootstrap-vcpkg.bat`.
+5. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
+6. Open an "x64 Native Tools Command Prompt for VS 2019".
+7. Change directories to a location you'd like a clone of this repository.
+7. Invoke `git clone https://github.com/Microsoft/STL`.
+8. Invoke `cd STL`.
+9. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}` to configure the project. For example,
+`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`.
+10. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`.
 
 # How to Consume (COMING SOON)
 
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
-VCRuntime and VCStartup. The following diagram describes the dependencies between those components and their ship
+VCRuntime, and VCStartup. The following diagram describes the dependencies between those components and their ship
 vehicles.
 
 ![MSVC Libraries Block Diagram](doc/msvc_libraries.plantuml.svg)
@@ -188,9 +189,8 @@ provided by the bot. You will only need to do this once across all repos using o
 
 # Code of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct][]. For more information see the
+[Code of Conduct FAQ][] or contact [opencode@microsoft.com][] with any additional questions or comments.
 
 # License
 
@@ -199,14 +199,19 @@ Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 [CMake]: https://cmake.org/download
+[Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
 [Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
+[LICENSE.TXT]: LICENSE.TXT
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
+[Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
 [N4830]: https://wg21.link/n4830
+[NOTICE.TXT]: NOTICE.TXT
 [Ninja]: https://ninja-build.org
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Wandbox]: https://wandbox.org
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
+[opencode@microsoft.com]: mailto:opencode@microsoft.com
 [vcpkg]: https://github.com/Microsoft/vcpkg
