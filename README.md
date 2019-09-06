@@ -202,11 +202,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
 [Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
-[LICENSE.TXT]: LICENSE.TXT
+[LICENSE.txt]: LICENSE.txt
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
 [N4830]: https://wg21.link/n4830
-[NOTICE.TXT]: NOTICE.TXT
+[NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Wandbox]: https://wandbox.org
