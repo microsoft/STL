@@ -296,7 +296,7 @@ struct _List_node { // list node
     _List_node& operator=(const _List_node&) = delete;
 
     template <class _Alnode>
-    static _Nodeptr _Buyheadnode(_Alnode& _Al) noexcept {
+    static _Nodeptr _Buyheadnode(_Alnode& _Al) {
         const auto _Result = _Al.allocate(1);
         _Construct_in_place(_Result->_Next, _Result);
         _Construct_in_place(_Result->_Prev, _Result);
