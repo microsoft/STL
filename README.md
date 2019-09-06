@@ -18,11 +18,8 @@ everything else).
 
 We're in the process of moving all of our work on the STL to GitHub. Current status:
 
-* Code: **Done.** Our source code is available under the Apache License v2.0 with LLVM Exception. (See [LICENSE.txt][]
-and [NOTICE.txt][] for more information.)
-
-[LICENSE.txt]: https://github.com/microsoft/STL/blob/master/LICENSE.txt
-[NOTICE.txt]: https://github.com/microsoft/STL/blob/master/NOTICE.txt
+* Code: **Done.** Our source code is available under the Apache License v2.0 with LLVM Exception. (See
+[LICENSE.txt](LICENSE.txt) and [](NOTICE.txt) for more information.)
 
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
@@ -33,8 +30,6 @@ soon as possible.)
 
 * Tests: **Coming soon.** We rely on three test suites: devcrt, tr1, and [libcxx][]. We need to replace our current test
 harness, which extensively uses Microsoft-internal machinery.
-
-[libcxx]: https://libcxx.llvm.org
 
 * Continuous Integration: **Coming soon.** We need tests first.
 
@@ -49,12 +44,7 @@ includes C++20 features, [LWG issues][], conformance bugs, performance improveme
 approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
 GitHub issues.
 
-[LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
-
-* Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
-
-[Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
-[Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
+* Plans: **In progress.** We're writing up our [Roadmap](wiki/Roadmap) and [Iteration Plans](wiki/Iteration-Plans).
 
 # Goals
 
@@ -64,8 +54,6 @@ Working Draft (WD) and Working Paper (WP) are interchangeable; we often informal
 Standard" while being aware of the difference. (There are other relevant Standards; for example, supporting `/std:c++14`
 and `/std:c++17` involves understanding how the C++14 and C++17 Standards differ from the Working Paper, and we often
 need to refer to the C Standard Library and ECMAScript regular expression specifications.)
-
-[N4830]: https://wg21.link/n4830
 
 Our primary goals are conformance, performance, usability, and compatibility.
 
@@ -157,7 +145,7 @@ this dependency.
 7. Open Visual Studio 2019 16.3 or later, and choose the "Open a local folder" option. Choose the path to a clone
    of this repository.
 8. Choose the architecture you wish to build in the IDE, and build as you would any other project. (All necessary CMake
-   settings are set by `CMakeSettings.json` and `vcpkg integrate`)
+   settings are set by `CMakeSettings.json` and `vcpkg integrate`.)
 
 # How to Build with a Native Tools Command Prompt
 
@@ -173,7 +161,7 @@ architectures.
 7. Invoke `cd STL`
 8. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}`
    to configure the project. (For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
-9. Invoke `ninja -C {wherever you want binaries}` to build the project. (For example, `ninja -C build.x64`)
+9. Invoke `ninja -C {wherever you want binaries}` to build the project. (For example, `ninja -C build.x64`.)
 
 # How to Consume (COMING SOON)
 
@@ -214,3 +202,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Wandbox]: https://wandbox.org
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [vcpkg]: https://github.com/Microsoft/vcpkg
+[N4830]: https://wg21.link/n4830
+[libcxx]: https://libcxx.llvm.org
+[LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
