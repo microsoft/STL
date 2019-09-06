@@ -3,3 +3,7 @@
 
 # Disable CRLF-mapping for all files.
 * -text
+
+# Ensure GitHub detects our C++ code as C++ code.
+/stl/inc/** linguist-language=C++
+/stl/src/** linguist-language=C++
