@@ -18,11 +18,8 @@ everything else).
 
 We're in the process of moving all of our work on the STL to GitHub. Current status:
 
-* Code: **Done.** Our source code is available under the Apache License v2.0 with LLVM Exception. (See [LICENSE.txt][]
-and [NOTICE.txt][] for more information.)
-
-[LICENSE.txt]: https://github.com/microsoft/STL/blob/master/LICENSE.txt
-[NOTICE.txt]: https://github.com/microsoft/STL/blob/master/NOTICE.txt
+* Code: **Done.** Our source code is available under the Apache License v2.0 with LLVM Exception. (See
+[LICENSE.txt][] and [NOTICE.txt][] for more information.)
 
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
@@ -33,8 +30,6 @@ soon as possible.)
 
 * Tests: **Coming soon.** We rely on three test suites: devcrt, tr1, and [libcxx][]. We need to replace our current test
 harness, which extensively uses Microsoft-internal machinery.
-
-[libcxx]: https://libcxx.llvm.org
 
 * Continuous Integration: **Coming soon.** We need tests first.
 
@@ -49,12 +44,7 @@ includes C++20 features, [LWG issues][], conformance bugs, performance improveme
 approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
 GitHub issues.
 
-[LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
-
 * Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
-
-[Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
-[Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
 
 # Goals
 
@@ -64,8 +54,6 @@ Working Draft (WD) and Working Paper (WP) are interchangeable; we often informal
 Standard" while being aware of the difference. (There are other relevant Standards; for example, supporting `/std:c++14`
 and `/std:c++17` involves understanding how the C++14 and C++17 Standards differ from the Working Paper, and we often
 need to refer to the C Standard Library and ECMAScript regular expression specifications.)
-
-[N4830]: https://wg21.link/n4830
 
 Our primary goals are conformance, performance, usability, and compatibility.
 
@@ -115,8 +103,6 @@ review a production-ready pull request.
 You can report STL bugs here, where they'll be directly reviewed by maintainers. You can also report STL bugs through
 [Developer Community][], or the VS IDE (Help > Send Feedback > Report a Problem...).
 
-[Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
-
 **Please help us** efficiently process bug reports by following these rules:
 
 * Only STL bugs should be reported here. If it's a bug in the compiler, CRT, or IDE, please report it through Developer
@@ -124,15 +110,10 @@ Community or Report A Problem. If it's a bug in the Windows SDK, please report i
 If you aren't sure, try to reduce your test case and see if you can eliminate the STL's involvement while still
 reproducing the bug.
 
-[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
-
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
 can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][] and [Wandbox][]. If you still aren't
 sure, ask the nearest C++ expert.
-
-[Compiler Explorer]: https://godbolt.org
-[Wandbox]: https://wandbox.org
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
 command line, what happened (e.g. a compiler error, runtime misbehavior), and what you expected to happen. By
@@ -148,18 +129,52 @@ mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true 
 It's okay if you report an apparent STL bug that turns out to be a compiler bug, or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
-# How to Build (COMING SOON)
+# How to Build with the Visual Studio IDE
 
-```
-Copy trnsctrl.h from vcruntime to your local VS inc directory. # TRANSITION, Unnecessary after VS 2019 16.3 Preview 3 or Preview 4 (depending on when PR 197564 lands)
-vcpkg install boost-math --triplet x64-windows
-cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg is located}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_TARGET_ARCHITECTURE={one of x86, x64, arm, arm64} -DVCLIBS_SUFFIX={whatever you want, defaults to "oss"} -S . -B {wherever_you_want_binaries}
-ninja -C {wherever_you_want_binaries}
-```
+The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to acquire
+this dependency.
+
+1. Install Visual Studio 2019 16.3 or later.
+2. Invoke `git clone https://github.com/Microsoft/vcpkg`
+3. Invoke `cd vcpkg`
+4. Invoke `.\bootstrap-vcpkg.bat`
+5. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
+   done this before, you may be prompted to elevate.
+8. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URI to this
+   repository, typically `https://github.com/Microsoft/STL`
+9. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+   settings are set by `CMakeSettings.json` and `vcpkg integrate`
+
+# How to Build with a Native Tools Command Prompt
+
+These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
+architectures.
+
+1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.3 or later.
+2. Invoke `git clone https://github.com/Microsoft/vcpkg`
+3. Invoke `cd vcpkg`
+4. Invoke `.\bootstrap-vcpkg.bat`
+5. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
+6. Open an "x64 Native Tools Command Prompt for VS 2019".
+7. Change directories to a location where you'd like a clone of this STL repository.
+8. Invoke `git clone https://github.com/Microsoft/STL`
+9. Invoke `cd STL`
+10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}` to configure the project. For example,
+`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`
+11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
 # How to Consume (COMING SOON)
 
-# Block Diagram (COMING SOON)
+# Block Diagram
+
+The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
+VCRuntime, and VCStartup. The following diagram describes the dependencies between those components and their ship
+vehicles.
+
+![MSVC Libraries Block Diagram](doc/msvc_libraries.plantuml.svg)
 
 # Contributing
 
@@ -173,12 +188,29 @@ provided by the bot. You will only need to do this once across all repos using o
 
 # Code of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct][]. For more information see the
+[Code of Conduct FAQ][] or contact [opencode@microsoft.com][] with any additional questions or comments.
 
 # License
 
 Copyright (c) Microsoft Corporation.
 
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+[CMake]: https://cmake.org/download
+[Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
+[Compiler Explorer]: https://godbolt.org
+[Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
+[LICENSE.txt]: LICENSE.txt
+[LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
+[Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
+[N4830]: https://wg21.link/n4830
+[NOTICE.txt]: NOTICE.txt
+[Ninja]: https://ninja-build.org
+[Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
+[Wandbox]: https://wandbox.org
+[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
+[libcxx]: https://libcxx.llvm.org
+[opencode@microsoft.com]: mailto:opencode@microsoft.com
+[vcpkg]: https://github.com/Microsoft/vcpkg

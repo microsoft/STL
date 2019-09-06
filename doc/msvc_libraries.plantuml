@@ -1,0 +1,50 @@
+' Copyright (c) Microsoft Corporation.
+'
+' SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+@startuml MSVC Library Block Diagram
+
+package "Visual Studio" {
+
+    component STL [
+        <b>STL</b>
+        This repo; provides C++ Standard Library headers, separately compiled
+        implementations of most of the iostreams functionality, and a few runtime
+        support components like std::exception_ptr.
+    ]
+
+    package VCRuntime as VCRuntimePackage {
+        component VCStartup [
+        <b>VCStartup</b>
+        Provides compiler support mechanisms that live in each binary; such as
+        machinery to call constructors and destructors for global variables, the
+        entry point, and the /GS cookie.
+
+        Merged into static and import libraries of VCRuntime.
+        ]
+
+        component VCRuntime [
+        <b>VCRuntime</b>
+        Provides compiler support mechanisms that can be shared between
+        binaries; code that the compiler calls on your behalf, such as
+        the C++ exception handling runtime, string.h intrinsics, math
+        intrinsics, and declarations for CPU-vendor-specific intrinsics.
+        ]
+
+        [VCStartup] --> [VCRuntime]
+    }
+}
+
+package "Windows SDK" {
+    component UCRT [
+        <b>Universal CRT</b>
+        Windows component that provides C library support, such as printf,
+        C locales, and some POSIX-like shims for the Windows API, like _stat.
+    ]
+}
+
+STL --> UCRT
+STL --> VCRuntimePackage
+VCRuntime --> UCRT
+
+@enduml
