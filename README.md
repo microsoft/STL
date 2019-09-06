@@ -167,9 +167,9 @@ architectures.
 
 # Block Diagram
 
-The STL is built atop other compiler support libraries that ship with Windows and Visual Studio. As such you might see
-maintainers here talk about "vcruntime" or "vcstartup" or "the UCRT". The following diagram describes the dependencies
-between those components and their ship vehicles.
+The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
+VCRuntime and VCStartup. The following diagram describes the dependencies between those components and their ship
+vehicles.
 
 ![MSVC Libraries Block Diagram](doc/msvc_libraries.plantuml.svg)
 
