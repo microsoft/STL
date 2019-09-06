@@ -159,8 +159,11 @@ architectures.
 5. Open an "x64 Native Tools Command Prompt for VS 2019" prompt.
 6. Invoke `git clone https://github.com/Microsoft/STL`
 7. Invoke `cd STL`
-8. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}`
-   to configure the project. (For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
+8. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}`
+   to configure the project. (For example, `cmake -G Ninja
+-DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
 9. Invoke `ninja -C {wherever you want binaries}` to build the project. (For example, `ninja -C build.x64`.)
 
 # How to Consume (COMING SOON)
