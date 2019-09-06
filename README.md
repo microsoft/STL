@@ -110,7 +110,6 @@ Community or Report A Problem. If it's a bug in the Windows SDK, please report i
 If you aren't sure, try to reduce your test case and see if you can eliminate the STL's involvement while still
 reproducing the bug.
 
-
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
 can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][] and [Wandbox][]. If you still aren't
@@ -152,7 +151,7 @@ this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.15 or later, [Ninja][], and Visual Studio 2019 16.3 or later.
+1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.3 or later.
 2. Invoke `git clone https://github.com/Microsoft/vcpkg`.
 3. Invoke `cd vcpkg`.
 4. Invoke `.\bootstrap-vcpkg.bat`.
