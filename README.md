@@ -42,7 +42,8 @@ libraries.) Until that's in place, pull request reviews will be delayed.
 * Issues: **In progress.** We're going to use GitHub issues to track all of the things that we need to work on. This
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
 approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
-GitHub issues.
+GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
+issue. The [bug tag][] and [enhancement tag][] remain to be populated.
 
 * Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
 
@@ -131,8 +132,8 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How to Build with the Visual Studio IDE
 
-The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to acquire
-this dependency.
+The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
+acquire this dependency.
 
 1. Install Visual Studio 2019 16.3 or later.
 2. Invoke `git clone https://github.com/Microsoft/vcpkg`
@@ -141,9 +142,9 @@ this dependency.
 5. Invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
 6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
-8. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URI to this
+7. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URI to this
    repository, typically `https://github.com/Microsoft/STL`
-9. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
 
 # How to Build with a Native Tools Command Prompt
@@ -214,3 +215,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [libcxx]: https://libcxx.llvm.org
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [vcpkg]: https://github.com/Microsoft/vcpkg
+[cxx20 tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20
+[LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
+[bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
+[enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
