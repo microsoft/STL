@@ -28,7 +28,7 @@ package "Visual Studio" {
         Provides compiler support mechanisms that can be shared between
         binaries; code that the compiler calls on your behalf, such as
         the C++ exception handling runtime, string.h intrinsics, math
-        intrinsics, and declarations for CPU vendor specific intrinsics.
+        intrinsics, and declarations for CPU-vendor-specific intrinsics.
         ]
 
         [VCStartup] --> [VCRuntime]
