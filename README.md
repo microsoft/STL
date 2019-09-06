@@ -163,7 +163,7 @@ architectures.
 -DVCPKG_TARGET_TRIPLET=x64-windows -S . -B {wherever you want binaries}`
    to configure the project. (For example, `cmake -G Ninja
 -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
--DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`)
+-DVCPKG_TARGET_TRIPLET=x64-windows -S . -B build.x64`.)
 9. Invoke `ninja -C {wherever you want binaries}` to build the project. (For example, `ninja -C build.x64`.)
 
 # How to Consume (COMING SOON)
