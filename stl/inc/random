@@ -1851,7 +1851,7 @@ private:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
-        _Rng_from_urng<_Uty, _Engine> _Rng(_Eng);
+        _Rng_from_urng<_Uty, _Engine> _Generator(_Eng);
 
         const _Uty _Umin = _Adjust(_Uty(_Min));
         const _Uty _Umax = _Adjust(_Uty(_Max));
@@ -1859,9 +1859,9 @@ private:
         _Uty _Uret;
 
         if (_Umax - _Umin == _Uty(-1)) {
-            _Uret = static_cast<_Uty>(_Rng._Get_all_bits());
+            _Uret = static_cast<_Uty>(_Generator._Get_all_bits());
         } else {
-            _Uret = static_cast<_Uty>(_Rng(static_cast<_Uty>(_Umax - _Umin + 1)));
+            _Uret = static_cast<_Uty>(_Generator(static_cast<_Uty>(_Umax - _Umin + 1)));
         }
 
         return static_cast<_Ty>(_Adjust(static_cast<_Uty>(_Uret + _Umin)));

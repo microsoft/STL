@@ -205,21 +205,28 @@ struct is_arithmetic : bool_constant<is_arithmetic_v<_Ty>> {};
 // STRUCT TEMPLATE remove_reference
 template <class _Ty>
 struct remove_reference {
-    using type = _Ty;
+    using type                 = _Ty;
+    using _Const_thru_ref_type = const _Ty;
 };
 
 template <class _Ty>
 struct remove_reference<_Ty&> {
-    using type = _Ty;
+    using type                 = _Ty;
+    using _Const_thru_ref_type = const _Ty&;
 };
 
 template <class _Ty>
 struct remove_reference<_Ty&&> {
-    using type = _Ty;
+    using type                 = _Ty;
+    using _Const_thru_ref_type = const _Ty&&;
 };
 
 template <class _Ty>
 using remove_reference_t = typename remove_reference<_Ty>::type;
+
+// ALIAS TEMPLATE _Const_thru_ref
+template <class _Ty>
+using _Const_thru_ref = typename remove_reference<_Ty>::_Const_thru_ref_type;
 
 template <class _Ty>
 using _Remove_cvref_t = remove_cv_t<remove_reference_t<_Ty>>;

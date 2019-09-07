@@ -38,6 +38,117 @@ _END_EXTERN_C
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 
 _STD_BEGIN
+
+// STRUCT TEMPLATE _Get_first_parameter
+template <class _Ty>
+struct _Get_first_parameter;
+
+template <template <class, class...> class _Ty, class _First, class... _Rest>
+struct _Get_first_parameter<_Ty<_First, _Rest...>> { // given _Ty<_First, _Rest...>, extract _First
+    using type = _First;
+};
+
+// STRUCT TEMPLATE _Replace_first_parameter
+template <class _Newfirst, class _Ty>
+struct _Replace_first_parameter;
+
+template <class _Newfirst, template <class, class...> class _Ty, class _First, class... _Rest>
+struct _Replace_first_parameter<_Newfirst, _Ty<_First, _Rest...>> { // given _Ty<_First, _Rest...>, replace _First
+    using type = _Ty<_Newfirst, _Rest...>;
+};
+
+// STRUCT TEMPLATE _Get_element_type
+template <class _Ty, class = void>
+struct _Get_element_type {
+    using type = typename _Get_first_parameter<_Ty>::type;
+};
+
+template <class _Ty>
+struct _Get_element_type<_Ty, void_t<typename _Ty::element_type>> {
+    using type = typename _Ty::element_type;
+};
+
+// STRUCT TEMPLATE _Get_ptr_difference_type
+template <class _Ty, class = void>
+struct _Get_ptr_difference_type {
+    using type = ptrdiff_t;
+};
+
+template <class _Ty>
+struct _Get_ptr_difference_type<_Ty, void_t<typename _Ty::difference_type>> {
+    using type = typename _Ty::difference_type;
+};
+
+// STRUCT TEMPLATE _Get_rebind_alias
+template <class _Ty, class _Other, class = void>
+struct _Get_rebind_alias {
+    using type = typename _Replace_first_parameter<_Other, _Ty>::type;
+};
+
+template <class _Ty, class _Other>
+struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Other>>> {
+    using type = typename _Ty::template rebind<_Other>;
+};
+
+// STRUCT TEMPLATE pointer_traits
+template <class _Ty>
+struct pointer_traits {
+    using pointer         = _Ty;
+    using element_type    = typename _Get_element_type<_Ty>::type;
+    using difference_type = typename _Get_ptr_difference_type<_Ty>::type;
+
+    template <class _Other>
+    using rebind = typename _Get_rebind_alias<_Ty, _Other>::type;
+
+    using _Reftype = conditional_t<is_void_v<element_type>, char, element_type>&;
+
+    _NODISCARD static pointer pointer_to(_Reftype _Val) noexcept(noexcept(_Ty::pointer_to(_Val))) /* strengthened */ {
+        return _Ty::pointer_to(_Val);
+    }
+};
+
+template <class _Ty>
+struct pointer_traits<_Ty*> {
+    using pointer         = _Ty*;
+    using element_type    = _Ty;
+    using difference_type = ptrdiff_t;
+
+    template <class _Other>
+    using rebind = _Other*;
+
+    using _Reftype = conditional_t<is_void_v<_Ty>, char, _Ty>&;
+
+    _NODISCARD static pointer pointer_to(_Reftype _Val) noexcept {
+        return _STD addressof(_Val);
+    }
+};
+
+#if _HAS_CXX20
+// FUNCTION TEMPLATE to_address
+template <class _Ty, class = void>
+inline constexpr bool _Has_to_address_v = false; // determines whether _Ptr has pointer_traits<_Ptr>::to_address(p)
+
+template <class _Ty>
+inline constexpr bool
+    _Has_to_address_v<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
+
+template <class _Ty>
+_NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
+    static_assert(!is_function_v<_Ty>,
+        "N4810 20.10.4 [pointer.conversion]/2: The program is ill-formed if T is a function type.");
+    return _Val;
+}
+
+template <class _Ptr>
+_NODISCARD auto to_address(const _Ptr& _Val) noexcept {
+    if constexpr (_Has_to_address_v<_Ptr>) {
+        return pointer_traits<_Ptr>::to_address(_Val);
+    } else {
+        return _STD to_address(_Val.operator->()); // plain pointer overload must come first
+    }
+}
+#endif // _HAS_CXX20
+
 // FUNCTION TEMPLATE _Pass_fn
 // TRANSITION, VSO#386225
 template <class _Fx>
@@ -248,24 +359,11 @@ using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<_Ty
 template <_Dereferenceable _Ty>
 using iter_reference_t = decltype(*_STD declval<_Ty&>());
 
-// STRUCT TEMPLATE iterator_traits
+// STRUCT TEMPLATE _Iterator_traits_base
 template <class>
-struct iterator_traits {
-    using _From_primary = iterator_traits;
-};
+struct _Iterator_traits_base {};
 
 // clang-format off
-template <class _Ty>
-    requires is_object_v<_Ty>
-struct iterator_traits<_Ty*> {
-    using iterator_concept  = contiguous_iterator_tag;
-    using iterator_category = random_access_iterator_tag;
-    using value_type        = remove_cv_t<_Ty>;
-    using difference_type   = ptrdiff_t;
-    using pointer           = _Ty*;
-    using reference         = _Ty&;
-};
-
 template <class _It>
 concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> && _Has_member_reference<_It>
     && _Has_member_iterator_category<_It>;
@@ -284,14 +382,12 @@ struct _Old_iter_traits_pointer<false> {
 };
 
 template <_Has_iter_types _It>
-struct iterator_traits<_It> {
+struct _Iterator_traits_base<_It> {
     using iterator_category = typename _It::iterator_category;
     using difference_type   = typename _It::difference_type;
     using value_type        = typename _It::value_type;
     using pointer           = typename _Old_iter_traits_pointer<_Has_member_pointer<_It>>::template _Apply<_It>;
     using reference         = typename _It::reference;
-
-    using _From_primary = iterator_traits;
 };
 
 template <bool _Has_member_typedef>
@@ -306,8 +402,32 @@ struct _Iter_traits_difference<false> {
     using _Apply = void;
 };
 
+// clang-format off
 template <class _It>
-struct _Iterator_traits2 {
+concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
+#if _HAS_EXACT_COMPOUND_REQUIREMENT
+    { *__i } -> _Can_reference;
+    { ++__i } -> same_as<_It&>;
+    { *__i++ } -> _Can_reference;
+#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
+    *__i; requires _Can_reference<decltype(*__i)>;
+    ++__i; requires same_as<decltype(++__i), _It&>;
+    *__i++; requires _Can_reference<decltype(*__i++)>;
+#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
+};
+
+template <class _It>
+concept _Cpp17_input_iterator = _Cpp17_iterator<_It> && equality_comparable<_It>
+    && _Has_member_difference_type<incrementable_traits<_It>> && _Has_member_value_type<readable_traits<_It>>
+    && requires(_It __i) {
+        typename common_reference_t<iter_reference_t<_It>&&, typename readable_traits<_It>::value_type&>;
+        typename common_reference_t<decltype(*__i++)&&, typename readable_traits<_It>::value_type&>;
+        requires signed_integral<typename incrementable_traits<_It>::difference_type>;
+    };
+
+template <class _It>
+    requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>)
+struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
     using difference_type =
         typename _Iter_traits_difference<_Has_member_difference_type<incrementable_traits<_It>>>::template _Apply<_It>;
@@ -315,6 +435,7 @@ struct _Iterator_traits2 {
     using pointer    = void;
     using reference  = void;
 };
+// clang-format on
 
 enum class _Itraits_pointer_strategy { _Use_void, _Use_member, _Use_decltype };
 
@@ -450,30 +571,8 @@ struct _Iter_traits_category<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
-    { *__i } -> _Can_reference;
-    { ++__i } -> same_as<_It&>;
-    { *__i++ } -> _Can_reference;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    *__i; requires _Can_reference<decltype(*__i)>;
-    ++__i; requires same_as<decltype(++__i), _It&>;
-    *__i++; requires _Can_reference<decltype(*__i++)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
-};
-
-template <class _It>
-concept _Cpp17_input_iterator = _Cpp17_iterator<_It> && equality_comparable<_It>
-    && _Has_member_difference_type<incrementable_traits<_It>> && _Has_member_value_type<readable_traits<_It>>
-    && requires(_It __i) {
-        typename common_reference_t<iter_reference_t<_It>&&, typename readable_traits<_It>::value_type&>;
-        typename common_reference_t<decltype(*__i++)&&, typename readable_traits<_It>::value_type&>;
-        requires signed_integral<typename incrementable_traits<_It>::difference_type>;
-    };
-// clang-format on
-
-template <_Cpp17_input_iterator _It>
-struct _Iterator_traits2<_It> {
+    requires (!_Has_iter_types<_It> && _Cpp17_input_iterator<_It>)
+struct _Iterator_traits_base<_It> {
     using iterator_category = typename _Iter_traits_category<_Has_member_iterator_category<_It>>::template _Apply<_It>;
     using difference_type   = typename incrementable_traits<_It>::difference_type;
     using value_type        = typename readable_traits<_It>::value_type;
@@ -483,55 +582,74 @@ struct _Iterator_traits2<_It> {
                                                        : _Itraits_pointer_strategy::_Use_void)>::template _Apply<_It>;
     using reference         = typename _Iter_traits_reference<_Has_member_reference<_It>>::template _Apply<_It>;
 };
+// clang-format on
+
+// STRUCT TEMPLATE iterator_traits
+template <class _Ty>
+struct iterator_traits : _Iterator_traits_base<_Ty> {
+    using _From_primary = iterator_traits;
+};
 
 // clang-format off
-template <class _It>
-    requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It>)
-struct iterator_traits<_It> : _Iterator_traits2<_It> {
-    using _From_primary = iterator_traits;
+template <class _Ty>
+    requires is_object_v<_Ty>
+struct iterator_traits<_Ty*> {
+    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = remove_cv_t<_Ty>;
+    using difference_type   = ptrdiff_t;
+    using pointer           = _Ty*;
+    using reference         = _Ty&;
 };
 // clang-format on
 
 // CUSTOMIZATION POINT OBJECT iter_move
 namespace ranges {
+    // STRUCT TEMPLATE _Choice_t
+    template <class _Ty>
+    struct _Choice_t {
+        _Ty _Strategy  = _Ty{};
+        bool _No_throw = false;
+    };
+
     namespace _Iter_move {
         void iter_move(); // Block unqualified lookup
 
+        // clang-format off
         template <class _Ty>
-        concept _Has_ADL = requires(_Ty&& __t) {
-            iter_move(static_cast<_Ty&&>(__t));
-        };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> // Per LWG 3270
+            && requires(_Ty&& __t) { iter_move(static_cast<_Ty&&>(__t)); };
 
         template <class _Ty>
         concept _Can_deref = requires(_Ty&& __t) {
             *static_cast<_Ty&&>(__t);
         };
 
-        // clang-format off
         class _Cpo {
         private:
-            template <class _Ty>
-            _NODISCARD static constexpr int _Choose() noexcept { // TRANSITION, consteval
-                if constexpr (_Has_ADL<_Ty>) {
-                    return 0 | int{noexcept(iter_move(_STD declval<_Ty>()))};
-                } else if constexpr (_Can_deref<_Ty>) {
-                    return 2 | int{noexcept(*_STD declval<_Ty>())};
-                }
+            enum class _St { _None, _Custom, _Fallback };
 
-                return -1;
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (_Has_ADL<_Ty>) {
+                    return {_St::_Custom, noexcept(iter_move(_STD declval<_Ty>()))};
+                } else if constexpr (_Can_deref<_Ty>) {
+                    return {_St::_Fallback, noexcept(*_STD declval<_Ty>())};
+                } else {
+                    return {_St::_None};
+                }
             }
 
             template <class _Ty>
-            static constexpr int _Strategy = _Choose<_Ty>();
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
             template <class _Ty>
-                requires (_Strategy<_Ty> >= 0)
-            _NODISCARD constexpr decltype(auto) operator()(_Ty&& __t) const noexcept(_Strategy<_Ty> & 1) {
-                constexpr int _Masked = _Strategy<_Ty> / 2;
-                if constexpr (_Masked == 0) { // __t has non-member iter_move
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr decltype(auto) operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Custom) {
                     return iter_move(static_cast<_Ty&&>(__t));
-                } else if constexpr (_Masked == 1) { // *static_cast<_Ty&&>(__t) is well-formed
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Fallback) {
                     using _Ref = decltype(*static_cast<_Ty&&>(__t));
                     if constexpr (is_lvalue_reference_v<_Ref>) {
                         return _STD move(*static_cast<_Ty&&>(__t));
@@ -660,7 +778,8 @@ struct _Iter_concept_impl<_It, false> {
 };
 
 template <class _It>
-    requires (!_Has_member_iterator_concept<iterator_traits<_It>> && _Has_member_iterator_category<iterator_traits<_It>>)
+    requires (!_Has_member_iterator_concept<iterator_traits<_It>>
+        && _Has_member_iterator_category<iterator_traits<_It>>)
 struct _Iter_concept_impl<_It, false> {
     using type = typename iterator_traits<_It>::iterator_category;
 };
@@ -741,9 +860,17 @@ concept random_access_iterator = bidirectional_iterator<_It>
 
 // CONCEPT contiguous_iterator
 template <class _It>
-concept contiguous_iterator = random_access_iterator<_It> && derived_from<_Iter_concept<_It>, contiguous_iterator_tag>
+concept contiguous_iterator = random_access_iterator<_It>
+    && derived_from<_Iter_concept<_It>, contiguous_iterator_tag>
     && is_lvalue_reference_v<iter_reference_t<_It>>
-    && same_as<iter_value_t<_It>, remove_cvref_t<iter_reference_t<_It>>>;
+    && same_as<iter_value_t<_It>, remove_cvref_t<iter_reference_t<_It>>>
+    && requires(const _It& __i) {
+#if _HAS_EXACT_COMPOUND_REQUIREMENT
+        { _STD to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_It>>>;
+#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
+        _STD to_address(__i); requires same_as<decltype(_STD to_address(__i)), add_pointer_t<iter_reference_t<_It>>>;
+#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
+    };
 
 // CONCEPT indirectly_movable
 template <class _In, class _Out>
@@ -766,12 +893,13 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         void iter_swap(_Ty1, _Ty2) = delete;
 
-        template <class _Ty1, class _Ty2>
-        concept _Has_ADL = requires(_Ty1&& __t1, _Ty2&& __t2) {
-            iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
-        };
-
         // clang-format off
+        template <class _Ty1, class _Ty2>
+        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) // Per LWG 3270
+            && requires(_Ty1&& __t1, _Ty2&& __t2) {
+                iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
+            };
+
         template <class _Ty1, class _Ty2>
         concept _Can_swap_references = readable<remove_reference_t<_Ty1>> && readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
@@ -787,35 +915,37 @@ namespace ranges {
 
         class _Cpo {
         private:
+            enum class _St { _None, _Custom, _Swap, _Exchange };
+
             // clang-format off
             template <class _Ty1, class _Ty2>
-            _NODISCARD static constexpr int _Choose() noexcept { // TRANSITION, consteval
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty1, _Ty2>) {
-                    return 0 | int{noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
+                    return {_St::_Custom, noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
                 } else if constexpr (_Can_swap_references<_Ty1, _Ty2>) {
-                    return 2 | int{noexcept(swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
+                    return {_St::_Swap, noexcept(swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
                 } else if constexpr (indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
                     && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>) {
-                    constexpr auto _Nothrow = int{noexcept(
-                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
-                    return 4 | _Nothrow;
+                    constexpr auto _Nothrow = noexcept(
+                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty1>(), _STD declval<_Ty2>()));
+                    return {_St::_Exchange, _Nothrow};
+                } else {
+                    return {_St::_None};
                 }
-
-                return -1;
             }
 
             template <class _Ty1, class _Ty2>
-            static constexpr int _Strategy = _Choose<_Ty1, _Ty2>();
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty1, _Ty2>();
 
         public:
             template <class _Ty1, class _Ty2>
-                requires (_Strategy<_Ty1, _Ty2> >= 0)
-            constexpr void operator()(_Ty1&& __t1, _Ty2&& __t2) const noexcept(_Strategy<_Ty1, _Ty2> & 1) {
-                if constexpr (_Strategy<_Ty1, _Ty2> / 2 == 0) {
+                requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
+            constexpr void operator()(_Ty1&& __t1, _Ty2&& __t2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
+                if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Custom) {
                     iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
-                } else if constexpr (_Strategy<_Ty1, _Ty2> / 2 == 1) {
+                } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Swap) {
                     swap(*static_cast<_Ty1&&>(__t1), *static_cast<_Ty2&&>(__t2));
-                } else if constexpr (_Strategy<_Ty1, _Ty2> / 2 == 2) {
+                } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
                     *static_cast<_Ty1&&>(__t1) =
                         _Iter_exchange_move(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
                 } else {
@@ -1585,9 +1715,6 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
 }
 
 // CLASS TEMPLATE reverse_iterator
-template <class _Ty>
-struct pointer_traits;
-
 template <class _Iterator>
 constexpr _Iterator _Operator_arrow(_Iterator _Target, true_type) { // return operator-> where _Iterator is a pointer
     return _Target;
@@ -1609,9 +1736,11 @@ public:
     using pointer           = typename iterator_traits<_BidIt>::pointer;
     using reference         = typename iterator_traits<_BidIt>::reference;
 
-    _CONSTEXPR17 reverse_iterator() : current() {}
+    _CONSTEXPR17 reverse_iterator() = default;
 
-    _CONSTEXPR17 explicit reverse_iterator(_BidIt _Right) : current(_Right) {}
+    _CONSTEXPR17 explicit reverse_iterator(_BidIt _Right) noexcept(
+        is_nothrow_move_constructible_v<_BidIt>) // strengthened
+        : current(_STD move(_Right)) {}
 
     template <class _Other>
     _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) : current(_Right.base()) {}
@@ -1705,7 +1834,7 @@ public:
     }
 
 protected:
-    _BidIt current; // the wrapped iterator
+    _BidIt current{}; // the wrapped iterator
 };
 
 template <class _BidIt, class _BidIt2, enable_if_t<_Range_verifiable_v<_BidIt, _BidIt2>, int> = 0>
@@ -1764,8 +1893,9 @@ _NODISCARD _CONSTEXPR17 bool operator>=(
 
 // FUNCTION TEMPLATE make_reverse_iterator
 template <class _BidIt>
-_NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _Iter) {
-    return reverse_iterator<_BidIt>(_Iter);
+_NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _Iter) noexcept(
+    is_nothrow_move_constructible_v<_BidIt>) /* strengthened */ {
+    return reverse_iterator<_BidIt>(_STD move(_Iter));
 }
 
 // FUNCTION TEMPLATES begin AND end
@@ -1909,6 +2039,699 @@ template <class _Elem>
 _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.begin();
 }
+
+#ifdef __cpp_lib_concepts
+// FUNCTION TEMPLATE _Fake_decay_copy
+template <class _Ty>
+_NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
+// _Fake_decay_copy<T>(E):
+// (1) has type T [decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
+
+namespace ranges {
+    // CUSTOMIZATION POINT OBJECT ranges::begin
+    namespace _Begin {
+#ifndef __clang__ // TRANSITION, VSO#895622
+        void begin();
+#endif // TRANSITION, VSO#895622
+
+        template <class _Ty>
+        void begin(_Ty&&) = delete;
+        template <class _Ty>
+        void begin(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = requires(_Ty& __t) {
+            { _Fake_decay_copy(__t.begin()) } -> input_or_output_iterator;
+        };
+
+        template <class _Ty>
+        concept _Has_ADL = requires(_Ty&& __t) {
+            { _Fake_decay_copy(begin(static_cast<_Ty&&>(__t))) } -> input_or_output_iterator;
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Array, _Member, _Non_member };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                constexpr bool _Is_lvalue = is_lvalue_reference_v<_Ty>;
+
+                if constexpr (is_array_v<remove_reference_t<_Ty>>) {
+                    if constexpr (_Is_lvalue) {
+                        return {_St::_Array, true};
+                    }
+                } else if constexpr (_Is_lvalue && _Has_member<_Ty>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
+                } else if constexpr (_Has_ADL<_Ty>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(begin(_STD declval<_Ty>())))};
+                }
+
+                return {_St::_None};
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
+                    return __t;
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return __t.begin();
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
+                    return begin(static_cast<_Ty&&>(__t));
+                } else {
+                    static_assert(_Always_false<_Ty>, "Should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Begin
+
+    inline namespace __cpos {
+        inline constexpr _Begin::_Cpo begin;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::end
+    namespace _End {
+#ifndef __clang__ // TRANSITION, VSO#895622
+        void end();
+#endif // TRANSITION, VSO#895622
+
+        template <class _Ty>
+        void end(_Ty&&) = delete;
+        template <class _Ty>
+        void end(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+
+        // clang-format off
+        template <class _Ty>
+        concept _Can_begin = requires(_Ty&& __t) {
+            begin(static_cast<_Ty&&>(__t));
+        };
+
+        template <class _Ty>
+        concept _Has_member = requires(_Ty& __t) {
+            { _Fake_decay_copy(__t.end()) } -> sentinel_for<decltype(begin(__t))>;
+        };
+
+        template <class _Ty>
+        concept _Has_ADL = requires(_Ty&& __t) {
+            { _Fake_decay_copy(end(static_cast<_Ty&&>(__t))) } ->
+                sentinel_for<decltype(begin(static_cast<_Ty&&>(__t)))>;
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Array, _Member, _Non_member };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (_Can_begin<_Ty>) {
+                    constexpr bool _Is_lvalue = is_lvalue_reference_v<_Ty>;
+
+                    if constexpr (is_array_v<remove_reference_t<_Ty>>) {
+                        if constexpr (_Is_lvalue) {
+                            return {_St::_Array, true};
+                        }
+                    } else if constexpr (_Is_lvalue && _Has_member<_Ty>) {
+                        return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().end()))};
+                    } else if constexpr (_Has_ADL<_Ty>) {
+                        return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty>())))};
+                    }
+                }
+
+                return {_St::_None};
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
+                    return __t + extent_v<remove_reference_t<_Ty>>;
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return __t.end();
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
+                    return end(static_cast<_Ty&&>(__t));
+                } else {
+                    static_assert(_Always_false<_Ty>, "should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _End
+
+    inline namespace __cpos {
+        inline constexpr _End::_Cpo end;
+    }
+
+    // CONCEPT ranges::range
+    template <class _Rng>
+    concept _Range_impl = requires(_Rng&& __r) {
+        begin(static_cast<_Rng&&>(__r));
+        end(static_cast<_Rng&&>(__r));
+    };
+
+    template <class _Rng>
+    concept range = _Range_impl<_Rng&>;
+
+    // CONCEPT ranges::_Forwarding_range
+    // clang-format off
+    template <class _Rng>
+    concept _Forwarding_range = range<_Rng> && _Range_impl<_Rng>;
+    // clang-format on
+
+    // ALIAS TEMPLATE ranges::iterator_t
+    template <range _Rng>
+    using iterator_t = decltype(begin(_STD declval<_Rng&>()));
+
+    // ALIAS TEMPLATE ranges::sentinel_t
+    template <range _Rng>
+    using sentinel_t = decltype(end(_STD declval<_Rng&>()));
+
+    // ALIAS TEMPLATE ranges::range_difference_t
+    template <class _Rng>
+    using range_difference_t = iter_difference_t<iterator_t<_Rng>>;
+
+    // ALIAS TEMPLATE ranges::range_value_t
+    template <class _Rng>
+    using range_value_t = iter_value_t<iterator_t<_Rng>>;
+
+    // ALIAS TEMPLATE ranges::range_reference_t
+    template <class _Rng>
+    using range_reference_t = iter_reference_t<iterator_t<_Rng>>;
+
+    // ALIAS TEMPLATE ranges::range_rvalue_reference_t
+    template <class _Rng>
+    using range_rvalue_reference_t = iter_rvalue_reference_t<iterator_t<_Rng>>;
+
+    // CUSTOMIZATION POINT OBJECT ranges::cbegin
+    struct _Cbegin_fn {
+        // clang-format off
+        template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
+        _NODISCARD constexpr auto operator()(_Ty&& __t) const
+            noexcept(noexcept(begin(static_cast<_CTy&&>(__t))))
+            requires requires { begin(static_cast<_CTy&&>(__t)); } {
+            return begin(static_cast<_CTy&&>(__t));
+        }
+        // clang-format on
+    };
+
+    inline namespace __cpos {
+        inline constexpr _Cbegin_fn cbegin;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::cend
+    struct _Cend_fn {
+        // clang-format off
+        template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
+        _NODISCARD constexpr auto operator()(_Ty&& __t) const
+            noexcept(noexcept(end(static_cast<_CTy&&>(__t))))
+            requires requires { end(static_cast<_CTy&&>(__t)); } {
+            return end(static_cast<_CTy&&>(__t));
+        }
+        // clang-format on
+    };
+
+    inline namespace __cpos {
+        inline constexpr _Cend_fn cend;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::rbegin
+    namespace _Rbegin {
+#ifndef __clang__ // TRANSITION, VSO#895622
+        void rbegin();
+#endif // TRANSITION, VSO#895622
+
+        template <class _Ty>
+        void rbegin(_Ty&&) = delete;
+        template <class _Ty>
+        void rbegin(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = is_lvalue_reference_v<_Ty> && requires(_Ty& __t) {
+            { _Fake_decay_copy(__t.rbegin()) } -> input_or_output_iterator;
+        };
+
+        template <class _Ty>
+        concept _Has_ADL = requires(_Ty&& __t) {
+            { _Fake_decay_copy(rbegin(static_cast<_Ty&&>(__t))) } -> input_or_output_iterator;
+        };
+
+        template <class _Ty>
+        concept _Can_make_reverse = requires(_Ty&& __t) {
+            { begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
+            { end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(begin(static_cast<_Ty&&>(__t)))>;
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Non_member, _Make_reverse };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (_Has_member<_Ty>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rbegin()))};
+                } else if constexpr (_Has_ADL<_Ty>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(rbegin(_STD declval<_Ty>())))};
+                } else if constexpr (_Can_make_reverse<_Ty>) {
+                    return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(end(_STD declval<_Ty>())))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return __t.rbegin();
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
+                    return rbegin(static_cast<_Ty&&>(__t));
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Make_reverse) {
+                    return _STD make_reverse_iterator(end(static_cast<_Ty&&>(__t)));
+                } else {
+                    static_assert(_Always_false<_Ty>, "should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Rbegin
+
+    inline namespace __cpos {
+        inline constexpr _Rbegin::_Cpo rbegin;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::rend
+    namespace _Rend {
+#ifndef __clang__ // TRANSITION, VSO#895622
+        void rend();
+#endif // TRANSITION, VSO#895622
+
+        template <class _Ty>
+        void rend(_Ty&&) = delete;
+        template <class _Ty>
+        void rend(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+
+        // clang-format off
+        template <class _Ty>
+        concept _Can_rbegin = requires(_Ty&& __t) {
+            rbegin(static_cast<_Ty&&>(__t));
+        };
+
+        template <class _Ty>
+        concept _Has_member = is_lvalue_reference_v<_Ty> && requires(_Ty& __t) {
+            { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(rbegin(__t))>;
+        };
+
+        template <class _Ty>
+        concept _Has_ADL = requires(_Ty&& __t) {
+            { _Fake_decay_copy(rend(static_cast<_Ty&&>(__t))) } ->
+                sentinel_for<decltype(rbegin(static_cast<_Ty&&>(__t)))>;
+        };
+
+        template <class _Ty>
+        concept _Can_make_reverse = requires(_Ty&& __t) {
+            { begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
+            { end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(begin(static_cast<_Ty&&>(__t)))>;
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Non_member, _Make_reverse };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (_Can_rbegin<_Ty>) {
+                    if constexpr (_Has_member<_Ty>) {
+                        return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rend()))};
+                    } else if constexpr (_Has_ADL<_Ty>) {
+                        return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty>())))};
+                    } else if constexpr (_Can_make_reverse<_Ty>) {
+                        return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(begin(_STD declval<_Ty>())))};
+                    }
+                }
+
+                return {_St::_None};
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return __t.rend();
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
+                    return rend(static_cast<_Ty&&>(__t));
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Make_reverse) {
+                    return _STD make_reverse_iterator(begin(static_cast<_Ty&&>(__t)));
+                } else {
+                    static_assert(_Always_false<_Ty>, "should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Rend
+
+    inline namespace __cpos {
+        inline constexpr _Rend::_Cpo rend;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::crbegin
+    struct _Crbegin_fn {
+        // clang-format off
+        template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
+        _NODISCARD constexpr auto operator()(_Ty&& __t) const
+            noexcept(noexcept(rbegin(static_cast<_CTy&&>(__t))))
+            requires requires { rbegin(static_cast<_CTy&&>(__t)); } {
+            return rbegin(static_cast<_CTy&&>(__t));
+        }
+        // clang-format on
+    };
+
+    inline namespace __cpos {
+        inline constexpr _Crbegin_fn crbegin;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::crend
+    struct _Crend_fn {
+        // clang-format off
+        template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
+        _NODISCARD constexpr auto operator()(_Ty&& __t) const
+            noexcept(noexcept(rend(static_cast<_CTy&&>(__t))))
+            requires requires { rend(static_cast<_CTy&&>(__t)); } {
+            return rend(static_cast<_CTy&&>(__t));
+        }
+        // clang-format on
+    };
+
+    inline namespace __cpos {
+        inline constexpr _Crend_fn crend;
+    }
+
+    // VARIABLE TEMPLATE ranges::disable_sized_range
+    template <class>
+    inline constexpr bool disable_sized_range = false;
+
+    // CUSTOMIZATION POINT OBJECT ranges::size
+    namespace _Size {
+#ifndef __clang__ // TRANSITION, VSO#895622
+        void size();
+#endif // TRANSITION, VSO#895622
+
+        template <class _Ty>
+        void size(_Ty&&) = delete;
+
+        // clang-format off
+        template <class _Ty, class _UnCV>
+        concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty&& __t) {
+            { _Fake_decay_copy(static_cast<_Ty&&>(__t).size()) } -> integral;
+        };
+
+        template <class _Ty, class _UnCV>
+        concept _Has_ADL = !disable_sized_range<_UnCV> && requires(_Ty&& __t) {
+            { _Fake_decay_copy(size(static_cast<_Ty&&>(__t))) } -> integral;
+        };
+
+        template <class _Ty>
+        concept _Can_difference = requires(_Ty&& __t) {
+            { begin(__t) } -> forward_iterator;
+            { end(__t) } -> sized_sentinel_for<decltype(begin(__t))>;
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Array, _Member, _Non_member, _Subtract };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                using _UnCV = remove_cvref_t<_Ty>;
+                if constexpr (is_array_v<_UnCV>) {
+                    return {_St::_Array, true};
+                } else if constexpr (_Has_member<_Ty, _UnCV>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().size()))};
+                } else if constexpr (_Has_ADL<_Ty, _UnCV>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(size(_STD declval<_Ty>())))};
+                } else if constexpr (_Can_difference<_Ty>) {
+                    return {_St::_Subtract, noexcept(end(_STD declval<_Ty&>()) - begin(_STD declval<_Ty&>()))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()([[maybe_unused]] _Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
+                    return extent_v<remove_cvref_t<_Ty>>;
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return static_cast<_Ty&&>(__t).size();
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
+                    return size(static_cast<_Ty&&>(__t));
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Subtract) {
+                    const auto _Delta = end(__t) - begin(__t);
+                    return static_cast<make_unsigned_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
+                } else {
+                    static_assert(_Always_false<_Ty>, "should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Size
+
+    inline namespace __cpos {
+        inline constexpr _Size::_Cpo size;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::empty
+    namespace _Empty {
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = requires(_Ty&& __t) {
+            static_cast<bool>(static_cast<_Ty&&>(__t).empty());
+        };
+
+        template <class _Ty>
+        concept _Has_size = requires(_Ty&& __t) {
+            size(static_cast<_Ty&&>(__t));
+        };
+
+        template <class _Ty>
+        concept _Can_begin_end = requires(_Ty&& __t) {
+            { begin(__t) } -> forward_iterator;
+            end(__t);
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Size, _Compare };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (_Has_member<_Ty>) {
+                    return {_St::_Member, noexcept(static_cast<bool>(_STD declval<_Ty>().empty()))};
+                } else if constexpr (_Has_size<_Ty>) {
+                    return {_St::_Size, noexcept(size(_STD declval<_Ty>()))};
+                } else if constexpr (_Can_begin_end<_Ty>) {
+                    constexpr auto _Nothrow =
+                        noexcept(static_cast<bool>(begin(_STD declval<_Ty&>()) == end(_STD declval<_Ty&>())));
+                    return {_St::_Compare, _Nothrow};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr bool operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return static_cast<bool>(static_cast<_Ty&&>(__t).empty());
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Size) {
+                    return size(static_cast<_Ty&&>(__t)) == 0;
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Compare) {
+                    return static_cast<bool>(begin(__t) == end(__t));
+                } else {
+                    static_assert(_Always_false<_Ty>, "should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Empty
+
+    inline namespace __cpos {
+        inline constexpr _Empty::_Cpo empty;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::data
+    namespace _Data {
+        // clang-format off
+        template <class _Ty>
+        concept _Points_to_object = is_pointer_v<_Ty> && is_object_v<remove_pointer_t<_Ty>>;
+
+        template <class _Ty>
+        concept _Has_member = is_lvalue_reference_v<_Ty> && requires(_Ty& __t) {
+            { _Fake_decay_copy(__t.data()) } -> _Points_to_object;
+        };
+
+        template <class _Ty>
+        concept _Has_contiguous_iterator = requires(_Ty&& __t) {
+            { begin(static_cast<_Ty&&>(__t)) } -> contiguous_iterator;
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Address };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (_Has_member<_Ty>) {
+                    return {_St::_Member, noexcept(_STD declval<_Ty&>().data())};
+                } else if constexpr (_Has_contiguous_iterator<_Ty>) {
+                    return {_St::_Address, noexcept(_STD to_address(begin(_STD declval<_Ty>())))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <class _Ty>
+                requires (_Choice<_Ty>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+                if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
+                    return __t.data();
+                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Address) {
+                    return _STD to_address(begin(static_cast<_Ty&&>(__t)));
+                } else {
+                    static_assert(_Always_false<_Ty>, "should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Data
+
+    inline namespace __cpos {
+        inline constexpr _Data::_Cpo data;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::cdata
+    struct _Cdata_fn {
+        // clang-format off
+        template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
+        _NODISCARD constexpr auto operator()(_Ty&& __t) const
+            noexcept(noexcept(data(static_cast<_CTy&&>(__t))))
+            requires requires { data(static_cast<_CTy&&>(__t)); } {
+            return data(static_cast<_CTy&&>(__t));
+        }
+        // clang-format on
+    };
+
+    inline namespace __cpos {
+        inline constexpr _Cdata_fn cdata;
+    }
+
+    // clang-format off
+    // CONCEPT ranges::sized_range
+    template <class _Rng>
+    concept sized_range = range<_Rng>
+#if 0 // TRANSITION, LWG 3264
+        && !disable_sized_range<remove_cvref_t<_Rng>>
+#endif // TRANSITION, LWG 3264
+        && requires(_Rng& __r) { size(__r); };
+    // clang-format on
+
+    // STRUCT ranges::view_base
+    struct view_base {};
+
+    // VARIABLE TEMPLATE ranges::enable_view
+    // clang-format off
+    template <class _Ty>
+    concept _Enable_view_impl = derived_from<_Ty, view_base> || !range<_Ty> || !range<const _Ty>
+        || same_as<range_reference_t<_Ty>, range_reference_t<const _Ty>>;
+    // clang-format on
+
+    template <class _Ty>
+    inline constexpr bool enable_view = _Enable_view_impl<_Ty>;
+
+    template <class _Ty>
+    inline constexpr bool enable_view<initializer_list<_Ty>> = false;
+
+    // enable_view specializations for (unordered_)?(multi)?set and match_results are in the corresponding headers.
+
+    // clang-format off
+    // CONCEPT ranges::view
+    template <class _Ty>
+    concept view = range<_Ty> && semiregular<_Ty> && enable_view<_Ty>;
+
+    // CONCEPT ranges::output_range
+    template <class _Rng, class _Ty>
+    concept output_range = range<_Rng> && output_iterator<iterator_t<_Rng>, _Ty>;
+
+    // CONCEPT ranges::input_range
+    template <class _Rng>
+    concept input_range = range<_Rng> && input_iterator<iterator_t<_Rng>>;
+
+    // CONCEPT ranges::forward_range
+    template <class _Rng>
+    concept forward_range = range<_Rng> && forward_iterator<iterator_t<_Rng>>;
+
+    // CONCEPT ranges::bidirectional_range
+    template <class _Rng>
+    concept bidirectional_range = range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
+
+    // CONCEPT ranges::random_access_range
+    template <class _Rng>
+    concept random_access_range = range<_Rng> && random_access_iterator<iterator_t<_Rng>>;
+
+    // CONCEPT ranges::contiguous_range
+    template <class _Rng>
+    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng& __r) {
+        { data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
+    };
+    // clang-format on
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // MACRO _STL_VERIFY_ARRAY_SIZE
 #define _STL_VERIFY_ARRAY_SIZE(_Array, _Desired) \
@@ -3075,8 +3898,8 @@ struct _Value_equality_is_bitwise_equality : bool_constant<static_cast<_Elem1>(-
 };
 
 template <class _Elem1, class _Elem2, class _Pr>
-struct _Equal_memcmp_is_safe_helper : false_type { // determines whether it is safe to call memcmp to compare things;
-                                                   // defaults to false
+struct _Equal_memcmp_is_safe_helper : false_type {
+    // determines whether it is safe to call memcmp to compare things; defaults to false
 };
 
 template <class _Elem1, class _Elem2>
@@ -3084,33 +3907,30 @@ struct _Equal_memcmp_is_safe_helper<_Elem1, _Elem2, equal_to<>>
     : bool_constant<conjunction_v<bool_constant<sizeof(_Elem1) == sizeof(_Elem2)
                                                 && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2>>,
           negation<is_volatile<_Elem1>>, negation<is_volatile<_Elem2>>,
-          // note that order matters here, as being integral is a precondition
-          // of _Value_equality_is_bitwise_equality
-          _Value_equality_is_bitwise_equality<_Elem1, _Elem2>>> { // allow memcmping same-size integral non-bool
-                                                                  // non-volatile bitwise types using equal_to<>
+          // order matters here: being integral is a precondition of _Value_equality_is_bitwise_equality
+          _Value_equality_is_bitwise_equality<_Elem1, _Elem2>>> {
+    // allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
 };
 
 template <class _Elem1, class _Elem2>
 struct _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>>
-    : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type { // allow memcmping pointers-to-cv-T with equal_to<>
-};
+    : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type {}; // allow memcmping pointers-to-cv-T with equal_to<>
 
 #if _HAS_STD_BYTE
 template <>
-struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type { // allow memcmping std::byte
-};
+struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type {}; // allow memcmping std::byte
 #endif // _HAS_STD_BYTE
 
 template <class _Elem>
 struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>>
-    : _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>::type { // treat equal_to with exact T as equal_to<>
-                                                                     // this is safe because we only activate the
-                                                                     // optimization for builtin _Elem (and std::byte)
+    : _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>::type {
+    // treat equal_to with exact T as equal_to<> this is safe because we only activate the optimization for builtin
+    // _Elem (and std::byte)
 };
 
 template <class _Iter1, class _Iter2, class _Pr>
-false_type _Equal_memcmp_is_safe(
-    const _Iter1&, const _Iter2&, const _Pr&) { // return equal optimization category for arbitrary iterators
+false_type _Equal_memcmp_is_safe(const _Iter1&, const _Iter2&, const _Pr&) {
+    // return equal optimization category for arbitrary iterators
     return {};
 }
 
@@ -3372,9 +4192,9 @@ template <class _Memcmp_pr>
 struct _Lex_compare_optimize {}; // optimization tag for lexicographical_compare
 
 template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
-using _Lex_compare_check_element_types = _Lex_compare_optimize<
-    conditional_t<_Lex_compare_check_element_types_helper<remove_const_t<_Obj1>, remove_const_t<_Obj2>, _FTy>::value,
-        _Memcmp_pr, void>>; // checks the lex_compare element types for memcmp safety
+using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
+    _Lex_compare_check_element_types_helper<remove_const_t<_Obj1>, remove_const_t<_Obj2>, _FTy>::value, _Memcmp_pr,
+    void>>; // checks the lex_compare element types for memcmp safety
 
 template <class _InIt1, class _InIt2, class _Pr>
 _Lex_compare_optimize<void> _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {

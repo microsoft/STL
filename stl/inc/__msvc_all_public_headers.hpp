@@ -74,6 +74,7 @@
 #include <ostream>
 #include <queue>
 #include <random>
+#include <ranges>
 #include <ratio>
 #include <regex>
 #include <scoped_allocator>
