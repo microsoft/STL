@@ -461,8 +461,8 @@ namespace stdext {
     }
 } // namespace stdext
 _STD_BEGIN
-using stdext::hash_map;
-using stdext::hash_multimap;
+using _STDEXT hash_map;
+using _STDEXT hash_multimap;
 _STD_END
 
 #pragma pop_macro("new")

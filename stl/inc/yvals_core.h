@@ -38,18 +38,12 @@
 // P0811R3 midpoint(), lerp()
 //     (partially implemented, lerp() not yet constexpr)
 // P0887R1 type_identity
+// P0896R4 Ranges
+//     (partially implemented)
 // P0898R3 Standard Library Concepts
-//     * common_reference
-//     * common_type adjustment
-//     * identity
 // P0919R3 Heterogeneous Lookup For Unordered Containers
-// P????R? directory_entry::clear_cache()
-
-// _HAS_CXX20 indirectly controls:
-// P0898R3 Standard Library Concepts
-//     * <concepts>
-//     * UniformRandomBitGenerator
 // P1754R1 Rename Concepts To standard_case
+// P????R? directory_entry::clear_cache()
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -412,7 +406,7 @@
 
 #define _CPPLIB_VER 650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE 201908L
+#define _MSVC_STL_UPDATE 201909L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -534,6 +528,8 @@
 #else // _HAS_IF_CONSTEXPR
 #define _CONSTEXPR_IF
 #endif // _HAS_IF_CONSTEXPR
+
+#define _CONSTEVAL constexpr // TRANSITION, Clang 9
 
 // Controls whether the STL will force /fp:fast to enable vectorization of algorithms defined
 // in the standard as special cases; such as reduce, transform_reduce, inclusive_scan, exclusive_scan

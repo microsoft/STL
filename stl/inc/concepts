@@ -121,6 +121,10 @@ concept default_initializable = constructible_from<_Ty>
 template <class _Ty>
 concept move_constructible = constructible_from<_Ty, _Ty> && convertible_to<_Ty, _Ty>;
 
+// CONCEPT _Has_class_or_enum_type
+template <class _Ty>
+concept _Has_class_or_enum_type = __is_class(remove_reference_t<_Ty>) || __is_enum(remove_reference_t<_Ty>);
+
 // CUSTOMIZATION POINT OBJECT ranges::swap
 namespace ranges {
     namespace _Swap {
@@ -131,12 +135,8 @@ namespace ranges {
         template <class _Ty>
         void swap(_Ty&, _Ty&) = delete;
 
-        template <class _Ty>
-        inline constexpr bool _Is_class_or_enum = __is_class(_Ty) || __is_enum(_Ty);
-
         template <class _Ty1, class _Ty2>
-        concept _Use_ADL_swap =
-            (_Is_class_or_enum<remove_reference_t<_Ty1>> || _Is_class_or_enum<remove_reference_t<_Ty2>>)
+        concept _Use_ADL_swap = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>)
             && requires(_Ty1&& __t, _Ty2&& __u) {
                 swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u));
             };
@@ -364,7 +364,7 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #else // ^^^ <concepts> supported / <concepts> not supported vvv
-#pragma message("The contents of <concepts> are only available with C++20 or later.")
+#pragma message("The contents of <concepts> are only available with C++20 concepts support.")
 #endif // __cpp_lib_concepts
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _CONCEPTS_

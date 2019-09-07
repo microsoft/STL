@@ -2173,32 +2173,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, c
     return _Out;
 }
 
-#if _HAS_CXX20
-// FUNCTION TEMPLATE to_address
-template <class _Ptr, class = void>
-inline constexpr bool _Has_to_address_v = false; // determines whether _Ptr has pointer_traits<_Ptr>::to_address(p)
-
-template <class _Ptr>
-inline constexpr bool
-    _Has_to_address_v<_Ptr, void_t<decltype(pointer_traits<_Ptr>::to_address(_STD declval<const _Ptr&>()))>> = true;
-
-template <class _Ty>
-_NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
-    static_assert(!is_function_v<_Ty>,
-        "N4810 20.10.4 [pointer.conversion]/2: The program is ill-formed if T is a function type.");
-    return _Val;
-}
-
-template <class _Ptr>
-_NODISCARD auto to_address(const _Ptr& _Val) noexcept {
-    if constexpr (_Has_to_address_v<_Ptr>) {
-        return pointer_traits<_Ptr>::to_address(_Val);
-    } else {
-        return _STD to_address(_Val.operator->()); // plain pointer overload must come first
-    }
-}
-#endif // _HAS_CXX20
-
 // GARBAGE COLLECTION
 enum class pointer_safety { relaxed, preferred, strict };
 

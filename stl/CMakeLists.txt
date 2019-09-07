@@ -164,6 +164,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/ostream
     ${CMAKE_CURRENT_LIST_DIR}/inc/queue
     ${CMAKE_CURRENT_LIST_DIR}/inc/random
+    ${CMAKE_CURRENT_LIST_DIR}/inc/ranges
     ${CMAKE_CURRENT_LIST_DIR}/inc/ratio
     ${CMAKE_CURRENT_LIST_DIR}/inc/regex
     ${CMAKE_CURRENT_LIST_DIR}/inc/scoped_allocator
