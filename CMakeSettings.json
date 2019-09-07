@@ -23,6 +23,30 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "variables": []
+    },
+    {
+      "name": "ARM",
+      "buildCommandArgs": "-v",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "configurationType": "Debug",
+      "ctestCommandArgs": "",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_arm" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "variables": []
+    },
+    {
+      "name": "ARM64",
+      "buildCommandArgs": "-v",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "configurationType": "Debug",
+      "ctestCommandArgs": "",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_arm64" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "variables": []
     }
   ]
 }
