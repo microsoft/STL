@@ -184,10 +184,12 @@ ensures that other components wanting to be a "guest in your process", like prin
 export surface of the STL they were built with. Otherwise, the "`msvcp140.dll`" you deployed in the same directory as
 your .exe would "win" over the versions in System32.
 
-A complete example using the DLL flavors from an "x64 Native Tools Command Prompt for VS 2019" follows. The compiler
-looks for include directories according to the `INCLUDE` environment variable, and the linker looks for import library
-directories according to the `LIB` environment variable, and the Windows loader will (eventually) look for DLL
-dependencies according to directories in the `PATH` environment variable.
+## Complete example using x64 DLL flavor
+
+The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
+import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
+for DLL dependencies according to directories in the `PATH` environment variable. From an
+"x64 Native Tools Command Prompt for VS 2019":
 
 ```
 C:\Users\bion\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
