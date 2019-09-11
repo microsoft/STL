@@ -317,6 +317,7 @@
 #define _STL_EXTRA_DISABLED_WARNINGS
 #endif // _STL_EXTRA_DISABLED_WARNINGS
 
+// warning C4180: qualifier applied to function type has no meaning; ignored
 // warning C4412: function signature contains type 'meow'; C++ objects are unsafe to pass between pure code
 //                and mixed or native. (/Wall)
 // warning C4455: literal suffix identifiers that do not start with an underscore are reserved
@@ -347,9 +348,9 @@
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
-    4412 4455 4472 4494 4514 4571 4574 4582 4583 4587 \
-    4588 4619 4623 4625 4626 4643 4702 4793 4820 4988 \
-    5026 5027 5045                                    \
+    4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
+    4587 4588 4619 4623 4625 4626 4643 4702 4793 4820 \
+    4988 5026 5027 5045                               \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
