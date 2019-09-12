@@ -221,7 +221,7 @@ The STL is built atop other compiler support libraries that ship with Windows an
 VCRuntime, and VCStartup. The following diagram describes the dependencies between those components and their ship
 vehicles.
 
-![MSVC Libraries Block Diagram](doc/msvc_libraries.plantuml.svg)
+![MSVC Libraries Block Diagram](docs/msvc_libraries.plantuml.svg)
 
 # Contributing
 
