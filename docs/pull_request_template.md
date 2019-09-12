@@ -6,14 +6,14 @@ README.md.
 
 # Checklist:
 
-- [ ] I have read and understand README.md.
+- [ ] I understand README.md.
 - [ ] If this is a feature addition, that feature has been voted into the C++
-  Standard.
+  Working Draft.
 - [ ] Any code files edited have been processed by clang-format.
 - [ ] Identifiers in any product code changes are properly `_Ugly` as per
-  http://eel.is/c++draft/lex.name#3.1 .
-- [ ] Identifiers in test code changes are *not* _Ugly.
-- [ ] Test code `#include`s the correct headers as per the Standard, not just
+  https://eel.is/c++draft/lex.name#3.1 .
+- [ ] Identifiers in test code changes are *not* `_Ugly`.
+- [ ] Test code #includes the correct headers as per the Standard, not just
   what happens to compile.
 - [ ] The STL builds and test harnesses have passed (must be manually verified
   by an STL maintainer before CI is online, leave this unchecked for initial
