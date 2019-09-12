@@ -1,0 +1,41 @@
+// ranges standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _RANGES_
+#define _RANGES_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#ifdef __cpp_lib_concepts
+#include <iterator>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+namespace ranges {
+    // Much machinery defined in <xutility>
+
+    // clang-format off
+    // CONCEPT ranges::common_range
+    template <class _Rng>
+    concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+    // clang-format on
+} // namespace ranges
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#else // ^^^ Concepts support / no Concepts vvv
+#pragma message("The contents of <ranges> are only available with C++20 concepts support.")
+#endif // __cpp_lib_concepts
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _RANGES_
