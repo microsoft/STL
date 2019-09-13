@@ -21,7 +21,7 @@ C:\Users\billy\Desktop>type repro.cpp
 #include <iostream>
 
 int main() {
-    // Peplace this program with one demonstrating your actual bug report,
+    // Replace this program with one demonstrating your actual bug report,
     // along with the following compilation command. Please leave compiler
     // version banners in the output (don't use /nologo), and include output of
     // your test program, if any.
