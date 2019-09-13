@@ -45,7 +45,7 @@ test failure
 
 **Expected behavior**
 A clear and concise description of what you expected to happen. Alternately,
-include static_asserts or asserts in your test case above.
+include `static_assert`s or `assert`s in your test case above whose failure clearly indicates the problem.
 
 **Additional context**
 Add any other context about the problem here.
