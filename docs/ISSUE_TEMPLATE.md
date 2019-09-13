@@ -9,7 +9,7 @@ assignees: ''
 
 **Describe the bug**
 A clear and concise description of what the bug is. Please check that you've
-read the guidelines for submitting STL bug reports in README.md. If you are
+read the guidelines for submitting STL bug reports in `README.md`. If you are
 having problems with any component that is not the STL, instructions to get
 to the right place are there.
 
