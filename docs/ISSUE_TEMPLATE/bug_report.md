@@ -14,16 +14,38 @@ having problems with any component that is not the STL, instructions to get
 to the right place are there.
 
 **Command line test case**
+STL version (GitHub commit or Visual Studio version):
+
 ```
+C:\Users\billy\Desktop>type repro.cpp
 #include <iostream>
 
 int main() {
+    // Peplace this program with one demonstrating your actual bug report,
+    // along with the following compilation command. Please leave compiler
+    // version banners in the output (don't use /nologo), and include output of
+    // your test program, if any.
     std::cout << "test failure\n";
 }
+
+C:\Users\billy\Desktop>cl /EHsc /W4 /WX .\repro.cpp
+Microsoft (R) C/C++ Optimizing Compiler Version 19.23.28019.1 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+repro.cpp
+Microsoft (R) Incremental Linker Version 14.23.28019.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:repro.exe
+repro.obj
+
+C:\Users\billy\Desktop>.\repro.exe
+test failure
 ```
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+A clear and concise description of what you expected to happen. Alternately,
+include static_asserts or asserts in your test case above.
 
 **Additional context**
 Add any other context about the problem here.
