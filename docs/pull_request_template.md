@@ -13,7 +13,7 @@ README.md.
 - [ ] Identifiers in any product code changes are properly `_Ugly` as per
   https://eel.is/c++draft/lex.name#3.1 .
 - [ ] Identifiers in test code changes are *not* `_Ugly`.
-- [ ] Test code #includes the correct headers as per the Standard, not just
+- [ ] Test code includes the correct headers as per the Standard, not just
   what happens to compile.
 - [ ] The STL builds and test harnesses have passed (must be manually verified
   by an STL maintainer before CI is online, leave this unchecked for initial
