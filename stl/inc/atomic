@@ -238,9 +238,18 @@ template <class _Integral, class _Ty>
 _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     // interprets _Source as the supplied integral type
     static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
-    _Integral _Result{}; // zero padding bits
-    _CSTD memcpy(&_Result, _STD addressof(_Source), sizeof(_Source));
-    return _Result;
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_integral_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
+        return static_cast<_Integral>(_Source);
+    } else if constexpr (is_pointer_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
+        return reinterpret_cast<_Integral>(_Source);
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        _Integral _Result{}; // zero padding bits
+        _CSTD memcpy(&_Result, _STD addressof(_Source), sizeof(_Source));
+        return _Result;
+    }
 }
 
 // FUNCTION _Load_barrier
