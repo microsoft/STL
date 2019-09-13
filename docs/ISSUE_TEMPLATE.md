@@ -13,8 +13,8 @@ read the guidelines for submitting STL bug reports in README.md. If you are
 having problems with any component that is not the STL, instructions to get
 to the right place are there.
 
-**Command line test case**
-STL version (GitHub commit or Visual Studio version):
+**Command-line test case**
+STL version (git commit or Visual Studio version):
 
 ```
 C:\Users\billy\Desktop>type repro.cpp
