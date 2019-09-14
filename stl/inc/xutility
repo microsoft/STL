@@ -2133,11 +2133,6 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty>
-        concept _Can_begin = requires(_Ty&& __t) {
-            begin(static_cast<_Ty&&>(__t));
-        };
-
-        template <class _Ty>
         concept _Has_member = requires(_Ty& __t) {
             { _Fake_decay_copy(__t.end()) } -> sentinel_for<decltype(begin(__t))>;
         };
@@ -2155,18 +2150,16 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                if constexpr (_Can_begin<_Ty>) {
-                    constexpr bool _Is_lvalue = is_lvalue_reference_v<_Ty>;
+                constexpr bool _Is_lvalue = is_lvalue_reference_v<_Ty>;
 
-                    if constexpr (is_array_v<remove_reference_t<_Ty>>) {
-                        if constexpr (_Is_lvalue) {
-                            return {_St::_Array, true};
-                        }
-                    } else if constexpr (_Is_lvalue && _Has_member<_Ty>) {
-                        return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().end()))};
-                    } else if constexpr (_Has_ADL<_Ty>) {
-                        return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty>())))};
+                if constexpr (is_array_v<remove_reference_t<_Ty>>) {
+                    if constexpr (_Is_lvalue) {
+                        return {_St::_Array, true};
                     }
+                } else if constexpr (_Is_lvalue && _Has_member<_Ty>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().end()))};
+                } else if constexpr (_Has_ADL<_Ty>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty>())))};
                 }
 
                 return {_St::_None};
@@ -2756,6 +2749,9 @@ class _Array_const_iterator
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 {
 public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
@@ -3017,12 +3013,28 @@ _NODISCARD _CONSTEXPR17 _Array_const_iterator<_Ty, _Size> operator+(
     return _Next += _Off;
 }
 
+#if _HAS_CXX20
+template <class _Ty, size_t _Size>
+struct pointer_traits<_Array_const_iterator<_Ty, _Size>> {
+    using pointer         = _Array_const_iterator<_Ty, _Size>;
+    using element_type    = const _Ty;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE _Array_iterator
 template <class _Ty, size_t _Size>
 class _Array_iterator : public _Array_const_iterator<_Ty, _Size> {
 public:
     using _Mybase = _Array_const_iterator<_Ty, _Size>;
 
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
@@ -3102,6 +3114,19 @@ template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 _Array_iterator<_Ty, _Size> operator+(ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) {
     return _Next += _Off;
 }
+
+#if _HAS_CXX20
+template <class _Ty, size_t _Size>
+struct pointer_traits<_Array_iterator<_Ty, _Size>> {
+    using pointer         = _Array_iterator<_Ty, _Size>;
+    using element_type    = _Ty;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+#endif // _HAS_CXX20
 
 // STRUCT _Default_sentinel
 struct _Default_sentinel {}; // empty struct to serve as the end of a range

@@ -26,13 +26,16 @@ _STD_BEGIN
 template <class _Myvec>
 class _Vector_const_iterator : public _Iterator_base {
 public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
+    using value_type        = typename _Myvec::value_type;
+    using difference_type   = typename _Myvec::difference_type;
+    using pointer           = typename _Myvec::const_pointer;
+    using reference         = const value_type&;
 
-    using value_type      = typename _Myvec::value_type;
-    using difference_type = typename _Myvec::difference_type;
-    using pointer         = typename _Myvec::const_pointer;
-    using reference       = const value_type&;
-    using _Tptr           = typename _Myvec::pointer;
+    using _Tptr = typename _Myvec::pointer;
 
     _Vector_const_iterator() noexcept : _Ptr() {}
 
@@ -201,17 +204,47 @@ _NODISCARD _Vector_const_iterator<_Myvec> operator+(
     return _Next += _Off;
 }
 
+#if _HAS_CXX20
+template <class _Myvec>
+struct pointer_traits<_Vector_const_iterator<_Myvec>> {
+    using pointer         = _Vector_const_iterator<_Myvec>;
+    using element_type    = const typename pointer::value_type;
+    using difference_type = typename pointer::difference_type;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        // A value-initialized iterator is in the domain of to_address. An invalidated end iterator for a vector with
+        // capacity() of 0 is not. This function cannot distinguish those two cases, so it incorrectly does not diagnose
+        // the latter. In practice, this isn't a significant problem since to_address returns nullptr for such an
+        // iterator.
+        const auto _Mycont = static_cast<const _Myvec*>(_Iter._Getcont());
+        if (_Mycont) {
+            _STL_VERIFY(_Mycont->_Myfirst <= _Iter._Ptr && _Iter._Ptr <= _Mycont->_Mylast,
+                "can't convert out-of-range vector iterator to pointer");
+        } else {
+            _STL_VERIFY(!_Iter._Ptr, "can't convert invalid vector iterator to pointer");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        return _STD to_address(_Iter._Ptr);
+    }
+};
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE _Vector_iterator
 template <class _Myvec>
 class _Vector_iterator : public _Vector_const_iterator<_Myvec> {
 public:
-    using _Mybase           = _Vector_const_iterator<_Myvec>;
-    using iterator_category = random_access_iterator_tag;
+    using _Mybase = _Vector_const_iterator<_Myvec>;
 
-    using value_type      = typename _Myvec::value_type;
-    using difference_type = typename _Myvec::difference_type;
-    using pointer         = typename _Myvec::pointer;
-    using reference       = value_type&;
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = typename _Myvec::value_type;
+    using difference_type   = typename _Myvec::difference_type;
+    using pointer           = typename _Myvec::pointer;
+    using reference         = value_type&;
 
     using _Mybase::_Mybase;
 
@@ -283,6 +316,33 @@ _NODISCARD _Vector_iterator<_Myvec> operator+(
     typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) {
     return _Next += _Off;
 }
+
+#if _HAS_CXX20
+template <class _Myvec>
+struct pointer_traits<_Vector_iterator<_Myvec>> {
+    using pointer         = _Vector_iterator<_Myvec>;
+    using element_type    = typename pointer::value_type;
+    using difference_type = typename pointer::difference_type;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        // A value-initialized iterator is in the domain of to_address. An invalidated end iterator for a vector with
+        // capacity() of 0 is not. This function cannot distinguish those two cases, so it incorrectly does not diagnose
+        // the latter. In practice, this isn't a significant problem since to_address returns nullptr for such an
+        // iterator.
+        const auto _Mycont = static_cast<const _Myvec*>(_Iter._Getcont());
+        if (_Mycont) {
+            _STL_VERIFY(_Mycont->_Myfirst <= _Iter._Ptr && _Iter._Ptr <= _Mycont->_Mylast,
+                "can't convert out-of-range vector iterator to pointer");
+        } else {
+            _STL_VERIFY(!_Iter._Ptr, "can't convert invalid vector iterator to pointer");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        return _STD to_address(_Iter._Ptr);
+    }
+};
+#endif // _HAS_CXX20
 
 // vector TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,

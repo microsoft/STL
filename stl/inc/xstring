@@ -898,6 +898,9 @@ class basic_string_view;
 template <class _Traits>
 class _String_view_iterator {
 public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Traits::char_type;
     using difference_type   = ptrdiff_t;
@@ -1132,6 +1135,19 @@ _NODISCARD constexpr _String_view_iterator<_Traits> operator+(
     return _Right;
 }
 
+#if _HAS_CXX20
+template <class _Traits>
+struct pointer_traits<_String_view_iterator<_Traits>> {
+    using pointer         = _String_view_iterator<_Traits>;
+    using element_type    = const typename pointer::value_type;
+    using difference_type = typename pointer::difference_type;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer& _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+#endif // _HAS_CXX20
+
 
 // CLASS TEMPLATE basic_string_view
 template <class _Elem, class _Traits>
@@ -1187,6 +1203,17 @@ public:
         return const_iterator(_Mydata + _Mysize);
 #endif // _ITERATOR_DEBUG_LEVEL
     }
+
+#ifdef __cpp_lib_concepts
+    _NODISCARD friend constexpr const_iterator begin(const basic_string_view& _Right) noexcept {
+        // non-member overload that accepts rvalues to model the exposition-only forwarding-range concept
+        return _Right.begin();
+    }
+    _NODISCARD friend constexpr const_iterator end(const basic_string_view& _Right) noexcept {
+        // Ditto modeling forwarding-range
+        return _Right.end();
+    }
+#endif // __cpp_lib_concepts
 
     _NODISCARD constexpr const_iterator cbegin() const noexcept {
         return begin();
@@ -1738,12 +1765,14 @@ inline namespace literals {
 template <class _Mystr>
 class _String_const_iterator : public _Iterator_base {
 public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
-
-    using value_type      = typename _Mystr::value_type;
-    using difference_type = typename _Mystr::difference_type;
-    using pointer         = typename _Mystr::const_pointer;
-    using reference       = const value_type&;
+    using value_type        = typename _Mystr::value_type;
+    using difference_type   = typename _Mystr::difference_type;
+    using pointer           = typename _Mystr::const_pointer;
+    using reference         = const value_type&;
 
     _String_const_iterator() noexcept : _Ptr() {}
 
@@ -1929,17 +1958,51 @@ _NODISCARD _String_const_iterator<_Mystr> operator+(
     return _Next += _Off;
 }
 
+#if _HAS_CXX20
+template <class _Mystr>
+struct pointer_traits<_String_const_iterator<_Mystr>> {
+    using pointer         = _String_const_iterator<_Mystr>;
+    using element_type    = const typename pointer::value_type;
+    using difference_type = typename pointer::difference_type;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
+        const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
+        if (!_Mycont) {
+            _STL_VERIFY(!_Iter._Ptr, "cannot convert string iterator to pointer because the iterator was invalidated "
+                                     "(e.g. reallocation occurred, or the string was destroyed)");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
+        const auto _Rawptr = _STD to_address(_Iter._Ptr);
+
+#if _ITERATOR_DEBUG_LEVEL >= 1
+        if (_Mycont) {
+            const auto _Contptr = _Mycont->_Myptr();
+            _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr <= _Contptr + _Mycont->_Mysize,
+                "cannot convert string iterator to pointer because it is out of range");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
+        return _Rawptr;
+    }
+};
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE _String_iterator
 template <class _Mystr>
 class _String_iterator : public _String_const_iterator<_Mystr> {
 public:
-    using _Mybase           = _String_const_iterator<_Mystr>;
-    using iterator_category = random_access_iterator_tag;
+    using _Mybase = _String_const_iterator<_Mystr>;
 
-    using value_type      = typename _Mystr::value_type;
-    using difference_type = typename _Mystr::difference_type;
-    using pointer         = typename _Mystr::pointer;
-    using reference       = value_type&;
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = typename _Mystr::value_type;
+    using difference_type   = typename _Mystr::difference_type;
+    using pointer           = typename _Mystr::pointer;
+    using reference         = value_type&;
 
     using _Mybase::_Mybase;
 
@@ -2011,6 +2074,37 @@ _NODISCARD _String_iterator<_Mystr> operator+(
     typename _String_iterator<_Mystr>::difference_type _Off, _String_iterator<_Mystr> _Next) {
     return _Next += _Off;
 }
+
+#if _HAS_CXX20
+template <class _Mystr>
+struct pointer_traits<_String_iterator<_Mystr>> {
+    using pointer         = _String_iterator<_Mystr>;
+    using element_type    = typename pointer::value_type;
+    using difference_type = typename pointer::difference_type;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
+        const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
+        if (!_Mycont) {
+            _STL_VERIFY(!_Iter._Ptr, "cannot convert string iterator to pointer because the iterator was invalidated "
+                                     "(e.g. reallocation occurred, or the string was destroyed)");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
+        const auto _Rawptr = _STD to_address(_Iter._Ptr);
+
+#if _ITERATOR_DEBUG_LEVEL >= 1
+        if (_Mycont) {
+            const auto _Contptr = _Mycont->_Myptr();
+            _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr <= _Contptr + _Mycont->_Mysize,
+                "cannot convert string iterator to pointer because it is out of range");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
+        return const_cast<element_type*>(_Rawptr);
+    }
+};
+#endif // _HAS_CXX20
 
 // basic_string TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
