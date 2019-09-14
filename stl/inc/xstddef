@@ -280,12 +280,12 @@ const _Ty* addressof(const _Ty&&) = delete;
 
 // FUNCTION TEMPLATE _Unfancy
 template <class _Ptrty>
-auto _Unfancy(_Ptrty _Ptr) { // converts from a fancy pointer to a plain pointer
+_NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
     return _STD addressof(*_Ptr);
 }
 
 template <class _Ty>
-_Ty* _Unfancy(_Ty* _Ptr) { // do nothing for plain pointers
+_NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain pointers
     return _Ptr;
 }
 _STD_END
