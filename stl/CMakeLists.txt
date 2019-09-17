@@ -229,8 +229,8 @@ set(HEADERS
 )
 
 foreach(header ${HEADERS})
-    get_filename_component(_header_name "${header}" NAME)
-    configure_file("${header}" "${PROJECT_BINARY_DIR}/out/inc/${_header_name}" COPYONLY)
+    file(RELATIVE_PATH _header_path "${CMAKE_CURRENT_LIST_DIR}/inc" "${header}")
+    configure_file("${header}" "${PROJECT_BINARY_DIR}/out/inc/${_header_path}" COPYONLY)
 endforeach()
 
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
