@@ -3407,7 +3407,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
                && (_Lookup_range(static_cast<typename _RxTraits::_Uelem>(
                                      _Sflags & regex_constants::collate ? _Traits.translate(static_cast<_Elem>(_Ch))
                                                                         : static_cast<_Elem>(_Ch)),
-                      _Node->_Ranges))) {
+                   _Node->_Ranges))) {
         _Found = true;
     } else if (_Ch < _Bmp_max) {
         _Found = _Node->_Small && _Node->_Small->_Find(_Ch);
@@ -3719,10 +3719,10 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                     _Found = true;
                 } else if (_Node->_Ranges
                            && (_Lookup_range(
-                                  static_cast<typename _RxTraits::_Uelem>(
-                                      _Sflags & regex_constants::collate ? _Traits.translate(static_cast<_Elem>(_Ch))
-                                                                         : static_cast<_Elem>(_Ch)),
-                                  _Node->_Ranges))) {
+                               static_cast<typename _RxTraits::_Uelem>(_Sflags & regex_constants::collate
+                                                                           ? _Traits.translate(static_cast<_Elem>(_Ch))
+                                                                           : static_cast<_Elem>(_Ch)),
+                               _Node->_Ranges))) {
                     _Found = true;
                 } else if (_Ch < _Bmp_max) {
                     _Found = _Node->_Small && _Node->_Small->_Find(_Ch);
@@ -3810,7 +3810,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _En
     _FwdIt _Ch0 = _Pat;
     return ++_Ch0 != _End
            && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
-                  || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
+               || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>

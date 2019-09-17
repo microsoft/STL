@@ -1716,7 +1716,7 @@ public:
 
         if (_No_push || !is_directory(_Mylist.front().first->status())
             || (_Options != directory_options::follow_directory_symlink
-                   && is_symlink(_Mylist.front().first->status()))) {
+                && is_symlink(_Mylist.front().first->status()))) {
             _No_push = false;
             ++_Mylist.front().first;
         } else { // push down a subdirectory
@@ -2027,9 +2027,9 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval, copy_options _
 
     if (!_Exists || (_Opt & copy_options::overwrite_existing) != copy_options::none
         || ((_Opt & copy_options::update_existing) != copy_options::none
-               && ((void) (_Oldtime = last_write_time(_Oldpval, _Code)), !_Code)
-               && ((void) (_Newtime = last_write_time(_Newpval, _Code)), !_Code)
-               && _Newtime < _Oldtime)) { // ok to overwrite, if necessary
+            && ((void) (_Oldtime = last_write_time(_Oldpval, _Code)), !_Code)
+            && ((void) (_Newtime = last_write_time(_Newpval, _Code)), !_Code)
+            && _Newtime < _Oldtime)) { // ok to overwrite, if necessary
         if (_Copy_file(_Oldpval.c_str(), _Newpval.c_str()) == 0) {
             return true;
         }
