@@ -1,0 +1,51 @@
+parameters:
+  targetPlatform: 'x64'
+
+jobs:
+- job: vs2019_hosted_${{ parameters.targetPlatform }}
+  pool:
+    #name: Hosted Windows 2019 with VS2019
+    name: STL
+
+  variables:
+    vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+    vcpkgResponseFile: $(Build.SourcesDirectory)/vcpkg_windows.txt
+  steps:
+    - checkout: self
+      submodules: recursive
+    - task: BatchScript@1
+      inputs:
+        filename: 'azure-devops/enforce-clang-format.cmd'
+        failOnStandardError: true
+        displayName: 'Enforce clang-format'
+      # Install VS 2019 preview on Microsoft Hosted Agents only.
+    - task: PowerShell@2
+      displayName: 'Install MSVC preview'
+      condition: or(contains(variables['Agent.Name'], 'Azure Pipelines'), contains(variables['Agent.Name'], 'Hosted Agent'))
+      inputs:
+        targetType: filePath
+        filePath: $(Build.SourcesDirectory)/azure-devops/install_msvc_preview.ps1
+    - task: CacheBeta@0
+      displayName: Cache vcpkg
+      inputs:
+        key: $(vcpkgResponseFile) | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD
+        path: '$(vcpkgLocation)'
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg to install boost-build'
+      inputs:
+        vcpkgArguments: 'boost-build:x86-windows'
+        vcpkgDirectory: '$(vcpkgLocation)'
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg'
+      inputs:
+        vcpkgArguments: '@$(vcpkgResponseFile)'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
+    - task: run-cmake@0
+      displayName: 'Run CMake with Ninja'
+      enabled: true
+      inputs:
+        cmakeListsTxtPath: 'CMakeSettings.json'
+        useVcpkgToolchainFile: true
+        configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
+        buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
