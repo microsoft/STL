@@ -9,7 +9,8 @@ README.md.
 - [ ] I understand README.md.
 - [ ] If this is a feature addition, that feature has been voted into the C++
   Working Draft.
-- [ ] Any code files edited have been processed by clang-format.
+- [ ] Any code files edited have been processed by clang-format 8.0.1.
+  (The version is important because clang-format's behavior sometimes changes.)
 - [ ] Identifiers in any product code changes are properly `_Ugly` as per
   https://eel.is/c++draft/lex.name#3.1 .
 - [ ] Identifiers in test code changes are *not* `_Ugly`.
