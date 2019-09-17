@@ -457,7 +457,7 @@ public:
         }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Strbuf, "istreambuf_iterator is not dereferencable");
+        _STL_VERIFY(_Strbuf, "istreambuf_iterator is not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         return _Val;
