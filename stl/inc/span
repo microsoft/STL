@@ -1,0 +1,539 @@
+// span standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _SPAN_
+#define _SPAN_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#include <algorithm>
+#include <iterator>
+#include <tuple>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+// constants
+_CONSTEXPR17 const _STD ptrdiff_t dynamic_extent = -1;
+
+template <class _Ty, _STD ptrdiff_t _Extent = dynamic_extent>
+class span;
+
+// implementation details
+namespace details {
+    template <class _Span, bool _IsConst>
+    class span_iterator {
+        using element_type = typename _Span::element_type;
+
+    public:
+        using iterator_category = _STD random_access_iterator_tag;
+        using value_type        = _STD remove_cv_t<element_type>;
+        using difference_type   = typename _Span::index_type;
+
+        using reference = _STD conditional_t<_IsConst, const element_type, element_type>&;
+        using pointer   = _STD add_pointer_t<reference>;
+
+        friend span_iterator<_Span, true>;
+
+        span_iterator() = default;
+
+        _CONSTEXPR17 span_iterator(const _Span* span, typename _Span::index_type idx) noexcept
+            : _span(span), _index(idx) {}
+
+        template <bool B, _STD enable_if_t<!B && _IsConst>* = nullptr>
+        _CONSTEXPR17 span_iterator(const span_iterator<_Span, B>& other) noexcept
+            : span_iterator(other._span, other._index) {}
+
+        _CONSTEXPR17 reference operator*() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_index != _span->size(), "span iterator index out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            return *(_span->data() + _index);
+        }
+
+        _CONSTEXPR17 pointer operator->() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_index != _span->size(), "span iterator index out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            return _span->data() + _index;
+        }
+
+        _CONSTEXPR17 span_iterator& operator++() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_index >= 0 && _index != _span->size(), "span iterator index out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            ++_index;
+            return *this;
+        }
+
+        _CONSTEXPR17 span_iterator operator++(int) {
+            auto ret = *this;
+            ++(*this);
+            return ret;
+        }
+
+        _CONSTEXPR17 span_iterator& operator--() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_index != 0 && _index <= _span->size(), "span iterator index out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            --_index;
+            return *this;
+        }
+
+        _CONSTEXPR17 span_iterator operator--(int) {
+            auto ret = *this;
+            --(*this);
+            return ret;
+        }
+
+        _CONSTEXPR17 span_iterator operator+(difference_type n) const {
+            auto ret = *this;
+            return ret += n;
+        }
+
+        friend _CONSTEXPR17 span_iterator operator+(difference_type n, span_iterator const& rhs) {
+            return rhs + n;
+        }
+
+        _CONSTEXPR17 span_iterator& operator+=(difference_type n) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY((_index + n) >= 0 && (_index + n) <= _span->size(), "span iterator index out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            _index += n;
+            return *this;
+        }
+
+        _CONSTEXPR17 span_iterator operator-(difference_type n) const {
+            auto ret = *this;
+            return ret -= n;
+        }
+
+        _CONSTEXPR17 span_iterator& operator-=(difference_type n) {
+            return *this += -n;
+        }
+
+        _CONSTEXPR17 difference_type operator-(span_iterator rhs) const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_span == rhs._span, "Mismatch of iterators from different spans");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            return _index - rhs._index;
+        }
+
+        _CONSTEXPR17 reference operator[](difference_type n) const {
+            return *(*this + n);
+        }
+
+        _CONSTEXPR17 friend bool operator==(span_iterator lhs, span_iterator rhs) noexcept {
+            return lhs._span == rhs._span && lhs._index == rhs._index;
+        }
+
+        _CONSTEXPR17 friend bool operator!=(span_iterator lhs, span_iterator rhs) noexcept {
+            return !(lhs == rhs);
+        }
+
+        _CONSTEXPR17 friend bool operator<(span_iterator lhs, span_iterator rhs) noexcept {
+            return lhs._index < rhs._index;
+        }
+
+        _CONSTEXPR17 friend bool operator<=(span_iterator lhs, span_iterator rhs) noexcept {
+            return !(rhs < lhs);
+        }
+
+        _CONSTEXPR17 friend bool operator>(span_iterator lhs, span_iterator rhs) noexcept {
+            return rhs < lhs;
+        }
+
+        _CONSTEXPR17 friend bool operator>=(span_iterator lhs, span_iterator rhs) noexcept {
+            return !(rhs > lhs);
+        }
+
+    protected:
+        const _Span* _span     = nullptr;
+        _STD ptrdiff_t _index = 0;
+    };
+
+    template <_STD ptrdiff_t _Extent>
+    class extent_type {
+    public:
+        using index_type = _STD ptrdiff_t;
+
+        static_assert(_Extent >= 0, "A fixed-size span must be >= 0 in size.");
+
+        _CONSTEXPR17 extent_type() noexcept {}
+
+        template <index_type Other>
+        _CONSTEXPR17 extent_type(extent_type<Other> ext) noexcept {
+            static_assert(Other == _Extent || Other == dynamic_extent,
+                "Mismatch between fixed-size extent and size of initializing data.");
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(ext.size() == _Extent, "Mismatch between extent and size of initializing data");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
+
+        _CONSTEXPR17 extent_type(index_type size) noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(size == _Extent, "Mismatch between extent and size of initializing data");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _CRT_UNUSED(size);
+        }
+
+        _CONSTEXPR17 index_type size() const noexcept {
+            return _Extent;
+        }
+    };
+
+    template <>
+    class extent_type<dynamic_extent> {
+    public:
+        using index_type = _STD ptrdiff_t;
+
+        template <index_type Other>
+        explicit _CONSTEXPR17 extent_type(extent_type<Other> ext) noexcept : _size(ext.size()) {}
+
+        explicit _CONSTEXPR17 extent_type(index_type size) noexcept : _size(size) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(size >= 0, "Mismatch between extent and size of initializing data");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
+
+        _CONSTEXPR17 index_type size() const noexcept {
+            return _size;
+        }
+
+    private:
+        index_type _size;
+    };
+}
+
+// [views.span], class template span
+template <class _Ty, _STD ptrdiff_t _Extent>
+class span {
+public:
+    // constants and types
+    using element_type           = _Ty;
+    using value_type             = remove_cv_t<_Ty>;
+    using index_type             = ptrdiff_t;
+    using difference_type        = ptrdiff_t;
+    using pointer                = element_type*;
+    using reference              = element_type&;
+    using iterator               = details::span_iterator<span<_Ty, _Extent>, false>;
+    using const_iterator         = details::span_iterator<span<_Ty, _Extent>, true>;
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+
+    static constexpr index_type extent = _Extent;
+
+    // [span.cons], span constructors, copy, assignment,and destructor
+    _CONSTEXPR17 span() noexcept : _storage(nullptr, details::extent_type<0>()) {}
+
+    _CONSTEXPR17 span(pointer ptr, index_type count) : _storage(ptr, count) {}
+
+    _CONSTEXPR17 span(pointer firstElem, pointer lastElem) : _storage(firstElem, _STD distance(firstElem, lastElem)) {}
+
+    template <size_t N>
+    _CONSTEXPR17 span(element_type (&arr)[N]) noexcept
+        : _storage(KnownNotNull{_STD addressof(arr[0])}, details::extent_type<N>()) {}
+
+    template <size_t N>
+    _CONSTEXPR17 span(_STD array<value_type, N>& arr) noexcept
+        : _storage(KnownNotNull{arr.data()}, details::extent_type<N>()) {}
+
+    template <size_t N>
+    _CONSTEXPR17 span(const _STD array<value_type, N>& arr) noexcept
+        : _storage(KnownNotNull{arr.data()}, details::extent_type<N>()) {}
+
+    template <class Container>
+    _CONSTEXPR17 span(Container& cont) : span(cont.data(), static_cast<index_type>(cont.size())) {}
+
+    template <class Container>
+    _CONSTEXPR17 span(const Container& cont) : span(cont.data(), static_cast<index_type>(cont.size())) {}
+
+    _CONSTEXPR17 span(const span& other) noexcept = default;
+
+    template <class Other_Ty, ptrdiff_t OtherExtent>
+    _CONSTEXPR17 span(const span<Other_Ty, OtherExtent>& s) noexcept
+        : _storage(s.data(), details::extent_type<OtherExtent>(s.size())) {}
+
+    ~span() noexcept           = default;
+    _CONSTEXPR17 span& operator=(const span& other) noexcept = default;
+
+    // [span.sub], span subviews
+    template <ptrdiff_t Count>
+    _CONSTEXPR17 span<element_type, Count> first() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(Count >= 0 && Count <= size(), "Count out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return {data(), Count};
+    }
+
+    template <ptrdiff_t Count>
+    _CONSTEXPR17 span<element_type, Count> last() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(Count >= 0 && size() - Count >= 0, "Count out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return {data() + (size() - Count), Count};
+    }
+
+    template <ptrdiff_t Offset, ptrdiff_t Count = dynamic_extent>
+    _CONSTEXPR17
+        span<_Ty, Count != dynamic_extent ? Count : (_Extent != dynamic_extent ? _Extent - Offset : _Extent)>
+        subspan() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY((Offset >= 0 && size() - Offset >= 0)
+                        && (Count == dynamic_extent || (Count >= 0 && Offset + Count <= size())),
+            "Count out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return {data() + Offset, Count == dynamic_extent ? size() - Offset : Count};
+    }
+
+    _CONSTEXPR17 span<element_type, dynamic_extent> first(index_type count) const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(count >= 0 && count <= size(), "Count out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return {data(), count};
+    }
+
+    _CONSTEXPR17 span<element_type, dynamic_extent> last(index_type count) const {
+        return make_subspan(size() - count, dynamic_extent, subspan_selector<_Extent>{});
+    }
+
+    _CONSTEXPR17 span<element_type, dynamic_extent> subspan(
+        index_type offset, index_type count = dynamic_extent) const {
+        return make_subspan(offset, count, subspan_selector<_Extent>{});
+    }
+
+    // [span.obs],span observers
+    constexpr index_type size() const noexcept {
+        return _storage.size();
+    }
+    constexpr index_type size_bytes() const noexcept {
+        return size() * static_cast<index_type>(sizeof(element_type));
+    }
+    _NODISCARD constexpr bool empty() const noexcept {
+        return size() == 0;
+    }
+
+    // [span.elem], span element access
+    _CONSTEXPR17 reference operator[](index_type idx) const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(idx >= 0 && idx <= size(), "span index out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return data()[idx];
+    }
+    _CONSTEXPR17 reference front() const {
+        return data()[0];
+    }
+    _CONSTEXPR17 reference back() const {
+        return data()[size() - 1];
+    }
+    _CONSTEXPR17 pointer data() const noexcept {
+        return _storage.data();
+    }
+
+    // [span.iterators], span iterator support
+    _CONSTEXPR17 iterator begin() const noexcept {
+        return {this, 0};
+    }
+    _CONSTEXPR17 iterator end() const noexcept {
+        return {this, size()};
+    }
+    _CONSTEXPR17 const_iterator cbegin() const noexcept {
+        return {this, 0};
+    }
+    _CONSTEXPR17 const_iterator cend() const noexcept {
+        return {this, size()};
+    }
+    _CONSTEXPR17 reverse_iterator rbegin() const noexcept {
+        return reverse_iterator{end()};
+    }
+    _CONSTEXPR17 reverse_iterator rend() const noexcept {
+        return reverse_iterator{begin()};
+    }
+    _CONSTEXPR17 const_reverse_iterator crbegin() const noexcept {
+        return const_reverse_iterator{cend()};
+    }
+    _CONSTEXPR17 const_reverse_iterator crend() const noexcept {
+        return const_reverse_iterator{cbegin()};
+    }
+
+private:
+    // Needed to remove unnecessary null check in subspans
+    struct KnownNotNull {
+        pointer p;
+    };
+
+    // this implementation detail class lets us take advantage of the
+    // empty base class optimization to pay for only storage of a single
+    // pointer in the case of fixed-size spans
+    template <class ExtentType>
+    class storage_type : public ExtentType {
+    public:
+        // KnownNotNull parameter is needed to remove unnecessary null check
+        // in subspans and constructors from arrays
+        template <class OtherExtentType>
+        constexpr storage_type(KnownNotNull data, OtherExtentType ext) : ExtentType(ext), _data(data.p) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(ExtentType::size() >= 0, "Invalid extent size");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
+
+        template <class OtherExtentType>
+        constexpr storage_type(pointer data, OtherExtentType ext) : ExtentType(ext), _data(data) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(ExtentType::size() >= 0, "Invalid extent size");
+            _STL_VERIFY(data || ExtentType::size() == 0, "Invalid extent size for non-empty data");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
+
+        constexpr pointer data() const noexcept {
+            return _data;
+        }
+
+    private:
+        pointer _data;
+    };
+
+    // The rest is needed to remove unnecessary null check
+    // in subspans and constructors from arrays
+    constexpr span(KnownNotNull ptr, index_type count) : _storage(ptr, count) {}
+
+    template <_STD ptrdiff_t CallerExtent>
+    class subspan_selector {};
+
+    template <_STD ptrdiff_t CallerExtent>
+    span<element_type, dynamic_extent> make_subspan(
+        index_type offset, index_type count, subspan_selector<CallerExtent>) const {
+        const span<element_type, dynamic_extent> tmp(*this);
+        return tmp.subspan(offset, count);
+    }
+
+    span<element_type, dynamic_extent> make_subspan(
+        index_type offset, index_type count, subspan_selector<dynamic_extent>) const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(offset >= 0 && size() - offset >= 0, "offset out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        if (count == dynamic_extent) {
+            return {KnownNotNull{data() + offset}, size() - offset};
+        }
+
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(count >= 0 && size() - offset >= count, "count out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return {KnownNotNull{data() + offset}, count};
+    }
+
+    storage_type<details::extent_type<_Extent>> _storage;
+};
+
+template <class T, size_t N>
+span(T (&)[N])->span<T, N>;
+
+template <class T, size_t N>
+span(array<T, N>&)->span<T, N>;
+
+template <class T, size_t N>
+span(const array<T, N>&)->span<const T, N>;
+
+template <class Container>
+span(Container&)->span<typename Container::value_type>;
+
+template <class Container>
+span(const Container&)->span<const typename Container::value_type>;
+
+// [span.comparison], span comparison operators
+template <class T, ptrdiff_t X, class U, ptrdiff_t Y>
+constexpr bool operator==(span<T, X> l, span<U, Y> r) {
+    return _STD equal(l.begin(), l.end(), r.begin());
+}
+
+template <class T, ptrdiff_t X, class U, ptrdiff_t Y>
+constexpr bool operator!=(span<T, X> l, span<U, Y> r) {
+    return !(l == r);
+}
+
+template <class T, ptrdiff_t X, class U, ptrdiff_t Y>
+constexpr bool operator<(span<T, X> l, span<U, Y> r) {
+    return _STD lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
+}
+
+template <class T, ptrdiff_t X, class U, ptrdiff_t Y>
+constexpr bool operator>(span<T, X> l, span<U, Y> r) {
+    return r < l;
+}
+
+template <class T, ptrdiff_t X, class U, ptrdiff_t Y>
+constexpr bool operator<=(span<T, X> l, span<U, Y> r) {
+    return !(r < l);
+}
+
+template <class T, ptrdiff_t X, class U, ptrdiff_t Y>
+constexpr bool operator>=(span<T, X> l, span<U, Y> r) {
+    return !(l < r);
+}
+
+// [span.objectrep], views of object representation
+template <class _Ty, ptrdiff_t _Extent>
+span<const byte, ((_Extent == dynamic_extent) ? dynamic_extent : (static_cast<ptrdiff_t>(sizeof(_Ty)) * _Extent))>
+    as_bytes(span<_Ty, _Extent> s) noexcept {
+    return {reinterpret_cast<const byte*>(s.data()), s.size_bytes()};
+}
+
+template <class _Ty, ptrdiff_t _Extent>
+span<byte, ((_Extent == dynamic_extent) ? dynamic_extent : (static_cast<ptrdiff_t>(sizeof(_Ty)) * _Extent))>
+    as_writable_bytes(span<_Ty, _Extent> s) noexcept {
+    return {reinterpret_cast<byte*>(s.data()), s.size_bytes()};
+}
+
+// 26.7.X Tuple interface
+template <class _Ty>
+struct tuple_size;
+
+template <size_t Index, class _Ty>
+struct tuple_element;
+
+template <class _Ty, ptrdiff_t _Extent>
+struct tuple_size<span<_Ty, _Extent>> : integral_constant<size_t, static_cast<size_t>(_Extent)> {};
+
+template <class _Ty>
+struct tuple_size<span<_Ty, dynamic_extent>>;
+
+template <size_t Index, class _Ty, ptrdiff_t _Extent>
+struct tuple_element<Index, span<_Ty, _Extent>> {
+    using type = _Ty;
+};
+
+template <size_t Index, class _Ty, ptrdiff_t _Extent>
+constexpr _Ty& get(span<_Ty, _Extent> s) noexcept {
+    static_assert(Index < _Extent, "Index out of bounds");
+    return s[Index];
+}
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _SPAN_
