@@ -81,7 +81,7 @@
 // for bopomofo and is intended to be the tone mark for the first tone in
 // Mandarin Chinese.  We have selected the mapping U+02C9 MODIFIER LETTER
 // MACRON (Mandarin Chinese first tone) to reflect this semantic.
-// However, because bopomofo uses the absense of a tone mark to indicate
+// However, because bopomofo uses the absence of a tone mark to indicate
 // the first Mandarin tone, most implementations of Big Five represent
 // this character with a blank space, and so a mapping such as U+2003 EM
 // SPACE might be preferred.

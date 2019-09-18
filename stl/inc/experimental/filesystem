@@ -1530,7 +1530,7 @@ public:
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(*_Mypdir, "directory_iterator is not dereferencable");
+        _STL_VERIFY(*_Mypdir, "directory_iterator is not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Myentry;
@@ -1699,7 +1699,7 @@ public:
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Mylist.front().first != _Myiter(), "recursive_directory_iterator is not dereferencable");
+        _STL_VERIFY(_Mylist.front().first != _Myiter(), "recursive_directory_iterator is not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Myentry;

@@ -266,7 +266,7 @@ namespace Concurrency {
             if (SUCCEEDED(hr)) {
                 // We determine the origin of a task continuation by looking at where .then is called, so we can tell
                 // whether to need to marshal the continuation back to the originating apartment. If an STA thread is in
-                // executing in a neutral aparment when it schedules a continuation, we will not marshal continuations
+                // executing in a neutral apartment when it schedules a continuation, we will not marshal continuations
                 // back to the STA, since variables used within a neutral apartment are expected to be apartment
                 // neutral.
                 switch (_AptType) {

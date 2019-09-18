@@ -1879,7 +1879,7 @@ public:
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
         _STL_VERIFY(this->_Total_off(_Cont) <= static_cast<_Difference_type>(_Cont->_Mysize),
-            "vector<bool> iterator not dereferencable");
+            "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return this->_Myptr;
@@ -1925,7 +1925,7 @@ public:
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
         _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
-            "vector<bool> iterator not dereferencable");
+            "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Reft(*this);
@@ -2109,7 +2109,7 @@ public:
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
         _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
-            "vector<bool> iterator not dereferencable");
+            "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Reft(*this);
