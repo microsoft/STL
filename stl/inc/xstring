@@ -1206,7 +1206,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     _NODISCARD friend constexpr const_iterator begin(const basic_string_view& _Right) noexcept {
-        // non-member overload that accepts rvalues to model the exposition-only forwarding-range concept
+        // non-member overload to model the exposition-only forwarding-range concept
         return _Right.begin();
     }
     _NODISCARD friend constexpr const_iterator end(const basic_string_view& _Right) noexcept {
