@@ -1,0 +1,260 @@
+// coroutine standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// Library Support For Coroutines, https://wg21.link/P0912R5
+
+#pragma once
+#ifndef _COROUTINE_
+#define _COROUTINE_
+#define _EXPERIMENTAL_RESUMABLE_
+
+#include <yvals_core.h>
+
+#if _STL_COMPILER_PREPROCESSOR
+#include <memory>
+#include <new>
+#if _HAS_EXCEPTIONS
+#include <exception>
+#endif // _HAS_EXCEPTIONS
+#endif // _STL_COMPILER_PREPROCESSOR
+
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
+struct _portable_coro_prefix;
+
+_CRTIMP2_IMPORT bool _portable_coro_done(_portable_coro_prefix* handle);
+_CRTIMP2_IMPORT void _portable_coro_resume(_portable_coro_prefix* handle);
+_CRTIMP2_IMPORT void _portable_coro_destroy(_portable_coro_prefix* handle);
+
+_CRTIMP2_IMPORT _portable_coro_prefix* _portable_coro_from_promise(void* promise, ptrdiff_t shift);
+_CRTIMP2_IMPORT void* _portable_coro_get_promise(_portable_coro_prefix* handle, ptrdiff_t shift);
+
+constexpr auto align_req_v = sizeof(void*) * 2;
+template <typename P>
+constexpr auto aligned_size_v = // replaces _ALIGNED_SIZE in <experimental/resumable>
+    std::is_empty_v<P> ? 0 : ((sizeof(P) + align_req_v - 1u) & ~(align_req_v - 1u));
+
+_STD_BEGIN
+
+
+template <typename PromiseType = void>
+class coroutine_handle;
+
+template <>
+class coroutine_handle<void> {
+protected:
+    _portable_coro_prefix* handle;
+
+public:
+    coroutine_handle() noexcept                        = default;
+    ~coroutine_handle() noexcept                       = default;
+    coroutine_handle(coroutine_handle const&) noexcept = default;
+    coroutine_handle(coroutine_handle&& rhs) noexcept  = default;
+    coroutine_handle& operator=(coroutine_handle const&) noexcept = default;
+    coroutine_handle& operator=(coroutine_handle&& rhs) noexcept = default;
+
+    explicit coroutine_handle(std::nullptr_t) noexcept : handle{nullptr} {}
+    coroutine_handle& operator=(nullptr_t) noexcept {
+        handle = nullptr;
+        return *this;
+    }
+
+    explicit operator bool() const noexcept {
+        return handle != nullptr;
+    }
+    void operator()() noexcept(false) {
+        return _portable_coro_resume(handle);
+    }
+
+    bool done() const noexcept {
+        return _portable_coro_done(handle);
+    }
+    void resume() noexcept(false) {
+        return _portable_coro_resume(handle);
+    }
+    void destroy() noexcept {
+        return _portable_coro_destroy(handle);
+    }
+
+public:
+    void* address() const noexcept {
+        return handle;
+    }
+
+    static coroutine_handle from_address(void* addr) noexcept {
+        coroutine_handle coro{};
+        coro.handle = reinterpret_cast<_portable_coro_prefix*>(addr);
+        return coro;
+    }
+};
+
+template <typename PromiseType>
+class coroutine_handle : public coroutine_handle<void> {
+public:
+    using promise_type = PromiseType;
+
+public:
+    using coroutine_handle<void>::coroutine_handle;
+
+    coroutine_handle& operator=(nullptr_t) noexcept {
+        this->handle = nullptr;
+        return *this;
+    }
+    auto promise() const noexcept -> const promise_type& {
+        auto ptr        = _portable_coro_get_promise(handle, aligned_size_v<promise_type>);
+        promise_type* p = reinterpret_cast<promise_type*>(ptr);
+        return *p;
+    }
+    auto promise() noexcept -> promise_type& {
+        auto ptr        = _portable_coro_get_promise(handle, aligned_size_v<promise_type>);
+        promise_type* p = reinterpret_cast<promise_type*>(ptr);
+        return *p;
+    }
+
+public:
+    static coroutine_handle from_address(void* addr) noexcept {
+        coroutine_handle coro{};
+        coro.handle = reinterpret_cast<_portable_coro_prefix*>(addr);
+        return coro;
+    }
+    static coroutine_handle from_promise(promise_type& promise) noexcept {
+        auto handle = _portable_coro_from_promise(&promise, sizeof(promise_type));
+        return coroutine_handle::from_address(handle);
+    }
+};
+static_assert(sizeof(coroutine_handle<void>) == sizeof(void*));
+
+inline bool operator==(const coroutine_handle<void> lhs, const coroutine_handle<void> rhs) noexcept {
+    return lhs.address() == rhs.address();
+}
+inline bool operator!=(const coroutine_handle<void> lhs, const coroutine_handle<void> rhs) noexcept {
+    return !(lhs == rhs);
+}
+inline bool operator<(const coroutine_handle<void> lhs, const coroutine_handle<void> rhs) noexcept {
+    return lhs.address() < rhs.address();
+}
+inline bool operator>(const coroutine_handle<void> lhs, const coroutine_handle<void> rhs) noexcept {
+    return !(lhs < rhs);
+}
+inline bool operator<=(const coroutine_handle<void> lhs, const coroutine_handle<void> rhs) noexcept {
+    return !(lhs > rhs);
+}
+inline bool operator>=(const coroutine_handle<void> lhs, const coroutine_handle<void> rhs) noexcept {
+    return !(lhs < rhs);
+}
+
+struct noop_coroutine_promise {};
+
+template <>
+class coroutine_handle<noop_coroutine_promise> : public coroutine_handle<void> {
+public:
+    coroutine_handle() noexcept : coroutine_handle<void>{} {
+        auto& p      = this->promise();
+        this->handle = reinterpret_cast<_portable_coro_prefix*>(&p);
+    }
+
+public:
+    constexpr explicit operator bool() const noexcept {
+        return true;
+    }
+    constexpr void operator()() const noexcept {
+        return;
+    }
+
+    constexpr bool done() const noexcept {
+        return false;
+    }
+    constexpr void resume() const noexcept {
+        return;
+    }
+    constexpr void destroy() const noexcept {
+        return;
+    }
+
+    noop_coroutine_promise& promise() const noexcept {
+        static noop_coroutine_promise p{};
+        return p;
+    }
+};
+
+using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+_CRTDATA2_IMPORT noop_coroutine_handle noop_coroutine() noexcept;
+
+class suspend_never {
+public:
+    constexpr bool await_ready() const noexcept {
+        return true;
+    }
+    constexpr void await_resume() const noexcept {}
+    void await_suspend(coroutine_handle<void>) const noexcept {}
+};
+
+class suspend_always {
+public:
+    constexpr bool await_ready() const noexcept {
+        return false;
+    }
+    constexpr void await_resume() const noexcept {}
+    void await_suspend(coroutine_handle<void>) const noexcept {}
+};
+
+namespace experimental {
+
+    template <class _Ret, class = void>
+    struct _Coroutine_traits_sfinae {};
+
+    template <class _Ret>
+    struct _Coroutine_traits_sfinae<_Ret, void_t<typename _Ret::promise_type>> {
+        using promise_type = typename _Ret::promise_type;
+    };
+
+    template <typename _Ret, typename... _Ts>
+    struct coroutine_traits : _Coroutine_traits_sfinae<_Ret> {};
+
+    // _Resumable_helper_traits class isolates front-end from public surface
+    // naming changes
+    template <typename _Ret, typename... _Ts>
+    struct _Resumable_helper_traits {
+        using _Traits      = coroutine_traits<_Ret, _Ts...>;
+        using _PromiseT    = typename _Traits::promise_type;
+        using _Handle_type = coroutine_handle<_PromiseT>;
+
+        static _PromiseT* _Promise_from_frame(void* _Addr) noexcept {
+            auto& prom = _Handle_type::from_address(_Addr).promise();
+            return &prom;
+        }
+
+        static _Handle_type _Handle_from_frame(void* _Addr) noexcept {
+            return _Handle_type::from_promise(*_Promise_from_frame(_Addr));
+        }
+
+        static void _Set_exception(void* _Addr) {
+            _Promise_from_frame(_Addr)->set_exception(_STD current_exception());
+        }
+
+        static void _ConstructPromise(void* _Addr, void* _Resume_addr, int _HeapElision) {
+            *reinterpret_cast<void**>(_Addr) = _Resume_addr;
+            *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(_Addr) + sizeof(void*)) =
+                2u + (_HeapElision ? 0u : 0x10000u);
+            auto _Prom = _Promise_from_frame(_Addr);
+            ::new (static_cast<void*>(_Prom)) _PromiseT();
+        }
+
+        static void _DestructPromise(void* _Addr) {
+            _Promise_from_frame(_Addr)->~_PromiseT();
+        }
+    };
+
+} // namespace experimental
+
+template <typename R, typename... _Ts>
+using coroutine_traits = experimental::coroutine_traits<R, _Ts...>;
+
+_STD_END
+
+#endif // _COROUTINE_

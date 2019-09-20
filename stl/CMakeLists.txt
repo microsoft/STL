@@ -262,6 +262,7 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/clog.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cond.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cout.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/coroutine.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cthread.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/filesys.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/fiopen.cpp
