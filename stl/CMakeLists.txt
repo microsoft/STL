@@ -22,6 +22,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/clocale
     ${CMAKE_CURRENT_LIST_DIR}/inc/cmath
     ${CMAKE_CURRENT_LIST_DIR}/inc/codecvt
+    ${CMAKE_CURRENT_LIST_DIR}/inc/coroutine
     ${CMAKE_CURRENT_LIST_DIR}/inc/compare
     ${CMAKE_CURRENT_LIST_DIR}/inc/complex
     ${CMAKE_CURRENT_LIST_DIR}/inc/concepts

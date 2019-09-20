@@ -4,9 +4,8 @@
 // coroutine functions
 
 #include <coroutine>
-
+//#include <experimental/resumable>
 //#include <experimental/generator>
-#include <experimental/resumable>
 
 _STD_BEGIN
 
@@ -34,7 +33,7 @@ static_assert(aligned_size_v<msvc_frame_prefix> == 16);
 extern "C" size_t _coro_resume(void*);
 extern "C" void _coro_destroy(void*);
 // extern "C" size_t _coro_done(void*);
-bool _coro_finished(const msvc_frame_prefix*) noexcept; // replacement of the `_coro_done`
+bool _coro_finished(_portable_coro_prefix*) noexcept; // replacement of the `_coro_done`
 
 extern "C" bool __builtin_coro_done(void*);
 extern "C" void __builtin_coro_resume(void*);
@@ -47,6 +46,7 @@ static constexpr auto is_msvc  = !is_clang;
 static constexpr auto is_gcc   = !is_clang;
 
 struct _portable_coro_prefix final : public clang_frame_prefix {};
+
 
 #elif defined(_MSC_VER)
 static constexpr auto is_msvc  = true;
@@ -119,38 +119,19 @@ void* _portable_coro_get_promise(_portable_coro_prefix* handle, ptrdiff_t psize)
     }
 }
 
-#if defined(__clang__)
-//
-//  Note
-//      VC++ header expects msvc intrinsics. Redirect them to Clang intrinsics.
-//      If the project uses libc++ header files, this code won't be a problem
-//      because they wont't be used
-//  Reference
-//      https://clang.llvm.org/docs/LanguageExtensions.html#c-coroutines-support-builtins
-//      https://llvm.org/docs/Coroutines.html#example
-//
 
-bool _coro_finished(const msvc_frame_prefix* m) noexcept {
+#if defined(__clang__)
+
+bool _coro_finished(_portable_coro_prefix* m) noexcept {
     // expect: coroutine == suspended
     // expect: coroutine != destroyed
-    auto* c = reinterpret_cast<const clang_frame_prefix*>(m);
-    return __builtin_coro_done(const_cast<clang_frame_prefix*>(c));
-}
-
-size_t _coro_resume(void* addr) {
-    auto* c = reinterpret_cast<clang_frame_prefix*>(addr);
-    __builtin_coro_resume(c);
-    return 0;
-}
-
-void _coro_destroy(void* addr) {
-    auto* c = reinterpret_cast<clang_frame_prefix*>(addr);
-    __builtin_coro_destroy(c);
+    auto* c = reinterpret_cast<clang_frame_prefix*>(m);
+    return __builtin_coro_done(c);
 }
 
 #elif defined(_MSC_VER)
 
-bool _coro_finished(const msvc_frame_prefix* prefix) noexcept {
+bool _coro_finished(_portable_coro_prefix* prefix) noexcept {
     // expect: coroutine == suspended
     // expect: coroutine != destroyed
     return prefix->index == 0;
