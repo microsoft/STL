@@ -161,7 +161,11 @@ _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependen
 // FUNCTION _Check_memory_order
 inline void _Check_memory_order(const memory_order _Order) noexcept {
     // check that _Order is a valid memory_order
+#if _HAS_CXX20
+    if (_Order > memory_order_seq_cst) {
+#else
     if (static_cast<unsigned int>(_Order) > memory_order_seq_cst) {
+#endif
         _INVALID_MEMORY_ORDER;
     }
 }
@@ -230,7 +234,11 @@ _NODISCARD inline memory_order _Combine_cas_memory_orders(
 
     _Check_memory_order(_Success);
     _Check_load_memory_order(_Failure);
+#if _HAS_CXX20
+    return _Combined_memory_orders[static_cast<unsigned int>(_Success)][static_cast<unsigned int>(_Failure)];
+#else
     return _Combined_memory_orders[_Success][_Failure];
+#endif
 }
 
 // FUNCTION TEMPLATE _Atomic_reinterpret_as
