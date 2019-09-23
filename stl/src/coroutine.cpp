@@ -4,10 +4,10 @@
 // coroutine functions
 
 #include <coroutine>
-//#include <experimental/resumable>
-//#include <experimental/generator>
 
 _STD_BEGIN
+
+static_assert(sizeof(coroutine_handle<void>) == sizeof(void*));
 
 _CRTIMP2_IMPORT noop_coroutine_handle noop_coroutine() noexcept {
     return {};
@@ -15,126 +15,133 @@ _CRTIMP2_IMPORT noop_coroutine_handle noop_coroutine() noexcept {
 
 _STD_END
 
-using procedure_t = void(__cdecl*)(void*);
+using _Procedure = void(__cdecl*)(void*);
 
-struct clang_frame_prefix {
-    procedure_t factivate;
-    procedure_t fdestroy;
-};
-static_assert(aligned_size_v<clang_frame_prefix> == 16);
+constexpr auto _Align_req_v = sizeof(void*) * 2;
+template <typename P>
+constexpr auto _Aligned_size_v = (sizeof(P) + _Align_req_v - 1u) & ~(_Align_req_v - 1u);
 
-struct msvc_frame_prefix {
-    procedure_t factivate;
-    uint16_t index;
-    uint16_t flag;
+constexpr ptrdiff_t _Make_aligned_size(size_t _TypeSize) {
+    return (_TypeSize + _Align_req_v - 1u) & ~(_Align_req_v - 1u);
+}
+
+struct _Clang_frame_prefix {
+    _Procedure _Factivate;
+    _Procedure _Fdestroy;
 };
-static_assert(aligned_size_v<msvc_frame_prefix> == 16);
+static_assert(_Aligned_size_v<_Clang_frame_prefix> == 16);
+
+struct _Msvc_frame_prefix {
+    _Procedure _Factivate;
+    uint16_t _Index;
+    uint16_t _Flag;
+};
+static_assert(_Aligned_size_v<_Msvc_frame_prefix> == 16);
 
 extern "C" size_t _coro_resume(void*);
 extern "C" void _coro_destroy(void*);
-// extern "C" size_t _coro_done(void*);
-bool _coro_finished(_portable_coro_prefix*) noexcept; // replacement of the `_coro_done`
+extern "C" size_t _coro_done(void*);
+#pragma intrinsic(_coro_resume)
+#pragma intrinsic(_coro_destroy)
+#pragma intrinsic(_coro_done)
 
 extern "C" bool __builtin_coro_done(void*);
 extern "C" void __builtin_coro_resume(void*);
 extern "C" void __builtin_coro_destroy(void*);
 // void* __builtin_coro_promise(void* ptr, int align, bool p);
 
+// replacement of the `_coro_done`
+bool _coro_finished(_Portable_coro_prefix*) noexcept;
+
 #if defined(__clang__)
 static constexpr auto is_clang = true;
 static constexpr auto is_msvc  = !is_clang;
-static constexpr auto is_gcc   = !is_clang;
 
-struct _portable_coro_prefix final : public clang_frame_prefix {};
-
+struct _Portable_coro_prefix final : public _Clang_frame_prefix {};
 
 #elif defined(_MSC_VER)
 static constexpr auto is_msvc  = true;
 static constexpr auto is_clang = !is_msvc;
-static constexpr auto is_gcc   = !is_msvc;
 
-struct _portable_coro_prefix final : public msvc_frame_prefix {};
+struct _Portable_coro_prefix final : public _Msvc_frame_prefix {};
 
 #endif // __clang__ || _MSC_VER
 
 _CRTIMP2_IMPORT
-bool _portable_coro_done(_portable_coro_prefix* handle) {
+bool _Portable_coro_done(_Portable_coro_prefix* _Handle) {
     if constexpr (is_msvc) {
-        return _coro_finished(handle);
+        return _coro_finished(_Handle);
     } else if constexpr (is_clang) {
-        return __builtin_coro_done(handle);
+        return __builtin_coro_done(_Handle);
     } else {
         return false; // follow `noop_coroutine`
     }
 }
 
 _CRTIMP2_IMPORT
-void _portable_coro_resume(_portable_coro_prefix* handle) {
+void _Portable_coro_resume(_Portable_coro_prefix* _Handle) {
     if constexpr (is_msvc) {
-        _coro_resume(handle);
+        _coro_resume(_Handle);
     } else if constexpr (is_clang) {
-        __builtin_coro_resume(handle);
+        __builtin_coro_resume(_Handle);
     }
 }
 
 _CRTIMP2_IMPORT
-void _portable_coro_destroy(_portable_coro_prefix* handle) {
+void _Portable_coro_destroy(_Portable_coro_prefix* _Handle) {
     if constexpr (is_msvc) {
-        _coro_destroy(handle);
+        _coro_destroy(_Handle);
     } else if constexpr (is_clang) {
-        __builtin_coro_destroy(handle);
+        __builtin_coro_destroy(_Handle);
     }
 }
 
+// 'get_promise' from frame prefix
 _CRTIMP2_IMPORT
-_portable_coro_prefix* _portable_coro_from_promise(void* promise, ptrdiff_t psize) {
-    // calculate the frame prefix's location with the promise object
-    if constexpr (is_clang) {
-        auto* handle = reinterpret_cast<std::byte*>(promise) - psize;
-        return reinterpret_cast<_portable_coro_prefix*>(handle);
-    } else if constexpr (is_msvc) {
-        auto* handle = reinterpret_cast<std::byte*>(promise) + psize;
-        return reinterpret_cast<_portable_coro_prefix*>(handle);
-    } else {
-        // !!! dangerous !!!
-        return nullptr;
-    }
-}
+void* _Portable_coro_get_promise(_Portable_coro_prefix* _Handle, ptrdiff_t _PromSize) {
+    // location of the promise object
+    void* _PromAddr = nullptr;
 
-_CRTIMP2_IMPORT
-void* _portable_coro_get_promise(_portable_coro_prefix* handle, ptrdiff_t psize) {
-    // calculate the promise object's location with the frame's prefix
     if constexpr (is_clang) {
-        // for clang, promise is placed just after frame prefix
+        // for Clang, promise is placed just after frame prefix
         // see also: `__builtin_coro_promise`
-        auto* promise = reinterpret_cast<std::byte*>(handle) + psize;
-        return promise;
+        _PromAddr = reinterpret_cast<std::byte*>(_Handle) + _Aligned_size_v<_Clang_frame_prefix>;
     } else if constexpr (is_msvc) {
-        // for msvc, promise is placed before frame prefix
-        auto* promise = reinterpret_cast<std::byte*>(handle) - psize;
-        return promise;
-    } else {
-        // !!! dangerous !!!
-        return nullptr;
+        // for MSVC, promise is placed before frame prefix
+        _PromAddr = reinterpret_cast<std::byte*>(_Handle) - _Make_aligned_size(_PromSize);
     }
+    return _PromAddr;
+}
+
+// 'from_promise' get frame prefix
+_CRTIMP2_IMPORT
+_Portable_coro_prefix* _Portable_coro_from_promise(void* _PromAddr, ptrdiff_t _PromSize) {
+    // location of the frame prefix
+    void* _Handle = nullptr;
+
+    if constexpr (is_clang) {
+        _Handle = reinterpret_cast<std::byte*>(_PromAddr) - _Aligned_size_v<_Clang_frame_prefix>;
+    } else if constexpr (is_msvc) {
+        _Handle = reinterpret_cast<std::byte*>(_PromAddr) + _Make_aligned_size(_PromSize);
+    }
+    return reinterpret_cast<_Portable_coro_prefix*>(_Handle);
 }
 
 
 #if defined(__clang__)
 
-bool _coro_finished(_portable_coro_prefix* m) noexcept {
-    // expect: coroutine == suspended
-    // expect: coroutine != destroyed
-    auto* c = reinterpret_cast<clang_frame_prefix*>(m);
-    return __builtin_coro_done(c);
+bool _coro_finished(_Portable_coro_prefix* _Handle) noexcept {
+    auto* _Ptr = reinterpret_cast<clang_frame_prefix*>(_Handle);
+    return __builtin_coro_done(_Ptr);
 }
 
 #elif defined(_MSC_VER)
 
-bool _coro_finished(_portable_coro_prefix* prefix) noexcept {
+// replacement of the `_coro_done`
+bool _coro_finished(_Portable_coro_prefix* _Handle) noexcept {
     // expect: coroutine == suspended
     // expect: coroutine != destroyed
-    return prefix->index == 0;
+    return _Handle->_Index == 0;
 }
 
 #endif // __clang__ || _MSC_VER
