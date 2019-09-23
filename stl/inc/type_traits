@@ -331,6 +331,28 @@ _INLINE_VAR constexpr bool is_array_v<_Ty[]> = true;
 template <class _Ty>
 struct is_array : bool_constant<is_array_v<_Ty>> {};
 
+#if _HAS_CXX20
+// STRUCT TEMPLATE is_bounded_array
+template <class>
+inline constexpr bool is_bounded_array_v = false;
+
+template <class _Ty, size_t _Nx>
+inline constexpr bool is_bounded_array_v<_Ty[_Nx]> = true;
+
+template <class _Ty>
+struct is_bounded_array : bool_constant<is_bounded_array_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_unbounded_array
+template <class>
+inline constexpr bool is_unbounded_array_v = false;
+
+template <class _Ty>
+inline constexpr bool is_unbounded_array_v<_Ty[]> = true;
+
+template <class _Ty>
+struct is_unbounded_array : bool_constant<is_unbounded_array_v<_Ty>> {};
+#endif // _HAS_CXX20
+
 // STRUCT TEMPLATE is_lvalue_reference
 template <class>
 _INLINE_VAR constexpr bool is_lvalue_reference_v = false; // determine whether type argument is an lvalue reference
