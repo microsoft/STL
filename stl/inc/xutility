@@ -1994,7 +1994,6 @@ _NODISCARD _CONSTEXPR17 auto crend(const _Container& _Cont) -> decltype(_STD ren
     return _STD rend(_Cont);
 }
 
-
 template <class _Container>
 _NODISCARD constexpr auto size(const _Container& _Cont) -> decltype(_Cont.size()) {
     return _Cont.size();
@@ -2004,6 +2003,21 @@ template <class _Ty, size_t _Size>
 _NODISCARD constexpr size_t size(const _Ty (&)[_Size]) noexcept {
     return _Size;
 }
+
+#if _HAS_CXX20
+// FUNCTION TEMPLATE ssize
+template <class _Container>
+_NODISCARD constexpr auto ssize(const _Container& _Cont)
+    -> common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>> {
+    using _Common = common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>>;
+    return static_cast<_Common>(_Cont.size());
+}
+
+template <class _Ty, ptrdiff_t _Size>
+_NODISCARD constexpr ptrdiff_t ssize(const _Ty (&)[_Size]) noexcept {
+    return _Size;
+}
+#endif // _HAS_CXX20
 
 template <class _Container>
 _NODISCARD constexpr auto empty(const _Container& _Cont) -> decltype(_Cont.empty()) {
