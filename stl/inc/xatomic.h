@@ -55,8 +55,8 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// ENUM memory_order
 #if _HAS_CXX20
+// ENUM CLASS memory_order
 enum class memory_order : unsigned int { relaxed, consume, acquire, release, acq_rel, seq_cst };
 inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
 inline constexpr memory_order memory_order_consume = memory_order::consume;
@@ -65,6 +65,7 @@ inline constexpr memory_order memory_order_release = memory_order::release;
 inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
 inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
 #else
+// ENUM memory_order
 enum memory_order {
     memory_order_relaxed,
     memory_order_consume,
