@@ -26,9 +26,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// TRANSITION, Several names herein are declared as _Xxx_xxx2; in all such cases the corresponding
-// _Xxx_xxx name is an ABI zombie name
-
 _EXTERN_C
 // If on Windows XP, returns 1 (disabling parallelism); otherwise, returns the number of hardware threads available.
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept;
@@ -2901,7 +2898,6 @@ struct _Bottom_up_tree_visitor {
     }
 };
 
-// TRANSITION, _Static_partitioned_stable_sort2 is an ABI zombie name
 template <class _BidIt, class _Pr>
 struct _Static_partitioned_stable_sort3 {
     using _Diff = _Iter_diff_t<_BidIt>;

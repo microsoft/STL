@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // FUNCTION TEMPLATE uninitialized_copy_n
-// TRANSITION: _Uninitialized_copy_n_unchecked and _Uninitialized_copy_n_unchecked1 are ABI zombie names
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -142,7 +141,6 @@ _OutTy* uninitialized_move(const _InIt _First, const _InIt _Last, _OutTy (&_Dest
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 // FUNCTION TEMPLATE uninitialized_move_n
-// TRANSITION, _Uninitialized_move_n_unchecked is an ABI zombie name
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -251,7 +249,6 @@ pair<_InTy*, _OutTy*> uninitialized_move_n(_InTy (&_First)[_InSize], const _Diff
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE uninitialized_fill_n
-// TRANSITION: _Uninitialized_fill_n_unchecked is an ABI zombie name
 #if _HAS_IF_CONSTEXPR
 template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
@@ -1480,8 +1477,6 @@ template <class _Dx, class _Ty>
 _Dx* get_deleter(const shared_ptr<_Ty>&) noexcept = delete; // requires static RTTI
 #endif // _HAS_STATIC_RTTI
 
-// _Ref_count_obj is an ABI zombie name
-
 // CLASS TEMPLATE _Ref_count_obj2
 template <class _Ty>
 class _Ref_count_obj2 : public _Ref_count_base { // handle reference counting for object in control block, no allocator
@@ -1548,8 +1543,6 @@ protected:
         return _Myval;
     }
 };
-
-// _Ref_count_obj_alloc is an ABI zombie name
 
 // CLASS TEMPLATE _Ref_count_obj_alloc2
 template <class _Ty, class _Alloc>

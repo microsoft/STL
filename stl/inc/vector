@@ -552,7 +552,6 @@ public:
     }
 
 private:
-    // _Move_from is an ABI zombie name
     void _Move_construct(vector& _Right, true_type) noexcept { // move from _Right, stealing its contents
         _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
     }
@@ -1574,8 +1573,6 @@ public:
     }
 
 private:
-    // _Udefault is an ABI zombie name
-
     pointer _Ufill(pointer _Dest, const size_type _Count, const _Ty& _Val) {
         // fill raw _Dest with _Count copies of _Val, using allocator
         return _Uninitialized_fill_n(_Dest, _Count, _Val, _Getal());
@@ -1632,7 +1629,6 @@ private:
         return _Geometric; // geometric growth is sufficient
     }
 
-    // _Buy is an ABI zombie name
     void _Buy_raw(const size_type _Newcapacity) {
         // allocate array with _Newcapacity elements
         auto& _My_data    = _Mypair._Myval2;

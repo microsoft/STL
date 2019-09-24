@@ -3397,7 +3397,6 @@ _DestTy* copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE copy_n
-// TRANSITION: _Copy_n_unchecked, _Copy_n_unchecked1, _Copy_n_unchecked2, and _Copy_n_unchecked3 are ABI zombie names
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _OutIt>
 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _First + _Count) to [_Dest, ...)
@@ -3849,7 +3848,6 @@ void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* ter
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE fill_n
-// TRANSITION: _Fill_n_unchecked and _Fill_n_unchecked1 are ABI zombie names
 #if _HAS_IF_CONSTEXPR
 template <class _OutIt, class _Diff, class _Ty>
 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {

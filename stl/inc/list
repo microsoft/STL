@@ -576,7 +576,6 @@ public:
 };
 
 // STRUCT TEMPLATE _List_node_emplace_op2
-// _List_node_emplace_op is an ABI zombie name
 template <class _Alnode>
 struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
     using _Alnode_traits = allocator_traits<_Alnode>;

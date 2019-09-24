@@ -999,7 +999,6 @@ public:
         return _Vec.max_size() >> 1;
     }
 
-    // _Hashval is an ABI zombie name
     _NODISCARD size_type bucket(const key_type& _Keyval) const
         noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
         return _Traitsobj(_Keyval) & _Mask;
