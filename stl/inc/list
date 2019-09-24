@@ -1732,19 +1732,19 @@ private:
             }
 
             auto& _Right_data = _Right._Mypair._Myval2;
-            _My_data._Mysize += _Count;
-            _Right_data._Mysize -= _Count;
-
 #if _ITERATOR_DEBUG_LEVEL == 2
             // transfer ownership
             if (_Count == 1) {
                 _My_data._Adopt_unique(_Right_data, _First);
-            } else if (_Count == _Right.size()) {
+            } else if (_Count == _Right_data._Mysize) {
                 _My_data._Adopt_all(_Right_data);
             } else {
                 _My_data._Adopt_range(_Right_data, _First, _Last);
             }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
+
+            _My_data._Mysize += _Count;
+            _Right_data._Mysize -= _Count;
         }
 
         return _Scary_val::_Unchecked_splice(_Where, _First, _Last);
