@@ -1,0 +1,10 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+pool: 'STL'
+
+steps:
+- task: BatchScript@1
+  inputs:
+    filename: 'azure-devops/enforce-clang-format.cmd'
+    failOnStandardError: true
+    displayName: 'Enforce clang-format'

@@ -31,7 +31,9 @@ soon as possible.)
 * Tests: **Coming soon.** We rely on three test suites: devcrt, tr1, and [libcxx][]. We need to replace our current test
 harness, which extensively uses Microsoft-internal machinery.
 
-* Continuous Integration: **Coming soon.** We need tests first.
+* Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
+However, that infrastructure requires manual review before building community-submitted pull requests, as we haven't
+yet hardened it against untrusted changes.
 
 * Contribution Guidelines: **Coming soon.** Working on the STL's code involves following many rules. We have codebase
 conventions, Standard requirements, Microsoft-specific requirements, binary compatibility (ABI) requirements, and more.
