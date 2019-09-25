@@ -13,10 +13,10 @@
 #error <atomic> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
+#include <xatomic.h>
 #include <stddef.h> // for size_t
 #include <stdint.h>
 #include <string.h>
-#include <xatomic.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
