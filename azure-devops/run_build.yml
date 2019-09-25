@@ -2,9 +2,8 @@ parameters:
   targetPlatform: 'x64'
 
 jobs:
-- job: vs2019_hosted_${{ parameters.targetPlatform }}
+- job: ${{ parameters.targetPlatform }}
   pool:
-    #name: Hosted Windows 2019 with VS2019
     name: STL
 
   variables:
