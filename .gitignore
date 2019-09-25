@@ -4,3 +4,4 @@
 .vs/
 .vscode/
 /out/
+/vcpkg/
