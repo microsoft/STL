@@ -16,7 +16,6 @@ jobs:
       inputs:
         filename: 'azure-devops/enforce-clang-format.cmd'
         failOnStandardError: true
-        displayName: 'Enforce clang-format'
       # Install VS 2019 preview on Microsoft Hosted Agents only.
     - task: PowerShell@2
       displayName: 'Install MSVC preview'
