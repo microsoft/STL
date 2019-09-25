@@ -1,7 +1,5 @@
-#
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-#
 pool: 'STL'
 
 steps:
@@ -9,4 +7,4 @@ steps:
   inputs:
     filename: 'azure-devops/enforce-clang-format.cmd'
     failOnStandardError: true
-    displayName: 'Verify clang-format'
+    displayName: 'Enforce clang-format'
