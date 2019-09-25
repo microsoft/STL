@@ -21,6 +21,7 @@
 // _HAS_CXX20 directly controls:
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0318R1 unwrap_reference, unwrap_ref_decay
+// P0325R4 to_array()
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
@@ -912,6 +913,7 @@
 
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_to_array 201907L
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
