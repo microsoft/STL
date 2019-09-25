@@ -7,6 +7,6 @@ pool: 'STL'
 steps:
 - task: BatchScript@1
   inputs:
-    filename: 'ado/enforce-clang-format.cmd'
+    filename: 'azure-devops/enforce-clang-format.cmd'
     failOnStandardError: true
     displayName: 'Verify clang-format'
