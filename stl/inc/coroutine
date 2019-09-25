@@ -1,0 +1,337 @@
+// coroutine standard header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _COROUTINE_
+#define _COROUTINE_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if _HAS_CXX20
+#ifdef __cpp_coroutines
+#include <type_traits>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+// LWG TODO:
+// * The implicit correspondence between `address() != nullptr` and "the coroutine handle refers to a coroutine" needs
+//   to be made explicit.
+// * Should `coroutine_handle<>`'s comparison operators be hidden friends?
+// * `noop_coroutine_handle` makes no sense after a slicing assignment. Maybe it should have a conversion to
+//   `coroutine_handle<>` rather than being publicly derived? (This interacts with the "hidden friend" comparison
+//   operator question.)
+// * [coroutine.trivial.awaitables]/1 needs a cross-reference for *await-expression*.
+//
+// * [coroutine.handle]
+//   * Replace para 1:
+//     An object whose type is a specialization of `coroutine_handle` is called a *coroutine handle* and can be used to
+//     refer to a suspended or executing coroutine. A coroutine handle refers to a coroutine if and only if the return
+//     value of `address()` is non-null.
+//   * Replace para 2:
+//     A program shall not declare an explicit or partial specialization of `coroutine_handle`.
+// * coroutine_handle<Promise>::from_promise:
+//   Expects: `p` references the promise object of a coroutine.
+//   Returns: A coroutine handle `h` that refers to the coroutine whose promise object is referenced by `p`. [Note:
+//            `addressof(h.promise()) == addressof(p)` is consequently `true`.-end note]
+//   Throws: Nothing.
+// * coroutine_handle<>::address:
+//   Returns: A non-null pointer value if and only if `*this` refers to a coroutine.
+// * coroutine_handle<>::from_address and coroutine_handle<Promise>::from_address:
+//   Expects: ...
+//   Returns: A coroutine handle that refers to the same coroutine, if any, as the coroutine handle from which `addr`
+//            was obtained. [Note: For a coroutine handle `h`, `from_address(h.address()) == h` is `true`.]
+// * coroutine_handle<>::done: s/Requires/Expects/
+// * coroutine_handle<>::operator() and coroutine_handle<>::resume:
+//   Expects: `*this` refers to a coroutine suspended at other than its final suspend point.
+//   Effects: Resumes the execution of the coroutine.
+// * coroutine_handle<>::destroy: s/Requires/Expects/
+// * coroutine_handle<Promise>::promise: s/Requires/Expects/
+
+// intrinsics used in the implementation of coroutine_handle
+_EXTERN_C
+size_t _coro_resume(void*); // FIXME: Calling convention?
+#pragma intrinsic(_coro_resume) // FIXME: Is `#pragma intrinsic` necessary?
+
+void _coro_destroy(void*); // FIXME: Calling convention?
+#pragma intrinsic(_coro_destroy) // FIXME: Is `#pragma intrinsic` necessary?
+_END_EXTERN_C
+
+_STD_BEGIN
+
+// STRUCT TEMPLATE coroutine_traits
+template <class _Ret, class = void>
+struct _Coroutine_traits {};
+
+template <class _Ret>
+struct _Coroutine_traits<_Ret, void_t<typename _Ret::promise_type>> {
+    using promise_type = typename _Ret::promise_type;
+};
+
+template <class _Ret, class...>
+struct coroutine_traits : _Coroutine_traits<_Ret> {};
+
+// STRUCT TEMPLATE coroutine_handle
+template <class = void>
+struct coroutine_handle;
+
+struct _Resumable_frame {
+    using _Fn = void __cdecl(void*);
+
+    _Fn* _Resume;
+    unsigned short _Index;
+    unsigned short _Flags;
+};
+
+inline constexpr intptr_t _Noop_sentinel_value = -1;
+
+template <>
+struct coroutine_handle<void> {
+    constexpr coroutine_handle() noexcept = default;
+    constexpr coroutine_handle(nullptr_t) noexcept {}
+
+    coroutine_handle& operator=(nullptr_t) noexcept {
+        _Ptr = nullptr;
+        return *this;
+    }
+
+    _NODISCARD constexpr void* address() const noexcept {
+        return _Ptr;
+    }
+
+    _NODISCARD static constexpr coroutine_handle from_address(void* const _Addr) noexcept { // strengthened
+        coroutine_handle _Result;
+        _Result._Ptr = _Addr;
+        return _Result;
+    }
+
+    constexpr explicit operator bool() const noexcept {
+        return _Ptr != nullptr;
+    }
+
+    _NODISCARD bool done() const noexcept { // strengthened
+        if (reinterpret_cast<intptr_t>(_Ptr) == _Noop_sentinel_value) {
+            return false;
+        }
+
+        // _STL_ASSERT(_Ptr != nullptr);
+        // _STL_ASSERT(_coro_is_suspended(_Ptr));
+        return static_cast<_Resumable_frame*>(_Ptr)->_Index == 0;
+    }
+
+    void operator()() const noexcept { // strengthened
+        if (reinterpret_cast<intptr_t>(_Ptr) == _Noop_sentinel_value) {
+            return;
+        }
+
+        // _STL_ASSERT(_Ptr != nullptr);
+        // _STL_ASSERT(_coro_is_suspended(_Ptr));
+        _coro_resume(_Ptr);
+    }
+
+    void resume() const noexcept { // strengthened
+        if (reinterpret_cast<intptr_t>(_Ptr) == _Noop_sentinel_value) {
+            return;
+        }
+
+        // _STL_ASSERT(_Ptr != nullptr);
+        // _STL_ASSERT(_coro_is_suspended(_Ptr));
+        _coro_resume(_Ptr);
+    }
+
+    void destroy() const noexcept { // strengthened
+        if (reinterpret_cast<intptr_t>(_Ptr) == _Noop_sentinel_value) {
+            return;
+        }
+
+        // _STL_ASSERT(_Ptr != nullptr);
+        // _STL_ASSERT(_coro_is_suspended(_Ptr));
+        _coro_destroy(_Ptr);
+    }
+
+protected:
+    void* _Ptr = nullptr;
+};
+
+inline constexpr size_t _Coro_promise_alignment = 2 * sizeof(void*);
+
+template <class _Promise>
+struct coroutine_handle : coroutine_handle<> {
+    using coroutine_handle<>::coroutine_handle;
+
+    static constexpr size_t _Aligned_size =
+        is_empty_v<_Promise> ? 0 : ((sizeof(_Promise) + _Coro_promise_alignment - 1) & ~(_Coro_promise_alignment - 1));
+
+    _NODISCARD static coroutine_handle from_promise(_Promise& _Prom) noexcept { // strengthened
+        const auto _PromPtr  = const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Prom)));
+        const auto _FramePtr = static_cast<char*>(_PromPtr) + _Aligned_size;
+        coroutine_handle _Result;
+        _Result._Ptr = _FramePtr;
+        return _Result;
+    }
+
+    coroutine_handle& operator=(nullptr_t) noexcept {
+        _Ptr = nullptr;
+        return *this;
+    }
+
+    _NODISCARD static constexpr coroutine_handle from_address(void* const _Addr) noexcept { // strengthened
+        coroutine_handle _Result;
+        _Result._Ptr = _Addr;
+        return _Result;
+    }
+
+    _NODISCARD _Promise& promise() const noexcept { // strengthened
+        // _STL_ASSERT(*this);
+        return *reinterpret_cast<_Promise*>(static_cast<char*>(_Ptr) - _Aligned_size);
+    }
+};
+
+_NODISCARD constexpr bool operator==(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return _Left.address() == _Right.address();
+}
+
+_NODISCARD constexpr bool operator!=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return !(_Left == _Right);
+}
+
+_NODISCARD constexpr bool operator<(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return less{}(_Left.address(), _Right.address());
+}
+
+_NODISCARD constexpr bool operator>(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return _Right < _Left;
+}
+
+_NODISCARD constexpr bool operator<=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return !(_Right < _Left);
+}
+
+_NODISCARD constexpr bool operator>=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return !(_Left < _Right);
+}
+
+template <class _Promise>
+struct hash<coroutine_handle<_Promise>> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef coroutine_handle<_Promise> argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+
+    _NODISCARD size_t operator()(const coroutine_handle<_Promise>& _Coro) noexcept {
+        return _Hash_representation(_Coro.address());
+    }
+};
+
+// STRUCT noop_coroutine_promise
+struct noop_coroutine_promise {};
+
+// STRUCT coroutine_handle<noop_coroutine_promise>
+template <>
+struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
+    friend coroutine_handle noop_coroutine() noexcept;
+
+    constexpr explicit operator bool() const noexcept {
+        return true;
+    }
+    _NODISCARD constexpr bool done() const noexcept {
+        return false;
+    }
+
+    constexpr void operator()() const noexcept {} // nothing to do
+    constexpr void resume() const noexcept {} // nothing to do
+    constexpr void destroy() const noexcept {} // nothing to do
+
+    _NODISCARD noop_coroutine_promise& promise() const noexcept {
+        return *static_cast<noop_coroutine_promise*>(_Ptr); // FIXME: This appears to be bogus! See ctor.
+    }
+
+    using coroutine_handle<>::address;
+
+private:
+    coroutine_handle() noexcept {
+        _Ptr = reinterpret_cast<void*>(_Noop_sentinel_value);
+    }
+};
+
+// ALIAS noop_coroutine_handle
+using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+// FUNCTION noop_coroutine
+_NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
+    return {};
+}
+
+// STRUCT suspend_never
+struct suspend_never {
+    _NODISCARD constexpr bool await_ready() const noexcept {
+        return true;
+    }
+
+    constexpr void await_suspend(coroutine_handle<>) const noexcept {}
+    constexpr void await_resume() const noexcept {}
+};
+
+// STRUCT suspend_always
+struct suspend_always {
+    _NODISCARD constexpr bool await_ready() const noexcept {
+        return false;
+    }
+
+    constexpr void await_suspend(coroutine_handle<>) const noexcept {}
+    constexpr void await_resume() const noexcept {}
+};
+
+template <class _Ret, class... _Ts>
+struct _Resumable_helper_traits { // isolates front-end from public surface naming changes
+    // FIXME: Is this necessary now that we have Standard names?
+    using _Promise = typename coroutine_traits<_Ret, _Ts...>::promise_type;
+    using _Handle  = coroutine_handle<_Promise>;
+
+    _NODISCARD static _Promise* _Promise_from_frame(void* const _Addr) noexcept {
+        return reinterpret_cast<_Promise*>(static_cast<char*>(_Addr) - _Handle::_Aligned_size);
+    }
+
+    _NODISCARD static _Handle _Handle_from_frame(void* const _Addr) noexcept {
+        return _Handle::from_promise(*_Promise_from_frame(_Addr));
+    }
+
+    static void _Set_exception(void* const _Addr) {
+        _Promise_from_frame(_Addr)->unhandled_exception();
+    }
+
+    static void _ConstructPromise(void* const _Addr, void* const _Resume_addr, const int _HeapElision) {
+        const auto _Frame = static_cast<_Resumable_frame*>(_Addr);
+        _Frame->_Resume   = reinterpret_cast<_Resumable_frame::_Fn*>(_Resume_addr);
+        _Frame->_Index    = 2;
+        _Frame->_Flags    = !_HeapElision;
+
+        // TODO:
+        // * Move _Construct_in_place into a (core) header and use it?
+        // * Does this scribble zeroes over memory when _Promise is empty?
+        ::new (const_cast<void*>(static_cast<const volatile void*>(_Promise_from_frame(_Frame)))) _Promise();
+    }
+
+    static void _DestructPromise(void* const _Addr) {
+        _Promise_from_frame(_Addr)->~_Promise();
+    }
+};
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#else // ^^^ __cpp_coroutines defined / __cpp_coroutines not defined vvv
+#pragma message("The contents of <coroutine> require compiler support for coroutines.")
+#endif // __cpp_coroutines
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#pragma message("The contents of <coroutine> are only available with C++20 or later.")
+#endif // _HAS_CXX20
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _COROUTINE_

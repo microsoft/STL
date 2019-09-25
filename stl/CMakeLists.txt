@@ -27,6 +27,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/complex
     ${CMAKE_CURRENT_LIST_DIR}/inc/concepts
     ${CMAKE_CURRENT_LIST_DIR}/inc/condition_variable
+    ${CMAKE_CURRENT_LIST_DIR}/inc/coroutine
     ${CMAKE_CURRENT_LIST_DIR}/inc/csetjmp
     ${CMAKE_CURRENT_LIST_DIR}/inc/csignal
     ${CMAKE_CURRENT_LIST_DIR}/inc/cstdalign

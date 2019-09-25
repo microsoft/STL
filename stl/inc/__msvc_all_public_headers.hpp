@@ -48,6 +48,7 @@
 #include <compare>
 #include <complex>
 #include <concepts>
+#include <coroutine>
 #include <deque>
 #include <exception>
 #include <filesystem>
