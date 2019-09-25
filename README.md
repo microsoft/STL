@@ -3,6 +3,8 @@
 This is the official repository for Microsoft's implementation of the C++ Standard Library (also known as the STL),
 which ships as part of the MSVC toolset and the Visual Studio IDE.
 
+[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=master)][Pipelines]
+
 # What This Repo Is Useful For
 
 If you're a programmer who just wants to use the STL, you **don't** need this repo. Simply install the Visual Studio IDE
@@ -258,6 +260,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [N4830]: https://wg21.link/n4830
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
+[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Wandbox]: https://wandbox.org
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
