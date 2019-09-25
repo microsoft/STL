@@ -4,5 +4,6 @@ steps:
  - script: |
     echo off
     clang-format -style=file -i stl/inc/** stl/src/** 2>&1
-    git diff-index --quiet HEAD -- || echo "error: You have files that are not clang formatted. Please run clang-format 8.0.1."
+    echo If your build fails here, the following files were changed by clang-format.
+    git status --porcelain 1>&2
    displayName: Validate clang-formatted Sources
