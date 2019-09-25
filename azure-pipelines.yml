@@ -1,6 +1,7 @@
 pool: 'STL'
 
 steps:
-  - BatchScript@1
-    filename: ado/enforce_clang_format.cmd
+- task: BatchScript@1
+  inputs:
+    filename: 'ado/enforce_clang_format.cmd'
     failOnStandardError: true
