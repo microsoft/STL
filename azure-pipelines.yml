@@ -1,0 +1,8 @@
+pool: 'STL'
+
+steps:
+ - script: |
+    echo off
+    clang-format -style=file -i stl/*
+    git diff-index --quiet HEAD -- || echo "error: You have files that are not clang formatted. Please run clang-format 8.0.1."
+   displayName: Validate clang-formatted Sources
