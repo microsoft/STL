@@ -13,6 +13,7 @@ jobs:
     - checkout: self
       submodules: recursive
     - task: BatchScript@1
+      displayName: 'Enforce clang-format'
       condition: eq('${{ parameters.targetPlatform }}', 'x86')
       inputs:
         filename: 'azure-devops/enforce-clang-format.cmd'
