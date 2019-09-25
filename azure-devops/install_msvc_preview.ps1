@@ -1,9 +1,11 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 $ErrorActionPreference = "Stop"
 
 Function InstallVS
 {
-    # Microsoft hosted agents do not have the required MSVC 14.23 for building MSVC STL. 
-    # This step installs MSVC 14.23, only on Microsoft hosted agents.
+    # Microsoft hosted agents do not have the required MSVC Preview for building MSVC STL.
+    # This step installs MSVC Preview, only on Microsoft hosted agents.
 
   Param(
     [String]$WorkLoads,
@@ -45,14 +47,11 @@ Function InstallVS
 Move-Item "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/" "C:/Program Files (x86)/Microsoft Visual Studio/2019/nouse/" -Verbose
 
 $WorkLoads =  '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
-              '--add Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre ' + `
-              '--add Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre ' + `
-              '--add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.ARM ' + `
               '--add Microsoft.VisualStudio.Component.Windows10SDK.18362 '
-     
+
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VSBootstrapperURL = 'https://aka.ms/vs/16/pre/vs_buildtools.exe'
