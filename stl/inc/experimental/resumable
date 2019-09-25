@@ -25,6 +25,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
+#error The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> headers currently do not \
+support Clang. You can define _SILENCE_CLANG_COROUTINE_MESSAGE to silence this message and acknowledge that this is \
+unsupported.
+#endif // defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
+
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*);
 extern "C" void _coro_destroy(void*);
