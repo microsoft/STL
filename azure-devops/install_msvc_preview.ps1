@@ -18,7 +18,7 @@ Function InstallVS
     [string]$bootstrapperExe = Join-Path ${env:Temp} ([System.IO.Path]::GetRandomFileName() + ".exe")
     Invoke-WebRequest -Uri $VSBootstrapperURL -OutFile $bootstrapperExe
 
-    $Arguments = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache' )
+    $Arguments = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache')
 
     Write-Host "Starting Install: $Arguments"
     $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru
@@ -30,7 +30,7 @@ Function InstallVS
     }
     else
     {
-      Write-Host -Object "Non zero exit code returned by the installation process : $exitCode."
+      Write-Host -Object "Nonzero exit code returned by the installation process : $exitCode."
     }
   }
   catch
