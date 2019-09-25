@@ -44,13 +44,10 @@ Function InstallVS
 # Invalidate the standard installation of VS on the hosted agent.
 Move-Item "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/" "C:/Program Files (x86)/Microsoft Visual Studio/2019/nouse/" -Verbose
 
-$WorkLoads =  '--add Microsoft.VisualStudio.Component.UWP.VC.ARM64 ' + `
-              '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
+$WorkLoads =  '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
               '--add Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre ' + `
               '--add Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre ' + `
               '--add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ' + `
-              '--add Microsoft.VisualStudio.Component.VC.TestAdapterForBoostTest ' + `
-              '--add Microsoft.VisualStudio.Component.VC.TestAdapterForGoogleTest ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.ARM ' + `
