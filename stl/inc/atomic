@@ -161,7 +161,7 @@ _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependen
 // FUNCTION _Check_memory_order
 inline void _Check_memory_order(const memory_order _Order) noexcept {
     // check that _Order is a valid memory_order
-    if (static_cast<int>(_Order) > static_cast<int>(memory_order_seq_cst)) {
+    if (static_cast<unsigned int>(_Order) > static_cast<unsigned int>(memory_order_seq_cst)) {
         _INVALID_MEMORY_ORDER;
     }
 }
