@@ -8,6 +8,15 @@
                     "commitHash": "59661c3f883dfd39cef6dc8eaf2fcbaae53597e8"
                 }
             }
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/microsoft/STL.git",
+                    "commitHash": "d5c2a9aaaac737216ac6bfa890a26f1a2cd8b4b1"
+                }
+            }
         }
     ],
     "Version": 1
