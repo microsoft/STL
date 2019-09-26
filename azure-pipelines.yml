@@ -12,7 +12,6 @@ jobs:
   parameters:
     targetPlatform: x64
 
-
 - template: azure-devops/run_build.yml
   parameters:
     targetPlatform: arm
