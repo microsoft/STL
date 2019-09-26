@@ -1,21 +1,22 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Build STL targeting x64, arm64, x86, arm.
+# Build STL targeting x86, x64, arm, arm64
 
 jobs:
-- template: azure-devops/run_build.yml
-  parameters:
-    targetPlatform: x64
-
-- template: azure-devops/run_build.yml
-  parameters:
-    targetPlatform: arm64
-
 - template: azure-devops/run_build.yml
   parameters:
     targetPlatform: x86
 
 - template: azure-devops/run_build.yml
   parameters:
+    targetPlatform: x64
+
+
+- template: azure-devops/run_build.yml
+  parameters:
     targetPlatform: arm
+
+- template: azure-devops/run_build.yml
+  parameters:
+    targetPlatform: arm64
