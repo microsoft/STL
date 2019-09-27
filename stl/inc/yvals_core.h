@@ -44,6 +44,7 @@
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0919R3 Heterogeneous Lookup For Unordered Containers
+// P1357R1 is_bounded_array, is_unbounded_array
 // P1754R1 Rename Concepts To standard_case
 // P????R? directory_entry::clear_cache()
 
@@ -890,6 +891,7 @@
 
 // C++20
 #if _HAS_CXX20
+#define __cpp_lib_bounded_array_traits 201902L
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201811L
 #endif // __cpp_char8_t
