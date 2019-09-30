@@ -148,7 +148,7 @@ acquire this dependency.
    and ARM64.
 6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
-7. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URI to this
+7. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URL to this
    repository, typically `https://github.com/Microsoft/STL`
 8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
