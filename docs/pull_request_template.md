@@ -15,9 +15,6 @@ For example: **(N/A: this is a bugfix, not a feature)**
   C++ Working Draft.
 - [ ] Identifiers in product code changes are properly `_Ugly` as per
   https://eel.is/c++draft/lex.name#3.1 .
-- [ ] Identifiers in test code changes are *not* `_Ugly`. **(N/A: no tests)**
-- [ ] Test code includes the correct headers as per the Standard, not just
-  what happens to compile. **(N/A: no tests)**
 - [ ] The STL builds successfully and all tests have passed (must be manually
   verified by an STL maintainer before CI is online, leave this unchecked for
   initial submission).
@@ -27,7 +24,7 @@ For example: **(N/A: this is a bugfix, not a feature)**
 - [ ] These changes were written from scratch using only this repository and
   the C++ Working Draft as a reference (and any other cited standards).
   If they were derived from a project that's already listed in NOTICE.txt,
-  that's fine, but please mention it. If they were derived from any other open
-  source project (including Boost and libc++, which are not yet listed in
+  that's fine, but please mention it. If they were derived from any other
+  project (including Boost and libc++, which are not yet listed in
   NOTICE.txt), you *must* mention it here, so we can determine whether the
   license is compatible and what else needs to be done.
