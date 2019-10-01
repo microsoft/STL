@@ -23,8 +23,8 @@ C:\Users\billy\Desktop>type repro.cpp
 int main() {
     // Replace this program with one demonstrating your actual bug report,
     // along with the following compilation command. Please leave compiler
-    // version banners in the output (don't use /nologo), and include output of
-    // your test program, if any.
+    // version banners in the output (don't use /nologo), and include output
+    // of your test program, if any.
     std::cout << "test failure\n";
 }
 
@@ -44,8 +44,9 @@ test failure
 ```
 
 **Expected behavior**
-A clear and concise description of what you expected to happen. Alternately,
-include `static_assert`s or `assert`s in your test case above whose failure clearly indicates the problem.
+A clear and concise description of what you expected to happen. Alternatively,
+include `static_assert`s or `assert`s in your test case above whose failure
+clearly indicates the problem.
 
 **Additional context**
 Add any other context about the problem here.
