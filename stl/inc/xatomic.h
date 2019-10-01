@@ -57,7 +57,22 @@ _STD_BEGIN
 
 #if _HAS_CXX20
 // ENUM CLASS memory_order
-enum class memory_order : int { relaxed, consume, acquire, release, acq_rel, seq_cst };
+enum class memory_order : int {
+    relaxed,
+    consume,
+    acquire,
+    release,
+    acq_rel,
+    seq_cst,
+
+    // LWG 3268
+    memory_order_relaxed = relaxed,
+    memory_order_consume = consume,
+    memory_order_acquire = acquire,
+    memory_order_release = release,
+    memory_order_acq_rel = acq_rel,
+    memory_order_seq_cst = seq_cst
+};
 inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
 inline constexpr memory_order memory_order_consume = memory_order::consume;
 inline constexpr memory_order memory_order_acquire = memory_order::acquire;
