@@ -134,13 +134,13 @@ mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true 
 It's okay if you report an apparent STL bug that turns out to be a compiler bug, or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
-# How to Build with the Visual Studio IDE
+# How To Build With The Visual Studio IDE
 
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
 1. Install Visual Studio 2019 16.3 or later.
-2. Invoke `git clone https://github.com/Microsoft/vcpkg`
+2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
 5. Assuming you are targeting x86 and x64, invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
@@ -149,30 +149,30 @@ acquire this dependency.
 6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
 7. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URL to this
-   repository, typically `https://github.com/Microsoft/STL`
+   repository, typically `https://github.com/microsoft/STL`
 8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
 
-# How to Build with a Native Tools Command Prompt
+# How To Build With A Native Tools Command Prompt
 
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
 1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.3 or later.
-2. Invoke `git clone https://github.com/Microsoft/vcpkg`
+2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
 5. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
 6. Open an "x64 Native Tools Command Prompt for VS 2019".
 7. Change directories to a location where you'd like a clone of this STL repository.
-8. Invoke `git clone https://github.com/Microsoft/STL`
+8. Invoke `git clone https://github.com/microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -S . -B {wherever you want binaries}` to configure the project. For example,
 `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
 11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
-# How to Consume
+# How To Consume
 
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
 you need to hook up. Assuming you built the x64 target with the Visual Studio IDE, with the STL repository cloned to
@@ -188,7 +188,7 @@ ensures that other components wanting to be a "guest in your process", like prin
 export surface of the STL they were built with. Otherwise, the "`msvcp140.dll`" you deployed in the same directory as
 your .exe would "win" over the versions in System32.
 
-## Complete example using x64 DLL flavor
+## Complete Example Using x64 DLL Flavor
 
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
@@ -237,7 +237,7 @@ When you submit a pull request, a CLA bot will automatically determine whether y
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
 provided by the bot. You will only need to do this once across all repos using our CLA.
 
-# Code of Conduct
+# Code Of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct][]. For more information see the
 [Code of Conduct FAQ][] or contact [opencode@microsoft.com][] with any additional questions or comments.
@@ -270,4 +270,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [libcxx]: https://libcxx.llvm.org
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
-[vcpkg]: https://github.com/Microsoft/vcpkg
+[vcpkg]: https://github.com/microsoft/vcpkg
