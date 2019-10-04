@@ -1482,7 +1482,11 @@ namespace placeholders {
 #if _HAS_CXX20
 // FUNCTION TEMPLATE _Call_front_binder
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
-auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl, _Unbound&&... _Unbargs) {
+constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
+    _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
+    _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))..., _STD forward<_Unbound>(_Unbargs)...)))
+    -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
+        _STD forward<_Unbound>(_Unbargs)...)) {
     return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
         _STD forward<_Unbound>(_Unbargs)...);
 }
@@ -1491,12 +1495,14 @@ auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _
 template <class _Fx, class... _Types>
 class _Front_binder { // wrap bound callable object and arguments
 private:
-    static_assert(is_constructible_v<decay_t<_Fx>, _Fx>, "bind_front requires a constructible decayed callable");
-    static_assert(is_move_constructible_v<decay_t<_Fx>>, "bind_front requires a move constructible decayed callable");
+    static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
+        "std::bind_front() requires the decayed callable to be constructible from an undecayed callable");
+    static_assert(is_move_constructible_v<decay_t<_Fx>>,
+        "std::bind_front() requires the decayed callable to be move constructible");
     static_assert(conjunction_v<is_constructible<decay_t<_Types>, _Types>...>,
-        "bind_front requires constructible decayed bound arguments");
+        "std::bind_front() requires the decayed bound arguments to be constructible from undecayed bound arguments");
     static_assert(conjunction_v<is_move_constructible<decay_t<_Types>>...>,
-        "bind_front requires move constructible decayed bound arguments");
+        "std::bind_front() requires the decayed bound arguments to be move constructible");
 
     using _Seq    = index_sequence_for<_Types...>;
     using _First  = decay_t<_Fx>;
@@ -1505,39 +1511,47 @@ private:
     _Compressed_pair<_First, _Second> _Mypair;
 
 public:
-    explicit _Front_binder(_Fx&& _Func, _Types&&... _Args)
+    constexpr explicit _Front_binder(_Fx&& _Func, _Types&&... _Args)
         : _Mypair(_One_then_variadic_args_t(), _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
     template <class... _Unbound>
-        auto operator()(_Unbound&&... _Unbargs)
-        & noexcept(is_nothrow_invocable_v<decay_t<_Fx>&, decay_t<_Types>&..., _Unbound...>) {
-        return _Call_front_binder(_Seq(), _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+        _NODISCARD constexpr auto operator()(_Unbound&&... _Unbargs)
+        & noexcept(noexcept(_Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2,
+            _STD forward<_Unbound>(_Unbargs)...))) -> decltype(_Call_front_binder(_Seq{}, _Mypair._Get_first(),
+            _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
+        return _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    auto operator()(_Unbound&&... _Unbargs) const& noexcept(
-        is_nothrow_invocable_v<decay_t<_Fx> const&, decay_t<_Types> const&..., _Unbound...>) {
-        return _Call_front_binder(_Seq(), _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    _NODISCARD constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
+        _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
+        -> decltype(
+            _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
+        return _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-        auto operator()(_Unbound&&... _Unbargs)
-        && noexcept(is_nothrow_invocable_v<decay_t<_Fx>, decay_t<_Types>..., _Unbound...>) {
+        _NODISCARD constexpr auto operator()(_Unbound&&... _Unbargs)
+        && noexcept(noexcept(_Call_front_binder(_Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2),
+            _STD forward<_Unbound>(_Unbargs)...))) -> decltype(_Call_front_binder(_Seq{},
+            _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
         return _Call_front_binder(
-            _Seq(), _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    auto operator()(_Unbound&&... _Unbargs) const&& noexcept(
-        is_nothrow_invocable_v<decay_t<_Fx>, decay_t<_Types>..., _Unbound...>) {
+    _NODISCARD constexpr auto operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_Call_front_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
+        -> decltype(_Call_front_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
         return _Call_front_binder(
-            _Seq(), _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
     }
 };
 
 // FUNCTION TEMPLATE bind_front
 template <class _Fx, class... _Types>
-_NODISCARD auto bind_front(_Fx&& _Func, _Types&&... _Args) {
+_NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
     return _Front_binder<_Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
