@@ -20,7 +20,7 @@ jobs:
       condition: eq('${{ parameters.targetPlatform }}', 'x86')
       inputs:
         cmakeListsTxtPath: 'tools/CMakeSettings.json'
-        useVcpkgToolchainFile: false
+        useVcpkgToolchainFile: true
         configurationRegexFilter: 'x64-Release'
         buildDirectory: $(Build.ArtifactStagingDirectory)/tools
     - task: BatchScript@1
