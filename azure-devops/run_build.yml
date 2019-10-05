@@ -21,7 +21,7 @@ jobs:
       inputs:
         cmakeListsTxtPath: 'tools/CMakeSettings.json'
         useVcpkgToolchainFile: true
-        configurationRegexFilter: 'x64-Release'
+        configurationRegexFilter: '.*x64-Release.*'
         buildDirectory: $(Build.ArtifactStagingDirectory)/tools
     - task: BatchScript@1
       displayName: 'Enforce clang-format'
