@@ -42,13 +42,10 @@ jobs:
       enabled: true
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
-        cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
-        cmakeListsTxtPath: '$(Build.SourcesDirectory)/tools/CMakeLists.txt'
+        cmakeListsTxtPath: 'tools/CMakeSettings.json'
+        useVcpkgToolchainFile: true
+        configurationRegexFilter: '.*x64-Release.*'
         buildDirectory: $(Build.ArtifactStagingDirectory)/tools
-        useVcpkgToolchainFile: false
-        cmakeBuildType: 'Release'
-        cmakeGenerator: 'Ninja'
-        cmakeAppendedArgs: '-G Ninja -DCMAKE_BUILD_TYPE=Release -DSTL_PIPELINES=1'
     - task: BatchScript@1
       displayName: 'Enforce clang-format'
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
