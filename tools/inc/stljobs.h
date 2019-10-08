@@ -204,7 +204,7 @@ public:
     tp_io() = default;
 
     explicit tp_io(handle<invalid_handle_value_policy>&& fileHandle_, const PTP_WIN32_IO_CALLBACK callback,
-        void* const pv, const PTP_CALLBACK_ENVIRON pcbe)
+        void* const pv, const PTP_CALLBACK_ENVIRON pcbe = nullptr)
         : io(CreateThreadpoolIo(fileHandle_.get(), callback, pv, pcbe)) {
         if (!io) {
             api_failure("CreateThreadpoolIo");
@@ -275,7 +275,8 @@ struct output_collecting_pipe {
         // be used in asynchronous mode)
         std::random_device rd;
         constexpr size_t pipeNameBufferCount        = 15 + 8 * 8 + 1;
-        wchar_t pipeNameBuffer[pipeNameBufferCount] = L"\\\\.\\pipe\\Local\\";
+        //                                                123456789012345
+        wchar_t pipeNameBuffer[pipeNameBufferCount] = LR"(\\.\pipe\Local\)";
         wchar_t* pipeNameCursor                     = pipeNameBuffer + 15;
         for (int values = 0; values < 8; ++values) {
             unsigned int randomValue = rd();
@@ -364,7 +365,7 @@ private:
         case ERROR_OPERATION_ABORTED:
             break;
         default:
-            api_failure("StartThreadpoolIo callback", ioResult);
+            api_failure("StartThreadpoolIo + ReadFile callback", ioResult); // slams into noexcept
             break;
         }
 
@@ -547,7 +548,7 @@ struct subprocess_executive {
     }
 
     void begin_execution(const wchar_t* const applicationName, wchar_t* const commandLine,
-        const unsigned long creationFlags, const wchar_t* const currentDirectory) {
+        const unsigned long creationFlags = 0, const wchar_t* const currentDirectory = nullptr) {
         thread_proc_attribute_list procAttributeList{2};
 
         // only inherit these pipe handles, not other handles that might be concurrently in use in this program
