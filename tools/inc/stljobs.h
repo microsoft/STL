@@ -1,34 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#pragma once
+
 #include <algorithm>
 #include <assert.h>
 #include <atomic>
+#include <exception>
 #include <iterator>
+#include <limits.h>
 #include <memory>
-#include <stdexcept>
+#include <random>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
 #include <string_view>
-#include <userenv.h>
+#include <utility>
 
 #include <Windows.h>
+#include <userenv.h>
 
 struct api_exception : std::exception {
     const char* api;
     unsigned long lastError;
 
-    explicit api_exception(const char* api_, unsigned long lastError_) noexcept : api(api_), lastError(lastError_){};
+    explicit api_exception(const char* const api_, const unsigned long lastError_) noexcept
+        : api(api_), lastError(lastError_) {}
 
     [[noreturn]] void give_up() const {
         fflush(stdout);
-        fprintf(stderr, "The API %s failed unexpectedly; last error 0x%08lX\n", api, lastError);
+        fprintf(stderr, "The API \"%s\" failed unexpectedly; last error 0x%08lX\n", api, lastError);
         abort();
     }
 
-    const char* what() const noexcept override {
+    [[nodiscard]] const char* what() const noexcept override {
         return "win32 exception";
     }
 };
@@ -42,7 +48,7 @@ struct invalid_handle_value_policy {
 };
 
 struct null_handle_policy {
-    static constexpr HANDLE Empty = 0;
+    static constexpr HANDLE Empty{};
 };
 
 template <class EmptyPolicy>
@@ -96,7 +102,8 @@ public:
         return std::exchange(hImpl, EmptyPolicy::Empty);
     }
 
-    [[nodiscard]] HANDLE* out() noexcept {
+    [[nodiscard]] HANDLE* out() & noexcept {
+        assert(hImpl == EmptyPolicy::Empty);
         return &hImpl;
     }
 
@@ -104,9 +111,9 @@ private:
     HANDLE hImpl{EmptyPolicy::Empty};
 };
 
-inline handle<invalid_handle_value_policy> create_file(const wchar_t* const lpFileName, unsigned long dwDesiredAccess,
-    unsigned long dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, unsigned long dwCreationDisposition,
-    unsigned long dwFlagsAndAttributes, HANDLE hTemplateFile) {
+inline handle<invalid_handle_value_policy> create_file(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
+    HANDLE hTemplateFile) {
     handle<invalid_handle_value_policy> result{CreateFileW(lpFileName, dwDesiredAccess, dwShareMode,
         lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)};
     if (!result) {
@@ -129,9 +136,9 @@ inline handle<invalid_handle_value_policy> create_named_pipe(LPCWSTR lpName, DWO
 }
 
 
-const auto is_space = [](const wchar_t c) { return c == L' '; };
+const auto is_exactly_space = [](const wchar_t c) { return c == L' '; };
 
-[[nodiscard]] inline handle<null_handle_policy> create_kill_on_job_close_job() {
+[[nodiscard]] inline handle<null_handle_policy> create_job_that_will_be_killed_when_closed() {
     handle<null_handle_policy> hJob{CreateJobObjectW(nullptr, nullptr)};
     if (!hJob) {
         api_failure("CreateJobObjectW");
@@ -148,7 +155,7 @@ const auto is_space = [](const wchar_t c) { return c == L' '; };
 }
 
 inline void put_self_in_job() {
-    auto hJob = create_kill_on_job_close_job();
+    auto hJob = create_job_that_will_be_killed_when_closed();
 
     // Put ourselves in that job
     if (!AssignProcessToJobObject(hJob.get(), GetCurrentProcess())) {
@@ -167,7 +174,7 @@ public:
         inheritSa.lpSecurityDescriptor = nullptr;
         inheritSa.bInheritHandle       = TRUE;
         HANDLE read;
-        if (!CreatePipe(&read, hDevNull.out(), &inheritSa, 0)) {
+        if (!CreatePipe(&read, devNull.out(), &inheritSa, 0)) {
             api_failure("CreatePipe");
         }
 
@@ -177,25 +184,25 @@ public:
     no_input_pipe(const no_input_pipe&) = delete;
     no_input_pipe& operator=(const no_input_pipe&) = delete;
 
-    HANDLE get() const noexcept {
-        return hDevNull.get();
+    [[nodiscard]] HANDLE get() const noexcept {
+        return devNull.get();
     }
 
-    static const no_input_pipe& instance() {
+    [[nodiscard]] static const no_input_pipe& instance() {
         static no_input_pipe instance_;
         return instance_;
     }
 
 private:
-    handle<null_handle_policy> hDevNull;
+    handle<null_handle_policy> devNull;
 };
 
 class tp_io {
 public:
     tp_io() = default;
 
-    explicit tp_io(handle<invalid_handle_value_policy>&& fileHandle_, PTP_WIN32_IO_CALLBACK callback, void* const pv,
-        const PTP_CALLBACK_ENVIRON pcbe)
+    explicit tp_io(handle<invalid_handle_value_policy>&& fileHandle_, const PTP_WIN32_IO_CALLBACK callback,
+        void* const pv, const PTP_CALLBACK_ENVIRON pcbe)
         : io(CreateThreadpoolIo(fileHandle_.get(), callback, pv, pcbe)) {
         if (!io) {
             api_failure("CreateThreadpoolIo");
@@ -205,6 +212,10 @@ public:
     }
 
     tp_io(tp_io&& other) noexcept : fileHandle(std::move(other.fileHandle)), io(std::exchange(other.io, nullptr)) {}
+
+    ~tp_io() {
+        close();
+    }
 
     tp_io& operator=(tp_io&& other) noexcept {
         tp_io moved{std::move(other)};
@@ -230,7 +241,7 @@ public:
         CancelThreadpoolIo(io);
     }
 
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return io != nullptr;
     }
 
@@ -238,10 +249,11 @@ public:
         assert(io != nullptr);
         WaitForThreadpoolIoCallbacks(io, TRUE);
         CloseThreadpoolIo(io);
+        io = nullptr;
         return std::move(fileHandle);
     }
 
-    void wait(bool cancelPending) noexcept {
+    void wait(const bool cancelPending) noexcept {
         WaitForThreadpoolIoCallbacks(io, cancelPending);
     }
 
@@ -257,14 +269,15 @@ struct output_collecting_pipe {
     output_collecting_pipe() {
         // generate a random name for the pipe (we must use a named pipe because anonymous pipes from CreatePipe can't
         // be used in asynchronous mode)
+        std::random_device rd;
         constexpr size_t pipeNameBufferCount        = 15 + 8 * 8 + 1;
         wchar_t pipeNameBuffer[pipeNameBufferCount] = L"\\\\.\\pipe\\Local\\";
         wchar_t* pipeNameCursor                     = pipeNameBuffer + 15;
         for (int values = 0; values < 8; ++values) {
-            unsigned int randomValue;
-            rand_s(&randomValue);
+            unsigned int randomValue = rd();
             for (int hexits = 0; hexits < 8; ++hexits) {
                 *pipeNameCursor++ = L"0123456789ABCDEF"[randomValue & 0xFu];
+                randomValue >>= 4;
             }
         }
 
@@ -285,18 +298,18 @@ struct output_collecting_pipe {
         inheritSa.lpSecurityDescriptor = nullptr;
         inheritSa.bInheritHandle       = TRUE;
         writeHandle = create_file(pipeNameBuffer, GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, &inheritSa, OPEN_EXISTING,
-            FILE_FLAG_OVERLAPPED, NULL);
+            FILE_FLAG_OVERLAPPED, HANDLE{});
 
         readIo = tp_io{std::move(readHandle), callback, this, nullptr};
 
         start();
     }
 
-    ~output_collecting_pipe() {
+    ~output_collecting_pipe() noexcept {
         if (readIo) {
             if (running.load()) {
                 if (!CancelIoEx(readIo.get_file(), &overlapped)) {
-                    api_failure("CancelIoEx");
+                    api_failure("CancelIoEx"); // slams into noexcept
                 }
             }
 
@@ -308,9 +321,8 @@ struct output_collecting_pipe {
     output_collecting_pipe& operator=(const output_collecting_pipe&) = delete;
 
     void start() {
-        const auto oldRunning = running.exchange(true);
+        [[maybe_unused]] const auto oldRunning = running.exchange(true);
         assert(!oldRunning);
-        (void) oldRunning;
         read_some();
     }
 
@@ -324,28 +336,16 @@ struct output_collecting_pipe {
         }
     }
 
-    [[nodiscard]] std::string extract() {
-        stop();
-        std::string result(targetBuffer.data(), validTill);
-        start();
-        return result;
-    }
-
     [[nodiscard]] std::string extract_and_reset() {
         stop();
         auto first = targetBuffer.data();
         auto last  = first + validTill;
-        first      = std::find_if_not(first, last, is_space);
-        last       = std::find_if_not(std::reverse_iterator(last), std::reverse_iterator(first), is_space).base();
+        first      = std::find_if_not(first, last, is_exactly_space);
+        last = std::find_if_not(std::reverse_iterator(last), std::reverse_iterator(first), is_exactly_space).base();
         std::string result(first, static_cast<size_t>(last - first));
         validTill = 0;
         start();
         return result;
-    }
-
-    [[nodiscard]] const std::string& get_buffer() const noexcept {
-        assert(!running.load());
-        return targetBuffer;
     }
 
     [[nodiscard]] HANDLE get_write_pipe() noexcept {
@@ -353,8 +353,8 @@ struct output_collecting_pipe {
     }
 
 private:
-    static void __stdcall callback(
-        PTP_CALLBACK_INSTANCE, void* thisRaw, void*, ULONG ioResult, ULONG_PTR bytes, PTP_IO) noexcept {
+    static void __stdcall callback(PTP_CALLBACK_INSTANCE, void* const thisRaw, void*, const ULONG ioResult,
+        const ULONG_PTR bytes, PTP_IO) noexcept {
         switch (ioResult) {
         case ERROR_SUCCESS:
         case ERROR_OPERATION_ABORTED:
@@ -366,13 +366,13 @@ private:
 
         const auto this_ = static_cast<output_collecting_pipe*>(thisRaw);
         this_->validTill += bytes;
-        if (this_->running) {
+        if (this_->running.load()) {
             this_->read_some();
         }
     }
 
-    void resize_create_target_buffer() {
-        if (bufferSize < targetBuffer.size() - validTill) {
+    void ensure_target_buffer_space() {
+        if (bufferSize <= targetBuffer.size() - validTill) {
             // already has enough space
             return;
         }
@@ -385,9 +385,13 @@ private:
         assert(running.load());
         DWORD bytesRead = 0;
         readIo.start_threadpool_io();
-        while (resize_create_target_buffer(),
-            ReadFile(readIo.get_file(), targetBuffer.data() + validTill,
-                static_cast<unsigned long>(targetBuffer.size() - validTill), &bytesRead, &overlapped)) {
+        for (;;) {
+            ensure_target_buffer_space();
+            if (!ReadFile(readIo.get_file(), targetBuffer.data() + validTill,
+                    static_cast<unsigned long>(targetBuffer.size() - validTill), &bytesRead, &overlapped)) {
+                break;
+            }
+
             validTill += bytesRead;
         }
 
@@ -402,7 +406,7 @@ private:
 
     std::atomic<bool> running{};
     std::string targetBuffer; // if running, owned by a threadpool thread, otherwise owned by the calling thread
-    std::size_t validTill{};
+    size_t validTill{};
     handle<invalid_handle_value_policy> writeHandle;
     tp_io readIo;
     OVERLAPPED overlapped{};
@@ -447,7 +451,7 @@ private:
     struct default_block {
         void* blockRaw;
         default_block() {
-            if (!CreateEnvironmentBlock(&blockRaw, NULL, FALSE)) {
+            if (!CreateEnvironmentBlock(&blockRaw, HANDLE{}, FALSE)) {
                 api_failure("CreateEnvironmentBlock");
             }
         }
@@ -470,7 +474,7 @@ struct create_process_result {
     unsigned long dwThreadId;
 };
 
-create_process_result create_process(LPCWSTR lpApplicationName, LPWSTR lpCommandLine,
+inline create_process_result create_process(LPCWSTR lpApplicationName, LPWSTR lpCommandLine,
     LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles,
     DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo) {
     PROCESS_INFORMATION procInfo;
@@ -489,15 +493,16 @@ public:
     thread_proc_attribute_list(thread_proc_attribute_list&&) = default;
     thread_proc_attribute_list& operator=(thread_proc_attribute_list&&) = default;
 
-    explicit thread_proc_attribute_list(unsigned long attributeCount) {
+    explicit thread_proc_attribute_list(const unsigned long attributeCount) {
         size_t size;
         if (InitializeProcThreadAttributeList(nullptr, attributeCount, 0, &size)) {
-            throw std::logic_error("First call to InitializeProcThreadAttributeList should not succeed.");
-        } else {
-            const auto lastError = GetLastError();
-            if (lastError != ERROR_INSUFFICIENT_BUFFER) {
-                api_failure("InitializeProcThreadAttributeList", ERROR_INSUFFICIENT_BUFFER);
-            }
+            fputs("First call to InitializeProcThreadAttributeList should not succeed.", stderr);
+            abort();
+        }
+
+        const auto lastError = GetLastError();
+        if (lastError != ERROR_INSUFFICIENT_BUFFER) {
+            api_failure("InitializeProcThreadAttributeList", lastError);
         }
 
         buffer = std::make_unique<unsigned char[]>(size);
@@ -518,7 +523,7 @@ public:
         }
     }
 
-    operator LPPROC_THREAD_ATTRIBUTE_LIST() const {
+    [[nodiscard]] LPPROC_THREAD_ATTRIBUTE_LIST get() const {
         return reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(buffer.get());
     }
 
@@ -531,12 +536,12 @@ struct subprocess_executive {
     explicit subprocess_executive(const environment_block& environment_) : environment(environment_) {}
     explicit subprocess_executive(environment_block&& environment_) : environment(std::move(environment_)) {}
 
-    HANDLE get_wait_handle() const noexcept {
+    [[nodiscard]] HANDLE get_wait_handle() const noexcept {
         return runningProcess.get();
     }
 
-    void begin_execution(const wchar_t* const applicationName, wchar_t* const commandLine, unsigned long creationFlags,
-        const wchar_t* currentDirectory) {
+    void begin_execution(const wchar_t* const applicationName, wchar_t* const commandLine,
+        const unsigned long creationFlags, const wchar_t* const currentDirectory) {
         thread_proc_attribute_list procAttributeList{2};
 
         // only inherit these pipe handles, not other handles that might be concurrently in use in this program
@@ -568,9 +573,9 @@ struct subprocess_executive {
         startupInfo.StartupInfo.hStdOutput  = inheritTheseHandles[1];
         startupInfo.StartupInfo.hStdError   = inheritTheseHandles[1];
         startupInfo.StartupInfo.wShowWindow = SW_HIDE;
-        startupInfo.lpAttributeList         = procAttributeList;
+        startupInfo.lpAttributeList         = procAttributeList.get();
 
-        runningJob = create_kill_on_job_close_job();
+        runningJob = create_job_that_will_be_killed_when_closed();
 
         auto procInfo = create_process(applicationName, commandLine, nullptr, nullptr, TRUE,
             creationFlags | CREATE_UNICODE_ENVIRONMENT | CREATE_SUSPENDED, environment.get(), currentDirectory,

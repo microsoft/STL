@@ -3,25 +3,27 @@
 
 #include "stljobs.h"
 #include <algorithm>
+#include <assert.h>
+#include <atomic>
 #include <condition_variable>
 #include <filesystem>
 #include <limits.h>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include <Windows.h>
 
 class tp_wait {
 public:
-    tp_wait(PTP_WAIT_CALLBACK pfnwa, PVOID pv, PTP_CALLBACK_ENVIRON pcbe)
+    explicit tp_wait(PTP_WAIT_CALLBACK pfnwa, PVOID pv, PTP_CALLBACK_ENVIRON pcbe)
         : wait(CreateThreadpoolWait(pfnwa, pv, pcbe)) {
         if (!wait) {
             api_failure("CreateThreadpoolWait");
@@ -47,7 +49,7 @@ private:
 class parallelizer {
 public:
     parallelizer() : subprocesses(std::make_unique<entry[]>(availableConcurrency)) {
-        for (std::size_t idx = 0; idx < availableConcurrency; ++idx) {
+        for (size_t idx = 0; idx < availableConcurrency; ++idx) {
             subprocesses[idx].parent = this;
         }
     }
@@ -56,13 +58,13 @@ public:
         std::lock_guard lck(mtx);
         const auto oldCommandsSize = commands.size();
         commands.emplace_back(std::move(toRun), std::nullopt);
-        auto localConcurrency = runningConcurrency.load(std::memory_order_relaxed);
+        const auto localConcurrency = runningConcurrency.load(std::memory_order_relaxed);
         if (availableConcurrency == localConcurrency) {
             return;
         }
 
         runningConcurrency.store(localConcurrency + 1, std::memory_order_relaxed);
-        std::size_t scheduledOn = 0;
+        size_t scheduledOn = 0;
         while (subprocesses[scheduledOn].commandRunning != SIZE_MAX) {
             ++scheduledOn;
         }
@@ -77,7 +79,8 @@ public:
         cv.wait(lck, [this] { return runningConcurrency.load(std::memory_order_relaxed) == 0; });
     }
 
-    const std::vector<std::pair<std::wstring, std::optional<execution_result>>>& results() const {
+    [[nodiscard]] const std::vector<std::pair<std::wstring, std::optional<execution_result>>>& results() const
+        noexcept {
         assert(runningConcurrency.load(std::memory_order_relaxed) == 0);
         return commands;
     }
@@ -87,21 +90,20 @@ private:
     std::mutex mtx{};
     std::condition_variable cv{};
     std::vector<std::pair<std::wstring, std::optional<execution_result>>> commands{};
-    std::size_t nextCommandToRun{0};
-    std::size_t availableConcurrency{std::thread::hardware_concurrency()};
-    std::atomic<std::size_t> runningConcurrency{0};
+    size_t nextCommandToRun{0};
+    size_t availableConcurrency{std::thread::hardware_concurrency()};
+    std::atomic<size_t> runningConcurrency{0};
     std::unique_ptr<entry[]> subprocesses;
 
     struct entry {
         parallelizer* parent;
-        std::size_t commandRunning{SIZE_MAX}; // guarded by parent->mtx
+        size_t commandRunning{SIZE_MAX}; // guarded by parent->mtx
         subprocess_executive executive;
         tp_wait tpWait{callback, this, nullptr};
 
         static void __stdcall callback(
-            PTP_CALLBACK_INSTANCE, void* thisRaw, PTP_WAIT, TP_WAIT_RESULT waitDisposition) noexcept {
+            PTP_CALLBACK_INSTANCE, void* thisRaw, PTP_WAIT, [[maybe_unused]] TP_WAIT_RESULT waitDisposition) noexcept {
             assert(waitDisposition == WAIT_OBJECT_0);
-            (void) waitDisposition;
             const auto this_  = static_cast<entry*>(thisRaw);
             const auto parent = this_->parent;
             auto results      = this_->executive.complete();
@@ -119,7 +121,7 @@ private:
             parent->update_display();
         }
 
-        void schedule(std::size_t command) {
+        void schedule(size_t command) {
             commandRunning = command;
             executive.begin_execution(nullptr, parent->commands[command].first.data(), 0, nullptr);
             tpWait.wait_for(executive.get_wait_handle());
@@ -131,13 +133,13 @@ private:
         const auto next         = nextCommandToRun;
         const auto running      = runningConcurrency.load(std::memory_order_relaxed);
         assert(running <= next);
-        printf("%zu scheduled %zu completed %zu running\n", commandsSize, next - running, running);
+        printf("%zu scheduled; %zu completed; %zu running\n", commandsSize, next - running, running);
     }
 };
 
-inline void schedule_command(parallelizer& p, const std::wstring_view commandPrefix, const std::wstring& native) {
+void schedule_command(parallelizer& p, const std::wstring_view commandPrefix, const std::wstring& native) {
     std::wstring toExecute;
-    toExecute.reserve(commandPrefix.size() + native.size() + 1);
+    toExecute.reserve(commandPrefix.size() + 1 + native.size());
     toExecute.assign(commandPrefix);
     toExecute.push_back(L' ');
     toExecute.append(native);
@@ -147,7 +149,10 @@ inline void schedule_command(parallelizer& p, const std::wstring_view commandPre
 extern "C" int wmain(int argc, wchar_t* argv[]) {
     try {
         if (argc < 3) {
-            puts("Usage: parallelize.exe commandPrefix pathRoots");
+            puts("Usage: parallelize.exe commandPrefix pathRoot0 [... pathRootN]\n"
+                 "The command:\n"
+                 "commandPrefix file\n"
+                 "will be launched in parallel for every regular file under any of pathRoots, recursively.");
             return 1;
         }
 
@@ -171,29 +176,40 @@ extern "C" int wmain(int argc, wchar_t* argv[]) {
         }
 
         p.wait_all();
-        auto& ran          = p.results();
-        const auto success = [](const std::pair<std::wstring, std::optional<execution_result>>& command) noexcept {
+        bool exitSuccess    = true;
+        size_t vacuousCount = 0;
+        for (auto& command : p.results()) {
             auto& result = command.second.value();
-            return result.exitCode == 0 && result.output.empty();
-        };
-
-        const std::size_t successes = std::count_if(ran.begin(), ran.end(), success);
-        printf("%zu commands ran successfully.\n", successes);
-        if (successes == ran.size()) {
-            return 0;
-        }
-
-        for (auto& command : ran) {
-            if (success(command)) {
-                continue;
+            if (result.exitCode == 0) {
+                if (result.output.empty()) {
+                    ++vacuousCount;
+                } else {
+                    printf("%ls produced output:\n%s\n", command.first.c_str(), result.output.c_str());
+                }
+            } else {
+                exitSuccess = false;
+                if (result.output.empty()) {
+                    printf("%ls exited with 0x%08lX and no output.\n", command.first.c_str(), result.exitCode);
+                } else {
+                    printf("%ls exited with 0x%08lX and output:\n%s\n", command.first.c_str(), result.exitCode,
+                        result.output.c_str());
+                }
             }
-
-            auto& result = command.second.value();
-            printf("%ls exited with 0x%08lX and output:\n%s\n", command.first.c_str(), result.exitCode,
-                result.output.c_str());
         }
 
-        return 1;
+        const auto totalCommands = p.results().size();
+        printf("%zu commands ran, returned 0, and produced no output", vacuousCount);
+        if (vacuousCount == totalCommands) {
+            puts(".");
+        } else {
+            printf(" (out of %zu).", totalCommands);
+        }
+
+        if (exitSuccess) {
+            return 0;
+        } else {
+            return 1;
+        }
     } catch (std::filesystem::filesystem_error& err) {
         fputs(err.what(), stderr);
         abort();

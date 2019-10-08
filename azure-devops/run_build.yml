@@ -15,7 +15,7 @@ jobs:
     - checkout: self
       submodules: recursive
     - task: PowerShell@2
-      displayName: 'Install MSVC preview'
+      displayName: 'Install MSVC Preview'
       # on "Hosted" agents only:
       condition: or(contains(variables['Agent.Name'], 'Azure Pipelines'), contains(variables['Agent.Name'], 'Hosted Agent'))
       inputs:
@@ -27,7 +27,7 @@ jobs:
         key: $(vcpkgResponseFile) | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD
         path: '$(vcpkgLocation)'
     - task: run-vcpkg@0
-      displayName: 'Run vcpkg to install boost-build'
+      displayName: 'Run vcpkg to Install boost-build'
       inputs:
         vcpkgArguments: 'boost-build:x86-windows'
         vcpkgDirectory: '$(vcpkgLocation)'
@@ -38,14 +38,17 @@ jobs:
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
     - task: run-cmake@0
-      displayName: 'Build STL Support Tools'
+      displayName: 'Build Support Tools'
       enabled: true
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
-        cmakeListsTxtPath: 'tools/CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*x64-Release.*'
+        cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
+        cmakeListsTxtPath: '$(Build.SourcesDirectory)/tools/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/tools
+        useVcpkgToolchainFile: false
+        cmakeBuildType: 'Release'
+        cmakeGenerator: 'Ninja'
+        cmakeAppendedArgs: '-G Ninja -DCMAKE_BUILD_TYPE=Release -DSTL_PIPELINES=1'
     - task: BatchScript@1
       displayName: 'Enforce clang-format'
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
