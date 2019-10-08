@@ -8,6 +8,7 @@
 
 #include <Windows.h>
 
+// Gets the command line with the path to jobify.exe removed from the beginning.
 [[nodiscard]] wchar_t* get_subcommand() {
     auto first      = GetCommandLineW();
     const auto last = first + wcslen(first);
