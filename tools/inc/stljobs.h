@@ -43,6 +43,12 @@ struct api_exception : std::exception {
     throw api_exception{api, lastError};
 }
 
+void close_handle(const HANDLE toClose) noexcept {
+    if (!CloseHandle(toClose)) {
+        assert(false);
+    }
+}
+
 struct invalid_handle_value_policy {
     static constexpr HANDLE Empty = INVALID_HANDLE_VALUE;
 };
@@ -66,15 +72,9 @@ public:
         return *this;
     }
 
-    handle& operator=(const HANDLE hNew) & noexcept {
-        handle moved{hNew};
-        swap(moved, *this);
-        return *this;
-    }
-
     ~handle() noexcept {
         if (hImpl != EmptyPolicy::Empty) {
-            CloseHandle(hImpl);
+            close_handle(hImpl);
         }
     }
 
@@ -85,7 +85,7 @@ public:
 
     void close() noexcept {
         if (hImpl != EmptyPolicy::Empty) {
-            CloseHandle(hImpl);
+            close_handle(hImpl);
             hImpl = EmptyPolicy::Empty;
         }
     }
@@ -98,13 +98,13 @@ public:
         return hImpl;
     }
 
-    [[nodiscard]] HANDLE detach() noexcept {
-        return std::exchange(hImpl, EmptyPolicy::Empty);
+    void attach(const HANDLE newHandle) & noexcept {
+        handle moved{newHandle};
+        swap(moved, *this);
     }
 
-    [[nodiscard]] HANDLE* out() & noexcept {
-        assert(hImpl == EmptyPolicy::Empty);
-        return &hImpl;
+    [[nodiscard]] HANDLE detach() noexcept {
+        return std::exchange(hImpl, EmptyPolicy::Empty);
     }
 
 private:
@@ -174,11 +174,13 @@ public:
         inheritSa.lpSecurityDescriptor = nullptr;
         inheritSa.bInheritHandle       = TRUE;
         HANDLE read;
-        if (!CreatePipe(&read, devNull.out(), &inheritSa, 0)) {
+        HANDLE write;
+        if (!CreatePipe(&read, &write, &inheritSa, 0)) {
             api_failure("CreatePipe");
         }
 
-        CloseHandle(read);
+        devNull.attach(write);
+        close_handle(read);
     }
 
     no_input_pipe(const no_input_pipe&) = delete;
@@ -214,19 +216,21 @@ public:
     tp_io(tp_io&& other) noexcept : fileHandle(std::move(other.fileHandle)), io(std::exchange(other.io, nullptr)) {}
 
     ~tp_io() {
-        close();
-    }
-
-    tp_io& operator=(tp_io&& other) noexcept {
-        tp_io moved{std::move(other)};
-        swap(moved, *this);
-        return *this;
+        if (io != nullptr) {
+            close();
+        }
     }
 
     friend void swap(tp_io& lhs, tp_io& rhs) noexcept {
         using std::swap;
         swap(lhs.fileHandle, rhs.fileHandle);
         swap(lhs.io, rhs.io);
+    }
+
+    tp_io& operator=(tp_io&& other) noexcept {
+        tp_io moved{std::move(other)};
+        swap(moved, *this);
+        return *this;
     }
 
     [[nodiscard]] HANDLE get_file() const noexcept {
@@ -457,7 +461,9 @@ private:
         }
 
         ~default_block() noexcept {
-            DestroyEnvironmentBlock(blockRaw);
+            if (!DestroyEnvironmentBlock(blockRaw)) {
+                api_failure("DestroyEnvironmentBlock"); // slams into noexcept
+            }
         }
 
         default_block(const default_block&) = delete;
