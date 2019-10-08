@@ -62,9 +62,9 @@ class handle {
 public:
     handle() = default;
 
-    explicit handle(const HANDLE hInitial) noexcept : hImpl(hInitial) {}
+    explicit handle(const HANDLE hInitial) noexcept : impl(hInitial) {}
 
-    handle(handle&& other) noexcept : hImpl(std::exchange(other.hImpl, EmptyPolicy::Empty)) {}
+    handle(handle&& other) noexcept : impl(std::exchange(other.impl, EmptyPolicy::Empty)) {}
 
     handle& operator=(handle&& other) noexcept {
         handle moved = std::move(other);
@@ -73,42 +73,42 @@ public:
     }
 
     ~handle() noexcept {
-        if (hImpl != EmptyPolicy::Empty) {
-            close_handle(hImpl);
+        if (impl != EmptyPolicy::Empty) {
+            close_handle(impl);
         }
     }
 
     friend void swap(handle& lhs, handle& rhs) noexcept {
         using std::swap;
-        swap(lhs.hImpl, rhs.hImpl);
+        swap(lhs.impl, rhs.impl);
     }
 
     void close() noexcept {
-        if (hImpl != EmptyPolicy::Empty) {
-            close_handle(hImpl);
-            hImpl = EmptyPolicy::Empty;
+        if (impl != EmptyPolicy::Empty) {
+            close_handle(impl);
+            impl = EmptyPolicy::Empty;
         }
     }
 
     [[nodiscard]] explicit operator bool() const noexcept {
-        return hImpl != EmptyPolicy::Empty;
+        return impl != EmptyPolicy::Empty;
     }
 
     [[nodiscard]] HANDLE get() const noexcept {
-        return hImpl;
+        return impl;
     }
 
     void attach(const HANDLE newHandle) & noexcept {
-        handle moved{newHandle};
-        swap(moved, *this);
+        handle captured{newHandle};
+        swap(captured, *this);
     }
 
     [[nodiscard]] HANDLE detach() noexcept {
-        return std::exchange(hImpl, EmptyPolicy::Empty);
+        return std::exchange(impl, EmptyPolicy::Empty);
     }
 
 private:
-    HANDLE hImpl{EmptyPolicy::Empty};
+    HANDLE impl{EmptyPolicy::Empty};
 };
 
 inline handle<invalid_handle_value_policy> create_file(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
@@ -274,7 +274,7 @@ struct output_collecting_pipe {
         // generate a random name for the pipe (we must use a named pipe because anonymous pipes from CreatePipe can't
         // be used in asynchronous mode)
         std::random_device rd;
-        constexpr size_t pipeNameBufferCount        = 15 + 8 * 8 + 1;
+        constexpr size_t pipeNameBufferCount = 15 + 8 * 8 + 1;
         //                                                123456789012345
         wchar_t pipeNameBuffer[pipeNameBufferCount] = LR"(\\.\pipe\Local\)";
         wchar_t* pipeNameCursor                     = pipeNameBuffer + 15;
@@ -326,7 +326,7 @@ struct output_collecting_pipe {
     output_collecting_pipe& operator=(const output_collecting_pipe&) = delete;
 
     void start() {
-        [[maybe_unused]] const auto oldRunning = running.exchange(true);
+        [[maybe_unused]] const bool oldRunning = running.exchange(true);
         assert(!oldRunning);
         read_some();
     }
@@ -530,7 +530,7 @@ public:
         }
     }
 
-    [[nodiscard]] LPPROC_THREAD_ATTRIBUTE_LIST get() const {
+    [[nodiscard]] LPPROC_THREAD_ATTRIBUTE_LIST get() const noexcept {
         return reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(buffer.get());
     }
 

@@ -121,7 +121,7 @@ private:
             parent->update_display();
         }
 
-        void schedule(size_t command) {
+        void schedule(const size_t command) {
             commandRunning = command;
             executive.begin_execution(nullptr, parent->commands[command].first.data(), 0, nullptr);
             tpWait.wait_for(executive.get_wait_handle());
