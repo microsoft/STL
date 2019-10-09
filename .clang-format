@@ -113,7 +113,7 @@ IncludeBlocks:   Regroup
 IncludeCategories:
   - Regex:           '^<yvals(_core)?\.h>$'
     Priority:        1
-  - Regex:           '^<Windows\.h>$'
+  - Regex:           '^<(Windows|userenv)\.h>$'
     Priority:        3
   - Regex:           '^<WinIoCtl\.h>$'
     Priority:        4

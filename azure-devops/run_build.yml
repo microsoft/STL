@@ -14,14 +14,8 @@ jobs:
   steps:
     - checkout: self
       submodules: recursive
-    - task: BatchScript@1
-      displayName: 'Enforce clang-format'
-      condition: eq('${{ parameters.targetPlatform }}', 'x86')
-      inputs:
-        filename: 'azure-devops/enforce-clang-format.cmd'
-        failOnStandardError: true
     - task: PowerShell@2
-      displayName: 'Install MSVC preview'
+      displayName: 'Install MSVC Preview'
       # on "Hosted" agents only:
       condition: or(contains(variables['Agent.Name'], 'Azure Pipelines'), contains(variables['Agent.Name'], 'Hosted Agent'))
       inputs:
@@ -33,7 +27,7 @@ jobs:
         key: $(vcpkgResponseFile) | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD
         path: '$(vcpkgLocation)'
     - task: run-vcpkg@0
-      displayName: 'Run vcpkg to install boost-build'
+      displayName: 'Run vcpkg to Install boost-build'
       inputs:
         vcpkgArguments: 'boost-build:x86-windows'
         vcpkgDirectory: '$(vcpkgLocation)'
@@ -44,7 +38,23 @@ jobs:
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
     - task: run-cmake@0
-      displayName: 'Run CMake with Ninja'
+      displayName: 'Build Support Tools'
+      enabled: true
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        cmakeListsTxtPath: 'tools/CMakeSettings.json'
+        useVcpkgToolchainFile: true
+        configurationRegexFilter: '.*x64-Release.*'
+        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
+    - task: BatchScript@1
+      displayName: 'Enforce clang-format'
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        filename: 'azure-devops/enforce-clang-format.cmd'
+        failOnStandardError: true
+        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+    - task: run-cmake@0
+      displayName: 'Build the STL'
       enabled: true
       inputs:
         cmakeListsTxtPath: 'CMakeSettings.json'
