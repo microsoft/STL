@@ -2057,6 +2057,11 @@ _NODISCARD unique_ptr<_Ty> make_unique(size_t _Size) { // make a unique_ptr
 template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0, int> = 0>
 void make_unique(_Types&&...) = delete;
 
+template <class _Ty, class _Dx, enable_if_t<_Is_swappable<_Dx>::value, int> = 0>
+void swap(unique_ptr<_Ty, _Dx>& _Left, unique_ptr<_Ty, _Dx>& _Right) noexcept {
+    _Left.swap(_Right);
+}
+
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
 _NODISCARD bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return _Left.get() == _Right.get();
