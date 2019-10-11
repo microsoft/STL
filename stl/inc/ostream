@@ -109,7 +109,7 @@ public:
         _STL_DISABLE_DEPRECATED_WARNING
         __CLR_OR_THIS_CALL ~sentry() noexcept {
 #if _HAS_EXCEPTIONS
-            if (!_STD uncaught_exception()) { // TRANSITION, was OS issue 15518458
+            if (!_STD uncaught_exception()) { // TRANSITION, ArchivedOS-12000909
                 this->_Myostr._Osfx();
             }
 #else // _HAS_EXCEPTIONS
