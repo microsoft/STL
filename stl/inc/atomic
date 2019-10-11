@@ -1471,11 +1471,11 @@ public:
 
     using _Base::_Base;
 
-#ifdef __clang__ // TRANSITION, VSO#406237
+#ifdef __clang__ // TRANSITION, VSO-406237
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
 #else // ^^^ no workaround / workaround vvv
     atomic()                                  = default;
-#endif // TRANSITION, VSO#406237
+#endif // TRANSITION, VSO-406237
 
     atomic(const atomic&) = delete;
     atomic& operator=(const atomic&) = delete;
@@ -1975,11 +1975,11 @@ struct atomic_flag { // flag with test-and-set semantics
         _Storage.store(false, _Order);
     }
 
-#ifdef __clang__ // TRANSITION, VSO#406237
+#ifdef __clang__ // TRANSITION, VSO-406237
     constexpr atomic_flag() noexcept = default;
 #else // ^^^ no workaround / workaround vvv
     atomic_flag() noexcept = default;
-#endif // TRANSITION, VSO#406237
+#endif // TRANSITION, VSO-406237
 
 #if 1 // TRANSITION, ABI
     atomic<long> _Storage;

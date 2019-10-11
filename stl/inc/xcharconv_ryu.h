@@ -156,7 +156,7 @@ _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 
 _NODISCARD __forceinline uint64_t __ryu_umul128(const uint64_t __a, const uint64_t __b, uint64_t* const __productHi) {
-  // TRANSITION, VSO#634761
+  // TRANSITION, VSO-634761
   // The casts here help MSVC to avoid calls to the __allmul library function.
   const uint32_t __aLo = static_cast<uint32_t>(__a);
   const uint32_t __aHi = static_cast<uint32_t>(__a >> 32);
@@ -216,7 +216,7 @@ _NODISCARD inline uint64_t __umulh(const uint64_t __a, const uint64_t __b) {
 // On 32-bit platforms, compilers typically generate calls to library
 // functions for 64-bit divisions, even if the divisor is a constant.
 //
-// TRANSITION, LLVM#37932
+// TRANSITION, LLVM-37932
 //
 // The functions here perform division-by-constant using multiplications
 // in the same way as 64-bit compilers would do.
@@ -392,7 +392,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
 inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, char* const __result) {
   uint32_t __i = 0;
   while (__digits >= 10000) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
     const uint32_t __c = __digits - 10000 * (__digits / 10000);
 #else
     const uint32_t __c = __digits % 10000;
@@ -421,7 +421,7 @@ inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, char*
 inline void __append_d_digits(const uint32_t __olength, uint32_t __digits, char* const __result) {
   uint32_t __i = 0;
   while (__digits >= 10000) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
     const uint32_t __c = __digits - 10000 * (__digits / 10000);
 #else
     const uint32_t __c = __digits % 10000;
@@ -470,7 +470,7 @@ inline void __append_nine_digits(uint32_t __digits, char* const __result) {
   }
 
   for (uint32_t __i = 0; __i < 5; __i += 4) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
     const uint32_t __c = __digits - 10000 * (__digits / 10000);
 #else
     const uint32_t __c = __digits % 10000;
@@ -1125,7 +1125,7 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
   if (__vmIsTrailingZeros || __vrIsTrailingZeros) {
     // General case, which happens rarely (~4.0%).
     while (__vp / 10 > __vm / 10) {
-#ifdef __clang__ // TRANSITION, LLVM#23106
+#ifdef __clang__ // TRANSITION, LLVM-23106
       __vmIsTrailingZeros &= __vm - (__vm / 10) * 10 == 0;
 #else
       __vmIsTrailingZeros &= __vm % 10 == 0;
@@ -1440,7 +1440,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     }
 
     while (__output >= 10000) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
       const uint32_t __c = __output - 10000 * (__output / 10000);
 #else
       const uint32_t __c = __output % 10000;
@@ -1492,7 +1492,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   // Print the decimal digits.
   uint32_t __i = 0;
   while (__output >= 10000) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
     const uint32_t __c = __output - 10000 * (__output / 10000);
 #else
     const uint32_t __c = __output % 10000;
@@ -1660,7 +1660,7 @@ _NODISCARD inline uint64_t __mulShiftAll(const uint64_t __m, const uint64_t* con
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 
 _NODISCARD __forceinline uint64_t __mulShiftAll(uint64_t __m, const uint64_t* const __mul, const int32_t __j,
-  uint64_t* const __vp, uint64_t* const __vm, const uint32_t __mmShift) { // TRANSITION, VSO#634761
+  uint64_t* const __vp, uint64_t* const __vm, const uint32_t __mmShift) { // TRANSITION, VSO-634761
   __m <<= 1;
   // __m is maximum 55 bits
   uint64_t __tmp;
@@ -2079,7 +2079,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     }
     uint32_t __output2 = static_cast<uint32_t>(__output);
     while (__output2 >= 10000) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
       const uint32_t __c = __output2 - 10000 * (__output2 / 10000);
 #else
       const uint32_t __c = __output2 % 10000;
@@ -2155,7 +2155,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   }
   uint32_t __output2 = static_cast<uint32_t>(__output);
   while (__output2 >= 10000) {
-#ifdef __clang__ // TRANSITION, LLVM#38217
+#ifdef __clang__ // TRANSITION, LLVM-38217
     const uint32_t __c = __output2 - 10000 * (__output2 / 10000);
 #else
     const uint32_t __c = __output2 % 10000;

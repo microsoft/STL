@@ -72,7 +72,7 @@ _MRTIMP2 int __cdecl _Mbrtowc(wchar_t* pwc, const char* s, size_t n, mbstate_t* 
         return 0;
     }
 
-    if (!*s) { // handle null terminator, TRANSITION, VSO#654347
+    if (!*s) { // handle null terminator, TRANSITION, VSO-654347
         *pwc = 0;
         return 0;
     }

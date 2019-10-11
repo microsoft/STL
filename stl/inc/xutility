@@ -150,7 +150,7 @@ _NODISCARD auto to_address(const _Ptr& _Val) noexcept {
 #endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE _Pass_fn
-// TRANSITION, VSO#386225
+// TRANSITION, VSO-386225
 template <class _Fx>
 struct _Ref_fn { // pass function object by value as a reference
     template <class... _Args>
@@ -617,7 +617,7 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> // Per LWG 3270
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> // Per LWG-3270
             && requires(_Ty&& __t) { iter_move(static_cast<_Ty&&>(__t)); };
 
         template <class _Ty>
@@ -886,16 +886,16 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out> && writable<
 // CUSTOMIZATION POINT OBJECT iter_swap
 namespace ranges {
     namespace _Iter_swap {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void iter_swap();
-#endif // TRANSITION, VSO#895622
+#endif // TRANSITION, VSO-895622
 
         template <class _Ty1, class _Ty2>
         void iter_swap(_Ty1, _Ty2) = delete;
 
         // clang-format off
         template <class _Ty1, class _Ty2>
-        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) // Per LWG 3270
+        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) // Per LWG-3270
             && requires(_Ty1&& __t1, _Ty2&& __t2) {
                 iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
             };
@@ -1082,8 +1082,8 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
     if constexpr (_Range_verifiable_v<_Iter, _Sentinel>) {
         _Verify_range(_First, _Last);
     } else {
-        (void) _First; // TRANSITION, VSO#486357
-        (void) _Last; // TRANSITION, VSO#486357
+        (void) _First; // TRANSITION, VSO-486357
+        (void) _Last; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -1349,8 +1349,8 @@ auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     if constexpr (_Is_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
     } else {
-        (void) _First; // TRANSITION, VSO#486357
-        (void) _Last; // TRANSITION, VSO#486357
+        (void) _First; // TRANSITION, VSO-486357
+        (void) _Last; // TRANSITION, VSO-486357
         return _Distance_unknown{};
     }
 }
@@ -1507,9 +1507,9 @@ void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
             }
         }
     } else {
-        (void) _First; // TRANSITION, VSO#486357
-        (void) _Last; // TRANSITION, VSO#486357
-        (void) _Pred; // TRANSITION, VSO#486357
+        (void) _First; // TRANSITION, VSO-486357
+        (void) _Last; // TRANSITION, VSO-486357
+        (void) _Pred; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -1543,9 +1543,9 @@ void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>> && _Is_fwd_iter_v<_InIt>) {
         _Debug_order_unchecked(_First, _Last, _Pred);
     } else {
-        (void) _First; // TRANSITION, VSO#486357
-        (void) _Last; // TRANSITION, VSO#486357
-        (void) _Pred; // TRANSITION, VSO#486357
+        (void) _First; // TRANSITION, VSO-486357
+        (void) _Last; // TRANSITION, VSO-486357
+        (void) _Pred; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -1839,7 +1839,7 @@ protected:
 
 template <class _BidIt, class _BidIt2, enable_if_t<_Range_verifiable_v<_BidIt, _BidIt2>, int> = 0>
 constexpr void _Verify_range(const reverse_iterator<_BidIt>& _First, const reverse_iterator<_BidIt2>& _Last) {
-    // TRANSITION, VSO#612785
+    // TRANSITION, VSO-612785
     _Verify_range(_Last.base(), _First.base()); // note reversed parameters
 }
 
@@ -2066,14 +2066,14 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 namespace ranges {
     // CUSTOMIZATION POINT OBJECT ranges::begin
     namespace _Begin {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void begin();
-#endif // TRANSITION, VSO#895622
+#endif // TRANSITION, VSO-895622
 
         template <class _Ty>
         void begin(_Ty&&) = delete;
         template <class _Ty>
-        void begin(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+        void begin(initializer_list<_Ty>) = delete; // Per PR of LWG-3258
 
         // clang-format off
         template <class _Ty>
@@ -2136,14 +2136,14 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void end();
-#endif // TRANSITION, VSO#895622
+#endif // TRANSITION, VSO-895622
 
         template <class _Ty>
         void end(_Ty&&) = delete;
         template <class _Ty>
-        void end(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+        void end(initializer_list<_Ty>) = delete; // Per PR of LWG-3258
 
         // clang-format off
         template <class _Ty>
@@ -2279,14 +2279,14 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void rbegin();
-#endif // TRANSITION, VSO#895622
+#endif // TRANSITION, VSO-895622
 
         template <class _Ty>
         void rbegin(_Ty&&) = delete;
         template <class _Ty>
-        void rbegin(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+        void rbegin(initializer_list<_Ty>) = delete; // Per PR of LWG-3258
 
         // clang-format off
         template <class _Ty>
@@ -2351,14 +2351,14 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void rend();
-#endif // TRANSITION, VSO#895622
+#endif // TRANSITION, VSO-895622
 
         template <class _Ty>
         void rend(_Ty&&) = delete;
         template <class _Ty>
-        void rend(initializer_list<_Ty>) = delete; // Per PR of LWG 3258
+        void rend(initializer_list<_Ty>) = delete; // Per PR of LWG-3258
 
         // clang-format off
         template <class _Ty>
@@ -2467,9 +2467,9 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::size
     namespace _Size {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void size();
-#endif // TRANSITION, VSO#895622
+#endif // TRANSITION, VSO-895622
 
         template <class _Ty>
         void size(_Ty&&) = delete;
@@ -2682,9 +2682,9 @@ namespace ranges {
     // CONCEPT ranges::sized_range
     template <class _Rng>
     concept sized_range = range<_Rng>
-#if 0 // TRANSITION, LWG 3264
+#if 0 // TRANSITION, LWG-3264
         && !disable_sized_range<remove_cvref_t<_Rng>>
-#endif // TRANSITION, LWG 3264
+#endif // TRANSITION, LWG-3264
         && requires(_Rng& __r) { size(__r); };
     // clang-format on
 
@@ -3016,7 +3016,7 @@ private:
 template <class _Ty, size_t _Size>
 constexpr void _Verify_range(
     const _Array_const_iterator<_Ty, _Size>& _First, const _Array_const_iterator<_Ty, _Size>& _Last) noexcept {
-    // TRANSITION, VSO#612785
+    // TRANSITION, VSO-612785
     _First._Verify_with(_Last);
 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3426,7 +3426,7 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
                 ++_UDest;
                 --_Count;
                 if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
-                                   // see LWG#2471
+                                   // see LWG-2471
                     break;
                 }
 
@@ -3450,7 +3450,7 @@ _OutIt _Copy_n_unchecked4(_InIt _First, _Diff _Count, _OutIt _Dest, false_type) 
         ++_Dest;
         --_Count;
         if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
-                           // see LWG#2471
+                           // see LWG-2471
             return _Dest;
         }
 
@@ -4860,7 +4860,7 @@ _NODISCARD _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val
     _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        const _Iter_diff_t<_FwdIt> _Count2 = _Count >> 1; // TRANSITION, VSO#433486
+        const _Iter_diff_t<_FwdIt> _Count2 = _Count >> 1; // TRANSITION, VSO-433486
         const auto _UMid                   = _STD next(_UFirst, _Count2);
         if (_Pred(*_UMid, _Val)) { // try top half
             _UFirst = _Next_iter(_UMid);

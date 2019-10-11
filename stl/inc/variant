@@ -525,7 +525,7 @@ public:
     }
 };
 
-#ifdef __cplusplus_winrt // TRANSITION, VSO#586813
+#ifdef __cplusplus_winrt // TRANSITION, VSO-586813
 // C++/CX is unable to store hats in unions. We instead store them inside a
 // wrapper to enable minimal hats-in-variants support.
 template <class _Ty>
@@ -782,7 +782,7 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
     void operator()(_Tagged<_Ty, _Idx> _Source) const noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
         is_nothrow_constructible<remove_reference_t<_Ty>, _Ty>>) { // initialize _Idx-th item in _Self from _Source
                                                                    // pre: _Self.valueless_by_exception()
-        (void) _Source; // TRANSITION, VSO#486357
+        (void) _Source; // TRANSITION, VSO-486357
         if constexpr (_Idx != variant_npos) {
             auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
             _Construct_in_place(_Target, static_cast<_Ty&&>(_Source._Val));
@@ -805,7 +805,7 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
             is_nothrow_constructible<_Remove_cvref_t<_Ty>, _Ty>>>) {
         // assign the _Idx-th alternative of _Self from _Source
         if constexpr (_Idx == variant_npos) { // assign from valueless _Source
-            (void) _Source; // TRANSITION, VSO#486357
+            (void) _Source; // TRANSITION, VSO-486357
             _Self._Reset();
         } else {
             auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
@@ -890,7 +890,7 @@ public:
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
             _Variant_raw_visit(
                 index(), _Storage(), [](auto _Ref) noexcept {
-                    (void) _Ref; // TRANSITION, VSO#486357
+                    (void) _Ref; // TRANSITION, VSO-486357
                     if constexpr (decltype(_Ref)::_Idx != variant_npos) {
                         _Destroy_in_place(_Ref._Val);
                     }
@@ -1137,25 +1137,25 @@ public:
             // Limit the size of variants that use this quadratic code size implementation of swap.
             _Variant_raw_visit(index(), _Storage(),
                 [this, &_That](auto _My_ref)
-#ifndef __EDG__ // TRANSITION, VSO#897887
+#ifndef __EDG__ // TRANSITION, VSO-897887
                     noexcept(conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>)
-#endif // TRANSITION, VSO#897887
+#endif // TRANSITION, VSO-897887
                 {
                     _Variant_raw_visit(_That.index(), _That._Storage(),
                         [this, &_That, _My_ref](auto _That_ref)
-#ifndef __EDG__ // TRANSITION, VSO#897887
+#ifndef __EDG__ // TRANSITION, VSO-897887
                             noexcept(conjunction_v<is_nothrow_move_constructible<_Types>...,
                                 is_nothrow_swappable<_Types>...>)
-#endif // TRANSITION, VSO#897887
+#endif // TRANSITION, VSO-897887
                         {
                             (void) _My_ref;
-                            (void) _That_ref; // TRANSITION, VSO#486357
+                            (void) _That_ref; // TRANSITION, VSO-486357
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
-#ifdef __EDG__ // TRANSITION, VSO#657455
+#ifdef __EDG__ // TRANSITION, VSO-657455
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
-#endif // TRANSITION, VSO#657455
+#endif // TRANSITION, VSO-657455
                             if constexpr (_My_idx == _That_idx) { // Same alternatives...
                                 if constexpr (_My_idx != variant_npos) { // ...and not valueless, swap directly
                                     _Swap_adl(_My_ref._Val, _That_ref._Val);
@@ -1167,12 +1167,12 @@ public:
                                 _That._Emplace_valueless<_My_idx>(_STD move(_My_ref._Val));
                                 this->template _Reset<_My_idx>();
                             } else { // different non-valueless alternatives
-#ifdef __EDG__ // TRANSITION, VSO#657455
+#ifdef __EDG__ // TRANSITION, VSO-657455
                                 using _Workaround = enable_if_t<_That_idx != variant_npos, decltype(_My_ref._Val)>;
                                 auto _Tmp         = _STD move(static_cast<_Workaround>(_My_ref._Val));
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                                 auto _Tmp = _STD move(_My_ref._Val);
-#endif // TRANSITION, VSO#657455
+#endif // TRANSITION, VSO-657455
                                 this->template _Reset<_My_idx>();
                                 this->_Emplace_valueless<_That_idx>(_STD move(_That_ref._Val));
                                 _That.template _Reset<_That_idx>();
@@ -1184,9 +1184,9 @@ public:
             if (this->_Which == _That._Which) {
                 _Variant_raw_visit(static_cast<size_t>(this->_Which), _That._Storage(),
                     [this](auto _Ref)
-#ifndef __EDG__ // TRANSITION, VSO#897887
+#ifndef __EDG__ // TRANSITION, VSO-897887
                         noexcept(conjunction_v<is_nothrow_swappable<_Types>...>)
-#endif // TRANSITION, VSO#897887
+#endif // TRANSITION, VSO-897887
                     {
                         constexpr size_t _Idx = decltype(_Ref)::_Idx;
                         if constexpr (_Idx != variant_npos) {
@@ -1218,9 +1218,9 @@ private:
         this->_Reset();
         _Variant_raw_visit(_That.index(), _That._Storage(),
             [this](auto _Ref)
-#ifndef __EDG__ // TRANSITION, VSO#897887
+#ifndef __EDG__ // TRANSITION, VSO-897887
                 noexcept(conjunction_v<is_nothrow_move_constructible<_Types>...>)
-#endif // TRANSITION, VSO#897887
+#endif // TRANSITION, VSO-897887
             {
                 constexpr size_t _Idx = decltype(_Ref)::_Idx;
                 if constexpr (_Idx != variant_npos) {
@@ -1357,7 +1357,7 @@ struct _Variant_relop_visitor { // evaluate _Op with the contained value of two 
         if constexpr (_Idx != variant_npos) {
             return _Op{}(_Variant_raw_get<_Idx>(_Left), _Right._Val);
         } else { // return whatever _Op returns for equal values
-            (void) _Right; // TRANSITION, VSO#486357
+            (void) _Right; // TRANSITION, VSO-486357
             return _Op{}(0, 0);
         }
     }
@@ -1465,7 +1465,7 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
         _Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
             (void) _Obj;
-            ((void) _Args, ...); // TRANSITION, VSO#486357
+            ((void) _Args, ...); // TRANSITION, VSO-486357
             _Throw_bad_variant_access();
         } else {
             return _C_invoke(
@@ -1657,7 +1657,7 @@ struct _Variant_hash_visitor { // visitation function for hashing variants
         noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
             is_nothrow_invocable<hash<_Ty>, const _Ty&>>) { // hash contained value _Obj
         if constexpr (_Idx == variant_npos) { // hash a valueless variant
-            (void) _Obj; // TRANSITION, VSO#486357
+            (void) _Obj; // TRANSITION, VSO-486357
             return 0;
         } else { // hash the contained value
             return hash<_Ty>{}(_Obj._Val);

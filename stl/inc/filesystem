@@ -594,7 +594,7 @@ namespace filesystem {
 
     _NODISCARD inline bool _Is_drive_prefix_with_slash_slash_question(const wstring_view _Text) {
         // test if _Text starts with a \\?\X: prefix
-        using namespace _STD string_view_literals; // TRANSITION, VSO#571749
+        using namespace _STD string_view_literals; // TRANSITION, VSO-571749
         return _Text.size() >= 6 && _Text._Starts_with(LR"(\\?\)"sv) && _Is_drive_prefix(_Text.data() + 4);
     }
 
@@ -1222,7 +1222,7 @@ namespace filesystem {
         }
 
         _NODISCARD path lexically_normal() const {
-            using namespace _STD string_view_literals; // TRANSITION, VSO#571749
+            using namespace _STD string_view_literals; // TRANSITION, VSO-571749
 
             constexpr wstring_view _Dot     = L"."sv;
             constexpr wstring_view _Dot_dot = L".."sv;
@@ -1354,15 +1354,15 @@ namespace filesystem {
         _NODISCARD inline iterator end() const noexcept; // strengthened
 
         template <class _Elem, class _Traits>
-        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO#570323
-            _STD basic_ostream<_Elem, _Traits>& _Ostr, const path& _Path) { // TRANSITION, VSO#570323
+        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
+            _STD basic_ostream<_Elem, _Traits>& _Ostr, const path& _Path) { // TRANSITION, VSO-570323
             // insert a path into a stream
             return _Ostr << _STD quoted(_Path.string<_Elem, _Traits>());
         }
 
         template <class _Elem, class _Traits>
-        friend _STD basic_istream<_Elem, _Traits>& operator>>( // TRANSITION, VSO#570323
-            _STD basic_istream<_Elem, _Traits>& _Istr, path& _Path) { // TRANSITION, VSO#570323
+        friend _STD basic_istream<_Elem, _Traits>& operator>>( // TRANSITION, VSO-570323
+            _STD basic_istream<_Elem, _Traits>& _Istr, path& _Path) { // TRANSITION, VSO-570323
             // extract a path from a stream
             basic_string<_Elem, _Traits> _Tmp;
             _Istr >> _STD quoted(_Tmp);
@@ -1649,7 +1649,7 @@ namespace filesystem {
     }
 
     _NODISCARD inline path path::lexically_relative(const path& _Base) const {
-        using namespace _STD string_view_literals; // TRANSITION, VSO#571749
+        using namespace _STD string_view_literals; // TRANSITION, VSO-571749
 
         constexpr wstring_view _Dot     = L"."sv;
         constexpr wstring_view _Dot_dot = L".."sv;
@@ -1772,7 +1772,7 @@ namespace filesystem {
 
     private:
         static string _Pretty_message(const string_view _Op, const path& _Path1, const path& _Path2 = {}) {
-            using namespace _STD string_view_literals; // TRANSITION, VSO#571749
+            using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             string _Result;
             const string _Path1_str = _Path1.string();
             const string _Path2_str = _Path2.string();
@@ -1902,7 +1902,7 @@ namespace filesystem {
         create_symlinks   = 0x2000,
         create_hard_links = 0x4000,
 
-        _Unspecified_copy_prevention_tag = 0x10000 // to be removed by LWG3057
+        _Unspecified_copy_prevention_tag = 0x10000 // to be removed by LWG-3057
     };
 
     _BITMASK_OPS(copy_options)
@@ -2512,7 +2512,7 @@ namespace filesystem {
 
         _NODISCARD static __std_win_error _Open_dir(
             path& _Path, const directory_options _Options_arg, _Find_file_handle& _Dir, __std_fs_find_data& _Data) {
-            using namespace _STD string_view_literals; // TRANSITION, VSO#571749
+            using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             const size_t _Null_term_len = _CSTD wcslen(_Path.c_str());
             if (_Null_term_len == 0 || _Null_term_len != _Path.native().size()) {
                 return __std_win_error::_File_not_found;
@@ -2983,7 +2983,7 @@ namespace filesystem {
 
     // FUNCTION canonical
     _NODISCARD inline __std_win_error _Canonical(path& _Result, const wstring& _Text) { // pre: _Result.empty()
-        using namespace _STD string_view_literals; // TRANSITION, VSO#571749
+        using namespace _STD string_view_literals; // TRANSITION, VSO-571749
         if (_Text.empty()) {
             return __std_win_error::_Success;
         }
@@ -4162,13 +4162,13 @@ namespace filesystem {
         const directory_entry& _From, const path& _To, const copy_options _Options, error_code& _Ec) {
         // implement copy, does not clear _Ec for callers
         // Standard quotes herein are relative to N4810
-        // The following parts of LWG3057 are implemented:
+        // The following parts of LWG-3057 are implemented:
         // * guarding equivalent() from nonexistent to
         // * replacing unspecified recursion prevention tag with copy_options::directories_only
-        // Other parts of LWG3057 remain under discussion in the committee and are not yet implemented.
+        // Other parts of LWG-3057 remain under discussion in the committee and are not yet implemented.
         //  (In particular, changes to existing destination flags, and error handling).
         const bool _Flink = (_Options & (copy_options::skip_symlinks | copy_options::copy_symlinks))
-                            != copy_options::none; // create_symlinks intentionally removed by LWG3057
+                            != copy_options::none; // create_symlinks intentionally removed by LWG-3057
         const auto _Fstat = _From._Get_any_status(_Flink ? _Symlink_status_stats_flags : _Status_stats_flags);
         if (_Fstat._Error != __std_win_error::_Success) { // report an error if exists(f) is false
             _Ec = _Make_ec(_Fstat._Error);
@@ -4251,7 +4251,7 @@ namespace filesystem {
             return;
         }
 
-        // The following condition modified by LWG3057:
+        // The following condition modified by LWG-3057:
         if (_STD filesystem::is_directory(_Fstat._Status)) {
             if ((_Options & copy_options::create_symlinks) != copy_options::none) {
                 _Ec = _STD make_error_code(errc::is_a_directory);
@@ -4263,7 +4263,7 @@ namespace filesystem {
                 return;
             }
 
-            // Note LWG3057 uses directories_only as the flag, instead of an unspecified copy_options value:
+            // Note LWG-3057 uses directories_only as the flag, instead of an unspecified copy_options value:
             if ((_Options & copy_options::recursive) != copy_options::none
                 || (_Options & copy_options::directories_only) == copy_options::none) {
                 for (directory_iterator _It(_From, _Ec);; _It.increment(_Ec)) {

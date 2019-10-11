@@ -908,7 +908,7 @@ public:
 
 private:
     void _Different_allocator_move_construct(_Tree&& _Right) {
-        // TRANSITION, VSO#675959 (inline into only caller when that is fixed)
+        // TRANSITION, VSO-675959 (inline into only caller when that is fixed)
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);

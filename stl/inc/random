@@ -69,11 +69,11 @@ concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invo
     (_Ty::min)(); requires same_as<decltype((_Ty::min)()), invoke_result_t<_Ty&>>;
     (_Ty::max)(); requires same_as<decltype((_Ty::max)()), invoke_result_t<_Ty&>>;
 #endif // _HAS_EXACT_COMPOUND_REQUIREMENT
-#if 1 // Implement the PR for LWG 3150
+#if 1 // Implement the PR for LWG-3150
     typename _Require_constant<(_Ty::min)()>;
     typename _Require_constant<(_Ty::max)()>;
     requires (_Ty::min)() < (_Ty::max)();
-#endif // LWG 3150
+#endif // LWG-3150
 };
 // clang-format on
 #endif // __cpp_lib_concepts
@@ -486,17 +486,17 @@ public:
         _Prev = _Temp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend bool operator==(
         const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend bool operator!=(
         const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
@@ -577,17 +577,17 @@ public:
         _Prev = _Temp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend bool operator==(
         const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend bool operator!=(
         const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;

@@ -64,8 +64,8 @@ int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
 
 template <class _Ty>
 _Ty& _Immortalize() { // return a reference to an object that will live forever
-    static_assert(sizeof(void*) == sizeof(once_flag), "TRANSITION, VSO#406237");
-    static_assert(alignof(void*) == alignof(once_flag), "TRANSITION, VSO#406237");
+    static_assert(sizeof(void*) == sizeof(once_flag), "TRANSITION, VSO-406237");
+    static_assert(alignof(void*) == alignof(once_flag), "TRANSITION, VSO-406237");
     static void* _Flag = nullptr;
     static aligned_union_t<1, _Ty> _Storage;
     if (_Execute_once(reinterpret_cast<once_flag&>(_Flag), _Immortalize_impl<_Ty>, &_Storage) == 0) {

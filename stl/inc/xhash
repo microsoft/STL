@@ -223,16 +223,16 @@ struct _Reinterpret_move_iter {
 
     // post ++ intentionally omitted
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend bool operator==(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base == _Rhs._Base;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base != _Rhs._Base;
     }
@@ -1271,12 +1271,12 @@ public:
 
     void clear() noexcept {
         // TRANSITION, ABI:
-        // LWG 2550 requires implementations to make clear() O(size()), independent of bucket_count().
+        // LWG-2550 requires implementations to make clear() O(size()), independent of bucket_count().
         // Unfortunately our current data structure / ABI does not allow achieving this in the general case because:
         //   (1) Finding the bucket that goes with an element requires running the hash function
         //   (2) The hash function operator() may throw exceptions, and
         //   (3) clear() is a noexcept function.
-        // We do comply with LWG 2550 if the hash function is noexcept, or if the container was empty.
+        // We do comply with LWG-2550 if the hash function is noexcept, or if the container was empty.
         const auto _Oldsize = _List._Mypair._Myval2._Mysize;
         if (_Oldsize == 0) {
             return;

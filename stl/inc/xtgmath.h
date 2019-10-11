@@ -185,9 +185,9 @@ _GENERIC_MATH2(fdim)
 _GENERIC_MATH2(fmax)
 _GENERIC_MATH2(fmin)
 // fma() is hand-crafted
-// lerp() should be exempt, LWG 3223
-// The "classification/comparison functions" (fpclassify(), etc.) are exempt, LWG 1327
-// TRANSITION, VSO#945789, Special Math shouldn't be exempt
+// lerp() should be exempt, LWG-3223
+// The "classification/comparison functions" (fpclassify(), etc.) are exempt, LWG-1327
+// TRANSITION, VSO-945789, Special Math shouldn't be exempt
 
 #undef _GENERIC_MATH1R
 #undef _GENERIC_MATH1

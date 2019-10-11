@@ -34,7 +34,7 @@ namespace experimental {
         struct promise_type {
             _Ty const* _CurrentValue;
 #ifdef _CPPUNWIND
-            // TRANSITION, VSO#967814
+            // TRANSITION, VSO-967814
             exception_ptr _Eptr;
 #endif // _CPPUNWIND
 

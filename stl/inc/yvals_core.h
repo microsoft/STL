@@ -104,9 +104,9 @@
 // P0004R1 Removing Deprecated Iostreams Aliases
 // P0298R3 std::byte
 // P0302R1 Removing Allocator Support In std::function
-// LWG 2385 function::assign allocator argument doesn't make sense
-// LWG 2921 packaged_task and type-erased allocators
-// LWG 2976 Dangling uses_allocator specialization for packaged_task
+// LWG-2385 function::assign allocator argument doesn't make sense
+// LWG-2921 packaged_task and type-erased allocators
+// LWG-2976 Dangling uses_allocator specialization for packaged_task
 // The non-Standard std::tr1 namespace and TR1-only machinery
 // Enforcement of matching allocator value_types
 
@@ -473,9 +473,9 @@
 #endif // _HAS_STD_BYTE
 
 // P0302R1 Removing Allocator Support In std::function
-// LWG 2385 function::assign allocator argument doesn't make sense
-// LWG 2921 packaged_task and type-erased allocators
-// LWG 2976 Dangling uses_allocator specialization for packaged_task
+// LWG-2385 function::assign allocator argument doesn't make sense
+// LWG-2921 packaged_task and type-erased allocators
+// LWG-2976 Dangling uses_allocator specialization for packaged_task
 #ifndef _HAS_FUNCTION_ALLOCATOR_SUPPORT
 #define _HAS_FUNCTION_ALLOCATOR_SUPPORT (!_HAS_CXX17)
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT

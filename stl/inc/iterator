@@ -318,9 +318,9 @@ public:
         return _Tmp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend constexpr checked_array_iterator operator+(
         const difference_type _Off, const checked_array_iterator<_Ptr>& _Next) noexcept {
         return _Next + _Off;
@@ -492,9 +492,9 @@ public:
         return _Tmp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO#568006
+#ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
-#endif // TRANSITION, VSO#568006
+#endif // TRANSITION, VSO-568006
     friend constexpr unchecked_array_iterator operator+(
         const difference_type _Off, const unchecked_array_iterator& _Next) noexcept {
         return _Next + _Off;

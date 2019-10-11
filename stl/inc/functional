@@ -1351,7 +1351,7 @@ struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
 #pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO#181496, unreferenced formal parameter
+#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
     template <class _Untuple, size_t... _Jx>
     static auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut,
         index_sequence<_Jx...>) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) { // call a nested bind expression
@@ -1392,7 +1392,7 @@ auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut)
 }
 
 #pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO#181496, unreferenced formal parameter
+#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 // FUNCTION TEMPLATE _Call_binder
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl, _Untuple&& _Ut)

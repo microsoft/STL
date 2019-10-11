@@ -1592,13 +1592,13 @@ _NODISCARD constexpr bool operator==(
     return _Lhs._Equal(_Rhs);
 }
 
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs._Equal(_Rhs);
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs._Equal(_Rhs);
@@ -1612,13 +1612,13 @@ _NODISCARD constexpr bool operator!=(
     return !_Lhs._Equal(_Rhs);
 }
 
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator!=(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return !_Lhs._Equal(_Rhs);
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator!=(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return !_Lhs._Equal(_Rhs);
@@ -1632,13 +1632,13 @@ _NODISCARD constexpr bool operator<(
     return _Lhs.compare(_Rhs) < 0;
 }
 
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator<(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) < 0;
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) < 0;
@@ -1652,13 +1652,13 @@ _NODISCARD constexpr bool operator>(
     return _Lhs.compare(_Rhs) > 0;
 }
 
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator>(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) > 0;
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator>(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) > 0;
@@ -1672,13 +1672,13 @@ _NODISCARD constexpr bool operator<=(
     return _Lhs.compare(_Rhs) <= 0;
 }
 
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator<=(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) <= 0;
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) <= 0;
@@ -1692,13 +1692,13 @@ _NODISCARD constexpr bool operator>=(
     return _Lhs.compare(_Rhs) >= 0;
 }
 
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator>=(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) >= 0;
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO#409326
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator>=(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) >= 0;
@@ -2470,7 +2470,7 @@ private:
         if (_Getal() == _Right._Getal()) {
             _Move_assign(_Right, _Equal_allocators{});
         } else {
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO#466800
+            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
             _Mypair._Myval2._Orphan_all();
             _Mypair._Myval2._Reload_proxy(
                 _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
@@ -2638,7 +2638,7 @@ public:
 
 private:
     void _Copy_assign_val_from_small(const basic_string& _Right) {
-        // TRANSITION, VSO#761321; inline into only caller when that's fixed
+        // TRANSITION, VSO-761321; inline into only caller when that's fixed
         _Tidy_deallocate();
         if
             _CONSTEXPR_IF(_Can_memcpy_val) {

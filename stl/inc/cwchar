@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <cstdio> // TRANSITION, VSO#661721
+#include <cstdio> // TRANSITION, VSO-661721
 #include <wchar.h>
 
 #pragma pack(push, _CRT_PACKING)

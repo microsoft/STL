@@ -2619,9 +2619,9 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
 template <class _RanIt, class _Ty, class _Pr>
 void _Push_heap_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
     // percolate _Hole to _Top or where _Val belongs, using _Pred
-    for (_Iter_diff_t<_RanIt> _Idx = (_Hole - 1) >> 1; // TRANSITION, VSO#433486
+    for (_Iter_diff_t<_RanIt> _Idx = (_Hole - 1) >> 1; // TRANSITION, VSO-433486
          _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val);
-         _Idx = (_Hole - 1) >> 1) { // TRANSITION, VSO#433486
+         _Idx = (_Hole - 1) >> 1) { // TRANSITION, VSO-433486
         // move _Hole up to parent
         *(_First + _Hole) = _STD move(*(_First + _Idx));
         _Hole             = _Idx;
@@ -2660,7 +2660,7 @@ void _Pop_heap_hole_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_di
 
     // Check whether _Idx can have a child before calculating that child's index, since
     // calculating the child's index can trigger integer overflows
-    const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // TRANSITION, VSO#433486
+    const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // TRANSITION, VSO-433486
     while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
         _Idx = 2 * _Idx + 2;
         if (_DEBUG_LT_PRED(_Pred, *(_First + _Idx), *(_First + (_Idx - 1)))) {
@@ -2714,7 +2714,7 @@ template <class _RanIt, class _Pr>
 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // make nontrivial [_First, _Last) into a heap, using _Pred
     _Iter_diff_t<_RanIt> _Bottom = _Last - _First;
-    for (_Iter_diff_t<_RanIt> _Hole = _Bottom >> 1; 0 < _Hole;) { // TRANSITION, VSO#433486
+    for (_Iter_diff_t<_RanIt> _Hole = _Bottom >> 1; 0 < _Hole;) { // TRANSITION, VSO-433486
         // reheap top half, bottom to top
         --_Hole;
         _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
@@ -2739,7 +2739,7 @@ _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap ordered by _Pred
     const _Iter_diff_t<_RanIt> _Size = _Last - _First;
     for (_Iter_diff_t<_RanIt> _Off = 1; _Off < _Size; ++_Off) {
-        if (_DEBUG_LT_PRED(_Pred, _First[(_Off - 1) >> 1], _First[_Off])) { // TRANSITION, VSO#433486
+        if (_DEBUG_LT_PRED(_Pred, _First[(_Off - 1) >> 1], _First[_Off])) { // TRANSITION, VSO-433486
             return _First + _Off;
         }
     }
@@ -2840,7 +2840,7 @@ _NODISCARD _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr 
     _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        _Iter_diff_t<_FwdIt> _Count2 = _Count >> 1; // TRANSITION, VSO#433486
+        _Iter_diff_t<_FwdIt> _Count2 = _Count >> 1; // TRANSITION, VSO-433486
         const auto _UMid             = _STD next(_UFirst, _Count2);
         if (_Pred(_Val, *_UMid)) {
             _Count = _Count2;
@@ -2878,7 +2878,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _
             break;
         }
 
-        _Diff _Count2    = _Count >> 1; // TRANSITION, VSO#433486
+        _Diff _Count2    = _Count >> 1; // TRANSITION, VSO-433486
         const auto _UMid = _STD next(_UFirst, _Count2);
         if (_DEBUG_LT_PRED(_Pred, *_UMid, _Val)) { // range begins above _UMid, loop
             _UFirst = _Next_iter(_UMid);
@@ -3173,13 +3173,13 @@ void _Buffered_inplace_merge_divide_and_conquer(_BidIt _First, _BidIt _Mid, _Bid
     // merge sorted [_First, _Mid) with sorted [_Mid, _Last), using _Pred
     // usual invariants apply
     if (_Count1 <= _Count2) {
-        const _Iter_diff_t<_BidIt> _Count1n = _Count1 >> 1; // TRANSITION, VSO#433486
+        const _Iter_diff_t<_BidIt> _Count1n = _Count1 >> 1; // TRANSITION, VSO-433486
         const _BidIt _Firstn                = _STD next(_First, _Count1n);
         const _BidIt _Lastn                 = _STD lower_bound(_Mid, _Last, *_Firstn, _Pred);
         _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred,
             _Firstn, _Lastn, _Count1n, _STD distance(_Mid, _Lastn));
     } else {
-        const _Iter_diff_t<_BidIt> _Count2n = _Count2 >> 1; // TRANSITION, VSO#433486
+        const _Iter_diff_t<_BidIt> _Count2n = _Count2 >> 1; // TRANSITION, VSO-433486
         const _BidIt _Lastn                 = _STD next(_Mid, _Count2n);
         const _BidIt _Firstn                = _STD upper_bound(_First, _Mid, *_Lastn, _Pred);
         _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred,
@@ -3376,7 +3376,7 @@ void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred
 template <class _RanIt, class _Pr>
 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last), using _Pred
-    _RanIt _Mid = _First + ((_Last - _First) >> 1); // TRANSITION, VSO#433486
+    _RanIt _Mid = _First + ((_Last - _First) >> 1); // TRANSITION, VSO-433486
     _Guess_median_unchecked(_First, _Mid, _Last - 1, _Pred);
     _RanIt _Pfirst = _Mid;
     _RanIt _Plast  = _Pfirst + 1;
@@ -3446,7 +3446,7 @@ void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _
     _Iter_diff_t<_RanIt> _Count;
     while (_ISORT_MAX < (_Count = _Last - _First) && 0 < _Ideal) { // divide and conquer by quicksort
         auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
-        // TRANSITION, VSO#433486
+        // TRANSITION, VSO-433486
         _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 
         if (_Mid.first - _First < _Last - _Mid.second) { // loop on second half

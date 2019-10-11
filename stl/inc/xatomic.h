@@ -65,7 +65,7 @@ enum class memory_order : int {
     acq_rel,
     seq_cst,
 
-    // LWG 3268
+    // LWG-3268
     memory_order_relaxed = relaxed,
     memory_order_consume = consume,
     memory_order_acquire = acquire,

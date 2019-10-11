@@ -1439,7 +1439,7 @@ template <class... _Types>
 class _Fake_no_copy_callable_adapter {
     // async() is built on packaged_task internals which incorrectly use
     // std::function, which requires that things be copyable. We can't fix this in an
-    // update, so this adapter turns copies into terminate(). When VSO#153581 is
+    // update, so this adapter turns copies into terminate(). When VSO-153581 is
     // fixed, remove this adapter.
     using _Storaget = tuple<decay_t<_Types>...>;
 

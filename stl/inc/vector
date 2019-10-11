@@ -602,7 +602,7 @@ private:
         _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0
         if (_Getal() != _Right._Getal()) {
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO#466800
+            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
             _Mypair._Myval2._Reload_proxy(
                 _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
         }
@@ -2333,7 +2333,7 @@ private:
     void _Move_assign(vector& _Right, _Propagate_allocators) noexcept {
         using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
         if (this->_Getal() != _Right._Getal()) { // reload proxy
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO#466800
+            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
             _Alproxy_type _Oldal(this->_Getal());
             _Alproxy_type _Right_proxy_al(_Right._Getal());
             _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
