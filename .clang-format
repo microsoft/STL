@@ -91,7 +91,7 @@ ColumnLimit:     120
 # DisableFormat:   false
 # ExperimentalAutoDetectBinPacking: false
 
-# NOTE: LLVM#39247, this emits damaged "// namespace _DEPRECATE_TR1_NAMESPACEtr1".
+# NOTE: LLVM-39247, this emits damaged "// namespace _DEPRECATE_TR1_NAMESPACEtr1".
 # FixNamespaceComments: true
 FixNamespaceComments: false
 
