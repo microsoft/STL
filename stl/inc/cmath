@@ -1206,7 +1206,7 @@ _NODISCARD /* constexpr */ _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, co
 }
 
 // As of 2019-06-17 it is unclear whether the "sufficient additional overloads" clause is intended to target lerp;
-// LWG 3223 is pending.
+// LWG-3223 is pending.
 
 _NODISCARD /* constexpr */ inline float lerp(
     const float _ArgA, const float _ArgB, const float _ArgT) noexcept /* strengthened */ {

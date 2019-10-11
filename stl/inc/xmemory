@@ -42,7 +42,7 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 // VARIABLE TEMPLATE _New_alignof
 template <class _Ty>
 _INLINE_VAR constexpr size_t _New_alignof = _Max_value(alignof(_Ty),
-    static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO#522105
+    static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
 );
 
 // STRUCT _Default_allocate_traits
@@ -856,8 +856,8 @@ void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value) {
         _Left = _Right;
     } else {
-        (void) _Left; // TRANSITION, VSO#486357
-        (void) _Right; // TRANSITION, VSO#486357
+        (void) _Left; // TRANSITION, VSO-486357
+        (void) _Right; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
@@ -882,8 +882,8 @@ void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) propagate on co
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value) {
         _Left = _STD move(_Right);
     } else {
-        (void) _Left; // TRANSITION, VSO#486357
-        (void) _Right; // TRANSITION, VSO#486357
+        (void) _Left; // TRANSITION, VSO-486357
+        (void) _Right; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
@@ -910,8 +910,8 @@ void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
         _Swap_adl(_Left, _Right);
     } else {
         _STL_ASSERT(_Left == _Right, "containers incompatible for swap");
-        (void) _Left; // TRANSITION, VSO#486357
-        (void) _Right; // TRANSITION, VSO#486357
+        (void) _Left; // TRANSITION, VSO-486357
+        (void) _Right; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv

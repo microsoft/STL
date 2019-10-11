@@ -12,17 +12,17 @@
 #pragma warning(push)
 #pragma warning(1 : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 
-// DevDiv#255593 "All STL headers should protect themselves from macroized new"
+// All STL headers should protect themselves from macroized new.
 #pragma push_macro("new")
 #undef new
 #define new WILL NOT COMPILE
 
-// VSO#768746: mbctype.h macroizes _MS, _MP, _M1, and _M2. Include it first for test coverage.
+// VSO-768746: mbctype.h macroizes _MS, _MP, _M1, and _M2. Include it first for test coverage.
 #ifndef _MSVC_TESTING_NVCC
 #include <mbctype.h>
 #endif // _MSVC_TESTING_NVCC
 
-#if 1 // TRANSITION, MSFT:17090155 (UCRT)
+#if 1 // TRANSITION, OS-17090155 (UCRT)
 #define _CRT_DECLARE_NONSTDC_NAMES 0
 #ifndef _MSVC_TESTING_NVCC
 #include <sys/stat.h>
@@ -30,7 +30,7 @@
 #include <sys/utime.h>
 #endif // _MSVC_TESTING_NVCC
 #undef _CRT_DECLARE_NONSTDC_NAMES
-#endif // TRANSITION, MSFT:17090155 (UCRT)
+#endif // TRANSITION, OS-17090155 (UCRT)
 
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
 #define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING

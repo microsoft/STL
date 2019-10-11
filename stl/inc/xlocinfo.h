@@ -11,7 +11,7 @@
 
 #include <ctype.h>
 #include <locale.h>
-#include <stdio.h> // TRANSITION, VSO#661721
+#include <stdio.h> // TRANSITION, VSO-661721
 #include <wchar.h>
 
 #pragma pack(push, _CRT_PACKING)

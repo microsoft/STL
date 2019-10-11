@@ -46,11 +46,11 @@ concept derived_from = __is_base_of(_Base, _Derived)
 // CONCEPT convertible_to
 template <class _From, class _To>
 concept convertible_to = __is_convertible_to(_From, _To)
-#if 1 // Implement the PR of LWG 3151
+#if 1 // Implement the PR of LWG-3151
     && requires { static_cast<_To>(_STD declval<_From>()); };
-#else // ^^^ LWG 3151 / N4810 vvv
+#else // ^^^ LWG-3151 / N4810 vvv
     && requires(_From (&_Fn)()) { static_cast<_To>(_Fn()); };
-#endif // select LWG 3151 vs. N4810
+#endif // select LWG-3151 vs. N4810
 
 // CONCEPT common_reference_with
 template <class _Ty1, class _Ty2>
@@ -113,9 +113,9 @@ concept constructible_from = destructible<_Ty>
     && __is_constructible(_Ty, _ArgTys...);
 
 // CONCEPT default_initializable
-template <class _Ty> // Per P1754R1 and LWG 3149
+template <class _Ty> // Per P1754R1 and LWG-3149
 concept default_initializable = constructible_from<_Ty>
-    && requires { _Ty{}; }; // && __is_default_initializable(_Ty); // TRANSITION, VSO#896348
+    && requires { _Ty{}; }; // && __is_default_initializable(_Ty); // TRANSITION, VSO-896348
 
 // CONCEPT move_constructible
 template <class _Ty>
@@ -129,7 +129,7 @@ concept _Has_class_or_enum_type = __is_class(remove_reference_t<_Ty>) || __is_en
 // CUSTOMIZATION POINT OBJECT ranges::swap
 namespace ranges {
     namespace _Swap {
-#ifndef __clang__ // TRANSITION, VSO#895622
+#ifndef __clang__ // TRANSITION, VSO-895622
         void swap();
 #endif // TRANSITION
 
@@ -184,11 +184,11 @@ concept swappable = requires(_Ty& __x, _Ty& __y) {
 // CONCEPT swappable_with
 template <class _Ty1, class _Ty2>
 concept swappable_with =
-#if 1 // Implement the PR of LWG 3175
+#if 1 // Implement the PR of LWG-3175
     common_reference_with<_Ty1, _Ty2>
-#else // ^^^ LWG 3175 / N4810 vvv
+#else // ^^^ LWG-3175 / N4810 vvv
     common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
-#endif // select LWG 3175 vs. N4810
+#endif // select LWG-3175 vs. N4810
     && requires(_Ty1&& __t, _Ty2&& __u) {
         _STD ranges::swap(static_cast<_Ty1&&>(__t), static_cast<_Ty1&&>(__t));
         _STD ranges::swap(static_cast<_Ty2&&>(__u), static_cast<_Ty2&&>(__u));

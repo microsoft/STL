@@ -294,7 +294,7 @@ protected:
 protected:
     void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
-        if (_Count > INT_MAX) { // TRANSITION, VSO#485517
+        if (_Count > INT_MAX) { // TRANSITION, VSO-485517
             _Xbad_alloc();
         }
 

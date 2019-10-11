@@ -11,7 +11,7 @@
 #include <xstring>
 // The <cctype> include below is to workaround many projects that assumed
 // <string> includes it. We workaround it instead of fixing all the upstream
-// projects because <cctype> is inexpensive. See VSO#663136.
+// projects because <cctype> is inexpensive. See VSO-663136.
 #include <cctype>
 
 #pragma pack(push, _CRT_PACKING)

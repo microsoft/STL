@@ -109,7 +109,7 @@ public:
         _STL_DISABLE_DEPRECATED_WARNING
         __CLR_OR_THIS_CALL ~sentry() noexcept {
 #if _HAS_EXCEPTIONS
-            if (!_STD uncaught_exception()) { // TRANSITION, OS#15518458
+            if (!_STD uncaught_exception()) { // TRANSITION, ArchivedOS-12000909
                 this->_Myostr._Osfx();
             }
 #else // _HAS_EXCEPTIONS
@@ -452,7 +452,7 @@ public:
         return *this;
     }
 
-#if _HAS_CXX17 // LWG 2221 "No formatted output operator for nullptr"
+#if _HAS_CXX17 // LWG-2221 "No formatted output operator for nullptr"
     template <class = void> // TRANSITION, ABI
     basic_ostream& operator<<(nullptr_t) { // insert a null pointer
         return *this << "nullptr";

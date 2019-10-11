@@ -1590,7 +1590,7 @@ _NODISCARD shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr
 // FUNCTION TEMPLATE allocate_shared
 template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr
-    // Note: As of 2019-05-28, this implements the proposed resolution of LWG 3210 (which controls whether
+    // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
     using _Refoa   = _Ref_count_obj_alloc2<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;

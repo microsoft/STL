@@ -159,7 +159,7 @@ private:
     template <class _Mutex>
     static void _Relock(_Mutex& _Xtrnl) noexcept /* terminates */ {
         // relocks external mutex, terminate() on failure
-        // LWG 2135 says terminate rather than leaving the mutex unlocked;
+        // LWG-2135 says terminate rather than leaving the mutex unlocked;
         // we slam into noexcept here for that for easier user debugging
         _Xtrnl.lock();
     }

@@ -2058,7 +2058,7 @@ protected:
             case -1: // failed conversion
                 return error;
 
-            case 0: // converted NULL character, TRANSITION, VSO#654347
+            case 0: // converted NULL character, TRANSITION, VSO-654347
                 _Bytes = 1;
                 // [[fallthrough]];
 
@@ -2142,7 +2142,7 @@ protected:
                 break;
             }
 
-            if (_Bytes == 0) { // converted NULL character, TRANSITION, VSO#654347
+            if (_Bytes == 0) { // converted NULL character, TRANSITION, VSO-654347
                 _Bytes = 1;
             }
 
@@ -2259,7 +2259,7 @@ protected:
             case -1: // failed conversion
                 return error;
 
-            case 0: // converted NULL character, TRANSITION, VSO#654347
+            case 0: // converted NULL character, TRANSITION, VSO-654347
                 _Bytes = 1;
                 // [[fallthrough]];
 
@@ -2344,7 +2344,7 @@ protected:
                 break;
             }
 
-            if (_Bytes == 0) { // converted NULL character, TRANSITION, VSO#654347
+            if (_Bytes == 0) { // converted NULL character, TRANSITION, VSO-654347
                 _Bytes = 1;
             }
 

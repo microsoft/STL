@@ -595,7 +595,7 @@ public:
     }
 
     void wait(unique_lock<mutex>& _Lck) { // wait for signal
-        // Nothing to do to comply with LWG 2135 because std::mutex lock/unlock are nothrow
+        // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
         _Check_C_return(_Cnd_wait(_Mycnd(), _Lck.mutex()->_Mymtx()));
     }
 
@@ -662,7 +662,7 @@ public:
             _Throw_Cpp_error(_OPERATION_NOT_PERMITTED);
         }
 
-        // Nothing to do to comply with LWG 2135 because std::mutex lock/unlock are nothrow
+        // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
         const int _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), _Abs_time);
         switch (_Res) {
         case _Thrd_success:

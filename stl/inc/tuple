@@ -115,7 +115,7 @@ _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v =
     _Tuple_nothrow_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 // STRUCT TEMPLATE _Tuple_convert_copy_val
-// Constrain tuple's converting copy constructor (LWG 2549)
+// Constrain tuple's converting copy constructor (LWG-2549)
 template <class _Myself, class... _Other>
 struct _Tuple_convert_copy_val : true_type {};
 
@@ -125,7 +125,7 @@ struct _Tuple_convert_copy_val<tuple<_This>, _Uty>
           is_convertible<const tuple<_Uty>&, _This>>> {};
 
 // STRUCT TEMPLATE _Tuple_convert_move_val
-// Constrain tuple's converting move constructor (LWG 2549)
+// Constrain tuple's converting move constructor (LWG-2549)
 template <class _Myself, class... _Other>
 struct _Tuple_convert_move_val : true_type {};
 
@@ -135,7 +135,7 @@ struct _Tuple_convert_move_val<tuple<_This>, _Uty>
           is_convertible<tuple<_Uty>, _This>>> {};
 
 // STRUCT TEMPLATE _Tuple_perfect_val
-// Constrain tuple's perfect forwarding constructor (LWG 3121)
+// Constrain tuple's perfect forwarding constructor (LWG-3121)
 template <class _Myself, class _This2, class... _Rest2>
 struct _Tuple_perfect_val : true_type {};
 
@@ -902,7 +902,7 @@ struct _Tuple_cat1 : _Tuple_cat2<tuple<>, index_sequence<>, index_sequence<>, 0,
 };
 
 #pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO#181496, unreferenced formal parameter
+#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 template <class _Ret, size_t... _Kx, size_t... _Ix, class _Ty>
 constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& _Arg) { // concatenate tuples
     return _Ret(_STD get<_Kx>(_STD get<_Ix>(_STD forward<_Ty>(_Arg)))...);
@@ -919,7 +919,7 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&.
 #if _HAS_CXX17
 // FUNCTION TEMPLATE apply
 #pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO#181496, unreferenced formal parameter
+#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 template <class _Callable, class _Tuple, size_t... _Indices>
 constexpr decltype(auto) _Apply_impl(
     _Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) { // invoke _Obj with the elements of _Tpl
@@ -935,7 +935,7 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) { // invoke _Obj
 
 // FUNCTION TEMPLATE make_from_tuple
 #pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO#181496, unreferenced formal parameter
+#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 template <class _Ty, class _Tuple, size_t... _Indices>
 constexpr _Ty _Make_from_tuple_impl(
     _Tuple&& _Tpl, index_sequence<_Indices...>) { // construct _Ty from the elements of _Tpl
@@ -966,7 +966,7 @@ void _For_each_tuple_element(_Tpl&& _Tuple, _Fx _Func) { // call _Func() on each
 
 
 #pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO#181496, unreferenced formal parameter
+#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 // TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
 template <class _Ty1, class _Ty2>
 template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>

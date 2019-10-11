@@ -114,7 +114,7 @@ namespace pmr {
     struct _Intrusive_list { // intrusive circular list of _Ty (which must derive from _Double_link<_Tag>)
         using _Link_type = _Double_link<_Tag>;
 
-        constexpr _Intrusive_list() noexcept { // TRANSITION, VSO#517878
+        constexpr _Intrusive_list() noexcept { // TRANSITION, VSO-517878
             // initialize this list to the empty state
         }
 

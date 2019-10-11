@@ -254,7 +254,7 @@ protected:
 };
 
 // STATIC numpunct::id OBJECT
-#if !(defined _CRTBLD && defined _BUILDING_SATELLITE_2) // TRANSITION, VSO#578955
+#if !(defined _CRTBLD && defined _BUILDING_SATELLITE_2) // TRANSITION, VSO-578955
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -391,7 +391,7 @@ protected:
                                   // We should still do numeric conversion with bad digit separators, instead of
                                   // setting 0, but we can't distinguish that from _Getifld's interface, and _Getifld's
                                   // interface can't be changed as it is an exported function.
-                                  // TRANSITION, ABI: Fixing that when ABI allows is tracked by VSO#591516.
+                                  // TRANSITION, ABI: Fixing that when ABI allows is tracked by VSO-591516.
                 _Val   = false;
                 _State = ios_base::failbit;
             } else {
@@ -422,7 +422,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
         const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
@@ -469,7 +469,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
         const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
@@ -493,7 +493,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
         const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
@@ -517,7 +517,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
         const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc());
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
@@ -541,7 +541,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
         const int _Base = _Getifld(_Ac, _First, _Last, _Iosbase.flags(), _Iosbase.getloc());
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0;
         } else {
@@ -573,7 +573,7 @@ protected:
         char _Ac[_FLOATING_BUFFER_SIZE];
         int _Hexexp     = _ENABLE_V2_BEHAVIOR;
         const int _Base = _Getffld(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0.0f;
         } else {
@@ -601,7 +601,7 @@ protected:
         char _Ac[_FLOATING_BUFFER_SIZE];
         int _Hexexp     = _ENABLE_V2_BEHAVIOR;
         const int _Base = _Getffld(_Ac, _First, _Last, _Iosbase, &_Hexexp); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = 0.0;
         } else {
@@ -638,7 +638,7 @@ protected:
         _Adl_verify_range(_First, _Last);
         char _Ac[_MAX_INT_DIG];
         const int _Base = _Getifld(_Ac, _First, _Last, ios_base::hex, _Iosbase.getloc()); // gather field
-        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO#591516
+        if (_Ac[0] == '\0') { // ditto "fails to convert the entire field" / VSO-591516
             _State = ios_base::failbit;
             _Val   = nullptr;
         } else {
