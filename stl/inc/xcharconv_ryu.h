@@ -1861,7 +1861,7 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
     const uint64_t __vmDiv100 = __div100(__vm);
     if (__vpDiv100 > __vmDiv100) { // Optimization: remove two digits at a time (~86.2%).
       const uint64_t __vrDiv100 = __div100(__vr);
-      const uint32_t __vrMod100 = static_cast<uint32_t>(__vr) - 100 * static_cast<uint32_t>(__vrDiv100);
+      const uint32_t __vrMod100 = static_cast<uint32_t>(__vr & 0xffffffff) - 100 * static_cast<uint32_t>(__vrDiv100 & 0xffffffff);
       __roundUp = __vrMod100 >= 50;
       __vr = __vrDiv100;
       __vp = __vpDiv100;
@@ -1879,7 +1879,7 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
         break;
       }
       const uint64_t __vrDiv10 = __div10(__vr);
-      const uint32_t __vrMod10 = static_cast<uint32_t>(__vr) - 10 * static_cast<uint32_t>(__vrDiv10);
+      const uint32_t __vrMod10 = static_cast<uint32_t>(__vr & 0xffffffff) - 10 * static_cast<uint32_t>(__vrDiv10 & 0xffffffff);
       __roundUp = __vrMod10 >= 5;
       __vr = __vrDiv10;
       __vp = __vpDiv10;
