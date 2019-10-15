@@ -799,7 +799,21 @@
 #define _DEPRECATE_STDEXT_HASH_UPPER_BOUND
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4024
+// P0966R1 [depr.string.capacity]
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_STRING_RESERVE_DEFAULT_ARGUMENT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_STRING_RESERVE_DEFAULT_ARGUMENT                                                             \
+    [[deprecated("warning STL4024: "                                                                                 \
+                 "std::string::reserve() with the default arument 0 is deprecated in C++20. "                        \
+                 "If the intention is to shrink the string's capacity, use std::string::shrink_to_fit(). Otherwise, "\
+                 "provide an argument to std::string::reserve(). "                                                   \
+                 "You can define _SILENCE_CXX20_STRING_RESERVE_DEFAULT_ARGUMENT_DEPRECATION_WARNING"                 \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_STRING_RESERVE_DEFAULT_ARGUMENT
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4025
 
 
 // LIBRARY FEATURE-TEST MACROS
