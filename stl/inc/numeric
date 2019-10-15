@@ -967,9 +967,9 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
         const auto _Val1_u = static_cast<_Unsigned>(_Val1);
         const auto _Val2_u = static_cast<_Unsigned>(_Val2);
         if (_Val1 > _Val2) {
-            return static_cast<_Ty>(_Val1 - static_cast<_Ty>(static_cast<_Unsigned>(_Val1_u - _Val2_u) >> 1));
+            return static_cast<_Ty>(_Val1 - static_cast<_Ty>(static_cast<_Unsigned>(_Val1_u - _Val2_u) / 2));
         } else {
-            return static_cast<_Ty>(_Val1 + static_cast<_Ty>(static_cast<_Unsigned>(_Val2_u - _Val1_u) >> 1));
+            return static_cast<_Ty>(_Val1 + static_cast<_Ty>(static_cast<_Unsigned>(_Val2_u - _Val1_u) / 2));
         }
     }
 }
@@ -977,9 +977,9 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
 template <class _Ty, enable_if_t<is_object_v<_Ty>, int> = 0>
 _NODISCARD constexpr _Ty* midpoint(_Ty* const _Val1, _Ty* const _Val2) noexcept /* strengthened */ {
     if (_Val1 > _Val2) {
-        return _Val1 - ((_Val1 - _Val2) >> 1);
+        return _Val1 - ((_Val1 - _Val2) >> 1); // shift for codegen
     } else {
-        return _Val1 + ((_Val2 - _Val1) >> 1);
+        return _Val1 + ((_Val2 - _Val1) >> 1); // shift for codegen
     }
 }
 #endif // _HAS_CXX20

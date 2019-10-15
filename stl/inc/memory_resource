@@ -715,7 +715,7 @@ namespace pmr {
                 return _Max_allocation;
             }
 
-            return (_Size + ((_Size + 1) >> 1) + alignof(_Header) - 1) & _Max_allocation;
+            return (_Size + (_Size + 1) / 2 + alignof(_Header) - 1) & _Max_allocation;
         }
 
         void _Increase_capacity(const size_t _Bytes, const size_t _Align) { // obtain a new buffer from upstream

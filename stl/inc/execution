@@ -241,7 +241,7 @@ constexpr size_t _Get_least2_chunked_work_chunk_count(const size_t _Hw_threads, 
     // get the number of chunks to break work into to parallelize, assuming chunks must be of size 2
     const auto _Size_count = static_cast<size_t>(_Count); // no overflow due to forward iterators
     // we assume _Hw_threads * _Oversubscription_multiplier does not overflow
-    return _Get_chunked_work_chunk_count(_Hw_threads, _Size_count >> 1);
+    return _Get_chunked_work_chunk_count(_Hw_threads, _Size_count / 2);
 }
 
 // STRUCT TEMPLATE _Parallelism_allocator
@@ -2679,7 +2679,7 @@ bool _Process_sort_work_item(const _RanIt _Basis, _Pr _Pred, _Sort_work_item<_Ra
 
     if (0 < _Ideal) { // divide and conquer by partitioning (quicksort)
         const auto _Mid       = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
-        const auto _New_ideal = static_cast<_Diff>((_Ideal >> 1) + (_Ideal >> 2)); // allow 1.5 log2(N) divisions
+        const auto _New_ideal = static_cast<_Diff>(_Ideal / 2 + _Ideal / 4); // allow 1.5 log2(N) divisions
         _Wi._Size             = _Mid.first - _First;
         _Wi._Ideal            = _New_ideal;
         _Right_fork_wi        = {_Mid.second - _Basis, _Last - _Mid.second, _New_ideal};
@@ -3030,8 +3030,7 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
         _Attempt_parallelism = false;
     }
 
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{
-        _Attempt_parallelism ? _Count : _Count - (_Count >> 1)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Attempt_parallelism ? _Count : _Count - _Count / 2};
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         if (_Attempt_parallelism) {
             // forward+ iterator overflow assumption for size_t cast
@@ -3283,7 +3282,7 @@ _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last,
 template <class _RanIt, class _Pr>
 struct _Static_partitioned_is_heap_until {
     using _Diff = _Iter_diff_t<_RanIt>;
-    _Static_partition_team<_Iter_diff_t<_RanIt>> _Team;
+    _Static_partition_team<_Diff> _Team;
     _RanIt _Range_first;
     _Pr _Pred;
     _Parallel_find_results<_RanIt> _Results;

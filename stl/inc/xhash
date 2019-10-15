@@ -1287,7 +1287,7 @@ public:
                 // In testing, hash<size_t>{}(size_t{}) takes about 14 times as much time as assigning a pointer, or
                 // ~7-8 times as much as clearing a bucket. Therefore, if we would need to assign over more than 8 times
                 // as many buckets as elements, remove element-by-element.
-                if ((bucket_count() >> 3) > _Oldsize) {
+                if (bucket_count() / 8 > _Oldsize) {
                     const auto _Head = _List._Mypair._Myval2._Myhead;
                     _Unchecked_erase(_Head->_Next, _Head);
                     return;

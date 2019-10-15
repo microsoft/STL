@@ -2514,7 +2514,7 @@ template <typename UInt, typename Pred>
     assert(first <= last);
 
     for (UInt n = last - first; n > 0;) {
-        const UInt n2  = n >> 1;
+        const UInt n2  = n / 2;
         const UInt mid = first + n2;
 
         if (pred(mid)) {
