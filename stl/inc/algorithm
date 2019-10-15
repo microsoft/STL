@@ -646,7 +646,7 @@ _NODISCARD _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     const auto _ULast = _Get_unwrapped(_Last);
     auto _Count       = _STD distance(_UFirst, _ULast);
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        const auto _Count2 = static_cast<_Iter_diff_t<_FwdIt>>(_Count >> 1);
+        const auto _Count2 = static_cast<_Iter_diff_t<_FwdIt>>(_Count / 2);
         const auto _UMid   = _STD next(_UFirst, _Count2);
 
         if (_Pred(*_UMid)) { // try top half
@@ -2619,9 +2619,10 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
 template <class _RanIt, class _Ty, class _Pr>
 void _Push_heap_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
     // percolate _Hole to _Top or where _Val belongs, using _Pred
-    for (_Iter_diff_t<_RanIt> _Idx = (_Hole - 1) >> 1; // TRANSITION, VSO-433486
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val);
-         _Idx = (_Hole - 1) >> 1) { // TRANSITION, VSO-433486
+    using _Diff = _Iter_diff_t<_RanIt>;
+    for (_Diff _Idx = (_Hole - 1) >> 1; // shift for codegen
+         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); //
+         _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
         *(_First + _Hole) = _STD move(*(_First + _Idx));
         _Hole             = _Idx;
@@ -2660,7 +2661,7 @@ void _Pop_heap_hole_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_di
 
     // Check whether _Idx can have a child before calculating that child's index, since
     // calculating the child's index can trigger integer overflows
-    const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // TRANSITION, VSO-433486
+    const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
     while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
         _Idx = 2 * _Idx + 2;
         if (_DEBUG_LT_PRED(_Pred, *(_First + _Idx), *(_First + (_Idx - 1)))) {
@@ -2683,9 +2684,9 @@ void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _Dest, _Ty&& _
     // pop *_First to *_Dest and reheap, using _Pred
     // precondition: _First != _Last
     // precondition: _First != _Dest
-    *_Dest = _STD move(*_First);
-    _Pop_heap_hole_by_index(
-        _First, _Iter_diff_t<_RanIt>(0), _Iter_diff_t<_RanIt>(_Last - _First), _STD move(_Val), _Pred);
+    *_Dest      = _STD move(*_First);
+    using _Diff = _Iter_diff_t<_RanIt>;
+    _Pop_heap_hole_by_index(_First, static_cast<_Diff>(0), static_cast<_Diff>(_Last - _First), _STD move(_Val), _Pred);
 }
 
 template <class _RanIt, class _Pr>
@@ -2713,8 +2714,9 @@ void pop_heap(_RanIt _First, _RanIt _Last) { // pop *_First to *(_Last - 1) and 
 template <class _RanIt, class _Pr>
 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // make nontrivial [_First, _Last) into a heap, using _Pred
-    _Iter_diff_t<_RanIt> _Bottom = _Last - _First;
-    for (_Iter_diff_t<_RanIt> _Hole = _Bottom >> 1; 0 < _Hole;) { // TRANSITION, VSO-433486
+    using _Diff   = _Iter_diff_t<_RanIt>;
+    _Diff _Bottom = _Last - _First;
+    for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
         _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
@@ -2737,9 +2739,10 @@ void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a hea
 template <class _RanIt, class _Pr>
 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap ordered by _Pred
-    const _Iter_diff_t<_RanIt> _Size = _Last - _First;
-    for (_Iter_diff_t<_RanIt> _Off = 1; _Off < _Size; ++_Off) {
-        if (_DEBUG_LT_PRED(_Pred, _First[(_Off - 1) >> 1], _First[_Off])) { // TRANSITION, VSO-433486
+    using _Diff       = _Iter_diff_t<_RanIt>;
+    const _Diff _Size = _Last - _First;
+    for (_Diff _Off = 1; _Off < _Size; ++_Off) {
+        if (_DEBUG_LT_PRED(_Pred, _First[(_Off - 1) >> 1], _First[_Off])) { // shift for codegen
             return _First + _Off;
         }
     }
@@ -2840,7 +2843,7 @@ _NODISCARD _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr 
     _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        _Iter_diff_t<_FwdIt> _Count2 = _Count >> 1; // TRANSITION, VSO-433486
+        _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
         const auto _UMid             = _STD next(_UFirst, _Count2);
         if (_Pred(_Val, *_UMid)) {
             _Count = _Count2;
@@ -2878,7 +2881,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _
             break;
         }
 
-        _Diff _Count2    = _Count >> 1; // TRANSITION, VSO-433486
+        _Diff _Count2    = _Count / 2;
         const auto _UMid = _STD next(_UFirst, _Count2);
         if (_DEBUG_LT_PRED(_Pred, *_UMid, _Val)) { // range begins above _UMid, loop
             _UFirst = _Next_iter(_UMid);
@@ -3172,16 +3175,17 @@ void _Buffered_inplace_merge_divide_and_conquer(_BidIt _First, _BidIt _Mid, _Bid
     _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* const _Temp_ptr, const ptrdiff_t _Capacity, _Pr _Pred) {
     // merge sorted [_First, _Mid) with sorted [_Mid, _Last), using _Pred
     // usual invariants apply
+    using _Diff = _Iter_diff_t<_BidIt>;
     if (_Count1 <= _Count2) {
-        const _Iter_diff_t<_BidIt> _Count1n = _Count1 >> 1; // TRANSITION, VSO-433486
-        const _BidIt _Firstn                = _STD next(_First, _Count1n);
-        const _BidIt _Lastn                 = _STD lower_bound(_Mid, _Last, *_Firstn, _Pred);
+        const _Diff _Count1n = _Count1 >> 1; // shift for codegen
+        const _BidIt _Firstn = _STD next(_First, _Count1n);
+        const _BidIt _Lastn  = _STD lower_bound(_Mid, _Last, *_Firstn, _Pred);
         _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred,
             _Firstn, _Lastn, _Count1n, _STD distance(_Mid, _Lastn));
     } else {
-        const _Iter_diff_t<_BidIt> _Count2n = _Count2 >> 1; // TRANSITION, VSO-433486
-        const _BidIt _Lastn                 = _STD next(_Mid, _Count2n);
-        const _BidIt _Firstn                = _STD upper_bound(_First, _Mid, *_Lastn, _Pred);
+        const _Diff _Count2n = _Count2 >> 1; // shift for codegen
+        const _BidIt _Lastn  = _STD next(_Mid, _Count2n);
+        const _BidIt _Firstn = _STD upper_bound(_First, _Mid, *_Lastn, _Pred);
         _Buffered_inplace_merge_divide_and_conquer2(_First, _Mid, _Last, _Count1, _Count2, _Temp_ptr, _Capacity, _Pred,
             _Firstn, _Lastn, _STD distance(_First, _Firstn), _Count2n);
     }
@@ -3283,13 +3287,14 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
 
     ++_ULast;
 
-    const _Iter_diff_t<_BidIt> _Count1 = _STD distance(_UFirst, _UMid);
+    using _Diff         = _Iter_diff_t<_BidIt>;
+    const _Diff _Count1 = _STD distance(_UFirst, _UMid);
     if (_Count1 == 1) { // rotate only element remaining in left partition to the end, without allocating
         _Rotate_one_left(_UFirst, _UMid, _ULast);
         return;
     }
 
-    const _Iter_diff_t<_BidIt> _Count2 = _STD distance(_UMid, _ULast);
+    const _Diff _Count2 = _STD distance(_UMid, _ULast);
     _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Min_value(_Count1, _Count2)};
     _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
@@ -3361,7 +3366,7 @@ template <class _RanIt, class _Pr>
 void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) { // sort median element to middle
     using _Diff        = _Iter_diff_t<_RanIt>;
     const _Diff _Count = _Last - _First;
-    if (40 < _Count) { // median of nine
+    if (40 < _Count) { // Tukey's ninther
         const _Diff _Step     = (_Count + 1) >> 3; // +1 can't overflow because range was made inclusive in caller
         const _Diff _Two_step = _Step << 1; // note: intentionally discards low-order bit
         _Med3_unchecked(_First, _First + _Step, _First + _Two_step, _Pred);
@@ -3376,7 +3381,7 @@ void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred
 template <class _RanIt, class _Pr>
 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last), using _Pred
-    _RanIt _Mid = _First + ((_Last - _First) >> 1); // TRANSITION, VSO-433486
+    _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
     _Guess_median_unchecked(_First, _Mid, _Last - 1, _Pred);
     _RanIt _Pfirst = _Mid;
     _RanIt _Plast  = _Pfirst + 1;
@@ -3446,8 +3451,8 @@ void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _
     _Iter_diff_t<_RanIt> _Count;
     while (_ISORT_MAX < (_Count = _Last - _First) && 0 < _Ideal) { // divide and conquer by quicksort
         auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
-        // TRANSITION, VSO-433486
-        _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
+
+        _Ideal = _Ideal / 2 + _Ideal / 4; // allow 1.5 log2(N) divisions
 
         if (_Mid.first - _First < _Last - _Mid.second) { // loop on second half
             _Sort_unchecked(_First, _Mid.first, _Ideal, _Pred);
@@ -3635,7 +3640,7 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     if (_Count <= _ISORT_MAX) {
         _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     } else { // sort halves and merge
-        const auto _Half_count      = static_cast<_Diff>(_Count >> 1);
+        const auto _Half_count      = static_cast<_Diff>(_Count / 2);
         const auto _Half_count_ceil = static_cast<_Diff>(_Count - _Half_count);
         const _BidIt _Mid           = _STD next(_First, _Half_count_ceil);
         if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer
@@ -3666,7 +3671,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
         return;
     }
 
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Count - (_Count >> 1)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Count - _Count / 2};
     _Stable_sort_unchecked(_UFirst, _ULast, _Count, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
 }
 
@@ -3754,9 +3759,9 @@ _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _La
         for (; _UFirst1 != _ULast1; ++_UFirst1) {
             if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
                 // replace top with new largest:
-                _Pop_heap_hole_by_index(_UFirst2, static_cast<_Iter_diff_t<_RanIt>>(0),
-                    static_cast<_Iter_diff_t<_RanIt>>(_UMid2 - _UFirst2), static_cast<_Iter_value_t<_InIt>>(*_UFirst1),
-                    _Pass_fn(_Pred));
+                using _Diff = _Iter_diff_t<_RanIt>;
+                _Pop_heap_hole_by_index(_UFirst2, static_cast<_Diff>(0), static_cast<_Diff>(_UMid2 - _UFirst2),
+                    static_cast<_Iter_value_t<_InIt>>(*_UFirst1), _Pass_fn(_Pred));
             }
         }
 

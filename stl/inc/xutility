@@ -4860,7 +4860,7 @@ _NODISCARD _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val
     _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        const _Iter_diff_t<_FwdIt> _Count2 = _Count >> 1; // TRANSITION, VSO-433486
+        const _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
         const auto _UMid                   = _STD next(_UFirst, _Count2);
         if (_Pred(*_UMid, _Val)) { // try top half
             _UFirst = _Next_iter(_UMid);

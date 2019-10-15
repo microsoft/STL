@@ -382,7 +382,7 @@ public:
             return _Sort2(_BFirst, _Pred);
         }
 
-        const auto _Half_bound = _Bound >> 1;
+        const auto _Half_bound = _Bound / 2;
         const auto _BMid       = _Sort(_BFirst, _Half_bound, _Pred);
         if (!_BMid->_Next) {
             return _BMid;
