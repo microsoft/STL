@@ -121,6 +121,7 @@
 // Other C++17 deprecation warnings
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
+// P0767R1 Deprecating is_pod
 // Other C++20 deprecation warnings
 
 // Implemented unconditionally:
@@ -812,9 +813,20 @@
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX20_DEPRECATE_STRING_RESERVE_WITHOUT_ARGUMENT
+
+// P0767R1 [depr.meta.types]
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_IS_POD_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_IS_POD                                              \
+    [[deprecated("warning STL4024: "                                         \
+                 "std::is_pod and std::is_pod_v are deprecated in C++20. "   \
+                 "You can define _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_IS_POD
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4025
+// next warning number: STL4026
 
 
 // LIBRARY FEATURE-TEST MACROS
