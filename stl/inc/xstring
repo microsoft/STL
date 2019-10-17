@@ -3616,6 +3616,27 @@ public:
         return _Mypair._Myval2._Myres;
     }
 
+#if _HAS_CXX20
+    void reserve(_CRT_GUARDOVERFLOW const size_type _Newcap) { // determine new minimum length of allocated storage
+        if (_Mypair._Myval2._Myres >= _Newcap) { // requested capacity is not larger than current capacity, ignore
+            return; // nothing to do
+        }
+
+        const size_type _Old_size = _Mypair._Myval2._Mysize;
+        _Reallocate_grow_by(
+            _Newcap - _Old_size, [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
+                _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
+            });
+
+        _Mypair._Myval2._Mysize = _Old_size;
+    }
+
+    _CXX20_DEPRECATE_STRING_RESERVE_WITHOUT_ARGUMENT void reserve() {
+        if (_Mypair._Myval2._Mysize == 0 && _Mypair._Myval2._Large_string_engaged()) {
+            _Become_small();
+        }
+    }
+#else // _HAS_CXX20
     void reserve(_CRT_GUARDOVERFLOW const size_type _Newcap = 0) { // determine new minimum length of allocated storage
         if (_Mypair._Myval2._Mysize > _Newcap) { // requested capacity is not large enough for current size, ignore
             return; // nothing to do
@@ -3644,6 +3665,7 @@ public:
 
         // ignore requests to reserve to [_BUF_SIZE, _Myres)
     }
+#endif // _HAS_CXX20
 
     _NODISCARD bool empty() const noexcept {
         return size() == 0;

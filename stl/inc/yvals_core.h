@@ -44,6 +44,7 @@
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0919R3 Heterogeneous Lookup For Unordered Containers
+// P0966R1 string::reserve() Should Not Shrink
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 //     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
@@ -412,7 +413,7 @@
 
 #define _CPPLIB_VER 650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE 201909L
+#define _MSVC_STL_UPDATE 201910L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -799,7 +800,21 @@
 #define _DEPRECATE_STDEXT_HASH_UPPER_BOUND
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4024
+// P0966R1 [depr.string.capacity]
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_STRING_RESERVE_WITHOUT_ARGUMENT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_STRING_RESERVE_WITHOUT_ARGUMENT                                                             \
+    [[deprecated("warning STL4024: "                                                                                 \
+                 "std::string::reserve() without an argument is deprecated in C++20. "                               \
+                 "To shrink the string's capacity, use std::string::shrink_to_fit() instead. Otherwise, provide an " \
+                 "argument to std::string::reserve(). "                                                              \
+                 "You can define _SILENCE_CXX20_STRING_RESERVE_WITHOUT_ARGUMENT_DEPRECATION_WARNING "                \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_STRING_RESERVE_WITHOUT_ARGUMENT
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4025
 
 
 // LIBRARY FEATURE-TEST MACROS
