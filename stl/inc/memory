@@ -1821,7 +1821,7 @@ public:
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(pointer, remove_reference_t<_Dx>&&) = delete;
 
-    template <class _MyDx = _Dx, enable_if_t<is_move_constructible_v<_MyDx>, int> = 0>
+    template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
     unique_ptr(unique_ptr&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
@@ -1849,7 +1849,7 @@ public:
         return *this;
     }
 
-    template <class _MyDx = _Dx, enable_if_t<is_move_constructible_v<_MyDx>, int> = 0>
+    template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
@@ -1948,11 +1948,11 @@ public:
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(_Uty, remove_reference_t<_Dx>&&) = delete;
 
-    template <class _MyDx = _Dx, enable_if_t<is_move_constructible_v<_MyDx>, int> = 0>
+    template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
     unique_ptr(unique_ptr&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
-    template <class _MyDx = _Dx, enable_if_t<is_move_constructible_v<_MyDx>, int> = 0>
+    template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
