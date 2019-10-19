@@ -909,6 +909,7 @@
 
 // C++20
 #if _HAS_CXX20
+#define __cpp_lib_bind_front 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201811L
@@ -935,7 +936,6 @@
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_to_array 201907L
-#define __cpp_lib_bind_front 201910L
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
