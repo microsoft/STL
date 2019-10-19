@@ -428,14 +428,15 @@ public:
         : _Mybase(allocator_arg, _Al), _Myfirst(_Al, allocator_arg) {}
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
     template <class _Alloc, class _This2 = _This,
-        enable_if_t<
-            conjunction_v<_Is_implicitly_default_constructible<_This2>, _Is_implicitly_default_constructible<_Rest>...>,
+        enable_if_t<conjunction_v<is_default_constructible<_This2>, is_default_constructible<_Rest>...,
+                        _Is_implicitly_default_constructible<_This2>, _Is_implicitly_default_constructible<_Rest>...>,
             int> = 0>
     tuple(allocator_arg_t, const _Alloc& _Al) : _Mybase(allocator_arg, _Al), _Myfirst(_Al, allocator_arg) {}
 
     template <class _Alloc, class _This2 = _This,
-        enable_if_t<!conjunction_v<_Is_implicitly_default_constructible<_This2>,
-                        _Is_implicitly_default_constructible<_Rest>...>,
+        enable_if_t<conjunction_v<is_default_constructible<_This2>, is_default_constructible<_Rest>...,
+                        negation<conjunction<_Is_implicitly_default_constructible<_This2>,
+                            _Is_implicitly_default_constructible<_Rest>...>>>,
             int> = 0>
     explicit tuple(allocator_arg_t, const _Alloc& _Al) : _Mybase(allocator_arg, _Al), _Myfirst(_Al, allocator_arg) {}
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
