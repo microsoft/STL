@@ -528,10 +528,10 @@ struct is_volatile : bool_constant<is_volatile_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_pod
 template <class _Ty>
-struct is_pod : bool_constant<__is_pod(_Ty)> {}; // determine whether _Ty is a POD type
+struct _CXX20_DEPRECATE_IS_POD is_pod : bool_constant<__is_pod(_Ty)> {}; // determine whether _Ty is a POD type
 
 template <class _Ty>
-_INLINE_VAR constexpr bool is_pod_v = __is_pod(_Ty);
+_CXX20_DEPRECATE_IS_POD _INLINE_VAR constexpr bool is_pod_v = __is_pod(_Ty);
 
 // STRUCT TEMPLATE is_empty
 template <class _Ty>
