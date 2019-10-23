@@ -22,6 +22,7 @@
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
+// P0356R5 bind_front()
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
@@ -48,6 +49,7 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 //     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1754R1 Rename Concepts To standard_case
 // P????R? directory_entry::clear_cache()
 
@@ -908,6 +910,7 @@
 
 // C++20
 #if _HAS_CXX20
+#define __cpp_lib_bind_front 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201811L
