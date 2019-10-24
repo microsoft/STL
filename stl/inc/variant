@@ -1523,10 +1523,9 @@ struct _Variant_all_visit_results_implicitly_convertible; // undefined
 template <class _To, class _Callable, class... _IndexVectors, class... _Variants>
 struct _Variant_all_visit_results_implicitly_convertible<_To, _Callable, _Meta_list<_IndexVectors...>, _Variants...>
     : _Convertible_from_all<_To,
-          typename _Variant_single_visit_result<_Callable, _IndexVectors,
-              _Variants...>::type...>::type { // true_type if invocation of _Callable on the elements
-                                              // of _Variants with all sequences of indices in
-                                              // _IndexVectors is implicitly convertible to _To.
+          typename _Variant_single_visit_result<_Callable, _IndexVectors, _Variants...>::type...>::type {
+    // true_type if invocation of _Callable on the elements of _Variants with all sequences of indices in _IndexVectors
+    // is implicitly convertible to _To.
 };
 
 template <int _Strategy>
@@ -1644,11 +1643,12 @@ constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_C
         _Meta_list<_Meta_as_list<make_index_sequence<1 + variant_size_v<_Remove_cvref_t<_As_variant<_Variants>>>>>...>;
     using _ListOfIndexVectors =
         _Meta_transform<_Meta_quote<_Meta_as_integer_sequence>, _Meta_cartesian_product<_ListOfIndexLists>>;
+    using _Ret = _Variant_visit_result_t<_Callable, _As_variant<_Variants>...>;
     static_assert(_Variant_all_visit_results_same<_Callable, _ListOfIndexVectors, _As_variant<_Variants>...>::value,
         "visit() requires the result of all potential invocations to have the same type and value category "
         "(N4835 [variant.visit]/2).");
 
-    return _Visit_impl<_Size, _ListOfIndexVectors, _Variant_visit_result_t<_Callable, _As_variant<_Variants>...>>(
+    return _Visit_impl<_Size, _ListOfIndexVectors, _Ret>(
         static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);
 }
 
