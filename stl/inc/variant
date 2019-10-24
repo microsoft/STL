@@ -888,13 +888,12 @@ public:
 
     void _Destroy() noexcept { // destroy the contained value, if any
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
-            _Variant_raw_visit(
-                index(), _Storage(), [](auto _Ref) noexcept {
-                    (void) _Ref; // TRANSITION, VSO-486357
-                    if constexpr (decltype(_Ref)::_Idx != variant_npos) {
-                        _Destroy_in_place(_Ref._Val);
-                    }
-                });
+            _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
+                (void) _Ref; // TRANSITION, VSO-486357
+                if constexpr (decltype(_Ref)::_Idx != variant_npos) {
+                    _Destroy_in_place(_Ref._Val);
+                }
+            });
         }
     }
 
