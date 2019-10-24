@@ -1328,15 +1328,15 @@ public:
         : _Ty1(), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     template <class _Other1, class... _Other2>
-    _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
+    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
         conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Ty1(_STD forward<_Other1>(_Val1)), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
-    _Ty1& _Get_first() noexcept {
+    constexpr _Ty1& _Get_first() noexcept {
         return *this;
     }
 
-    const _Ty1& _Get_first() const noexcept {
+    constexpr const _Ty1& _Get_first() const noexcept {
         return *this;
     }
 };
@@ -1353,15 +1353,15 @@ public:
         : _Myval1(), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     template <class _Other1, class... _Other2>
-    _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
+    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
         conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Myval1(_STD forward<_Other1>(_Val1)), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
-    _Ty1& _Get_first() noexcept {
+    constexpr _Ty1& _Get_first() noexcept {
         return _Myval1;
     }
 
-    const _Ty1& _Get_first() const noexcept {
+    constexpr const _Ty1& _Get_first() const noexcept {
         return _Myval1;
     }
 };

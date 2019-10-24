@@ -463,8 +463,7 @@ public:
     }
 
     ~scoped_lock() noexcept {
-        _For_each_tuple_element(
-            _MyMutexes, [](auto& _Mutex) noexcept { _Mutex.unlock(); });
+        _For_each_tuple_element(_MyMutexes, [](auto& _Mutex) noexcept { _Mutex.unlock(); });
     }
 
     scoped_lock(const scoped_lock&) = delete;
