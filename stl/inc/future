@@ -92,7 +92,7 @@ enum class future_status { // names for timed wait function returns
 
 // STRUCT TEMPLATE SPECIALIZATION is_error_code_enum
 template <>
-struct is_error_code_enum<future_errc> : public true_type {};
+struct is_error_code_enum<future_errc> : true_type {};
 
 _NODISCARD const error_category& future_category() noexcept;
 

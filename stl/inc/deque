@@ -523,7 +523,7 @@ struct _Deque_iter_types {
 };
 
 template <class _Ty>
-struct _Deque_simple_types : public _Simple_types<_Ty> {
+struct _Deque_simple_types : _Simple_types<_Ty> {
     using _Mapptr = _Ty**;
 };
 

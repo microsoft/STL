@@ -382,7 +382,7 @@ struct _Tree_node {
 };
 
 template <class _Ty>
-struct _Tree_simple_types : public _Simple_types<_Ty> {
+struct _Tree_simple_types : _Simple_types<_Ty> {
     using _Node    = _Tree_node<_Ty, void*>;
     using _Nodeptr = _Node*;
 };

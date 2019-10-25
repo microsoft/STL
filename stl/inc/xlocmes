@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // STRUCT messages_base
-struct messages_base : public locale::facet { // base class for messages
+struct messages_base : locale::facet { // base class for messages
     using catalog = int;
 
     explicit messages_base(size_t _Refs = 0) : locale::facet(_Refs) {}

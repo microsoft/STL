@@ -478,7 +478,7 @@ protected:
 
 private:
     // STRUCT _Iosarray
-    struct _Iosarray : public _Crt_new_delete { // list element for open-ended sparse array of longs/pointers
+    struct _Iosarray : _Crt_new_delete { // list element for open-ended sparse array of longs/pointers
     public:
         __CLR_OR_THIS_CALL _Iosarray(int _Idx, _Iosarray* _Link)
             : _Next(_Link), _Index(_Idx), _Lo(0), _Vp(nullptr) { // construct node for index _Idx and link it in
@@ -491,7 +491,7 @@ private:
     };
 
     // STRUCT _Fnarray
-    struct _Fnarray : public _Crt_new_delete { // list element for open-ended sparse array of event handlers
+    struct _Fnarray : _Crt_new_delete { // list element for open-ended sparse array of event handlers
         __CLR_OR_THIS_CALL _Fnarray(int _Idx, event_callback _Pnew, _Fnarray* _Link)
             : _Next(_Link), _Index(_Idx), _Pfn(_Pnew) { // construct node for index _Idx and link it in
         }
