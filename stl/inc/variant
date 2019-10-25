@@ -1625,7 +1625,7 @@ template <class _Ty>
 using _As_variant = // Deduce variant specialization from a derived type
     decltype(_As_variant_(_STD declval<_Ty>()));
 
-template <size_t _Size, class _ListOfIndexVectors, class _Ret, class _Callable, class... _Variants>
+template <size_t _Size, class _Ret, class _ListOfIndexVectors, class _Callable, class... _Variants>
 constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
     constexpr int _Strategy =
         _Size == 1 ? 0 : _Size <= 4 ? 1 : _Size <= 16 ? 2 : _Size <= 64 ? 3 : _Size <= 256 ? 4 : -1;
@@ -1647,7 +1647,7 @@ constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_C
         "visit() requires the result of all potential invocations to have the same type and value category "
         "(N4835 [variant.visit]/2).");
 
-    return _Visit_impl<_Size, _ListOfIndexVectors, _Ret>(
+    return _Visit_impl<_Size, _Ret, _ListOfIndexVectors>(
         static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);
 }
 
@@ -1666,7 +1666,7 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
             "(N4835 [variant.visit]/2).");
     }
 
-    return _Visit_impl<_Size, _ListOfIndexVectors, _Ret>(
+    return _Visit_impl<_Size, _Ret, _ListOfIndexVectors>(
         static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);
 }
 #endif // _HAS_CXX20
