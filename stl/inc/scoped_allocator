@@ -62,7 +62,7 @@ struct _Scoped_base;
 struct _Secret_scoped_allocator_construct_tag {};
 
 template <class _Outer, class _Inner0, class... _Inner>
-struct _Scoped_base<_Outer, _Inner0, _Inner...> : public _Outer { // nest of allocators, arbitrary depth
+struct _Scoped_base<_Outer, _Inner0, _Inner...> : _Outer { // nest of allocators, arbitrary depth
     using _Myadaptor           = scoped_allocator_adaptor<_Outer, _Inner0, _Inner...>;
     using inner_allocator_type = scoped_allocator_adaptor<_Inner0, _Inner...>;
 
@@ -99,7 +99,7 @@ struct _Scoped_base<_Outer, _Inner0, _Inner...> : public _Outer { // nest of all
 };
 
 template <class _Outer>
-struct _Scoped_base<_Outer> : public _Outer { // nest of allocators, one deep
+struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     using _Myadaptor           = scoped_allocator_adaptor<_Outer>;
     using inner_allocator_type = scoped_allocator_adaptor<_Outer>;
 

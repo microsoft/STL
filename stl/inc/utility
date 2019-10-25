@@ -407,20 +407,20 @@ template <size_t _Index, class _Tuple>
 struct tuple_element;
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, const _Tuple> : public tuple_element<_Index, _Tuple> { // tuple_element for const
+struct tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> { // tuple_element for const
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_const_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, volatile _Tuple> : public tuple_element<_Index, _Tuple> { // tuple_element for volatile
+struct tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> { // tuple_element for volatile
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_volatile_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
 struct tuple_element<_Index, const volatile _Tuple>
-    : public tuple_element<_Index, _Tuple> { // tuple_element for const volatile
+    : tuple_element<_Index, _Tuple> { // tuple_element for const volatile
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };
@@ -463,7 +463,7 @@ struct tuple_element<0, tuple<_This, _Rest...>> { // select first element
 
 template <size_t _Index, class _This, class... _Rest>
 struct tuple_element<_Index, tuple<_This, _Rest...>>
-    : public tuple_element<_Index - 1, tuple<_Rest...>> { // recursive tuple_element definition
+    : tuple_element<_Index - 1, tuple<_Rest...>> { // recursive tuple_element definition
 };
 
 // TUPLE INTERFACE TO pair

@@ -2398,7 +2398,7 @@ protected:
 };
 
 // STRUCT ctype_base
-struct _CRTIMP2_PURE_IMPORT ctype_base : public locale::facet { // base for ctype
+struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
     enum { // constants for character classifications
         alnum  = _DI | _LO | _UP | _XA,
         alpha  = _LO | _UP | _XA,

@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // STRUCT money_base
-struct money_base : public locale::facet { // ultimate base class for moneypunct
+struct money_base : locale::facet { // ultimate base class for moneypunct
     enum { // constants for different format codes
         symbol = '$',
         sign   = '+',
