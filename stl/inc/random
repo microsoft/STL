@@ -1910,7 +1910,7 @@ public:
     using _Mypbase    = typename _Mybase::param_type;
     using result_type = typename _Mybase::result_type;
 
-    struct param_type : public _Mypbase { // parameter package
+    struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_int_distribution;
 
         explicit param_type(result_type _Min0 = 0, result_type _Max0 = (numeric_limits<_Ty>::max)())
@@ -2653,7 +2653,7 @@ public:
     using _Mypbase    = typename _Mybase::param_type;
     using result_type = typename _Mybase::result_type;
 
-    struct param_type : public _Mypbase { // parameter package
+    struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_real_distribution;
 
         explicit param_type(_Ty _Min0 = _Ty{0}, _Ty _Max0 = _Ty{1}) : _Mypbase(_Min0, _Max0) {}
@@ -4475,7 +4475,7 @@ public:
     using _Noinit     = typename _Mypbase::_Noinit;
     using result_type = _Ty;
 
-    struct param_type : public _Mypbase { // parameter package
+    struct param_type : _Mypbase { // parameter package
         using distribution_type = piecewise_constant_distribution;
 
         param_type() {
@@ -4677,7 +4677,7 @@ public:
     using _Noinit     = typename _Mypbase::_Noinit;
     using result_type = _Ty;
 
-    struct param_type : public _Mypbase { // parameter package
+    struct param_type : _Mypbase { // parameter package
         using distribution_type = piecewise_linear_distribution;
 
         param_type() {

@@ -256,7 +256,7 @@ struct _Flist_node { // forward_list node
 };
 
 template <class _Ty>
-struct _Flist_simple_types : public _Simple_types<_Ty> {
+struct _Flist_simple_types : _Simple_types<_Ty> {
     using _Node    = _Flist_node<_Ty, void*>;
     using _Nodeptr = _Node*;
 };

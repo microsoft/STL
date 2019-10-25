@@ -332,7 +332,7 @@ struct _List_node { // list node
 };
 
 template <class _Ty>
-struct _List_simple_types : public _Simple_types<_Ty> {
+struct _List_simple_types : _Simple_types<_Ty> {
     using _Node    = _List_node<_Ty, void*>;
     using _Nodeptr = _Node*;
 };
