@@ -35,6 +35,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0660R10 <stop_token> and jthread
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 //     (partially implemented)
@@ -950,6 +951,7 @@
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
 #define __cpp_lib_generic_unordered_lookup 201811L
+#define __cpp_lib_jthread 201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_to_array 201907L
 #endif // _HAS_CXX20

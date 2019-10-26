@@ -11,6 +11,7 @@
 #include <chrono>
 #include <memory>
 #include <mutex>
+#include <stop_token>
 #include <xthreads.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -146,6 +147,18 @@ public:
         // wait for signal with timeout and check predicate
         return _Wait_until1(_Xtrnl, _Abs_time, _Pred);
     }
+
+#if _HAS_CXX20
+    template <class _Lock, class _Rep, class _Period, class _Predicate>
+    bool wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred, stop_token _S_token);
+
+    template <class _Lock, class _Predicate>
+    bool wait_until(_Lock& _Lck, _Predicate _Pred, stop_token _S_token);
+
+    template <class _Lock, class _Clock, class _Duration, class _Predicate>
+    bool wait_until(
+        _Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred, stop_token _S_token);
+#endif // _HAS_CXX20
 
 private:
     shared_ptr<mutex> _Myptr;

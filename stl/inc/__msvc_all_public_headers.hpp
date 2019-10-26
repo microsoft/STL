@@ -82,6 +82,7 @@
 #include <sstream>
 #include <stack>
 #include <stdexcept>
+#include <stop_token>
 #include <streambuf>
 #include <string>
 #include <string_view>

@@ -1,0 +1,110 @@
+// stop_token standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _STOP_TOKEN_
+#define _STOP_TOKEN_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#if _HAS_CXX20
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+class stop_token {
+public:
+    stop_token() noexcept;
+
+    ~stop_token();
+
+    stop_token(stop_token&&) noexcept;
+    stop_token& operator=(stop_token&&) noexcept;
+
+    stop_token(const stop_token&) noexcept;
+    stop_token& operator=(const stop_token&) noexcept;
+
+    void swap(stop_token&) noexcept;
+
+    _NODISCARD bool stop_requested() const noexcept;
+    _NODISCARD bool stop_possible() const noexcept;
+
+    _NODISCARD friend bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept;
+    _NODISCARD friend bool operator!=(const stop_token& _Lhs, const stop_token& _Rhs) noexcept;
+};
+
+inline void swap(stop_token& _Lhs, stop_token& _Rhs) noexcept {
+    _Lhs.swap(_Rhs);
+}
+
+struct nostopstate_t {
+    explicit nostopstate_t() = default;
+};
+
+inline constexpr nostopstate_t nostopstate{};
+
+class stop_source {
+public:
+    stop_source();
+    explicit stop_source(nostopstate_t) noexcept;
+
+    ~stop_source();
+
+    stop_source(stop_source&&) noexcept;
+    stop_source& operator=(stop_source&&) noexcept;
+
+    stop_source(const stop_source&) noexcept;
+    stop_source& operator=(const stop_source&) noexcept;
+
+    void swap(stop_source&) noexcept;
+
+    _NODISCARD stop_token get_token() const noexcept;
+    _NODISCARD bool stop_possible() const noexcept;
+    _NODISCARD bool stop_requested() const noexcept;
+    bool request_stop() noexcept;
+
+    _NODISCARD friend bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept;
+    _NODISCARD friend bool operator!=(const stop_source& _Lhs, const stop_source& _Rhs) noexcept;
+};
+
+inline void swap(stop_source& _Lhs, stop_source& _Rhs) noexcept {
+    _Lhs.swap(_Rhs);
+}
+
+template <class _Callback>
+class stop_callback {
+public:
+    using callback_type = _Callback;
+
+    template <class _Fn>
+    explicit stop_callback(const stop_token& _S_token, _Fn&& _Fx) noexcept(is_nothrow_constructible_v<_Callback, _Fn>);
+
+    template <class _Fn>
+    explicit stop_callback(stop_token&& _S_token, _Fn&& _Fx) noexcept(is_nothrow_constructible_v<_Callback, _Fn>);
+
+    ~stop_callback();
+
+    stop_callback(stop_callback&&) = delete;
+    stop_callback& operator=(stop_callback&&) = delete;
+
+    stop_callback(const stop_callback&) = delete;
+    stop_callback& operator=(const stop_callback&) = delete;
+
+private:
+    _Callback _My_callback;
+};
+
+template <class _Callback>
+stop_callback(stop_token, _Callback)->stop_callback<_Callback>;
+
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#pragma message("stop_token is only available with C++20 or later.")
+#endif // _HAS_CXX20
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _STOP_TOKEN_
