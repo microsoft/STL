@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-// TODO (for P0768R1 completion):
+// TRANSITION (for P0768R1 completion):
 // * Implement comparison algorithms from [cmp.alg]
 // * Implement compare_3way and lexicographical_compare_3way in <algorithm>
 // * After completing the above, define __cpp_lib_three_way_comparison when
