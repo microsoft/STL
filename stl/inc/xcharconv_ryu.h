@@ -1114,7 +1114,7 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
         // __mp = __mv + 2, so it always has at least one trailing 0 bit.
         --__vp;
       }
-    } else if (__q < 31) { // TODO(ulfjack): Use a tighter bound here.
+    } else if (__q < 31) { // TRANSITION(ulfjack): Use a tighter bound here.
       __vrIsTrailingZeros = __multipleOfPowerOf2(__mv, __q - 1);
     }
   }
@@ -1796,7 +1796,7 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
         // __mp = __mv + 2, so it always has at least one trailing 0 bit.
         --__vp;
       }
-    } else if (__q < 63) { // TODO(ulfjack): Use a tighter bound here.
+    } else if (__q < 63) { // TRANSITION(ulfjack): Use a tighter bound here.
       // We need to compute min(ntz(__mv), __pow5Factor(__mv) - __e2) >= __q - 1
       // <=> ntz(__mv) >= __q - 1 && __pow5Factor(__mv) - __e2 >= __q - 1
       // <=> ntz(__mv) >= __q - 1 (__e2 is negative and -__e2 >= __q)
