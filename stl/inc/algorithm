@@ -4388,7 +4388,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
     // find smallest and largest elements, using _Pred
     pair<_FwdIt, _FwdIt> _Found(_First, _First);
 
-    while (++_First != _Last) { // O(N-1) applications of _Pred, where N = std::distance(_First, _Last)
+    while (_First++ != _Last) { // O(N) applications of _Pred, where N = std::distance(_First, _Last)
         _Found.first = _DEBUG_LT_PRED(_Pred, *_First, *_Found.first) ? _First : _Found.first, _Found.second = _First;
     }
 
