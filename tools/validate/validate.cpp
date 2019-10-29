@@ -100,7 +100,7 @@ void scan_file(const string& filepath, vector<unsigned char>& buffer) {
                 ++trailing_whitespace_lines;
             }
 
-            (void) exchange(previous3, exchange(previous2, exchange(prev, ch)));
+            previous3 = exchange(previous2, exchange(prev, ch));
         }
     }
 
