@@ -39,7 +39,7 @@ public:
 
     ~BinaryFile() {
         if (fclose(m_file) != 0) {
-            puts("fclose() failed.");
+            fprintf(stderr, "fclose() failed.\n");
             terminate();
         }
     }
@@ -90,7 +90,7 @@ void scan_file(const string& filepath, vector<unsigned char>& buffer) {
                 ++disallowed_characters;
                 constexpr size_t MaxDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxDisallowedCharacters) {
-                    printf("Validation failed: %s contains disallowed character 0x%02X.\n", filepath.c_str(),
+                    fprintf(stderr, "Validation failed: %s contains disallowed character 0x%02X.\n", filepath.c_str(),
                         static_cast<unsigned int>(ch));
                 }
             }
@@ -108,39 +108,39 @@ void scan_file(const string& filepath, vector<unsigned char>& buffer) {
     }
 
     if (has_cr) {
-        printf("Validation failed: %s contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
+        fprintf(stderr, "Validation failed: %s contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
     } else if (has_lf && has_crlf) {
-        printf("Validation failed: %s contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
+        fprintf(stderr, "Validation failed: %s contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
     } else if (has_lf) {
-        printf("Validation failed: %s contains LF line endings.", filepath.c_str());
+        fprintf(stderr, "Validation failed: %s contains LF line endings.", filepath.c_str());
 
         if (prev != LF) {
-            printf(" Also, it doesn't end with a newline.\n");
+            fprintf(stderr, " Also, it doesn't end with a newline.\n");
         } else if (previous2 == LF) {
-            printf(" Also, it ends with multiple newlines.\n");
+            fprintf(stderr, " Also, it ends with multiple newlines.\n");
         } else {
-            printf("\n");
+            fprintf(stderr, "\n");
         }
     } else if (has_crlf) {
         if (previous2 != CR || prev != LF) {
-            printf("Validation failed: %s doesn't end with a newline.\n", filepath.c_str());
+            fprintf(stderr, "Validation failed: %s doesn't end with a newline.\n", filepath.c_str());
         } else if (previous3 == LF) {
-            printf("Validation failed: %s ends with multiple newlines.\n", filepath.c_str());
+            fprintf(stderr, "Validation failed: %s ends with multiple newlines.\n", filepath.c_str());
         }
     } else {
-        printf("Validation failed: %s doesn't contain any newlines.\n", filepath.c_str());
+        fprintf(stderr, "Validation failed: %s doesn't contain any newlines.\n", filepath.c_str());
     }
 
     if (has_utf8_bom) {
-        printf("Validation failed: %s contains UTF-8 BOM characters.\n", filepath.c_str());
+        fprintf(stderr, "Validation failed: %s contains UTF-8 BOM characters.\n", filepath.c_str());
     }
 
     if (tab_characters != 0) {
-        printf("Validation failed: %s contains %zu tab characters.\n", filepath.c_str(), tab_characters);
+        fprintf(stderr, "Validation failed: %s contains %zu tab characters.\n", filepath.c_str(), tab_characters);
     }
 
     if (trailing_whitespace_lines != 0) {
-        printf("Validation failed: %s contains %zu lines with trailing whitespace.\n", filepath.c_str(),
+        fprintf(stderr, "Validation failed: %s contains %zu lines with trailing whitespace.\n", filepath.c_str(),
             trailing_whitespace_lines);
     }
 }
@@ -190,8 +190,8 @@ int main() {
             scan_file(filepath, buffer);
         }
     } catch (const exception& e) {
-        printf("Validation failed: Exception: %s\n", e.what());
+        fprintf(stderr, "Validation failed: Exception: %s\n", e.what());
     } catch (...) {
-        printf("Validation failed: Unknown exception.\n");
+        fprintf(stderr, "Validation failed: Unknown exception.\n");
     }
 }
