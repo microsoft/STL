@@ -1371,11 +1371,11 @@ public:
 
         if (_Firstptr != _Lastptr) { // something to do, invalidate iterators
             _Orphan_range(_Firstptr, _Mylast);
-        }
 
-        const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
-        _Destroy(_Newlast, _Mylast);
-        _Mylast = _Newlast;
+            const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
+            _Destroy(_Newlast, _Mylast);
+            _Mylast = _Newlast;
+        }
 
         return iterator(_Firstptr, _STD addressof(_My_data));
     }
