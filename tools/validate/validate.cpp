@@ -87,8 +87,8 @@ void scan_file(const string& filepath, vector<unsigned char>& buffer) {
                 has_utf8_bom = true;
             } else if (ch != CR && ch != LF && !(ch >= 0x20 && ch <= 0x7E)) {
                 ++disallowed_characters;
-                constexpr size_t MaxDisallowedCharacters = 10;
-                if (disallowed_characters <= MaxDisallowedCharacters) {
+                constexpr size_t MaxErrorsForDisallowedCharacters = 10;
+                if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
                     fprintf(stderr, "Validation failed: %s contains disallowed character 0x%02X.\n", filepath.c_str(),
                         static_cast<unsigned int>(ch));
                 }
