@@ -39,7 +39,6 @@ jobs:
         vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
     - task: run-cmake@0
       displayName: 'Build Support Tools'
-      enabled: true
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
         cmakeListsTxtPath: 'tools/CMakeSettings.json'
@@ -59,7 +58,6 @@ jobs:
       failOnStderr: true
     - task: run-cmake@0
       displayName: 'Build the STL'
-      enabled: true
       inputs:
         cmakeListsTxtPath: 'CMakeSettings.json'
         useVcpkgToolchainFile: true
