@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <stdexcept>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -40,7 +41,7 @@ public:
     ~BinaryFile() {
         if (fclose(m_file) != 0) {
             fprintf(stderr, "fclose() failed.\n");
-            terminate();
+            abort();
         }
     }
 
