@@ -5,9 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <assert.h>
-#include <exception>
 #include <filesystem>
-#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -22,7 +20,7 @@ public:
         m_file = fopen(filepath.c_str(), "rb");
 
         if (!m_file) {
-            throw runtime_error("fopen() failed for: " + filepath);
+            fprintf(stderr, "Validation failed: %s couldn't be opened.\n", filepath.c_str());
         }
     }
 
@@ -167,32 +165,26 @@ int main() {
 
     vector<unsigned char> buffer; // reused for performance
 
-    try {
-        for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
-            if (!rdi->is_regular_file()) {
-                if (rdi->is_directory()) {
-                    const string filename = rdi->path().filename().string();
-                    if (binary_search(skipped_directories.begin(), skipped_directories.end(), filename)) {
-                        rdi.disable_recursion_pending();
-                    }
+    for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
+        if (!rdi->is_regular_file()) {
+            if (rdi->is_directory()) {
+                const string filename = rdi->path().filename().string();
+                if (binary_search(skipped_directories.begin(), skipped_directories.end(), filename)) {
+                    rdi.disable_recursion_pending();
                 }
-
-                continue;
             }
 
-            const string extension = rdi->path().extension().string();
-
-            if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
-                continue;
-            }
-
-            const string filepath = rdi->path().string();
-
-            scan_file(filepath, buffer);
+            continue;
         }
-    } catch (const exception& e) {
-        fprintf(stderr, "Validation failed: Exception: %s\n", e.what());
-    } catch (...) {
-        fprintf(stderr, "Validation failed: Unknown exception.\n");
+
+        const string extension = rdi->path().extension().string();
+
+        if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
+            continue;
+        }
+
+        const string filepath = rdi->path().string();
+
+        scan_file(filepath, buffer);
     }
 }
