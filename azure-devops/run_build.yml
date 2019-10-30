@@ -48,12 +48,14 @@ jobs:
     - task: BatchScript@1
       displayName: 'Enforce clang-format'
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      continueOnError: true
       inputs:
         filename: 'azure-devops/enforce-clang-format.cmd'
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
     - displayName: 'Validate Files'
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      continueOnError: true
       script: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
       failOnStderr: true
     - task: run-cmake@0
