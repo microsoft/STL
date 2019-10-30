@@ -1187,17 +1187,6 @@ template <class _Ty, unsigned int _Ix = 0>
 struct extent : integral_constant<size_t, extent_v<_Ty, _Ix>> {};
 
 // STRUCT TEMPLATE is_base_of
-#ifdef __clang__ // TRANSITION, Clang 9
-template <class _Base, class _Derived, bool = __is_class(_Base) && __is_class(_Derived)>
-_INLINE_VAR constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
-
-template <class _Base, class _Derived>
-_INLINE_VAR constexpr bool is_base_of_v<_Base, _Derived, false> = false;
-
-template <class _Base, class _Derived>
-struct is_base_of : bool_constant<is_base_of_v<_Base, _Derived>> {};
-
-#else // ^^^ workaround / no workaround vvv
 template <class _Base, class _Derived>
 struct is_base_of : bool_constant<__is_base_of(_Base, _Derived)> {
     // determine whether _Base is a base of or the same as _Derived
@@ -1205,7 +1194,6 @@ struct is_base_of : bool_constant<__is_base_of(_Base, _Derived)> {
 
 template <class _Base, class _Derived>
 _INLINE_VAR constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
-#endif // TRANSITION, Clang 9
 
 // STRUCT TEMPLATE decay
 template <class _Ty>
