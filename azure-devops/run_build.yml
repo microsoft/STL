@@ -53,10 +53,10 @@ jobs:
         filename: 'azure-devops/enforce-clang-format.cmd'
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
-    - displayName: 'Validate Files'
+    - script: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+      displayName: 'Validate Files'
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
       continueOnError: true
-      script: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
       failOnStderr: true
     - task: run-cmake@0
       displayName: 'Build the STL'
