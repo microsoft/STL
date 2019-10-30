@@ -84,8 +84,12 @@ void scan_file(const string& filepath, vector<unsigned char>& buffer) {
             if (ch == '\t') {
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
+                // 0xEF, 0xBB, and 0xBF are the UTF-8 BOM characters.
+                // https://en.wikipedia.org/wiki/Byte_order_mark#UTF-8
                 has_utf8_bom = true;
             } else if (ch != CR && ch != LF && !(ch >= 0x20 && ch <= 0x7E)) {
+                // [0x20, 0x7E] are the printable characters, including the space character.
+                // https://en.wikipedia.org/wiki/ASCII#Printable_characters
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
