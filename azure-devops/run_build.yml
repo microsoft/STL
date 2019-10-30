@@ -39,7 +39,6 @@ jobs:
         vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
     - task: run-cmake@0
       displayName: 'Build Support Tools'
-      enabled: true
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
         cmakeListsTxtPath: 'tools/CMakeSettings.json'
@@ -53,9 +52,15 @@ jobs:
         filename: 'azure-devops/enforce-clang-format.cmd'
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+    - task: BatchScript@1
+      displayName: 'Validate Files'
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        filename: 'azure-devops/validate-files.cmd'
+        failOnStandardError: true
+        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
     - task: run-cmake@0
       displayName: 'Build the STL'
-      enabled: true
       inputs:
         cmakeListsTxtPath: 'CMakeSettings.json'
         useVcpkgToolchainFile: true
