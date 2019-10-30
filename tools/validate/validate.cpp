@@ -16,11 +16,11 @@ using namespace std;
 
 class BinaryFile {
 public:
-    explicit BinaryFile(const string& filepath) {
-        m_file = fopen(filepath.c_str(), "rb");
+    explicit BinaryFile(const filesystem::path& filepath) {
+        m_file = _wfopen(filepath.c_str(), L"rb");
 
         if (!m_file) {
-            fprintf(stderr, "Validation failed: %s couldn't be opened.\n", filepath.c_str());
+            fwprintf(stderr, L"Validation failed: %s couldn't be opened.\n", filepath.c_str());
         }
     }
 
@@ -38,7 +38,7 @@ public:
 
     ~BinaryFile() {
         if (fclose(m_file) != 0) {
-            fprintf(stderr, "fclose() failed.\n");
+            fwprintf(stderr, L"fclose() failed.\n");
             abort();
         }
     }
@@ -52,7 +52,7 @@ private:
 
 enum class TabPolicy : bool { Forbidden, Allowed };
 
-void scan_file(const string& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
+void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
     constexpr char CR = '\r';
     constexpr char LF = '\n';
 
@@ -95,7 +95,7 @@ void scan_file(const string& filepath, const TabPolicy tab_policy, vector<unsign
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    fprintf(stderr, "Validation failed: %s contains disallowed character 0x%02X.\n", filepath.c_str(),
+                    fwprintf(stderr, L"Validation failed: %s contains disallowed character 0x%02X.\n", filepath.c_str(),
                         static_cast<unsigned int>(ch));
                 }
             }
@@ -113,39 +113,40 @@ void scan_file(const string& filepath, const TabPolicy tab_policy, vector<unsign
     }
 
     if (has_cr) {
-        fprintf(stderr, "Validation failed: %s contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
+        fwprintf(
+            stderr, L"Validation failed: %s contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
     } else if (has_lf && has_crlf) {
-        fprintf(stderr, "Validation failed: %s contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %s contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
     } else if (has_lf) {
-        fprintf(stderr, "Validation failed: %s contains LF line endings.", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %s contains LF line endings.", filepath.c_str());
 
         if (prev != LF) {
-            fprintf(stderr, " Also, it doesn't end with a newline.\n");
+            fwprintf(stderr, L" Also, it doesn't end with a newline.\n");
         } else if (previous2 == LF) {
-            fprintf(stderr, " Also, it ends with multiple newlines.\n");
+            fwprintf(stderr, L" Also, it ends with multiple newlines.\n");
         } else {
-            fprintf(stderr, "\n");
+            fwprintf(stderr, L"\n");
         }
     } else if (has_crlf) {
         if (previous2 != CR || prev != LF) {
-            fprintf(stderr, "Validation failed: %s doesn't end with a newline.\n", filepath.c_str());
+            fwprintf(stderr, L"Validation failed: %s doesn't end with a newline.\n", filepath.c_str());
         } else if (previous3 == LF) {
-            fprintf(stderr, "Validation failed: %s ends with multiple newlines.\n", filepath.c_str());
+            fwprintf(stderr, L"Validation failed: %s ends with multiple newlines.\n", filepath.c_str());
         }
     } else {
-        fprintf(stderr, "Validation failed: %s doesn't contain any newlines.\n", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %s doesn't contain any newlines.\n", filepath.c_str());
     }
 
     if (has_utf8_bom) {
-        fprintf(stderr, "Validation failed: %s contains UTF-8 BOM characters.\n", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %s contains UTF-8 BOM characters.\n", filepath.c_str());
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        fprintf(stderr, "Validation failed: %s contains %zu tab characters.\n", filepath.c_str(), tab_characters);
+        fwprintf(stderr, L"Validation failed: %s contains %zu tab characters.\n", filepath.c_str(), tab_characters);
     }
 
     if (trailing_whitespace_lines != 0) {
-        fprintf(stderr, "Validation failed: %s contains %zu lines with trailing whitespace.\n", filepath.c_str(),
+        fwprintf(stderr, L"Validation failed: %s contains %zu lines with trailing whitespace.\n", filepath.c_str(),
             trailing_whitespace_lines);
     }
 }
@@ -195,12 +196,10 @@ int main() {
             continue;
         }
 
-        const string filepath = rdi->path().string();
-
         const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
                                          ? TabPolicy::Allowed
                                          : TabPolicy::Forbidden;
 
-        scan_file(filepath, tab_policy, buffer);
+        scan_file(rdi->path(), tab_policy, buffer);
     }
 }
