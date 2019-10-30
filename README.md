@@ -139,7 +139,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.4 or later.
+1. Install Visual Studio 2019 16.4 preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -148,7 +148,7 @@ acquire this dependency.
    and ARM64.
 6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
-7. Open Visual Studio 2019 16.4 or later, and choose the "Clone or check out code" option. Enter the URL to this
+7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
    repository, typically `https://github.com/microsoft/STL`
 8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
@@ -158,7 +158,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.4 or later.
+1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.4 preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
