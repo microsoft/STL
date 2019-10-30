@@ -1786,6 +1786,39 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
+// FUNCTION TEMPLATE _Erase_nodes_if
+template <class _Container, class _Pr>
+void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First      = _Cont.begin();
+    const auto _Last = _Cont.end();
+    while (_First != _Last) {
+        if (_Pred(*_First)) {
+            _First = _Cont.erase(_First);
+        } else {
+            ++_First;
+        }
+    }
+}
+
+
+// FUNCTION TEMPLATE _Erase_remove_if
+template <class _Container, class _Pr>
+void _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First      = _Cont.begin();
+    const auto _Last = _Cont.end();
+    _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
+    _Cont.erase(_First, _Last);
+}
+
+// FUNCTION TEMPLATE _Erase_remove
+template <class _Container, class _Uty>
+void _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
+    auto _First      = _Cont.begin();
+    const auto _Last = _Cont.end();
+    _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
+    _Cont.erase(_First, _Last);
+}
+
 // FUNCTION TEMPLATE unique
 template <class _FwdIt, class _Pr>
 _NODISCARD _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // remove each satisfying _Pred with previous

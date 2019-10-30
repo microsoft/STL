@@ -14,6 +14,10 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#include <algorithm>
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1490,6 +1494,18 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
 forward_list(_Iter, _Iter, _Alloc = _Alloc())->forward_list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20
+template <class _Ty, class _Alloc, class _Pr>
+void erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    _Cont.remove_if(_Pass_fn(_Pred));
+}
+
+template <class _Ty, class _Alloc, class _Uty>
+void erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
+}
+#endif
 
 template <class _Ty, class _Alloc>
 void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {

@@ -16,6 +16,10 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#include <algorithm>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -363,6 +367,13 @@ template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>
 map(initializer_list<pair<_Kty, _Ty>>, _Alloc)->map<_Kty, _Ty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
+
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
@@ -509,6 +520,13 @@ multimap(_Iter, _Iter, _Alloc)->multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc)->multimap<_Kty, _Ty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20
+template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
