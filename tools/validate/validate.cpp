@@ -50,7 +50,9 @@ private:
     FILE* m_file{nullptr};
 };
 
-void scan_file(const string& filepath, vector<unsigned char>& buffer) {
+enum class TabPolicy : bool { Forbidden, Allowed };
+
+void scan_file(const string& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
     constexpr char CR = '\r';
     constexpr char LF = '\n';
 
@@ -138,7 +140,7 @@ void scan_file(const string& filepath, vector<unsigned char>& buffer) {
         fprintf(stderr, "Validation failed: %s contains UTF-8 BOM characters.\n", filepath.c_str());
     }
 
-    if (tab_characters != 0) {
+    if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
         fprintf(stderr, "Validation failed: %s contains %zu tab characters.\n", filepath.c_str(), tab_characters);
     }
 
@@ -163,16 +165,22 @@ int main() {
         ".obj"sv,
     };
 
+    static constexpr array tabby_filenames{
+        ".gitmodules"sv,
+    };
+
     // TRANSITION, P0202R3, use constexpr is_sorted()
     assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
     assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
+    assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
     vector<unsigned char> buffer; // reused for performance
 
     for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
+        const string filename = rdi->path().filename().string();
+
         if (!rdi->is_regular_file()) {
             if (rdi->is_directory()) {
-                const string filename = rdi->path().filename().string();
                 if (binary_search(skipped_directories.begin(), skipped_directories.end(), filename)) {
                     rdi.disable_recursion_pending();
                 }
@@ -189,6 +197,10 @@ int main() {
 
         const string filepath = rdi->path().string();
 
-        scan_file(filepath, buffer);
+        const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
+                                         ? TabPolicy::Allowed
+                                         : TabPolicy::Forbidden;
+
+        scan_file(filepath, tab_policy, buffer);
     }
 }
