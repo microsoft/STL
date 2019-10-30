@@ -25,13 +25,13 @@ namespace experimental {
 
         // FUNCTION TEMPLATE erase_if
         template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-        void erase_if(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont,
+        _DEPRECATE_STD_EXPERIMENTAL_ERASE void erase_if(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont,
             _Pr _Pred) { // erase each element satisfying _Pred
             _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
         }
 
         template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-        void erase_if(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont,
+        _DEPRECATE_STD_EXPERIMENTAL_ERASE void erase_if(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont,
             _Pr _Pred) { // erase each element satisfying _Pred
             _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
         }

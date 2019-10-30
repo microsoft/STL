@@ -835,7 +835,18 @@
 #define _CXX20_DEPRECATE_IS_POD
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4026
+#if _HAS_CXX20 && !defined(_SILENCE_STD_EXPERIMENTAL_ERASE_DEPRECATION_WARNING)
+#define _DEPRECATE_STD_EXPERIMENTAL_ERASE                                           \
+    [[deprecated(                                                                   \
+        "warning STL4026: "                                                         \
+        "std::experimental::erase and std::experimental::erase_if are deprecated. " \
+        "Please update to std::erase or std::erase_if. "                            \
+        "You can define _SILENCE_STD_EXPERIMENTAL_ERASE_DEPRECATION_WARNING to suppress this deprecation.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_STD_EXPERIMENTAL_ERASE
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4027
 
 
 // LIBRARY FEATURE-TEST MACROS
