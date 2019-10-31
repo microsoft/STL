@@ -14,10 +14,6 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-#include <algorithm>
-#endif // _HAS_CXX20
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)

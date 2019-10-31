@@ -1994,6 +1994,80 @@ struct _Alloc_temporary {
         _Traits::destroy(_Al, _STD addressof(_Storage._Value));
     }
 };
+
+// FUNCTION TEMPLATE remove
+template <class _FwdIt, class _Ty>
+_NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { // remove each matching _Val
+    _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _Get_unwrapped(_First);
+    const auto _ULast = _Get_unwrapped(_Last);
+    _UFirst           = _Find_unchecked(_UFirst, _ULast, _Val);
+    auto _UNext       = _UFirst;
+    if (_UFirst != _ULast) {
+        while (++_UFirst != _ULast) {
+            if (!(*_UFirst == _Val)) {
+                *_UNext = _STD move(*_UFirst);
+                ++_UNext;
+            }
+        }
+    }
+
+    _Seek_wrapped(_First, _UNext);
+    return _First;
+}
+
+// FUNCTION TEMPLATE remove_if
+template <class _FwdIt, class _Pr>
+_NODISCARD _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) { // remove each satisfying _Pred
+    _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _Get_unwrapped(_First);
+    const auto _ULast = _Get_unwrapped(_Last);
+    _UFirst           = _STD find_if(_UFirst, _ULast, _Pass_fn(_Pred));
+    auto _UNext       = _UFirst;
+    if (_UFirst != _ULast) {
+        while (++_UFirst != _ULast) {
+            if (!_Pred(*_UFirst)) {
+                *_UNext = _STD move(*_UFirst);
+                ++_UNext;
+            }
+        }
+    }
+
+    _Seek_wrapped(_First, _UNext);
+    return _First;
+}
+
+// FUNCTION TEMPLATE _Erase_remove
+template <class _Container, class _Uty>
+void _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
+    auto _First      = _Cont.begin();
+    const auto _Last = _Cont.end();
+    _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
+    _Cont.erase(_First, _Last);
+}
+
+// FUNCTION TEMPLATE _Erase_remove_if
+template <class _Container, class _Pr>
+void _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First      = _Cont.begin();
+    const auto _Last = _Cont.end();
+    _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
+    _Cont.erase(_First, _Last);
+}
+
+// FUNCTION TEMPLATE _Erase_nodes_if
+template <class _Container, class _Pr>
+void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First      = _Cont.begin();
+    const auto _Last = _Cont.end();
+    while (_First != _Last) {
+        if (_Pred(*_First)) {
+            _First = _Cont.erase(_First);
+        } else {
+            ++_First;
+        }
+    }
+}
 _STD_END
 
 #pragma pop_macro("new")
