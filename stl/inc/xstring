@@ -4267,18 +4267,6 @@ basic_string(
     ->basic_string<_Elem, _Traits, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Elem, class _Traits, class _Alloc, class _Pr>
-void erase_if(basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
-}
-
-template <class _Elem, class _Traits, class _Alloc, class _Uty>
-void erase(basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
-}
-#endif // _HAS_CXX20
-
 template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_string<_Elem, _Traits, _Alloc>& _Left,
     basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
@@ -4590,6 +4578,18 @@ inline namespace literals {
         }
     } // namespace string_literals
 } // namespace literals
+
+#if _HAS_CXX20
+template <class _Elem, class _Traits, class _Alloc, class _Uty>
+void erase(basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
+    _Erase_remove(_Cont, _Val);
+}
+
+template <class _Elem, class _Traits, class _Alloc, class _Pr>
+void erase_if(basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

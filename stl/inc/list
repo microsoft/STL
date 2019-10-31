@@ -1785,18 +1785,6 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 list(_Iter, _Iter, _Alloc = _Alloc())->list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Pr>
-void erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    _Cont.remove_if(_Pass_fn(_Pred));
-}
-
-template <class _Ty, class _Alloc, class _Uty>
-void erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
-}
-#endif // _HAS_CXX20
-
 template <class _Ty, class _Alloc>
 void swap(list<_Ty, _Alloc>& _Left, list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
@@ -1831,6 +1819,18 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+
+#if _HAS_CXX20
+template <class _Ty, class _Alloc, class _Uty>
+void erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
+}
+
+template <class _Ty, class _Alloc, class _Pr>
+void erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    _Cont.remove_if(_Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

@@ -1759,18 +1759,6 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 vector(_Iter, _Iter, _Alloc = _Alloc())->vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Pr>
-void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
-}
-
-template <class _Ty, class _Alloc, class _Uty>
-void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
-}
-#endif // _HAS_CXX20
-
 template <class _Ty, class _Alloc>
 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
@@ -2878,6 +2866,18 @@ struct hash<vector<bool, _Alloc>> {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
     }
 };
+
+#if _HAS_CXX20
+template <class _Ty, class _Alloc, class _Uty>
+void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    _Erase_remove(_Cont, _Val);
+}
+
+template <class _Ty, class _Alloc, class _Pr>
+void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

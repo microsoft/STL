@@ -367,13 +367,6 @@ template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>
 map(initializer_list<pair<_Kty, _Ty>>, _Alloc)->map<_Kty, _Ty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
-}
-#endif // _HAS_CXX20
-
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
@@ -521,18 +514,23 @@ template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>
 multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc)->multimap<_Kty, _Ty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
-}
-#endif // _HAS_CXX20
-
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
+
+#if _HAS_CXX20
+template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+
+template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

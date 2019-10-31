@@ -471,13 +471,6 @@ unordered_map(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>, _Ha
     ->unordered_map<_Kty, _Ty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
-}
-#endif // _HAS_CXX20
-
 template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
 void swap(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -766,13 +759,6 @@ unordered_multimap(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>
     ->unordered_multimap<_Kty, _Ty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
-}
-#endif // _HAS_CXX20
-
 template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
 void swap(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -797,6 +783,18 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD unordered_multimap;
 } // namespace tr1
 #endif // _HAS_TR1_NAMESPACE
+
+#if _HAS_CXX20
+template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+void erase_if(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+
+template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+void erase_if(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {
