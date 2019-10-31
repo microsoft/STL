@@ -25,13 +25,13 @@ namespace experimental {
 
         // FUNCTION TEMPLATE erase_if
         template <class _Ty, class _Alloc, class _Pr>
-        _DEPRECATE_STD_EXPERIMENTAL_ERASE void erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
             _Cont.remove_if(_Pass_fn(_Pred));
         }
 
         // FUNCTION TEMPLATE erase
         template <class _Ty, class _Alloc, class _Uty>
-        _DEPRECATE_STD_EXPERIMENTAL_ERASE void erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) { // erase each element matching _Val
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
             _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
         }
 
