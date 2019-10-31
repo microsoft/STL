@@ -1407,7 +1407,7 @@ private:
     }
 
 public:
-    template <class _Iter = iterator, class = enable_if_t<!is_same_v<_Iter, const_iterator>>>
+    template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
     iterator erase(iterator _Where) noexcept /* strengthened */ {
         const auto _Scary = _Get_scary();
 #if _ITERATOR_DEBUG_LEVEL == 2

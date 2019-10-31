@@ -1233,7 +1233,7 @@ private:
     }
 
 public:
-    template <class _Iter = iterator, class = enable_if_t<!is_same_v<_Iter, const_iterator>>>
+    template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
     iterator erase(iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
         return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
     }

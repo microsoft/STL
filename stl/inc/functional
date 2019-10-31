@@ -894,7 +894,7 @@ public:
     using _Mybase       = _Func_base<_Rx, _Types...>;
     using _Nothrow_move = is_nothrow_move_constructible<_Callable>;
 
-    template <class _Other, class = enable_if_t<!is_same_v<_Func_impl_no_alloc, decay_t<_Other>>>>
+    template <class _Other, enable_if_t<!is_same_v<_Func_impl_no_alloc, decay_t<_Other>>, int> = 0>
     explicit _Func_impl_no_alloc(_Other&& _Val) : _Callee(_STD forward<_Other>(_Val)) {}
 
     // dtor non-virtual due to _Delete_this()

@@ -2370,7 +2370,7 @@ public:
         _Proxy._Release();
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t(), _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -2809,7 +2809,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& append(const _Iter _First, const _Iter _Last) { // append [_First, _Last), input iterators
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2833,7 +2833,7 @@ public:
         return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& append(const _Iter _First, const _Iter _Last) { // append [_First, _Last), input iterators {
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2910,7 +2910,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& assign(const _Iter _First, const _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2946,7 +2946,7 @@ public:
         }
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& assign(const _Iter _First, const _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -3068,7 +3068,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3099,7 +3099,7 @@ public:
         insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3337,7 +3337,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const _Iter _First2, const _Iter _Last2) {
         // replace [_First, _Last) with [_First2, _Last2), input iterators
@@ -3373,7 +3373,7 @@ public:
         return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const _Iter _First2, const _Iter _Last2) {
         // replace [_First, _Last) with [_First2, _Last2), input iterators
