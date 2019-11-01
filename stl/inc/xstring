@@ -2263,7 +2263,8 @@ private:
     template <class _StringViewIsh>
     using _Is_string_view_ish =
         enable_if_t<conjunction_v<is_convertible<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>,
-            negation<is_convertible<const _StringViewIsh&, const _Elem*>>>, int>;
+                        negation<is_convertible<const _StringViewIsh&, const _Elem*>>>,
+            int>;
 #endif // _HAS_CXX17
 
 public:
