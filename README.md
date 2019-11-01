@@ -41,7 +41,7 @@ yet hardened it against untrusted changes.
 conventions, Standard requirements, Microsoft-specific requirements, binary compatibility (ABI) requirements, and more.
 We're eager to begin accepting features and fixes from the community, but in addition to setting up a CI system, we need
 to write down all of the rules that are currently stored in our brains. (The ABI rules may be useful to other C++
-libraries.) Until that's in place, pull request reviews will be delayed.
+libraries.)
 
 * Issues: **In progress.** We're going to use GitHub issues to track all of the things that we need to work on. This
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
