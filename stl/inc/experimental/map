@@ -9,7 +9,6 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <experimental/xutility>
 #include <map>
 
 #pragma pack(push, _CRT_PACKING)
@@ -25,12 +24,12 @@ namespace experimental {
 
         // FUNCTION TEMPLATE erase_if
         template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
-        void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
             _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
         }
 
         template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
-        void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
             _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
         }
 
