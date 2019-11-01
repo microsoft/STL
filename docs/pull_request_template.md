@@ -6,8 +6,6 @@
 
 If you're unsure about a box, leave it unchecked. A maintainer will help you.
 
-- [ ] I understand README.md. I also understand that acceptance of
-  community PRs will be delayed until the test and CI systems are online.
 - [ ] Identifiers in product code changes are properly `_Ugly` as per
   https://eel.is/c++draft/lex.name#3.1 or there are no product code changes.
 - [ ] The STL builds successfully and all tests have passed (must be manually
