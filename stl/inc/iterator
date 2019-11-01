@@ -133,17 +133,23 @@ public:
     using traits_type  = _Traits;
     using istream_type = basic_istream<_Elem, _Traits>;
 
-    constexpr istream_iterator() : _Myistr(nullptr), _Myval() {}
+    static_assert(conjunction_v<is_default_constructible<_Ty>, is_copy_constructible<_Ty>, is_copy_assignable<_Ty>>,
+        "The type T shall meet the Cpp17DefaultConstructible, Cpp17CopyConstructible, and Cpp17CopyAssignable "
+        "requirements. (Enabled unconditionally from CXX20)");
+
+    constexpr istream_iterator() {};
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
         _Getval();
     }
 
     _NODISCARD const _Ty& operator*() const {
+        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non null");
         return _Myval;
     }
 
     _NODISCARD const _Ty* operator->() const {
+        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non null");
         return _STD addressof(_Myval);
     }
 
@@ -164,13 +170,14 @@ public:
 
 protected:
     void _Getval() { // get a _Ty value if possible
+        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non null");
         if (_Myistr && !(*_Myistr >> _Myval)) {
             _Myistr = nullptr;
         }
     }
 
-    istream_type* _Myistr; // pointer to input stream
-    _Ty _Myval; // lookahead value (valid if _Myistr is not null)
+    istream_type* _Myistr{nullptr}; // pointer to input stream
+    _Ty _Myval{}; // lookahead value (valid if _Myistr is not null)
 };
 
 template <class _Ty, class _Elem, class _Traits, class _Diff>
