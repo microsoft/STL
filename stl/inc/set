@@ -179,6 +179,13 @@ void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcep
     _Left.swap(_Right);
 }
 
+#if _HAS_CXX20
+template <class _Kty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE multiset
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
 class multiset : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true>> {
@@ -314,11 +321,6 @@ void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Righ
 }
 
 #if _HAS_CXX20
-template <class _Kty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
-}
-
 template <class _Kty, class _Keylt, class _Alloc, class _Pr>
 void erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
     _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
