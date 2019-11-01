@@ -4891,15 +4891,14 @@ public:
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
         for (;;) { // try a sample random value
-            _Udiff _Ret  = 0; // random bits
-            _Udiff _Mask = 0; // 2^N - 1, _Ret is within [0, _Mask]
+            _Udiff _Ret  = _Get_bits(); // random bits
+            _Udiff _Mask = _Bmask; // 2^N - 1, _Ret is within [0, _Mask]
 
             while (_Mask < _Udiff(_Index - 1)) { // need more random bits
-                _Ret <<= _Bits - 1; // avoid full shift
-                _Ret <<= 1;
+                // if loop is entered, _Bits can't shift out of range
+                _Ret <<= _Bits;
                 _Ret |= _Get_bits();
-                _Mask <<= _Bits - 1; // avoid full shift
-                _Mask <<= 1;
+                _Mask <<= _Bits;
                 _Mask |= _Bmask;
             }
 
