@@ -638,7 +638,7 @@ public:
         _Proxy._Release();
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t()) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
@@ -646,7 +646,7 @@ public:
         _Proxy._Release();
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     deque(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
@@ -1147,7 +1147,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
         _Orphan_all();
         _Adl_verify_range(_First, _Last);
@@ -1214,7 +1214,7 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
         size_type _Off = static_cast<size_type>(_Where - begin());

@@ -2263,7 +2263,8 @@ private:
     template <class _StringViewIsh>
     using _Is_string_view_ish =
         enable_if_t<conjunction_v<is_convertible<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>,
-            negation<is_convertible<const _StringViewIsh&, const _Elem*>>>>;
+                        negation<is_convertible<const _StringViewIsh&, const _Elem*>>>,
+            int>;
 #endif // _HAS_CXX17
 
 public:
@@ -2370,7 +2371,7 @@ public:
         _Proxy._Release();
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t(), _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -2437,7 +2438,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     explicit basic_string(const _StringViewIsh& _Right, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t(), _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
@@ -2447,7 +2448,7 @@ public:
         _Proxy._Release();
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string(
         const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t(), _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
@@ -2697,7 +2698,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& operator=(const _StringViewIsh& _Right) {
         return assign(_Right);
     }
@@ -2720,7 +2721,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& operator+=(const _StringViewIsh& _Right) {
         return append(_Right);
     }
@@ -2747,13 +2748,13 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& append(const _StringViewIsh& _Right) {
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
         return append(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& append(const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count = npos) {
         // append _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -2809,7 +2810,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& append(const _Iter _First, const _Iter _Last) { // append [_First, _Last), input iterators
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2833,7 +2834,7 @@ public:
         return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& append(const _Iter _First, const _Iter _Last) { // append [_First, _Last), input iterators {
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2854,13 +2855,13 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& assign(const _StringViewIsh& _Right) {
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
         return assign(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& assign(const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count = npos) {
         // assign _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -2910,7 +2911,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& assign(const _Iter _First, const _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2946,7 +2947,7 @@ public:
         }
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& assign(const _Iter _First, const _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
@@ -2967,13 +2968,13 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& insert(const size_type _Off, const _StringViewIsh& _Right) { // insert _Right at _Off
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
         return insert(_Off, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& insert(const size_type _Off, const _StringViewIsh& _Right, const size_type _Roff,
         const size_type _Count = npos) { // insert _Right [_Roff, _Roff + _Count) at _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -3068,7 +3069,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3099,7 +3100,7 @@ public:
         insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3168,14 +3169,14 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& replace(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right) {
         // replace [_Off, _Off + _N0) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return replace(_Off, _N0, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& replace(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right,
         const size_type _Roff, const size_type _Count = npos) {
         // replace [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
@@ -3292,7 +3293,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string& replace(const const_iterator _First, const const_iterator _Last, const _StringViewIsh& _Right) {
         // replace [_First, _Last) with _Right
         _Adl_verify_range(_First, _Last);
@@ -3337,7 +3338,7 @@ public:
     }
 
 #if _HAS_IF_CONSTEXPR
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const _Iter _First2, const _Iter _Last2) {
         // replace [_First, _Last) with [_First2, _Last2), input iterators
@@ -3373,7 +3374,7 @@ public:
         return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const _Iter _First2, const _Iter _Last2) {
         // replace [_First, _Last) with [_First2, _Last2), input iterators
@@ -3760,7 +3761,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const {
         // look for _Right beginning at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -3796,7 +3797,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD size_type rfind(const _StringViewIsh& _Right, const size_type _Off = npos) const {
         // look for _Right beginning before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -3832,7 +3833,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD size_type find_first_of(const _StringViewIsh& _Right, const size_type _Off = 0) const {
         // look for one of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -3869,7 +3870,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD size_type find_last_of(const _StringViewIsh& _Right, const size_type _Off = npos) const {
         // look for one of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -3906,7 +3907,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD size_type find_first_not_of(const _StringViewIsh& _Right, const size_type _Off = 0) const {
         // look for none of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -3945,7 +3946,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD size_type find_last_not_of(const _StringViewIsh& _Right, const size_type _Off = npos) const {
         // look for none of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -4004,14 +4005,14 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD int compare(const _StringViewIsh& _Right) const { // compare [0, size()) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return _Traits_compare<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _As_view.data(), _As_view.size());
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD int compare(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right) const {
         // compare [_Off, _Off + _N0) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
@@ -4020,7 +4021,7 @@ public:
             _As_view.data(), _As_view.size());
     }
 
-    template <class _StringViewIsh, class = _Is_string_view_ish<_StringViewIsh>>
+    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD int compare(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right,
         const size_type _Roff, const size_type _Count = npos) const {
         // compare [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)

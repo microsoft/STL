@@ -560,7 +560,7 @@ public:
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t()) {
         _Adl_verify_range(_First, _Last);
         _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
@@ -569,7 +569,7 @@ public:
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
         _Adl_verify_range(_First, _Last);
         _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
@@ -908,7 +908,7 @@ private:
     }
 
 public:
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -944,7 +944,7 @@ public:
         return _Make_iter(_Where._Ptr);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert_after(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) after _Where
 #if _ITERATOR_DEBUG_LEVEL == 2

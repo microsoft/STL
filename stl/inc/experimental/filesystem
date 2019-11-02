@@ -749,7 +749,7 @@ public:
 
     // ARBITRARY SOURCE CONSTRUCT
 
-    template <class _InIt, class = enable_if_t<_Is_iterator_v<_InIt>>>
+    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last) {
         using _Valty = _Iter_value_t<_InIt>;
         basic_string<_Valty> _Str(_First, _Last);
@@ -757,7 +757,7 @@ public:
         *this /= _Path_cvt<_Valty, value_type>::_Cvt(_Str_out, _Str.c_str(), _Str.size());
     }
 
-    template <class _InIt, class = enable_if_t<_Is_iterator_v<_InIt>>>
+    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First) {
         using _Valty = _Iter_value_t<_InIt>;
         basic_string<_Valty> _Str;
@@ -777,7 +777,7 @@ public:
 
     // ARBITRARY SOURCE CONSTRUCT, WITH LOCALE
 
-    template <class _InIt, class = enable_if_t<_Is_iterator_v<_InIt>>>
+    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last, const locale& _Loc) {
         using _Valty = _Iter_value_t<_InIt>;
         basic_string<_Valty> _Str(_First, _Last);
@@ -785,7 +785,7 @@ public:
         *this /= _Path_cvt<_Valty, value_type>::_Cvt(_Str_out, _Str.c_str(), _Str.size(), _Loc);
     }
 
-    template <class _InIt, class = enable_if_t<_Is_iterator_v<_InIt>>>
+    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, const locale& _Loc) {
         using _Valty = _Iter_value_t<_InIt>;
         basic_string<_Valty> _Str;
@@ -1305,14 +1305,14 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, 
 }
 
 // FUNCTION TEMPLATE u8path
-template <class _InIt, class = enable_if_t<_Is_iterator_v<_InIt>>>
+template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
 _NODISCARD path u8path(_InIt _First, _InIt _Last) { // make path from [_First, _Last) UTF8, given iterators
     string _Str(_First, _Last);
     path::string_type _Str_out;
     return path(_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size()));
 }
 
-template <class _InIt, class = enable_if_t<_Is_iterator_v<_InIt>>>
+template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
 _NODISCARD path u8path(_InIt _First) { // make path from NTBS UTF8, given iterator
     string _Str;
     for (; *_First != '\0'; ++_First) {
