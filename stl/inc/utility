@@ -44,7 +44,7 @@ void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
 }
 
 // FUNCTION TEMPLATE swap
-template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int>>
+template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> _Enabled>
 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     if (&_Left != &_Right) {
         _Ty* _First1 = _Left;
@@ -57,9 +57,9 @@ void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappa
 }
 
 #if _HAS_CXX17
-template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int>>
+template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> _Enabled>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-template <class _Ty, int>
+template <class _Ty, int _Enabled>
 #endif // _HAS_CXX17
 void swap(_Ty& _Left, _Ty& _Right) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
     _Ty _Tmp = _STD move(_Left);

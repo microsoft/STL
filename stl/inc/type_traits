@@ -1926,7 +1926,7 @@ struct _Is_nothrow_swappable;
 #if _HAS_CXX17
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-template <class _Ty, int = 0>
+template <class _Ty, int _Enabled = 0>
 #endif // _HAS_CXX17
 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
