@@ -9,7 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #if !_HAS_CXX17
-#pragma message("The contents of <optional> are only available with C++17 or later.")
+#pragma message("The contents of <optional> are available only with C++17 or later.")
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <exception>
 #include <initializer_list>

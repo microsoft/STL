@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX20
-#pragma message("The contents of <compare> are only available with C++20 or later.")
+#pragma message("The contents of <compare> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <xtr1common>
 
