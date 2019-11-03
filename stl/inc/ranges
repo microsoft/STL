@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_concepts
-#pragma message("The contents of <ranges> are only available with C++20 or later.")
+#pragma message("The contents of <ranges> are only available with C++20 concepts support.")
 #else // ^^^ !__cpp_lib_concepts / __cpp_lib_concepts vvv
 #include <iterator>
 
