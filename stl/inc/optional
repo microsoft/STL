@@ -8,7 +8,9 @@
 #define _OPTIONAL_
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if _HAS_CXX17
+#if !_HAS_CXX17
+#pragma message("The contents of <optional> are only available with C++17 or later.")
+#else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <exception>
 #include <initializer_list>
 #include <type_traits>
@@ -637,8 +639,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-#pragma message("class template optional is only available with C++17 or later.")
 #endif // _HAS_CXX17
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _OPTIONAL_

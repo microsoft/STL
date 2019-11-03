@@ -9,7 +9,9 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if _HAS_CXX17
+#if !_HAS_CXX17
+#pragma message("The contents of <memory_resource> are only available with C++17 or later.")
+#else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <vector>
 #include <xbit_ops.h>
 #include <xpolymorphic_allocator.h>
@@ -755,8 +757,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-#pragma message("The contents of <memory_resource> are only available with C++17 or later.")
 #endif // _HAS_CXX17
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _MEMORY_RESOURCE_

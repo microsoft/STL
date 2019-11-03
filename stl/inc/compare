@@ -9,7 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if _HAS_CXX20
+#if !_HAS_CXX20
+#pragma message("The contents of <compare> are only available with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
@@ -475,8 +477,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#else // ^^^ C++20 / not C++20 vvv
-#pragma message("The contents of <compare> are only available with C++20 or later.")
 #endif // _HAS_CXX20
 
 #endif // _STL_COMPILER_PREPROCESSOR
