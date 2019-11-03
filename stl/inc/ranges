@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_concepts
 #pragma message("The contents of <ranges> are only available with C++20 concepts support.")
-#else // ^^^ !__cpp_lib_concepts / __cpp_lib_concepts vvv
+#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <iterator>
 
 #pragma pack(push, _CRT_PACKING)
