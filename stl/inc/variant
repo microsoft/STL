@@ -1158,7 +1158,7 @@ public:
                             (void) _That_ref; // TRANSITION, VSO-486357
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
-                            constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
+                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455

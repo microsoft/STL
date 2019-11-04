@@ -2841,10 +2841,10 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     // go to the next smaller power of 2
     const auto _Count_max_tree_height = _Log_count_max_chunks & ~static_cast<size_t>(1);
 
-    const auto _Ideal_chunks       = _Hw_threads * _Oversubscription_multiplier;
-    const size_t _Log_ideal_chunks = _Floor_of_log_2(_Ideal_chunks);
+    const auto _Ideal_chunks           = _Hw_threads * _Oversubscription_multiplier;
+    const size_t _Log_ideal_chunks     = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
-    const size_t _Max_tree_height = 62; // to avoid ptrdiff_t overflow
+    const size_t _Max_tree_height      = 62; // to avoid ptrdiff_t overflow
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
