@@ -9,6 +9,8 @@ tools/inc ^
 tools/jobify/jobify.cpp ^
 tools/parallelize/parallelize.cpp ^
 tools/validate/validate.cpp
-@echo If your build fails here, you need to format the following files with
+@echo If your build fails here, you need to format the following files with:
 @clang-format.exe --version
 @git status --porcelain stl tools 1>&2
+@echo clang-format will produce the following diff:
+@git diff stl tools 1>&2
