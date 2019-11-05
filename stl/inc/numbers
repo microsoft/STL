@@ -1,0 +1,98 @@
+// numbers standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _NUMBERS_
+#define _NUMBERS_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX20
+#pragma message("The contents of <numbers> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+#ifdef __cpp_lib_concepts
+#include <concepts>
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#include <type_traits>
+#endif
+
+_STD_BEGIN
+namespace numbers {
+#ifdef __cpp_lib_concepts
+    template <floating_point _Floating>
+    inline constexpr _Floating e_v = static_cast<_Floating>(2.71828182845904523536);
+    template <floating_point _Floating>
+    inline constexpr _Floating log2e_v = static_cast<_Floating>(1.44269504088896340736);
+    template <floating_point _Floating>
+    inline constexpr _Floating log10e_v = static_cast<_Floating>(0.434294481903251827651);
+    template <floating_point _Floating>
+    inline constexpr _Floating pi_v = static_cast<_Floating>(3.14159265358979323846);
+    template <floating_point _Floating>
+    inline constexpr _Floating inv_pi_v = static_cast<_Floating>(0.318309886183790671538);
+    template <floating_point _Floating>
+    inline constexpr _Floating inv_sqrtpi_v = static_cast<_Floating>(0.564189583547756286948);
+    template <floating_point _Floating>
+    inline constexpr _Floating ln2_v = static_cast<_Floating>(0.693147180559945309417);
+    template <floating_point _Floating>
+    inline constexpr _Floating ln10_v = static_cast<_Floating>(2.30258509299404568402);
+    template <floating_point _Floating>
+    inline constexpr _Floating sqrt2_v = static_cast<_Floating>(1.41421356237309504880);
+    template <floating_point _Floating>
+    inline constexpr _Floating sqrt3_v = static_cast<_Floating>(1.73205080756887729353);
+    template <floating_point _Floating>
+    inline constexpr _Floating inv_sqrt3_v = static_cast<_Floating>(0.577350269189625764509);
+    template <floating_point _Floating>
+    inline constexpr _Floating egamma_v = static_cast<_Floating>(0.577215664901532860607);
+    template <floating_point _Floating>
+    inline constexpr _Floating phi_v   = static_cast<_Floating>(1.61803398874989484820);
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    template <class _Ty>
+    using _Floating = enable_if_t<is_floating_point_v<_Ty>, _Ty>;
+
+    template <class _Ty>
+    inline constexpr _Ty e_v = static_cast<_Floating<_Ty>>(2.71828182845904523536);
+    template <class _Ty>
+    inline constexpr _Ty log2e_v = static_cast<_Floating<_Ty>>(1.44269504088896340736);
+    template <class _Ty>
+    inline constexpr _Ty log10e_v = static_cast<_Floating<_Ty>>(0.434294481903251827651);
+    template <class _Ty>
+    inline constexpr _Ty pi_v = static_cast<_Floating<_Ty>>(3.14159265358979323846);
+    template <class _Ty>
+    inline constexpr _Ty inv_pi_v = static_cast<_Floating<_Ty>>(0.318309886183790671538);
+    template <class _Ty>
+    inline constexpr _Ty inv_sqrtpi_v = static_cast<_Floating<_Ty>>(0.564189583547756286948);
+    template <class _Ty>
+    inline constexpr _Ty ln2_v = static_cast<_Floating<_Ty>>(0.693147180559945309417);
+    template <class _Ty>
+    inline constexpr _Ty ln10_v = static_cast<_Floating<_Ty>>(2.30258509299404568402);
+    template <class _Ty>
+    inline constexpr _Ty sqrt2_v = static_cast<_Floating<_Ty>>(1.41421356237309504880);
+    template <class _Ty>
+    inline constexpr _Ty sqrt3_v = static_cast<_Floating<_Ty>>(1.73205080756887729353);
+    template <class _Ty>
+    inline constexpr _Ty inv_sqrt3_v = static_cast<_Floating<_Ty>>(0.577350269189625764509);
+    template <class _Ty>
+    inline constexpr _Ty egamma_v = static_cast<_Floating<_Ty>>(0.577215664901532860607);
+    template <class _Ty>
+    inline constexpr _Ty phi_v = static_cast<_Floating<_Ty>>(1.61803398874989484820);
+#endif
+    inline constexpr double e          = e_v<double>;
+    inline constexpr double log2e      = log2e_v<double>;
+    inline constexpr double log10e     = log10e_v<double>;
+    inline constexpr double pi         = pi_v<double>;
+    inline constexpr double inv_pi     = inv_pi_v<double>;
+    inline constexpr double inv_sqrtpi = inv_sqrtpi_v<double>;
+    inline constexpr double ln2        = ln2_v<double>;
+    inline constexpr double ln10       = ln10_v<double>;
+    inline constexpr double sqrt2      = sqrt2_v<double>;
+    inline constexpr double sqrt3      = sqrt3_v<double>;
+    inline constexpr double inv_sqrt3  = inv_sqrt3_v<double>;
+    inline constexpr double egamma     = egamma_v<double>;
+    inline constexpr double phi        = phi_v<double>;
+}
+_STD_END
+
+#endif // _HAS_CXX20
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _NUMBERS_

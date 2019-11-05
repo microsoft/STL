@@ -32,6 +32,7 @@
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0550R2 remove_cvref
 // P0616R0 Using move() In <numeric>
+// P0631R8 <numbers> Math Constants
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
@@ -968,6 +969,7 @@
 #define __cpp_lib_erase_if 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_math_constants 201907L
 #define __cpp_lib_to_array 201907L
 #endif // _HAS_CXX20
 
