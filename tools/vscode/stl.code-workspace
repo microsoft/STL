@@ -1,0 +1,21 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+{
+    "folders": [
+        {
+            "path": "../../stl"
+        }
+    ],
+    "settings": {
+        "editor.formatOnSave": true,
+        "files.associations": {
+            "**/stl/inc/**": "cpp"
+        },
+        "files.exclude": {
+            "msbuild": true
+        },
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true
+    }
+}
