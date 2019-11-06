@@ -8,7 +8,7 @@ jobs:
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
-    vcpkgResponseFile: $(Build.SourcesDirectory)/vcpkg_windows.txt
+    vcpkgResponseFile: $(Build.SourcesDirectory)/azure-devops/vcpkg_windows.txt
   steps:
     - checkout: self
       submodules: recursive
