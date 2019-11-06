@@ -134,22 +134,21 @@ public:
     using istream_type = basic_istream<_Elem, _Traits>;
 
     static_assert(conjunction_v<is_default_constructible<_Ty>, is_copy_constructible<_Ty>, is_copy_assignable<_Ty>>,
-        "The type T shall meet the Cpp17DefaultConstructible, Cpp17CopyConstructible, and Cpp17CopyAssignable "
-        "requirements. (Enabled unconditionally from CXX20)");
+        "istream_iterator<T> requires T to be default constructible, copy constructible, and copy assignable. (N4835 [istream.iterator]/2)");
 
-    constexpr istream_iterator() {};
+    constexpr istream_iterator() {}
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
         _Getval();
     }
 
     _NODISCARD const _Ty& operator*() const {
-        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non null");
+        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non-null");
         return _Myval;
     }
 
     _NODISCARD const _Ty* operator->() const {
-        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non null");
+        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non-null");
         return _STD addressof(_Myval);
     }
 
@@ -168,10 +167,10 @@ public:
         return _Myistr == _Right._Myistr;
     }
 
-protected:
+private:
     void _Getval() { // get a _Ty value if possible
-        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non null");
-        if (_Myistr && !(*_Myistr >> _Myval)) {
+        _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non-null");
+        if (!(*_Myistr >> _Myval)) {
             _Myistr = nullptr;
         }
     }
