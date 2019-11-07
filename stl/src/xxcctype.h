@@ -3,5 +3,5 @@
 
 // parameters for char character type
 
-#define CTYPE char
+#define CTYPE      char
 #define CNAME(fun) _##fun

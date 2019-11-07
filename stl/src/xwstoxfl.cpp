@@ -11,8 +11,8 @@
 
 _EXTERN_C_UNLESS_PURE
 
-#define BASE 16 // hexadecimal
-#define NDIG 7 // hexadecimal digits per long element
+#define BASE   16 // hexadecimal
+#define NDIG   7 // hexadecimal digits per long element
 #define MAXSIG (5 * NDIG) // maximum significant digits to keep
 
 int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],

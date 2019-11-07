@@ -1055,7 +1055,7 @@ template <class _Ty>
 _INLINE_VAR constexpr size_t alignment_of_v = alignof(_Ty);
 
 // STRUCT TEMPLATE aligned_storage
-#define _FITS(_Ty) _Align <= alignof(_Ty)
+#define _FITS(_Ty)       _Align <= alignof(_Ty)
 #define _NEXT_ALIGN(_Ty) using type = typename _Aligned<_Len, _Align, _Ty, _FITS(_Ty)>::type
 
 template <class _Ty, size_t _Len>
@@ -1473,7 +1473,7 @@ template <class _Ty>
 class reference_wrapper;
 
 #define _CONCATX(x, y) x##y
-#define _CONCAT(x, y) _CONCATX(x, y)
+#define _CONCAT(x, y)  _CONCATX(x, y)
 
 #define _IMPLEMENT_INVOKE(NAME_PREFIX, CONSTEXPR)                                                                      \
     /* FUNCTION TEMPLATE invoke */                                                                                     \

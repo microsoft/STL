@@ -11,8 +11,8 @@
 
 _EXTERN_C_UNLESS_PURE
 
-#define BASE 16 // hexadecimal
-#define NDIG 7 // hexadecimal digits per long element
+#define BASE   16 // hexadecimal
+#define NDIG   7 // hexadecimal digits per long element
 #define MAXSIG (5 * NDIG) // maximum significant digits to keep
 
 int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
