@@ -11,6 +11,7 @@
         "files.associations": {
             "**/stl/inc/**": "cpp"
         },
+        "files.eol": "\r\n",
         "files.exclude": {
             "msbuild": true
         },
