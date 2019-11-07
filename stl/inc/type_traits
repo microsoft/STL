@@ -1055,9 +1055,6 @@ template <class _Ty>
 _INLINE_VAR constexpr size_t alignment_of_v = alignof(_Ty);
 
 // STRUCT TEMPLATE aligned_storage
-#define _FITS(_Ty)       _Align <= alignof(_Ty)
-#define _NEXT_ALIGN(_Ty) using type = typename _Aligned<_Len, _Align, _Ty, _FITS(_Ty)>::type
-
 template <class _Ty, size_t _Len>
 union _Align_type { // union with size _Len bytes and alignment of _Ty
     _Ty _Val;
@@ -1098,26 +1095,31 @@ struct _Aligned<_Len, _Align, double, false> {
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, int, false> {
-    _NEXT_ALIGN(double);
+    using _Next                 = double;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, short, false> {
-    _NEXT_ALIGN(int);
+    using _Next                 = int;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, char, false> {
-    _NEXT_ALIGN(short);
+    using _Next                 = short;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 struct aligned_storage { // define type with size _Len and alignment _Align
-    using type = typename _Aligned<_Len, _Align, char, _FITS(char)>::type;
+    using _Next                 = char;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
-
-#undef _FITS
-#undef _NEXT_ALIGN
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
