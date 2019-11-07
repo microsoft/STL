@@ -134,7 +134,8 @@ public:
     using istream_type = basic_istream<_Elem, _Traits>;
 
     static_assert(conjunction_v<is_default_constructible<_Ty>, is_copy_constructible<_Ty>, is_copy_assignable<_Ty>>,
-        "istream_iterator<T> requires T to be default constructible, copy constructible, and copy assignable. (N4835 [istream.iterator]/2)");
+        "istream_iterator<T> requires T to be default constructible, copy constructible, and copy assignable. "
+        "(N4835 [istream.iterator]/2)");
 
     constexpr istream_iterator() {}
 
