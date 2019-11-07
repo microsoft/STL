@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/7.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/9.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -13,6 +13,9 @@ AccessModifierOffset: -4
 
 # AlignAfterOpenBracket: Align
 AlignAfterOpenBracket: DontAlign
+
+# AlignConsecutiveMacros: false
+AlignConsecutiveMacros: true
 
 # AlignConsecutiveAssignments: false
 AlignConsecutiveAssignments: true
@@ -27,6 +30,8 @@ AlignEscapedNewlines: Left
 # AlignTrailingComments: true
 AlignTrailingComments: false
 
+# AllowAllArgumentsOnNextLine: true
+# AllowAllConstructorInitializersOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
 # AllowShortBlocksOnASingleLine: false
 # AllowShortCaseLabelsOnASingleLine: false
@@ -34,22 +39,20 @@ AlignTrailingComments: false
 # AllowShortFunctionsOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
 
-# AllowShortIfStatementsOnASingleLine: false
+# AllowShortLambdasOnASingleLine: All
+# AllowShortIfStatementsOnASingleLine: Never
 # AllowShortLoopsOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
 
-# Clang 7 default:
 # AlwaysBreakTemplateDeclarations: MultiLine
-# Clang 7 customization:
-# AlwaysBreakTemplateDeclarations: Yes
-# Clang 6 compatible customization:
-AlwaysBreakTemplateDeclarations: true
+AlwaysBreakTemplateDeclarations: Yes
 
 # BinPackArguments: true
 # BinPackParameters: true
 # BraceWrapping:
+#   AfterCaseLabel:  false
 #   AfterClass:      false
 #   AfterControlStatement: false
 #   AfterEnum:       false
@@ -91,7 +94,7 @@ ColumnLimit:     120
 # DisableFormat:   false
 # ExperimentalAutoDetectBinPacking: false
 
-# NOTE: LLVM-39247, this emits damaged "// namespace _DEPRECATE_TR1_NAMESPACEtr1".
+# TRANSITION, LLVM-39247, fixed in clang-format 10.
 # FixNamespaceComments: true
 FixNamespaceComments: false
 
@@ -167,6 +170,7 @@ PointerAlignment: Left
 # SpaceAfterCStyleCast: false
 SpaceAfterCStyleCast: true
 
+# SpaceAfterLogicalNot: false
 # SpaceAfterTemplateKeyword: true
 # SpaceBeforeAssignmentOperators: true
 # SpaceBeforeCpp11BracedList: false
@@ -182,6 +186,9 @@ SpaceAfterCStyleCast: true
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
 # Standard:        Cpp11
+# StatementMacros:
+#   - Q_UNUSED
+#   - QT_REQUIRE_VERSION
 # TabWidth:        8
 # UseTab:          Never
 ...

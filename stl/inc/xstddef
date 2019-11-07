@@ -307,7 +307,7 @@ _STD_END
 #endif // defined(_M_IX86) && !defined(_M_CEE)
 
 #ifdef _M_IX86
-#define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__stdcall, OPT1, OPT2, OPT3)
+#define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
 
 #else // _M_IX86
