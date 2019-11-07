@@ -17,13 +17,13 @@
 #include <type_traits>
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-#pragma pack(push, _CRT_PACKING) 
-#pragma warning(push, _STL_WARNING_LEVEL) 
-#pragma warning(disable : _STL_DISABLED_WARNINGS) 
-_STL_DISABLE_CLANG_WARNINGS 
-#pragma push_macro("new") 
-#undef new 
-  
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
 _STD_BEGIN
 namespace numbers {
 #ifdef __cpp_lib_concepts
@@ -100,10 +100,10 @@ namespace numbers {
 } // namespace numbers
 _STD_END
 
-#pragma pop_macro("new") 
-_STL_RESTORE_CLANG_WARNINGS 
-#pragma warning(pop) 
-#pragma pack(pop) 
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
 #endif // _HAS_CXX20
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _NUMBERS_
