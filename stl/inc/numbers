@@ -28,61 +28,61 @@ _STD_BEGIN
 namespace numbers {
 #ifdef __cpp_lib_concepts
     template <floating_point _Floating>
-    inline constexpr _Floating e_v = static_cast<_Floating>(2.71828182845904523536);
+    inline constexpr _Floating e_v = static_cast<_Floating>(2.718281828459045);
     template <floating_point _Floating>
-    inline constexpr _Floating log2e_v = static_cast<_Floating>(1.44269504088896340736);
+    inline constexpr _Floating log2e_v = static_cast<_Floating>(1.4426950408889634);
     template <floating_point _Floating>
-    inline constexpr _Floating log10e_v = static_cast<_Floating>(0.434294481903251827651);
+    inline constexpr _Floating log10e_v = static_cast<_Floating>(0.4342944819032518);
     template <floating_point _Floating>
-    inline constexpr _Floating pi_v = static_cast<_Floating>(3.14159265358979323846);
+    inline constexpr _Floating pi_v = static_cast<_Floating>(3.141592653589793);
     template <floating_point _Floating>
-    inline constexpr _Floating inv_pi_v = static_cast<_Floating>(0.318309886183790671538);
+    inline constexpr _Floating inv_pi_v = static_cast<_Floating>(0.3183098861837907);
     template <floating_point _Floating>
-    inline constexpr _Floating inv_sqrtpi_v = static_cast<_Floating>(0.564189583547756286948);
+    inline constexpr _Floating inv_sqrtpi_v = static_cast<_Floating>(0.5641895835477563);
     template <floating_point _Floating>
-    inline constexpr _Floating ln2_v = static_cast<_Floating>(0.693147180559945309417);
+    inline constexpr _Floating ln2_v = static_cast<_Floating>(0.6931471805599453);
     template <floating_point _Floating>
-    inline constexpr _Floating ln10_v = static_cast<_Floating>(2.30258509299404568402);
+    inline constexpr _Floating ln10_v = static_cast<_Floating>(2.302585092994046);
     template <floating_point _Floating>
-    inline constexpr _Floating sqrt2_v = static_cast<_Floating>(1.41421356237309504880);
+    inline constexpr _Floating sqrt2_v = static_cast<_Floating>(1.4142135623730951);
     template <floating_point _Floating>
-    inline constexpr _Floating sqrt3_v = static_cast<_Floating>(1.73205080756887729353);
+    inline constexpr _Floating sqrt3_v = static_cast<_Floating>(1.7320508075688772);
     template <floating_point _Floating>
-    inline constexpr _Floating inv_sqrt3_v = static_cast<_Floating>(0.577350269189625764509);
+    inline constexpr _Floating inv_sqrt3_v = static_cast<_Floating>(0.5773502691896257);
     template <floating_point _Floating>
-    inline constexpr _Floating egamma_v = static_cast<_Floating>(0.577215664901532860607);
+    inline constexpr _Floating egamma_v = static_cast<_Floating>(0.5772156649015329);
     template <floating_point _Floating>
-    inline constexpr _Floating phi_v   = static_cast<_Floating>(1.61803398874989484820);
+    inline constexpr _Floating phi_v   = static_cast<_Floating>(1.618033988749895);
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class _Ty>
     using _Floating = enable_if_t<is_floating_point_v<_Ty>, _Ty>;
 
     template <class _Ty>
-    inline constexpr _Ty e_v = static_cast<_Floating<_Ty>>(2.71828182845904523536);
+    inline constexpr _Ty e_v = static_cast<_Floating<_Ty>>(2.718281828459045);
     template <class _Ty>
-    inline constexpr _Ty log2e_v = static_cast<_Floating<_Ty>>(1.44269504088896340736);
+    inline constexpr _Ty log2e_v = static_cast<_Floating<_Ty>>(1.4426950408889634);
     template <class _Ty>
-    inline constexpr _Ty log10e_v = static_cast<_Floating<_Ty>>(0.434294481903251827651);
+    inline constexpr _Ty log10e_v = static_cast<_Floating<_Ty>>(0.4342944819032518);
     template <class _Ty>
-    inline constexpr _Ty pi_v = static_cast<_Floating<_Ty>>(3.14159265358979323846);
+    inline constexpr _Ty pi_v = static_cast<_Floating<_Ty>>(3.141592653589793);
     template <class _Ty>
-    inline constexpr _Ty inv_pi_v = static_cast<_Floating<_Ty>>(0.318309886183790671538);
+    inline constexpr _Ty inv_pi_v = static_cast<_Floating<_Ty>>(0.3183098861837907);
     template <class _Ty>
-    inline constexpr _Ty inv_sqrtpi_v = static_cast<_Floating<_Ty>>(0.564189583547756286948);
+    inline constexpr _Ty inv_sqrtpi_v = static_cast<_Floating<_Ty>>(0.5641895835477563);
     template <class _Ty>
-    inline constexpr _Ty ln2_v = static_cast<_Floating<_Ty>>(0.693147180559945309417);
+    inline constexpr _Ty ln2_v = static_cast<_Floating<_Ty>>(0.6931471805599453);
     template <class _Ty>
-    inline constexpr _Ty ln10_v = static_cast<_Floating<_Ty>>(2.30258509299404568402);
+    inline constexpr _Ty ln10_v = static_cast<_Floating<_Ty>>(2.302585092994046);
     template <class _Ty>
-    inline constexpr _Ty sqrt2_v = static_cast<_Floating<_Ty>>(1.41421356237309504880);
+    inline constexpr _Ty sqrt2_v = static_cast<_Floating<_Ty>>(1.4142135623730951);
     template <class _Ty>
-    inline constexpr _Ty sqrt3_v = static_cast<_Floating<_Ty>>(1.73205080756887729353);
+    inline constexpr _Ty sqrt3_v = static_cast<_Floating<_Ty>>(1.7320508075688772);
     template <class _Ty>
-    inline constexpr _Ty inv_sqrt3_v = static_cast<_Floating<_Ty>>(0.577350269189625764509);
+    inline constexpr _Ty inv_sqrt3_v = static_cast<_Floating<_Ty>>(0.5773502691896257);
     template <class _Ty>
-    inline constexpr _Ty egamma_v = static_cast<_Floating<_Ty>>(0.577215664901532860607);
+    inline constexpr _Ty egamma_v = static_cast<_Floating<_Ty>>(0.5772156649015329);
     template <class _Ty>
-    inline constexpr _Ty phi_v = static_cast<_Floating<_Ty>>(1.61803398874989484820);
+    inline constexpr _Ty phi_v = static_cast<_Floating<_Ty>>(1.618033988749895);
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     inline constexpr double e          = e_v<double>;
     inline constexpr double log2e      = log2e_v<double>;
