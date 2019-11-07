@@ -159,6 +159,7 @@
 // P0548R1 Tweaking common_type And duration
 // P0558R1 Resolving atomic<T> Named Base Class Inconsistencies
 // P0599R1 noexcept hash
+// P0738R2 istream_iterator Cleanup
 // P0771R1 noexcept For std::function's Move Constructor
 // P0777R1 Avoiding Unnecessary decay
 // P0809R0 Comparing Unordered Containers
