@@ -4,15 +4,15 @@
 
 # Checklist
 
+Be sure you've read README.md and understand the scope of this repo.
+
 If you're unsure about a box, leave it unchecked. A maintainer will help you.
 
-- [ ] I understand README.md. I also understand that acceptance of
-  community PRs will be delayed until the test and CI systems are online.
 - [ ] Identifiers in product code changes are properly `_Ugly` as per
   https://eel.is/c++draft/lex.name#3.1 or there are no product code changes.
 - [ ] The STL builds successfully and all tests have passed (must be manually
-  verified by an STL maintainer before CI is online, leave this unchecked for
-  initial submission).
+  verified by an STL maintainer before automated testing is enabled on GitHub,
+  leave this unchecked for initial submission).
 - [ ] These changes introduce no known ABI breaks (adding members, renaming
   members, adding virtual functions, changing whether a type is an aggregate
   or trivially copyable, etc.).

@@ -190,12 +190,12 @@ namespace stdext {
 
         using _Mybase::insert;
 
-        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>> // TRANSITION, GH-249
         pair<iterator, bool> insert(_Valty&& _Val) {
             return this->emplace(_STD forward<_Valty>(_Val));
         }
 
-        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>> // TRANSITION, GH-249
         iterator insert(const_iterator _Where, _Valty&& _Val) {
             return this->emplace_hint(_Where, _STD forward<_Valty>(_Val));
         }
@@ -373,12 +373,12 @@ namespace stdext {
 
         using _Mybase::insert;
 
-        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>> // TRANSITION, GH-249
         iterator insert(_Valty&& _Val) {
             return this->emplace(_STD forward<_Valty>(_Val));
         }
 
-        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+        template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>> // TRANSITION, GH-249
         iterator insert(const_iterator _Where, _Valty&& _Val) {
             return this->emplace_hint(_Where, _STD forward<_Valty>(_Val));
         }

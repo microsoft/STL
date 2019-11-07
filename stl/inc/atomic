@@ -53,25 +53,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #error Unsupported hardware
 #endif // hardware
 
-#ifndef _STL_ATOMIC_LOAD_WITH_CMPXCHG8B
-#if !defined(_M_IX86)
-// On non-x86, we always have 64-bit load instructions.
-#define _STL_ATOMIC_LOAD_WITH_CMPXCHG8B 0
-#elif defined(__EDG__)
-// EDG treats the intrinsic as any other extern function.
-#define _STL_ATOMIC_LOAD_WITH_CMPXCHG8B 0
-#elif defined(__clang__)
-// TRANSITION, Clang 8.0.1 hasn't yet been taught about __iso_volatile_load64 on x86.
-#define _STL_ATOMIC_LOAD_WITH_CMPXCHG8B 1
-#elif defined(_MSC_VER) && _MSC_VER >= 1924
-// MSVC 19.24 is the first release with __iso_volatile_load64 for x86.
-#define _STL_ATOMIC_LOAD_WITH_CMPXCHG8B 0
-#else
-// Older than MSVC 19.24, use the older cmpxchg8b load operation.
-#define _STL_ATOMIC_LOAD_WITH_CMPXCHG8B 1
-#endif
-#endif // _STL_ATOMIC_LOAD_WITH_CMPXCHG8B
-
 #ifndef _INVALID_MEMORY_ORDER
 #ifdef _DEBUG
 #define _INVALID_MEMORY_ORDER _STL_REPORT_ERROR("Invalid memory order")
@@ -701,23 +682,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 #endif // _M_IX86
 
-#if _STL_ATOMIC_LOAD_WITH_CMPXCHG8B
-    _NODISCARD _Ty load(const memory_order _Order = memory_order_seq_cst) const noexcept {
-        // load with (effectively) sequential consistency
-        _Check_load_memory_order(_Order);
-        const auto _Mem_const = _Atomic_address_as<const long long>(_Storage);
-        const auto _Mem       = const_cast<volatile long long*>(_Mem_const); // OK because the CAS will always fail
-        long long _As_bytes;
-        _Compiler_barrier();
-        do {
-            _As_bytes = *_Mem;
-        } while (_As_bytes != _InterlockedCompareExchange64(_Mem, _As_bytes, _As_bytes));
-        _Compiler_barrier();
-
-        return reinterpret_cast<_Ty&>(_As_bytes);
-    }
-#else // ^^^ _STL_ATOMIC_LOAD_WITH_CMPXCHG8B / !_STL_ATOMIC_LOAD_WITH_CMPXCHG8B vvv
-
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<const long long>(_Storage);
         long long _As_bytes;
@@ -735,7 +699,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem     = _Atomic_address_as<const long long>(_Storage);
+        const auto _Mem = _Atomic_address_as<const long long>(_Storage);
 #if defined(_M_ARM)
         long long _As_bytes = __ldrexd(_Mem);
 #elif defined(_M_IX86) || defined(_M_ARM64)
@@ -746,7 +710,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _Load_barrier(_Order);
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
-#endif // _STL_ATOMIC_LOAD_WITH_CMPXCHG8B
 
 #ifdef _M_IX86
     _Ty exchange(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {

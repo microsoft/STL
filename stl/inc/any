@@ -9,7 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if _HAS_CXX17
+#if !_HAS_CXX17
+#pragma message("The contents of <any> are available only with C++17 or later.")
+#else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <initializer_list>
 #include <type_traits>
 #include <typeinfo>
@@ -441,8 +443,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-#pragma message("class any is only available with C++17 or later.")
 #endif // _HAS_CXX17
 
 #endif // _STL_COMPILER_PREPROCESSOR

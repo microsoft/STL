@@ -51,7 +51,7 @@ private:
     }
 
 public:
-    template <class _Fn, class... _Args, class = enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>>>
+    template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
     explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
         using _Tuple                 = tuple<decay_t<_Fn>, decay_t<_Args>...>;
         auto _Decay_copied           = _STD make_unique<_Tuple>(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);

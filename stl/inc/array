@@ -376,7 +376,7 @@ public:
     _Ty _Elems[1];
 };
 
-template <class _Ty, size_t _Size, class = enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value>>
+template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
 }

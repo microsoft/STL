@@ -500,7 +500,7 @@ private:
     }
 
 public:
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t(), _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -1013,7 +1013,7 @@ private:
     }
 
 public:
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         const pointer _Whereptr = _Where._Ptr;
         auto& _My_data          = _Mypair._Myval2;
@@ -1136,7 +1136,7 @@ private:
     }
 
 public:
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
@@ -2295,7 +2295,7 @@ public:
 
     vector(const vector& _Right, const _Alloc& _Al) : _Mybase(_Right, _Al) {}
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
         _BConstruct(_First, _Last);
     }
@@ -2645,7 +2645,7 @@ public:
         erase(end() - 1);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
         clear();
         insert(begin(), _First, _Last);
@@ -2664,7 +2664,7 @@ public:
         return _Insert_n(_Where, _Count, _Val);
     }
 
-    template <class _Iter, class = enable_if_t<_Is_iterator_v<_Iter>>>
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         difference_type _Off = _Where - begin();
         _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>());
@@ -2862,6 +2862,18 @@ struct hash<vector<bool, _Alloc>> {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
     }
 };
+
+#if _HAS_CXX20
+template <class _Ty, class _Alloc, class _Uty>
+void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    _Erase_remove(_Cont, _Val);
+}
+
+template <class _Ty, class _Alloc, class _Pr>
+void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

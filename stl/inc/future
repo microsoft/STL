@@ -1352,7 +1352,7 @@ public:
 
     packaged_task() noexcept : _MyPromise(0) {}
 
-    template <class _Fty2, class = enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>>>
+    template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {}
 
     packaged_task(packaged_task&& _Other) noexcept : _MyPromise(_STD move(_Other._MyPromise)) {}
@@ -1363,7 +1363,7 @@ public:
     }
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc, class = enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>>>
+    template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     packaged_task(allocator_arg_t, const _Alloc& _Al, _Fty2&& _Fnarg)
         : _MyPromise(_Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT

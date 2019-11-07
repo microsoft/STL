@@ -9,15 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-// TRANSITION (for P0768R1 completion):
-// * Implement comparison algorithms from [cmp.alg]
-// * Implement compare_3way and lexicographical_compare_3way in <algorithm>
-// * After completing the above, define __cpp_lib_three_way_comparison when
-//   C++20 and __cpp_impl_three_way_comparison are defined.
-// * Throughput tuning for common_comparison_category
-// * Deprecate rel_ops.
-
-#if _HAS_CXX20
+#if !_HAS_CXX20
+#pragma message("The contents of <compare> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
@@ -39,31 +33,38 @@ enum class _Compare_ncmp : _Compare_t { unordered = -127 };
 // CLASS weak_equality
 class weak_equality {
 public:
-    constexpr explicit weak_equality(const _Compare_eq _Value_) noexcept : _Value(static_cast<_Compare_t>(_Value_)) {}
+    _NODISCARD constexpr explicit weak_equality(const _Compare_eq _Value_) noexcept
+        : _Value(static_cast<_Compare_t>(_Value_)) {}
 
     static const weak_equality equivalent;
     static const weak_equality nonequivalent;
 
-    friend constexpr bool operator==(const weak_equality _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const weak_equality _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
-    }
-    friend constexpr bool operator!=(const weak_equality _Val, _Literal_zero) noexcept {
-        return _Val._Value != 0;
-    }
-
-    friend constexpr bool operator==(_Literal_zero, const weak_equality _Val) noexcept {
-        return _Val._Value == 0;
-    }
-    friend constexpr bool operator!=(_Literal_zero, const weak_equality _Val) noexcept {
-        return _Val._Value != 0;
     }
 
 #ifdef __cpp_impl_three_way_comparison
-    friend constexpr weak_equality operator<=>(const weak_equality _Val, _Literal_zero) noexcept {
+    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+    _NODISCARD friend constexpr bool operator==(const weak_equality&, const weak_equality&) noexcept = default;
+
+    _NODISCARD friend constexpr weak_equality operator<=>(const weak_equality _Val, _Literal_zero) noexcept {
         return _Val;
     }
-    friend constexpr weak_equality operator<=>(_Literal_zero, const weak_equality _Val) noexcept {
+
+    _NODISCARD friend constexpr weak_equality operator<=>(_Literal_zero, const weak_equality _Val) noexcept {
         return _Val;
+    }
+#else // ^^^ supports <=> and P1185 / supports neither vvv
+    _NODISCARD friend constexpr bool operator!=(const weak_equality _Val, _Literal_zero) noexcept {
+        return _Val._Value != 0;
+    }
+
+    _NODISCARD friend constexpr bool operator==(_Literal_zero, const weak_equality _Val) noexcept {
+        return _Val._Value == 0;
+    }
+
+    _NODISCARD friend constexpr bool operator!=(_Literal_zero, const weak_equality _Val) noexcept {
+        return _Val._Value != 0;
     }
 #endif // __cpp_impl_three_way_comparison
 
@@ -77,7 +78,8 @@ inline constexpr weak_equality weak_equality::nonequivalent(_Compare_eq::nonequi
 // CLASS strong_equality
 class strong_equality {
 public:
-    constexpr explicit strong_equality(const _Compare_eq _Value_) noexcept : _Value(static_cast<_Compare_t>(_Value_)) {}
+    _NODISCARD constexpr explicit strong_equality(const _Compare_eq _Value_) noexcept
+        : _Value(static_cast<_Compare_t>(_Value_)) {}
 
     static const strong_equality equal;
     static const strong_equality nonequal;
@@ -88,26 +90,32 @@ public:
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
 
-    friend constexpr bool operator==(const strong_equality _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const strong_equality _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
-    }
-    friend constexpr bool operator!=(const strong_equality _Val, _Literal_zero) noexcept {
-        return _Val._Value != 0;
-    }
-
-    friend constexpr bool operator==(_Literal_zero, const strong_equality _Val) noexcept {
-        return _Val._Value == 0;
-    }
-    friend constexpr bool operator!=(_Literal_zero, const strong_equality _Val) noexcept {
-        return _Val._Value != 0;
     }
 
 #ifdef __cpp_impl_three_way_comparison
-    friend constexpr strong_equality operator<=>(const strong_equality _Val, _Literal_zero) noexcept {
+    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+    _NODISCARD friend constexpr bool operator==(const strong_equality&, const strong_equality&) noexcept = default;
+
+    _NODISCARD friend constexpr strong_equality operator<=>(const strong_equality _Val, _Literal_zero) noexcept {
         return _Val;
     }
-    friend constexpr strong_equality operator<=>(_Literal_zero, const strong_equality _Val) noexcept {
+
+    _NODISCARD friend constexpr strong_equality operator<=>(_Literal_zero, const strong_equality _Val) noexcept {
         return _Val;
+    }
+#else // ^^^ supports <=> and P1185 / supports neither vvv
+    _NODISCARD friend constexpr bool operator!=(const strong_equality _Val, _Literal_zero) noexcept {
+        return _Val._Value != 0;
+    }
+
+    _NODISCARD friend constexpr bool operator==(_Literal_zero, const strong_equality _Val) noexcept {
+        return _Val._Value == 0;
+    }
+
+    _NODISCARD friend constexpr bool operator!=(_Literal_zero, const strong_equality _Val) noexcept {
+        return _Val._Value != 0;
     }
 #endif // __cpp_impl_three_way_comparison
 
@@ -123,11 +131,11 @@ inline constexpr strong_equality strong_equality::nonequivalent(_Compare_eq::non
 // CLASS partial_ordering
 class partial_ordering {
 public:
-    constexpr explicit partial_ordering(const _Compare_eq _Value_) noexcept
+    _NODISCARD constexpr explicit partial_ordering(const _Compare_eq _Value_) noexcept
         : _Value(static_cast<_Compare_t>(_Value_)), _Is_ordered(true) {}
-    constexpr explicit partial_ordering(const _Compare_ord _Value_) noexcept
+    _NODISCARD constexpr explicit partial_ordering(const _Compare_ord _Value_) noexcept
         : _Value(static_cast<_Compare_t>(_Value_)), _Is_ordered(true) {}
-    constexpr explicit partial_ordering(const _Compare_ncmp _Value_) noexcept
+    _NODISCARD constexpr explicit partial_ordering(const _Compare_ncmp _Value_) noexcept
         : _Value(static_cast<_Compare_t>(_Value_)), _Is_ordered(false) {}
 
     static const partial_ordering less;
@@ -139,49 +147,65 @@ public:
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
 
-    friend constexpr bool operator==(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value == 0;
     }
-    friend constexpr bool operator!=(const partial_ordering _Val, _Literal_zero) noexcept {
+
+#ifdef __cpp_impl_three_way_comparison
+    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+    _NODISCARD friend constexpr bool operator==(const partial_ordering&, const partial_ordering&) noexcept = default;
+#else // ^^^ supports <=> and P1185 / supports neither vvv
+    _NODISCARD friend constexpr bool operator!=(const partial_ordering _Val, _Literal_zero) noexcept {
         return !_Val._Is_ordered || _Val._Value != 0;
     }
-    friend constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator==(_Literal_zero, const partial_ordering _Val) noexcept {
+        return _Val._Is_ordered && 0 == _Val._Value;
+    }
+
+    _NODISCARD friend constexpr bool operator!=(_Literal_zero, const partial_ordering _Val) noexcept {
+        return !_Val._Is_ordered || 0 != _Val._Value;
+    }
+#endif // __cpp_impl_three_way_comparison
+
+    _NODISCARD friend constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value < 0;
     }
-    friend constexpr bool operator>(const partial_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator>(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value > 0;
     }
-    friend constexpr bool operator<=(const partial_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator<=(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value <= 0;
     }
-    friend constexpr bool operator>=(const partial_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator>=(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value >= 0;
     }
 
-    friend constexpr bool operator==(_Literal_zero, const partial_ordering _Val) noexcept {
-        return _Val._Is_ordered && 0 == _Val._Value;
-    }
-    friend constexpr bool operator!=(_Literal_zero, const partial_ordering _Val) noexcept {
-        return !_Val._Is_ordered || _Val._Value != 0;
-    }
-    friend constexpr bool operator<(_Literal_zero, const partial_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val._Is_ordered && 0 < _Val._Value;
     }
-    friend constexpr bool operator>(_Literal_zero, const partial_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator>(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val._Is_ordered && 0 > _Val._Value;
     }
-    friend constexpr bool operator<=(_Literal_zero, const partial_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator<=(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val._Is_ordered && 0 <= _Val._Value;
     }
-    friend constexpr bool operator>=(_Literal_zero, const partial_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator>=(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val._Is_ordered && 0 >= _Val._Value;
     }
 
 #ifdef __cpp_impl_three_way_comparison
-    friend constexpr partial_ordering operator<=>(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr partial_ordering operator<=>(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val;
     }
-    friend constexpr partial_ordering operator<=>(_Literal_zero, const partial_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr partial_ordering operator<=>(_Literal_zero, const partial_ordering _Val) noexcept {
         return partial_ordering{static_cast<_Compare_ord>(-_Val._Value)};
     }
 #endif // __cpp_impl_three_way_comparison
@@ -199,8 +223,10 @@ inline constexpr partial_ordering partial_ordering::unordered(_Compare_ncmp::uno
 // CLASS weak_ordering
 class weak_ordering {
 public:
-    constexpr explicit weak_ordering(const _Compare_eq _Value_) noexcept : _Value(static_cast<_Compare_t>(_Value_)) {}
-    constexpr explicit weak_ordering(const _Compare_ord _Value_) noexcept : _Value(static_cast<_Compare_t>(_Value_)) {}
+    _NODISCARD constexpr explicit weak_ordering(const _Compare_eq _Value_) noexcept
+        : _Value(static_cast<_Compare_t>(_Value_)) {}
+    _NODISCARD constexpr explicit weak_ordering(const _Compare_ord _Value_) noexcept
+        : _Value(static_cast<_Compare_t>(_Value_)) {}
 
     static const weak_ordering less;
     static const weak_ordering equivalent;
@@ -209,53 +235,70 @@ public:
     constexpr operator weak_equality() const noexcept {
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
+
     constexpr operator partial_ordering() const noexcept {
         return partial_ordering{static_cast<_Compare_ord>(_Value)};
     }
 
-    friend constexpr bool operator==(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
     }
-    friend constexpr bool operator!=(const weak_ordering _Val, _Literal_zero) noexcept {
+
+#ifdef __cpp_impl_three_way_comparison
+    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+    _NODISCARD friend constexpr bool operator==(const weak_ordering&, const weak_ordering&) noexcept = default;
+#else // ^^^ supports <=> and P1185 / supports neither vvv
+    _NODISCARD friend constexpr bool operator!=(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value != 0;
     }
-    friend constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator==(_Literal_zero, const weak_ordering _Val) noexcept {
+        return 0 == _Val._Value;
+    }
+
+    _NODISCARD friend constexpr bool operator!=(_Literal_zero, const weak_ordering _Val) noexcept {
+        return 0 != _Val._Value;
+    }
+#endif // __cpp_impl_three_way_comparison
+
+    _NODISCARD friend constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
     }
-    friend constexpr bool operator>(const weak_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator>(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value > 0;
     }
-    friend constexpr bool operator<=(const weak_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator<=(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value <= 0;
     }
-    friend constexpr bool operator>=(const weak_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator>=(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value >= 0;
     }
 
-    friend constexpr bool operator==(_Literal_zero, const weak_ordering _Val) noexcept {
-        return 0 == _Val._Value;
-    }
-    friend constexpr bool operator!=(_Literal_zero, const weak_ordering _Val) noexcept {
-        return 0 != _Val._Value;
-    }
-    friend constexpr bool operator<(_Literal_zero, const weak_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<(_Literal_zero, const weak_ordering _Val) noexcept {
         return 0 < _Val._Value;
     }
-    friend constexpr bool operator>(_Literal_zero, const weak_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator>(_Literal_zero, const weak_ordering _Val) noexcept {
         return 0 > _Val._Value;
     }
-    friend constexpr bool operator<=(_Literal_zero, const weak_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator<=(_Literal_zero, const weak_ordering _Val) noexcept {
         return 0 <= _Val._Value;
     }
-    friend constexpr bool operator>=(_Literal_zero, const weak_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator>=(_Literal_zero, const weak_ordering _Val) noexcept {
         return 0 >= _Val._Value;
     }
 
 #ifdef __cpp_impl_three_way_comparison
-    friend constexpr weak_ordering operator<=>(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr weak_ordering operator<=>(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val;
     }
-    friend constexpr weak_ordering operator<=>(_Literal_zero, const weak_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr weak_ordering operator<=>(_Literal_zero, const weak_ordering _Val) noexcept {
         return weak_ordering{static_cast<_Compare_ord>(-_Val._Value)};
     }
 #endif // __cpp_impl_three_way_comparison
@@ -271,8 +314,9 @@ inline constexpr weak_ordering weak_ordering::greater(_Compare_ord::greater);
 // CLASS strong_ordering
 class strong_ordering {
 public:
-    constexpr explicit strong_ordering(const _Compare_eq _Value_) noexcept : _Value(static_cast<_Compare_t>(_Value_)) {}
-    constexpr explicit strong_ordering(const _Compare_ord _Value_) noexcept
+    _NODISCARD constexpr explicit strong_ordering(const _Compare_eq _Value_) noexcept
+        : _Value(static_cast<_Compare_t>(_Value_)) {}
+    _NODISCARD constexpr explicit strong_ordering(const _Compare_ord _Value_) noexcept
         : _Value(static_cast<_Compare_t>(_Value_)) {}
 
     static const strong_ordering less;
@@ -283,59 +327,78 @@ public:
     constexpr operator weak_equality() const noexcept {
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
+
     constexpr operator strong_equality() const noexcept {
         return strong_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
+
     constexpr operator partial_ordering() const noexcept {
         return partial_ordering{static_cast<_Compare_ord>(_Value)};
     }
+
     constexpr operator weak_ordering() const noexcept {
         return weak_ordering{static_cast<_Compare_ord>(_Value)};
     }
 
-    friend constexpr bool operator==(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
     }
-    friend constexpr bool operator!=(const strong_ordering _Val, _Literal_zero) noexcept {
+
+#ifdef __cpp_impl_three_way_comparison
+    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+    _NODISCARD friend constexpr bool operator==(const strong_ordering&, const strong_ordering&) noexcept = default;
+#else // ^^^ supports <=> and P1185 / supports neither vvv
+    _NODISCARD friend constexpr bool operator!=(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value != 0;
     }
-    friend constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator==(_Literal_zero, const strong_ordering _Val) noexcept {
+        return 0 == _Val._Value;
+    }
+
+    _NODISCARD friend constexpr bool operator!=(_Literal_zero, const strong_ordering _Val) noexcept {
+        return 0 != _Val._Value;
+    }
+#endif // __cpp_impl_three_way_comparison
+
+    _NODISCARD friend constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
     }
-    friend constexpr bool operator>(const strong_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator>(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value > 0;
     }
-    friend constexpr bool operator<=(const strong_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator<=(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value <= 0;
     }
-    friend constexpr bool operator>=(const strong_ordering _Val, _Literal_zero) noexcept {
+
+    _NODISCARD friend constexpr bool operator>=(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value >= 0;
     }
 
-    friend constexpr bool operator==(_Literal_zero, const strong_ordering _Val) noexcept {
-        return 0 == _Val._Value;
-    }
-    friend constexpr bool operator!=(_Literal_zero, const strong_ordering _Val) noexcept {
-        return 0 != _Val._Value;
-    }
-    friend constexpr bool operator<(_Literal_zero, const strong_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<(_Literal_zero, const strong_ordering _Val) noexcept {
         return 0 < _Val._Value;
     }
-    friend constexpr bool operator>(_Literal_zero, const strong_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator>(_Literal_zero, const strong_ordering _Val) noexcept {
         return 0 > _Val._Value;
     }
-    friend constexpr bool operator<=(_Literal_zero, const strong_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator<=(_Literal_zero, const strong_ordering _Val) noexcept {
         return 0 <= _Val._Value;
     }
-    friend constexpr bool operator>=(_Literal_zero, const strong_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr bool operator>=(_Literal_zero, const strong_ordering _Val) noexcept {
         return 0 >= _Val._Value;
     }
 
 #ifdef __cpp_impl_three_way_comparison
-    friend constexpr strong_ordering operator<=>(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr strong_ordering operator<=>(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val;
     }
-    friend constexpr strong_ordering operator<=>(_Literal_zero, const strong_ordering _Val) noexcept {
+
+    _NODISCARD friend constexpr strong_ordering operator<=>(_Literal_zero, const strong_ordering _Val) noexcept {
         return strong_ordering{static_cast<_Compare_ord>(-_Val._Value)};
     }
 #endif // __cpp_impl_three_way_comparison
@@ -349,23 +412,33 @@ inline constexpr strong_ordering strong_ordering::equal(_Compare_eq::equal);
 inline constexpr strong_ordering strong_ordering::equivalent(_Compare_eq::equivalent);
 inline constexpr strong_ordering strong_ordering::greater(_Compare_ord::greater);
 
-// NAMED COMPARISON FUNCTIONS
-constexpr bool is_eq(const weak_equality _Comp) noexcept {
+// FUNCTION is_eq
+_NODISCARD constexpr bool is_eq(const weak_equality _Comp) noexcept {
     return _Comp == 0;
 }
-constexpr bool is_neq(const weak_equality _Comp) noexcept {
+
+// FUNCTION is_neq
+_NODISCARD constexpr bool is_neq(const weak_equality _Comp) noexcept {
     return _Comp != 0;
 }
-constexpr bool is_lt(const partial_ordering _Comp) noexcept {
+
+// FUNCTION is_lt
+_NODISCARD constexpr bool is_lt(const partial_ordering _Comp) noexcept {
     return _Comp < 0;
 }
-constexpr bool is_lteq(const partial_ordering _Comp) noexcept {
+
+// FUNCTION is_lteq
+_NODISCARD constexpr bool is_lteq(const partial_ordering _Comp) noexcept {
     return _Comp <= 0;
 }
-constexpr bool is_gt(const partial_ordering _Comp) noexcept {
+
+// FUNCTION is_gt
+_NODISCARD constexpr bool is_gt(const partial_ordering _Comp) noexcept {
     return _Comp > 0;
 }
-constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
+
+// FUNCTION is_gteq
+_NODISCARD constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
     return _Comp >= 0;
 }
 
@@ -397,27 +470,13 @@ struct common_comparison_category {
 template <class... _Types>
 using common_comparison_category_t = typename common_comparison_category<_Types...>::type;
 
-#if 0 // Not yet implemented
-    // COMPARISON ALGORITHMS
-template <class _Ty>
-constexpr strong_ordering strong_order(const _Ty& _Left, const _Ty& _Right);
-template <class _Ty>
-constexpr weak_ordering weak_order(const _Ty& _Left, const _Ty& _Right);
-template <class _Ty>
-constexpr partial_ordering partial_order(const _Ty& _Left, const _Ty& _Right);
-template <class _Ty>
-constexpr strong_equality strong_equal(const _Ty& _Left, const _Ty& _Right);
-template <class _Ty>
-constexpr weak_equality weak_equal(const _Ty& _Left, const _Ty& _Right);
-#endif // Not yet implemented
+// Other components not yet implemented
 _STD_END
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#else // ^^^ C++20 / not C++20 vvv
-#pragma message("The contents of <compare> are only available with C++20 or later.")
 #endif // _HAS_CXX20
 
 #endif // _STL_COMPILER_PREPROCESSOR

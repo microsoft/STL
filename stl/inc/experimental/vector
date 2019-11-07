@@ -9,7 +9,6 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <experimental/xutility>
 #include <vector>
 
 #pragma pack(push, _CRT_PACKING)
@@ -25,13 +24,13 @@ namespace experimental {
 
         // FUNCTION TEMPLATE erase_if
         template <class _Ty, class _Alloc, class _Pr>
-        void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
             _Erase_remove_if(_Cont, _Pass_fn(_Pred));
         }
 
         // FUNCTION TEMPLATE erase
         template <class _Ty, class _Alloc, class _Uty>
-        void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) { // erase each element matching _Val
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
             _Erase_remove(_Cont, _Val);
         }
 

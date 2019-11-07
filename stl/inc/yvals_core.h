@@ -47,6 +47,7 @@
 // P0898R3 Standard Library Concepts
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 //     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
@@ -290,15 +291,15 @@
 
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
-#if defined(__CUDACC__)
+#ifdef __cpp_conditional_explicit
+#define _HAS_CONDITIONAL_EXPLICIT 1
+#elif defined(__CUDACC__)
 #define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION
-#elif defined(__EDG__)
-#define _HAS_CONDITIONAL_EXPLICIT 1
 #elif defined(__clang__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, Clang 9
-#else // vvv C1XX vvv
+#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694
+#else // vvv C1XX or non-CUDA EDG vvv
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX ^^^
+#endif // ^^^ C1XX or non-CUDA EDG ^^^
 #endif // _HAS_CONDITIONAL_EXPLICIT
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
@@ -417,18 +418,18 @@
 
 #define _CPPLIB_VER 650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE 201910L
+#define _MSVC_STL_UPDATE 201911L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 8 || (__clang_major__ == 8 && __clang_minor__ == 0 && __clang_patchlevel__ == 0)
-#error STL1000: Unexpected compiler version, expected Clang 8.0.1 or newer.
+#if __clang_major__ < 9
+#error STL1000: Unexpected compiler version, expected Clang 9.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1923 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.23 or newer.
+#if _MSC_VER < 1924 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.24 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -540,7 +541,11 @@
 #define _CONSTEXPR_IF
 #endif // _HAS_IF_CONSTEXPR
 
-#define _CONSTEVAL constexpr // TRANSITION, Clang 9
+#ifdef __clang__
+#define _CONSTEVAL consteval
+#else // ^^^ supports consteval / no consteval vvv
+#define _CONSTEVAL constexpr
+#endif // ^^^ no consteval ^^^
 
 // Controls whether the STL will force /fp:fast to enable vectorization of algorithms defined
 // in the standard as special cases; such as reduce, transform_reduce, inclusive_scan, exclusive_scan
@@ -831,7 +836,18 @@
 #define _CXX20_DEPRECATE_IS_POD
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4026
+#if _HAS_CXX20 && !defined(_SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING)
+#define _DEPRECATE_EXPERIMENTAL_ERASE                                                                                 \
+    [[deprecated("warning STL4026: "                                                                                  \
+                 "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will " \
+                 "be REMOVED. They are superseded by std::erase() and std::erase_if(). "                              \
+                 "You can define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING to acknowledge that you have "       \
+                 "received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_EXPERIMENTAL_ERASE
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4027
 
 
 // LIBRARY FEATURE-TEST MACROS
@@ -949,6 +965,7 @@
 #endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
+#define __cpp_lib_erase_if 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_to_array 201907L
