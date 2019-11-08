@@ -13,7 +13,7 @@
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#endif
+#endif // ^^^ defined(__cpp_lib_concepts) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -84,6 +84,7 @@ namespace numbers {
     inline constexpr _Floating egamma_v<_Floating> = static_cast<_Floating>(0.5772156649015329);
     template <floating_point _Floating>
     inline constexpr _Floating phi_v<_Floating> = static_cast<_Floating>(1.618033988749895);
+
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <>
     inline constexpr double e_v<double> = 2.718281828459045;
@@ -165,6 +166,7 @@ namespace numbers {
     inline constexpr long double egamma_v<long double> = egamma_v<double>;
     template <>
     inline constexpr long double phi_v<long double> = phi_v<double>;
+
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     inline constexpr double e                   = e_v<double>;
     inline constexpr double log2e               = log2e_v<double>;
