@@ -86,31 +86,31 @@ namespace numbers {
     inline constexpr _Floating phi_v<_Floating> = static_cast<_Floating>(1.618033988749895);
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <>
-    inline constexpr double e_v<double> = static_cast<double>(2.718281828459045);
+    inline constexpr double e_v<double> = 2.718281828459045;
     template <>
-    inline constexpr double log2e_v<double> = static_cast<double>(1.4426950408889634);
+    inline constexpr double log2e_v<double> = 1.4426950408889634;
     template <>
-    inline constexpr double log10e_v<double> = static_cast<double>(0.4342944819032518);
+    inline constexpr double log10e_v<double> = 0.4342944819032518;
     template <>
-    inline constexpr double pi_v<double> = static_cast<double>(3.141592653589793);
+    inline constexpr double pi_v<double> = 3.141592653589793;
     template <>
-    inline constexpr double inv_pi_v<double> = static_cast<double>(0.3183098861837907);
+    inline constexpr double inv_pi_v<double> = 0.3183098861837907;
     template <>
-    inline constexpr double inv_sqrtpi_v<double> = static_cast<double>(0.5641895835477563);
+    inline constexpr double inv_sqrtpi_v<double> = 0.5641895835477563;
     template <>
-    inline constexpr double ln2_v<double> = static_cast<double>(0.6931471805599453);
+    inline constexpr double ln2_v<double> = 0.6931471805599453;
     template <>
-    inline constexpr double ln10_v<double> = static_cast<double>(2.302585092994046);
+    inline constexpr double ln10_v<double> = 2.302585092994046;
     template <>
-    inline constexpr double sqrt2_v<double> = static_cast<double>(1.4142135623730951);
+    inline constexpr double sqrt2_v<double> = 1.4142135623730951;
     template <>
-    inline constexpr double sqrt3_v<double> = static_cast<double>(1.7320508075688772);
+    inline constexpr double sqrt3_v<double> = 1.7320508075688772;
     template <>
-    inline constexpr double inv_sqrt3_v<double> = static_cast<double>(0.5773502691896257);
+    inline constexpr double inv_sqrt3_v<double> = 0.5773502691896257;
     template <>
-    inline constexpr double egamma_v<double> = static_cast<double>(0.5772156649015329);
+    inline constexpr double egamma_v<double> = 0.5772156649015329;
     template <>
-    inline constexpr double phi_v<double> = static_cast<double>(1.618033988749895);
+    inline constexpr double phi_v<double> = 1.618033988749895;
 
     template <>
     inline constexpr float e_v<float> = static_cast<float>(e_v<double>);
@@ -140,31 +140,31 @@ namespace numbers {
     inline constexpr float phi_v<float> = static_cast<float>(phi_v<double>);
 
     template <>
-    inline constexpr long double e_v<long double> = static_cast<long double>(e_v<double>);
+    inline constexpr long double e_v<long double> = e_v<double>;
     template <>
-    inline constexpr long double log2e_v<long double> = static_cast<long double>(log2e_v<double>);
+    inline constexpr long double log2e_v<long double> = log2e_v<double>;
     template <>
-    inline constexpr long double log10e_v<long double> = static_cast<long double>(log10e_v<double>);
+    inline constexpr long double log10e_v<long double> = log10e_v<double>;
     template <>
-    inline constexpr long double pi_v<long double> = static_cast<long double>(pi_v<double>);
+    inline constexpr long double pi_v<long double> = pi_v<double>;
     template <>
-    inline constexpr long double inv_pi_v<long double> = static_cast<long double>(inv_pi_v<double>);
+    inline constexpr long double inv_pi_v<long double> = inv_pi_v<double>;
     template <>
-    inline constexpr long double inv_sqrtpi_v<long double> = static_cast<long double>(inv_sqrtpi_v<double>);
+    inline constexpr long double inv_sqrtpi_v<long double> = inv_sqrtpi_v<double>;
     template <>
-    inline constexpr long double ln2_v<long double> = static_cast<long double>(ln2_v<double>);
+    inline constexpr long double ln2_v<long double> = ln2_v<double>;
     template <>
-    inline constexpr long double ln10_v<long double> = static_cast<long double>(ln10_v<double>);
+    inline constexpr long double ln10_v<long double> = ln10_v<double>;
     template <>
-    inline constexpr long double sqrt2_v<long double> = static_cast<long double>(sqrt2_v<double>);
+    inline constexpr long double sqrt2_v<long double> = sqrt2_v<double>;
     template <>
-    inline constexpr long double sqrt3_v<long double> = static_cast<long double>(sqrt3_v<double>);
+    inline constexpr long double sqrt3_v<long double> = sqrt3_v<double>;
     template <>
-    inline constexpr long double inv_sqrt3_v<long double> = static_cast<long double>(inv_sqrt3_v<double>);
+    inline constexpr long double inv_sqrt3_v<long double> = inv_sqrt3_v<double>;
     template <>
-    inline constexpr long double egamma_v<long double> = static_cast<long double>(egamma_v<double>);
+    inline constexpr long double egamma_v<long double> = egamma_v<double>;
     template <>
-    inline constexpr long double phi_v<long double> = static_cast<long double>(phi_v<double>);
+    inline constexpr long double phi_v<long double> = phi_v<double>;
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     inline constexpr double e                   = e_v<double>;
     inline constexpr double log2e               = log2e_v<double>;
