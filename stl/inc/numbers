@@ -26,34 +26,37 @@ _STD_BEGIN
 namespace numbers {
     template <class _Ty>
     struct _Invalid {
-        static_assert(_Always_false<_Ty>, "This variable template is not specialised for this type which is invalid.");
+        static_assert(_Always_false<_Ty>, "A program that instantiates a primary template of a mathematical constant "
+                                          "variable template is ill-formed. (N4835 [math.constants]/3)");
     };
+
     template <class _Ty>
-    inline constexpr _Ty e_v = _Invalid<_Ty>();
+    inline constexpr _Ty e_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty log2e_v = _Invalid<_Ty>();
+    inline constexpr _Ty log2e_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty log10e_v = _Invalid<_Ty>();
+    inline constexpr _Ty log10e_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty pi_v = _Invalid<_Ty>();
+    inline constexpr _Ty pi_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty inv_pi_v = _Invalid<_Ty>();
+    inline constexpr _Ty inv_pi_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty inv_sqrtpi_v = _Invalid<_Ty>();
+    inline constexpr _Ty inv_sqrtpi_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty ln2_v = _Invalid<_Ty>();
+    inline constexpr _Ty ln2_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty ln10_v = _Invalid<_Ty>();
+    inline constexpr _Ty ln10_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty sqrt2_v = _Invalid<_Ty>();
+    inline constexpr _Ty sqrt2_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty sqrt3_v = _Invalid<_Ty>();
+    inline constexpr _Ty sqrt3_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty inv_sqrt3_v = _Invalid<_Ty>();
+    inline constexpr _Ty inv_sqrt3_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty egamma_v = _Invalid<_Ty>();
+    inline constexpr _Ty egamma_v = _Invalid<_Ty>{};
     template <class _Ty>
-    inline constexpr _Ty phi_v = _Invalid<_Ty>();
+    inline constexpr _Ty phi_v = _Invalid<_Ty>{};
+
 #ifdef __cpp_lib_concepts
     template <floating_point _Floating>
     inline constexpr _Floating e_v<_Floating> = static_cast<_Floating>(2.718281828459045);
