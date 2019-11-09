@@ -1155,9 +1155,6 @@ template <class _Ty, bool = is_enum_v<_Ty>>
 struct _Underlying_type {};
 
 template <class _Ty>
-struct _Underlying_type<_Ty, false> {};
-
-template <class _Ty>
 struct _Underlying_type<_Ty, true> {
     using type = __underlying_type(_Ty);
 };
