@@ -1469,7 +1469,7 @@ struct _Ptr_move_cat<move_iterator<_Source*>, _Dest*> : _Ptr_move_cat<_Source*, 
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred)
 
 #else // _ITERATOR_DEBUG_LEVEL < 2
-#define _DEBUG_LT_PRED(pred, x, y) _Debug_lt_pred(pred, x, y)
+#define _DEBUG_LT_PRED(pred, x, y)                _Debug_lt_pred(pred, x, y)
 #define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _Debug_order_unchecked(first, last, pred)
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
     _Debug_order_set_unchecked<otherIter>(first, last, pred)

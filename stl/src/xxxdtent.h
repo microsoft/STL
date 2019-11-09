@@ -11,7 +11,7 @@ _EXTERN_C
 
 // macros
 #define ACSIZE 4 // size of extended-precision accumulators
-#define BIAS (ACSIZE * (FBITS / 2)) // avoid denorms for finite values
+#define BIAS   (ACSIZE * (FBITS / 2)) // avoid denorms for finite values
 
 #define FRAC_BITS_2 (FRAC_BITS * FRAC_BITS)
 

@@ -24,8 +24,8 @@ extern "C" _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precond
 #endif // defined(_THREAD_CHECK) || defined(_DEBUG)
 
 #if _THREAD_CHECKX
-#define _THREAD_QUOTX(x) #x
-#define _THREAD_QUOT(x) _THREAD_QUOTX(x)
+#define _THREAD_QUOTX(x)          #x
+#define _THREAD_QUOT(x)           _THREAD_QUOTX(x)
 #define _THREAD_ASSERT(expr, msg) ((expr) ? (void) 0 : _Thrd_abort(__FILE__ "(" _THREAD_QUOT(__LINE__) "): " msg))
 #else // _THREAD_CHECKX
 #define _THREAD_ASSERT(expr, msg) ((void) 0)

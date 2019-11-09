@@ -127,7 +127,7 @@ namespace {
         &_Not_supported_SetFileInformationByHandle))
 #define _STL_ALWAYS_HAS_SetFileInformationByHandle 0
 #else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ // vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
-#define __vcrt_SetFileInformationByHandle SetFileInformationByHandle
+#define __vcrt_SetFileInformationByHandle          SetFileInformationByHandle
 #define _STL_ALWAYS_HAS_SetFileInformationByHandle 1
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
