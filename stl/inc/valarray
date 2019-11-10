@@ -746,6 +746,7 @@ _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const valarray<_Ty>
     _VALOP(bool, _Left.size(), _Left[_Idx] >= _Right[_Idx]);
 }
 
+// [valarray.transcend] Transcendentals
 template <class _Ty>
 _NODISCARD valarray<_Ty> abs(const valarray<_Ty>& _Left) {
     _VALOP(_Ty, _Left.size(), abs(_Left[_Idx]));
@@ -753,97 +754,97 @@ _NODISCARD valarray<_Ty> abs(const valarray<_Ty>& _Left) {
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> acos(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD acos(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), acos(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> asin(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD asin(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), asin(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD atan(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), atan(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _CSTD atan2(_Left[_Idx], _Right[_Idx]));
+    _VALOP(_Ty, _Left.size(), atan2(_Left[_Idx], _Right[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _CSTD atan2(_Left[_Idx], _Right));
+    _VALOP(_Ty, _Left.size(), atan2(_Left[_Idx], _Right));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _CSTD atan2(_Left, _Right[_Idx]));
+    _VALOP(_Ty, _Right.size(), atan2(_Left, _Right[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> cos(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD cos(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), cos(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> cosh(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD cosh(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), cosh(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> exp(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD exp(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), exp(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> log(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD log(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), log(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> log10(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD log10(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), log10(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _CSTD pow(_Left[_Idx], _Right[_Idx]));
+    _VALOP(_Ty, _Left.size(), pow(_Left[_Idx], _Right[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _CSTD pow(_Left[_Idx], _Right));
+    _VALOP(_Ty, _Left.size(), pow(_Left[_Idx], _Right));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _CSTD pow(_Left, _Right[_Idx]));
+    _VALOP(_Ty, _Right.size(), pow(_Left, _Right[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> sin(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD sin(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), sin(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> sinh(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD sinh(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), sinh(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> sqrt(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD sqrt(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), sqrt(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> tan(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD tan(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), tan(_Left[_Idx]));
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> tanh(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), _CSTD tanh(_Left[_Idx]));
+    _VALOP(_Ty, _Left.size(), tanh(_Left[_Idx]));
 }
 
 // CLASS slice
