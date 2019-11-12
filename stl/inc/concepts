@@ -91,6 +91,10 @@ concept signed_integral = integral<_Ty> && _Ty(-1) < _Ty(0);
 template <class _Ty>
 concept unsigned_integral = integral<_Ty> && !signed_integral<_Ty>;
 
+// CONCEPT floating_point
+template <class _Ty>
+concept floating_point = is_floating_point_v<_Ty>;
+
 // CONCEPT assignable_from
 template <class _LTy, class _RTy>
 concept assignable_from = is_lvalue_reference_v<_LTy>
