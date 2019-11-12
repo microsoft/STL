@@ -17,7 +17,7 @@ to the right place are there.
 STL version (git commit or Visual Studio version):
 
 ```
-C:\Users\billy\Desktop>type repro.cpp
+C:\Temp>type repro.cpp
 #include <iostream>
 
 int main() {
@@ -28,7 +28,7 @@ int main() {
     std::cout << "test failure\n";
 }
 
-C:\Users\billy\Desktop>cl /EHsc /W4 /WX .\repro.cpp
+C:\Temp>cl /EHsc /W4 /WX .\repro.cpp
 Microsoft (R) C/C++ Optimizing Compiler Version 19.23.28019.1 for x64
 Copyright (C) Microsoft Corporation.  All rights reserved.
 
@@ -39,7 +39,7 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 /out:repro.exe
 repro.obj
 
-C:\Users\billy\Desktop>.\repro.exe
+C:\Temp>.\repro.exe
 test failure
 ```
 
