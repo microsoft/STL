@@ -949,7 +949,7 @@
 #endif // __cpp_char8_t
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
-#define __cpp_lib_concepts 201806L
+#define __cpp_lib_concepts 201907L
 
 // "Detect" P1084's exact-type-and-value-category semantics for trailing-return-types in compound requirements
 #ifndef _HAS_EXACT_COMPOUND_REQUIREMENT
