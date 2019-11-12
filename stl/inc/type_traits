@@ -1163,7 +1163,7 @@ template <class _Ty>
 struct underlying_type : _Underlying_type<_Ty> {}; // determine underlying type for enum
 
 template <class _Ty>
-using underlying_type_t = typename underlying_type<_Ty>::type;
+using underlying_type_t = typename _Underlying_type<_Ty>::type;
 
 // STRUCT TEMPLATE rank
 template <class _Ty>
