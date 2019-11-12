@@ -661,7 +661,7 @@ inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, c
 // STRUCT codecvt_base
 class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
 public:
-    enum { // constants for different parse states
+    enum result { // constants for different parse states
         ok,
         partial,
         error,
