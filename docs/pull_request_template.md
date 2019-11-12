@@ -16,10 +16,11 @@ If you're unsure about a box, leave it unchecked. A maintainer will help you.
 - [ ] These changes introduce no known ABI breaks (adding members, renaming
   members, adding virtual functions, changing whether a type is an aggregate
   or trivially copyable, etc.).
-- [ ] These changes were written from scratch using only this repository and
-  the C++ Working Draft as a reference (and any other cited standards).
-  If they were derived from a project that's already listed in NOTICE.txt,
-  that's fine, but please mention it. If they were derived from any other
-  project (including Boost and libc++, which are not yet listed in
-  NOTICE.txt), you *must* mention it here, so we can determine whether the
-  license is compatible and what else needs to be done.
+- [ ] These changes were written from scratch using only this repository,
+  the C++ Working Draft (including any cited standards), other WG21 papers,
+  and LWG issues as reference material. If they were derived from a project
+  that's already listed in NOTICE.txt, that's fine, but please mention it.
+  If they were derived from any other project (including Boost and libc++,
+  which are not yet listed in NOTICE.txt), you *must* mention it here,
+  so we can determine whether the license is compatible and what else needs
+  to be done.
