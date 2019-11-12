@@ -28,26 +28,26 @@ struct _Thrd_t { // thread identifier for Win32
 // Size and alignment for _Mtx_internal_imp_t and _Cnd_internal_imp_t
 #ifdef _CRT_WINDOWS
 #ifdef _WIN64
-#define _Mtx_internal_imp_size 32
+#define _Mtx_internal_imp_size      32
 #define _Mtx_internal_imp_alignment 8
-#define _Cnd_internal_imp_size 16
+#define _Cnd_internal_imp_size      16
 #define _Cnd_internal_imp_alignment 8
 #else // _WIN64
-#define _Mtx_internal_imp_size 20
+#define _Mtx_internal_imp_size      20
 #define _Mtx_internal_imp_alignment 4
-#define _Cnd_internal_imp_size 8
+#define _Cnd_internal_imp_size      8
 #define _Cnd_internal_imp_alignment 4
 #endif // _WIN64
 #else // _CRT_WINDOWS
 #ifdef _WIN64
-#define _Mtx_internal_imp_size 80
+#define _Mtx_internal_imp_size      80
 #define _Mtx_internal_imp_alignment 8
-#define _Cnd_internal_imp_size 72
+#define _Cnd_internal_imp_size      72
 #define _Cnd_internal_imp_alignment 8
 #else // _WIN64
-#define _Mtx_internal_imp_size 48
+#define _Mtx_internal_imp_size      48
 #define _Mtx_internal_imp_alignment 4
-#define _Cnd_internal_imp_size 40
+#define _Cnd_internal_imp_size      40
 #define _Cnd_internal_imp_alignment 4
 #endif // _WIN64
 #endif // _CRT_WINDOWS

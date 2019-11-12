@@ -27,13 +27,13 @@ using _Common_float_type_t = conditional_t<is_same_v<_Ty1, long double> || is_sa
 _STD_END
 
 // FUNCTION TEMPLATE frexp
-template <class _Ty, class = _STD enable_if_t<_STD is_integral_v<_Ty>>>
+template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 double frexp(_Ty _Value, _Out_ int* const _Exp) noexcept /* strengthened */ {
     return _CSTD frexp(static_cast<double>(_Value), _Exp);
 }
 
 // FUNCTION TEMPLATE pow
-template <class _Ty1, class _Ty2, class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>>
+template <class _Ty1, class _Ty2, _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>
 _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> pow(const _Ty1 _Left, const _Ty2 _Right) noexcept /* strengthened */ {
     using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
     return _CSTD pow(static_cast<_Common>(_Left), static_cast<_Common>(_Right));
@@ -55,7 +55,7 @@ inline long double _Fma(long double _Left, long double _Middle, long double _Rig
 #endif // !_HAS_IF_CONSTEXPR
 
 template <class _Ty1, class _Ty2, class _Ty3,
-    class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2> && _STD is_arithmetic_v<_Ty3>>>
+    _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2> && _STD is_arithmetic_v<_Ty3>, int> = 0>
 _NODISCARD _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>> fma(
     _Ty1 _Left, _Ty2 _Middle, _Ty3 _Right) noexcept /* strengthened */ {
     using _Common = _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>>;
@@ -87,7 +87,7 @@ inline long double _Remquo(long double _Left, long double _Right, int* _Pquo) no
 }
 #endif // !_HAS_IF_CONSTEXPR
 
-template <class _Ty1, class _Ty2, class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>>
+template <class _Ty1, class _Ty2, _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>
 _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo) noexcept /* strengthened */ {
     using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
 #if _HAS_IF_CONSTEXPR
@@ -103,23 +103,23 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #endif // _HAS_IF_CONSTEXPR
 }
 
-#define _GENERIC_MATH1R(FUN, RET)                                           \
-    template <class _Ty, class = _STD enable_if_t<_STD is_integral_v<_Ty>>> \
-    _NODISCARD RET FUN(_Ty _Left) noexcept /* strengthened */ {             \
-        return _CSTD FUN(static_cast<double>(_Left));                       \
+#define _GENERIC_MATH1R(FUN, RET)                                            \
+    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0> \
+    _NODISCARD RET FUN(_Ty _Left) noexcept /* strengthened */ {              \
+        return _CSTD FUN(static_cast<double>(_Left));                        \
     }
 
 #define _GENERIC_MATH1(FUN) _GENERIC_MATH1R(FUN, double)
 
 #define _GENERIC_MATH1X(FUN, ARG2)                                             \
-    template <class _Ty, class = _STD enable_if_t<_STD is_integral_v<_Ty>>>    \
+    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>   \
     _NODISCARD double FUN(_Ty _Left, ARG2 _Arg2) noexcept /* strengthened */ { \
         return _CSTD FUN(static_cast<double>(_Left), _Arg2);                   \
     }
 
 #define _GENERIC_MATH2(FUN)                                                                                     \
     template <class _Ty1, class _Ty2,                                                                           \
-        class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>>                     \
+        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                    \
     _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> FUN(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
         using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                  \
         return _CSTD FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                            \

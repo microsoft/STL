@@ -309,6 +309,13 @@ void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     _Left.swap(_Right);
 }
 
+#if _HAS_CXX20
+template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+void erase_if(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
+
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
 _NODISCARD bool operator==(const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) {
@@ -564,6 +571,13 @@ void swap(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
     unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
+
+#if _HAS_CXX20
+template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
+void erase_if(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
 _NODISCARD bool operator==(const unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,

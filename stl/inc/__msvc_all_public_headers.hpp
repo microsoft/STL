@@ -69,6 +69,7 @@
 #include <memory>
 #include <memory_resource>
 #include <new>
+#include <numbers>
 #include <numeric>
 #include <optional>
 #include <ostream>

@@ -250,9 +250,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _CRTBLD
 // These functions are for enabling STATIC_CPPLIB functionality
-#define _cpp_stdin (__acrt_iob_func(0))
-#define _cpp_stdout (__acrt_iob_func(1))
-#define _cpp_stderr (__acrt_iob_func(2))
+#define _cpp_stdin         (__acrt_iob_func(0))
+#define _cpp_stdout        (__acrt_iob_func(1))
+#define _cpp_stderr        (__acrt_iob_func(2))
 #define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
 #endif // _CRTBLD
 
@@ -291,17 +291,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _CRTDATA2_IMPORT
 
 // INTEGER PROPERTIES
-#define _MAX_EXP_DIG 8 // for parsing numerics
-#define _MAX_INT_DIG 32
+#define _MAX_EXP_DIG    8 // for parsing numerics
+#define _MAX_INT_DIG    32
 #define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI
 #define _MAX_SIG_DIG_V2 768
 
 // MULTITHREAD PROPERTIES
 // LOCK MACROS
-#define _LOCK_LOCALE 0
-#define _LOCK_MALLOC 1
-#define _LOCK_STREAM 2
-#define _LOCK_DEBUG 3
+#define _LOCK_LOCALE         0
+#define _LOCK_MALLOC         1
+#define _LOCK_STREAM         2
+#define _LOCK_DEBUG          3
 #define _LOCK_AT_THREAD_EXIT 4
 
 #ifdef __cplusplus
@@ -454,7 +454,7 @@ private:
 #define _CATCH_END }
 
 #define _RAISE(x) throw x
-#define _RERAISE throw
+#define _RERAISE  throw
 #define _THROW(x) throw x
 
 #else // _HAS_EXCEPTIONS

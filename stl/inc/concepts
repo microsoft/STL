@@ -9,7 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#ifdef __cpp_lib_concepts
+#ifndef __cpp_lib_concepts
+#pragma message("The contents of <concepts> are available only with C++20 concepts support.")
+#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #if defined(__clang__) && !defined(_SILENCE_CLANG_CONCEPTS_MESSAGE)
 #error Despite the presence of some Clang-related bits, this header currently does not support Clang. \
 You can define _SILENCE_CLANG_CONCEPTS_MESSAGE to silence this message and acknowledge that this is unsupported.
@@ -88,6 +90,10 @@ concept signed_integral = integral<_Ty> && _Ty(-1) < _Ty(0);
 // CONCEPT unsigned_integral
 template <class _Ty>
 concept unsigned_integral = integral<_Ty> && !signed_integral<_Ty>;
+
+// CONCEPT floating_point
+template <class _Ty>
+concept floating_point = is_floating_point_v<_Ty>;
 
 // CONCEPT assignable_from
 template <class _LTy, class _RTy>
@@ -364,8 +370,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#else // ^^^ <concepts> supported / <concepts> not supported vvv
-#pragma message("The contents of <concepts> are only available with C++20 concepts support.")
 #endif // __cpp_lib_concepts
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _CONCEPTS_

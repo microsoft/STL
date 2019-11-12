@@ -10,8 +10,8 @@
 
 _EXTERN_C_UNLESS_PURE
 
-#define BASE 10 // decimal
-#define NDIG 9 // decimal digits per long word
+#define BASE   10 // decimal
+#define NDIG   9 // decimal digits per long word
 #define MAXSIG (5 * NDIG) // maximum significant digits to keep
 
 int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],

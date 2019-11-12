@@ -160,12 +160,12 @@ public:
 
     using _Mybase::insert;
 
-    template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+    template <class _Valty, enable_if_t<is_constructible_v<value_type, _Valty>, int> = 0>
     pair<iterator, bool> insert(_Valty&& _Val) {
         return this->emplace(_STD forward<_Valty>(_Val));
     }
 
-    template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+    template <class _Valty, enable_if_t<is_constructible_v<value_type, _Valty>, int> = 0>
     iterator insert(const_iterator _Where, _Valty&& _Val) {
         return this->emplace_hint(_Where, _STD forward<_Valty>(_Val));
     }
@@ -369,6 +369,13 @@ void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Righ
     _Left.swap(_Right);
 }
 
+#if _HAS_CXX20
+template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE multimap
 template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class multimap : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true>> {
@@ -457,12 +464,12 @@ public:
 
     using _Mybase::insert;
 
-    template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+    template <class _Valty, enable_if_t<is_constructible_v<value_type, _Valty>, int> = 0>
     iterator insert(_Valty&& _Val) {
         return this->emplace(_STD forward<_Valty>(_Val));
     }
 
-    template <class _Valty, class = enable_if_t<is_constructible_v<value_type, _Valty>>>
+    template <class _Valty, enable_if_t<is_constructible_v<value_type, _Valty>, int> = 0>
     iterator insert(const_iterator _Where, _Valty&& _Val) {
         return this->emplace_hint(_Where, _STD forward<_Valty>(_Val));
     }
@@ -515,6 +522,13 @@ void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _All
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
+
+#if _HAS_CXX20
+template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
+void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

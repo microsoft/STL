@@ -1931,11 +1931,12 @@ public:
     constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
 
     template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
-    using _Enable_ctor_reset = enable_if_t<is_same_v<_Uty, pointer> //
-                                           || _Is_nullptr::value //
-                                           || (is_same_v<pointer, element_type*> //
-                                               && is_pointer_v<_Uty> //
-                                               && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>)>;
+    using _Enable_ctor_reset =
+        enable_if_t<is_same_v<_Uty, pointer> //
+                    || _Is_nullptr::value //
+                    || (is_same_v<pointer, element_type*> //
+                        && is_pointer_v<_Uty> //
+                        && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>)>; // TRANSITION, GH-248
 
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
     explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Ptr) {}
@@ -1974,8 +1975,9 @@ public:
 
     template <class _Uty, class _Ex, class _More, class _UP_pointer = typename unique_ptr<_Uty, _Ex>::pointer,
         class _UP_element_type = typename unique_ptr<_Uty, _Ex>::element_type>
-    using _Enable_conversion = enable_if_t<conjunction_v<is_array<_Uty>, is_same<pointer, element_type*>,
-        is_same<_UP_pointer, _UP_element_type*>, is_convertible<_UP_element_type (*)[], element_type (*)[]>, _More>>;
+    using _Enable_conversion = enable_if_t<
+        conjunction_v<is_array<_Uty>, is_same<pointer, element_type*>, is_same<_UP_pointer, _UP_element_type*>,
+            is_convertible<_UP_element_type (*)[], element_type (*)[]>, _More>>; // TRANSITION, GH-248
 
     template <class _Uty, class _Ex,
         class = _Enable_conversion<_Uty, _Ex,

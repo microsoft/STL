@@ -1774,13 +1774,13 @@ struct _Promote_to_float { // promote integral to double
 };
 
 #define _GENERIC_MATHC0X(FUN, VAL)                                      \
-    template <class _Ty, class = enable_if_t<is_arithmetic_v<_Ty>>>     \
+    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>    \
     _NODISCARD typename _Promote_to_float<_Ty>::type FUN(_Ty) {         \
         return static_cast<typename _Promote_to_float<_Ty>::type>(VAL); \
     }
 
 #define _GENERIC_MATHC1X(FUN, VAL)                                      \
-    template <class _Ty, class = enable_if_t<is_arithmetic_v<_Ty>>>     \
+    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>    \
     _NODISCARD typename _Promote_to_float<_Ty>::type FUN(_Ty _Left) {   \
         return static_cast<typename _Promote_to_float<_Ty>::type>(VAL); \
     }
@@ -1816,7 +1816,7 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, cons
     return _STD pow(type(_Left), type(_Right));
 }
 
-template <class _Ty1, class _Ty2, class = enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>>>
+template <class _Ty1, class _Ty2, enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
 _NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2& _Right) {
     // raise Gaussian integer to an integer power
     using type = complex<_Ty1>;

@@ -10,8 +10,8 @@
 
 _EXTERN_C_UNLESS_PURE
 
-#define BASE 10 // decimal
-#define NDIG 9 // decimal digits per long element
+#define BASE   10 // decimal
+#define NDIG   9 // decimal digits per long element
 #define MAXSIG (5 * NDIG) // maximum significant digits to keep
 
 int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],

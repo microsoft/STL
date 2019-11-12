@@ -41,7 +41,7 @@ yet hardened it against untrusted changes.
 conventions, Standard requirements, Microsoft-specific requirements, binary compatibility (ABI) requirements, and more.
 We're eager to begin accepting features and fixes from the community, but in addition to setting up a CI system, we need
 to write down all of the rules that are currently stored in our brains. (The ABI rules may be useful to other C++
-libraries.) Until that's in place, pull request reviews will be delayed.
+libraries.)
 
 * Issues: **In progress.** We're going to use GitHub issues to track all of the things that we need to work on. This
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
@@ -139,7 +139,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.3 or later.
+1. Install Visual Studio 2019 16.4 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -148,7 +148,7 @@ acquire this dependency.
    and ARM64.
 6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
-7. Open Visual Studio 2019 16.3 or later, and choose the "Clone or check out code" option. Enter the URL to this
+7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
    repository, typically `https://github.com/microsoft/STL`
 8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
@@ -158,7 +158,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.3 or later.
+1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.4 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`

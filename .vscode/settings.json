@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+{
+    "editor.formatOnSave": true,
+    "files.associations": {
+        "**/stl/inc/**": "cpp"
+    },
+    "files.eol": "\r\n",
+    "files.exclude": {
+        "stl/msbuild": true,
+        "vcpkg": true
+    },
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true
+}

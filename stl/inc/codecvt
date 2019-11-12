@@ -21,8 +21,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
-#define _LITTLE_FIRST 1
-#define _BIG_FIRST 2
+#define _LITTLE_FIRST   1
+#define _BIG_FIRST      2
 #define _BYTES_PER_WORD 4
 
 enum _CXX17_DEPRECATE_CODECVT_HEADER codecvt_mode { consume_header = 4, generate_header = 2, little_endian = 1 };

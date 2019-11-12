@@ -10,7 +10,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <deque>
-#include <experimental/xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -25,13 +24,13 @@ namespace experimental {
 
         // FUNCTION TEMPLATE erase_if
         template <class _Ty, class _Alloc, class _Pr>
-        void erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _Pred) {
             _Erase_remove_if(_Cont, _Pass_fn(_Pred));
         }
 
         // FUNCTION TEMPLATE erase
         template <class _Ty, class _Alloc, class _Uty>
-        void erase(deque<_Ty, _Alloc>& _Cont, const _Uty& _Val) { // erase each element matching _Val
+        _DEPRECATE_EXPERIMENTAL_ERASE void erase(deque<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
             _Erase_remove(_Cont, _Val);
         }
 

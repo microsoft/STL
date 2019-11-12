@@ -1055,9 +1055,6 @@ template <class _Ty>
 _INLINE_VAR constexpr size_t alignment_of_v = alignof(_Ty);
 
 // STRUCT TEMPLATE aligned_storage
-#define _FITS(_Ty) _Align <= alignof(_Ty)
-#define _NEXT_ALIGN(_Ty) using type = typename _Aligned<_Len, _Align, _Ty, _FITS(_Ty)>::type
-
 template <class _Ty, size_t _Len>
 union _Align_type { // union with size _Len bytes and alignment of _Ty
     _Ty _Val;
@@ -1098,26 +1095,31 @@ struct _Aligned<_Len, _Align, double, false> {
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, int, false> {
-    _NEXT_ALIGN(double);
+    using _Next                 = double;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, short, false> {
-    _NEXT_ALIGN(int);
+    using _Next                 = int;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, char, false> {
-    _NEXT_ALIGN(short);
+    using _Next                 = short;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 struct aligned_storage { // define type with size _Len and alignment _Align
-    using type = typename _Aligned<_Len, _Align, char, _FITS(char)>::type;
+    using _Next                 = char;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
-
-#undef _FITS
-#undef _NEXT_ALIGN
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
@@ -1149,13 +1151,19 @@ template <size_t _Len, class... _Types>
 using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
 
 // STRUCT TEMPLATE underlying_type
-template <class _Ty>
-struct underlying_type { // determine underlying type for enum
+template <class _Ty, bool = is_enum_v<_Ty>>
+struct _Underlying_type {
     using type = __underlying_type(_Ty);
 };
 
 template <class _Ty>
-using underlying_type_t = typename underlying_type<_Ty>::type;
+struct _Underlying_type<_Ty, false> {};
+
+template <class _Ty>
+struct underlying_type : _Underlying_type<_Ty> {}; // determine underlying type for enum
+
+template <class _Ty>
+using underlying_type_t = typename _Underlying_type<_Ty>::type;
 
 // STRUCT TEMPLATE rank
 template <class _Ty>
@@ -1187,17 +1195,6 @@ template <class _Ty, unsigned int _Ix = 0>
 struct extent : integral_constant<size_t, extent_v<_Ty, _Ix>> {};
 
 // STRUCT TEMPLATE is_base_of
-#ifdef __clang__ // TRANSITION, Clang 9
-template <class _Base, class _Derived, bool = __is_class(_Base) && __is_class(_Derived)>
-_INLINE_VAR constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
-
-template <class _Base, class _Derived>
-_INLINE_VAR constexpr bool is_base_of_v<_Base, _Derived, false> = false;
-
-template <class _Base, class _Derived>
-struct is_base_of : bool_constant<is_base_of_v<_Base, _Derived>> {};
-
-#else // ^^^ workaround / no workaround vvv
 template <class _Base, class _Derived>
 struct is_base_of : bool_constant<__is_base_of(_Base, _Derived)> {
     // determine whether _Base is a base of or the same as _Derived
@@ -1205,7 +1202,6 @@ struct is_base_of : bool_constant<__is_base_of(_Base, _Derived)> {
 
 template <class _Base, class _Derived>
 _INLINE_VAR constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
-#endif // TRANSITION, Clang 9
 
 // STRUCT TEMPLATE decay
 template <class _Ty>
@@ -1485,7 +1481,7 @@ template <class _Ty>
 class reference_wrapper;
 
 #define _CONCATX(x, y) x##y
-#define _CONCAT(x, y) _CONCATX(x, y)
+#define _CONCAT(x, y)  _CONCATX(x, y)
 
 #define _IMPLEMENT_INVOKE(NAME_PREFIX, CONSTEXPR)                                                                      \
     /* FUNCTION TEMPLATE invoke */                                                                                     \
@@ -1936,13 +1932,13 @@ struct _Is_nothrow_swappable;
 
 // FUNCTION TEMPLATE swap
 #if _HAS_CXX17
-template <class _Ty, class = enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>>>
+template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-template <class _Ty, class = void>
+template <class _Ty, int _Enabled = 0>
 #endif // _HAS_CXX17
 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
-template <class _Ty, size_t _Size, class = enable_if_t<_Is_swappable<_Ty>::value>>
+template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
 
 // STRUCT TEMPLATE _Swappable_with_helper
