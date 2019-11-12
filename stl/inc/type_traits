@@ -1152,12 +1152,12 @@ using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
 
 // STRUCT TEMPLATE underlying_type
 template <class _Ty, bool = is_enum_v<_Ty>>
-struct _Underlying_type {};
-
-template <class _Ty>
-struct _Underlying_type<_Ty, true> {
+struct _Underlying_type {
     using type = __underlying_type(_Ty);
 };
+
+template <class _Ty>
+struct _Underlying_type<_Ty, false> {};
 
 template <class _Ty>
 struct underlying_type : _Underlying_type<_Ty> {}; // determine underlying type for enum
