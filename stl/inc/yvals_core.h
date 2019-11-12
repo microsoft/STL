@@ -150,6 +150,7 @@
 // P0063R3 C11 Standard Library
 // P0074R0 owner_less<>
 // P0092R1 <chrono> floor(), ceil(), round(), abs()
+// P0340R3 SFINAE-Friendly underlying_type
 // P0414R2 shared_ptr<T[]>, shared_ptr<T[N]>
 // P0418R2 atomic compare_exchange memory_order Requirements
 // P0435R1 Overhauling common_type
