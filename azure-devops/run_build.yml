@@ -50,7 +50,7 @@ jobs:
         buildDirectory: $(Build.ArtifactStagingDirectory)/tools
     - task: BatchScript@1
       displayName: 'Enforce clang-format'
-      timeoutInMinutes: 5
+      timeoutInMinutes: 60
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
         filename: 'azure-devops/enforce-clang-format.cmd'
