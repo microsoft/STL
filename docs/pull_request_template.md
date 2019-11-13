@@ -17,7 +17,8 @@ If you're unsure about a box, leave it unchecked. A maintainer will help you.
   members, adding virtual functions, changing whether a type is an aggregate
   or trivially copyable, etc.).
 - [ ] These changes were written from scratch using only this repository,
-  the C++ Working Draft (including any cited standards), other WG21 papers,
+  the C++ Working Draft (including any cited standards), other WG21 papers
+  (excluding reference implementations outside of proposed standard wording),
   and LWG issues as reference material. If they were derived from a project
   that's already listed in NOTICE.txt, that's fine, but please mention it.
   If they were derived from any other project (including Boost and libc++,
