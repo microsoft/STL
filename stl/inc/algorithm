@@ -2582,8 +2582,8 @@ void _Push_heap_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t
          _Top < _Hole && _DEBUG_LT_PRED(_Pred, _First[_Idx], _Val); //
          _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
-       _First[_Hole] = _STD move(_First[_Idx]);
-        _Hole        = _Idx;
+        _First[_Hole] = _STD move(_First[_Idx]);
+        _Hole         = _Idx;
     }
 
     _First[_Hole] = _STD move(_Val); // drop _Val into final hole
@@ -2622,7 +2622,7 @@ void _Pop_heap_hole_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_di
     const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
     while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
         _Idx = 2 * _Idx + 2;
-        if (_DEBUG_LT_PRED(_Pred, _First[_Idx], _First[_Idx-1])) {
+        if (_DEBUG_LT_PRED(_Pred, _First[_Idx], _First[_Idx - 1])) {
             --_Idx;
         }
         _First[_Hole] = _STD move(_First[_Idx]);
