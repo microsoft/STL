@@ -100,11 +100,7 @@ template <class _LTy, class _RTy>
 concept assignable_from = is_lvalue_reference_v<_LTy>
     && common_reference_with<const remove_reference_t<_LTy>&, const remove_reference_t<_RTy>&>
     && requires(_LTy _Left, _RTy&& _Right) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { _Left = static_cast<_RTy&&>(_Right) } -> same_as<_LTy>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        _Left = static_cast<_RTy&&>(_Right); requires same_as<_LTy, decltype(_Left = static_cast<_RTy&&>(_Right))>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // swappable and swappable_with are defined below, since they depend on move_constructible.
@@ -222,7 +218,6 @@ concept movable = is_object_v<_Ty> && move_constructible<_Ty> && assignable_from
 template <class _Ty>
 concept _STL_BOOLEAN_CONCEPT = movable<remove_cvref_t<_Ty>>
     && requires(const remove_reference_t<_Ty>& __x, const remove_reference_t<_Ty>& __y, const bool __b) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __x } -> convertible_to<bool>;
         { !__x } -> convertible_to<bool>;
         { __x && __y } -> same_as<bool>;
@@ -237,39 +232,16 @@ concept _STL_BOOLEAN_CONCEPT = movable<remove_cvref_t<_Ty>>
         { __x != __y } -> convertible_to<bool>;
         { __x != __b } -> convertible_to<bool>;
         { __b != __y } -> convertible_to<bool>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        requires convertible_to<const remove_reference_t<_Ty>&, bool>;
-        !__x; requires convertible_to<decltype(!__x), bool>;
-        __x && __y; requires same_as<decltype(__x && __y), bool>;
-        __x && __b; requires same_as<decltype(__x && __b), bool>;
-        __b && __y; requires same_as<decltype(__b && __y), bool>;
-        __x || __y; requires same_as<decltype(__x || __y), bool>;
-        __x || __b; requires same_as<decltype(__x || __b), bool>;
-        __b || __y; requires same_as<decltype(__b || __y), bool>;
-        __x == __y; requires convertible_to<decltype(__x == __y), bool>;
-        __x == __b; requires convertible_to<decltype(__x == __b), bool>;
-        __b == __y; requires convertible_to<decltype(__b == __y), bool>;
-        __x != __y; requires convertible_to<decltype(__x != __y), bool>;
-        __x != __b; requires convertible_to<decltype(__x != __b), bool>;
-        __b != __y; requires convertible_to<decltype(__b != __y), bool>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // CONCEPT _Weakly_equality_comparable_with
 template <class _Ty1, class _Ty2>
 concept _Weakly_equality_comparable_with =
     requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __t == __u } -> _STL_BOOLEAN_CONCEPT;
         { __t != __u } -> _STL_BOOLEAN_CONCEPT;
         { __u == __t } -> _STL_BOOLEAN_CONCEPT;
         { __u != __t } -> _STL_BOOLEAN_CONCEPT;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        __t == __u; requires _STL_BOOLEAN_CONCEPT<decltype(__t == __u)>;
-        __t != __u; requires _STL_BOOLEAN_CONCEPT<decltype(__t != __u)>;
-        __u == __t; requires _STL_BOOLEAN_CONCEPT<decltype(__u == __t)>;
-        __u != __t; requires _STL_BOOLEAN_CONCEPT<decltype(__u != __t)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // CONCEPT equality_comparable
@@ -287,17 +259,10 @@ concept equality_comparable_with = equality_comparable<_Ty1> && equality_compara
 template <class _Ty>
 concept totally_ordered = equality_comparable<_Ty>
     && requires(const remove_reference_t<_Ty>& __x, const remove_reference_t<_Ty>& __y) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __x <  __y } -> _STL_BOOLEAN_CONCEPT;
         { __x >  __y } -> _STL_BOOLEAN_CONCEPT;
         { __x <= __y } -> _STL_BOOLEAN_CONCEPT;
         { __x >= __y } -> _STL_BOOLEAN_CONCEPT;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        __x <  __y; requires _STL_BOOLEAN_CONCEPT<decltype(__x < __y)>;
-        __x >  __y; requires _STL_BOOLEAN_CONCEPT<decltype(__x > __y)>;
-        __x <= __y; requires _STL_BOOLEAN_CONCEPT<decltype(__x <= __y)>;
-        __x >= __y; requires _STL_BOOLEAN_CONCEPT<decltype(__x >= __y)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // CONCEPT totally_ordered_with
@@ -307,7 +272,6 @@ concept totally_ordered_with = totally_ordered<_Ty1> && totally_ordered<_Ty2>
     && totally_ordered<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>>
     && equality_comparable_with<_Ty1, _Ty2>
     && requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __t <  __u } -> _STL_BOOLEAN_CONCEPT;
         { __t >  __u } -> _STL_BOOLEAN_CONCEPT;
         { __t <= __u } -> _STL_BOOLEAN_CONCEPT;
@@ -316,16 +280,6 @@ concept totally_ordered_with = totally_ordered<_Ty1> && totally_ordered<_Ty2>
         { __u >  __t } -> _STL_BOOLEAN_CONCEPT;
         { __u <= __t } -> _STL_BOOLEAN_CONCEPT;
         { __u >= __t } -> _STL_BOOLEAN_CONCEPT;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        __t <  __u; requires _STL_BOOLEAN_CONCEPT<decltype(__t < __u)>;
-        __t >  __u; requires _STL_BOOLEAN_CONCEPT<decltype(__t > __u)>;
-        __t <= __u; requires _STL_BOOLEAN_CONCEPT<decltype(__t <= __u)>;
-        __t >= __u; requires _STL_BOOLEAN_CONCEPT<decltype(__t >= __u)>;
-        __u <  __t; requires _STL_BOOLEAN_CONCEPT<decltype(__u < __t)>;
-        __u >  __t; requires _STL_BOOLEAN_CONCEPT<decltype(__u > __t)>;
-        __u <= __t; requires _STL_BOOLEAN_CONCEPT<decltype(__u <= __t)>;
-        __u >= __t; requires _STL_BOOLEAN_CONCEPT<decltype(__u >= __t)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
 };
 
 // CONCEPT copyable

@@ -953,15 +953,6 @@
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
 #define __cpp_lib_concepts 201907L
 
-// "Detect" P1084's exact-type-and-value-category semantics for trailing-return-types in compound requirements
-#ifndef _HAS_EXACT_COMPOUND_REQUIREMENT
-#if __cpp_concepts >= 201811L
-#define _HAS_EXACT_COMPOUND_REQUIREMENT 1
-#else // ^^^ post-P1084 concepts / pre-P1084 concepts vvv
-#define _HAS_EXACT_COMPOUND_REQUIREMENT 0
-#endif // __cpp_concepts >= 201811L
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
-
 // P0898R3 (as modified by P1754R1) std::boolean
 #ifndef _HAS_STD_BOOLEAN
 #define _HAS_STD_BOOLEAN 1
