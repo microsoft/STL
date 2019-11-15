@@ -37,7 +37,7 @@ public:
     virtual ~bad_cast() noexcept {}
 
 protected:
-    virtual void _Doraise() const { // perform class-specific exception handling
+    virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };
@@ -50,7 +50,7 @@ public:
     virtual ~bad_typeid() noexcept {}
 
 protected:
-    virtual void _Doraise() const { // perform class-specific exception handling
+    virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };

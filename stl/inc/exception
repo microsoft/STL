@@ -127,7 +127,7 @@ public:
     virtual __CLR_OR_THIS_CALL ~bad_exception() noexcept {}
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const { // raise this exception
+    virtual void __CLR_OR_THIS_CALL _Doraise() const override { // raise this exception
         _RAISE(*this);
     }
 };
@@ -149,7 +149,7 @@ private:
     }
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const { // perform class-specific exception handling
+    virtual void __CLR_OR_THIS_CALL _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };
