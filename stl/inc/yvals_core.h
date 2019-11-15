@@ -22,6 +22,8 @@
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
+// P0355R7 Calendars And Time Zones
+//     (partially implemented)
 // P0356R5 bind_front()
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view

@@ -14,9 +14,14 @@
 #include <utility>
 #include <xtimec.h>
 
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
+#pragma warning(disable : 4308) // needed for constexpr date arithmetic
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
@@ -195,6 +200,23 @@ namespace chrono {
         _NODISCARD constexpr _Duration time_since_epoch() const noexcept(is_arithmetic_v<rep>) /* strengthened */ {
             return _MyDur;
         }
+
+#if _HAS_CXX20
+        constexpr time_point& operator++() {
+            ++_MyDur;
+            return *this;
+        }
+        constexpr time_point operator++(int) {
+            return time_point{_MyDur++};
+        }
+        constexpr time_point& operator--() {
+            --_MyDur;
+            return *this;
+        }
+        constexpr time_point operator--(int) {
+            return time_point{_MyDur--};
+        }
+#endif // _HAS_CXX20
 
         _CONSTEXPR17 time_point& operator+=(const _Duration& _Dur) noexcept(is_arithmetic_v<rep>) /* strengthened */ {
             _MyDur += _Dur;
@@ -471,6 +493,12 @@ namespace chrono {
     using seconds      = duration<long long>;
     using minutes      = duration<int, ratio<60>>;
     using hours        = duration<int, ratio<3600>>;
+#if _HAS_CXX20
+    using days   = duration<int, ratio_multiply<ratio<24>, hours::period>>;
+    using weeks  = duration<int, ratio_multiply<ratio<7>, days::period>>;
+    using years  = duration<int, ratio_multiply<ratio<146097, 400>, days::period>>;
+    using months = duration<int, ratio_divide<years::period, ratio<12>>>;
+#endif // _HAS_CXX20
 
     // time_point ARITHMETIC
     template <class _Clock, class _Duration, class _Rep, class _Period>
@@ -602,6 +630,14 @@ namespace chrono {
         }
     };
 
+#if _HAS_CXX20
+    // SYS_TIME aliases
+    template <class _Duration>
+    using sys_time    = time_point<system_clock, _Duration>;
+    using sys_seconds = sys_time<seconds>;
+    using sys_days    = sys_time<days>;
+#endif // _HAS_CXX20
+
     struct steady_clock { // wraps QueryPerformanceCounter
         using rep                       = long long;
         using period                    = nano;
@@ -620,6 +656,1297 @@ namespace chrono {
     };
 
     using high_resolution_clock = steady_clock;
+
+#if _HAS_CXX20
+    struct local_t {};
+
+    template <class _Duration>
+    using local_time    = time_point<local_t, _Duration>;
+    using local_seconds = local_time<seconds>;
+    using local_days    = local_time<days>;
+
+    struct last_spec {
+        explicit last_spec() = default;
+    };
+    inline constexpr last_spec last{};
+
+    class day {
+        unsigned char _Day;
+
+    public:
+        day() = default;
+        constexpr explicit day(unsigned _Val) noexcept;
+
+        constexpr day& operator++() noexcept;
+        constexpr day operator++(int) noexcept;
+        constexpr day& operator--() noexcept;
+        constexpr day operator--(int) noexcept;
+
+        constexpr day& operator+=(const days& _Days) noexcept;
+        constexpr day& operator-=(const days& _Days) noexcept;
+
+        constexpr explicit operator unsigned() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class month {
+        unsigned char _Month;
+
+    public:
+        month() = default;
+        constexpr explicit month(unsigned _Val) noexcept;
+
+        constexpr month& operator++() noexcept;
+        constexpr month operator++(int) noexcept;
+        constexpr month& operator--() noexcept;
+        constexpr month operator--(int) noexcept;
+
+        constexpr month& operator+=(const months& _Months) noexcept;
+        constexpr month& operator-=(const months& _Months) noexcept;
+
+        constexpr explicit operator unsigned() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class year {
+        short _Year;
+
+    public:
+        year() = default;
+        constexpr explicit year(int _Val) noexcept;
+
+        constexpr year& operator++() noexcept;
+        constexpr year operator++(int) noexcept;
+        constexpr year& operator--() noexcept;
+        constexpr year operator--(int) noexcept;
+
+        constexpr year& operator+=(const years& _Years) noexcept;
+        constexpr year& operator-=(const years& _Years) noexcept;
+
+        constexpr year operator+() const noexcept;
+        constexpr year operator-() const noexcept;
+
+        constexpr bool is_leap() const noexcept;
+
+        constexpr explicit operator int() const noexcept;
+
+        constexpr bool ok() const noexcept;
+
+        static constexpr year(min)() noexcept;
+        static constexpr year(max)() noexcept;
+    };
+
+    class weekday {
+        unsigned char _Weekday;
+        static constexpr unsigned _Weekday_from_days(int _Tp) noexcept;
+        friend constexpr bool operator==(const weekday& _Left, const weekday& _Right) noexcept;
+        friend constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept;
+
+    public:
+        weekday() = default;
+        constexpr explicit weekday(unsigned _Val) noexcept;
+        constexpr weekday(const sys_days& _Sys_day) noexcept;
+        constexpr explicit weekday(const local_days& _Local_day) noexcept;
+
+        constexpr weekday& operator++() noexcept;
+        constexpr weekday operator++(int) noexcept;
+        constexpr weekday& operator--() noexcept;
+        constexpr weekday operator--(int) noexcept;
+
+        constexpr weekday& operator+=(const days& _Days) noexcept;
+        constexpr weekday& operator-=(const days& _Days) noexcept;
+
+        constexpr unsigned c_encoding() const noexcept;
+        constexpr unsigned iso_encoding() const noexcept;
+        constexpr bool ok() const noexcept;
+
+        constexpr class weekday_indexed operator[](unsigned _Index) const noexcept;
+        constexpr class weekday_last operator[](last_spec) const noexcept;
+    };
+
+    class weekday_indexed {
+        chrono::weekday _Weekday;
+        unsigned char _Index;
+
+    public:
+        weekday_indexed() = default;
+        constexpr weekday_indexed(const chrono::weekday& _Wd, unsigned _Idx) noexcept;
+
+        constexpr chrono::weekday weekday() const noexcept;
+        constexpr unsigned index() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class weekday_last {
+        chrono::weekday _Weekday;
+
+    public:
+        constexpr explicit weekday_last(const chrono::weekday& _Wd) noexcept;
+
+        constexpr chrono::weekday weekday() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class month_day {
+        chrono::month _Month;
+        chrono::day _Day;
+
+    public:
+        month_day() = default;
+        constexpr month_day(const chrono::month& _M, const chrono::day& _D) noexcept;
+
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::day day() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class month_day_last {
+        chrono::month _Month;
+
+    public:
+        constexpr explicit month_day_last(const chrono::month& _M) noexcept;
+
+        constexpr chrono::month month() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class month_weekday {
+        chrono::month _Month;
+        chrono::weekday_indexed _Weekday_index;
+
+    public:
+        constexpr month_weekday(const chrono::month& _M, const chrono::weekday_indexed& _Wdi) noexcept;
+
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::weekday_indexed weekday_indexed() const noexcept;
+
+        constexpr bool ok() const noexcept;
+    };
+
+    class month_weekday_last {
+        chrono::month _Month;
+        chrono::weekday_last _Weekday_last;
+
+    public:
+        constexpr month_weekday_last(const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept;
+
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::weekday_last weekday_last() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class year_month {
+        chrono::year _Year;
+        chrono::month _Month;
+
+    public:
+        year_month() = default;
+        constexpr year_month(const chrono::year& _Y, const chrono::month& _M) noexcept;
+
+        constexpr chrono::year year() const noexcept;
+        constexpr chrono::month month() const noexcept;
+
+        constexpr year_month& operator+=(const months& _Months) noexcept;
+        constexpr year_month& operator-=(const months& _Months) noexcept;
+        constexpr year_month& operator+=(const years& _Years) noexcept;
+        constexpr year_month& operator-=(const years& _Years) noexcept;
+
+        constexpr bool ok() const noexcept;
+    };
+
+    class year_month_day {
+        chrono::year _Year;
+        chrono::month _Month;
+        chrono::day _Day;
+        static constexpr year_month_day _Civil_from_days(int _Tp) noexcept;
+        constexpr days _Days_from_civil() const noexcept;
+
+    public:
+        year_month_day() = default;
+        constexpr year_month_day(const chrono::year& _Y, const chrono::month& _M, const chrono::day& _D) noexcept;
+        constexpr year_month_day(const class year_month_day_last& _Ymdl) noexcept;
+        constexpr year_month_day(const sys_days& _Sys_days) noexcept;
+        constexpr explicit year_month_day(const local_days& _Local_days) noexcept;
+
+        constexpr year_month_day& operator+=(const months& _Months) noexcept;
+        constexpr year_month_day& operator-=(const months& _Months) noexcept;
+        constexpr year_month_day& operator+=(const years& _Years) noexcept;
+        constexpr year_month_day& operator-=(const years& _Years) noexcept;
+
+        constexpr chrono::year year() const noexcept;
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::day day() const noexcept;
+
+        constexpr operator sys_days() const noexcept;
+        constexpr explicit operator local_days() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class year_month_day_last {
+        chrono::year _Year;
+        chrono::month_day_last _Month_day_last;
+
+    public:
+        constexpr year_month_day_last(const chrono::year& _Y, const chrono::month_day_last& _Mdl) noexcept;
+
+        constexpr year_month_day_last& operator+=(const months& _Months) noexcept;
+        constexpr year_month_day_last& operator-=(const months& _Months) noexcept;
+        constexpr year_month_day_last& operator+=(const years& _Years) noexcept;
+        constexpr year_month_day_last& operator-=(const years& _Years) noexcept;
+
+        constexpr chrono::year year() const noexcept;
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::month_day_last month_day_last() const noexcept;
+        constexpr chrono::day day() const noexcept;
+
+        constexpr operator sys_days() const noexcept;
+        constexpr explicit operator local_days() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class year_month_weekday {
+        chrono::year _Year;
+        chrono::month _Month;
+        chrono::weekday_indexed _Weekday_index;
+        static constexpr year_month_weekday _Ymwd_from_days(days _Dp) noexcept;
+
+    public:
+        year_month_weekday() = default;
+        constexpr year_month_weekday(
+            const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_indexed& _Wdi) noexcept;
+        constexpr year_month_weekday(const sys_days& _Sys_days) noexcept;
+        constexpr explicit year_month_weekday(const local_days& _Local_days) noexcept;
+
+        constexpr year_month_weekday& operator+=(const months& _Months) noexcept;
+        constexpr year_month_weekday& operator-=(const months& _Months) noexcept;
+        constexpr year_month_weekday& operator+=(const years& _Years) noexcept;
+        constexpr year_month_weekday& operator-=(const years& _Years) noexcept;
+
+        constexpr chrono::year year() const noexcept;
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::weekday weekday() const noexcept;
+        constexpr unsigned index() const noexcept;
+        constexpr chrono::weekday_indexed weekday_indexed() const noexcept;
+
+        constexpr operator sys_days() const noexcept;
+        constexpr explicit operator local_days() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    class year_month_weekday_last {
+        chrono::year _Year;
+        chrono::month _Month;
+        chrono::weekday_last _Weekday_last;
+
+    public:
+        constexpr year_month_weekday_last(
+            const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept;
+
+        constexpr year_month_weekday_last& operator+=(const months& _Months) noexcept;
+        constexpr year_month_weekday_last& operator-=(const months& _Months) noexcept;
+        constexpr year_month_weekday_last& operator+=(const years& _Years) noexcept;
+        constexpr year_month_weekday_last& operator-=(const years& _Years) noexcept;
+
+        constexpr chrono::year year() const noexcept;
+        constexpr chrono::month month() const noexcept;
+        constexpr chrono::weekday weekday() const noexcept;
+        constexpr chrono::weekday_last weekday_last() const noexcept;
+
+        constexpr operator sys_days() const noexcept;
+        constexpr explicit operator local_days() const noexcept;
+        constexpr bool ok() const noexcept;
+    };
+
+    constexpr year_month operator/(const year& _Year, const month& _Month) noexcept;
+    constexpr year_month operator/(const year& _Year, int _Month) noexcept;
+    constexpr month_day operator/(const month& _Month, const day& _Day) noexcept;
+    constexpr month_day operator/(const month& _Month, int _Day) noexcept;
+    constexpr month_day operator/(int _Month, const day& _Day) noexcept;
+    constexpr month_day operator/(const day& _Day, const month& _Month) noexcept;
+    constexpr month_day operator/(const day& _Day, int _Month) noexcept;
+    constexpr month_day_last operator/(const month& _Month, last_spec) noexcept;
+    constexpr month_day_last operator/(int _Month, last_spec) noexcept;
+    constexpr month_day_last operator/(last_spec, const month& _Month) noexcept;
+    constexpr month_day_last operator/(last_spec, int _Month) noexcept;
+    constexpr month_weekday operator/(const month& _Month, const weekday_indexed& _Wdi) noexcept;
+    constexpr month_weekday operator/(int _Month, const weekday_indexed& _Wdi) noexcept;
+    constexpr month_weekday operator/(const weekday_indexed& _Wdi, const month& _Month) noexcept;
+    constexpr month_weekday operator/(const weekday_indexed& _Wdi, int _Month) noexcept;
+    constexpr month_weekday_last operator/(const month& _Month, const weekday_last& _Wdl) noexcept;
+    constexpr month_weekday_last operator/(int _Month, const weekday_last& _Wdl) noexcept;
+    constexpr month_weekday_last operator/(const weekday_last& _Wdl, const month& _Month) noexcept;
+    constexpr month_weekday_last operator/(const weekday_last& _Wdl, int _Month) noexcept;
+    constexpr year_month_day operator/(const year_month& _Ym, const day& _Day) noexcept;
+    constexpr year_month_day operator/(const year_month& _Ym, int _Day) noexcept;
+    constexpr year_month_day operator/(const year& _Year, const month_day& _Md) noexcept;
+    constexpr year_month_day operator/(int _Year, const month_day& _Md) noexcept;
+    constexpr year_month_day operator/(const month_day& _Md, const year& _Year) noexcept;
+    constexpr year_month_day operator/(const month_day& _Md, int _Year) noexcept;
+    constexpr year_month_day_last operator/(const year_month& _Ym, last_spec) noexcept;
+    constexpr year_month_day_last operator/(const year& _Year, const month_day_last& _Mdl) noexcept;
+    constexpr year_month_day_last operator/(int _Year, const month_day_last& _Mdl) noexcept;
+    constexpr year_month_day_last operator/(const month_day_last& _Mdl, const year& _Year) noexcept;
+    constexpr year_month_day_last operator/(const month_day_last& _Mdl, int _Year) noexcept;
+    constexpr year_month_weekday operator/(const year_month& _Ym, const weekday_indexed& _Wdi) noexcept;
+    constexpr year_month_weekday operator/(const year& _Year, const month_weekday& _Mwd) noexcept;
+    constexpr year_month_weekday operator/(int _Year, const month_weekday& _Mwd) noexcept;
+    constexpr year_month_weekday operator/(const month_weekday& _Mwd, const year& _Year) noexcept;
+    constexpr year_month_weekday operator/(const month_weekday& _Mwd, int _Year) noexcept;
+    constexpr year_month_weekday_last operator/(const year_month& ym, const weekday_last& _Wdl) noexcept;
+    constexpr year_month_weekday_last operator/(const year& _Year, const month_weekday_last& mwdl) noexcept;
+    constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& mwdl) noexcept;
+    constexpr year_month_weekday_last operator/(const month_weekday_last& mwdl, const year& _Year) noexcept;
+    constexpr year_month_weekday_last operator/(const month_weekday_last& mwdl, int _Year) noexcept;
+
+    // day
+    constexpr day::day(unsigned _Val) noexcept : _Day{static_cast<unsigned char>(_Val)} {}
+
+    constexpr day& day::operator++() noexcept {
+        ++_Day;
+        return *this;
+    }
+    constexpr day day::operator++(int) noexcept {
+        return day{_Day++};
+    }
+    constexpr day& day::operator--() noexcept {
+        --_Day;
+        return *this;
+    }
+    constexpr day day::operator--(int) noexcept {
+        return day{_Day--};
+    }
+
+    constexpr day::operator unsigned() const noexcept {
+        return _Day;
+    }
+    constexpr bool day::ok() const noexcept {
+        return _Day >= 1 && _Day <= 31;
+    }
+
+    constexpr bool operator==(const day& _Left, const day& _Right) noexcept {
+        return static_cast<unsigned>(_Left) == static_cast<unsigned>(_Right);
+    }
+    constexpr strong_ordering operator<=>(const day& _Left, const day& _Right) noexcept {
+        return static_cast<unsigned>(_Left) <=> static_cast<unsigned>(_Right);
+    }
+
+    constexpr day operator+(const day& _Left, const days& _Right) noexcept {
+        return day{static_cast<unsigned>(_Left) + _Right.count()};
+    }
+    constexpr day operator+(const days& _Left, const day& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr day operator-(const day& _Left, const days& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr days operator-(const day& _Left, const day& _Right) noexcept {
+        return days{static_cast<int>(static_cast<unsigned>(_Left)) - static_cast<int>(static_cast<unsigned>(_Right))};
+    }
+
+    constexpr day& day::operator+=(const days& _Days) noexcept {
+        *this = *this + _Days;
+        return *this;
+    }
+    constexpr day& day::operator-=(const days& _Days) noexcept {
+        *this = *this - _Days;
+        return *this;
+    }
+
+    // month
+    constexpr month::month(unsigned _Val) noexcept : _Month{static_cast<unsigned char>(_Val)} {}
+
+    constexpr month& month::operator++() noexcept {
+        *this += months{1};
+        return *this;
+    }
+    constexpr month month::operator++(int) noexcept {
+        month _Temp{*this};
+        ++(*this);
+        return _Temp;
+    }
+    constexpr month& month::operator--() noexcept {
+        *this -= months{1};
+        return *this;
+    }
+    constexpr month month::operator--(int) noexcept {
+        month _Temp{*this};
+        --(*this);
+        return _Temp;
+    }
+    constexpr month::operator unsigned() const noexcept {
+        return static_cast<unsigned>(_Month);
+    }
+    constexpr bool month::ok() const noexcept {
+        return _Month >= 1 && _Month <= 12;
+    }
+
+    constexpr bool operator==(const month& _Left, const month& _Right) noexcept {
+        return static_cast<unsigned>(_Left) == static_cast<unsigned>(_Right);
+    }
+    constexpr strong_ordering operator<=>(const month& _Left, const month& _Right) noexcept {
+        return static_cast<unsigned>(_Left) <=> static_cast<unsigned>(_Right);
+    }
+
+    constexpr month operator+(const month& _Left, const months& _Right) noexcept {
+        const auto _M   = static_cast<long long>(static_cast<unsigned>(_Left)) + (_Right.count() - 1);
+        const auto _Div = (_M >= 0 ? _M : _M - 11) / 12;
+        return month{static_cast<unsigned>(_M - _Div * 12 + 1)};
+    }
+    constexpr month operator+(const months& _Left, const month& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr month operator-(const month& _Left, const months& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr months operator-(const month& _Left, const month& _Right) noexcept {
+        const auto _M = static_cast<unsigned>(_Left) - static_cast<unsigned>(_Right);
+        return months{_M <= 11 ? _M : _M + 12};
+    }
+
+    constexpr month& month::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr month& month::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+
+    // year
+    constexpr year::year(int _Val) noexcept : _Year{static_cast<short>(_Val)} {}
+
+    constexpr year& year::operator++() noexcept {
+        ++_Year;
+        return *this;
+    }
+    constexpr year year::operator++(int) noexcept {
+        return year{_Year++};
+    }
+    constexpr year& year::operator--() noexcept {
+        --_Year;
+        return *this;
+    }
+    constexpr year year::operator--(int) noexcept {
+        return year{_Year--};
+    }
+
+    constexpr year year::operator+() const noexcept {
+        return *this;
+    }
+    constexpr year year::operator-() const noexcept {
+        return year{-_Year};
+    }
+
+    constexpr bool year::is_leap() const noexcept {
+        return _Year % 4 == 0 && (_Year % 100 != 0 || _Year % 400 == 0);
+    }
+
+    constexpr year::operator int() const noexcept {
+        return static_cast<int>(_Year);
+    }
+    constexpr bool year::ok() const noexcept {
+        return (min)()._Year <= _Year && _Year <= (max)()._Year;
+    }
+
+    constexpr year(year::min)() noexcept {
+        return year{-32767};
+    }
+    constexpr year(year::max)() noexcept {
+        return year{32767};
+    }
+
+    constexpr bool operator==(const year& _Left, const year& _Right) noexcept {
+        return static_cast<int>(_Left) == static_cast<int>(_Right);
+    }
+    constexpr strong_ordering operator<=>(const year& _Left, const year& _Right) noexcept {
+        return static_cast<int>(_Left) <=> static_cast<int>(_Right);
+    }
+
+    constexpr year operator+(const year& _Left, const years& _Right) noexcept {
+        return year{static_cast<int>(_Left) + _Right.count()};
+    }
+    constexpr year operator+(const years& _Left, const year& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr year operator-(const year& _Left, const years& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr years operator-(const year& _Left, const year& _Right) noexcept {
+        return years{static_cast<int>(_Left) - static_cast<int>(_Right)};
+    }
+
+    constexpr year& year::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year& year::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
+
+    // weekday
+    // courtesy of Howard Hinnant
+    // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
+    constexpr unsigned weekday::_Weekday_from_days(int _Tp) noexcept {
+        return static_cast<unsigned>(_Tp >= -4 ? (_Tp + 4) % 7 : (_Tp + 5) % 7 + 6);
+    }
+    constexpr weekday::weekday(unsigned _Val) noexcept : _Weekday{static_cast<unsigned char>(_Val == 7 ? 0 : _Val)} {}
+    constexpr weekday::weekday(const sys_days& _Sys_day) noexcept
+        : _Weekday{static_cast<unsigned char>(_Weekday_from_days(_Sys_day.time_since_epoch().count()))} {}
+    constexpr weekday::weekday(const local_days& _Local_day) noexcept
+        : _Weekday{static_cast<unsigned char>(_Weekday_from_days(_Local_day.time_since_epoch().count()))} {}
+
+
+    constexpr unsigned weekday::c_encoding() const noexcept {
+        return _Weekday;
+    }
+    constexpr unsigned weekday::iso_encoding() const noexcept {
+        return _Weekday == 0u ? 7u : _Weekday;
+    }
+    constexpr bool weekday::ok() const noexcept {
+        return _Weekday <= 6;
+    }
+
+    constexpr weekday_indexed weekday::operator[](unsigned _Index) const noexcept {
+        return {*this, _Index};
+    }
+    constexpr weekday_last weekday::operator[](last_spec) const noexcept {
+        return weekday_last{*this};
+    }
+
+    constexpr bool operator==(const weekday& _Left, const weekday& _Right) noexcept {
+        return _Left._Weekday == _Right._Weekday;
+    }
+
+    constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept {
+        const auto _Wd  = static_cast<long long>(_Left._Weekday) + _Right.count();
+        const auto _Div = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
+        return weekday{static_cast<unsigned>(_Wd - _Div * 7)};
+    }
+    constexpr weekday operator+(const days& _Left, const weekday& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr weekday operator-(const weekday& _Left, const days& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr days operator-(const weekday& _Left, const weekday& _Right) noexcept {
+        const int _Wd = _Left.c_encoding() - _Right.c_encoding();
+        const int _Wk = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
+        return days{_Wd - _Wk * 7};
+    }
+
+    constexpr weekday& weekday::operator++() noexcept {
+        return *this += days{1};
+    }
+    constexpr weekday weekday::operator++(int) noexcept {
+        weekday _Temp{*this};
+        ++(*this);
+        return _Temp;
+    }
+    constexpr weekday& weekday::operator--() noexcept {
+        return *this -= days{1};
+    }
+    constexpr weekday weekday::operator--(int) noexcept {
+        weekday _Temp{*this};
+        --(*this);
+        return _Temp;
+    }
+
+    constexpr weekday& weekday::operator+=(const days& _Days) noexcept {
+        return *this = *this + _Days;
+    }
+    constexpr weekday& weekday::operator-=(const days& _Days) noexcept {
+        return *this = *this - _Days;
+    }
+
+    // weekday_indexed
+    constexpr weekday_indexed::weekday_indexed(const chrono::weekday& _Wd, unsigned _Idx) noexcept
+        : _Weekday{_Wd}, _Index{static_cast<unsigned char>(_Idx)} {}
+
+    constexpr chrono::weekday weekday_indexed::weekday() const noexcept {
+        return _Weekday;
+    }
+    constexpr unsigned weekday_indexed::index() const noexcept {
+        return _Index;
+    }
+    constexpr bool weekday_indexed::ok() const noexcept {
+        return _Weekday.ok() && 1 <= _Index && _Index <= 5;
+    }
+    constexpr bool operator==(const weekday_indexed& _Left, const weekday_indexed& _Right) noexcept {
+        return _Left.weekday() == _Right.weekday() && _Left.index() == _Right.index();
+    }
+
+    // weekday_last
+    constexpr weekday_last::weekday_last(const chrono::weekday& _Wd) noexcept : _Weekday{_Wd} {}
+
+    constexpr chrono::weekday weekday_last::weekday() const noexcept {
+        return _Weekday;
+    }
+    constexpr bool weekday_last::ok() const noexcept {
+        return _Weekday.ok();
+    }
+
+    constexpr bool operator==(const weekday_last& _Left, const weekday_last& _Right) noexcept {
+        return _Left.weekday() == _Right.weekday();
+    }
+
+    // month_day
+    constexpr month_day::month_day(const chrono::month& _M, const chrono::day& _D) noexcept : _Month{_M}, _Day{_D} {}
+
+    constexpr chrono::month month_day::month() const noexcept {
+        return _Month;
+    }
+    constexpr chrono::day month_day::day() const noexcept {
+        return _Day;
+    }
+    constexpr bool month_day::ok() const noexcept {
+        if (!_Month.ok() || !_Day.ok())
+            return false;
+
+        const auto _D = static_cast<unsigned>(_Day);
+        const auto _M = static_cast<unsigned>(_Month);
+
+        if (_M == 2 && _D > 29)
+            return false;
+        if (_M == 4 || _M == 6 || _M == 9 || _M == 11)
+            return _D <= 30;
+        return true;
+    }
+
+    constexpr bool operator==(const month_day& _Left, const month_day& _Right) noexcept {
+        return _Left.month() == _Right.month() && _Left.day() == _Right.day();
+    }
+    constexpr strong_ordering operator<=>(const month_day& _Left, const month_day& _Right) noexcept {
+        if (auto _Comp = _Left.month() <=> _Right.month(); _Comp != 0)
+            return _Comp;
+        return _Left.day() <=> _Right.day();
+    }
+
+    // month_day_last
+    constexpr month_day_last::month_day_last(const chrono::month& _M) noexcept : _Month{_M} {}
+
+    constexpr chrono::month month_day_last::month() const noexcept {
+        return _Month;
+    }
+    constexpr bool month_day_last::ok() const noexcept {
+        return _Month.ok();
+    }
+
+    constexpr bool operator==(const month_day_last& _Left, const month_day_last& _Right) {
+        return _Left.month() == _Right.month();
+    }
+    constexpr strong_ordering operator<=>(const month_day_last& _Left, const month_day_last& _Right) {
+        return _Left.month() <=> _Right.month();
+    }
+
+    // month_weekday
+    constexpr month_weekday::month_weekday(const chrono::month& _M, const chrono::weekday_indexed& _Wdi) noexcept
+        : _Month{_M}, _Weekday_index{_Wdi} {}
+
+    constexpr chrono::month month_weekday::month() const noexcept {
+        return _Month;
+    }
+    constexpr chrono::weekday_indexed month_weekday::weekday_indexed() const noexcept {
+        return _Weekday_index;
+    }
+
+    constexpr bool month_weekday::ok() const noexcept {
+        return _Month.ok() && _Weekday_index.ok();
+    }
+
+    constexpr bool operator==(const month_weekday& _Left, const month_weekday& _Right) {
+        return _Left.month() == _Right.month() && _Left.weekday_indexed() == _Right.weekday_indexed();
+    }
+
+    // month_weekday_last
+    constexpr month_weekday_last::month_weekday_last(const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept
+        : _Month{_M}, _Weekday_last{_Wdl} {}
+
+    constexpr chrono::month month_weekday_last::month() const noexcept {
+        return _Month;
+    }
+    constexpr chrono::weekday_last month_weekday_last::weekday_last() const noexcept {
+        return _Weekday_last;
+    }
+    constexpr bool month_weekday_last::ok() const noexcept {
+        return _Month.ok() && _Weekday_last.ok();
+    }
+
+    constexpr bool operator==(const month_weekday_last& _Left, const month_weekday_last& _Right) noexcept {
+        return _Left.month() == _Right.month() && _Left.weekday_last() == _Right.weekday_last();
+    }
+
+    // year_month
+    constexpr year_month::year_month(const chrono::year& _Y, const chrono::month& _M) noexcept
+        : _Year{_Y}, _Month{_M} {}
+
+    constexpr chrono::year year_month::year() const noexcept {
+        return _Year;
+    }
+    constexpr chrono::month year_month::month() const noexcept {
+        return _Month;
+    }
+
+    constexpr bool year_month::ok() const noexcept {
+        return _Year.ok() && _Month.ok();
+    }
+
+    constexpr bool operator==(const year_month& _Left, const year_month& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month() == _Right.month();
+    }
+    constexpr strong_ordering operator<=>(const year_month& _Left, const year_month& _Right) noexcept {
+        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
+            return _Comp;
+        return _Left.month() <=> _Right.month();
+    }
+
+    constexpr year_month operator+(const year_month& _Left, const months& _Right) noexcept {
+        const auto _M   = static_cast<long long>(static_cast<unsigned>(_Left.month())) + (_Right.count() - 1);
+        const auto _Div = (_M >= 0 ? _M : _M - 11) / 12;
+        return year_month{_Left.year() + years{_Div}, month{static_cast<unsigned>(_M - _Div * 12 + 1)}};
+    }
+    constexpr year_month operator+(const months& _Left, const year_month& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month operator-(const year_month& _Left, const months& _Right) noexcept {
+        return _Left + -_Right;
+    }
+
+    constexpr months operator-(const year_month& _Left, const year_month& _Right) noexcept {
+        return _Left.year() - _Right.year()
+               + months{static_cast<int>(static_cast<unsigned>(_Left.month()))
+                        - static_cast<int>(static_cast<unsigned>(_Right.month()))};
+    }
+
+    constexpr year_month operator+(const year_month& _Left, const years& _Right) noexcept {
+        return (_Left.year() + _Right) / _Left.month();
+    }
+
+    constexpr year_month operator+(const years& _Left, const year_month& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month operator-(const year_month& _Left, const years& _Right) noexcept {
+        return _Left + -_Right;
+    }
+
+    constexpr year_month& year_month::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month& year_month::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month& year_month::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month& year_month::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
+
+    // year_month_day
+    // Thanks again to Howard https://howardhinnant.github.io/date_algorithms.html#civil_from_days
+    constexpr year_month_day year_month_day::_Civil_from_days(int _Tp) noexcept {
+        static_assert(_STD numeric_limits<unsigned>::digits >= 18);
+        static_assert(_STD numeric_limits<int>::digits >= 20);
+        const int _Z        = _Tp + 719468;
+        const int _Era      = (_Z >= 0 ? _Z : _Z - 146096) / 146097;
+        const unsigned _Doe = static_cast<unsigned>(_Z - _Era * 146097);
+        const unsigned _Yoe = (_Doe - _Doe / 1460 + _Doe / 36524 - _Doe / 146096) / 365;
+        const int _Y        = static_cast<int>(_Yoe) + _Era * 400;
+        const unsigned _Doy = _Doe - (365 * _Yoe + _Yoe / 4 - _Yoe / 100);
+        const unsigned _Mp  = (5 * _Doy + 2) / 153;
+        const unsigned _D   = _Doy - (153 * _Mp + 2) / 5 + 1;
+        const unsigned _M   = _Mp + (_Mp < 10 ? 3 : -9);
+        return year_month_day(chrono::year{_Y + (_M <= 2)}, chrono::month{_M}, chrono::day{_D});
+    }
+
+    constexpr year_month_day::year_month_day(
+        const chrono::year& _Y, const chrono::month& _M, const chrono::day& _D) noexcept
+        : _Year{_Y}, _Month{_M}, _Day{_D} {}
+    constexpr year_month_day::year_month_day(const year_month_day_last& _Ymdl) noexcept
+        : _Year{_Ymdl.year()}, _Month{_Ymdl.month()}, _Day{_Ymdl.day()} {}
+    constexpr year_month_day::year_month_day(const sys_days& _Sys_days) noexcept
+        : year_month_day{_Civil_from_days(_Sys_days.time_since_epoch().count())} {}
+    constexpr year_month_day::year_month_day(const local_days& _Local_days) noexcept
+        : year_month_day{_Civil_from_days(_Local_days.time_since_epoch().count())} {}
+
+    constexpr chrono::year year_month_day::year() const noexcept {
+        return _Year;
+    }
+    constexpr chrono::month year_month_day::month() const noexcept {
+        return _Month;
+    }
+    constexpr chrono::day year_month_day::day() const noexcept {
+        return _Day;
+    }
+
+    constexpr year_month_day::operator sys_days() const noexcept {
+        return sys_days{_Year / _Month / chrono::day{1}} + (_Day - chrono::day{1});
+    }
+    constexpr year_month_day::operator local_days() const noexcept {
+        return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
+    }
+    constexpr bool year_month_day::ok() const noexcept {
+        if (!_Year.ok() || !_Month.ok())
+            return false;
+        return _Day >= chrono::day{1} && _Day <= (_Year / _Month / last).day();
+    }
+
+    constexpr bool operator==(const year_month_day& _Left, const year_month_day& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month() == _Right.month() && _Left.day() == _Right.day();
+    }
+    constexpr strong_ordering operator<=>(const year_month_day& _Left, const year_month_day& _Right) noexcept {
+        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
+            return _Comp;
+        if (auto _Comp = _Left.month() <=> _Right.month(); _Comp != 0)
+            return _Comp;
+        return _Left.day() <=> _Right.day();
+    }
+
+    constexpr year_month_day operator+(const year_month_day& _Left, const months& _Right) noexcept {
+        return year_month{_Left.year() / _Left.month() + _Right} / _Left.day();
+    }
+
+    constexpr year_month_day operator+(const months& _Left, const year_month_day& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_day operator-(const year_month_day& _Left, const months& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_day operator+(const year_month_day& _Left, const years& _Right) noexcept {
+        return year{_Left.year() + _Right} / _Left.month() / _Left.day();
+    }
+
+    constexpr year_month_day operator+(const years& _Left, const year_month_day& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_day operator-(const year_month_day& _Left, const years& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_day& year_month_day::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month_day& year_month_day::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month_day& year_month_day::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month_day& year_month_day::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
+
+    // year_month_day_last
+    constexpr year_month_day_last::year_month_day_last(
+        const chrono::year& _Y, const chrono::month_day_last& _Mdl) noexcept
+        : _Year{_Y}, _Month_day_last{_Mdl} {}
+
+    constexpr chrono::year year_month_day_last::year() const noexcept {
+        return _Year;
+    }
+    constexpr chrono::month year_month_day_last::month() const noexcept {
+        return _Month_day_last.month();
+    }
+    constexpr chrono::month_day_last year_month_day_last::month_day_last() const noexcept {
+        return _Month_day_last;
+    }
+    constexpr chrono::day year_month_day_last::day() const noexcept {
+        // clang-format off
+        constexpr chrono::day _Days[] = {
+            chrono::day{31}, chrono::day{28}, chrono::day{31}, chrono::day{30},
+            chrono::day{31}, chrono::day{30}, chrono::day{31}, chrono::day{31},
+            chrono::day{30}, chrono::day{31}, chrono::day{30}, chrono::day{31}};
+        // clang-format on
+        return month() == chrono::month{2} && _Year.is_leap()
+                   ? _Days[static_cast<unsigned>(month()) - 1] + chrono::days{1}
+                   : _Days[static_cast<unsigned>(month()) - 1];
+    }
+
+    constexpr year_month_day_last::operator sys_days() const noexcept {
+        return sys_days{year() / month() / day()};
+    }
+    constexpr year_month_day_last::operator local_days() const noexcept {
+        return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
+    }
+    constexpr bool year_month_day_last::ok() const noexcept {
+        return _Year.ok() && _Month_day_last.ok();
+    }
+
+    constexpr bool operator==(const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month_day_last() == _Right.month_day_last();
+    }
+    constexpr strong_ordering operator<=>(
+        const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
+        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
+            return _Comp;
+        return _Left.month_day_last() <=> _Right.month_day_last();
+    }
+
+    constexpr year_month_day_last operator+(const year_month_day_last& _Left, const months& _Right) noexcept {
+        return (_Left.year() / _Left.month() + _Right) / last;
+    }
+    constexpr year_month_day_last operator+(const months& _Left, const year_month_day_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_day_last operator-(const year_month_day_last& _Left, const months& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_day_last operator+(const year_month_day_last& _Left, const years& _Right) noexcept {
+        return {_Left.year() + _Right, _Left.month_day_last()};
+    }
+    constexpr year_month_day_last operator+(const years& _Left, const year_month_day_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr year_month_day_last operator-(const year_month_day_last& _Left, const years& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_day_last& year_month_day_last::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month_day_last& year_month_day_last::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month_day_last& year_month_day_last::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month_day_last& year_month_day_last::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
+
+    // year_month_weekday
+    constexpr year_month_weekday year_month_weekday::_Ymwd_from_days(days _Dp) noexcept {
+        const chrono::year_month_day _Ymd = sys_days{_Dp};
+        const chrono::weekday _Wd         = sys_days{_Dp};
+        const auto _Idx                   = ((static_cast<unsigned>(_Ymd.day()) - 1) / 7) + 1;
+        return {_Ymd.year() / _Ymd.month() / _Wd[_Idx]};
+    }
+
+    constexpr std::chrono::year_month_weekday::year_month_weekday(
+        const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_indexed& _Wdi) noexcept
+        : _Year{_Y}, _Month{_M}, _Weekday_index{_Wdi} {}
+    constexpr year_month_weekday::year_month_weekday(const sys_days& _Sys_days) noexcept
+        : year_month_weekday{_Ymwd_from_days(_Sys_days.time_since_epoch())} {}
+    constexpr year_month_weekday::year_month_weekday(const local_days& _Local_days) noexcept
+        : year_month_weekday{_Ymwd_from_days(_Local_days.time_since_epoch())} {}
+
+
+    constexpr chrono::year year_month_weekday::year() const noexcept {
+        return _Year;
+    }
+    constexpr chrono::month year_month_weekday::month() const noexcept {
+        return _Month;
+    }
+    constexpr chrono::weekday year_month_weekday::weekday() const noexcept {
+        return _Weekday_index.weekday();
+    }
+    constexpr unsigned year_month_weekday::index() const noexcept {
+        return _Weekday_index.index();
+    }
+    constexpr chrono::weekday_indexed year_month_weekday::weekday_indexed() const noexcept {
+        return _Weekday_index;
+    }
+
+    constexpr year_month_weekday::operator sys_days() const noexcept {
+        const sys_days _First{_Year / _Month / 1};
+        const days _Diff = weekday() - chrono::weekday{_First};
+        const days _Days = _Diff + days{(index() - 1) * 7};
+        return _First + _Days;
+    }
+    constexpr year_month_weekday::operator local_days() const noexcept {
+        return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
+    }
+
+    constexpr bool year_month_weekday::ok() const noexcept {
+        if (!_Year.ok() || !_Month.ok() || !_Weekday_index.ok())
+            return false;
+        if (_Weekday_index.index() <= 4)
+            return true;
+        const sys_days _First = _Year / _Month / chrono::weekday_indexed{weekday(), 1};
+        const sys_days _Four  = _First + days{28};
+        return year_month_day{_Four}.month() == _Month;
+    }
+    constexpr bool operator==(const year_month_weekday& _Left, const year_month_weekday& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month() == _Right.month()
+               && _Left.weekday_indexed() == _Right.weekday_indexed();
+    }
+
+    constexpr year_month_weekday operator+(const year_month_weekday& _Left, const months& _Right) noexcept {
+        return (_Left.year() / _Left.month() + _Right) / _Left.weekday_indexed();
+    }
+    constexpr year_month_weekday operator+(const months& _Left, const year_month_weekday& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_weekday operator-(const year_month_weekday& _Left, const months& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_weekday operator+(const year_month_weekday& _Left, const years& _Right) noexcept {
+        return year_month_weekday{_Left.year() + _Right, _Left.month(), _Left.weekday_indexed()};
+    }
+    constexpr year_month_weekday operator+(const years& _Left, const year_month_weekday& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_weekday operator-(const year_month_weekday& _Left, const years& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_weekday& year_month_weekday::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month_weekday& year_month_weekday::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month_weekday& year_month_weekday::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month_weekday& year_month_weekday::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
+
+    // year_month_weekday_last
+    constexpr year_month_weekday_last::year_month_weekday_last(
+        const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept
+        : _Year{_Y}, _Month{_M}, _Weekday_last{_Wdl} {}
+
+    constexpr chrono::year year_month_weekday_last::year() const noexcept {
+        return _Year;
+    }
+    constexpr chrono::month year_month_weekday_last::month() const noexcept {
+        return _Month;
+    }
+    constexpr chrono::weekday year_month_weekday_last::weekday() const noexcept {
+        return _Weekday_last.weekday();
+    }
+    constexpr chrono::weekday_last year_month_weekday_last::weekday_last() const noexcept {
+        return _Weekday_last;
+    }
+
+    constexpr year_month_weekday_last::operator sys_days() const noexcept {
+        const sys_days _Last{_Year / _Month / last};
+        const auto _Diff = chrono::weekday{_Last} - weekday();
+        return _Last - _Diff;
+    }
+    constexpr year_month_weekday_last::operator local_days() const noexcept {
+        return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
+    }
+    constexpr bool year_month_weekday_last::ok() const noexcept {
+        return _Year.ok() && _Month.ok() && _Weekday_last.ok();
+    }
+
+    constexpr bool operator==(const year_month_weekday_last& _Left, const year_month_weekday_last& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month() == _Right.month()
+               && _Left.weekday_last() == _Right.weekday_last();
+    }
+
+    constexpr year_month_weekday_last operator+(const year_month_weekday_last& _Left, const months& _Right) noexcept {
+        return (_Left.year() / _Left.month() + _Right) / _Left.weekday_last();
+    }
+    constexpr year_month_weekday_last operator+(const months& _Left, const year_month_weekday_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_weekday_last operator-(const year_month_weekday_last& _Left, const months& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_weekday_last operator+(const year_month_weekday_last& _Left, const years& _Right) noexcept {
+        return {_Left.year() + _Right, _Left.month(), _Left.weekday_last()};
+    }
+    constexpr year_month_weekday_last operator+(const years& _Left, const year_month_weekday_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_weekday_last operator-(const year_month_weekday_last& _Left, const years& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
+
+    // Civil calendar conventional syntax operators
+    constexpr year_month operator/(const year& _Year, const month& _Month) noexcept {
+        return {_Year, _Month};
+    }
+    constexpr year_month operator/(const year& _Year, int _Month) noexcept {
+        return _Year / month{static_cast<unsigned>(_Month)};
+    }
+    constexpr month_day operator/(const month& _Month, const day& _Day) noexcept {
+        return {_Month, _Day};
+    }
+    constexpr month_day operator/(const month& _Month, int _Day) noexcept {
+        return _Month / day{static_cast<unsigned>(_Day)};
+    }
+    constexpr month_day operator/(int _Month, const day& _Day) noexcept {
+        return month{static_cast<unsigned>(_Month)} / _Day;
+    }
+    constexpr month_day operator/(const day& _Day, const month& _Month) noexcept {
+        return _Month / _Day;
+    }
+    constexpr month_day operator/(const day& _Day, int _Month) noexcept {
+        return month{static_cast<unsigned>(_Month)} / _Day;
+    }
+    constexpr month_day_last operator/(const month& _Month, last_spec) noexcept {
+        return month_day_last{_Month};
+    }
+    constexpr month_day_last operator/(int _Month, last_spec) noexcept {
+        return month{static_cast<unsigned>(_Month)} / last;
+    }
+    constexpr month_day_last operator/(last_spec, const month& _Month) noexcept {
+        return _Month / last;
+    }
+    constexpr month_day_last operator/(last_spec, int _Month) noexcept {
+        return month{static_cast<unsigned>(_Month)} / last;
+    }
+    constexpr month_weekday operator/(const month& _Month, const weekday_indexed& _Wdi) noexcept {
+        return {_Month, _Wdi};
+    }
+    constexpr month_weekday operator/(int _Month, const weekday_indexed& _Wdi) noexcept {
+        return month{static_cast<unsigned>(_Month)} / _Wdi;
+    }
+    constexpr month_weekday operator/(const weekday_indexed& _Wdi, const month& _Month) noexcept {
+        return _Month / _Wdi;
+    }
+    constexpr month_weekday operator/(const weekday_indexed& _Wdi, int _Month) noexcept {
+        return month{static_cast<unsigned>(_Month)} / _Wdi;
+    }
+    constexpr month_weekday_last operator/(const month& _Month, const weekday_last& _Wdl) noexcept {
+        return {_Month, _Wdl};
+    }
+    constexpr month_weekday_last operator/(int _Month, const weekday_last& _Wdl) noexcept {
+        return month{static_cast<unsigned>(_Month)} / _Wdl;
+    }
+    constexpr month_weekday_last operator/(const weekday_last& _Wdl, const month& _Month) noexcept {
+        return _Month / _Wdl;
+    }
+    constexpr month_weekday_last operator/(const weekday_last& _Wdl, int _Month) noexcept {
+        return month{static_cast<unsigned>(_Month)} / _Wdl;
+    }
+    constexpr year_month_day operator/(const year_month& _Ym, const day& _Day) noexcept {
+        return {_Ym.year(), _Ym.month(), _Day};
+    }
+    constexpr year_month_day operator/(const year_month& _Ym, int _Day) noexcept {
+        return _Ym / day{static_cast<unsigned>(_Day)};
+    }
+    constexpr year_month_day operator/(const year& _Year, const month_day& _Md) noexcept {
+        return _Year / _Md.month() / _Md.day();
+    }
+    constexpr year_month_day operator/(int _Year, const month_day& _Md) noexcept {
+        return year{_Year} / _Md.month() / _Md.day();
+    }
+    constexpr year_month_day operator/(const month_day& _Md, const year& _Year) noexcept {
+        return _Year / _Md.month() / _Md.day();
+    }
+    constexpr year_month_day operator/(const month_day& _Md, int _Year) noexcept {
+        return year{_Year} / _Md.month() / _Md.day();
+    }
+    constexpr year_month_day_last operator/(const year_month& _Ym, last_spec) noexcept {
+        return {_Ym.year(), month_day_last{_Ym.month()}};
+    }
+    constexpr year_month_day_last operator/(const year& _Year, const month_day_last& _Mdl) noexcept {
+        return {_Year, _Mdl};
+    }
+    constexpr year_month_day_last operator/(int _Year, const month_day_last& _Mdl) noexcept {
+        return year{_Year} / _Mdl;
+    }
+    constexpr year_month_day_last operator/(const month_day_last& _Mdl, const year& _Year) noexcept {
+        return _Year / _Mdl;
+    }
+    constexpr year_month_day_last operator/(const month_day_last& _Mdl, int _Year) noexcept {
+        return year{_Year} / _Mdl;
+    }
+    constexpr year_month_weekday operator/(const year_month& _Ym, const weekday_indexed& _Wdi) noexcept {
+        return year_month_weekday{_Ym.year(), _Ym.month(), _Wdi};
+    }
+    constexpr year_month_weekday operator/(const year& _Year, const month_weekday& _Mwd) noexcept {
+        return year_month_weekday{_Year, _Mwd.month(), _Mwd.weekday_indexed()};
+    }
+    constexpr year_month_weekday operator/(int _Year, const month_weekday& _Mwd) noexcept {
+        return year{_Year} / _Mwd;
+    }
+    constexpr year_month_weekday operator/(const month_weekday& _Mwd, const year& _Year) noexcept {
+        return _Year / _Mwd;
+    }
+    constexpr year_month_weekday operator/(const month_weekday& _Mwd, int _Year) noexcept {
+        return year{_Year} / _Mwd;
+    }
+    constexpr year_month_weekday_last operator/(const year_month& _Ym, const weekday_last& _Wdl) noexcept {
+        return {_Ym.year(), _Ym.month(), _Wdl};
+    }
+    constexpr year_month_weekday_last operator/(const year& _Year, const month_weekday_last& _Mwdl) noexcept {
+        return {_Year, _Mwdl.month(), _Mwdl.weekday_last()};
+    }
+    constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept {
+        return year{_Year} / _Mwdl;
+    }
+    constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept {
+        return _Year / _Mwdl;
+    }
+    constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept {
+        return year{_Year} / _Mwdl;
+    }
+
+    // Calendrical constants
+    inline constexpr weekday Sunday{0};
+    inline constexpr weekday Monday{1};
+    inline constexpr weekday Tuesday{2};
+    inline constexpr weekday Wednesday{3};
+    inline constexpr weekday Thursday{4};
+    inline constexpr weekday Friday{5};
+    inline constexpr weekday Saturday{6};
+
+    inline constexpr month January{1};
+    inline constexpr month February{2};
+    inline constexpr month March{3};
+    inline constexpr month April{4};
+    inline constexpr month May{5};
+    inline constexpr month June{6};
+    inline constexpr month July{7};
+    inline constexpr month August{8};
+    inline constexpr month September{9};
+    inline constexpr month October{10};
+    inline constexpr month November{11};
+    inline constexpr month December{12};
+#endif // _HAS_CXX20
 } // namespace chrono
 
 // HELPERS
@@ -702,6 +2029,14 @@ inline namespace literals {
             long double _Val) noexcept /* strengthened */ {
             return chrono::duration<double, nano>(_Val);
         }
+#if _HAS_CXX20
+        _NODISCARD constexpr chrono::day operator"" d(unsigned long long _Day) noexcept /* strengthened */ {
+            return chrono::day{static_cast<unsigned>(_Day)};
+        }
+        _NODISCARD constexpr chrono::year operator"" y(unsigned long long _Year) noexcept /* strengthened */ {
+            return chrono::year{static_cast<int>(_Year)};
+        }
+#endif // _HAS_CXX20
     } // namespace chrono_literals
 } // namespace literals
 
