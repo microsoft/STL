@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// ENUM CLASS endian
 enum class endian { little = 0, big = 1, native = little };
 
 _STD_END
