@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <any>
 #include <array>
+#include <bit>
 #include <bitset>
 #include <charconv>
 #include <chrono>
