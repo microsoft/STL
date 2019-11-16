@@ -52,6 +52,7 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 //     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1612R1 Relocating endian To <bit>
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1754R1 Rename Concepts To standard_case
 // P????R? directory_entry::clear_cache()
@@ -959,6 +960,7 @@
 #endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
+#define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_list_remove_return_type  201806L
