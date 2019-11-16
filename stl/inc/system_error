@@ -420,7 +420,7 @@ public:
 
 #else // _HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const { // perform class-specific exception handling
+    virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // _HAS_EXCEPTIONS
