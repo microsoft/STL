@@ -127,6 +127,7 @@
 
 // _HAS_CXX20 directly controls:
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
+// P0122R7 <span>
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
 // P0356R5 bind_front()
@@ -161,10 +162,12 @@
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1024R3 Enhancing span Usability
+// P1085R2 Removing span Comparisons
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
-//     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1394R4 Range Constructor For span
 // P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
 // P1645R1 constexpr For <numeric> Algorithms
@@ -172,6 +175,7 @@
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1754R1 Rename Concepts To standard_case
 // P1870R1 safe_range
+// P1872R0 span Should Have size_type, Not index_type
 // P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
@@ -1014,6 +1018,7 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_shift                   201806L
+#define __cpp_lib_span                    201902L
 #define __cpp_lib_ssize                   201902L
 #define __cpp_lib_starts_ends_with        201711L
 #define __cpp_lib_to_address              201711L
