@@ -72,11 +72,6 @@ struct negation : bool_constant<!static_cast<bool>(_Trait::value)> {}; // The ne
 template <class _Trait>
 _INLINE_VAR constexpr bool negation_v = negation<_Trait>::value;
 
-#if _HAS_CXX20
-// ENUM CLASS endian
-enum class endian { little = 0, big = 1, native = little };
-#endif // _HAS_CXX20
-
 // STRUCT TEMPLATE _Arg_types
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. (sometimes)
