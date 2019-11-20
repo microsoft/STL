@@ -1205,10 +1205,12 @@ public:
         return get()[_Idx];
     }
 
+#if _HAS_DEPRECATED_SHARED_PTR_UNIQUE
     _CXX17_DEPRECATE_SHARED_PTR_UNIQUE _NODISCARD bool unique() const noexcept {
         // return true if no other shared_ptr object owns this resource
         return this->use_count() == 1;
     }
+#endif // _HAS_DEPRECATED_SHARED_PTR_UNIQUE
 
     explicit operator bool() const noexcept {
         return get() != nullptr;
