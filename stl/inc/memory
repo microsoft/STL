@@ -417,7 +417,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
 
 #endif // _HAS_CXX17
 
-
+#if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 // CLASS TEMPLATE raw_storage_iterator
 template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
@@ -462,6 +462,7 @@ public:
 private:
     _OutIt _Next;
 };
+#endif // _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 
 
 #if _HAS_AUTO_PTR_ETC
