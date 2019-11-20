@@ -1908,6 +1908,7 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#if _HAS_DEPRECATED_TEMPORARY_BUFFER
 // FUNCTION TEMPLATE get_temporary_buffer
 template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER _NODISCARD pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
@@ -1919,6 +1920,7 @@ template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
     _Return_temporary_buffer(_Pbuf);
 }
+#endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
 
 // STRUCT TEMPLATE _In_place_key_extract_set
 // assumes _Args have already been _Remove_cvref_t'd
