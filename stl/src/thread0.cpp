@@ -11,7 +11,7 @@
 
 _STD_BEGIN
 
-static const char* const msgs[] = {
+static constexpr const char* msgs[] = {
     // error messages
     "device or resource busy",
     "invalid argument",
@@ -22,7 +22,7 @@ static const char* const msgs[] = {
     "resource unavailable try again",
 };
 
-static const errc codes[] = {
+static constexpr errc codes[] = {
     // system_error codes
     errc::device_or_resource_busy,
     errc::invalid_argument,
