@@ -1553,7 +1553,8 @@ void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, const size_t _Size) {
     size_t _Idx = _Size;
     do {
         --_Idx;
-        if constexpr (rank_v<_Ty> > 0) {
+        // TRANSITION, LLVM-42404
+        if constexpr ((rank_v<_Ty>) > 0) {
             _Reverse_destroy_multidimensional_n(_Arr[_Idx], extent_v<_Ty>);
         } else {
             _Destroy_in_place(_Arr[_Idx]);
@@ -1563,7 +1564,8 @@ void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, const size_t _Size) {
 
 template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
-    if constexpr (rank_v<_Ty> > 0) {
+    // TRANSITION, LLVM-42404
+    if constexpr ((rank_v<_Ty>) > 0) {
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional(_In[_Idx], _Out[_Idx]);
@@ -1579,7 +1581,8 @@ void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_
 
 template <class _Ty>
 void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const size_t _Size) {
-    if constexpr (rank_v<_Ty> > 0) {
+    // TRANSITION, LLVM-42404
+    if constexpr ((rank_v<_Ty>) > 0) {
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_value_construct_multidimensional_n(_Out[_Idx], extent_v<_Ty>);
@@ -1595,7 +1598,8 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
 
 template <class _Ty>
 void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size, const _Ty& _Val) {
-    if constexpr (rank_v<_Ty> > 0) {
+    // TRANSITION, LLVM-42404
+    if constexpr ((rank_v<_Ty>) > 0) {
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional(_Val, _Out[_Idx]);
@@ -1755,7 +1759,8 @@ void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, const size_t _Size,
     size_t _Idx = _Size;
     do {
         --_Idx;
-        if constexpr (rank_v<_Ty> > 0) {
+        // TRANSITION, LLVM-42404
+        if constexpr ((rank_v<_Ty>) > 0) {
             _Reverse_destroy_multidimensional_n_al(_Arr[_Idx], extent_v<_Ty>, _Al);
         } else {
             allocator_traits<_Alloc>::destroy(_Al, _Arr + _Idx);
@@ -1765,7 +1770,8 @@ void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, const size_t _Size,
 
 template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
-    if constexpr (rank_v<_Ty> > 0) {
+    // TRANSITION, LLVM-42404
+    if constexpr ((rank_v<_Ty>) > 0) {
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional_al(_In[_Idx], _Out[_Idx], _Al);
@@ -1781,7 +1787,8 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
 
 template <class _Ty, class _Alloc>
 void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const size_t _Size, _Alloc& _Al) {
-    if constexpr (rank_v<_Ty> > 0) {
+    // TRANSITION, LLVM-42404
+    if constexpr ((rank_v<_Ty>) > 0) {
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_value_construct_multidimensional_n_al(_Out[_Idx], extent_v<_Ty>, _Al);
@@ -1797,7 +1804,8 @@ void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const
 
 template <class _Ty, class _Alloc>
 void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Size, const _Ty& _Val, _Alloc& _Al) {
-    if constexpr (rank_v<_Ty> > 0) {
+    // TRANSITION, LLVM-42404
+    if constexpr ((rank_v<_Ty>) > 0) {
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al);
