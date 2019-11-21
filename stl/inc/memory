@@ -1544,7 +1544,7 @@ private:
 
 #if _HAS_CXX20
 template <class _Ty>
-_Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
+constexpr _Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
     return (_Val1 % _Val2 == 0) ? (_Val1 / _Val2) : (_Val1 / _Val2 + 1);
 }
 
@@ -1631,7 +1631,7 @@ public:
 
     auto _Get_ptr() {
         return reinterpret_cast<remove_extent_t<_Ty>*>(
-            reinterpret_cast<char*>(this) + _Max_value(sizeof(*this), alignof(_Ty)));
+            reinterpret_cast<char*>(this) + _Div_ceil(sizeof(*this), alignof(_Ty)) * alignof(_Ty));
     }
 
 private:
@@ -1839,7 +1839,7 @@ public:
 
     auto _Get_ptr() {
         return reinterpret_cast<remove_extent_t<_Ty>*>(
-            reinterpret_cast<char*>(this) + _Max_value(sizeof(*this), alignof(_Ty)));
+            reinterpret_cast<char*>(this) + _Div_ceil(sizeof(*this), alignof(_Ty)) * alignof(_Ty));
     }
 
 private:
@@ -1860,7 +1860,7 @@ private:
         this->~_Ref_count_unbounded_array_alloc();
         allocator_traits<_Rebind_alloc_t<_Alloc, _Storage>>::deallocate(_Al, reinterpret_cast<_Storage*>(this),
             _Div_ceil(_Size * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
-                + _Max_value(sizeof(*this) / sizeof(_Storage), size_t(1)));
+                + _Div_ceil(sizeof(*this), sizeof(_Storage)));
     }
 };
 
@@ -1923,7 +1923,7 @@ requires is_unbounded_array_v<_Ty> _NODISCARD shared_ptr<_Ty> make_shared(
         aligned_storage_t<_Max_value(alignof(_Ty), alignof(_Refc)), _Max_value(alignof(_Ty), alignof(_Refc))>;
     const auto _Rx =
         reinterpret_cast<_Refc*>(new _Storage[_Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
-                                              + _Max_value(sizeof(_Refc) / sizeof(_Storage), size_t(1))]);
+                                              + _Div_ceil(sizeof(_Refc), sizeof(_Storage))]);
     _TRY_BEGIN
     ::new (static_cast<void*>(_Rx)) _Refc(_Count);
     _CATCH_ALL
@@ -1943,7 +1943,7 @@ requires is_unbounded_array_v<_Ty> _NODISCARD shared_ptr<_Ty> make_shared(
         aligned_storage_t<_Max_value(alignof(_Ty), alignof(_Refc)), _Max_value(alignof(_Ty), alignof(_Refc))>;
     const auto _Rx =
         reinterpret_cast<_Refc*>(new _Storage[_Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
-                                              + _Max_value(sizeof(_Refc) / sizeof(_Storage), size_t(1))]);
+                                              + _Div_ceil(sizeof(_Refc), sizeof(_Storage))]);
     _TRY_BEGIN
     ::new (static_cast<void*>(_Rx)) _Refc(_Count, _Val);
     _CATCH_ALL
@@ -2002,8 +2002,8 @@ requires is_unbounded_array_v<_Ty> _NODISCARD shared_ptr<_Ty> allocate_shared(
     using _Storage =
         aligned_storage_t<_Max_value(alignof(_Ty), alignof(_Refc)), _Max_value(alignof(_Ty), alignof(_Refc))>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
-    size_t _Size = _Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
-                   + _Max_value(sizeof(_Refc) / sizeof(_Storage), size_t(1));
+    size_t _Size =
+        _Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage)) + _Div_ceil(sizeof(_Refc), sizeof(_Storage));
     const auto _Rx = reinterpret_cast<_Refc*>(_Rebound.allocate(_Size));
     _TRY_BEGIN
     ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count);
@@ -2023,8 +2023,8 @@ requires is_unbounded_array_v<_Ty> _NODISCARD shared_ptr<_Ty> allocate_shared(co
     using _Storage =
         aligned_storage_t<_Max_value(alignof(_Ty), alignof(_Refc)), _Max_value(alignof(_Ty), alignof(_Refc))>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
-    size_t _Size = _Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
-                   + _Max_value(sizeof(_Refc) / sizeof(_Storage), size_t(1));
+    size_t _Size =
+        _Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage)) + _Div_ceil(sizeof(_Refc), sizeof(_Storage));
     const auto _Rx = reinterpret_cast<_Refc*>(_Rebound.allocate(_Size));
     _TRY_BEGIN
     ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count, _Val);
