@@ -1464,6 +1464,17 @@ namespace chrono {
         const unsigned _M   = _Mp + (_Mp < 10 ? 3 : -9);
         return year_month_day(chrono::year{_Y + (_M <= 2)}, chrono::month{_M}, chrono::day{_D});
     }
+    constexpr days year_month_day::_Days_from_civil() const noexcept {
+        static_assert(_STD numeric_limits<unsigned>::digits >= 18);
+        static_assert(_STD numeric_limits<int>::digits >= 20);
+        const int _Y        = static_cast<int>(_Year) - (_Month <= chrono::month{2});
+        const unsigned _M   = static_cast<unsigned>(_Month);
+        const int _Era      = (_Y >= 0 ? _Y : _Y - 399) / 400;
+        const unsigned _Yoe = static_cast<unsigned>(_Y - _Era * 400);
+        const unsigned _Doy = (153 * (_M + (_M > 2 ? -3 : 9)) + 2) / 5 + static_cast<unsigned>(_Day) - 1;
+        const unsigned _Doe = _Yoe * 365 + _Yoe / 4 - _Yoe / 100 + _Doy;
+        return days{_Era * 146097 + static_cast<int>(_Doe) - 719468};
+    }
 
     constexpr year_month_day::year_month_day(
         const chrono::year& _Y, const chrono::month& _M, const chrono::day& _D) noexcept
@@ -1486,7 +1497,7 @@ namespace chrono {
     }
 
     constexpr year_month_day::operator sys_days() const noexcept {
-        return sys_days{_Year / _Month / chrono::day{1}} + (_Day - chrono::day{1});
+        return sys_days{_Days_from_civil()};
     }
     constexpr year_month_day::operator local_days() const noexcept {
         return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
