@@ -1689,9 +1689,10 @@ namespace chrono {
             return false;
         if (_Weekday_index.index() <= 4)
             return true;
-        const sys_days _First = _Year / _Month / chrono::weekday_indexed{weekday(), 1};
-        const sys_days _Four  = _First + days{28};
-        return year_month_day{_Four}.month() == _Month;
+        const sys_days _First = _Year / _Month / 1;
+        const days _Diff      = weekday() - chrono::weekday{_First};
+        const days _Last      = _Diff + days{29};
+        return static_cast<unsigned>(_Last.count()) <= static_cast<unsigned>((year() / month() / last).day());
     }
     constexpr bool operator==(const year_month_weekday& _Left, const year_month_weekday& _Right) noexcept {
         return _Left.year() == _Right.year() && _Left.month() == _Right.month()
