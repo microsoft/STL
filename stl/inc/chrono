@@ -1302,10 +1302,8 @@ namespace chrono {
     constexpr bool month_day::ok() const noexcept {
         if (!_Month.ok() || !_Day.ok())
             return false;
-
         const auto _D = static_cast<unsigned>(_Day);
         const auto _M = static_cast<unsigned>(_Month);
-
         if (_M == 2 && _D > 29)
             return false;
         if (_M == 4 || _M == 6 || _M == 9 || _M == 11)
@@ -1659,7 +1657,6 @@ namespace chrono {
         : year_month_weekday{_Ymwd_from_days(_Sys_days.time_since_epoch())} {}
     constexpr year_month_weekday::year_month_weekday(const local_days& _Local_days) noexcept
         : year_month_weekday{_Ymwd_from_days(_Local_days.time_since_epoch())} {}
-
 
     constexpr chrono::year year_month_weekday::year() const noexcept {
         return _Year;
