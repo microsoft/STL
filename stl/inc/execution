@@ -833,8 +833,9 @@ struct _Static_partition_range;
 template <class _RanIt, class _Diff>
 struct _Static_partition_range<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
-    _Unwrapped_t<_RanIt> _Start_at;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<_RanIt>>;
+    using _URanIt      = _Unwrapped_t<const _RanIt&>;
+    _URanIt _Start_at;
+    using _Chunk_type = _Iterator_range<_URanIt>;
 
     _RanIt _Populate(const _Static_partition_team<_Diff>& _Team,
         _RanIt _First) { // statically partition a random-access iterator range and return next(_First, _Team._Count)
@@ -852,7 +853,7 @@ struct _Static_partition_range<_RanIt, _Diff, true> {
         return _Team._Count == _Last - _First;
     }
 
-    _Unwrapped_t<_RanIt> _Get_first(size_t /* _Chunk_number */,
+    _URanIt _Get_first(size_t /* _Chunk_number */,
         const _Diff _Offset) { // get the first iterator for _Chunk _Chunk_number (which is at offset _Offset)
         return _Start_at + static_cast<_Target_diff>(_Offset);
     }
@@ -868,8 +869,9 @@ struct _Static_partition_range<_RanIt, _Diff, true> {
 template <class _FwdIt, class _Diff>
 struct _Static_partition_range<_FwdIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_FwdIt>;
-    _Parallel_vector<_Unwrapped_t<_FwdIt>> _Division_points;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<_FwdIt>>;
+    using _UFwdIt      = _Unwrapped_t<const _FwdIt&>;
+    _Parallel_vector<_UFwdIt> _Division_points;
+    using _Chunk_type = _Iterator_range<_UFwdIt>;
 
     _FwdIt _Populate(const _Static_partition_team<_Diff>& _Team,
         _FwdIt _First) { // statically partition a forward iterator range and return next(_First, _Team._Count)
@@ -933,7 +935,7 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
         return _First == _Last;
     }
 
-    _Unwrapped_t<_FwdIt> _Get_first(const size_t _Chunk_number, _Diff /* _Offset */) {
+    _UFwdIt _Get_first(const size_t _Chunk_number, _Diff /* _Offset */) {
         // get the first iterator for _Chunk _Chunk_number (which is at offset _Offset)
         return _Division_points[_Chunk_number];
     }
@@ -952,8 +954,8 @@ struct _Static_partition_range_backward;
 template <class _RanIt, class _Diff>
 struct _Static_partition_range_backward<_RanIt, _Diff, true> {
     using _Target_diff = _Iter_diff_t<_RanIt>;
-    _Unwrapped_t<_RanIt> _Start_at;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<_RanIt>>;
+    _Unwrapped_t<const _RanIt&> _Start_at;
+    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _RanIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _Last) {
         // statically partition a random-access iterator range ending at _Last
@@ -972,8 +974,8 @@ struct _Static_partition_range_backward<_RanIt, _Diff, true> {
 template <class _BidIt, class _Diff>
 struct _Static_partition_range_backward<_BidIt, _Diff, false> {
     using _Target_diff = _Iter_diff_t<_BidIt>;
-    _Parallel_vector<_Unwrapped_t<_BidIt>> _Division_points;
-    using _Chunk_type = _Iterator_range<_Unwrapped_t<_BidIt>>;
+    _Parallel_vector<_Unwrapped_t<const _BidIt&>> _Division_points;
+    using _Chunk_type = _Iterator_range<_Unwrapped_t<const _BidIt&>>;
 
     void _Populate(const _Static_partition_team<_Diff>& _Team, _BidIt _Last) {
         // statically partition a bidirectional iterator range ending at _Last
@@ -1364,7 +1366,7 @@ template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
     // find first matching _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    using _UFwdIt = _Unwrapped_t<_FwdIt>;
+    using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First,
         _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First), _Get_unwrapped(_Last),
@@ -1377,7 +1379,7 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    using _UFwdIt = _Unwrapped_t<_FwdIt>;
+    using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
     _Adl_verify_range(_First, _Last);
     auto _Pass_pred = _Pass_fn(_Pred);
     _Seek_wrapped(_First,
@@ -1391,7 +1393,7 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying !_Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    using _UFwdIt = _Unwrapped_t<_FwdIt>;
+    using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
     _Adl_verify_range(_First, _Last);
     auto _Pass_pred = _Pass_fn(_Pred);
     _Seek_wrapped(_First, _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First),
@@ -1606,7 +1608,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
     const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // look for one of [_First2, _Last2) that matches element
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    using _UFwdIt1 = _Unwrapped_t<_FwdIt1>;
+    using _UFwdIt1 = _Unwrapped_t<const _FwdIt1&>;
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     const auto _UFirst2 = _Get_unwrapped(_First2);
@@ -1768,8 +1770,9 @@ _NODISCARD _Iter_diff_t<_FwdIt> count(
 }
 
 // PARALLEL FUNCTION TEMPLATE mismatch
-template <class _FwdIt1, class _FwdIt2, bool = _Use_atomic_iterator<_Unwrapped_t<_FwdIt1>>&& _Is_random_iter_v<_FwdIt2>,
-    bool = _Use_atomic_iterator<_Unwrapped_t<_FwdIt2>>&& _Is_random_iter_v<_FwdIt1>>
+template <class _FwdIt1, class _FwdIt2,
+    bool = _Use_atomic_iterator<_Unwrapped_t<const _FwdIt1&>>&& _Is_random_iter_v<_FwdIt2>,
+    bool = _Use_atomic_iterator<_Unwrapped_t<const _FwdIt2&>>&& _Is_random_iter_v<_FwdIt1>>
 struct _Static_partitioned_mismatch_results;
 
 template <class _FwdIt1, class _FwdIt2, bool _Unused>
@@ -1777,9 +1780,10 @@ struct _Static_partitioned_mismatch_results<_FwdIt1, _FwdIt2, true, _Unused> {
     // atomically manipulate atomic<_FwdIt1> and calculate the second iterator by adding distance to it
     _Parallel_choose_min_result<_FwdIt1> _Storage;
 
-    _Static_partitioned_mismatch_results(const _FwdIt1 _Last1, const _Unwrapped_t<_FwdIt2>&) : _Storage(_Last1) {}
+    _Static_partitioned_mismatch_results(const _FwdIt1 _Last1, const _Unwrapped_t<const _FwdIt2&>&)
+        : _Storage(_Last1) {}
 
-    void _Imbue(const size_t _Chunk_number, const _FwdIt1 _First1, const _Unwrapped_t<_FwdIt2>&) {
+    void _Imbue(const size_t _Chunk_number, const _FwdIt1 _First1, const _Unwrapped_t<const _FwdIt2&>&) {
         _Storage._Imbue(_Chunk_number, _First1);
     }
 
@@ -1794,9 +1798,10 @@ struct _Static_partitioned_mismatch_results<_FwdIt1, _FwdIt2, false, true> {
     // atomically manipulate atomic<_FwdIt2> and calculate the first iterator by adding distance to it
     _Parallel_choose_min_result<_FwdIt2> _Storage;
 
-    _Static_partitioned_mismatch_results(const _Unwrapped_t<_FwdIt1>&, const _FwdIt2 _Last2) : _Storage(_Last2) {}
+    _Static_partitioned_mismatch_results(const _Unwrapped_t<const _FwdIt1&>&, const _FwdIt2 _Last2)
+        : _Storage(_Last2) {}
 
-    void _Imbue(const size_t _Chunk_number, const _Unwrapped_t<_FwdIt1>&, const _FwdIt2 _First2) {
+    void _Imbue(const size_t _Chunk_number, const _Unwrapped_t<const _FwdIt1&>&, const _FwdIt2 _First2) {
         _Storage._Imbue(_Chunk_number, _First2);
     }
 
@@ -1809,12 +1814,13 @@ struct _Static_partitioned_mismatch_results<_FwdIt1, _FwdIt2, false, true> {
 template <class _FwdIt1, class _FwdIt2>
 struct _Static_partitioned_mismatch_results<_FwdIt1, _FwdIt2, false, false> {
     // get both iterators by manipulating them under lock
-    _Parallel_choose_min_chunk<pair<_Unwrapped_t<_FwdIt1>, _Unwrapped_t<_FwdIt2>>> _Storage;
+    using _UFwdIt1 = _Unwrapped_t<const _FwdIt1&>;
+    using _UFwdIt2 = _Unwrapped_t<const _FwdIt2&>;
+    _Parallel_choose_min_chunk<pair<_UFwdIt1, _UFwdIt2>> _Storage;
 
-    _Static_partitioned_mismatch_results(const _Unwrapped_t<_FwdIt1> _Last1, const _Unwrapped_t<_FwdIt2> _Last2)
-        : _Storage({_Last1, _Last2}) {}
+    _Static_partitioned_mismatch_results(const _UFwdIt1 _Last1, const _UFwdIt2 _Last2) : _Storage({_Last1, _Last2}) {}
 
-    void _Imbue(const size_t _Chunk_number, const _Unwrapped_t<_FwdIt1> _First1, const _Unwrapped_t<_FwdIt2> _First2) {
+    void _Imbue(const size_t _Chunk_number, const _UFwdIt1 _First1, const _UFwdIt2 _First2) {
         _Storage._Imbue(_Chunk_number, {_First1, _First2});
     }
 
@@ -4055,7 +4061,7 @@ _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2
 template <class _InIt, class _Ty, class _BinOp>
 _Ty _Reduce_move_unchecked(_InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op) {
     // return reduction, choose optimization
-    if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<_InIt>, _Ty, _BinOp>) {
+    if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
         (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Val);
     } else {
@@ -4626,7 +4632,7 @@ _FwdIt2 inclusive_scan(
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 auto _Passed_op = _Pass_fn(_Reduce_op);
-                _Static_partitioned_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<_FwdIt1>, decltype(_UDest),
+                _Static_partitioned_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
                     decltype(_Passed_op)>
                     _Operation{_Hw_threads, _Count, _Passed_op, _Val};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
@@ -4670,7 +4676,7 @@ _FwdIt2 inclusive_scan(
                 _TRY_BEGIN
                 _No_init_tag _Tag;
                 auto _Passed_op = _Pass_fn(_Reduce_op);
-                _Static_partitioned_inclusive_scan2<_Iter_value_t<_FwdIt1>, _No_init_tag, _Unwrapped_t<_FwdIt1>,
+                _Static_partitioned_inclusive_scan2<_Iter_value_t<_FwdIt1>, _No_init_tag, _Unwrapped_t<const _FwdIt1&>,
                     decltype(_UDest), decltype(_Passed_op)>
                     _Operation{_Hw_threads, _Count, _Passed_op, _Tag};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
@@ -4962,7 +4968,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
                 _TRY_BEGIN
                 auto _Passed_reduce    = _Pass_fn(_Reduce_op);
                 auto _Passed_transform = _Pass_fn(_Transform_op);
-                _Static_partitioned_transform_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<_FwdIt1>, decltype(_UDest),
+                _Static_partitioned_transform_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
                     decltype(_Passed_reduce), decltype(_Passed_transform)>
                     _Operation{_Hw_threads, _Count, _Passed_reduce, _Passed_transform, _Val};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
@@ -5010,8 +5016,9 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
                 auto _Passed_reduce    = _Pass_fn(_Reduce_op);
                 auto _Passed_transform = _Pass_fn(_Transform_op);
                 using _Intermediate_t  = decay_t<decltype(_Transform_op(*_UFirst))>;
-                _Static_partitioned_transform_inclusive_scan2<_Intermediate_t, _No_init_tag, _Unwrapped_t<_FwdIt1>,
-                    decltype(_UDest), decltype(_Passed_reduce), decltype(_Passed_transform)>
+                _Static_partitioned_transform_inclusive_scan2<_Intermediate_t, _No_init_tag,
+                    _Unwrapped_t<const _FwdIt1&>, decltype(_UDest), decltype(_Passed_reduce),
+                    decltype(_Passed_transform)>
                     _Operation{_Hw_threads, _Count, _Passed_reduce, _Passed_transform, _Tag};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
                 _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));

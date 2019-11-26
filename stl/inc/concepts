@@ -180,7 +180,7 @@ namespace ranges {
 // CONCEPT swappable
 template <class _Ty>
 concept swappable = requires(_Ty& __x, _Ty& __y) {
-    _STD ranges::swap(__x, __y);
+    _RANGES swap(__x, __y);
 };
 
 // CONCEPT swappable_with
@@ -192,10 +192,10 @@ concept swappable_with =
     common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
 #endif // select LWG-3175 vs. N4810
     && requires(_Ty1&& __t, _Ty2&& __u) {
-        _STD ranges::swap(static_cast<_Ty1&&>(__t), static_cast<_Ty1&&>(__t));
-        _STD ranges::swap(static_cast<_Ty2&&>(__u), static_cast<_Ty2&&>(__u));
-        _STD ranges::swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u));
-        _STD ranges::swap(static_cast<_Ty2&&>(__u), static_cast<_Ty1&&>(__t));
+        _RANGES swap(static_cast<_Ty1&&>(__t), static_cast<_Ty1&&>(__t));
+        _RANGES swap(static_cast<_Ty2&&>(__u), static_cast<_Ty2&&>(__u));
+        _RANGES swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u));
+        _RANGES swap(static_cast<_Ty2&&>(__u), static_cast<_Ty1&&>(__t));
     };
 
 // CONCEPT copy_constructible
