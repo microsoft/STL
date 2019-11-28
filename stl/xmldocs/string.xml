@@ -1,0 +1,254 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="M:std.getline``3(std.basic_istream{_Elem,_Traits},std.basic_string{_Elem,_Traits,_Alloc},_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <param name="_Delim"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.getline``3(std.basic_istream{_Elem,_Traits},std.basic_string{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.getline``3(std.basic_istream{_Elem,_Traits},std.basic_string{_Elem,_Traits,_Alloc},_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <param name="_Delim"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.getline``3(std.basic_istream{_Elem,_Traits},std.basic_string{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoi(const std.string,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stol(const std.string,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoul(const std.string,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoll(const std.string,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoull(const std.string,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stof(const std.string,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stod(const std.string,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stold(const std.string,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoi(const std.wstring,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stol(const std.wstring,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoul(const std.wstring,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoll(const std.wstring,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stoull(const std.wstring,size_t,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stof(const std.wstring,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stod(const std.wstring,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stold(const std.wstring,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._UIntegral_to_buff``2(_Elem,_UTy)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_UTy"></typeparam>
+      <param name="_RNext"></param>
+      <param name="_UVal"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Integral_to_string``2(_Ty)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(unsigned int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(unsigned long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(float)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_string(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(unsigned int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(unsigned long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(float)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.to_wstring(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

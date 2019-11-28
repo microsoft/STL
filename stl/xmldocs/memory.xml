@@ -1,0 +1,1931 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="M:std.uninitialized_copy_n``3(_InIt,_Diff,_NoThrowFwdIt)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <typeparam name="_NoThrowFwdIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Count_raw"></param>
+      <param name="_Dest"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.uninitialized_copy_n``4(_InTy ()[_InSize],_Diff,_NoThrowFwdIt)">
+      <summary></summary>
+      <typeparam name="_InTy"></typeparam>
+      <typeparam name="_InSize"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <typeparam name="_NoThrowFwdIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Count_raw"></param>
+      <param name="_Dest"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.uninitialized_copy_n``4(_InIt,_Diff,_OutTy ()[_OutSize])">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_OutSize"></typeparam>
+      <param name="_First"></param>
+      <param name="_Count_raw"></param>
+      <param name="_Dest"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.uninitialized_copy_n``5(_InTy ()[_InSize],_Diff,_OutTy ()[_OutSize])">
+      <summary></summary>
+      <typeparam name="_InTy"></typeparam>
+      <typeparam name="_InSize"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_OutSize"></typeparam>
+      <param name="_First"></param>
+      <param name="_Count_raw"></param>
+      <param name="_Dest"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.uninitialized_fill_n``3(_NoThrowFwdIt,_Diff,const _Tval)">
+      <summary></summary>
+      <typeparam name="_NoThrowFwdIt"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <typeparam name="_Tval"></typeparam>
+      <param name="_First"></param>
+      <param name="_Count_raw"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.raw_storage_iterator`2">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.raw_storage_iterator`2.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.raw_storage_iterator`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.raw_storage_iterator`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.raw_storage_iterator`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.raw_storage_iterator`2.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.#ctor(_OutIt)">
+      <summary></summary>
+      <param name="_First"></param>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.operator*">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.operator=(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.operator=(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.raw_storage_iterator`2.base const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.auto_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.auto_ptr_ref`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.auto_ptr_ref`1.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.auto_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.auto_ptr`1.element_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.auto_ptr`1.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.auto_ptr`1.#ctor(std.auto_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.auto_ptr`1.#ctor(std.auto_ptr_ref{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.auto_ptr`1.operator std.auto_ptr`1``1">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.operator std.auto_ptr_ref`1``1">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.operator=``1(std.auto_ptr{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.#ctor``1(std.auto_ptr{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.auto_ptr`1.operator=(std.auto_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.operator=(std.auto_ptr_ref{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.~auto_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.auto_ptr`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.release">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.auto_ptr`1.reset(_Ty)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="T:std.auto_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.auto_ptr`1.element_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.bad_weak_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.bad_weak_ptr.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.bad_weak_ptr.what const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Throw_bad_weak_ptr">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ref_count_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base.#ctor(const std._Ref_count_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Ref_count_base.operator=(const std._Ref_count_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ref_count_base.~_Ref_count_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base._Incref_nz">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ref_count_base._Incref">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base._Incwref">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base._Decref">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base._Decwref">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ref_count_base._Use_count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ref_count_base._Get_deleter(const type_info) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ref_count`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Ref_count`1.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Px"></param>
+    </member>
+    <member name="T:std._Ref_count_resource`2">
+      <summary></summary>
+      <typeparam name="_Resource"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="M:std._Ref_count_resource`2.#ctor(_Resource,_Dx)">
+      <summary></summary>
+      <param name="_Px"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std._Ref_count_resource`2._Get_deleter(const type_info) const">
+      <summary></summary>
+      <param name="_Typeid"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ref_count_resource_alloc`3">
+      <summary></summary>
+      <typeparam name="_Resource"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="M:std._Ref_count_resource_alloc`3.#ctor(_Resource,_Dx,const _Alloc)">
+      <summary></summary>
+      <param name="_Px"></param>
+      <param name="_Dt"></param>
+      <param name="_Ax"></param>
+    </member>
+    <member name="M:std._Ref_count_resource_alloc`3._Get_deleter(const type_info) const">
+      <summary></summary>
+      <param name="_Typeid"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.default_delete`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.unique_ptr`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="T:std.shared_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.weak_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Can_enable_shared`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_enable_shared`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+    </member>
+    <member name="T:std._Exception_ptr_access">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ptr_base`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Ptr_base`1.element_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ptr_base`1.use_count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ptr_base`1.owner_before``1(const std._Ptr_base{_Ty2}) const">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ptr_base`1.#ctor(const std._Ptr_base{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Ptr_base`1.operator=(const std._Ptr_base{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ptr_base`1.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ptr_base`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ptr_base`1.~_Ptr_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ptr_base`1._Move_construct_from``1(std._Ptr_base{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Ptr_base`1._Copy_construct_from``1(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._Ptr_base`1._Alias_construct_from``1(const std.shared_ptr{_Ty2},std._Ptr_base{_Ty}.element_type)">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std._Ptr_base`1._Alias_move_construct_from``1(std.shared_ptr{_Ty2},std._Ptr_base{_Ty}.element_type)">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std._Ptr_base`1._Construct_from_weak``1(const std.weak_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ptr_base`1._Decref">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ptr_base`1._Swap(std._Ptr_base{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Ptr_base`1._Weakly_construct_from``1(const std._Ptr_base{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._Ptr_base`1._Decwref">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ptr_base`1.weak_ptr`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Can_scalar_delete`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_scalar_delete`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+    </member>
+    <member name="T:std._Can_array_delete`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_array_delete`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+    </member>
+    <member name="T:std._Can_call_function_object`3">
+      <summary></summary>
+      <typeparam name="_Fx"></typeparam>
+      <typeparam name="_Arg"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_call_function_object`3">
+      <summary></summary>
+      <typeparam name="_Fx"></typeparam>
+      <typeparam name="_Arg"></typeparam>
+    </member>
+    <member name="T:std._SP_convertible`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._SP_convertible`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+    </member>
+    <member name="T:std._SP_convertible`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ext"></typeparam>
+    </member>
+    <member name="T:std._SP_pointer_compatible`2">
+      <summary></summary>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._SP_pointer_compatible`2">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ext"></typeparam>
+    </member>
+    <member name="T:std._SP_pointer_compatible`2">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ext"></typeparam>
+    </member>
+    <member name="T:std._SP_pointer_compatible`2">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ext"></typeparam>
+    </member>
+    <member name="T:std._SP_pointer_compatible`2">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ext"></typeparam>
+    </member>
+    <member name="T:std._Temporary_owner`1">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+    </member>
+    <member name="M:std._Temporary_owner`1.#ctor(_Ux)">
+      <summary></summary>
+      <param name="_Ptr_"></param>
+    </member>
+    <member name="M:std._Temporary_owner`1.#ctor(const std._Temporary_owner{_Ux})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Temporary_owner`1.operator=(const std._Temporary_owner{_Ux})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Temporary_owner`1.~_Temporary_owner">
+      <summary></summary>
+    </member>
+    <member name="T:std._Temporary_owner_del`2">
+      <summary></summary>
+      <typeparam name="_UxptrOrNullptr"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="M:std._Temporary_owner_del`2.#ctor(_UxptrOrNullptr,_Dx)">
+      <summary></summary>
+      <param name="_Ptr_"></param>
+      <param name="_Dt_"></param>
+    </member>
+    <member name="M:std._Temporary_owner_del`2.#ctor(const std._Temporary_owner_del{_UxptrOrNullptr,_Dx})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Temporary_owner_del`2.operator=(const std._Temporary_owner_del{_UxptrOrNullptr,_Dx})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Temporary_owner_del`2.~_Temporary_owner_del">
+      <summary></summary>
+    </member>
+    <member name="T:std.shared_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor(std.nullptr_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``2(_Ux)">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``3(_Ux,_Dx)">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Px"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``4(_Ux,_Dx,_Alloc)">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Px"></param>
+      <param name="_Dt"></param>
+      <param name="_Ax"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``2(std.nullptr_t,_Dx)">
+      <summary></summary>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``3(std.nullptr_t,_Dx,_Alloc)">
+      <summary></summary>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Dt"></param>
+      <param name="_Ax"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``1(const std.shared_ptr{_Ty2},std._Ptr_base{_Ty}.element_type)">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``1(std.shared_ptr{_Ty2},std._Ptr_base{_Ty}.element_type)">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor(const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``2(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor(std.shared_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``2(std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``2(const std.weak_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``2(std.auto_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.#ctor``3(std.unique_ptr{_Ux,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.~shared_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_ptr`1.operator=(const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator=``1(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator=(std.shared_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator=``1(std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator=``1(std.auto_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator=``2(std.unique_ptr{_Ux,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.swap(std.shared_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.reset">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_ptr`1.reset``1(_Ux)">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.reset``2(_Ux,_Dx)">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Px"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.reset``3(_Ux,_Dx,_Alloc)">
+      <summary></summary>
+      <typeparam name="_Ux"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Px"></param>
+      <param name="_Dt"></param>
+      <param name="_Ax"></param>
+    </member>
+    <member name="M:std.shared_ptr`1.operator*``2 const">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator-&gt;``2 const">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator[]``3(ptrdiff_t) const">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.unique const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_ptr`1.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.shared_ptr{_Ty1},const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.shared_ptr{_Ty1},const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.shared_ptr{_Ty1},const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.shared_ptr{_Ty1},const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.shared_ptr{_Ty1},const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.shared_ptr{_Ty1},const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std.shared_ptr{_Ty},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(std.nullptr_t,const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.shared_ptr{_Ty},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(std.nullptr_t,const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(const std.shared_ptr{_Ty},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(std.nullptr_t,const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(const std.shared_ptr{_Ty},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(std.nullptr_t,const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(const std.shared_ptr{_Ty},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(std.nullptr_t,const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(const std.shared_ptr{_Ty},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(std.nullptr_t,const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``3(std.basic_ostream{_Elem,_Traits},const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Px"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.static_pointer_cast``2(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.static_pointer_cast``2(std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.const_pointer_cast``2(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.const_pointer_cast``2(std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.reinterpret_pointer_cast``2(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.reinterpret_pointer_cast``2(std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.dynamic_pointer_cast``2(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.dynamic_pointer_cast``2(std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get_deleter``2(const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Sx"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ref_count_obj2`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Ref_count_obj2`1.#ctor``1(_Types...)">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Ref_count_obj2`1.~_Ref_count_obj2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ebco_base`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std._Ebco_base`2.#ctor``2(_Other)">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std._Ebco_base`2._Get_val">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ebco_base`2._Get_val const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ebco_base`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Ebco_base`2.#ctor``2(_Other)">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std._Ebco_base`2._Get_val">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ebco_base`2._Get_val const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ref_count_obj_alloc2`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="M:std._Ref_count_obj_alloc2`2.#ctor``1(const _Alloc,_Types...)">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Al_arg"></param>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std.make_shared``2(_Types...)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.allocate_shared``3(const _Alloc,_Types...)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Al"></param>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.weak_ptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.weak_ptr`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.weak_ptr`1.#ctor(const std.weak_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.weak_ptr`1.#ctor``2(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.weak_ptr`1.#ctor``2(const std.weak_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.weak_ptr`1.#ctor(std.weak_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.weak_ptr`1.#ctor``2(std.weak_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.weak_ptr`1.~weak_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.weak_ptr`1.operator=(const std.weak_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.weak_ptr`1.operator=``1(const std.weak_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.weak_ptr`1.operator=(std.weak_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.weak_ptr`1.operator=``1(std.weak_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.weak_ptr`1.operator=``1(const std.shared_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.weak_ptr`1.reset">
+      <summary></summary>
+    </member>
+    <member name="M:std.weak_ptr`1.swap(std.weak_ptr{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.weak_ptr`1.expired const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.weak_ptr`1.lock const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``1(std.weak_ptr{_Ty},std.weak_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.enable_shared_from_this`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.enable_shared_from_this`1._Esft_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.shared_from_this">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.shared_from_this const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.weak_from_this">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.weak_from_this const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.#ctor(const std.enable_shared_from_this{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.operator=(const std.enable_shared_from_this{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.enable_shared_from_this`1.~enable_shared_from_this">
+      <summary></summary>
+    </member>
+    <member name="T:std.default_delete`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.default_delete`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.default_delete`1.#ctor``2(const std.default_delete{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.default_delete`1.operator()(_Ty) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="T:std.default_delete`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.default_delete`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.default_delete`1.#ctor``2(const std.default_delete{_Uty []})">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.default_delete`1.operator()``2(_Uty) const">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="T:std._Get_deleter_pointer_type`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx_noref"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Get_deleter_pointer_type`3.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Get_deleter_pointer_type`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx_noref"></typeparam>
+    </member>
+    <member name="std._Get_deleter_pointer_type`3.type">
+      <summary></summary>
+    </member>
+    <member name="std._Unique_ptr_enable_default_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.unique_ptr`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="std.unique_ptr`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unique_ptr`2.element_type">
+      <summary></summary>
+    </member>
+    <member name="std.unique_ptr`2.deleter_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=(std.nullptr_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.unique_ptr{_Ty,_Dx}.pointer)">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.unique_ptr{_Ty,_Dx}.pointer,const _Dx)">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.unique_ptr{_Ty,_Dx}.pointer,_Dx)">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.unique_ptr{_Ty,_Dx}.pointer,std.remove_reference_t{_Dx})">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor(std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``3(std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.auto_ptr{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=``3(std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=(std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.swap(std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.~unique_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_ptr`2.get_deleter">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.get_deleter const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.release">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.reset(std.unique_ptr{_Ty,_Dx}.pointer)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor(const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=(const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.unique_ptr`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="std.unique_ptr`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unique_ptr`2.element_type">
+      <summary></summary>
+    </member>
+    <member name="std.unique_ptr`2.deleter_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std.unique_ptr`2._Enable_ctor_reset`2">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``4(_Uty)">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``4(_Uty,const _Dx)">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``4(_Uty,_Dx)">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Dt"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``3(_Uty,std.remove_reference_t{_Dx})">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor(std.unique_ptr{_Ty [],_Dx})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=(std.unique_ptr{_Ty [],_Dx})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="std.unique_ptr`2._Enable_conversion`5">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``3(std.unique_ptr{_Uty,_Ex})">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ex"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=``3(std.unique_ptr{_Uty,_Ex})">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="_Ex"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor``2(std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Dx2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=(std.nullptr_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.reset(std.nullptr_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.swap(std.unique_ptr{_Ty [],_Dx})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.~unique_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_ptr`2.get_deleter">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.get_deleter const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.operator[](size_t) const">
+      <summary></summary>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.release">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_ptr`2.reset``2(_Uty)">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.#ctor(const std.unique_ptr{_Ty [],_Dx})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_ptr`2.operator=(const std.unique_ptr{_Ty [],_Dx})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_unique``3(_Types...)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_unique``2(size_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Size"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_unique``3(_Types...)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.operator==``4(const std.unique_ptr{_Ty1,_Dx1},const std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Dx1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``4(const std.unique_ptr{_Ty1,_Dx1},const std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Dx1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``4(const std.unique_ptr{_Ty1,_Dx1},const std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Dx1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``4(const std.unique_ptr{_Ty1,_Dx1},const std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Dx1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``4(const std.unique_ptr{_Ty1,_Dx1},const std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Dx1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``4(const std.unique_ptr{_Ty1,_Dx1},const std.unique_ptr{_Ty2,_Dx2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Dx1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Dx2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.unique_ptr{_Ty,_Dx},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(std.nullptr_t,const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.unique_ptr{_Ty,_Dx},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(std.nullptr_t,const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.unique_ptr{_Ty,_Dx},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(std.nullptr_t,const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.unique_ptr{_Ty,_Dx},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(std.nullptr_t,const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.unique_ptr{_Ty,_Dx},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(std.nullptr_t,const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.unique_ptr{_Ty,_Dx},std.nullptr_t)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(std.nullptr_t,const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Can_stream_unique_ptr`3">
+      <summary></summary>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_PxTy"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_stream_unique_ptr`3">
+      <summary></summary>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_PxTy"></typeparam>
+    </member>
+    <member name="M:std.operator&lt;&lt;``5(std.basic_ostream{_Elem,_Traits},const std.unique_ptr{_Yty,_Dx})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Yty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Px"></param>
+      <returns></returns>
+    </member>
+    <member name="F:std.pointer_safety.std.pointer_safety::relaxed">
+      <summary></summary>
+    </member>
+    <member name="F:std.pointer_safety.std.pointer_safety::preferred">
+      <summary></summary>
+    </member>
+    <member name="F:std.pointer_safety.std.pointer_safety::strict">
+      <summary></summary>
+    </member>
+    <member name="M:std.declare_reachable(void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.undeclare_reachable``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.declare_no_pointers(char,size_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.undeclare_no_pointers(char,size_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.get_pointer_safety">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.owner_less`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.owner_less`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.owner_less`1.first_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.owner_less`1.second_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.owner_less`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.owner_less`1.operator()(const std.shared_ptr{_Ty},const std.shared_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()(const std.shared_ptr{_Ty},const std.weak_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()(const std.weak_ptr{_Ty},const std.shared_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.owner_less`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.owner_less`1.first_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.owner_less`1.second_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.owner_less`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.owner_less`1.operator()(const std.weak_ptr{_Ty},const std.weak_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()(const std.weak_ptr{_Ty},const std.shared_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()(const std.shared_ptr{_Ty},const std.weak_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.owner_less`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.owner_less`1.is_transparent">
+      <summary></summary>
+    </member>
+    <member name="M:std.owner_less`1.operator()``2(const std.shared_ptr{_Ty},const std.shared_ptr{_Uty}) const">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()``2(const std.shared_ptr{_Ty},const std.weak_ptr{_Uty}) const">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()``2(const std.weak_ptr{_Ty},const std.shared_ptr{_Uty}) const">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.owner_less`1.operator()``2(const std.weak_ptr{_Ty},const std.weak_ptr{_Uty}) const">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="M:std.hash`1._Do_hash(const std.unique_ptr{_Ty,_Dx})">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(const std.shared_ptr{_Ty}) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.align(size_t,size_t,void,size_t)">
+      <summary></summary>
+      <param name="_Bound"></param>
+      <param name="_Size"></param>
+      <param name="_Ptr"></param>
+      <param name="_Space"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lock_shared_ptr_spin_lock">
+      <summary></summary>
+    </member>
+    <member name="M:std._Unlock_shared_ptr_spin_lock">
+      <summary></summary>
+    </member>
+    <member name="T:std._Shared_ptr_spin_lock">
+      <summary></summary>
+    </member>
+    <member name="M:std._Shared_ptr_spin_lock.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Shared_ptr_spin_lock.~_Shared_ptr_spin_lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.atomic_is_lock_free``1(const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_load_explicit``1(const std.shared_ptr{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_load``1(const std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_store_explicit``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Other"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.atomic_store``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.atomic_exchange_explicit``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Other"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_exchange``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_weak_explicit``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.memory_order,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Exp"></param>
+      <param name="_Value"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_weak``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Exp"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_strong_explicit``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.memory_order,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Exp"></param>
+      <param name="_Value"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_strong``1(std.shared_ptr{_Ty},std.shared_ptr{_Ty},std.shared_ptr{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Exp"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

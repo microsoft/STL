@@ -1,0 +1,1349 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Allocator_deleter`1">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std._Allocator_deleter`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="M:std._Allocator_deleter`1.operator()(std._Allocator_deleter{_Alloc}.pointer)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="std._Unique_ptr_alloc`1">
+      <summary></summary>
+    </member>
+    <member name="M:std._Make_unique_alloc``2(_Alloc,_Args...)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Args"></typeparam>
+      <param name="_Al"></param>
+      <param name="_Vals"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Nil">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_errc.std.future_errc::broken_promise">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_errc.std.future_errc::future_already_retrieved">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_errc.std.future_errc::promise_already_satisfied">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_errc.std.future_errc::no_state">
+      <summary></summary>
+    </member>
+    <member name="F:std.launch.std.launch::async">
+      <summary></summary>
+    </member>
+    <member name="F:std.launch.std.launch::deferred">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_status.std.future_status::ready">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_status.std.future_status::timeout">
+      <summary></summary>
+    </member>
+    <member name="F:std.future_status.std.future_status::deferred">
+      <summary></summary>
+    </member>
+    <member name="M:std._Throw_future_error(const std.error_code)">
+      <summary></summary>
+      <param name="_Code"></param>
+    </member>
+    <member name="M:std._Rethrow_future_exception(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="T:std.is_error_code_enum`1">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+    </member>
+    <member name="M:std.future_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_code(std.future_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_condition(std.future_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Future_error_map(int)">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.future_error">
+      <summary></summary>
+    </member>
+    <member name="M:std.future_error.#ctor(std.error_code)">
+      <summary></summary>
+      <param name="_Errcode"></param>
+    </member>
+    <member name="M:std.future_error.#ctor(std.future_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+    </member>
+    <member name="M:std.future_error.code const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.future_error.what const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Future_error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std._Future_error_category.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Future_error_category.name const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Future_error_category.message(int) const">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.future_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Associated_state`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Deleter_base`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Deleter_base`1._Delete(std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Deleter_base`1.~_Deleter_base">
+      <summary></summary>
+    </member>
+    <member name="T:std._State_deleter`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Derived"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="M:std._State_deleter`3.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std._State_deleter`3.#ctor(const std._State_deleter{_Ty,_Derived,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._State_deleter`3.operator=(const std._State_deleter{_Ty,_Derived,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_deleter`3._Delete(std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="_State"></param>
+    </member>
+    <member name="T:std._Associated_state`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Associated_state`1._State_type">
+      <summary></summary>
+    </member>
+    <member name="std._Associated_state`1._Mydel">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1.#ctor(std._Associated_state{_Ty}._Mydel)">
+      <summary></summary>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Associated_state`1.~_Associated_state">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1._Retain">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1._Release">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1._Wait">
+      <summary></summary>
+    </member>
+    <member name="T:std._Associated_state`1._Test_ready">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1._Test_ready.#ctor(const std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="_St"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Test_ready.operator() const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Wait_for``2(const std.chrono.duration{_Rep,_Per})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Per"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Wait_until``2(const std.chrono.time_point{_Clock,_Dur})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Dur"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Get_value(bool)">
+      <summary></summary>
+      <param name="_Get_only_once"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Set_value(const _Ty,bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_value_raw(const _Ty,std.unique_lock{std.mutex},bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Lock"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_value(_Ty,bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_value_raw(_Ty,std.unique_lock{std.mutex},bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Lock"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_value(bool)">
+      <summary></summary>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_value_raw(std.unique_lock{std.mutex},bool)">
+      <summary></summary>
+      <param name="_Lock"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_exception(std.exception_ptr,bool)">
+      <summary></summary>
+      <param name="_Exc"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Set_exception_raw(std.exception_ptr,std.unique_lock{std.mutex},bool)">
+      <summary></summary>
+      <param name="_Exc"></param>
+      <param name="_Lock"></param>
+      <param name="_At_thread_exit"></param>
+    </member>
+    <member name="M:std._Associated_state`1._Is_ready const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Is_ready_at_thread_exit const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Already_has_stored_result const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Already_retrieved const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Associated_state`1._Abandon">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1._Make_ready_at_thread_exit">
+      <summary></summary>
+    </member>
+    <member name="M:std._Associated_state`1._Maybe_run_deferred_function(std.unique_lock{std.mutex})">
+      <summary></summary>
+      <param name="_Lock"></param>
+    </member>
+    <member name="M:std._Associated_state`1.#ctor(const std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Associated_state`1.operator=(const std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_deleter`3._Delete(std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="_State"></param>
+    </member>
+    <member name="T:std._Packaged_state`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Packaged_state`1">
+      <summary></summary>
+      <typeparam name="_Ret"></typeparam>
+      <typeparam name="_ArgTypes"></typeparam>
+    </member>
+    <member name="std._Packaged_state`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Packaged_state`1._Mydel">
+      <summary></summary>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``1(const _Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``2(const _Fty2,const _Alloc,std._Packaged_state{_Ret (_ArgTypes...)}._Mydel)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``1(_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``2(_Fty2,const _Alloc,std._Packaged_state{_Ret (_ArgTypes...)}._Mydel)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Call_deferred(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Call_immediate(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Get_fn">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Packaged_state`1">
+      <summary></summary>
+      <typeparam name="_Ret"></typeparam>
+      <typeparam name="_ArgTypes"></typeparam>
+    </member>
+    <member name="std._Packaged_state`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Packaged_state`1._Mydel">
+      <summary></summary>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``1(const _Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``2(const _Fty2,const _Alloc,std._Packaged_state{_Ret(_ArgTypes...)}._Mydel)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``1(_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``2(_Fty2,const _Alloc,std._Packaged_state{_Ret(_ArgTypes...)}._Mydel)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Call_deferred(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Call_immediate(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Get_fn">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Packaged_state`1">
+      <summary></summary>
+      <typeparam name="_ArgTypes"></typeparam>
+    </member>
+    <member name="std._Packaged_state`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Packaged_state`1._Mydel">
+      <summary></summary>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``1(const _Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``2(const _Fty2,const _Alloc,std._Packaged_state{void (_ArgTypes...)}._Mydel)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``1(_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Packaged_state`1.#ctor``2(_Fty2,const _Alloc,std._Packaged_state{void (_ArgTypes...)}._Mydel)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <param name="_Dp"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Call_deferred(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Call_immediate(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std._Packaged_state`1._Get_fn">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Make_associated_state``2(const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Al"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Make_packaged_state``3(_Fty2,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Pack_state"></typeparam>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Al"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Deferred_async_state`1">
+      <summary></summary>
+      <typeparam name="_Rx"></typeparam>
+    </member>
+    <member name="M:std._Deferred_async_state`1.#ctor``1(const _Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Deferred_async_state`1.#ctor``1(_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="T:std._Task_async_state`1">
+      <summary></summary>
+      <typeparam name="_Rx"></typeparam>
+    </member>
+    <member name="std._Task_async_state`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Task_async_state`1._State_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Task_async_state`1.#ctor``1(_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std._Task_async_state`1.~_Task_async_state">
+      <summary></summary>
+    </member>
+    <member name="M:std._Task_async_state`1._Wait">
+      <summary></summary>
+    </member>
+    <member name="M:std._Task_async_state`1._Get_value(bool)">
+      <summary></summary>
+      <param name="_Get_only_once"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._State_manager`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._State_manager`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._State_manager`1.#ctor(std._Associated_state{_Ty},bool)">
+      <summary></summary>
+      <param name="_New_state"></param>
+      <param name="_Get_once"></param>
+    </member>
+    <member name="M:std._State_manager`1.#ctor(const std._State_manager{_Ty},bool)">
+      <summary></summary>
+      <param name="_Other"></param>
+      <param name="_Get_once"></param>
+    </member>
+    <member name="M:std._State_manager`1.#ctor(std._State_manager{_Ty},bool)">
+      <summary></summary>
+      <param name="_Other"></param>
+      <param name="_Get_once"></param>
+    </member>
+    <member name="M:std._State_manager`1.~_State_manager">
+      <summary></summary>
+    </member>
+    <member name="M:std._State_manager`1.operator=(const std._State_manager{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1.operator=(std._State_manager{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1.valid const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1.wait const">
+      <summary></summary>
+    </member>
+    <member name="M:std._State_manager`1.wait_for``2(const std.chrono.duration{_Rep,_Per}) const">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Per"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1.wait_until``2(const std.chrono.time_point{_Clock,_Dur}) const">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Dur"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1._Get_value const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1._Set_value(const _Ty,bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Defer"></param>
+    </member>
+    <member name="M:std._State_manager`1._Set_value(_Ty,bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Defer"></param>
+    </member>
+    <member name="M:std._State_manager`1._Abandon">
+      <summary></summary>
+    </member>
+    <member name="M:std._State_manager`1._Set_exception(std.exception_ptr,bool)">
+      <summary></summary>
+      <param name="_Exc"></param>
+      <param name="_Defer"></param>
+    </member>
+    <member name="M:std._State_manager`1._Swap(std._State_manager{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._State_manager`1._Ptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1._Copy_from(const std._State_manager{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._State_manager`1._Move_from(std._State_manager{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._State_manager`1._Is_ready const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._State_manager`1._Is_ready_at_thread_exit const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.shared_future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.future`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.#ctor(std.future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.future`1.operator=(std.future{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.#ctor(const std.future{_Ty}._Mybase,std._Nil)">
+      <summary></summary>
+      <param name="_State"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.future`1.~future">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.get">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.share">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.#ctor(const std.future{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.future`1.operator=(const std.future{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.future`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.#ctor(std.future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.future`1.operator=(std.future{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.#ctor(const std.future{_Ty}._Mybase,std._Nil)">
+      <summary></summary>
+      <param name="_State"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.future`1.~future">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.get">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.share">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.#ctor(const std.future{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.future`1.operator=(const std.future{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.future`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.#ctor(std.future{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.future`1.operator=(std.future{void})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.#ctor(const std.future{void}._Mybase,std._Nil)">
+      <summary></summary>
+      <param name="_State"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.future`1.~future">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.get">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.share">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.future`1.#ctor(const std.future{void})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.future`1.operator=(const std.future{void})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.shared_future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.shared_future`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(const std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.operator=(const std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(std.future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.operator=(std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_future`1.~shared_future">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_future`1.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.shared_future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.shared_future`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(const std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.operator=(const std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(std.future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.operator=(std.shared_future{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_future`1.~shared_future">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_future`1.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.shared_future`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.shared_future`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(const std.shared_future{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.operator=(const std.shared_future{void})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(std.shared_future{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.#ctor(std.future{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_future`1.operator=(std.shared_future{void})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_future`1.~shared_future">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_future`1.get const">
+      <summary></summary>
+    </member>
+    <member name="M:std.future`1.share">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Promise`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Promise`1.#ctor(std._Associated_state{_Ty})">
+      <summary></summary>
+      <param name="_State_ptr"></param>
+    </member>
+    <member name="M:std._Promise`1.#ctor(std._Promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._Promise`1.operator=(std._Promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1.~_Promise">
+      <summary></summary>
+    </member>
+    <member name="M:std._Promise`1._Swap(std._Promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._Promise`1._Get_state const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1._Get_state">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1._Get_state_for_set">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1._Get_state_for_future">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1._Is_valid const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1._Is_ready const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1._Is_ready_at_thread_exit const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Promise`1.#ctor(const std._Promise{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Promise`1.operator=(const std._Promise{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.promise`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.promise`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.#ctor``1(std.allocator_arg_t,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.promise`1.#ctor(std.promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.promise`1.operator=(std.promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.promise`1.~promise">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.swap(std.promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.promise`1.get_future">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.promise`1.set_value(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.promise`1.set_value_at_thread_exit(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.promise`1.set_value(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.promise`1.set_value_at_thread_exit(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.promise`1.set_exception(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Exc"></param>
+    </member>
+    <member name="M:std.promise`1.set_exception_at_thread_exit(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Exc"></param>
+    </member>
+    <member name="M:std.promise`1.#ctor(const std.promise{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.promise`1.operator=(const std.promise{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.promise`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.promise`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.#ctor``1(std.allocator_arg_t,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.promise`1.#ctor(std.promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.promise`1.operator=(std.promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.promise`1.~promise">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.swap(std.promise{_Ty})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.promise`1.get_future">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.promise`1.set_value(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.promise`1.set_value_at_thread_exit(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.promise`1.set_exception(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Exc"></param>
+    </member>
+    <member name="M:std.promise`1.set_exception_at_thread_exit(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Exc"></param>
+    </member>
+    <member name="M:std.promise`1.#ctor(const std.promise{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.promise`1.operator=(const std.promise{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.promise`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.promise`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.#ctor``1(std.allocator_arg_t,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.promise`1.#ctor(std.promise{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.promise`1.operator=(std.promise{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.promise`1.~promise">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.swap(std.promise{void})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.promise`1.get_future">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.promise`1.set_value">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.set_value_at_thread_exit">
+      <summary></summary>
+    </member>
+    <member name="M:std.promise`1.set_exception(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Exc"></param>
+    </member>
+    <member name="M:std.promise`1.set_exception_at_thread_exit(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Exc"></param>
+    </member>
+    <member name="M:std.promise`1.#ctor(const std.promise{void})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.promise`1.operator=(const std.promise{void})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.uses_allocator`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="M:std.swap``1(std.promise{_Ty},std.promise{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std._P_arg_type`1">
+      <summary></summary>
+      <typeparam name="_Fret"></typeparam>
+    </member>
+    <member name="std._P_arg_type`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._P_arg_type`1">
+      <summary></summary>
+      <typeparam name="_Fret"></typeparam>
+    </member>
+    <member name="std._P_arg_type`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._P_arg_type`1">
+      <summary></summary>
+      <typeparam name="_Fret"></typeparam>
+    </member>
+    <member name="std._P_arg_type`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.packaged_task`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std.packaged_task`1">
+      <summary></summary>
+      <typeparam name="_Ret"></typeparam>
+      <typeparam name="_ArgTypes"></typeparam>
+    </member>
+    <member name="std.packaged_task`1._Ptype">
+      <summary></summary>
+    </member>
+    <member name="std.packaged_task`1._MyPromiseType">
+      <summary></summary>
+    </member>
+    <member name="std.packaged_task`1._MyStateManagerType">
+      <summary></summary>
+    </member>
+    <member name="std.packaged_task`1._MyStateType">
+      <summary></summary>
+    </member>
+    <member name="M:std.packaged_task`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.packaged_task`1.#ctor``2(_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std.packaged_task`1.#ctor(std.packaged_task{_Ret (_ArgTypes...)})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.packaged_task`1.operator=(std.packaged_task{_Ret (_ArgTypes...)})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.packaged_task`1.#ctor``3(std.allocator_arg_t,const _Alloc,_Fty2)">
+      <summary></summary>
+      <typeparam name="_Fty2"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Fnarg"></param>
+    </member>
+    <member name="M:std.packaged_task`1.~packaged_task">
+      <summary></summary>
+    </member>
+    <member name="M:std.packaged_task`1.swap(std.packaged_task{_Ret (_ArgTypes...)})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.packaged_task`1.valid const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.packaged_task`1.get_future">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.packaged_task`1.operator()(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std.packaged_task`1.make_ready_at_thread_exit(_ArgTypes...)">
+      <summary></summary>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std.packaged_task`1.reset">
+      <summary></summary>
+    </member>
+    <member name="M:std.packaged_task`1.#ctor(const std.packaged_task{_Ret (_ArgTypes...)})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.packaged_task`1.operator=(const std.packaged_task{_Ret (_ArgTypes...)})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.uses_allocator`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="M:std.swap``1(std.packaged_task{_Ty},std.packaged_task{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std._Fake_no_copy_callable_adapter`1">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="M:std._Fake_no_copy_callable_adapter`1.#ctor(_Types...)">
+      <summary></summary>
+      <param name="_Vals"></param>
+    </member>
+    <member name="M:std._Fake_no_copy_callable_adapter`1.#ctor(const std._Fake_no_copy_callable_adapter{_Types})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._Fake_no_copy_callable_adapter`1.#ctor(std._Fake_no_copy_callable_adapter{_Types})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std._Fake_no_copy_callable_adapter`1.operator=(const std._Fake_no_copy_callable_adapter{_Types})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fake_no_copy_callable_adapter`1.operator=(std._Fake_no_copy_callable_adapter{_Types})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fake_no_copy_callable_adapter`1.operator()-&gt;decltype((std._Invoke_stored(std.move(std.declval&lt;std._Fake_no_copy_callable_adapter{_Types}._Storaget&gt;()))))">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Get_associated_state``2(std.launch,_Fty)">
+      <summary></summary>
+      <typeparam name="_Ret"></typeparam>
+      <typeparam name="_Fty"></typeparam>
+      <param name="_Psync"></param>
+      <param name="_Fnarg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.async``2(std.launch,_Fty,_ArgTypes...)">
+      <summary></summary>
+      <typeparam name="_Fty"></typeparam>
+      <typeparam name="_ArgTypes"></typeparam>
+      <param name="_Policy"></param>
+      <param name="_Fnarg"></param>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.async``2(_Fty,_ArgTypes...)">
+      <summary></summary>
+      <typeparam name="_Fty"></typeparam>
+      <typeparam name="_ArgTypes"></typeparam>
+      <param name="_Fnarg"></param>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.experimental.coroutine_traits`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_ArgTypes"></typeparam>
+    </member>
+    <member name="T:std.experimental.coroutine_traits`2.promise_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.get_return_object">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.initial_suspend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.final_suspend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.return_value``1(_Ut)">
+      <summary></summary>
+      <typeparam name="_Ut"></typeparam>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.unhandled_exception">
+      <summary></summary>
+    </member>
+    <member name="T:std.experimental.coroutine_traits`2">
+      <summary></summary>
+      <typeparam name="_ArgTypes"></typeparam>
+    </member>
+    <member name="T:std.experimental.coroutine_traits`2.promise_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.get_return_object">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.initial_suspend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.final_suspend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.return_void">
+      <summary></summary>
+    </member>
+    <member name="M:std.experimental.coroutine_traits`2.promise_type.unhandled_exception">
+      <summary></summary>
+    </member>
+    <member name="T:std.experimental._Future_awaiter`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.experimental._Future_awaiter`1.await_ready const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.experimental._Future_awaiter`1.await_suspend(std.experimental.coroutine_handle{void})">
+      <summary></summary>
+      <param name="_ResumeCb"></param>
+    </member>
+    <member name="M:std.experimental._Future_awaiter`1.await_resume">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator co_await``1(std.future{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Fut"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator co_await``1(std.future{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Fut"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

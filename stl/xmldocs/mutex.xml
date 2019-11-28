@@ -1,0 +1,605 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.condition_variable">
+      <summary></summary>
+    </member>
+    <member name="T:std.condition_variable_any">
+      <summary></summary>
+    </member>
+    <member name="T:std._Mutex_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Mutex_base.#ctor(int)">
+      <summary></summary>
+      <param name="_Flags"></param>
+    </member>
+    <member name="M:std._Mutex_base.~_Mutex_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Mutex_base.#ctor(const std._Mutex_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Mutex_base.operator=(const std._Mutex_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Mutex_base.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std._Mutex_base.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Mutex_base.unlock">
+      <summary></summary>
+    </member>
+    <member name="std._Mutex_base.native_handle_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Mutex_base.native_handle">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.mutex.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.mutex.#ctor(const std.mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.mutex.operator=(const std.mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.recursive_mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.recursive_mutex.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.recursive_mutex.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.recursive_mutex.#ctor(const std.recursive_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.recursive_mutex.operator=(const std.recursive_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.adopt_lock_t">
+      <summary></summary>
+    </member>
+    <member name="M:std.adopt_lock_t.#ctor">
+      <summary></summary>
+    </member>
+    <member name="T:std.defer_lock_t">
+      <summary></summary>
+    </member>
+    <member name="M:std.defer_lock_t.#ctor">
+      <summary></summary>
+    </member>
+    <member name="T:std.try_to_lock_t">
+      <summary></summary>
+    </member>
+    <member name="M:std.try_to_lock_t.#ctor">
+      <summary></summary>
+    </member>
+    <member name="T:std.unique_lock`1">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+    </member>
+    <member name="std.unique_lock`1.mutex_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(_Mutex)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(_Mutex,std.adopt_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(_Mutex,std.defer_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(_Mutex,std.try_to_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor``2(_Mutex,const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Mtx"></param>
+      <param name="_Rel_time"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor``2(_Mutex,const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Mtx"></param>
+      <param name="_Abs_time"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(_Mutex,const xtime)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="_Abs_time"></param>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(std.unique_lock{_Mutex})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.unique_lock`1.operator=(std.unique_lock{_Mutex})">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.~unique_lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_lock`1.#ctor(const std.unique_lock{_Mutex})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.unique_lock`1.operator=(const std.unique_lock{_Mutex})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_lock`1.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.try_lock_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.try_lock_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.try_lock_until(const xtime)">
+      <summary></summary>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.unique_lock`1.swap(std.unique_lock{_Mutex})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.unique_lock`1.release">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.owns_lock const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unique_lock`1.mutex const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``1(std.unique_lock{_Mutex},std.unique_lock{_Mutex})">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Lock_from_locks``2(int,std.index_sequence{},_LockN...)">
+      <summary></summary>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Target"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_LkN"></param>
+    </member>
+    <member name="M:std._Try_lock_from_locks``2(int,std.index_sequence{},_LockN...)">
+      <summary></summary>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Target"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_LkN"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Unlock_locks``2(int,int,std.index_sequence{},_LockN...)">
+      <summary></summary>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_LkN"></param>
+    </member>
+    <member name="M:std._Try_lock_range``1(int,int,_LockN...)">
+      <summary></summary>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_LkN"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Try_lock1``4(_Lock0,_Lock1,_Lock2,_LockN...)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <typeparam name="_Lock2"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+      <param name="_Lk2"></param>
+      <param name="_LkN"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Try_lock1``2(_Lock0,_Lock1)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.try_lock``3(_Lock0,_Lock1,_LockN...)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+      <param name="_LkN"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lock_attempt``1(int,_LockN...)">
+      <summary></summary>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Hard_lock"></param>
+      <param name="_LkN"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lock_nonmember1``4(_Lock0,_Lock1,_Lock2,_LockN...)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <typeparam name="_Lock2"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+      <param name="_Lk2"></param>
+      <param name="_LkN"></param>
+    </member>
+    <member name="M:std._Lock_attempt_small``2(_Lock0,_Lock1)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lock_nonmember1``2(_Lock0,_Lock1)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+    </member>
+    <member name="M:std.lock``3(_Lock0,_Lock1,_LockN...)">
+      <summary></summary>
+      <typeparam name="_Lock0"></typeparam>
+      <typeparam name="_Lock1"></typeparam>
+      <typeparam name="_LockN"></typeparam>
+      <param name="_Lk0"></param>
+      <param name="_Lk1"></param>
+      <param name="_LkN"></param>
+    </member>
+    <member name="T:std.lock_guard`1">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+    </member>
+    <member name="std.lock_guard`1.mutex_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.lock_guard`1.#ctor(_Mutex)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+    </member>
+    <member name="M:std.lock_guard`1.#ctor(_Mutex,std.adopt_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.lock_guard`1.~lock_guard">
+      <summary></summary>
+    </member>
+    <member name="M:std.lock_guard`1.#ctor(const std.lock_guard{_Mutex})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.lock_guard`1.operator=(const std.lock_guard{_Mutex})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Invoke_stored_explicit``2(std.tuple{_Types},std.index_sequence{})-&gt;decltype((std.invoke(std.get&lt;_Indices&gt;(std.move(_Tuple))...)))">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <typeparam name="_Indices"></typeparam>
+      <param name="_Tuple"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Invoke_stored``1(std.tuple{_Types})-&gt;decltype((std._Invoke_stored_explicit(std.move(_Tuple), std::index_sequence_for&lt;_Types...&gt;())))">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._XGetLastError">
+      <summary></summary>
+    </member>
+    <member name="M:std._Callback_once``3(void,void,void)">
+      <summary></summary>
+      <typeparam name="_Tuple"></typeparam>
+      <typeparam name="_Seq"></typeparam>
+      <typeparam name="_Idx"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Pv"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.call_once``2(std.once_flag,_Fn,_Args...)">
+      <summary></summary>
+      <typeparam name="_Fn"></typeparam>
+      <typeparam name="_Args"></typeparam>
+      <param name="_Flag"></param>
+      <param name="_Fx"></param>
+      <param name="_Ax"></param>
+    </member>
+    <member name="F:std.cv_status.std.cv_status::no_timeout">
+      <summary></summary>
+    </member>
+    <member name="F:std.cv_status.std.cv_status::timeout">
+      <summary></summary>
+    </member>
+    <member name="T:std.condition_variable">
+      <summary></summary>
+    </member>
+    <member name="std.condition_variable.native_handle_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable.~condition_variable">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable.#ctor(const std.condition_variable)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.condition_variable.operator=(const std.condition_variable)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.notify_one">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable.notify_all">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable.wait(std.unique_lock{std.mutex})">
+      <summary></summary>
+      <param name="_Lck"></param>
+    </member>
+    <member name="M:std.condition_variable.wait``1(std.unique_lock{std.mutex},_Predicate)">
+      <summary></summary>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.condition_variable.wait_for``2(std.unique_lock{std.mutex},const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.wait_for``3(std.unique_lock{std.mutex},const std.chrono.duration{_Rep,_Period},_Predicate)">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Rel_time"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.wait_until``2(std.unique_lock{std.mutex},const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.wait_until``3(std.unique_lock{std.mutex},const std.chrono.time_point{_Clock,_Duration},_Predicate)">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Abs_time"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.wait_until(std.unique_lock{std.mutex},const xtime)">
+      <summary></summary>
+      <param name="_Lck"></param>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.wait_until``1(std.unique_lock{std.mutex},const xtime,_Predicate)">
+      <summary></summary>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Abs_time"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable.native_handle">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable._Register(std.unique_lock{std.mutex},int)">
+      <summary></summary>
+      <param name="_Lck"></param>
+      <param name="_Ready"></param>
+    </member>
+    <member name="M:std.condition_variable._Unregister(std.mutex)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+    </member>
+    <member name="T:std._UInt_is_zero">
+      <summary></summary>
+    </member>
+    <member name="M:std._UInt_is_zero.operator() const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.timed_mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.timed_mutex.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.timed_mutex.#ctor(const std.timed_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.timed_mutex.operator=(const std.timed_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.timed_mutex.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.timed_mutex.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.timed_mutex.unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.timed_mutex.try_lock_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.timed_mutex._Try_lock_until``1(_Time)">
+      <summary></summary>
+      <typeparam name="_Time"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.timed_mutex.try_lock_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.timed_mutex.try_lock_until(const xtime)">
+      <summary></summary>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.recursive_timed_mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.recursive_timed_mutex.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.recursive_timed_mutex.#ctor(const std.recursive_timed_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.recursive_timed_mutex.operator=(const std.recursive_timed_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.recursive_timed_mutex.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.recursive_timed_mutex.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.recursive_timed_mutex.unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.recursive_timed_mutex.try_lock_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.recursive_timed_mutex._Try_lock_until``1(_Time)">
+      <summary></summary>
+      <typeparam name="_Time"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.recursive_timed_mutex.try_lock_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.recursive_timed_mutex.try_lock_until(const xtime)">
+      <summary></summary>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

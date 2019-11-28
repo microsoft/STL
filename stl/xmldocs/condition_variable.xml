@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.condition_variable_any">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable_any.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable_any.~condition_variable_any">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable_any.#ctor(const std.condition_variable_any)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.condition_variable_any.operator=(const std.condition_variable_any)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable_any.notify_one">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable_any.notify_all">
+      <summary></summary>
+    </member>
+    <member name="M:std.condition_variable_any.wait``1(_Mutex)">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+      <param name="_Xtrnl"></param>
+    </member>
+    <member name="M:std.condition_variable_any.wait``2(_Mutex,_Predicate)">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Xtrnl"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.condition_variable_any.wait_for``3(_Lock,const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Lock"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable_any.wait_for``4(_Lock,const std.chrono.duration{_Rep,_Period},_Predicate)">
+      <summary></summary>
+      <typeparam name="_Lock"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Rel_time"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable_any.wait_until``3(_Lock,const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Lock"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable_any.wait_until``4(_Lock,const std.chrono.time_point{_Clock,_Duration},_Predicate)">
+      <summary></summary>
+      <typeparam name="_Lock"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Lck"></param>
+      <param name="_Abs_time"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable_any.wait_until``1(_Mutex,const xtime)">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+      <param name="_Xtrnl"></param>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.condition_variable_any.wait_until``2(_Mutex,const xtime,_Predicate)">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+      <typeparam name="_Predicate"></typeparam>
+      <param name="_Xtrnl"></param>
+      <param name="_Abs_time"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.notify_all_at_thread_exit(std.condition_variable,std.unique_lock{std.mutex})">
+      <summary></summary>
+      <param name="_Cnd"></param>
+      <param name="_Lck"></param>
+    </member>
+  </members>
+</doc>

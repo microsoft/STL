@@ -1,0 +1,203 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.collate`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="std.collate`1.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.collate`1.string_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.collate`1.compare(const _Elem,const _Elem,const _Elem,const _Elem) const">
+      <summary></summary>
+      <param name="_First1"></param>
+      <param name="_Last1"></param>
+      <param name="_First2"></param>
+      <param name="_Last2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.collate`1.transform(const _Elem,const _Elem) const">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.collate`1.hash(const _Elem,const _Elem) const">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.collate`1.#ctor(size_t)">
+      <summary></summary>
+      <param name="_Refs"></param>
+    </member>
+    <member name="M:std.collate`1.#ctor(const std._Locinfo,size_t)">
+      <summary></summary>
+      <param name="_Lobj"></param>
+      <param name="_Refs"></param>
+    </member>
+    <member name="M:std.collate`1._Getcat(const std.locale.facet,const std.locale)">
+      <summary></summary>
+      <param name="_Ppf"></param>
+      <param name="_Ploc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.collate`1.~collate">
+      <summary></summary>
+    </member>
+    <member name="M:std.collate`1.#ctor(const char,size_t)">
+      <summary></summary>
+      <param name="_Locname"></param>
+      <param name="_Refs"></param>
+    </member>
+    <member name="M:std.collate`1._Init(const std._Locinfo)">
+      <summary></summary>
+      <param name="_Lobj"></param>
+    </member>
+    <member name="M:std.collate`1.do_compare(const _Elem,const _Elem,const _Elem,const _Elem) const">
+      <summary></summary>
+      <param name="_First1"></param>
+      <param name="_Last1"></param>
+      <param name="_First2"></param>
+      <param name="_Last2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.collate`1.do_transform(const _Elem,const _Elem) const">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.collate`1.do_hash(const _Elem,const _Elem) const">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.collate_byname`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="M:std.collate_byname`1.#ctor(const char,size_t)">
+      <summary></summary>
+      <param name="_Locname"></param>
+      <param name="_Refs"></param>
+    </member>
+    <member name="M:std.collate_byname`1.#ctor(const std.string,size_t)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Refs"></param>
+    </member>
+    <member name="M:std.collate_byname`1.~collate_byname">
+      <summary></summary>
+    </member>
+    <member name="M:std.has_facet``1(const std.locale)">
+      <summary></summary>
+      <typeparam name="_Facet"></typeparam>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isalnum``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isalpha``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isblank``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.iscntrl``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isdigit``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isgraph``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.islower``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isprint``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ispunct``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isspace``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isupper``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.isxdigit``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tolower``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.toupper``1(_Elem,const std.locale)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

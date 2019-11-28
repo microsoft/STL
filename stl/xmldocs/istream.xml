@@ -1,0 +1,460 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.basic_istream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_istream`2._Myios">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2._Iter">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2._Ctype">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2._Nget">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istream`2.#ctor(std.basic_istream{_Elem,_Traits}._Mysb,bool)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <param name="_Isstd"></param>
+    </member>
+    <member name="M:std.basic_istream`2.#ctor(std._Uninitialized)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_istream`2.#ctor(std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_istream`2.operator=(std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.swap(std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_istream`2.#ctor(const std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_istream`2.operator=(const std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.~basic_istream">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istream`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.basic_istream`2._Sentry_base">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istream`2._Sentry_base.#ctor(std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Istr"></param>
+    </member>
+    <member name="M:std.basic_istream`2._Sentry_base.~_Sentry_base">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istream`2._Sentry_base.operator=(const std.basic_istream{_Elem,_Traits}._Sentry_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_istream`2.sentry">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istream`2.sentry.#ctor(std.basic_istream{_Elem,_Traits},bool)">
+      <summary></summary>
+      <param name="_Istr"></param>
+      <param name="_Noskip"></param>
+    </member>
+    <member name="M:std.basic_istream`2.sentry.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.sentry.#ctor(const std.basic_istream{_Elem,_Traits}.sentry)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_istream`2.sentry.operator=(const std.basic_istream{_Elem,_Traits}.sentry)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2._Ipfx(bool)">
+      <summary></summary>
+      <param name="_Noskip"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.ipfx(bool)">
+      <summary></summary>
+      <param name="_Noskip"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.isfx">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(std.basic_istream{_Elem,_Traits}(__cdecl )(std.basic_istream{_Elem,_Traits}))">
+      <summary></summary>
+      <param name="_Pfn"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(std.basic_istream{_Elem,_Traits}._Myios(__cdecl )(std.basic_istream{_Elem,_Traits}._Myios))">
+      <summary></summary>
+      <param name="_Pfn"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(std.ios_base(__cdecl )(std.ios_base))">
+      <summary></summary>
+      <param name="_Pfn"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(short)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(unsigned short)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(unsigned int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(unsigned long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(float)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(void)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.operator&gt;&gt;(std.basic_istream{_Elem,_Traits}._Mysb)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.get">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.get(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.get(_Elem,std.streamsize,_Elem)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <param name="_Delim"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.get(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.get(std.basic_istream{_Elem,_Traits}._Mysb)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.get(std.basic_istream{_Elem,_Traits}._Mysb,_Elem)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <param name="_Delim"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.getline(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.getline(_Elem,std.streamsize,_Elem)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <param name="_Delim"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.ignore(std.streamsize,std.basic_istream{_Elem,_Traits}.int_type)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Metadelim"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.read(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.readsome(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.peek">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.putback(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.unget">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.gcount const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.sync">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.seekg(std.basic_istream{_Elem,_Traits}.pos_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.seekg(std.basic_istream{_Elem,_Traits}.off_type,std.ios_base.seekdir)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Way"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istream`2.tellg">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_istream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_istream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_iostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_iostream`2._Myis">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2._Myos">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2._Myios">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_iostream`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_iostream`2.#ctor(std.basic_streambuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+    </member>
+    <member name="M:std.basic_iostream`2.#ctor(std.basic_iostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_iostream`2.operator=(std.basic_iostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_iostream`2.swap(std.basic_iostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_iostream`2.#ctor(const std.basic_iostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_iostream`2.operator=(const std.basic_iostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_iostream`2.~basic_iostream">
+      <summary></summary>
+    </member>
+    <member name="T:std.basic_iostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_iostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="M:std._Istream_extract_into_buffer``2(std.basic_istream{_Elem,_Traits},size_t,_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Size"></param>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``2(std.basic_istream{_Elem,_Traits},_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``1(std.basic_istream{char,_Traits},signed char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``1(std.basic_istream{char,_Traits},unsigned char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``2(std.basic_istream{_Elem,_Traits},_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``1(std.basic_istream{char,_Traits},signed char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``1(std.basic_istream{char,_Traits},unsigned char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Can_stream_in`3">
+      <summary></summary>
+      <typeparam name="_Istr"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_stream_in`3">
+      <summary></summary>
+      <typeparam name="_Istr"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.operator&gt;&gt;``3(_Istr,_Ty)">
+      <summary></summary>
+      <typeparam name="_Istr"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Is"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ws``2(std.basic_istream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Istr"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

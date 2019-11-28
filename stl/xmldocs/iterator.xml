@@ -1,0 +1,527 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.front_insert_iterator`1">
+      <summary></summary>
+      <typeparam name="_Container"></typeparam>
+    </member>
+    <member name="std.front_insert_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.front_insert_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.front_insert_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.front_insert_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.front_insert_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std.front_insert_iterator`1.container_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.front_insert_iterator`1.#ctor(_Container)">
+      <summary></summary>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.front_insert_iterator`1.operator=(const _Container.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.front_insert_iterator`1.operator=(_Container.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.front_insert_iterator`1.operator*">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.front_insert_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.front_insert_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.front_inserter``1(_Container)">
+      <summary></summary>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Cont"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.insert_iterator`1">
+      <summary></summary>
+      <typeparam name="_Container"></typeparam>
+    </member>
+    <member name="std.insert_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.insert_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.insert_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.insert_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.insert_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std.insert_iterator`1.container_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.insert_iterator`1.#ctor(_Container,_Container.iterator)">
+      <summary></summary>
+      <param name="_Cont"></param>
+      <param name="_Where"></param>
+    </member>
+    <member name="M:std.insert_iterator`1.operator=(const _Container.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.insert_iterator`1.operator=(_Container.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.insert_iterator`1.operator*">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.insert_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.insert_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.inserter``1(_Container,_Container.iterator)">
+      <summary></summary>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Cont"></param>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.istream_iterator`4">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+    </member>
+    <member name="std.istream_iterator`4.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.reference">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.istream_iterator`4.istream_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.istream_iterator`4.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.istream_iterator`4.#ctor(std.istream_iterator{_Ty,_Elem,_Traits,_Diff}.istream_type)">
+      <summary></summary>
+      <param name="_Istr"></param>
+    </member>
+    <member name="M:std.istream_iterator`4.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.istream_iterator`4.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.istream_iterator`4.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.istream_iterator`4.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.istream_iterator`4._Equal(const std.istream_iterator{_Ty,_Elem,_Traits,_Diff}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.istream_iterator`4._Getval">
+      <summary></summary>
+    </member>
+    <member name="M:std.operator==``4(const std.istream_iterator{_Ty,_Elem,_Traits,_Diff},const std.istream_iterator{_Ty,_Elem,_Traits,_Diff})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``4(const std.istream_iterator{_Ty,_Elem,_Traits,_Diff},const std.istream_iterator{_Ty,_Elem,_Traits,_Diff})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Diff"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.ostream_iterator`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.ostream_iterator`3.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.reference">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostream_iterator`3.ostream_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.ostream_iterator`3.#ctor(std.ostream_iterator{_Ty,_Elem,_Traits}.ostream_type,const _Elem)">
+      <summary></summary>
+      <param name="_Ostr"></param>
+      <param name="_Delim"></param>
+    </member>
+    <member name="M:std.ostream_iterator`3.operator=(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostream_iterator`3.operator*">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostream_iterator`3.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostream_iterator`3.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:stdext.checked_array_iterator`1">
+      <summary></summary>
+      <typeparam name="_Ptr"></typeparam>
+    </member>
+    <member name="stdext.checked_array_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="stdext.checked_array_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="stdext.checked_array_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="stdext.checked_array_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="stdext.checked_array_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.#ctor(_Ptr,size_t,size_t)">
+      <summary></summary>
+      <param name="_Array"></param>
+      <param name="_Size"></param>
+      <param name="_Index"></param>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.base const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator+=(stdext.checked_array_iterator{_Ptr}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator+(stdext.checked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator-=(stdext.checked_array_iterator{_Ptr}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator-(stdext.checked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator-(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator[](stdext.checked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator==(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator!=(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator&lt;(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator&gt;(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator&lt;=(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1.operator&gt;=(const stdext.checked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1._Verify_offset(stdext.checked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="stdext.checked_array_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.checked_array_iterator`1._Seek_to(_Ptr)">
+      <summary></summary>
+      <param name="_It"></param>
+    </member>
+    <member name="M:stdext.make_checked_array_iterator``1(_Ptr,size_t,size_t)">
+      <summary></summary>
+      <typeparam name="_Ptr"></typeparam>
+      <param name="_Array"></param>
+      <param name="_Size"></param>
+      <param name="_Index"></param>
+      <returns></returns>
+    </member>
+    <member name="T:stdext.unchecked_array_iterator`1">
+      <summary></summary>
+      <typeparam name="_Ptr"></typeparam>
+    </member>
+    <member name="stdext.unchecked_array_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="stdext.unchecked_array_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="stdext.unchecked_array_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="stdext.unchecked_array_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="stdext.unchecked_array_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.#ctor(_Ptr)">
+      <summary></summary>
+      <param name="_Src"></param>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.base const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator+=(stdext.unchecked_array_iterator{_Ptr}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator+(stdext.unchecked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator-=(stdext.unchecked_array_iterator{_Ptr}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator-(stdext.unchecked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator-(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator[](stdext.unchecked_array_iterator{_Ptr}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator==(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator!=(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator&lt;(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator&gt;(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator&lt;=(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1.operator&gt;=(const stdext.unchecked_array_iterator{_Ptr}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="stdext.unchecked_array_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:stdext.unchecked_array_iterator`1._Seek_to(_Ptr)">
+      <summary></summary>
+      <param name="_It"></param>
+    </member>
+    <member name="M:stdext.make_unchecked_array_iterator``1(_Ptr)">
+      <summary></summary>
+      <typeparam name="_Ptr"></typeparam>
+      <param name="_It"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

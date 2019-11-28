@@ -1,0 +1,335 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Scoped_outermost_helper`2">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std._Scoped_outermost_helper`2._Fn(_Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Scoped_outermost_helper`2">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std._Scoped_outermost_helper`2._Outer_alloc">
+      <summary></summary>
+    </member>
+    <member name="M:std._Scoped_outermost_helper`2._Fn(_Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_outermost``1(_Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Al"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Scoped_outermost_t`1">
+      <summary></summary>
+    </member>
+    <member name="std._Scoped_outermost_traits`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.scoped_allocator_adaptor`2">
+      <summary></summary>
+      <typeparam name="_Outer"></typeparam>
+      <typeparam name="_Inner"></typeparam>
+    </member>
+    <member name="T:std._Scoped_base`2">
+      <summary></summary>
+      <typeparam name="_Outer"></typeparam>
+      <typeparam name="_Inner"></typeparam>
+    </member>
+    <member name="T:std._Secret_scoped_allocator_construct_tag">
+      <summary></summary>
+    </member>
+    <member name="T:std._Scoped_base`3">
+      <summary></summary>
+      <typeparam name="_Outer"></typeparam>
+      <typeparam name="_Inner0"></typeparam>
+      <typeparam name="_Inner"></typeparam>
+    </member>
+    <member name="std._Scoped_base`3._Myadaptor">
+      <summary></summary>
+    </member>
+    <member name="std._Scoped_base`3.inner_allocator_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Scoped_base`3._Get_inner_object(std._Scoped_base{_Outer,_Inner0,_Inner}._Myadaptor)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`3._Get_inner_object(const std._Scoped_base{_Outer,_Inner0,_Inner}._Myadaptor) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`3.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Scoped_base`3.#ctor``3(_Other1,_Other2...)">
+      <summary></summary>
+      <typeparam name="_Other1"></typeparam>
+      <typeparam name="_Other2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Outer_arg"></param>
+      <param name="_Inner_args"></param>
+    </member>
+    <member name="M:std._Scoped_base`3.#ctor(const std._Scoped_base{_Outer,_Inner0,_Inner})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Scoped_base`3.#ctor(std._Scoped_base{_Outer,_Inner0,_Inner})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Scoped_base`3.operator=(const std._Scoped_base{_Outer,_Inner0,_Inner})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`3.operator=(std._Scoped_base{_Outer,_Inner0,_Inner})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`3.select_on_container_copy_construction const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Scoped_base`1">
+      <summary></summary>
+      <typeparam name="_Outer"></typeparam>
+    </member>
+    <member name="std._Scoped_base`1._Myadaptor">
+      <summary></summary>
+    </member>
+    <member name="std._Scoped_base`1.inner_allocator_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Scoped_base`1._Get_inner_object(std._Scoped_base{_Outer}._Myadaptor)">
+      <summary></summary>
+      <param name="_Self"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`1._Get_inner_object(const std._Scoped_base{_Outer}._Myadaptor) const">
+      <summary></summary>
+      <param name="_Self"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Scoped_base`1.#ctor``2(_Other1)">
+      <summary></summary>
+      <typeparam name="_Other1"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Outer_arg"></param>
+    </member>
+    <member name="M:std._Scoped_base`1.#ctor(const std._Scoped_base{_Outer})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Scoped_base`1.#ctor(std._Scoped_base{_Outer})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Scoped_base`1.operator=(const std._Scoped_base{_Outer})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`1.operator=(std._Scoped_base{_Outer})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Scoped_base`1.select_on_container_copy_construction const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.scoped_allocator_adaptor`2">
+      <summary></summary>
+      <typeparam name="_Outer"></typeparam>
+      <typeparam name="_Inner"></typeparam>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.outer_allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.inner_allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.void_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.const_void_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.scoped_allocator_adaptor`2.rebind`1">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.rebind`1._Other_alloc">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.rebind`1.other">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.propagate_on_container_copy_assignment">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.propagate_on_container_move_assignment">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.propagate_on_container_swap">
+      <summary></summary>
+    </member>
+    <member name="std.scoped_allocator_adaptor`2.is_always_equal">
+      <summary></summary>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor``2(_Other,const _Inner...)">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Other_arg"></param>
+      <param name="_Inner_args"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor(const std.scoped_allocator_adaptor{_Outer,_Inner})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor(std.scoped_allocator_adaptor{_Outer,_Inner})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor``3(const std.scoped_allocator_adaptor{_Other,_Inner})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="_Enabled"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor``3(std.scoped_allocator_adaptor{_Other,_Inner})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="_Enabled"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.#ctor(std._Secret_scoped_allocator_construct_tag,const std.scoped_allocator_adaptor{_Outer,_Inner}.outer_allocator_type,const std.scoped_allocator_adaptor{_Outer,_Inner}.inner_allocator_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Outer_arg"></param>
+      <param name="_Inner_arg"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.operator=(const std.scoped_allocator_adaptor{_Outer,_Inner})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.operator=(std.scoped_allocator_adaptor{_Outer,_Inner})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.inner_allocator">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.inner_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.outer_allocator">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.outer_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.allocate(std.scoped_allocator_adaptor{_Outer,_Inner}.size_type)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.allocate(std.scoped_allocator_adaptor{_Outer,_Inner}.size_type,std.scoped_allocator_adaptor{_Outer,_Inner}.const_void_pointer)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Hint"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.deallocate(std.scoped_allocator_adaptor{_Outer,_Inner}.pointer,std.scoped_allocator_adaptor{_Outer,_Inner}.size_type)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.construct``2(_Ty,_Types...)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Args"></param>
+    </member>
+    <member name="M:std.scoped_allocator_adaptor`2.destroy``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.operator==``4(const std.scoped_allocator_adaptor{_Outer1,_Inner1,_Inner},const std.scoped_allocator_adaptor{_Outer2,_Inner1,_Inner})">
+      <summary></summary>
+      <typeparam name="_Outer1"></typeparam>
+      <typeparam name="_Outer2"></typeparam>
+      <typeparam name="_Inner1"></typeparam>
+      <typeparam name="_Inner"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.scoped_allocator_adaptor{_Outer1},const std.scoped_allocator_adaptor{_Outer2})">
+      <summary></summary>
+      <typeparam name="_Outer1"></typeparam>
+      <typeparam name="_Outer2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``3(const std.scoped_allocator_adaptor{_Outer1,_Inner},const std.scoped_allocator_adaptor{_Outer2,_Inner})">
+      <summary></summary>
+      <typeparam name="_Outer1"></typeparam>
+      <typeparam name="_Outer2"></typeparam>
+      <typeparam name="_Inner"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

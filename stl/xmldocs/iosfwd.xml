@@ -1,0 +1,333 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="std.streamoff">
+      <summary></summary>
+    </member>
+    <member name="std.streamsize">
+      <summary></summary>
+    </member>
+    <member name="T:std.fpos`1">
+      <summary></summary>
+      <typeparam name="_Statetype"></typeparam>
+    </member>
+    <member name="M:std.fpos`1.#ctor(std.streamoff)">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="M:std.fpos`1.#ctor(_Statetype,fpos_t)">
+      <summary></summary>
+      <param name="_State"></param>
+      <param name="_Fileposition"></param>
+    </member>
+    <member name="M:std.fpos`1.state const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.state(_Statetype)">
+      <summary></summary>
+      <param name="_State"></param>
+    </member>
+    <member name="M:std.fpos`1.operator std.streamoff const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.seekpos const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator-(const std.fpos{_Statetype}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator+=(std.streamoff)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator-=(std.streamoff)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator+(std.streamoff) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator-(std.streamoff) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator==(const std.fpos{_Statetype}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fpos`1.operator!=(const std.fpos{_Statetype}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.fpos{_Statetype},_Int)">
+      <summary></summary>
+      <typeparam name="_Int"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(_Int,const std.fpos{_Statetype})">
+      <summary></summary>
+      <typeparam name="_Int"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.fpos{_Statetype},_Int)">
+      <summary></summary>
+      <typeparam name="_Int"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(_Int,const std.fpos{_Statetype})">
+      <summary></summary>
+      <typeparam name="_Int"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="std.streampos">
+      <summary></summary>
+    </member>
+    <member name="std.wstreampos">
+      <summary></summary>
+    </member>
+    <member name="T:std.locale">
+      <summary></summary>
+    </member>
+    <member name="M:std.use_facet``1(const std.locale)">
+      <summary></summary>
+      <typeparam name="_Facet"></typeparam>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.char_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std.char_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std.char_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std.char_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std.char_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std.char_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std.allocator`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.ios_base">
+      <summary></summary>
+    </member>
+    <member name="T:std.basic_ios`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.istreambuf_iterator`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.ostreambuf_iterator`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_streambuf`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_istream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_ostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_iostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_stringbuf`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="T:std.basic_istringstream`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="T:std.basic_ostringstream`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="T:std.basic_stringstream`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="T:std.basic_filebuf`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_ifstream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_ofstream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_fstream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.num_get`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_InIt"></typeparam>
+    </member>
+    <member name="T:std.num_put`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_OutIt"></typeparam>
+    </member>
+    <member name="T:std.collate`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="std.ios">
+      <summary></summary>
+    </member>
+    <member name="std.streambuf">
+      <summary></summary>
+    </member>
+    <member name="std.istream">
+      <summary></summary>
+    </member>
+    <member name="std.ostream">
+      <summary></summary>
+    </member>
+    <member name="std.iostream">
+      <summary></summary>
+    </member>
+    <member name="std.stringbuf">
+      <summary></summary>
+    </member>
+    <member name="std.istringstream">
+      <summary></summary>
+    </member>
+    <member name="std.ostringstream">
+      <summary></summary>
+    </member>
+    <member name="std.stringstream">
+      <summary></summary>
+    </member>
+    <member name="std.filebuf">
+      <summary></summary>
+    </member>
+    <member name="std.ifstream">
+      <summary></summary>
+    </member>
+    <member name="std.ofstream">
+      <summary></summary>
+    </member>
+    <member name="std.fstream">
+      <summary></summary>
+    </member>
+    <member name="std.wios">
+      <summary></summary>
+    </member>
+    <member name="std.wstreambuf">
+      <summary></summary>
+    </member>
+    <member name="std.wistream">
+      <summary></summary>
+    </member>
+    <member name="std.wostream">
+      <summary></summary>
+    </member>
+    <member name="std.wiostream">
+      <summary></summary>
+    </member>
+    <member name="std.wstringbuf">
+      <summary></summary>
+    </member>
+    <member name="std.wistringstream">
+      <summary></summary>
+    </member>
+    <member name="std.wostringstream">
+      <summary></summary>
+    </member>
+    <member name="std.wstringstream">
+      <summary></summary>
+    </member>
+    <member name="std.wfilebuf">
+      <summary></summary>
+    </member>
+    <member name="std.wifstream">
+      <summary></summary>
+    </member>
+    <member name="std.wofstream">
+      <summary></summary>
+    </member>
+    <member name="std.wfstream">
+      <summary></summary>
+    </member>
+    <member name="_TRY_IO_BEGIN">
+      <summary></summary>
+    </member>
+    <member name="_CATCH_IO_END">
+      <summary></summary>
+    </member>
+    <member name="_CATCH_IO_">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

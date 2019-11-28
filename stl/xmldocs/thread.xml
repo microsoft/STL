@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.thread">
+      <summary></summary>
+    </member>
+    <member name="T:std.thread.id">
+      <summary></summary>
+    </member>
+    <member name="std.thread.native_handle_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.#ctor``3(_Fn,_Args...)">
+      <summary></summary>
+      <typeparam name="_Fn"></typeparam>
+      <typeparam name="_Args"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Fx"></param>
+      <param name="_Ax"></param>
+    </member>
+    <member name="M:std.thread.~thread">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.#ctor(std.thread)">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.thread.operator=(std.thread)">
+      <summary></summary>
+      <param name="_Other"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.thread.#ctor(const std.thread)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.thread.operator=(const std.thread)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.thread.swap(std.thread)">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.thread.joinable const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.thread.join">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.detach">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.get_id const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.thread.hardware_concurrency">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.thread.native_handle">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.this_thread.get_id">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.this_thread.yield">
+      <summary></summary>
+    </member>
+    <member name="M:std.this_thread.sleep_until(const xtime)">
+      <summary></summary>
+      <param name="_Abs_time"></param>
+    </member>
+    <member name="M:std.this_thread.sleep_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+    </member>
+    <member name="M:std.this_thread.sleep_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+    </member>
+    <member name="T:std.thread.id">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.id.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.thread.get_id const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.this_thread.get_id">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap(std.thread,std.thread)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==(std.thread.id,std.thread.id)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(std.thread.id,std.thread.id)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;(std.thread.id,std.thread.id)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=(std.thread.id,std.thread.id)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;(std.thread.id,std.thread.id)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=(std.thread.id,std.thread.id)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``2(std.basic_ostream{_Ch,_Tr},std.thread.id)">
+      <summary></summary>
+      <typeparam name="_Ch"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Id"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(std.thread.id) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

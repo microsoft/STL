@@ -1,0 +1,1429 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="_C_COMPLEX_T">
+      <summary></summary>
+    </member>
+    <member name="T:_C_double_complex">
+      <summary></summary>
+    </member>
+    <member name="T:_C_float_complex">
+      <summary></summary>
+    </member>
+    <member name="T:_C_ldouble_complex">
+      <summary></summary>
+    </member>
+    <member name="_RE">
+      <summary></summary>
+    </member>
+    <member name="_IM">
+      <summary></summary>
+    </member>
+    <member name="std._Dcomplex_value">
+      <summary></summary>
+    </member>
+    <member name="std._Fcomplex_value">
+      <summary></summary>
+    </member>
+    <member name="std._Lcomplex_value">
+      <summary></summary>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Ctraits`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_eps">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Cosh(_Ty,_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Exp(_Ty,_Ty,short)">
+      <summary></summary>
+      <param name="_Pleft"></param>
+      <param name="_Right"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Infv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isinf(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isnan(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Nanv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Sinh(_Ty,_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.asinh(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.atan2(_Ty,_Ty)">
+      <summary></summary>
+      <param name="_Yval"></param>
+      <param name="_Xval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.cos(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.exp(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.ldexp(_Ty,int)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log1p(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.pow(_Ty,_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sin(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sqrt(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.tan(_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.hypot(_Ty,_Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ctraits`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Ctraits`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_eps">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Cosh(std._Ctraits{long double}._Ty,std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Exp(std._Ctraits{long double}._Ty,std._Ctraits{long double}._Ty,short)">
+      <summary></summary>
+      <param name="_Pleft"></param>
+      <param name="_Right"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Infv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isinf(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isnan(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Nanv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Sinh(std._Ctraits{long double}._Ty,std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.asinh(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.atan2(std._Ctraits{long double}._Ty,std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Yval"></param>
+      <param name="_Xval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.cos(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.exp(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.ldexp(std._Ctraits{long double}._Ty,int)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log1p(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.pow(std._Ctraits{long double}._Ty,std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sin(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sqrt(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.tan(std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.hypot(std._Ctraits{long double}._Ty,std._Ctraits{long double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ctraits`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Ctraits`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_eps">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Cosh(std._Ctraits{double}._Ty,std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Exp(std._Ctraits{double}._Ty,std._Ctraits{double}._Ty,short)">
+      <summary></summary>
+      <param name="_Pleft"></param>
+      <param name="_Right"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Infv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isinf(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isnan(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Nanv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Sinh(std._Ctraits{double}._Ty,std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.asinh(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.atan2(std._Ctraits{double}._Ty,std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Yval"></param>
+      <param name="_Xval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.cos(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.exp(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.ldexp(std._Ctraits{double}._Ty,int)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log1p(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.pow(std._Ctraits{double}._Ty,std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sin(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sqrt(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.tan(std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.hypot(std._Ctraits{double}._Ty,std._Ctraits{double}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Ctraits`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Ctraits`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_eps">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Flt_max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Cosh(std._Ctraits{float}._Ty,std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Exp(std._Ctraits{float}._Ty,std._Ctraits{float}._Ty,short)">
+      <summary></summary>
+      <param name="_Pleft"></param>
+      <param name="_Right"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Infv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isinf(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Isnan(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Nanv">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1._Sinh(std._Ctraits{float}._Ty,std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.asinh(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.atan2(std._Ctraits{float}._Ty,std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Yval"></param>
+      <param name="_Xval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.cos(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.exp(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.ldexp(std._Ctraits{float}._Ty,int)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Exponent"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.log1p(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.pow(std._Ctraits{float}._Ty,std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sin(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.sqrt(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.tan(std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ctraits`1.hypot(std._Ctraits{float}._Ty,std._Ctraits{float}._Ty)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Complex_value`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="F:std._Complex_value`1._Re">
+      <summary></summary>
+    </member>
+    <member name="F:std._Complex_value`1._Im">
+      <summary></summary>
+    </member>
+    <member name="T:std._Complex_base`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Valbase"></typeparam>
+    </member>
+    <member name="std._Complex_base`2._Myctraits">
+      <summary></summary>
+    </member>
+    <member name="std._Complex_base`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Complex_base`2.#ctor(const _Ty,const _Ty)">
+      <summary></summary>
+      <param name="_Realval"></param>
+      <param name="_Imagval"></param>
+    </member>
+    <member name="M:std._Complex_base`2.real(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Complex_base`2.imag(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Complex_base`2.real const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Complex_base`2.imag const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Complex_base`2._Add``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Complex_base`2._Sub``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Complex_base`2._Mul``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Complex_base`2._Div``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.complex`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{double})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{long double})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{float}._Ty,const std.complex{float}._Ty)">
+      <summary></summary>
+      <param name="_Realval"></param>
+      <param name="_Imagval"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std._Fcomplex_value)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std._Dcomplex_value)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std._Lcomplex_value)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.operator=(const std.complex{float}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{float}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{float}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{float}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{float}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{float})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{float})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{float})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{float})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.complex`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{float})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{long double})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{double}._Ty,const std.complex{double}._Ty)">
+      <summary></summary>
+      <param name="_Realval"></param>
+      <param name="_Imagval"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std._Dcomplex_value)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std._Lcomplex_value)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.operator=(const std.complex{double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.complex`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{float})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{double})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{long double}._Ty,const std.complex{long double}._Ty)">
+      <summary></summary>
+      <param name="_Realval"></param>
+      <param name="_Imagval"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std._Lcomplex_value)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.operator=(const std.complex{long double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{long double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{long double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{long double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{long double}._Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{long double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{long double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{long double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{long double})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{double})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{long double})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{float})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{long double})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{float})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.#ctor(const std.complex{double})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.complex`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.complex`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.complex`1.#ctor(const _Ty,const _Ty)">
+      <summary></summary>
+      <param name="_Realval"></param>
+      <param name="_Imagval"></param>
+    </member>
+    <member name="M:std.complex`1.operator=(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.#ctor``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.complex`1.operator=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const _Ty)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=(const std.complex{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=(const std.complex{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=(const std.complex{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=(const std.complex{_Ty})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator+=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator-=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator*=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.complex`1.operator/=``1(const std.complex{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator-``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator-``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator-``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator*``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator*``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator*``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator/``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator/``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator/``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator-``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.imag``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.real``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sqrt``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.abs``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.acos``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.acosh``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.asinh``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.asin``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atanh``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atan``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.cosh``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.exp``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fabs``1(const std.complex{_Ty},int)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Pexp"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.log``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``1(const std.complex{_Ty},int)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Pow``1(const _Ty,const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``1(const std.complex{_Ty},const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``1(const _Ty,const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``1(const std.complex{_Ty},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sinh``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sqrt``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tanh``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.arg``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.conj``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.proj``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.cos``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.log10``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.norm``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.polar``1(const _Ty,const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Rho"></param>
+      <param name="_Theta"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.polar``1(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Rho"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sin``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tan``1(const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Left"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Promote_to_float`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Promote_to_float`1.type">
+      <summary></summary>
+    </member>
+    <member name="M:std.pow``2(const std.complex{_Ty1},const std.complex{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``2(const std.complex{_Ty1},const _Ty2)">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``2(const _Ty1,const std.complex{_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.pow``3(const std.complex{_Ty1},_Ty2)">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``3(std.basic_istream{_Elem,_Tr},std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``3(std.basic_ostream{_Elem,_Tr},const std.complex{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.complex_literals.operator ""il(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.complex_literals.operator ""il(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.complex_literals.operator ""i(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.complex_literals.operator ""i(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.complex_literals.operator ""if(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.complex_literals.operator ""if(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="_GENERIC_MATHC0X">
+      <summary></summary>
+    </member>
+    <member name="_GENERIC_MATHC1X">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

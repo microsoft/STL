@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="std.new_handler">
+      <summary></summary>
+    </member>
+    <member name="M:std.set_new_handler(std.new_handler)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get_new_handler">
+      <summary></summary>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

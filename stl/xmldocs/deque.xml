@@ -1,0 +1,961 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Deque_unchecked_const_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+    </member>
+    <member name="std._Deque_unchecked_const_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_const_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_const_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_const_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_const_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.#ctor(std._Deque_unchecked_const_iterator{_Mydeque}._Size_type,const std._Container_base12)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Pdeque"></param>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator+=(std._Deque_unchecked_const_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator+(std._Deque_unchecked_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator-=(std._Deque_unchecked_const_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator-(std._Deque_unchecked_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator-(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator[](std._Deque_unchecked_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator==(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator!=(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator&lt;(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator&gt;(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator&lt;=(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1.operator&gt;=(const std._Deque_unchecked_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_const_iterator`1._Getcont const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(std._Deque_unchecked_const_iterator{_Mydeque}.difference_type,std._Deque_unchecked_const_iterator{_Mydeque})">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Next"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Deque_unchecked_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+    </member>
+    <member name="std._Deque_unchecked_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_unchecked_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator+=(std._Deque_unchecked_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator+(std._Deque_unchecked_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator-=(std._Deque_unchecked_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator-(std._Deque_unchecked_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator-(const std._Deque_unchecked_iterator{_Mydeque}._Mybase) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_unchecked_iterator`1.operator[](std._Deque_unchecked_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(std._Deque_unchecked_iterator{_Mydeque}.difference_type,std._Deque_unchecked_iterator{_Mydeque})">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Next"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Deque_const_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+    </member>
+    <member name="std._Deque_const_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_const_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_const_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_const_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_const_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_const_iterator`1._Mydeque_t">
+      <summary></summary>
+    </member>
+    <member name="F:std._Deque_const_iterator`1._EEN_DS">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.#ctor(std._Deque_const_iterator{_Mydeque}._Size_type,const std._Container_base12)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Pdeque"></param>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator+=(std._Deque_const_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator+(std._Deque_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator-=(std._Deque_const_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator-(std._Deque_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator-(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator[](std._Deque_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator==(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator!=(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator&lt;(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator&gt;(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator&lt;=(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1.operator&gt;=(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1._Compat(const std._Deque_const_iterator{_Mydeque}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Deque_const_iterator`1._Setcont(const _Mydeque)">
+      <summary></summary>
+      <param name="_Pdeque"></param>
+    </member>
+    <member name="std._Deque_const_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_const_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_const_iterator`1._Verify_offset(std._Deque_const_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="M:std._Deque_const_iterator`1._Seek_to(const std._Deque_unchecked_const_iterator{_Mydeque})">
+      <summary></summary>
+      <param name="_UIt"></param>
+    </member>
+    <member name="M:std.operator+``1(std._Deque_const_iterator{_Mydeque}.difference_type,std._Deque_const_iterator{_Mydeque})">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Next"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Deque_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+    </member>
+    <member name="std._Deque_iterator`1._Deque_unchecked_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator+=(std._Deque_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator+(std._Deque_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator-=(std._Deque_iterator{_Mydeque}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator-(std._Deque_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Deque_iterator`1.operator[](std._Deque_iterator{_Mydeque}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Deque_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(std._Deque_iterator{_Mydeque}.difference_type,std._Deque_iterator{_Mydeque})">
+      <summary></summary>
+      <typeparam name="_Mydeque"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Next"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Deque_iter_types`8">
+      <summary></summary>
+      <typeparam name="_Value_type"></typeparam>
+      <typeparam name="_Size_type"></typeparam>
+      <typeparam name="_Difference_type"></typeparam>
+      <typeparam name="_Pointer"></typeparam>
+      <typeparam name="_Const_pointer"></typeparam>
+      <typeparam name="_Reference"></typeparam>
+      <typeparam name="_Const_reference"></typeparam>
+      <typeparam name="_Mapptr_type"></typeparam>
+    </member>
+    <member name="std._Deque_iter_types`8.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iter_types`8.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iter_types`8.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iter_types`8.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iter_types`8.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_iter_types`8._Mapptr">
+      <summary></summary>
+    </member>
+    <member name="T:std._Deque_simple_types`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Deque_simple_types`1._Mapptr">
+      <summary></summary>
+    </member>
+    <member name="T:std._Deque_val`1">
+      <summary></summary>
+      <typeparam name="_Val_types"></typeparam>
+    </member>
+    <member name="std._Deque_val`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std._Deque_val`1._Mapptr">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_val`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Deque_val`1._Getblock(std._Deque_val{_Val_types}.size_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.deque`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.deque`2.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2._Unchecked_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2._Unchecked_const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.deque`2.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="F:std.deque`2._EEN_DS">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(std.deque{_Ty,_Alloc}.size_type,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(std.deque{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(std.deque{_Ty,_Alloc}.size_type,const _Ty,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(const std.deque{_Ty,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor``2(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor``2(_Iter,_Iter,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.deque`2.#ctor(std.deque{_Ty,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.operator=(std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.push_front(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.push_back(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.insert(std.deque{_Ty,_Alloc}.const_iterator,_Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.emplace_front``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.emplace_back``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.emplace``1(std.deque{_Ty,_Alloc}.const_iterator,_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.#ctor(std.initializer_list{_Ty},const _Alloc)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.deque`2.operator=(std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.assign(std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.deque`2.insert(std.deque{_Ty,_Alloc}.const_iterator,std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.~deque">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2._Copy_assign(const std.deque{_Ty,_Alloc},std.false_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.deque`2._Copy_assign(const std.deque{_Ty,_Alloc},std.true_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.deque`2.operator=(const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2._Unchecked_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2._Unchecked_end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2._Make_iter(std.deque{_Ty,_Alloc}.const_iterator) const">
+      <summary></summary>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.rbegin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.rbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.rend">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.rend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.crbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.crend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.shrink_to_fit">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2.resize(std.deque{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+    </member>
+    <member name="M:std.deque`2.resize(std.deque{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.get_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.at(std.deque{_Ty,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.at(std.deque{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.operator[](std.deque{_Ty,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.operator[](std.deque{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.back">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.back const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.push_front(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.pop_front">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2.push_back(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.pop_back">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2.assign``2(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.deque`2.assign(std.deque{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.deque`2.insert(std.deque{_Ty,_Alloc}.const_iterator,const _Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.insert(std.deque{_Ty,_Alloc}.const_iterator,std.deque{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.insert``2(std.deque{_Ty,_Alloc}.const_iterator,_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.erase(std.deque{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.erase(std.deque{_Ty,_Alloc}.const_iterator,std.deque{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_First_arg"></param>
+      <param name="_Last_arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.deque`2.clear">
+      <summary></summary>
+    </member>
+    <member name="M:std.deque`2.swap(std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.swap``2(std.deque{_Ty,_Alloc},std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``2(const std.deque{_Ty,_Alloc},const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.deque{_Ty,_Alloc},const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.deque{_Ty,_Alloc},const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.deque{_Ty,_Alloc},const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.deque{_Ty,_Alloc},const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.deque{_Ty,_Alloc},const std.deque{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="_DEQUEMAPSIZ">
+      <summary></summary>
+    </member>
+    <member name="_DEQUESIZ">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

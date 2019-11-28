@@ -1,0 +1,383 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.basic_stringbuf`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.basic_stringbuf`3.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringbuf`3._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringbuf`3._Mystr">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringbuf`3._Mysize_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_stringbuf`3.#ctor(std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.#ctor(const std.basic_stringbuf{_Elem,_Traits,_Alloc}._Mystr,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.#ctor(std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.operator=(std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3._Assign_rv(std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.swap(std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.#ctor(const std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.operator=(const std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3.~basic_stringbuf">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_stringbuf`3._Allocated">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_stringbuf`3._Constant">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_stringbuf`3._Noread">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_stringbuf`3._Append">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_stringbuf`3._Atend">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringbuf`3.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringbuf`3.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringbuf`3.off_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_stringbuf`3.str const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3.str(const std.basic_stringbuf{_Elem,_Traits,_Alloc}._Mystr)">
+      <summary></summary>
+      <param name="_Newstr"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3.overflow(std.basic_stringbuf{_Elem,_Traits,_Alloc}.int_type)">
+      <summary></summary>
+      <param name="_Meta"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3.pbackfail(std.basic_stringbuf{_Elem,_Traits,_Alloc}.int_type)">
+      <summary></summary>
+      <param name="_Meta"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3.underflow">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3.seekoff(std.basic_stringbuf{_Elem,_Traits,_Alloc}.off_type,std.ios_base.seekdir,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Way"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3.seekpos(std.basic_stringbuf{_Elem,_Traits,_Alloc}.pos_type,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringbuf`3._Init(const _Elem,std.basic_stringbuf{_Elem,_Traits,_Alloc}._Mysize_type,int)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <param name="_State"></param>
+    </member>
+    <member name="M:std.basic_stringbuf`3._Tidy">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_stringbuf`3._MINSIZE">
+      <summary></summary>
+    </member>
+    <member name="M:std.swap``3(std.basic_stringbuf{_Elem,_Traits,_Alloc},std.basic_stringbuf{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.basic_istringstream`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.basic_istringstream`3._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istringstream`3.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istringstream`3._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_istringstream`3._Mystr">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istringstream`3.#ctor(std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_istringstream`3.#ctor(const std.basic_istringstream{_Elem,_Traits,_Alloc}._Mystr,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_istringstream`3.#ctor(std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_istringstream`3.operator=(std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istringstream`3._Assign_rv(std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_istringstream`3.swap(std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_istringstream`3.#ctor(const std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_istringstream`3.operator=(const std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istringstream`3.~basic_istringstream">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_istringstream`3.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istringstream`3.str const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_istringstream`3.str(const std.basic_istringstream{_Elem,_Traits,_Alloc}._Mystr)">
+      <summary></summary>
+      <param name="_Newstr"></param>
+    </member>
+    <member name="M:std.swap``3(std.basic_istringstream{_Elem,_Traits,_Alloc},std.basic_istringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.basic_ostringstream`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.basic_ostringstream`3._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostringstream`3.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostringstream`3._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostringstream`3._Mystr">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostringstream`3.#ctor(std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ostringstream`3.#ctor(const std.basic_ostringstream{_Elem,_Traits,_Alloc}._Mystr,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ostringstream`3.#ctor(std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ostringstream`3.operator=(std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostringstream`3._Assign_rv(std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ostringstream`3.swap(std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ostringstream`3.#ctor(const std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_ostringstream`3.operator=(const std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostringstream`3.~basic_ostringstream">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostringstream`3.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostringstream`3.str const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostringstream`3.str(const std.basic_ostringstream{_Elem,_Traits,_Alloc}._Mystr)">
+      <summary></summary>
+      <param name="_Newstr"></param>
+    </member>
+    <member name="M:std.swap``3(std.basic_ostringstream{_Elem,_Traits,_Alloc},std.basic_ostringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.basic_stringstream`3">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.basic_stringstream`3._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3.off_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_stringstream`3._Mystr">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_stringstream`3.#ctor(std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_stringstream`3.#ctor(const std.basic_stringstream{_Elem,_Traits,_Alloc}._Mystr,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_stringstream`3.#ctor(std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_stringstream`3.operator=(std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringstream`3._Assign_rv(std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_stringstream`3.swap(std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_stringstream`3.#ctor(const std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_stringstream`3.operator=(const std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringstream`3.~basic_stringstream">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_stringstream`3.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringstream`3.str const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_stringstream`3.str(const std.basic_stringstream{_Elem,_Traits,_Alloc}._Mystr)">
+      <summary></summary>
+      <param name="_Newstr"></param>
+    </member>
+    <member name="M:std.swap``3(std.basic_stringstream{_Elem,_Traits,_Alloc},std.basic_stringstream{_Elem,_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+  </members>
+</doc>

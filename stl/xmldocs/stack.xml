@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.stack`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+    </member>
+    <member name="std.stack`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.stack`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.stack`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.stack`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.stack`2.container_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.stack`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.stack`2.#ctor(const _Container)">
+      <summary></summary>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.stack`2.#ctor(_Container)">
+      <summary></summary>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.stack`2.#ctor``2(const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.stack`2.#ctor``2(const _Container,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Cont"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.stack`2.#ctor``2(_Container,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Cont"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.stack`2.#ctor``2(const std.stack{_Ty,_Container},const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.stack`2.#ctor``2(std.stack{_Ty,_Container},const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.stack`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.stack`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.stack`2.top">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.stack`2.top const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.stack`2.push(const std.stack{_Ty,_Container}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.stack`2.push(std.stack{_Ty,_Container}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.stack`2.emplace``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.stack`2.pop">
+      <summary></summary>
+    </member>
+    <member name="M:std.stack`2.swap(std.stack{_Ty,_Container})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.stack{_Ty,_Container},const std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``3(std.stack{_Ty,_Container},std.stack{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.uses_allocator`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+  </members>
+</doc>

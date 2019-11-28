@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Winit">
+      <summary></summary>
+    </member>
+    <member name="M:std._Winit.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Winit.~_Winit">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

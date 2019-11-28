@@ -1,0 +1,450 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.basic_streambuf`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="M:std.basic_streambuf`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2.#ctor(std._Uninitialized)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.#ctor(const std.basic_streambuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.operator=(const std.basic_streambuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.swap(std.basic_streambuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="std.basic_streambuf`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_streambuf`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2.~basic_streambuf">
+      <summary></summary>
+    </member>
+    <member name="std.basic_streambuf`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_streambuf`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_streambuf`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubseekoff(std.basic_streambuf{_Elem,_Traits}.off_type,std.ios_base.seekdir,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Way"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubseekoff(std.basic_streambuf{_Elem,_Traits}.off_type,std.ios_base.seek_dir,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Way"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubseekpos(std.basic_streambuf{_Elem,_Traits}.pos_type,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubseekpos(std.basic_streambuf{_Elem,_Traits}.pos_type,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubsetbuf(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Buffer"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubimbue(const std.locale)">
+      <summary></summary>
+      <param name="_Newlocale"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.getloc const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.in_avail">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pubsync">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sbumpc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sgetc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sgetn(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.snextc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sputbackc(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.stossc">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2.sungetc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sputc(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sputn(const _Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2._Unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2.eback const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.gptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pbase const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.egptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.gbump(int)">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.setg(_Elem,_Elem,_Elem)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Next"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.epptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Gndec">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Gninc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Gnpreinc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Gnavail const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pbump(int)">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.setp(_Elem,_Elem)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.setp(_Elem,_Elem,_Elem)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Next"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2._Pninc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Pnavail const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2._Init">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_streambuf`2._Init(_Elem,_Elem,int,_Elem,_Elem,int)">
+      <summary></summary>
+      <param name="_Gf"></param>
+      <param name="_Gn"></param>
+      <param name="_Gc"></param>
+      <param name="_Pf"></param>
+      <param name="_Pn"></param>
+      <param name="_Pc"></param>
+    </member>
+    <member name="M:std.basic_streambuf`2.overflow(std.basic_streambuf{_Elem,_Traits}.int_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.pbackfail(std.basic_streambuf{_Elem,_Traits}.int_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.showmanyc">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.underflow">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.uflow">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.xsgetn(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.xsputn(const _Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.seekoff(std.basic_streambuf{_Elem,_Traits}.off_type,std.ios_base.seekdir,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.seekpos(std.basic_streambuf{_Elem,_Traits}.pos_type,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.setbuf(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.sync">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_streambuf`2.imbue(const std.locale)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="T:std.basic_streambuf`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_streambuf`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.istreambuf_iterator`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.istreambuf_iterator`2.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.streambuf_type">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.istream_type">
+      <summary></summary>
+    </member>
+    <member name="std.istreambuf_iterator`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.#ctor(std.istreambuf_iterator{_Elem,_Traits}.streambuf_type)">
+      <summary></summary>
+      <param name="_Sb"></param>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.#ctor(std.istreambuf_iterator{_Elem,_Traits}.istream_type)">
+      <summary></summary>
+      <param name="_Istr"></param>
+    </member>
+    <member name="M:std.istreambuf_iterator`2._Istreambuf_proxy.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.#ctor(const std.istreambuf_iterator{_Elem,_Traits}._Istreambuf_proxy)">
+      <summary></summary>
+      <param name="_Px"></param>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.istreambuf_iterator`2.equal(const std.istreambuf_iterator{_Elem,_Traits}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.istreambuf_iterator{_Elem,_Traits},const std.istreambuf_iterator{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.istreambuf_iterator{_Elem,_Traits},const std.istreambuf_iterator{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.ostreambuf_iterator`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.ostreambuf_iterator`2.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.streambuf_type">
+      <summary></summary>
+    </member>
+    <member name="std.ostreambuf_iterator`2.ostream_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.#ctor(std.ostreambuf_iterator{_Elem,_Traits}.streambuf_type)">
+      <summary></summary>
+      <param name="_Sb"></param>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.#ctor(std.ostreambuf_iterator{_Elem,_Traits}.ostream_type)">
+      <summary></summary>
+      <param name="_Ostr"></param>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.operator=(_Elem)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.operator*">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ostreambuf_iterator`2.failed const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

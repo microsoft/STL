@@ -1,0 +1,1456 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="_Compiler_barrier">
+      <summary></summary>
+    </member>
+    <member name="_Compiler_or_memory_barrier">
+      <summary></summary>
+    </member>
+    <member name="_ISO_VOLATILE_STORE8">
+      <summary></summary>
+    </member>
+    <member name="_ISO_VOLATILE_STORE16">
+      <summary></summary>
+    </member>
+    <member name="_ISO_VOLATILE_STORE32">
+      <summary></summary>
+    </member>
+    <member name="_ISO_VOLATILE_STORE64">
+      <summary></summary>
+    </member>
+    <member name="_ISO_VOLATILE_LOAD8">
+      <summary></summary>
+    </member>
+    <member name="_ISO_VOLATILE_LOAD16">
+      <summary></summary>
+    </member>
+    <member name="_STL_ATOMIC_LOAD_WITH_CMPXCHG8B">
+      <summary></summary>
+    </member>
+    <member name="_INVALID_MEMORY_ORDER">
+      <summary></summary>
+    </member>
+    <member name="_ATOMIC_CHOOSE_INTRINSIC">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_BOOL_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_CHAR_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_CHAR16_T_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_CHAR32_T_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_WCHAR_T_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_SHORT_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_INT_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_LONG_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_LLONG_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_POINTER_LOCK_FREE">
+      <summary></summary>
+    </member>
+    <member name="M:std.kill_dependency``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Check_memory_order(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Check_store_memory_order(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Check_load_memory_order(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Combine_cas_memory_orders(std.memory_order,std.memory_order)">
+      <summary></summary>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_reinterpret_as``2(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Integral"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Source"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Load_barrier(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="T:std._Atomic_padded`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Atomic_storage`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.load(std.memory_order) const">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.exchange(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.compare_exchange_strong(_Ty,_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2._Lock const">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_storage`2._Unlock const">
+      <summary></summary>
+    </member>
+    <member name="T:std._Atomic_storage`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.load const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.load(std.memory_order) const">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.exchange(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.compare_exchange_strong(_Ty,_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_storage`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.load const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.load(std.memory_order) const">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.exchange(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.compare_exchange_strong(_Ty,_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_storage`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.load const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.load(std.memory_order) const">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.exchange(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.compare_exchange_strong(_Ty,_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_storage`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_storage`2.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.store(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std._Atomic_storage`2.load const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.load(std.memory_order) const">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.exchange(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_storage`2.compare_exchange_strong(_Ty,_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_integral`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Atomic_integral`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Atomic_integral`2._Base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_add(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_and(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_or(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_xor(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_integral`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Atomic_integral`2._Base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_add(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_and(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_or(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_xor(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_integral`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Atomic_integral`2._Base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_add(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_and(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_or(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_xor(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_integral`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Atomic_integral`2._Base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_add(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_and(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_or(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.fetch_xor(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral`2.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_integral_facade`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Atomic_integral_facade`1._Base">
+      <summary></summary>
+    </member>
+    <member name="std._Atomic_integral_facade`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_add(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_add(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1._Negate(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_sub(_Ty)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_sub(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_sub(_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_sub(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_and(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_and(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_or(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_or(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_xor(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.fetch_xor(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator++(int) volatile">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator++ volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator--(int) volatile">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator-- volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator+=(_Ty)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator+=(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator-=(_Ty)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator-=(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator&amp;=(_Ty)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator&amp;=(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator|=(_Ty)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator|=(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator^=(_Ty)">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_integral_facade`1.operator^=(_Ty) volatile">
+      <summary></summary>
+      <param name="_Operand"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Atomic_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Atomic_pointer`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_add(ptrdiff_t,std.memory_order)">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_add(ptrdiff_t) volatile">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_add(ptrdiff_t,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_sub(ptrdiff_t) volatile">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_sub(ptrdiff_t)">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_sub(ptrdiff_t,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.fetch_sub(ptrdiff_t,std.memory_order)">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator++(int) volatile">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator++ volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator--(int) volatile">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator-- volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator+=(ptrdiff_t) volatile">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator+=(ptrdiff_t)">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator-=(ptrdiff_t) volatile">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Atomic_pointer`1.operator-=(ptrdiff_t)">
+      <summary></summary>
+      <param name="_Diff"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Choose_atomic_base2_t`1">
+      <summary></summary>
+    </member>
+    <member name="std._Choose_atomic_base_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.atomic`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.atomic`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.atomic`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.atomic`1.#ctor(const std.atomic{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.atomic`1.operator=(const std.atomic{_Ty})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.is_lock_free const volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.is_lock_free const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.operator=(_Ty) volatile">
+      <summary></summary>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.operator=(_Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.store(_Ty) volatile">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.atomic`1.store(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic`1.load const volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.load(std.memory_order) const volatile">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.exchange(_Ty) volatile">
+      <summary></summary>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.exchange(_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_strong(_Ty,_Ty) volatile">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_strong(_Ty,_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_strong(_Ty,_Ty,std.memory_order,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_strong(_Ty,_Ty,std.memory_order,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_weak(_Ty,_Ty) volatile">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_weak(_Ty,_Ty)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_weak(_Ty,_Ty,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_weak(_Ty,_Ty,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_weak(_Ty,_Ty,std.memory_order,std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.compare_exchange_weak(_Ty,_Ty,std.memory_order,std.memory_order)">
+      <summary></summary>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.operator _Ty const volatile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic`1.operator _Ty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_is_lock_free``1(const volatile std.atomic{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_is_lock_free``1(const std.atomic{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_init``1(std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.atomic_init``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.atomic_store``1(volatile std.atomic{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.atomic_store``1(std.atomic{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.atomic_store_explicit``1(volatile std.atomic{_Ty},std._Identity_t{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic_store_explicit``1(std.atomic{_Ty},std._Identity_t{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic_load``1(const volatile std.atomic{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_load``1(const std.atomic{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_load_explicit``1(const volatile std.atomic{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_load_explicit``1(const std.atomic{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_exchange``1(volatile std.atomic{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_exchange``1(std.atomic{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_exchange_explicit``1(volatile std.atomic{_Ty},std._Identity_t{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_exchange_explicit``1(std.atomic{_Ty},std._Identity_t{_Ty},std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_strong``1(volatile std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_strong``1(std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_strong_explicit``1(volatile std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty},std.memory_order,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_strong_explicit``1(std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty},std.memory_order,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_weak``1(volatile std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_weak``1(std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_weak_explicit``1(volatile std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty},std.memory_order,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_compare_exchange_weak_explicit``1(std.atomic{_Ty},std._Identity_t{_Ty},std._Identity_t{_Ty},std.memory_order,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Expected"></param>
+      <param name="_Desired"></param>
+      <param name="_Success"></param>
+      <param name="_Failure"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_add``1(volatile std.atomic{_Ty},std.atomic{_Ty}.difference_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_add``1(std.atomic{_Ty},std.atomic{_Ty}.difference_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_add_explicit``1(volatile std.atomic{_Ty},std.atomic{_Ty}.difference_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_add_explicit``1(std.atomic{_Ty},std.atomic{_Ty}.difference_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_sub``1(volatile std.atomic{_Ty},std.atomic{_Ty}.difference_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_sub``1(std.atomic{_Ty},std.atomic{_Ty}.difference_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_sub_explicit``1(volatile std.atomic{_Ty},std.atomic{_Ty}.difference_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_sub_explicit``1(std.atomic{_Ty},std.atomic{_Ty}.difference_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_and``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_and``1(std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_and_explicit``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_and_explicit``1(std.atomic{_Ty},std.atomic{_Ty}.value_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_or``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_or``1(std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_or_explicit``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_or_explicit``1(std.atomic{_Ty},std.atomic{_Ty}.value_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_xor``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_xor``1(std.atomic{_Ty},std.atomic{_Ty}.value_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_xor_explicit``1(volatile std.atomic{_Ty},std.atomic{_Ty}.value_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_fetch_xor_explicit``1(std.atomic{_Ty},std.atomic{_Ty}.value_type,std.memory_order)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Mem"></param>
+      <param name="_Value"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_thread_fence(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic_signal_fence(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="std.atomic_bool">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_char">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_schar">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uchar">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_short">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_ushort">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_long">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_ulong">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_llong">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_ullong">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_char16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_char32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_wchar_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int8_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint8_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int64_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint64_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_least8_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_least8_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_least16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_least16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_least32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_least32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_least64_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_least64_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_fast8_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_fast8_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_fast16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_fast16_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_fast32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_fast32_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_int_fast64_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uint_fast64_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_intptr_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uintptr_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_size_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_ptrdiff_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_intmax_t">
+      <summary></summary>
+    </member>
+    <member name="std.atomic_uintmax_t">
+      <summary></summary>
+    </member>
+    <member name="T:std.atomic_flag">
+      <summary></summary>
+    </member>
+    <member name="M:std.atomic_flag.test_and_set(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_flag.test_and_set(std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_flag.clear(std.memory_order)">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic_flag.clear(std.memory_order) volatile">
+      <summary></summary>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic_flag.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.atomic_flag_test_and_set(std.atomic_flag)">
+      <summary></summary>
+      <param name="_Flag"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_flag_test_and_set(volatile std.atomic_flag)">
+      <summary></summary>
+      <param name="_Flag"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_flag_test_and_set_explicit(std.atomic_flag,std.memory_order)">
+      <summary></summary>
+      <param name="_Flag"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_flag_test_and_set_explicit(volatile std.atomic_flag,std.memory_order)">
+      <summary></summary>
+      <param name="_Flag"></param>
+      <param name="_Order"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.atomic_flag_clear(std.atomic_flag)">
+      <summary></summary>
+      <param name="_Flag"></param>
+    </member>
+    <member name="M:std.atomic_flag_clear(volatile std.atomic_flag)">
+      <summary></summary>
+      <param name="_Flag"></param>
+    </member>
+    <member name="M:std.atomic_flag_clear_explicit(std.atomic_flag,std.memory_order)">
+      <summary></summary>
+      <param name="_Flag"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="M:std.atomic_flag_clear_explicit(volatile std.atomic_flag,std.memory_order)">
+      <summary></summary>
+      <param name="_Flag"></param>
+      <param name="_Order"></param>
+    </member>
+    <member name="ATOMIC_VAR_INIT">
+      <summary></summary>
+    </member>
+    <member name="ATOMIC_FLAG_INIT">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

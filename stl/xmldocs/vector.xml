@@ -1,0 +1,1530 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Vector_const_iterator`1">
+      <summary></summary>
+      <typeparam name="_Myvec"></typeparam>
+    </member>
+    <member name="std._Vector_const_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_const_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_const_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_const_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_const_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_const_iterator`1._Tptr">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.#ctor(std._Vector_const_iterator{_Myvec}._Tptr,const std._Container_base)">
+      <summary></summary>
+      <param name="_Parg"></param>
+      <param name="_Pvector"></param>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1._Verify_offset(std._Vector_const_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator+=(std._Vector_const_iterator{_Myvec}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator+(std._Vector_const_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator-=(std._Vector_const_iterator{_Myvec}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator-(std._Vector_const_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator-(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator[](std._Vector_const_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator==(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator!=(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator&lt;(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator&gt;(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator&lt;=(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1.operator&gt;=(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1._Compat(const std._Vector_const_iterator{_Myvec}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="std._Vector_const_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_const_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_const_iterator`1._Seek_to(const std._Vector_const_iterator{_Myvec}.value_type)">
+      <summary></summary>
+      <param name="_It"></param>
+    </member>
+    <member name="M:std.operator+``1(std._Vector_const_iterator{_Myvec}.difference_type,std._Vector_const_iterator{_Myvec})">
+      <summary></summary>
+      <typeparam name="_Myvec"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Next"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Vector_iterator`1">
+      <summary></summary>
+      <typeparam name="_Myvec"></typeparam>
+    </member>
+    <member name="std._Vector_iterator`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator+=(std._Vector_iterator{_Myvec}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator+(std._Vector_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator-=(std._Vector_iterator{_Myvec}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator-(std._Vector_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vector_iterator`1.operator[](std._Vector_iterator{_Myvec}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Vector_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator+``1(std._Vector_iterator{_Myvec}.difference_type,std._Vector_iterator{_Myvec})">
+      <summary></summary>
+      <typeparam name="_Myvec"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Next"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Vec_iter_types`7">
+      <summary></summary>
+      <typeparam name="_Value_type"></typeparam>
+      <typeparam name="_Size_type"></typeparam>
+      <typeparam name="_Difference_type"></typeparam>
+      <typeparam name="_Pointer"></typeparam>
+      <typeparam name="_Const_pointer"></typeparam>
+      <typeparam name="_Reference"></typeparam>
+      <typeparam name="_Const_reference"></typeparam>
+    </member>
+    <member name="std._Vec_iter_types`7.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vec_iter_types`7.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vec_iter_types`7.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vec_iter_types`7.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vec_iter_types`7.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="T:std._Value_init_tag">
+      <summary></summary>
+    </member>
+    <member name="T:std._Vector_val`1">
+      <summary></summary>
+      <typeparam name="_Val_types"></typeparam>
+    </member>
+    <member name="std._Vector_val`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_val`1.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_val`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_val`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_val`1.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_val`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std._Vector_val`1.const_reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_val`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vector_val`1._Swap_val(std._Vector_val{_Val_types})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Vector_val`1._Take_contents(std._Vector_val{_Val_types})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Unfancy_maybe_null``1(_Ptrty)">
+      <summary></summary>
+      <typeparam name="_Ptrty"></typeparam>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Unfancy_maybe_null``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.vector`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.vector`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{_Ty,_Alloc}.size_type,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{_Ty,_Alloc}.size_type,const _Ty,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor``2(_Iter,_Iter,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.initializer_list{_Ty},const _Alloc)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(const std.vector{_Ty,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{_Ty,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.operator=(std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.~vector">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.emplace_back``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.push_back(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2.push_back(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2._Emplace_reallocate``1(std.vector{_Ty,_Alloc}.pointer,_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Whereptr"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.emplace``1(std.vector{_Ty,_Alloc}.const_iterator,_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{_Ty,_Alloc}.const_iterator,const _Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{_Ty,_Alloc}.const_iterator,_Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{_Ty,_Alloc}.const_iterator,std.vector{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert``2(std.vector{_Ty,_Alloc}.const_iterator,_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{_Ty,_Alloc}.const_iterator,std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.assign(std.vector{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2.assign``2(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.vector`2.assign(std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.vector`2.operator=(const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.operator=(std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.resize(std.vector{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+    </member>
+    <member name="M:std.vector`2.resize(std.vector{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2.reserve(std.vector{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Newcapacity"></param>
+    </member>
+    <member name="M:std.vector`2.shrink_to_fit">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.pop_back">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.erase(std.vector{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.erase(std.vector{_Ty,_Alloc}.const_iterator,std.vector{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.clear">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.swap(std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2.data">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.data const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rbegin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rend">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.crbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.crend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.capacity const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.operator[](std.vector{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.operator[](std.vector{_Ty,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.at(std.vector{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.at(std.vector{_Ty,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.back">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.back const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.get_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``2(std.vector{_Ty,_Alloc},std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``2(const std.vector{_Ty,_Alloc},const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.vector{_Ty,_Alloc},const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.vector{_Ty,_Alloc},const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.vector{_Ty,_Alloc},const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.vector{_Ty,_Alloc},const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.vector{_Ty,_Alloc},const std.vector{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Vbase">
+      <summary></summary>
+    </member>
+    <member name="T:std._Wrap_alloc`1">
+      <summary></summary>
+      <typeparam name="_Alloc0"></typeparam>
+    </member>
+    <member name="std._Wrap_alloc`1._Alloc">
+      <summary></summary>
+    </member>
+    <member name="T:std._Vb_iter_base`1">
+      <summary></summary>
+      <typeparam name="_Alvbase_wrapped"></typeparam>
+    </member>
+    <member name="std._Vb_iter_base`1._Alvbase">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iter_base`1._Size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iter_base`1._Difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iter_base`1._Mycont">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_iter_base`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_iter_base`1.#ctor(const std._Vbase,std._Vb_iter_base{_Alvbase_wrapped}._Size_type,const std._Container_base)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Off"></param>
+      <param name="_Mypvbool"></param>
+    </member>
+    <member name="M:std._Vb_iter_base`1._Advance(std._Vb_iter_base{_Alvbase_wrapped}._Size_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+    </member>
+    <member name="M:std._Vb_iter_base`1._Total_off(const std._Vb_iter_base{_Alvbase_wrapped}._Mycont) const">
+      <summary></summary>
+      <param name="_Cont"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Vb_reference`1">
+      <summary></summary>
+      <typeparam name="_Alvbase_wrapped"></typeparam>
+    </member>
+    <member name="M:std._Vb_reference`1.#ctor(const std._Vb_reference{_Alvbase_wrapped}._Mybase)">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Vb_reference`1.operator=(const std._Vb_reference{_Alvbase_wrapped})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_reference`1.operator=(bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_reference`1.flip">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_reference`1.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_reference`1._Getptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_reference`1._Mask const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Vb_const_iterator`1">
+      <summary></summary>
+      <typeparam name="_Alvbase_wrapped"></typeparam>
+    </member>
+    <member name="std._Vb_const_iterator`1._Mycont">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1._Difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1._Size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1._Reft">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_const_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.#ctor(const std._Vbase,const std._Container_base)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Mypvbool"></param>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator+=(std._Vb_const_iterator{_Alvbase_wrapped}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator+(std._Vb_const_iterator{_Alvbase_wrapped}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator-=(std._Vb_const_iterator{_Alvbase_wrapped}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator-(std._Vb_const_iterator{_Alvbase_wrapped}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator-(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator[](std._Vb_const_iterator{_Alvbase_wrapped}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator==(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator!=(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator&lt;(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator&gt;(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator&lt;=(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1.operator&gt;=(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_const_iterator`1._Compat(const std._Vb_const_iterator{_Alvbase_wrapped}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="std._Vb_const_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_const_iterator`1._Dec">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_const_iterator`1._Inc">
+      <summary></summary>
+    </member>
+    <member name="M:std.operator+``1(std._Vb_const_iterator{_Alvbase_wrapped}.difference_type,std._Vb_const_iterator{_Alvbase_wrapped})">
+      <summary></summary>
+      <typeparam name="_Alvbase_wrapped"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Vb_iterator`1">
+      <summary></summary>
+      <typeparam name="_Alvbase_wrapped"></typeparam>
+    </member>
+    <member name="std._Vb_iterator`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1._Mycont">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1._Difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1._Reft">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator+=(std._Vb_iterator{_Alvbase_wrapped}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator+(std._Vb_iterator{_Alvbase_wrapped}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator-=(std._Vb_iterator{_Alvbase_wrapped}.difference_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator-(std._Vb_iterator{_Alvbase_wrapped}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_iterator`1.operator[](std._Vb_iterator{_Alvbase_wrapped}.difference_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Vb_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std.operator+``1(std._Vb_iterator{_Alvbase_wrapped}.difference_type,std._Vb_iterator{_Alvbase_wrapped})">
+      <summary></summary>
+      <typeparam name="_Alvbase_wrapped"></typeparam>
+      <param name="_Off"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Vb_val`1">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std._Vb_val`1._Alvbase">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_val`1._Alvbase_traits">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_val`1._Vectype">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_val`1._Alvbase_wrapped">
+      <summary></summary>
+    </member>
+    <member name="std._Vb_val`1.size_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(std._Vb_val{_Alloc}.size_type,const bool)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(std._Vb_val{_Alloc}.size_type,const bool,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(const std._Vb_val{_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(const std._Vb_val{_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(std._Vb_val{_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Vb_val`1.#ctor(std._Vb_val{_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std._Vb_val`1.~_Vb_val">
+      <summary></summary>
+    </member>
+    <member name="M:std._Vb_val`1._Getal">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_val`1._Getal const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Vb_val`1._Nw(std._Vb_val{_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.vector`2">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.vector`2._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2._Alvbase_wrapped">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2._Alvbase">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2._Alvbase_traits">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2._Reft">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.vector`2.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="F:std.vector`2._EEN_VBITS">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{bool,_Alloc}.size_type,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{bool,_Alloc}.size_type,const bool,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(const std.vector{bool,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(const std.vector{bool,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor``2(_Iter,_Iter,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2._BConstruct``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{bool,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.vector{bool,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.operator=(std.vector{bool,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.emplace_back``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.emplace``1(std.vector{bool,_Alloc}.const_iterator,_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.#ctor(std.initializer_list{bool},const _Alloc)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.vector`2.operator=(std.initializer_list{bool})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.assign(std.initializer_list{bool})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{bool,_Alloc}.const_iterator,std.initializer_list{bool})">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.~vector">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.operator=(const std.vector{bool,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.reserve(std.vector{bool,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Count"></param>
+    </member>
+    <member name="M:std.vector`2.capacity const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.crbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.crend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.shrink_to_fit">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2._Make_iter(std.vector{bool,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rbegin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rend">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.rend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.resize(std.vector{bool,_Alloc}.size_type,bool)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.get_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.at(std.vector{bool,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.at(std.vector{bool,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.operator[](std.vector{bool,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.operator[](std.vector{bool,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.back">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.back const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.push_back(const bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2.pop_back">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.assign``2(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.vector`2.assign(std.vector{bool,_Alloc}.size_type,const bool)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{bool,_Alloc}.const_iterator,const bool)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert(std.vector{bool,_Alloc}.const_iterator,std.vector{bool,_Alloc}.size_type,const bool)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.insert``2(std.vector{bool,_Alloc}.const_iterator,_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Insert``1(std.vector{bool,_Alloc}.const_iterator,_Iter,_Iter,std.input_iterator_tag)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_Where"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.vector`2._Insert``1(std.vector{bool,_Alloc}.const_iterator,_Iter,_Iter,std.forward_iterator_tag)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_Where"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.vector`2.erase(std.vector{bool,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where_arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.erase(std.vector{bool,_Alloc}.const_iterator,std.vector{bool,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_First_arg"></param>
+      <param name="_Last_arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2.clear">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.flip">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2.swap(std.vector{bool,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2.swap(std.vector{bool,_Alloc}.reference,std.vector{bool,_Alloc}.reference)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.vector`2._Insert_n(std.vector{bool,_Alloc}.const_iterator,std.vector{bool,_Alloc}.size_type,const bool)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Insert_x(std.vector{bool,_Alloc}.const_iterator,std.vector{bool,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.vector`2._Orphan_range(std.vector{bool,_Alloc}.size_type,std.vector{bool,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Offlo"></param>
+      <param name="_Offhi"></param>
+    </member>
+    <member name="M:std.vector`2._Trim(std.vector{bool,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Size"></param>
+    </member>
+    <member name="M:std.vector`2._Xlen const">
+      <summary></summary>
+    </member>
+    <member name="M:std.vector`2._Xran const">
+      <summary></summary>
+    </member>
+    <member name="M:std.operator==``1(const std.vector{bool,_Alloc},const std.vector{bool,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.vector{bool,_Alloc},const std.vector{bool,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(const std.vector{bool,_Alloc}) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

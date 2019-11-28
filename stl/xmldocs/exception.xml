@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="M:std.uncaught_exception">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.uncaught_exceptions">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.get_terminate">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.get_unexpected">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:__ExceptionPtrCreate(void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrDestroy(void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrCopy(void,const void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrAssign(void,const void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrCompare(const void,const void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:__ExceptionPtrToBool(const void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:__ExceptionPtrSwap(void,void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrCurrentException(void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrRethrow(const void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:__ExceptionPtrCopyException(void,const void,const void)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="T:std.exception_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.exception_ptr.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.exception_ptr.#ctor(std.nullptr_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.exception_ptr.~exception_ptr">
+      <summary></summary>
+    </member>
+    <member name="M:std.exception_ptr.#ctor(const std.exception_ptr)">
+      <summary></summary>
+      <param name="_Rhs"></param>
+    </member>
+    <member name="M:std.exception_ptr.operator=(const std.exception_ptr)">
+      <summary></summary>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.exception_ptr.operator=(std.nullptr_t)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.exception_ptr.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.exception_ptr._Current_exception">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.exception_ptr._Copy_exception(void,const void)">
+      <summary></summary>
+      <param name="_Except"></param>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap(std.exception_ptr,std.exception_ptr)">
+      <summary></summary>
+      <param name="_Lhs"></param>
+      <param name="_Rhs"></param>
+    </member>
+    <member name="M:std.operator==(const std.exception_ptr,const std.exception_ptr)">
+      <summary></summary>
+      <param name="_Lhs"></param>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(std.nullptr_t,const std.exception_ptr)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.exception_ptr,std.nullptr_t)">
+      <summary></summary>
+      <param name="_Lhs"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.exception_ptr,const std.exception_ptr)">
+      <summary></summary>
+      <param name="_Lhs"></param>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(std.nullptr_t,const std.exception_ptr)">
+      <summary></summary>
+      <param name="_Lhs"></param>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.exception_ptr,std.nullptr_t)">
+      <summary></summary>
+      <param name="_Lhs"></param>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.current_exception">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.rethrow_exception(std.exception_ptr)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std.__GetExceptionInfo``1(_Ex)">
+      <summary></summary>
+      <typeparam name="_Ex"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_exception_ptr``1(_Ex)">
+      <summary></summary>
+      <typeparam name="_Ex"></typeparam>
+      <param name="_Except"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Throw_bad_array_new_length">
+      <summary></summary>
+    </member>
+    <member name="T:std.nested_exception">
+      <summary></summary>
+    </member>
+    <member name="M:std.nested_exception.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.nested_exception.#ctor(const std.nested_exception)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.nested_exception.operator=(const std.nested_exception)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.nested_exception.~nested_exception">
+      <summary></summary>
+    </member>
+    <member name="M:std.nested_exception.rethrow_nested const">
+      <summary></summary>
+    </member>
+    <member name="M:std.nested_exception.nested_ptr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._With_nested`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+    </member>
+    <member name="M:std._With_nested`2.#ctor(_Ty)">
+      <summary></summary>
+      <param name="_Arg"></param>
+    </member>
+    <member name="M:std.throw_with_nested``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+    </member>
+    <member name="M:std._Rethrow_if_nested``1(const _Ty,std.true_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Rethrow_if_nested``1(const _Ty,std.false_type)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.rethrow_if_nested``1(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+    </member>
+  </members>
+</doc>

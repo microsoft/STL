@@ -1,0 +1,1425 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.integer_sequence`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Vals"></typeparam>
+    </member>
+    <member name="std.integer_sequence`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.integer_sequence`2.size">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="std.make_integer_sequence`2">
+      <summary></summary>
+    </member>
+    <member name="std.index_sequence`1">
+      <summary></summary>
+    </member>
+    <member name="std.make_index_sequence`1">
+      <summary></summary>
+    </member>
+    <member name="std.index_sequence_for`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Conjunction`3">
+      <summary></summary>
+      <typeparam name="_First_value"></typeparam>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="std._Conjunction`3.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Conjunction`4">
+      <summary></summary>
+      <typeparam name="_True"></typeparam>
+      <typeparam name="_Next"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="std._Conjunction`4.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.conjunction`1">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.conjunction`2">
+      <summary></summary>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="T:std.negation`1">
+      <summary></summary>
+      <typeparam name="_Trait"></typeparam>
+    </member>
+    <member name="T:std._Arg_types`1">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="T:std._Arg_types`1">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+    </member>
+    <member name="std._Arg_types`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Arg_types`2">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="std._Arg_types`2.first_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Arg_types`2.second_argument_type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Is_function`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Is_function`1._Bool_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_function`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Is_memfunptr`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Is_memfunptr`1._Bool_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_void`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.void_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.add_const`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.add_const`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.add_const_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.add_volatile`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.add_volatile`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.add_volatile_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.add_cv`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.add_cv`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.add_cv_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Add_reference`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Add_reference`2._Lvalue">
+      <summary></summary>
+    </member>
+    <member name="std._Add_reference`2._Rvalue">
+      <summary></summary>
+    </member>
+    <member name="T:std._Add_reference`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Add_reference`2._Lvalue">
+      <summary></summary>
+    </member>
+    <member name="std._Add_reference`2._Rvalue">
+      <summary></summary>
+    </member>
+    <member name="T:std.add_lvalue_reference`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.add_lvalue_reference`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.add_lvalue_reference_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.add_rvalue_reference`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.add_rvalue_reference`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.add_rvalue_reference_t`1">
+      <summary></summary>
+    </member>
+    <member name="M:std.declval``1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="T:std.remove_extent`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_extent`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_extent`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Ix"></typeparam>
+    </member>
+    <member name="std.remove_extent`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_extent`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_extent`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.remove_extent_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_all_extents`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_all_extents`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_all_extents`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Ix"></typeparam>
+    </member>
+    <member name="std.remove_all_extents`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_all_extents`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_all_extents`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.remove_all_extents_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_pointer`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_pointer`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_pointer`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_pointer`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.remove_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.remove_pointer`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.remove_pointer_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Add_pointer`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Add_pointer`2.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Add_pointer`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Add_pointer`2.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.add_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.add_pointer`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.add_pointer_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_array`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_lvalue_reference`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_rvalue_reference`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_reference`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Is_member_object_pointer`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Pmf"></typeparam>
+    </member>
+    <member name="T:std._Is_member_object_pointer`2">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="std._Is_member_object_pointer`2._Class_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_member_object_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_member_function_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_null_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_union`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_class`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_fundamental`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_object`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_convertible`2">
+      <summary></summary>
+      <typeparam name="_From"></typeparam>
+      <typeparam name="_To"></typeparam>
+    </member>
+    <member name="T:std.is_enum`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_compound`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_member_pointer`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_scalar`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_const`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_volatile`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_pod`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_empty`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_polymorphic`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_abstract`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_final`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_standard_layout`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_literal_type`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivial`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_copyable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.has_virtual_destructor`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_constructible`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Args"></typeparam>
+    </member>
+    <member name="T:std.is_copy_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_default_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Is_implicitly_default_constructible`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std._Implicitly_default_construct``1(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="T:std._Is_implicitly_default_constructible`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_move_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_assignable`2">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_From"></typeparam>
+    </member>
+    <member name="T:std.is_copy_assignable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Is_copy_assignable_no_precondition_check`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_move_assignable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Is_move_assignable_no_precondition_check`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_destructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_constructible`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Args"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_copy_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_default_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_move_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_assignable`2">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_From"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_copy_assignable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_move_assignable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_trivially_destructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_constructible`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Args"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_copy_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_default_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_move_constructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_assignable`2">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_From"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_copy_assignable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_move_assignable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_nothrow_destructible`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Sign_base`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Sign_base`2._Uty">
+      <summary></summary>
+    </member>
+    <member name="T:std._Sign_base`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_signed`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.is_unsigned`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Select`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Select`1._Apply`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Select`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Select`1._Apply`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_signed2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Make_signed2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_signed2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_signed2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_signed2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_signed2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_signed2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_signed2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_signed2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="std._Make_signed1`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.make_signed`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.make_signed`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.make_signed_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_unsigned2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Make_unsigned2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_unsigned2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_unsigned2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_unsigned2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_unsigned2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_unsigned2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Make_unsigned2`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std._Make_unsigned2`1._Apply`1">
+      <summary></summary>
+    </member>
+    <member name="std._Make_unsigned1`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.make_unsigned`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.make_unsigned`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.make_unsigned_t`1">
+      <summary></summary>
+    </member>
+    <member name="M:std._Unsigned_value``1(_Rep)">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.alignment_of`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Align_type`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Aligned`4">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Ok"></typeparam>
+    </member>
+    <member name="T:std._Aligned`4">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Aligned`4.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Aligned`4">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+    </member>
+    <member name="std._Aligned`4.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Aligned`4">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+    </member>
+    <member name="_NEXT_ALIGN">
+      <summary></summary>
+    </member>
+    <member name="T:std._Aligned`4">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+    </member>
+    <member name="_NEXT_ALIGN">
+      <summary></summary>
+    </member>
+    <member name="T:std._Aligned`4">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+    </member>
+    <member name="_NEXT_ALIGN">
+      <summary></summary>
+    </member>
+    <member name="T:std.aligned_storage`2">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Align"></typeparam>
+    </member>
+    <member name="std.aligned_storage`2.type">
+      <summary></summary>
+    </member>
+    <member name="std.aligned_storage_t`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Maximum`1">
+      <summary></summary>
+      <typeparam name="_Vals"></typeparam>
+    </member>
+    <member name="T:std._Maximum`0">
+      <summary></summary>
+      <typeparam name="_Vals"></typeparam>
+    </member>
+    <member name="T:std._Maximum`1">
+      <summary></summary>
+      <typeparam name="_Val"></typeparam>
+    </member>
+    <member name="T:std._Maximum`3">
+      <summary></summary>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="T:std.aligned_union`2">
+      <summary></summary>
+      <typeparam name="_Len"></typeparam>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="std.aligned_union`2.type">
+      <summary></summary>
+    </member>
+    <member name="std.aligned_union_t`2">
+      <summary></summary>
+    </member>
+    <member name="T:std.underlying_type`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.underlying_type`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.underlying_type_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.rank`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.extent`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Ix"></typeparam>
+    </member>
+    <member name="T:std.is_base_of`2">
+      <summary></summary>
+      <typeparam name="_Base"></typeparam>
+      <typeparam name="_Derived"></typeparam>
+    </member>
+    <member name="T:std.decay`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.decay`1._Ty1">
+      <summary></summary>
+    </member>
+    <member name="std.decay`1._Ty2">
+      <summary></summary>
+    </member>
+    <member name="std.decay`1.type">
+      <summary></summary>
+    </member>
+    <member name="std.decay_t`1">
+      <summary></summary>
+    </member>
+    <member name="std._Conditional_type`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Decayed_cond_oper`3">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Decayed_cond_oper`3">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="std._Decayed_cond_oper`3.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.common_type`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.common_type_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.common_type`0">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std.common_type`1">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+    </member>
+    <member name="T:std._Common_type2`4">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Decayed1"></typeparam>
+      <typeparam name="_Decayed2"></typeparam>
+    </member>
+    <member name="T:std._Common_type2`4">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="T:std.common_type`2">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="T:std._Common_type3`4">
+      <summary></summary>
+      <typeparam name="_Void"></typeparam>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="T:std._Common_type3`4">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="T:std.common_type`3">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="T:std._Identity`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Identity`1.type">
+      <summary></summary>
+    </member>
+    <member name="std._Identity_t`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Is_specialization`2">
+      <summary></summary>
+      <typeparam name="_Type"></typeparam>
+      <typeparam name="_Template"></typeparam>
+    </member>
+    <member name="M:std.forward``1(std.remove_reference_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward``1(std.remove_reference_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.move``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.move_if_noexcept``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Arg"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.reference_wrapper`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Invoker_ret`2">
+      <summary></summary>
+      <typeparam name="_Rx"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Unforced">
+      <summary></summary>
+    </member>
+    <member name="T:std._Invoker_ret`2">
+      <summary></summary>
+      <typeparam name="_Cv_void"></typeparam>
+    </member>
+    <member name="M:std._Invoker_ret`2._Call``1(_Valtys...)">
+      <summary></summary>
+      <typeparam name="_Valtys"></typeparam>
+      <param name="_Vals"></param>
+    </member>
+    <member name="T:std._Invoker_ret`2">
+      <summary></summary>
+      <typeparam name="_Rx"></typeparam>
+    </member>
+    <member name="M:std._Invoker_ret`2._Call``1(_Valtys...)">
+      <summary></summary>
+      <typeparam name="_Valtys"></typeparam>
+      <param name="_Vals"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Invoker_ret`2">
+      <summary></summary>
+      <typeparam name="_Rx"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std._Invoker_ret`2._Call``1(_Valtys...)-&gt;decltype((std.invoke(std.forward&lt;_Valtys&gt;(_Vals)...)))">
+      <summary></summary>
+      <typeparam name="_Valtys"></typeparam>
+      <param name="_Vals"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Implicitly_convert_to``1(_To)">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="T:std._Is_nothrow_convertible`2">
+      <summary></summary>
+      <typeparam name="_From"></typeparam>
+      <typeparam name="_To"></typeparam>
+    </member>
+    <member name="T:std._Invoke_traits`2">
+      <summary></summary>
+      <typeparam name="_Void"></typeparam>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="std._Invoke_traits`2._Is_invocable">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_nothrow_invocable">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_invocable_r`1">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_nothrow_invocable_r`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Invoke_traits`2">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="std._Invoke_traits`2.type">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_invocable">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_nothrow_invocable">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_invocable_r`1">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_traits`2._Is_nothrow_invocable_r`1">
+      <summary></summary>
+    </member>
+    <member name="T:std.result_of`1">
+      <summary></summary>
+      <typeparam name="_Fty"></typeparam>
+    </member>
+    <member name="std.result_of_t`1">
+      <summary></summary>
+    </member>
+    <member name="std._Invoke_result_t`2">
+      <summary></summary>
+    </member>
+    <member name="std._Is_invocable_r_`3">
+      <summary></summary>
+    </member>
+    <member name="T:std._Is_invocable_r`3">
+      <summary></summary>
+      <typeparam name="_Rx"></typeparam>
+      <typeparam name="_Callable"></typeparam>
+      <typeparam name="_Args"></typeparam>
+    </member>
+    <member name="T:std._Weak_result_type`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Weak_result_type`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Weak_result_type`2.result_type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Weak_argument_type`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Weak_argument_type`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Weak_argument_type`2.argument_type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Weak_binary_args`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Weak_binary_args`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Weak_binary_args`2.first_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Weak_binary_args`2.second_argument_type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Weak_types`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Weak_types`1._Is_f_or_pf">
+      <summary></summary>
+    </member>
+    <member name="std._Weak_types`1._Is_pmf">
+      <summary></summary>
+    </member>
+    <member name="std._Weak_types`1.type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Refwrap_ctor_fun``1(std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Refwrap_ctor_fun``1(std._Identity_t{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="T:std._Refwrap_has_ctor_from`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Refwrap_has_ctor_from`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+    </member>
+    <member name="T:std.reference_wrapper`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.reference_wrapper`1.type">
+      <summary></summary>
+    </member>
+    <member name="M:std.reference_wrapper`1.#ctor``2(_Uty)">
+      <summary></summary>
+      <typeparam name="_Uty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.reference_wrapper`1.operator _Ty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.reference_wrapper`1.get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.reference_wrapper`1.operator()``1(_Types...) const-&gt;decltype((std.invoke(this-&gt;get(), std.forward&lt;_Types&gt;(_Args)...)))">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ref``1(_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ref``1(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.ref``1(std.reference_wrapper{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.cref``1(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.cref``1(const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.cref``1(std.reference_wrapper{_Ty})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Is_swappable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Is_nothrow_swappable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.swap``2(_Ty,_Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.swap``3(_Ty ()[_Size],_Ty ()[_Size])">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std._Swappable_with_helper`3">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Swappable_with_helper`3">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="T:std._Is_swappable_with`2">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="T:std._Is_swappable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Swap_cannot_throw`2">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="T:std._Is_nothrow_swappable_with`2">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="T:std._Is_nothrow_swappable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Has_ADL_swap_detail.swap">
+      <summary></summary>
+    </member>
+    <member name="T:std._Has_ADL_swap_detail._Has_ADL_swap`2">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Has_ADL_swap_detail._Has_ADL_swap`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Is_trivially_swappable`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Fnv1a_append_bytes(size_t,const unsigned char,size_t)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_First"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fnv1a_append_range``1(size_t,const _Ty,const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="_Val"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fnv1a_append_value``1(size_t,const _Kty)">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <param name="_Val"></param>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Hash_representation``1(const _Kty)">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Hash_array_representation``1(const _Kty,size_t)">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <param name="_First"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="T:std._Conditionally_enabled_hash`2">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Enabled"></typeparam>
+    </member>
+    <member name="std._Conditionally_enabled_hash`2.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Conditionally_enabled_hash`2.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Conditionally_enabled_hash`2.operator()(const _Kty) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Conditionally_enabled_hash`2">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="M:std._Conditionally_enabled_hash`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Conditionally_enabled_hash`2.#ctor(const std._Conditionally_enabled_hash{_Kty,})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Conditionally_enabled_hash`2.#ctor(std._Conditionally_enabled_hash{_Kty,})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Conditionally_enabled_hash`2.operator=(const std._Conditionally_enabled_hash{_Kty,})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Conditionally_enabled_hash`2.operator=(std._Conditionally_enabled_hash{_Kty,})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="M:std.hash`1._Do_hash(const _Kty)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(float) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(double) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(long double) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(std.nullptr_t) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Is_nothrow_hashable`2">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Is_nothrow_hashable`2">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="_IS_FUNCTION">
+      <summary></summary>
+    </member>
+    <member name="_IS_FUNCTION_ELLIPSIS">
+      <summary></summary>
+    </member>
+    <member name="_IS_MEMFUNPTR">
+      <summary></summary>
+    </member>
+    <member name="_IS_MEMFUNPTR_ELLIPSIS">
+      <summary></summary>
+    </member>
+    <member name="_FITS">
+      <summary></summary>
+    </member>
+    <member name="_NEXT_ALIGN">
+      <summary></summary>
+    </member>
+    <member name="_CONCATX">
+      <summary></summary>
+    </member>
+    <member name="_CONCAT">
+      <summary></summary>
+    </member>
+    <member name="_IMPLEMENT_INVOKE">
+      <summary></summary>
+    </member>
+    <member name="_RESULT_OF">
+      <summary></summary>
+    </member>
+    <member name="_BITMASK_OPS">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

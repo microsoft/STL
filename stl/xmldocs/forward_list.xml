@@ -1,0 +1,870 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Flist_unchecked_const_iterator`2">
+      <summary></summary>
+      <typeparam name="_Mylist"></typeparam>
+      <typeparam name="_Base"></typeparam>
+    </member>
+    <member name="std._Flist_unchecked_const_iterator`2.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_const_iterator`2._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_const_iterator`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_const_iterator`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_const_iterator`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_const_iterator`2.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.#ctor(std._Flist_unchecked_const_iterator{_Mylist,_Base}._Nodeptr,const _Mylist)">
+      <summary></summary>
+      <param name="_Pnode"></param>
+      <param name="_Plist"></param>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator==(const std._Flist_unchecked_const_iterator{_Mylist,_Base}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator!=(const std._Flist_unchecked_const_iterator{_Mylist,_Base}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator==(std._Default_sentinel) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_const_iterator`2.operator!=(std._Default_sentinel) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Flist_unchecked_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mylist"></typeparam>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_unchecked_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_unchecked_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_unchecked_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Flist_const_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mylist"></typeparam>
+    </member>
+    <member name="std._Flist_const_iterator`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_const_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_const_iterator`1._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_const_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_const_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_const_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_const_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_const_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_const_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_const_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_const_iterator`1.operator==(const std._Flist_const_iterator{_Mylist}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_const_iterator`1.operator!=(const std._Flist_const_iterator{_Mylist}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Flist_const_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_const_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_const_iterator`1._Seek_to(std._Flist_unchecked_const_iterator{_Mylist,std._Iterator_base0})">
+      <summary></summary>
+      <param name="_It"></param>
+    </member>
+    <member name="T:std._Flist_iterator`1">
+      <summary></summary>
+      <typeparam name="_Mylist"></typeparam>
+    </member>
+    <member name="std._Flist_iterator`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iterator`1.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iterator`1._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iterator`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iterator`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iterator`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iterator`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_iterator`1.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_iterator`1.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_iterator`1.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_iterator`1.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="std._Flist_iterator`1._Prevent_inheriting_unwrap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_iterator`1._Unwrapped const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Flist_iter_types`8">
+      <summary></summary>
+      <typeparam name="_Value_type"></typeparam>
+      <typeparam name="_Size_type"></typeparam>
+      <typeparam name="_Difference_type"></typeparam>
+      <typeparam name="_Pointer"></typeparam>
+      <typeparam name="_Const_pointer"></typeparam>
+      <typeparam name="_Reference"></typeparam>
+      <typeparam name="_Const_reference"></typeparam>
+      <typeparam name="_Nodeptr_type"></typeparam>
+    </member>
+    <member name="std._Flist_iter_types`8.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iter_types`8.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iter_types`8.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iter_types`8.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iter_types`8.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_iter_types`8._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="T:std._Flist_node`2">
+      <summary></summary>
+      <typeparam name="_Value_type"></typeparam>
+      <typeparam name="_Voidptr"></typeparam>
+    </member>
+    <member name="std._Flist_node`2._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_node`2.#ctor(const std._Flist_node{_Value_type,_Voidptr})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Flist_node`2.operator=(const std._Flist_node{_Value_type,_Voidptr})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_node`2._Freenode``1(_Alnode,std._Flist_node{_Value_type,_Voidptr}._Nodeptr)">
+      <summary></summary>
+      <typeparam name="_Alnode"></typeparam>
+      <param name="_Al"></param>
+      <param name="_Pnode"></param>
+    </member>
+    <member name="T:std._Flist_simple_types`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std._Flist_simple_types`1._Node">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_simple_types`1._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="T:std._Flist_val`1">
+      <summary></summary>
+      <typeparam name="_Val_types"></typeparam>
+    </member>
+    <member name="std._Flist_val`1._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1._Node">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.reference">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_val`1.const_reference">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_val`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_val`1._Before_head const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_val`1._Orphan_ptr(std._Flist_val{_Val_types}._Nodeptr)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+    </member>
+    <member name="M:std._Flist_val`1._Inplace_merge``1(std._Flist_val{_Val_types}._Nodeptr,std._Flist_val{_Val_types}._Nodeptr,std._Flist_val{_Val_types}._Nodeptr,_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_BFirst1"></param>
+      <param name="_BMid"></param>
+      <param name="_BLast"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_val`1._Sort2``1(std._Flist_val{_Val_types}._Nodeptr,_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_BFirst"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_val`1._Sort``1(std._Flist_val{_Val_types}._Nodeptr,std._Flist_val{_Val_types}.size_type,_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_BFirst"></param>
+      <param name="_Bound"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_val`1._Sort``1(std._Flist_val{_Val_types}._Nodeptr,_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_BFirst"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="T:std._Flist_insert_after_op`1">
+      <summary></summary>
+      <typeparam name="_Alnode"></typeparam>
+    </member>
+    <member name="std._Flist_insert_after_op`1._Alnode_traits">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_insert_after_op`1.pointer">
+      <summary></summary>
+    </member>
+    <member name="std._Flist_insert_after_op`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1.#ctor(_Alnode)">
+      <summary></summary>
+      <param name="_Al_"></param>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1.#ctor(const std._Flist_insert_after_op{_Alnode})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1.operator=(const std._Flist_insert_after_op{_Alnode})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1._Append_n``1(std.allocator_traits{_Alnode}.size_type,const _CArgT...)">
+      <summary></summary>
+      <typeparam name="_CArgT"></typeparam>
+      <param name="_Count"></param>
+      <param name="_Carg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1._Append_range_unchecked``2(_InIt,_Sentinel)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_Sentinel"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1._Attach_after(std._Flist_insert_after_op{_Alnode}.pointer)">
+      <summary></summary>
+      <param name="_After"></param>
+    </member>
+    <member name="M:std._Flist_insert_after_op`1.~_Flist_insert_after_op">
+      <summary></summary>
+    </member>
+    <member name="T:std.forward_list`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.forward_list`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2._Unchecked_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.forward_list`2._Unchecked_const_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(std.forward_list{_Ty,_Alloc}.size_type,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(std.forward_list{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(std.forward_list{_Ty,_Alloc}.size_type,const _Ty,const _Alloc)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(const std.forward_list{_Ty,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor``2(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor``2(_Iter,_Iter,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(std.forward_list{_Ty,_Alloc},const _Alloc)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.operator=(std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.push_front(_Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.forward_list`2.insert_after(std.forward_list{_Ty,_Alloc}.const_iterator,_Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.emplace_front``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.emplace_after``1(std.forward_list{_Ty,_Alloc}.const_iterator,_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.#ctor(std.initializer_list{_Ty},const _Alloc)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.forward_list`2.operator=(std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.assign(std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.forward_list`2.insert_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.initializer_list{_Ty})">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.~forward_list">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.operator=(const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.before_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.before_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.cbefore_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Unchecked_before_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Unchecked_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Make_iter(std.forward_list{_Ty,_Alloc}._Nodeptr) const">
+      <summary></summary>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.resize(std.forward_list{_Ty,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+    </member>
+    <member name="M:std.forward_list`2.resize(std.forward_list{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Newsize"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.forward_list`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.get_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.push_front(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.forward_list`2.pop_front">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.assign``2(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.forward_list`2.assign(std.forward_list{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.forward_list`2.insert_after(std.forward_list{_Ty,_Alloc}.const_iterator,const _Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.insert_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc}.size_type,const _Ty)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Count"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.insert_after``2(std.forward_list{_Ty,_Alloc}.const_iterator,_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.erase_after(std.forward_list{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.erase_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.clear">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.swap(std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.splice_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.splice_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.splice_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc},std.forward_list{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Right"></param>
+      <param name="_First"></param>
+    </member>
+    <member name="M:std.forward_list`2.splice_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc},std.forward_list{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Right"></param>
+      <param name="_First"></param>
+    </member>
+    <member name="M:std.forward_list`2.splice_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc},std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Right"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.forward_list`2.splice_after(std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc},std.forward_list{_Ty,_Alloc}.const_iterator,std.forward_list{_Ty,_Alloc}.const_iterator)">
+      <summary></summary>
+      <param name="_Where"></param>
+      <param name="_Right"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="T:std.forward_list`2._Flist_node_remove_op">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2._Flist_node_remove_op.#ctor(std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_List_"></param>
+    </member>
+    <member name="M:std.forward_list`2._Flist_node_remove_op.#ctor(const std.forward_list{_Ty,_Alloc}._Flist_node_remove_op)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.forward_list`2._Flist_node_remove_op.operator=(const std.forward_list{_Ty,_Alloc}._Flist_node_remove_op)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Flist_node_remove_op._Transfer_back(std.forward_list{_Ty,_Alloc}._Nodeptr)">
+      <summary></summary>
+      <param name="_Predecessor"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2._Flist_node_remove_op.~_Flist_node_remove_op">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.remove(const _Ty)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.remove_if``1(_Pr1)">
+      <summary></summary>
+      <typeparam name="_Pr1"></typeparam>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.unique">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.unique``1(_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_list`2.merge(std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.merge(std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.forward_list`2.merge``1(std.forward_list{_Ty,_Alloc},_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.forward_list`2.merge``1(std.forward_list{_Ty,_Alloc},_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.forward_list`2.sort">
+      <summary></summary>
+    </member>
+    <member name="M:std.forward_list`2.sort``1(_Pr2)">
+      <summary></summary>
+      <typeparam name="_Pr2"></typeparam>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.forward_list`2.reverse">
+      <summary></summary>
+    </member>
+    <member name="M:std.swap``2(std.forward_list{_Ty,_Alloc},std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``2(const std.forward_list{_Ty,_Alloc},const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.forward_list{_Ty,_Alloc},const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.forward_list{_Ty,_Alloc},const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.forward_list{_Ty,_Alloc},const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.forward_list{_Ty,_Alloc},const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.forward_list{_Ty,_Alloc},const std.forward_list{_Ty,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

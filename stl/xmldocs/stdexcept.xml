@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.logic_error">
+      <summary></summary>
+    </member>
+    <member name="std.logic_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.logic_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.logic_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.domain_error">
+      <summary></summary>
+    </member>
+    <member name="std.domain_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.domain_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.domain_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.invalid_argument">
+      <summary></summary>
+    </member>
+    <member name="std.invalid_argument._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.invalid_argument.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.invalid_argument.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.length_error">
+      <summary></summary>
+    </member>
+    <member name="std.length_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.length_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.length_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.out_of_range">
+      <summary></summary>
+    </member>
+    <member name="std.out_of_range._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.out_of_range.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.out_of_range.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.runtime_error">
+      <summary></summary>
+    </member>
+    <member name="std.runtime_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.runtime_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.runtime_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.overflow_error">
+      <summary></summary>
+    </member>
+    <member name="std.overflow_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.overflow_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.overflow_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.underflow_error">
+      <summary></summary>
+    </member>
+    <member name="std.underflow_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.underflow_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.underflow_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.range_error">
+      <summary></summary>
+    </member>
+    <member name="std.range_error._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.range_error.#ctor(const std.string)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.range_error.#ctor(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std._Throw_range_error(const char)">
+      <summary></summary>
+      <param name="_Message"></param>
+    </member>
+  </members>
+</doc>

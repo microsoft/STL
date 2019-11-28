@@ -1,0 +1,272 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.bitset`1">
+      <summary></summary>
+      <typeparam name="_Bits"></typeparam>
+    </member>
+    <member name="std.bitset`1._Ty">
+      <summary></summary>
+    </member>
+    <member name="T:std.bitset`1.reference">
+      <summary></summary>
+    </member>
+    <member name="M:std.bitset`1.reference.~reference">
+      <summary></summary>
+    </member>
+    <member name="M:std.bitset`1.reference.operator=(bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.reference.operator=(const std.bitset{}.reference)">
+      <summary></summary>
+      <param name="_Bitref"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.reference.flip">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.reference.operator~ const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.reference.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1._Validate(size_t)">
+      <summary></summary>
+      <param name="_Pos"></param>
+    </member>
+    <member name="M:std.bitset`1._Subscript(size_t) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator[](size_t) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator[](size_t)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.bitset`1.#ctor(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.bitset`1._Construct``2(const _Elem,size_t,_Elem,_Elem)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <param name="_E0"></param>
+      <param name="_E1"></param>
+    </member>
+    <member name="M:std.bitset`1.#ctor``3(const std.basic_string{_Elem,_Traits,_Alloc},std.basic_string{_Elem,_Traits,_Alloc}.size_type,std.basic_string{_Elem,_Traits,_Alloc}.size_type,_Elem,_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Pos"></param>
+      <param name="_Count"></param>
+      <param name="_E0"></param>
+      <param name="_E1"></param>
+    </member>
+    <member name="M:std.bitset`1.#ctor``1(const _Elem,std.basic_string{_Elem,std.char_traits{_Elem},std.allocator{_Elem}}.size_type,_Elem,_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ntcts"></param>
+      <param name="_Count"></param>
+      <param name="_E0"></param>
+      <param name="_E1"></param>
+    </member>
+    <member name="M:std.bitset`1.operator&amp;=(const std.bitset{})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator|=(const std.bitset{})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator^=(const std.bitset{})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator&lt;&lt;=(size_t)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator&gt;&gt;=(size_t)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.set">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.set(size_t,bool)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.reset">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.reset(size_t)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator~ const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.flip">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.flip(size_t)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.to_ulong const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.to_ullong const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.to_string``3(_Elem,_Elem) const">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_E0"></param>
+      <param name="_E1"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator==(const std.bitset{}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator!=(const std.bitset{}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.test(size_t) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.any const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.none const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.all const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator&lt;&lt;(size_t) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1.operator&gt;&gt;(size_t) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.bitset`1._Getword(size_t) const">
+      <summary></summary>
+      <param name="_Wpos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&amp;``1(const std.bitset{},const std.bitset{})">
+      <summary></summary>
+      <typeparam name="_Bits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator|``1(const std.bitset{},const std.bitset{})">
+      <summary></summary>
+      <typeparam name="_Bits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator^``1(const std.bitset{},const std.bitset{})">
+      <summary></summary>
+      <typeparam name="_Bits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``3(std.basic_ostream{_Elem,_Tr},const std.bitset{})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <typeparam name="_Bits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;&gt;``3(std.basic_istream{_Elem,_Tr},std.bitset{})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <typeparam name="_Bits"></typeparam>
+      <param name="_Istr"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Bits"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(const std.bitset{}) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,532 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="F:std.io_errc.std.io_errc::stream">
+      <summary></summary>
+    </member>
+    <member name="T:std.is_error_code_enum`1">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+    </member>
+    <member name="T:std.is_error_code_enum`1">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+    </member>
+    <member name="T:std.is_error_condition_enum`1">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+    </member>
+    <member name="T:std.is_error_condition_enum`1">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+    </member>
+    <member name="T:std.error_code">
+      <summary></summary>
+    </member>
+    <member name="T:std.error_condition">
+      <summary></summary>
+    </member>
+    <member name="M:std.make_error_code(std.errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_code(std.io_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_condition(std.errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_condition(std.io_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std.generic_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.iostream_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.system_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_category.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_category.~error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_category.name const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.message(int) const">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.default_error_condition(int) const">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.equivalent(int,const std.error_condition) const">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <param name="_Cond"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.equivalent(const std.error_code,int) const">
+      <summary></summary>
+      <param name="_Code"></param>
+      <param name="_Errval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.operator==(const std.error_category) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.operator!=(const std.error_category) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.operator&lt;(const std.error_category) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.#ctor(const std.error_category)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.error_category.operator=(const std.error_category)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="F:std.error_category._Future_addr">
+      <summary></summary>
+    </member>
+    <member name="F:std.error_category._Generic_addr">
+      <summary></summary>
+    </member>
+    <member name="F:std.error_category._Iostream_addr">
+      <summary></summary>
+    </member>
+    <member name="F:std.error_category._System_addr">
+      <summary></summary>
+    </member>
+    <member name="M:std._System_error_equal(const std.error_code,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.error_code">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_code.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_code.#ctor(int,const std.error_category)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Cat"></param>
+    </member>
+    <member name="M:std.error_code.#ctor``2(_Enum)">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Errcode"></param>
+    </member>
+    <member name="M:std.error_code.assign(int,const std.error_category)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Cat"></param>
+    </member>
+    <member name="M:std.error_code.operator=``2(_Enum)">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_code.clear">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_code.value const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_code.category const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_code.default_error_condition const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_code.message const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_code.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.error_code,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.error_code,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.error_condition,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.error_code,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.error_code,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.error_condition,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;(const std.error_code,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.error_condition">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_condition.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_condition.#ctor(int,const std.error_category)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Cat"></param>
+    </member>
+    <member name="M:std.error_condition.#ctor``2(_Enum)">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Errcode"></param>
+    </member>
+    <member name="M:std.error_condition.assign(int,const std.error_category)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <param name="_Cat"></param>
+    </member>
+    <member name="M:std.error_condition.operator=``2(_Enum)">
+      <summary></summary>
+      <typeparam name="_Enum"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_condition.clear">
+      <summary></summary>
+    </member>
+    <member name="M:std.error_condition.value const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_condition.category const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_condition.message const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_condition.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.error_condition,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.error_condition,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;(const std.error_condition,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.error_code,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==(const std.error_condition,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.error_code,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=(const std.error_condition,const std.error_code)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._System_error_equal(const std.error_code,const std.error_condition)">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.default_error_condition(int) const">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.equivalent(int,const std.error_condition) const">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <param name="_Cond"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_category.equivalent(const std.error_code,int) const">
+      <summary></summary>
+      <param name="_Code"></param>
+      <param name="_Errval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.error_code.default_error_condition const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_code(std.errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_code(std.io_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_condition(std.errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.make_error_condition(std.io_errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(const std.error_code) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(const std.error_condition) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._System_error">
+      <summary></summary>
+    </member>
+    <member name="M:std._System_error.#ctor(std.error_code,const std.string)">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <param name="_Message"></param>
+    </member>
+    <member name="T:std.system_error">
+      <summary></summary>
+    </member>
+    <member name="M:std.system_error.#ctor(std.error_code)">
+      <summary></summary>
+      <param name="_Errcode"></param>
+    </member>
+    <member name="M:std.system_error.#ctor(std.error_code,const std.string)">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.system_error.#ctor(std.error_code,const char)">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.system_error.#ctor(int,const std.error_category)">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <param name="_Errcat"></param>
+    </member>
+    <member name="M:std.system_error.#ctor(int,const std.error_category,const std.string)">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <param name="_Errcat"></param>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.system_error.#ctor(int,const std.error_category,const char)">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <param name="_Errcat"></param>
+      <param name="_Message"></param>
+    </member>
+    <member name="M:std.system_error.code const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Throw_system_error(std.errc)">
+      <summary></summary>
+      <param name="_Errno"></param>
+    </member>
+    <member name="M:std._Syserror_map(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Winerror_map(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Winerror_message(unsigned long,char,unsigned long)">
+      <summary></summary>
+      <param name="_Message_id"></param>
+      <param name="_Narrow"></param>
+      <param name="_Size"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Generic_error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std._Generic_error_category.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Generic_error_category.name const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Generic_error_category.message(int) const">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Iostream_error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std._Iostream_error_category.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Iostream_error_category.name const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Iostream_error_category.message(int) const">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._System_error_category">
+      <summary></summary>
+    </member>
+    <member name="M:std._System_error_category.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._System_error_category.name const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._System_error_category.message(int) const">
+      <summary></summary>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._System_error_category.default_error_condition(int) const">
+      <summary></summary>
+      <param name="_Errval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.generic_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.iostream_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.system_category">
+      <summary></summary>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

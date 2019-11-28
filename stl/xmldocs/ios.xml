@@ -1,0 +1,270 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.basic_ios`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_ios`2._Myos">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2._Ctype">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ios`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ios`2.#ctor(std.basic_ios{_Elem,_Traits}._Mysb)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+    </member>
+    <member name="M:std.basic_ios`2.~basic_ios">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ios`2.clear(std.ios_base.iostate,bool)">
+      <summary></summary>
+      <param name="_State"></param>
+      <param name="_Reraise"></param>
+    </member>
+    <member name="M:std.basic_ios`2.clear(std.ios_base.io_state)">
+      <summary></summary>
+      <param name="_State"></param>
+    </member>
+    <member name="M:std.basic_ios`2.setstate(std.ios_base.iostate,bool)">
+      <summary></summary>
+      <param name="_State"></param>
+      <param name="_Reraise"></param>
+    </member>
+    <member name="M:std.basic_ios`2.setstate(std.ios_base.io_state)">
+      <summary></summary>
+      <param name="_State"></param>
+    </member>
+    <member name="M:std.basic_ios`2.copyfmt(const std.basic_ios{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.tie const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.tie(std.basic_ios{_Elem,_Traits}._Myos)">
+      <summary></summary>
+      <param name="_Newtie"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.rdbuf(std.basic_ios{_Elem,_Traits}._Mysb)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.imbue(const std.locale)">
+      <summary></summary>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.fill const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.fill(_Elem)">
+      <summary></summary>
+      <param name="_Newfill"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.narrow(_Elem,char) const">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <param name="_Dflt"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.widen(char) const">
+      <summary></summary>
+      <param name="_Byte"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ios`2.move(std.basic_ios{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ios`2.move(std.basic_ios{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ios`2.swap(std.basic_ios{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ios`2.set_rdbuf(std.basic_ios{_Elem,_Traits}._Mysb)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+    </member>
+    <member name="M:std.basic_ios`2.init(std.basic_ios{_Elem,_Traits}._Mysb,bool)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <param name="_Isstd"></param>
+    </member>
+    <member name="M:std.basic_ios`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ios`2.#ctor(const std.basic_ios{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_ios`2.operator=(const std.basic_ios{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_ios`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_ios`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="M:std.boolalpha(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.dec(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.defaultfloat(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.fixed(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.hex(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.hexfloat(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.internal(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.left(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.noboolalpha(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.noshowbase(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.noshowpoint(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.noshowpos(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.noskipws(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.nounitbuf(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.nouppercase(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.oct(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.right(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.scientific(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.showbase(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.showpoint(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.showpos(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.skipws(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unitbuf(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.uppercase(std.ios_base)">
+      <summary></summary>
+      <param name="_Iosbase"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,438 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.array`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+    </member>
+    <member name="std.array`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.array`2.assign(const _Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.array`2.fill(const _Ty)">
+      <summary></summary>
+      <param name="_Value"></param>
+    </member>
+    <member name="M:std.array`2.swap(std.array{_Ty,})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.array`2.begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rbegin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rend">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.crbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.crend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.at(std.array{_Ty,}.size_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.at(std.array{_Ty,}.size_type) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.operator[](std.array{_Ty,}.size_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.operator[](std.array{_Ty,}.size_type) const">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.back">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.back const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.data">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.data const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Xran const">
+      <summary></summary>
+    </member>
+    <member name="T:std.array`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="std.array`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.array`2.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.array`2.assign(const _Ty)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.array`2.fill(const _Ty)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.array`2.swap(std.array{_Ty,})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.array`2.begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rbegin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rend">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.rend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.crbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.crend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_begin">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_end">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.at(std.array{_Ty,}.size_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.at(std.array{_Ty,}.size_type) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.operator[](std.array{_Ty,}.size_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.operator[](std.array{_Ty,}.size_type) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.back">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.back const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.data">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2.data const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.array`2._Xran const">
+      <summary></summary>
+    </member>
+    <member name="M:std.swap``3(std.array{_Ty,},std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``2(const std.array{_Ty,},const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.array{_Ty,},const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.array{_Ty,},const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.array{_Ty,},const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.array{_Ty,},const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.array{_Ty,},const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

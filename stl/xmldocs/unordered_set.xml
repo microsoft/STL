@@ -1,0 +1,600 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Uset_traits`4">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Mfl"></typeparam>
+    </member>
+    <member name="std._Uset_traits`4.key_type">
+      <summary></summary>
+    </member>
+    <member name="std._Uset_traits`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Uset_traits`4._Mutable_value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Uset_traits`4.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std._Uset_traits`4.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std._Uset_traits`4._In_place_key_extractor`1">
+      <summary></summary>
+    </member>
+    <member name="M:std._Uset_traits`4.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Uset_traits`4.#ctor(const _Tr)">
+      <summary></summary>
+      <param name="_Traits"></param>
+    </member>
+    <member name="std._Uset_traits`4.value_compare">
+      <summary></summary>
+    </member>
+    <member name="M:std._Uset_traits`4._Kfn(const std._Uset_traits{_Kty,_Tr,_Alloc,}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Uset_traits`4._Nonkfn(const std._Uset_traits{_Kty,_Tr,_Alloc,}.value_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.unordered_set`4">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.unordered_set`4.hasher">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.key_equal">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.local_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_set`4.const_local_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor``1(_Iter,_Iter,std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.operator=(const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.operator=(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_set`4.swap(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_set`4.#ctor(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_set`4.operator=(std.initializer_list{std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_set`4.hash_function const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_set`4.key_eq const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``4(std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc},std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``4(const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``4(const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_set{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.unordered_multiset`4">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.unordered_multiset`4.hasher">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.key_equal">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multiset`4.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor``1(_Iter,_Iter,std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.operator=(const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.operator=(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multiset`4.swap(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.#ctor(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multiset`4.operator=(std.initializer_list{std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multiset`4.hash_function const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multiset`4.key_eq const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``4(std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc},std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``4(const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``4(const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc},const std.unordered_multiset{_Kty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

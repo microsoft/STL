@@ -1,0 +1,697 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.chrono.treat_as_floating_point`1">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+    </member>
+    <member name="T:std.chrono.duration_values`1">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+    </member>
+    <member name="M:std.chrono.duration_values`1.zero">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration_values`1.min">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration_values`1.max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.chrono.duration`2">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+    </member>
+    <member name="M:std.chrono.duration_cast``4(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="_Enabled"></typeparam>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.chrono.duration`2">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+    </member>
+    <member name="std.chrono.duration`2.rep">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.duration`2.period">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.duration`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.duration`2.#ctor``2(const _Rep2)">
+      <summary></summary>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.chrono.duration`2.#ctor``3(const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Dur"></param>
+    </member>
+    <member name="M:std.chrono.duration`2.count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator+ const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator- const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator--">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator--(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator+=(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator-=(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator*=(const _Rep)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator/=(const _Rep)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator%=(const _Rep)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.operator%=(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.zero">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.min">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration`2.max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.chrono.time_point`2">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+    </member>
+    <member name="std.chrono.time_point`2.clock">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.time_point`2.duration">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.time_point`2.rep">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.time_point`2.period">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.time_point`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.time_point`2.#ctor(const _Duration)">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.chrono.time_point`2.#ctor``2(const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Duration2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Tp"></param>
+    </member>
+    <member name="M:std.chrono.time_point`2.time_since_epoch const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.time_point`2.operator+=(const _Duration)">
+      <summary></summary>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.time_point`2.operator-=(const _Duration)">
+      <summary></summary>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.time_point`2.min">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.time_point`2.max">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Lcm`2">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+    </member>
+    <member name="T:std.common_type`2">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+    </member>
+    <member name="std.common_type`2.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.common_type`2">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+    </member>
+    <member name="std.common_type`2.type">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.operator+``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator-``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator*``4(const std.chrono.duration{_Rep1,_Period1},const _Rep2)">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator*``4(const _Rep1,const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.chrono._Duration_div_mod1`4">
+      <summary></summary>
+      <typeparam name="_CR"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="std.chrono._Duration_div_mod1`4.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.chrono._Duration_div_mod1`4">
+      <summary></summary>
+      <typeparam name="_CR"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+    </member>
+    <member name="T:std.chrono._Duration_div_mod`4">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std.chrono._Duration_div_mod`4">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+    </member>
+    <member name="M:std.chrono.operator/``3(const std.chrono.duration{_Rep1,_Period1},const _Rep2)">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator/``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator%``3(const std.chrono.duration{_Rep1,_Period1},const _Rep2)">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator%``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator==``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator!=``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&lt;``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&lt;=``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&gt;``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&gt;=``4(const std.chrono.duration{_Rep1,_Period1},const std.chrono.duration{_Rep2,_Period2})">
+      <summary></summary>
+      <typeparam name="_Rep1"></typeparam>
+      <typeparam name="_Period1"></typeparam>
+      <typeparam name="_Rep2"></typeparam>
+      <typeparam name="_Period2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.duration_cast``4(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="_Enabled"></typeparam>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.floor``4(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.ceil``4(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono._Is_even``1(_Rep)">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.round``4(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.abs``3(std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Dur"></param>
+      <returns></returns>
+    </member>
+    <member name="std.chrono.nanoseconds">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.microseconds">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.milliseconds">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.seconds">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.minutes">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.hours">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.operator+``4(const std.chrono.time_point{_Clock,_Duration},const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator+``4(const std.chrono.duration{_Rep,_Period},const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator-``4(const std.chrono.time_point{_Clock,_Duration},const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator-``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator==``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator!=``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&lt;``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&lt;=``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&gt;``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.operator&gt;=``3(const std.chrono.time_point{_Clock,_Duration1},const std.chrono.time_point{_Clock,_Duration2})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration1"></typeparam>
+      <typeparam name="_Duration2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.time_point_cast``4(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.floor``4(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.ceil``4(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.round``4(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_To"></typeparam>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Time"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.chrono.system_clock">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.system_clock.rep">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.system_clock.period">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.system_clock.duration">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.system_clock.time_point">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.system_clock.now">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.system_clock.to_time_t(const std.chrono.system_clock.time_point)">
+      <summary></summary>
+      <param name="_Time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.chrono.system_clock.from_time_t(__time64_t)">
+      <summary></summary>
+      <param name="_Tm"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.chrono.steady_clock">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.steady_clock.rep">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.steady_clock.period">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.steady_clock.duration">
+      <summary></summary>
+    </member>
+    <member name="std.chrono.steady_clock.time_point">
+      <summary></summary>
+    </member>
+    <member name="M:std.chrono.steady_clock.now">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="std.chrono.high_resolution_clock">
+      <summary></summary>
+    </member>
+    <member name="M:std._To_xtime_10_day_clamped``2(xtime,const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Xt"></param>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""h(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""h(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""min(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""min(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""s(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""s(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""ms(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""ms(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""us(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""us(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""ns(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.literals.chrono_literals.operator ""ns(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

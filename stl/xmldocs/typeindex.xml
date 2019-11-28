@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.type_index">
+      <summary></summary>
+    </member>
+    <member name="M:std.type_index.#ctor(const type_info)">
+      <summary></summary>
+      <param name="_Tinfo"></param>
+    </member>
+    <member name="M:std.type_index.hash_code const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.name const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.operator==(const std.type_index) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.operator!=(const std.type_index) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.operator&lt;(const std.type_index) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.operator&gt;=(const std.type_index) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.operator&gt;(const std.type_index) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.type_index.operator&lt;=(const std.type_index) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.hash`1">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+    </member>
+    <member name="std.hash`1.argument_type">
+      <summary></summary>
+    </member>
+    <member name="std.hash`1.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.hash`1.operator()(const std.type_index) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

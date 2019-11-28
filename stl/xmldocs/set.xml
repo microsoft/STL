@@ -1,0 +1,379 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Tset_traits`4">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Mfl"></typeparam>
+    </member>
+    <member name="std._Tset_traits`4.key_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tset_traits`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tset_traits`4.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std._Tset_traits`4.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tset_traits`4._In_place_key_extractor`1">
+      <summary></summary>
+    </member>
+    <member name="std._Tset_traits`4.value_compare">
+      <summary></summary>
+    </member>
+    <member name="M:std._Tset_traits`4._Kfn(const std._Tset_traits{_Kty,_Pr,_Alloc,}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.set`3">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.set`3._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.value_compare">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.reference">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.set`3.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.set`3._Alnode">
+      <summary></summary>
+    </member>
+    <member name="std.set`3._Alnode_traits">
+      <summary></summary>
+    </member>
+    <member name="M:std.set`3.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.set`3.#ctor(const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(const std.set{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(const std.set{_Kty,_Pr,_Alloc},const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(const std.set{_Kty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(const std.set{_Kty,_Pr,_Alloc}.key_compare,const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.set`3.#ctor``1(_Iter,_Iter,const std.set{_Kty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.set`3.#ctor``1(_Iter,_Iter,const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.#ctor``1(_Iter,_Iter,const std.set{_Kty,_Pr,_Alloc}.key_compare,const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.operator=(const std.set{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.set`3.#ctor(std.set{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(std.set{_Kty,_Pr,_Alloc},const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.operator=(std.set{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.set`3.swap(std.set{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(std.initializer_list{std.set{_Kty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(std.initializer_list{std.set{_Kty,_Pr,_Alloc}.value_type},const std.set{_Kty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(std.initializer_list{std.set{_Kty,_Pr,_Alloc}.value_type},const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.#ctor(std.initializer_list{std.set{_Kty,_Pr,_Alloc}.value_type},const std.set{_Kty,_Pr,_Alloc}.key_compare,const std.set{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.set`3.operator=(std.initializer_list{std.set{_Kty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``3(std.set{_Kty,_Pr,_Alloc},std.set{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.multiset`3">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.multiset`3._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.value_compare">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.reference">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3._Alnode">
+      <summary></summary>
+    </member>
+    <member name="std.multiset`3._Alnode_traits">
+      <summary></summary>
+    </member>
+    <member name="M:std.multiset`3.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.multiset`3.#ctor(const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(const std.multiset{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(const std.multiset{_Kty,_Pr,_Alloc},const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(const std.multiset{_Kty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(const std.multiset{_Kty,_Pr,_Alloc}.key_compare,const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor``1(_Iter,_Iter,const std.multiset{_Kty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor``1(_Iter,_Iter,const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor``1(_Iter,_Iter,const std.multiset{_Kty,_Pr,_Alloc}.key_compare,const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.operator=(const std.multiset{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multiset`3.#ctor(std.multiset{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(std.multiset{_Kty,_Pr,_Alloc},const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.operator=(std.multiset{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multiset`3.emplace``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multiset`3.swap(std.multiset{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(std.initializer_list{std.multiset{_Kty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(std.initializer_list{std.multiset{_Kty,_Pr,_Alloc}.value_type},const std.multiset{_Kty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(std.initializer_list{std.multiset{_Kty,_Pr,_Alloc}.value_type},const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.#ctor(std.initializer_list{std.multiset{_Kty,_Pr,_Alloc}.value_type},const std.multiset{_Kty,_Pr,_Alloc}.key_compare,const std.multiset{_Kty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multiset`3.operator=(std.initializer_list{std.multiset{_Kty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``3(std.multiset{_Kty,_Pr,_Alloc},std.multiset{_Kty,_Pr,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+  </members>
+</doc>

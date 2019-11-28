@@ -1,0 +1,623 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="M:pow(double,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:acos(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:acosh(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:asin(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:asinh(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:atan(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:atanh(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:atan2(float,float)">
+      <summary></summary>
+      <param name="_Yx"></param>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:cbrt(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:ceil(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:copysign(float,float)">
+      <summary></summary>
+      <param name="_Number"></param>
+      <param name="_Sign"></param>
+      <returns></returns>
+    </member>
+    <member name="M:cos(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:cosh(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:erf(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:erfc(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:exp(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:exp2(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:expm1(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fabs(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fdim(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:floor(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fma(float,float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <param name="_Zx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fmax(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fmin(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fmod(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:frexp(float,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:hypot(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:ilogb(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:ldexp(float,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:lgamma(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:llrint(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:llround(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log10(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log1p(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log2(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:logb(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:lrint(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:lround(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:modf(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:nearbyint(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:nextafter(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:nexttoward(float,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:pow(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:pow(float,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:remainder(float,float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:remquo(float,float,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <param name="_Zx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:rint(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:round(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:scalbln(float,long)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:scalbn(float,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:sin(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:sinh(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:sqrt(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:tan(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:tanh(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:tgamma(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:trunc(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:acos(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:acosh(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:asin(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:asinh(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:atan(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:atanh(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:atan2(long double,long double)">
+      <summary></summary>
+      <param name="_Yx"></param>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:cbrt(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:ceil(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:copysign(long double,long double)">
+      <summary></summary>
+      <param name="_Number"></param>
+      <param name="_Sign"></param>
+      <returns></returns>
+    </member>
+    <member name="M:cos(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:cosh(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:erf(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:erfc(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:exp(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:exp2(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:expm1(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fabs(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fdim(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:floor(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fma(long double,long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <param name="_Zx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fmax(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fmin(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:fmod(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:frexp(long double,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:hypot(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:ilogb(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:ldexp(long double,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:lgamma(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:llrint(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:llround(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log10(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log1p(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:log2(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:logb(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:lrint(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:lround(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:modf(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:nearbyint(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:nextafter(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:nexttoward(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:pow(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:pow(long double,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:remainder(long double,long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:remquo(long double,long double,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <param name="_Zx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:rint(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:round(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:scalbln(long double,long)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:scalbn(long double,int)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <param name="_Yx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:sin(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:sinh(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:sqrt(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:tan(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:tanh(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:tgamma(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:trunc(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

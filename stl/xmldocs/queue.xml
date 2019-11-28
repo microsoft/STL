@@ -1,0 +1,386 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.queue`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+    </member>
+    <member name="std.queue`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.queue`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.queue`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.queue`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.queue`2.container_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.queue`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.queue`2.#ctor(const _Container)">
+      <summary></summary>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.queue`2.#ctor(_Container)">
+      <summary></summary>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.queue`2.#ctor``2(const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.queue`2.#ctor``2(const _Container,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Cont"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.queue`2.#ctor``2(_Container,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Cont"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.queue`2.#ctor``2(const std.queue{_Ty,_Container},const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.queue`2.#ctor``2(std.queue{_Ty,_Container},const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.queue`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.front">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.front const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.back">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.back const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.push(const std.queue{_Ty,_Container}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.queue`2.push(std.queue{_Ty,_Container}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.queue`2.emplace``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.queue`2.pop">
+      <summary></summary>
+    </member>
+    <member name="M:std.queue`2.swap(std.queue{_Ty,_Container})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.queue{_Ty,_Container},const std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``3(std.queue{_Ty,_Container},std.queue{_Ty,_Container})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.uses_allocator`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="T:std.priority_queue`3">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+    </member>
+    <member name="std.priority_queue`3.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.priority_queue`3.reference">
+      <summary></summary>
+    </member>
+    <member name="std.priority_queue`3.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.priority_queue`3.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.priority_queue`3.container_type">
+      <summary></summary>
+    </member>
+    <member name="std.priority_queue`3.value_compare">
+      <summary></summary>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor(const _Pr)">
+      <summary></summary>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor(const _Pr,const _Container)">
+      <summary></summary>
+      <param name="_Pred"></param>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor(const _Pr,_Container)">
+      <summary></summary>
+      <param name="_Pred"></param>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``1(_InIt,_InIt,const _Pr,const _Container)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``1(_InIt,_InIt)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``1(_InIt,_InIt,const _Pr)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``1(_InIt,_InIt,const _Pr,_Container)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+      <param name="_Cont"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``2(const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``2(const _Pr,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``2(const _Pr,const _Container,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Pred"></param>
+      <param name="_Cont"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``2(const _Pr,_Container,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Pred"></param>
+      <param name="_Cont"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``2(const std.priority_queue{_Ty,_Container,_Pr},const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.priority_queue`3.#ctor``2(std.priority_queue{_Ty,_Container,_Pr},const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.priority_queue`3.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.priority_queue`3.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.priority_queue`3.top const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.priority_queue`3.push(const std.priority_queue{_Ty,_Container,_Pr}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.priority_queue`3.push(std.priority_queue{_Ty,_Container,_Pr}.value_type)">
+      <summary></summary>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.priority_queue`3.emplace``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+    </member>
+    <member name="M:std.priority_queue`3.pop">
+      <summary></summary>
+    </member>
+    <member name="M:std.priority_queue`3.swap(std.priority_queue{_Ty,_Container,_Pr})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.swap``4(std.priority_queue{_Ty,_Container,_Pr},std.priority_queue{_Ty,_Container,_Pr})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.uses_allocator`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Container"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+  </members>
+</doc>

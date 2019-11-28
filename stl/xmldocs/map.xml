@@ -1,0 +1,524 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Tmap_traits`5">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Mfl"></typeparam>
+    </member>
+    <member name="std._Tmap_traits`5.key_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5._In_place_key_extractor`1">
+      <summary></summary>
+    </member>
+    <member name="T:std._Tmap_traits`5.value_compare">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5.value_compare.first_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5.value_compare.second_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Tmap_traits`5.value_compare.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Tmap_traits`5.value_compare.operator()(const std._Tmap_traits{_Kty,_Ty,_Pr,_Alloc,}.value_type,const std._Tmap_traits{_Kty,_Ty,_Pr,_Alloc,}.value_type) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Tmap_traits`5.value_compare.#ctor(std._Tmap_traits{_Kty,_Ty,_Pr,_Alloc,}.key_compare)">
+      <summary></summary>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std._Tmap_traits`5._Kfn``2(const std.pair{_Ty1,_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.map`4">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.map`4._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.map`4._Nodeptr">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.mapped_type">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.value_compare">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.reference">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.map`4.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.map`4._Alnode">
+      <summary></summary>
+    </member>
+    <member name="std.map`4._Alnode_traits">
+      <summary></summary>
+    </member>
+    <member name="M:std.map`4.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.map`4.#ctor(const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(const std.map{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(const std.map{_Kty,_Ty,_Pr,_Alloc},const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(const std.map{_Kty,_Ty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(const std.map{_Kty,_Ty,_Pr,_Alloc}.key_compare,const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.map`4.#ctor``1(_Iter,_Iter,const std.map{_Kty,_Ty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.map`4.#ctor``1(_Iter,_Iter,const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.#ctor``1(_Iter,_Iter,const std.map{_Kty,_Ty,_Pr,_Alloc}.key_compare,const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.operator=(const std.map{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.#ctor(std.map{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(std.map{_Kty,_Ty,_Pr,_Alloc},const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.operator=(std.map{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.operator[](std.map{_Kty,_Ty,_Pr,_Alloc}.key_type)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.swap(std.map{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.map`4.insert``2(_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.insert``2(std.map{_Kty,_Ty,_Pr,_Alloc}.const_iterator,_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.try_emplace``1(const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.try_emplace``1(std.map{_Kty,_Ty,_Pr,_Alloc}.const_iterator,const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.try_emplace``1(std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.try_emplace``1(std.map{_Kty,_Ty,_Pr,_Alloc}.const_iterator,std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.insert_or_assign``1(const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.insert_or_assign``1(std.map{_Kty,_Ty,_Pr,_Alloc}.const_iterator,const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.insert_or_assign``1(std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.insert_or_assign``1(std.map{_Kty,_Ty,_Pr,_Alloc}.const_iterator,std.map{_Kty,_Ty,_Pr,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.#ctor(std.initializer_list{std.map{_Kty,_Ty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(std.initializer_list{std.map{_Kty,_Ty,_Pr,_Alloc}.value_type},const std.map{_Kty,_Ty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(std.initializer_list{std.map{_Kty,_Ty,_Pr,_Alloc}.value_type},const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.#ctor(std.initializer_list{std.map{_Kty,_Ty,_Pr,_Alloc}.value_type},const std.map{_Kty,_Ty,_Pr,_Alloc}.key_compare,const std.map{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.map`4.operator=(std.initializer_list{std.map{_Kty,_Ty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.operator[](const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.at(const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.map`4.at(const std.map{_Kty,_Ty,_Pr,_Alloc}.key_type) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``4(std.map{_Kty,_Ty,_Pr,_Alloc},std.map{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.multimap`4">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.multimap`4._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.mapped_type">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.value_compare">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.reference">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4.const_reverse_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4._Alnode">
+      <summary></summary>
+    </member>
+    <member name="std.multimap`4._Alnode_traits">
+      <summary></summary>
+    </member>
+    <member name="M:std.multimap`4.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.multimap`4.#ctor(const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(const std.multimap{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(const std.multimap{_Kty,_Ty,_Pr,_Alloc},const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(const std.multimap{_Kty,_Ty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(const std.multimap{_Kty,_Ty,_Pr,_Alloc}.key_compare,const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor``1(_Iter,_Iter,const std.multimap{_Kty,_Ty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor``1(_Iter,_Iter,const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor``1(_Iter,_Iter,const std.multimap{_Kty,_Ty,_Pr,_Alloc}.key_compare,const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.operator=(const std.multimap{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multimap`4.#ctor(std.multimap{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(std.multimap{_Kty,_Ty,_Pr,_Alloc},const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.operator=(std.multimap{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multimap`4.emplace``1(_Valty...)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multimap`4.swap(std.multimap{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.multimap`4.insert``2(_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multimap`4.insert``2(std.multimap{_Kty,_Ty,_Pr,_Alloc}.const_iterator,_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.multimap`4.#ctor(std.initializer_list{std.multimap{_Kty,_Ty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(std.initializer_list{std.multimap{_Kty,_Ty,_Pr,_Alloc}.value_type},const std.multimap{_Kty,_Ty,_Pr,_Alloc}.key_compare)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(std.initializer_list{std.multimap{_Kty,_Ty,_Pr,_Alloc}.value_type},const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.#ctor(std.initializer_list{std.multimap{_Kty,_Ty,_Pr,_Alloc}.value_type},const std.multimap{_Kty,_Ty,_Pr,_Alloc}.key_compare,const std.multimap{_Kty,_Ty,_Pr,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Pred"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.multimap`4.operator=(std.initializer_list{std.multimap{_Kty,_Ty,_Pr,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``4(std.multimap{_Kty,_Ty,_Pr,_Alloc},std.multimap{_Kty,_Ty,_Pr,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+  </members>
+</doc>

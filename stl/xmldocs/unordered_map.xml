@@ -1,0 +1,754 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Umap_traits`5">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Tr"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Mfl"></typeparam>
+    </member>
+    <member name="std._Umap_traits`5.key_type">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5.value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5._Mutable_value_type">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5.key_compare">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5._In_place_key_extractor`1">
+      <summary></summary>
+    </member>
+    <member name="M:std._Umap_traits`5.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Umap_traits`5.#ctor(const _Tr)">
+      <summary></summary>
+      <param name="_Traits"></param>
+    </member>
+    <member name="T:std._Umap_traits`5.value_compare">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5.value_compare.first_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5.value_compare.second_argument_type">
+      <summary></summary>
+    </member>
+    <member name="std._Umap_traits`5.value_compare.result_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Umap_traits`5.value_compare.operator()(const std._Umap_traits{_Kty,_Ty,_Tr,_Alloc,}.value_type,const std._Umap_traits{_Kty,_Ty,_Tr,_Alloc,}.value_type) const">
+      <summary></summary>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Umap_traits`5.value_compare.#ctor(const std._Umap_traits{_Kty,_Ty,_Tr,_Alloc,}.key_compare)">
+      <summary></summary>
+      <param name="_Keycomparg"></param>
+    </member>
+    <member name="M:std._Umap_traits`5._Kfn``2(const std.pair{_Ty1,_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Umap_traits`5._Nonkfn``2(const std.pair{_Ty1,_Ty2})">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.unordered_map`5">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.unordered_map`5.hasher">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.mapped_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.key_equal">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.local_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_map`5.const_local_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor``1(_Iter,_Iter,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.operator=(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.operator=(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.operator[](std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.swap(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_map`5.insert``2(_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.insert``2(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.const_iterator,_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.try_emplace``1(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.try_emplace``1(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.try_emplace``1(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.const_iterator,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.try_emplace``1(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.const_iterator,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty...)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.insert_or_assign``1(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.insert_or_assign``1(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.insert_or_assign``1(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.const_iterator,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.insert_or_assign``1(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.const_iterator,std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type,_Mappedty)">
+      <summary></summary>
+      <typeparam name="_Mappedty"></typeparam>
+      <param name="_Hint"></param>
+      <param name="_Keyval"></param>
+      <param name="_Mapval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_map`5.#ctor(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_map`5.operator=(std.initializer_list{std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.hash_function const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.key_eq const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.operator[](const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.at(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type)">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_map`5.at(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.key_type) const">
+      <summary></summary>
+      <param name="_Keyval"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``5(std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``5(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``5(const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_map{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.unordered_multimap`5">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.unordered_multimap`5.hasher">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.key_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.mapped_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.key_equal">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.const_pointer">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.local_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.unordered_multimap`5.const_local_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor``1(_Iter,_Iter,std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.operator=(const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Right"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.operator=(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multimap`5.swap(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.insert``2(_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multimap`5.insert``2(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.const_iterator,_Valty)">
+      <summary></summary>
+      <typeparam name="_Valty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Where"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.#ctor(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.size_type,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.hasher,const _Keyeq,const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.allocator_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Buckets"></param>
+      <param name="_Hasharg"></param>
+      <param name="_Keyeqarg"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.unordered_multimap`5.operator=(std.initializer_list{std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc}.value_type})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multimap`5.hash_function const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.unordered_multimap`5.key_eq const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``5(std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.operator==``5(const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``5(const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc},const std.unordered_multimap{_Kty,_Ty,_Hasher,_Keyeq,_Alloc})">
+      <summary></summary>
+      <typeparam name="_Kty"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Hasher"></typeparam>
+      <typeparam name="_Keyeq"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

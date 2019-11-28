@@ -1,0 +1,236 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Abs`1">
+      <summary></summary>
+      <typeparam name="_Val"></typeparam>
+    </member>
+    <member name="T:std._Safe_mult`4">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+      <typeparam name="_Sfinae"></typeparam>
+      <typeparam name="_Good"></typeparam>
+    </member>
+    <member name="T:std._Safe_mult`4">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+      <typeparam name="_Sfinae"></typeparam>
+    </member>
+    <member name="T:std._Sign_of`1">
+      <summary></summary>
+      <typeparam name="_Val"></typeparam>
+    </member>
+    <member name="T:std._Safe_addX`4">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+      <typeparam name="_Good"></typeparam>
+      <typeparam name="_Also_good"></typeparam>
+    </member>
+    <member name="T:std._Safe_addX`4">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+    </member>
+    <member name="T:std._Safe_add`2">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+    </member>
+    <member name="T:std._GcdX`2">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+    </member>
+    <member name="T:std._GcdX`2">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+    </member>
+    <member name="T:std._Gcd`2">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+    </member>
+    <member name="T:std._Gcd`2">
+      <summary></summary>
+      <typeparam name="_Ax"></typeparam>
+      <typeparam name="_Bx"></typeparam>
+    </member>
+    <member name="T:std.ratio`2">
+      <summary></summary>
+      <typeparam name="_Nx"></typeparam>
+      <typeparam name="_Dx"></typeparam>
+    </member>
+    <member name="std.ratio`2.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ratio_add`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="std._Ratio_add`2.type">
+      <summary></summary>
+    </member>
+    <member name="std.ratio_add`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ratio_subtract`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="std._Ratio_subtract`2.type">
+      <summary></summary>
+    </member>
+    <member name="std.ratio_subtract`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ratio_multiply`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="std._Ratio_multiply`2._Num">
+      <summary></summary>
+    </member>
+    <member name="std._Ratio_multiply`2._Den">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ratio_multiply_sfinae`4">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+      <typeparam name="_Sfinae"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Ratio_multiply_sfinae`4">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+      <typeparam name="_Sfinae"></typeparam>
+    </member>
+    <member name="std._Ratio_multiply_sfinae`4.type">
+      <summary></summary>
+    </member>
+    <member name="std.ratio_multiply`2">
+      <summary></summary>
+    </member>
+    <member name="T:std._Ratio_divide`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="std._Ratio_divide`2._R2_inverse">
+      <summary></summary>
+    </member>
+    <member name="std._Ratio_divide_sfinae`3">
+      <summary></summary>
+    </member>
+    <member name="std.ratio_divide`2">
+      <summary></summary>
+    </member>
+    <member name="T:std.ratio_equal`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="T:std.ratio_not_equal`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="T:std._Big_uint128">
+      <summary></summary>
+    </member>
+    <member name="M:std._Big_uint128.operator&lt;(std._Big_uint128) const">
+      <summary></summary>
+      <param name="_Rhs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Big_multiply(uint64_t,uint64_t)">
+      <summary></summary>
+      <param name="_Lfactor"></param>
+      <param name="_Rfactor"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ratio_less(int64_t,int64_t,int64_t,int64_t)">
+      <summary></summary>
+      <param name="_N1"></param>
+      <param name="_D1"></param>
+      <param name="_N2"></param>
+      <param name="_D2"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.ratio_less`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="T:std.ratio_less_equal`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="T:std.ratio_greater`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="T:std.ratio_greater_equal`2">
+      <summary></summary>
+      <typeparam name="_R1"></typeparam>
+      <typeparam name="_R2"></typeparam>
+    </member>
+    <member name="std.atto">
+      <summary></summary>
+    </member>
+    <member name="std.femto">
+      <summary></summary>
+    </member>
+    <member name="std.pico">
+      <summary></summary>
+    </member>
+    <member name="std.nano">
+      <summary></summary>
+    </member>
+    <member name="std.micro">
+      <summary></summary>
+    </member>
+    <member name="std.milli">
+      <summary></summary>
+    </member>
+    <member name="std.centi">
+      <summary></summary>
+    </member>
+    <member name="std.deci">
+      <summary></summary>
+    </member>
+    <member name="std.deca">
+      <summary></summary>
+    </member>
+    <member name="std.hecto">
+      <summary></summary>
+    </member>
+    <member name="std.kilo">
+      <summary></summary>
+    </member>
+    <member name="std.mega">
+      <summary></summary>
+    </member>
+    <member name="std.giga">
+      <summary></summary>
+    </member>
+    <member name="std.tera">
+      <summary></summary>
+    </member>
+    <member name="std.peta">
+      <summary></summary>
+    </member>
+    <member name="std.exa">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

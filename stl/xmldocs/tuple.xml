@@ -1,0 +1,854 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std._Tuple_constructible_val`2">
+      <summary></summary>
+      <typeparam name="_Dest"></typeparam>
+      <typeparam name="_Srcs"></typeparam>
+    </member>
+    <member name="T:std._Tuple_assignable_val`2">
+      <summary></summary>
+      <typeparam name="_Dest"></typeparam>
+      <typeparam name="_Srcs"></typeparam>
+    </member>
+    <member name="T:std._Tuple_convert_copy_val`2">
+      <summary></summary>
+      <typeparam name="_Myself"></typeparam>
+      <typeparam name="_Other"></typeparam>
+    </member>
+    <member name="T:std._Tuple_convert_copy_val`2">
+      <summary></summary>
+      <typeparam name="_This"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+    </member>
+    <member name="T:std._Tuple_convert_move_val`2">
+      <summary></summary>
+      <typeparam name="_Myself"></typeparam>
+      <typeparam name="_Other"></typeparam>
+    </member>
+    <member name="T:std._Tuple_convert_move_val`2">
+      <summary></summary>
+      <typeparam name="_This"></typeparam>
+      <typeparam name="_Uty"></typeparam>
+    </member>
+    <member name="T:std._Tuple_perfect_val`3">
+      <summary></summary>
+      <typeparam name="_Myself"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="_Rest2"></typeparam>
+    </member>
+    <member name="T:std._Tuple_perfect_val`2">
+      <summary></summary>
+      <typeparam name="_Myself"></typeparam>
+      <typeparam name="_This2"></typeparam>
+    </member>
+    <member name="T:std._Ignore">
+      <summary></summary>
+    </member>
+    <member name="M:std._Ignore.operator=``1(const _Ty) const">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Tuple_val`1">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std._Tuple_val`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Tuple_val`1.#ctor``1(_Other)">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Arg"></param>
+    </member>
+    <member name="M:std._Tuple_val`1.#ctor``3(const _Alloc,std.allocator_arg_t,_Other...)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Arg"></param>
+    </member>
+    <member name="M:std._Tuple_val`1.#ctor``3(const _Alloc,std.allocator_arg_t,_Other...)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Al"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Arg"></param>
+    </member>
+    <member name="M:std._Tuple_val`1.#ctor``3(const _Alloc,std.allocator_arg_t,_Other...)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Al"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Arg"></param>
+    </member>
+    <member name="T:std._Exact_args_t">
+      <summary></summary>
+    </member>
+    <member name="T:std._Unpack_tuple_t">
+      <summary></summary>
+    </member>
+    <member name="T:std._Alloc_exact_args_t">
+      <summary></summary>
+    </member>
+    <member name="T:std._Alloc_unpack_tuple_t">
+      <summary></summary>
+    </member>
+    <member name="T:std.tuple`1">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std.tuple`0">
+      <summary></summary>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std.tuple`0.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.tuple`0.#ctor(const std.tuple})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`0.#ctor``1(std.allocator_arg_t,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`0.#ctor``1(std.allocator_arg_t,const _Alloc,const std.tuple})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`0.#ctor``2(_Tag)">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`0.#ctor``3(_Tag,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`0.swap(std.tuple})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`0._Equals(const std.tuple}) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`0._Less(const std.tuple}) const">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.tuple`2">
+      <summary></summary>
+      <typeparam name="_This"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="std.tuple`2._This_type">
+      <summary></summary>
+    </member>
+    <member name="std.tuple`2._Mybase">
+      <summary></summary>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(_Tag,_This2,_Rest2...)">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="_Rest2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_This_arg"></param>
+      <param name="_Rest_arg"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(_Tag,_Tpl,std.index_sequence{})">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(_Tag,_Tpl)">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``5(_Tag,const _Alloc,_This2,_Rest2...)">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="_Rest2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_This_arg"></param>
+      <param name="_Rest_arg"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``5(_Tag,const _Alloc,_Tpl,std.index_sequence{})">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(_Tag,const _Alloc,_Tpl)">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``2">
+      <summary></summary>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="M:std.tuple`2.#ctor``2(const _This,const _Rest...)">
+      <summary></summary>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_This_arg"></param>
+      <param name="_Rest_arg"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(_This2,_Rest2...)">
+      <summary></summary>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="_Rest2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_This_arg"></param>
+      <param name="_Rest_arg"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor(const std.tuple{_This,_Rest})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor(std.tuple{_This,_Rest})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``2(const std.tuple{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``2(std.tuple{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(const std.pair{_First,_Second})">
+      <summary></summary>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.pair{_First,_Second})">
+      <summary></summary>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.allocator_arg_t,const _Alloc)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.allocator_arg_t,const _Alloc,const _This,const _Rest...)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_This_arg"></param>
+      <param name="_Rest_arg"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(std.allocator_arg_t,const _Alloc,_This2,_Rest2...)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="_Rest2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_This_arg"></param>
+      <param name="_Rest_arg"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.allocator_arg_t,const _Alloc,const std.tuple{_This,_Rest})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.allocator_arg_t,const _Alloc,std.tuple{_This,_Rest})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.allocator_arg_t,const _Alloc,const std.tuple{_Other})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``3(std.allocator_arg_t,const _Alloc,std.tuple{_Other})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(std.allocator_arg_t,const _Alloc,const std.pair{_First,_Second})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(std.allocator_arg_t,const _Alloc,std.pair{_First,_Second})">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2.operator=(const volatile std.tuple{_This,_Rest})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.operator=``3(std._Identity_t{const _Myself})">
+      <summary></summary>
+      <typeparam name="_Myself"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.operator=``3(std._Identity_t{_Myself})">
+      <summary></summary>
+      <typeparam name="_Myself"></typeparam>
+      <typeparam name="_This2"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.operator=``2(const std.tuple{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.operator=``2(std.tuple{_Other})">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.operator=``3(const std.pair{_First,_Second})">
+      <summary></summary>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.operator=``3(std.pair{_First,_Second})">
+      <summary></summary>
+      <typeparam name="_First"></typeparam>
+      <typeparam name="_Second"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.swap(std.tuple{_This,_Rest})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.tuple`2._Get_rest">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2._Get_rest const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2._Equals``1(const std.tuple{_Other}) const">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2._Less``1(const std.tuple{_Other}) const">
+      <summary></summary>
+      <typeparam name="_Other"></typeparam>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.tuple{_Types1},const std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.tuple{_Types1},const std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``2(const std.tuple{_Types1},const std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``2(const std.tuple{_Types1},const std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``2(const std.tuple{_Types1},const std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``2(const std.tuple{_Types1},const std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``2(std.tuple{_Types},std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std._Tuple_element`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Tuple"></typeparam>
+    </member>
+    <member name="T:std._Tuple_element`2">
+      <summary></summary>
+      <typeparam name="_This"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="std._Tuple_element`2._Ttype">
+      <summary></summary>
+    </member>
+    <member name="T:std._Tuple_element`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_This"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="std._Tuple_element`2._Ttype">
+      <summary></summary>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Index"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``2(const std.tuple{_Types})">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Tuple"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple`2.#ctor``4(_Tag,_Tpl,std.index_sequence{})">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Right"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.tuple`2.#ctor``5(_Tag,const _Alloc,_Tpl,std.index_sequence{})">
+      <summary></summary>
+      <typeparam name="_Tag"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="_Indices"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Al"></param>
+      <param name="_Right"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.make_tuple``1(_Types...)">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tie``1(_Types...)">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.forward_as_tuple``1(_Types...)">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <param name="_Args"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Cat_sequences`2">
+      <summary></summary>
+      <typeparam name="_Seq_type1"></typeparam>
+      <typeparam name="_Seq_type2"></typeparam>
+    </member>
+    <member name="T:std._Cat_sequences`2">
+      <summary></summary>
+      <typeparam name="_Indexes1"></typeparam>
+      <typeparam name="_Indexes2"></typeparam>
+    </member>
+    <member name="std._Cat_sequences`2.type">
+      <summary></summary>
+    </member>
+    <member name="T:std.array`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+    </member>
+    <member name="M:std.get``3(std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.get``3(const std.array{_Ty,})">
+      <summary></summary>
+      <typeparam name="_Idx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <param name="_Arr"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._View_as_tuple`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_For_array"></typeparam>
+    </member>
+    <member name="T:std._View_as_tuple`1">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="std._View_as_tuple`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._View_as_tuple`1">
+      <summary></summary>
+      <typeparam name="_Ty1"></typeparam>
+      <typeparam name="_Ty2"></typeparam>
+    </member>
+    <member name="std._View_as_tuple`1.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._View_as_tuple`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="std._View_as_tuple`2.type">
+      <summary></summary>
+    </member>
+    <member name="T:std._View_as_tuple`2">
+      <summary></summary>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="_Size"></typeparam>
+      <typeparam name="_Types"></typeparam>
+    </member>
+    <member name="T:std._Repeat_for`2">
+      <summary></summary>
+      <typeparam name="_Nx"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="T:std._Tuple_cat2`5">
+      <summary></summary>
+      <typeparam name="_Ret"></typeparam>
+      <typeparam name="_Kx_arg"></typeparam>
+      <typeparam name="_Ix_arg"></typeparam>
+      <typeparam name="_Ix_next"></typeparam>
+      <typeparam name="_Tuples"></typeparam>
+    </member>
+    <member name="std._Tuple_cat2`5.type">
+      <summary></summary>
+    </member>
+    <member name="std._Tuple_cat2`5._Kx_arg_seq">
+      <summary></summary>
+    </member>
+    <member name="std._Tuple_cat2`5._Ix_arg_seq">
+      <summary></summary>
+    </member>
+    <member name="T:std._Tuple_cat2`6">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Kx_arg"></typeparam>
+      <typeparam name="_Ix"></typeparam>
+      <typeparam name="_Ix_next"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <typeparam name="_Rest"></typeparam>
+    </member>
+    <member name="T:std._Tuple_cat1`1">
+      <summary></summary>
+      <typeparam name="_Tuples"></typeparam>
+    </member>
+    <member name="M:std._Tuple_cat``4(std.index_sequence{},std.index_sequence{},_Ty)">
+      <summary></summary>
+      <typeparam name="_Ret"></typeparam>
+      <typeparam name="_Kx"></typeparam>
+      <typeparam name="_Ix"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.tuple_cat``1(_Tuples...)">
+      <summary></summary>
+      <typeparam name="_Tuples"></typeparam>
+      <param name="_Tpls"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._For_each_tuple_element_impl``3(_Tpl,_Fx,std.index_sequence{})">
+      <summary></summary>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="_Fx"></typeparam>
+      <typeparam name="_Indices"></typeparam>
+      <param name="_Tuple"></param>
+      <param name="_Func"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._For_each_tuple_element``2(_Tpl,_Fx)">
+      <summary></summary>
+      <typeparam name="_Tpl"></typeparam>
+      <typeparam name="_Fx"></typeparam>
+      <param name="_Tuple"></param>
+      <param name="_Func"></param>
+    </member>
+    <member name="M:std.pair`2.#ctor``4(_Tuple1,_Tuple2,std.index_sequence{},std.index_sequence{})">
+      <summary></summary>
+      <typeparam name="_Tuple1"></typeparam>
+      <typeparam name="_Tuple2"></typeparam>
+      <typeparam name="_Indexes1"></typeparam>
+      <typeparam name="_Indexes2"></typeparam>
+      <param name="_Val1"></param>
+      <param name="_Val2"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.pair`2.#ctor``2(std.piecewise_construct_t,std.tuple{_Types1},std.tuple{_Types2})">
+      <summary></summary>
+      <typeparam name="_Types1"></typeparam>
+      <typeparam name="_Types2"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Val1"></param>
+      <param name="_Val2"></param>
+    </member>
+    <member name="T:std.uses_allocator`2">
+      <summary></summary>
+      <typeparam name="_Types"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+  </members>
+</doc>

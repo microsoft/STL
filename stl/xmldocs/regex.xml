@@ -1,0 +1,3090 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="_REGEX_MAX_COMPLEXITY_COUNT">
+      <summary></summary>
+    </member>
+    <member name="_REGEX_MAX_STACK_COUNT">
+      <summary></summary>
+    </member>
+    <member name="_ENHANCED_REGEX_VISUALIZER">
+      <summary></summary>
+    </member>
+    <member name="T:std._Meta_type">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_lpar">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_rpar">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_dlr">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_caret">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_dot">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_star">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_plus">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_query">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_lsq">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_rsq">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_bar">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_esc">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_dash">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_lbr">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_rbr">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_comma">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_colon">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_equal">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_exc">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_eos">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_nl">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_cr">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_bsp">
+      <summary></summary>
+    </member>
+    <member name="F:std._Meta_chr">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_bsl">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_word">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_not_word">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_a">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_b">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_f">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_n">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_r">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_t">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl_v">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_ctrl">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_hex">
+      <summary></summary>
+    </member>
+    <member name="F:std._Esc_uni">
+      <summary></summary>
+    </member>
+    <member name="T:std.regex_constants.syntax_option_type">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.ECMAScript">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.basic">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.extended">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.awk">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.grep">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.egrep">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants._Gmask">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.icase">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.nosubs">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.optimize">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.collate">
+      <summary></summary>
+    </member>
+    <member name="T:std.regex_constants.match_flag_type">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_default">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_not_bol">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_not_eol">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_not_bow">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_not_eow">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_any">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_not_null">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_continuous">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.match_prev_avail">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.format_default">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.format_sed">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.format_no_copy">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.format_first_only">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants._Match_not_null">
+      <summary></summary>
+    </member>
+    <member name="T:std.regex_constants.error_type">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_collate">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_ctype">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_escape">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_backref">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_brack">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_paren">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_brace">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_badbrace">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_range">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_space">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_badrepeat">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_complexity">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_stack">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_parse">
+      <summary></summary>
+    </member>
+    <member name="F:std.regex_constants.error_syntax">
+      <summary></summary>
+    </member>
+    <member name="M:std._Xregex_error(std.regex_constants.error_type)">
+      <summary></summary>
+      <param name="_Code"></param>
+    </member>
+    <member name="T:std.regex_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="T:std._Cl_names">
+      <summary></summary>
+    </member>
+    <member name="M:std._Cl_names._Get``1 const">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="M:std._Cl_names._Get``1 const">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="M:std._Cl_names._Get``1 const">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <returns></returns>
+    </member>
+    <member name="T:std._Cmp_cs`1">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std._Cmp_cs`1._Elem">
+      <summary></summary>
+    </member>
+    <member name="M:std._Cmp_cs`1.operator()(std._Cmp_cs{_RxTraits}._Elem,std._Cmp_cs{_RxTraits}._Elem)">
+      <summary></summary>
+      <param name="_E1"></param>
+      <param name="_E2"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Cmp_icase`1">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std._Cmp_icase`1._Elem">
+      <summary></summary>
+    </member>
+    <member name="M:std._Cmp_icase`1.#ctor(const _RxTraits)">
+      <summary></summary>
+      <param name="_Tr"></param>
+    </member>
+    <member name="M:std._Cmp_icase`1.operator()(std._Cmp_icase{_RxTraits}._Elem,std._Cmp_icase{_RxTraits}._Elem)">
+      <summary></summary>
+      <param name="_E1"></param>
+      <param name="_E2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Cmp_icase`1.operator=(const std._Cmp_icase{_RxTraits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Cmp_collate`1">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std._Cmp_collate`1._Elem">
+      <summary></summary>
+    </member>
+    <member name="M:std._Cmp_collate`1.#ctor(const _RxTraits)">
+      <summary></summary>
+      <param name="_Tr"></param>
+    </member>
+    <member name="M:std._Cmp_collate`1.operator()(std._Cmp_collate{_RxTraits}._Elem,std._Cmp_collate{_RxTraits}._Elem)">
+      <summary></summary>
+      <param name="_E1"></param>
+      <param name="_E2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Cmp_collate`1.operator=(const std._Cmp_collate{_RxTraits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Regex_traits_base">
+      <summary></summary>
+    </member>
+    <member name="T:std._Regex_traits_base._Char_class_type">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_none">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_alnum">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_alpha">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_cntrl">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_digit">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_graph">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_lower">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_print">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_punct">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_space">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_upper">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_xdigit">
+      <summary></summary>
+    </member>
+    <member name="F:std._Regex_traits_base._Ch_blank">
+      <summary></summary>
+    </member>
+    <member name="std._Regex_traits_base.char_class_type">
+      <summary></summary>
+    </member>
+    <member name="T:std._Regex_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="std._Regex_traits`1._Uelem">
+      <summary></summary>
+    </member>
+    <member name="std._Regex_traits`1.char_type">
+      <summary></summary>
+    </member>
+    <member name="std._Regex_traits`1.size_type">
+      <summary></summary>
+    </member>
+    <member name="std._Regex_traits`1.string_type">
+      <summary></summary>
+    </member>
+    <member name="std._Regex_traits`1.locale_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Regex_traits`1.length(const _Elem)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Regex_traits`1.#ctor(const std._Regex_traits{_Elem})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std._Regex_traits`1.operator=(const std._Regex_traits{_Elem})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.translate(_Elem) const">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.translate_nocase(_Elem) const">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.transform``1(_FwdIt,_FwdIt) const">
+      <summary></summary>
+      <typeparam name="_FwdIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.transform_primary``1(_FwdIt,_FwdIt) const">
+      <summary></summary>
+      <typeparam name="_FwdIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.isctype(_Elem,std._Regex_traits_base.char_class_type) const">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <param name="_Fx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.lookup_classname``1(_Iter,_Iter,bool) const">
+      <summary></summary>
+      <typeparam name="_Iter"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Icase"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.lookup_collatename``1(_FwdIt,_FwdIt) const">
+      <summary></summary>
+      <typeparam name="_FwdIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.imbue(std._Regex_traits{_Elem}.locale_type)">
+      <summary></summary>
+      <param name="_Lx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1.getloc const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1._Getcoll const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_traits`1._Getctype const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.regex_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="M:std.regex_traits`1.value(char,int) const">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.regex_traits`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="M:std.regex_traits`1.value(wchar_t,int) const">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <param name="_Base"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.regex_error">
+      <summary></summary>
+    </member>
+    <member name="M:std.regex_error.#ctor(std.regex_constants.error_type)">
+      <summary></summary>
+      <param name="_Ex"></param>
+    </member>
+    <member name="M:std.regex_error.code const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Iter_compare3``3(_FwdIt1,_FwdIt1,_FwdIt2,_FwdIt2,std.true_type)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_FwdIt1"></typeparam>
+      <typeparam name="_FwdIt2"></typeparam>
+      <param name="_First1"></param>
+      <param name="_Last1"></param>
+      <param name="_First2"></param>
+      <param name="_Last2"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Iter_compare3``3(_FwdIt1,_FwdIt1,_FwdIt2,_FwdIt2,std.false_type)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_FwdIt1"></typeparam>
+      <typeparam name="_FwdIt2"></typeparam>
+      <param name="_First1"></param>
+      <param name="_Last1"></param>
+      <param name="_First2"></param>
+      <param name="_Last2"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Iter_compare2``3(_FwdIt1,_FwdIt1,_FwdIt2,_FwdIt2)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_FwdIt1"></typeparam>
+      <typeparam name="_FwdIt2"></typeparam>
+      <param name="_First1"></param>
+      <param name="_Last1"></param>
+      <param name="_First2"></param>
+      <param name="_Last2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Iter_compare``3(_FwdIt1,_FwdIt1,_FwdIt2,_FwdIt2)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_FwdIt1"></typeparam>
+      <typeparam name="_FwdIt2"></typeparam>
+      <param name="_First1"></param>
+      <param name="_Last1"></param>
+      <param name="_First2"></param>
+      <param name="_Last2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Is_word(unsigned char)">
+      <summary></summary>
+      <param name="_UCh"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Is_word(char)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Is_word``1(_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.sub_match`1">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+    </member>
+    <member name="std.sub_match`1._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.sub_match`1.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.sub_match`1.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.sub_match`1.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.sub_match`1.string_type">
+      <summary></summary>
+    </member>
+    <member name="std.sub_match`1._Traits">
+      <summary></summary>
+    </member>
+    <member name="std.sub_match`1._Size_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.sub_match`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.sub_match`1.length const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1.operator std.sub_match`1.string_type const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1.str const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1.compare(const std.sub_match{_BidIt}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1.compare(const std.sub_match{_BidIt}.string_type) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1.compare(const std.sub_match{_BidIt}.value_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Compare(const std.sub_match{_BidIt}.value_type,std.sub_match{_BidIt}._Size_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Match_equal(const std.sub_match{_BidIt}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Match_equal(const std.sub_match{_BidIt}.value_type,std.sub_match{_BidIt}._Size_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Match_equal(const std.sub_match{_BidIt}.value_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Less(const std.sub_match{_BidIt}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Less(const std.sub_match{_BidIt}.value_type,std.sub_match{_BidIt}._Size_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Less(const std.sub_match{_BidIt}.value_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Greater(const std.sub_match{_BidIt}.value_type,std.sub_match{_BidIt}._Size_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Greater(const std.sub_match{_BidIt}.value_type) const">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.sub_match`1._Effective_range const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="std.csub_match">
+      <summary></summary>
+    </member>
+    <member name="std.wcsub_match">
+      <summary></summary>
+    </member>
+    <member name="std.ssub_match">
+      <summary></summary>
+    </member>
+    <member name="std.wssub_match">
+      <summary></summary>
+    </member>
+    <member name="M:std.operator==``1(const std.sub_match{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.sub_match{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(const std.sub_match{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(const std.sub_match{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(const std.sub_match{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(const std.sub_match{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(const std._Iter_value_t{_BidIt},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``1(const std.sub_match{_BidIt},const std._Iter_value_t{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``3(const std.sub_match{_BidIt},const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``3(const std.sub_match{_BidIt},const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``3(const std.sub_match{_BidIt},const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``3(const std.sub_match{_BidIt},const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``3(const std.sub_match{_BidIt},const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``3(const std.sub_match{_BidIt},const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``3(const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``3(const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;``3(const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;``3(const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;=``3(const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&gt;=``3(const std.basic_string{std._Iter_value_t{_BidIt},_Traits,_Alloc},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``3(std.basic_ostream{_Elem,_Traits},const std.sub_match{_BidIt})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_BidIt"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Match"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.match_results`2">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="M:std._Format_default``4(const std.match_results{_BidIt,_Alloc},_OutIt,_InIt,_InIt,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_OutIt"></typeparam>
+      <param name="_Match"></param>
+      <param name="_Out"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Format_sed``4(const std.match_results{_BidIt,_Alloc},_OutIt,_InIt,_InIt,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_OutIt"></typeparam>
+      <param name="_Match"></param>
+      <param name="_Out"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.match_results`2">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+    </member>
+    <member name="std.match_results`2._Elem">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2._MyCont">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2._Mytraits">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.const_reference">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.reference">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.const_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.iterator">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.size_type">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.allocator_type">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.match_results`2.string_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.match_results`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.match_results`2.#ctor(const _Alloc)">
+      <summary></summary>
+      <param name="_Al"></param>
+    </member>
+    <member name="M:std.match_results`2.ready const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.max_size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.length(std.match_results{_BidIt,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Sub"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.position(std.match_results{_BidIt,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Sub"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.str(std.match_results{_BidIt,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Sub"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.operator[](std.match_results{_BidIt,_Alloc}.size_type) const">
+      <summary></summary>
+      <param name="_Sub"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.prefix const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.suffix const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.cbegin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.cend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._Unchecked_begin const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._Unchecked_end const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._Format1``1(_OutIt,const std.match_results{_BidIt,_Alloc}.char_type,const std.match_results{_BidIt,_Alloc}.char_type,std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Fmt_begin"></param>
+      <param name="_Fmt_end"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.format``1(_OutIt,const std.match_results{_BidIt,_Alloc}.char_type,const std.match_results{_BidIt,_Alloc}.char_type,std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Fmt_begin"></param>
+      <param name="_Fmt_end"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.format``2(_OutTy ()[_OutSize],const std.match_results{_BidIt,_Alloc}.char_type,const std.match_results{_BidIt,_Alloc}.char_type,std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_OutSize"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Fmt_begin"></param>
+      <param name="_Fmt_end"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.format``3(_OutIt,const std.basic_string{std.match_results{_BidIt,_Alloc}.char_type,_Traits1,_Alloc1},std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <typeparam name="_Traits1"></typeparam>
+      <typeparam name="_Alloc1"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.format``4(_OutTy ()[_OutSize],const std.basic_string{std.match_results{_BidIt,_Alloc}.char_type,_Traits1,_Alloc1},std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_OutSize"></typeparam>
+      <typeparam name="_Traits1"></typeparam>
+      <typeparam name="_Alloc1"></typeparam>
+      <param name="_Out"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.format``2(const std.basic_string{std.match_results{_BidIt,_Alloc}.char_type,_Traits1,_Alloc1},std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <typeparam name="_Traits1"></typeparam>
+      <typeparam name="_Alloc1"></typeparam>
+      <param name="_Fmt"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.format(const std.match_results{_BidIt,_Alloc}.char_type,std.regex_constants.match_flag_type) const">
+      <summary></summary>
+      <param name="_Fmt_begin"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.get_allocator const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2.swap(std.match_results{_BidIt,_Alloc})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.match_results`2._Resize(unsigned int)">
+      <summary></summary>
+      <param name="_Nx"></param>
+    </member>
+    <member name="M:std.match_results`2._Pfx">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._Sfx">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._Null">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._At(unsigned int)">
+      <summary></summary>
+      <param name="_Sub"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.match_results`2._At(unsigned int) const">
+      <summary></summary>
+      <param name="_Sub"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator==``2(const std.match_results{_BidIt,_Alloc},const std.match_results{_BidIt,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator!=``2(const std.match_results{_BidIt,_Alloc},const std.match_results{_BidIt,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Node_flags">
+      <summary></summary>
+    </member>
+    <member name="F:std._Fl_none">
+      <summary></summary>
+    </member>
+    <member name="F:std._Fl_negate">
+      <summary></summary>
+    </member>
+    <member name="F:std._Fl_greedy">
+      <summary></summary>
+    </member>
+    <member name="F:std._Fl_final">
+      <summary></summary>
+    </member>
+    <member name="F:std._Fl_longest">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_type">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_none">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_nop">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_bol">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_eol">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_wbound">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_dot">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_str">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_class">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_group">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_end_group">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_assert">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_neg_assert">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_end_assert">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_capture">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_end_capture">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_back">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_if">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_endif">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_rep">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_end_rep">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_begin">
+      <summary></summary>
+    </member>
+    <member name="F:std._N_end">
+      <summary></summary>
+    </member>
+    <member name="T:std._Buf`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="M:std._Buf`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Buf`1.~_Buf">
+      <summary></summary>
+    </member>
+    <member name="M:std._Buf`1._Size const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Buf`1._At(unsigned int) const">
+      <summary></summary>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Buf`1._Str const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Buf`1._Insert(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Buf`1._Del">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Buf`1._Insert``1(_FwdIt,_FwdIt)">
+      <summary></summary>
+      <typeparam name="_FwdIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="T:std._Bitmap">
+      <summary></summary>
+    </member>
+    <member name="M:std._Bitmap.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Bitmap._Mark``1(_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Bitmap._Find``1(_Elem) const">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Sequence`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="M:std._Sequence`1.#ctor(unsigned int)">
+      <summary></summary>
+      <param name="_Len"></param>
+    </member>
+    <member name="T:std._Node_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_base.#ctor(std._Node_type,std._Node_flags)">
+      <summary></summary>
+      <param name="_Ty"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std._Node_base.~_Node_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Destroy_node(std._Node_base,std._Node_base)">
+      <summary></summary>
+      <param name="_Nx"></param>
+      <param name="_Ne"></param>
+    </member>
+    <member name="T:std._Root_node">
+      <summary></summary>
+    </member>
+    <member name="M:std._Root_node.#ctor">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_end_group">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_end_group.#ctor(std._Node_type,std._Node_flags,std._Node_base)">
+      <summary></summary>
+      <param name="_Ty"></param>
+      <param name="_Fl"></param>
+      <param name="_Bx"></param>
+    </member>
+    <member name="T:std._Node_assert">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_assert.#ctor(std._Node_type,std._Node_flags)">
+      <summary></summary>
+      <param name="_Ty"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std._Node_assert.~_Node_assert">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_capture">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_capture.#ctor(unsigned int)">
+      <summary></summary>
+      <param name="_Ix"></param>
+    </member>
+    <member name="T:std._Node_back">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_back.#ctor(unsigned int)">
+      <summary></summary>
+      <param name="_Ix"></param>
+    </member>
+    <member name="T:std._Node_str`1">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+    </member>
+    <member name="M:std._Node_str`1.#ctor(std._Node_flags)">
+      <summary></summary>
+      <param name="_Fl"></param>
+    </member>
+    <member name="T:std._Node_class`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="M:std._Node_class`2.#ctor(std._Node_type,std._Node_flags)">
+      <summary></summary>
+      <param name="_Ty"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std._Node_class`2.~_Node_class">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_class`2._Tidy(std._Sequence{_Elem})">
+      <summary></summary>
+      <param name="_Head"></param>
+    </member>
+    <member name="T:std._Node_endif">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_endif.#ctor">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_if">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_if.#ctor(std._Node_base)">
+      <summary></summary>
+      <param name="_End"></param>
+    </member>
+    <member name="M:std._Node_if.~_Node_if">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_rep">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_end_rep">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_end_rep.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_end_rep.operator=(const std._Node_end_rep)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Loop_vals_t">
+      <summary></summary>
+    </member>
+    <member name="T:std._Node_rep">
+      <summary></summary>
+    </member>
+    <member name="M:std._Node_rep.#ctor(bool,int,int,std._Node_end_rep,unsigned int)">
+      <summary></summary>
+      <param name="_Greedy"></param>
+      <param name="_Mn"></param>
+      <param name="_Mx"></param>
+      <param name="_End"></param>
+      <param name="_Number"></param>
+    </member>
+    <member name="M:std._Node_rep.operator=(const std._Node_rep)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Builder`3">
+      <summary></summary>
+      <typeparam name="_FwdIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std._Builder`3._Difft">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3.#ctor(const _RxTraits,std.regex_constants.syntax_option_type)">
+      <summary></summary>
+      <param name="_Tr"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Builder`3._Beg_expr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Setlong">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Tidy">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Getmark const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Add_nop">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_bol">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_eol">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_wbound">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_dot">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_char(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_class">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_char_to_class(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_range(_Elem,_Elem)">
+      <summary></summary>
+      <param name="_E0"></param>
+      <param name="_E1"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_named_class(std._Regex_traits_base.char_class_type,bool)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_equiv(_FwdIt,_FwdIt,std._Builder{_FwdIt,_Elem,_RxTraits}._Difft)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_coll(_FwdIt,_FwdIt,std._Builder{_FwdIt,_Elem,_RxTraits}._Difft)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_group">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._End_group(std._Node_base)">
+      <summary></summary>
+      <param name="_Back"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_assert_group(bool)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._End_assert_group(std._Node_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_capture_group(unsigned int)">
+      <summary></summary>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Add_backreference(unsigned int)">
+      <summary></summary>
+      <param name="_Idx"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_if(std._Node_base)">
+      <summary></summary>
+      <param name="_Start"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Else_if(std._Node_base,std._Node_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_rep(int,int,bool)">
+      <summary></summary>
+      <param name="_Min"></param>
+      <param name="_Max"></param>
+      <param name="_Greedy"></param>
+    </member>
+    <member name="M:std._Builder`3._Negate">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Mark_final">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._End_pattern">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3.operator=(const std._Builder{_FwdIt,_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Bt_state_t`1">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+    </member>
+    <member name="T:std._Tgt_state_t`1">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+    </member>
+    <member name="T:std._Tgt_state_t`1._Grp_t">
+      <summary></summary>
+    </member>
+    <member name="M:std._Tgt_state_t`1.operator=(const std._Bt_state_t{_BidIt})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="T:std._Matcher`4">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_It"></typeparam>
+    </member>
+    <member name="M:std._Matcher`4.#ctor(_It,_It,const _RxTraits,std._Root_node,unsigned int,std.regex_constants.syntax_option_type,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_Pfirst"></param>
+      <param name="_Plast"></param>
+      <param name="_Tr"></param>
+      <param name="_Re"></param>
+      <param name="_Nx"></param>
+      <param name="_Sf"></param>
+      <param name="_Mf"></param>
+    </member>
+    <member name="M:std._Matcher`4._Setf(std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_Mf"></param>
+    </member>
+    <member name="M:std._Matcher`4._Clearf(std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_Mf"></param>
+    </member>
+    <member name="M:std._Matcher`4._Match``1(_It,std.match_results{_BidIt,_Alloc},bool)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Pfirst"></param>
+      <param name="_Matches"></param>
+      <param name="_Full_match"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Match``1(std.match_results{_BidIt,_Alloc},bool)">
+      <summary></summary>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Matches"></param>
+      <param name="_Full_match"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Skip(_BidIt,_BidIt,std._Node_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4.operator=(const std._Matcher{_BidIt,_Elem,_RxTraits,_It})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Prs_ret">
+      <summary></summary>
+    </member>
+    <member name="F:std._Prs_none">
+      <summary></summary>
+    </member>
+    <member name="F:std._Prs_chr">
+      <summary></summary>
+    </member>
+    <member name="F:std._Prs_set">
+      <summary></summary>
+    </member>
+    <member name="T:std._Parser`3">
+      <summary></summary>
+      <typeparam name="_FwdIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std._Parser`3.char_class_type">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3.#ctor(const _RxTraits,_FwdIt,_FwdIt,std.regex_constants.syntax_option_type)">
+      <summary></summary>
+      <param name="_Tr"></param>
+      <param name="_Pfirst"></param>
+      <param name="_Plast"></param>
+      <param name="_Fx"></param>
+    </member>
+    <member name="M:std._Parser`3._Compile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Mark_count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std._Lang_flags">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_ext_rep">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_alt_pipe">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_alt_nl">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_nex_grp">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_nex_rep">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_nc_grp">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_asrt_gen">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_asrt_wrd">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_bckr">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_lim_bckr">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_ngr_rep">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_uni">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_hex">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_oct">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_bsl">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_ffnx">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_ffn">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_wsd">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_esc_ctrl">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_no_nl">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_bzr_chr">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_grp_esc">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_ident_ECMA">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_ident_ERE">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_ident_awk">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_anch_rstr">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_star_beg">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_empty_grp">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_paren_bal">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_brk_rstr">
+      <summary></summary>
+    </member>
+    <member name="F:std._L_mtch_long">
+      <summary></summary>
+    </member>
+    <member name="T:std._Regex_base">
+      <summary></summary>
+    </member>
+    <member name="M:std._Regex_base.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std._Regex_base.~_Regex_base">
+      <summary></summary>
+    </member>
+    <member name="T:std.basic_regex`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std.basic_regex`2.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_regex`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_regex`2.locale_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_regex`2.string_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_regex`2.flag_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor(const _Elem,std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Flags"></param>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor(const _Elem,size_t,std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <param name="_Flags"></param>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor``2(const std.basic_string{_Elem,_STtraits,_STalloc},std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <typeparam name="_STtraits"></typeparam>
+      <typeparam name="_STalloc"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Flags"></param>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor``1(_InIt,_InIt,std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Flags"></param>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor``1(_InIt,_InIt)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor(std.initializer_list{_Elem},std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Flags"></param>
+    </member>
+    <member name="M:std.basic_regex`2.operator=(std.initializer_list{_Elem})">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.assign(std.initializer_list{_Elem},std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <param name="_Ilist"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.#ctor(std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_regex`2.operator=(std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2._Assign_rv(std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_regex`2.assign(std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.~basic_regex">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_regex`2.operator=(const std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.operator=(const _Elem)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.operator=``2(const std.basic_string{_Elem,_STtraits,_STalloc})">
+      <summary></summary>
+      <typeparam name="_STtraits"></typeparam>
+      <typeparam name="_STalloc"></typeparam>
+      <param name="_Str"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2._Loop_count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.mark_count const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.assign(const std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.assign(const _Elem,std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.assign(const _Elem,size_t,std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.assign``2(const std.basic_string{_Elem,_STtraits,_STalloc},std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <typeparam name="_STtraits"></typeparam>
+      <typeparam name="_STalloc"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.assign``1(_InIt,_InIt,std.basic_regex{_Elem,_RxTraits}.flag_type)">
+      <summary></summary>
+      <typeparam name="_InIt"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Flags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.flags const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.imbue(std.basic_regex{_Elem,_RxTraits}.locale_type)">
+      <summary></summary>
+      <param name="_Loc"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.getloc const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2.swap(std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_regex`2._Get const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2._Empty const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_regex`2._Get_traits const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``2(std.basic_regex{_Elem,_RxTraits},std.basic_regex{_Elem,_RxTraits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.swap``2(std.match_results{_BidIt,_Alloc},std.match_results{_BidIt,_Alloc})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="std.regex">
+      <summary></summary>
+    </member>
+    <member name="std.wregex">
+      <summary></summary>
+    </member>
+    <member name="std.cmatch">
+      <summary></summary>
+    </member>
+    <member name="std.wcmatch">
+      <summary></summary>
+    </member>
+    <member name="std.smatch">
+      <summary></summary>
+    </member>
+    <member name="std.wsmatch">
+      <summary></summary>
+    </member>
+    <member name="M:std._Format_default``4(const std.match_results{_BidIt,_Alloc},_OutIt,_InIt,_InIt,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_OutIt"></typeparam>
+      <param name="_Match"></param>
+      <param name="_Out"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Format_sed``4(const std.match_results{_BidIt,_Alloc},_OutIt,_InIt,_InIt,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_InIt"></typeparam>
+      <typeparam name="_OutIt"></typeparam>
+      <param name="_Match"></param>
+      <param name="_Out"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_match1``5(_It,_It,std.match_results{_BidIt,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type,bool)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_It"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <param name="_Full"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``4(_BidIt,_BidIt,std.match_results{_BidIt,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``3(_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``2(const _Elem,const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``3(const _Elem,std.match_results{const _Elem,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``5(const std.basic_string{_Elem,_StTraits,_StAlloc},std.match_results{std.basic_string{_Elem,_StTraits,_StAlloc}.const_iterator,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_StTraits"></typeparam>
+      <typeparam name="_StAlloc"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``5(const std.basic_string{_Elem,_StTraits,_StAlloc},std.match_results{std.basic_string{_Elem,_StTraits,_StAlloc}.const_iterator,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_StTraits"></typeparam>
+      <typeparam name="_StAlloc"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_match``4(const std.basic_string{_Elem,_StTraits,_StAlloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_StTraits"></typeparam>
+      <typeparam name="_StAlloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_search1``5(_It,_It,std.match_results{_BidIt,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type,_It)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_It"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <param name="_Org"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``4(_BidIt,_BidIt,std.match_results{_BidIt,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``3(_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``2(const _Elem,const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``3(const _Elem,std.match_results{const _Elem,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``5(const std.basic_string{_Elem,_StTraits,_StAlloc},std.match_results{std.basic_string{_Elem,_StTraits,_StAlloc}.const_iterator,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_StTraits"></typeparam>
+      <typeparam name="_StAlloc"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Matches"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``5(const std.basic_string{_Elem,_StTraits,_StAlloc},std.match_results{std.basic_string{_Elem,_StTraits,_StAlloc}.const_iterator,_Alloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_StTraits"></typeparam>
+      <typeparam name="_StAlloc"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_search``4(const std.basic_string{_Elem,_StTraits,_StAlloc},const std.basic_regex{_Elem,_RxTraits},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_StTraits"></typeparam>
+      <typeparam name="_StAlloc"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Re"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Regex_replace1``6(_OutIt,_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},const std.basic_string{_Elem,_Traits,_Alloc},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Result"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``6(_OutIt,_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},const std.basic_string{_Elem,_Traits,_Alloc},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Result"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``7(_OutTy ()[_OutSize],_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},const std.basic_string{_Elem,_Traits,_Alloc},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_OutSize"></typeparam>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <typeparam name="_Alloc"></typeparam>
+      <param name="_Result"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``4(_OutIt,_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},const _Elem,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_OutIt"></typeparam>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Result"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Ptr"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``5(_OutTy ()[_OutSize],_BidIt,_BidIt,const std.basic_regex{_Elem,_RxTraits},const _Elem,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_OutTy"></typeparam>
+      <typeparam name="_OutSize"></typeparam>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Result"></param>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Ptr"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``6(const std.basic_string{_Elem,_Traits1,_Alloc1},const std.basic_regex{_Elem,_RxTraits},const std.basic_string{_Elem,_Traits2,_Alloc2},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits1"></typeparam>
+      <typeparam name="_Alloc1"></typeparam>
+      <typeparam name="_Traits2"></typeparam>
+      <typeparam name="_Alloc2"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Re"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``4(const std.basic_string{_Elem,_Traits1,_Alloc1},const std.basic_regex{_Elem,_RxTraits},const _Elem,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits1"></typeparam>
+      <typeparam name="_Alloc1"></typeparam>
+      <param name="_Str"></param>
+      <param name="_Re"></param>
+      <param name="_Ptr"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``4(const _Elem,const std.basic_regex{_Elem,_RxTraits},const std.basic_string{_Elem,_Traits2,_Alloc2},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits2"></typeparam>
+      <typeparam name="_Alloc2"></typeparam>
+      <param name="_Pstr"></param>
+      <param name="_Re"></param>
+      <param name="_Fmt"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_replace``2(const _Elem,const std.basic_regex{_Elem,_RxTraits},const _Elem,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_RxTraits"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Pstr"></param>
+      <param name="_Re"></param>
+      <param name="_Ptr"></param>
+      <param name="_Flgs"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.regex_iterator`3">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std.regex_iterator`3.regex_type">
+      <summary></summary>
+    </member>
+    <member name="std.regex_iterator`3.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.regex_iterator`3.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.regex_iterator`3.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.regex_iterator`3.reference">
+      <summary></summary>
+    </member>
+    <member name="std.regex_iterator`3.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="M:std.regex_iterator`3.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.regex_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_iterator{_BidIt,_Elem,_RxTraits}.regex_type,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std.regex_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_iterator{_BidIt,_Elem,_RxTraits}.regex_type,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.regex_iterator`3.operator==(const std.regex_iterator{_BidIt,_Elem,_RxTraits}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_iterator`3.operator!=(const std.regex_iterator{_BidIt,_Elem,_RxTraits}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_iterator`3.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_iterator`3.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_iterator`3.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_iterator`3.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_iterator`3._Atend const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="std.cregex_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.wcregex_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.sregex_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.wsregex_iterator">
+      <summary></summary>
+    </member>
+    <member name="T:std.regex_token_iterator`3">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+    </member>
+    <member name="std.regex_token_iterator`3._Position">
+      <summary></summary>
+    </member>
+    <member name="std.regex_token_iterator`3.regex_type">
+      <summary></summary>
+    </member>
+    <member name="std.regex_token_iterator`3.value_type">
+      <summary></summary>
+    </member>
+    <member name="std.regex_token_iterator`3.difference_type">
+      <summary></summary>
+    </member>
+    <member name="std.regex_token_iterator`3.pointer">
+      <summary></summary>
+    </member>
+    <member name="std.regex_token_iterator`3.reference">
+      <summary></summary>
+    </member>
+    <member name="std.regex_token_iterator`3.iterator_category">
+      <summary></summary>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,int,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Sub"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,const std.vector{int,std.allocator{int}},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Subx"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor``1(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,const int ()[_Nx],std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_Nx"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Subx"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,std.initializer_list{int},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Re"></param>
+      <param name="_Ilist"></param>
+      <param name="_Fl"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,int,std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,const std.vector{int,std.allocator{int}},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor``1(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,const int ()[_Nx],std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <typeparam name="_Nx"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(_BidIt,_BidIt,const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}.regex_type,std.initializer_list{int},std.regex_constants.match_flag_type)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.#ctor(const std.regex_token_iterator{_BidIt,_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator=(const std.regex_token_iterator{_BidIt,_Elem,_RxTraits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator==(const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator!=(const std.regex_token_iterator{_BidIt,_Elem,_RxTraits}) const">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator* const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator-&gt; const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator++">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.regex_token_iterator`3.operator++(int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="std.cregex_token_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.wcregex_token_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.sregex_token_iterator">
+      <summary></summary>
+    </member>
+    <member name="std.wsregex_token_iterator">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3.#ctor(const _RxTraits,std.regex_constants.syntax_option_type)">
+      <summary></summary>
+      <param name="_Tr"></param>
+      <param name="_Fx"></param>
+    </member>
+    <member name="M:std._Builder`3._Setlong">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Negate">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Mark_final">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Getmark const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Beg_expr(std._Node_base) const">
+      <summary></summary>
+      <param name="_Nx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Beg_expr const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Link_node(std._Node_base)">
+      <summary></summary>
+      <param name="_Nx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Insert_node(std._Node_base,std._Node_base)">
+      <summary></summary>
+      <param name="_Insert_before"></param>
+      <param name="_To_insert"></param>
+    </member>
+    <member name="M:std._Builder`3._New_node(std._Node_type)">
+      <summary></summary>
+      <param name="_Kind"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Add_nop">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_bol">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_eol">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_wbound">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_dot">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_str_node">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_char(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_class">
+      <summary></summary>
+    </member>
+    <member name="M:std._Builder`3._Add_char_to_bitmap(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_char_to_array(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_char_to_class(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_range(_Elem,_Elem)">
+      <summary></summary>
+      <param name="_E0x"></param>
+      <param name="_E1x"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_elts(std._Node_class{_Elem,_RxTraits},std._Regex_traits_base.char_class_type,bool)">
+      <summary></summary>
+      <param name="_Node"></param>
+      <param name="_Cl"></param>
+      <param name="_Negate"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_named_class(std._Regex_traits_base.char_class_type,bool)">
+      <summary></summary>
+      <param name="_Cl"></param>
+      <param name="_Negate"></param>
+    </member>
+    <member name="M:std._Builder`3._Char_to_elts(_FwdIt,_FwdIt,std._Builder{_FwdIt,_Elem,_RxTraits}._Difft,std._Sequence{_Elem})">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Diff"></param>
+      <param name="_Cur"></param>
+    </member>
+    <member name="M:std._Builder`3._Get_bmax const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Get_tmax const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Add_equiv(_FwdIt,_FwdIt,std._Builder{_FwdIt,_Elem,_RxTraits}._Difft)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Diff"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_coll(_FwdIt,_FwdIt,std._Builder{_FwdIt,_Elem,_RxTraits}._Difft)">
+      <summary></summary>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Diff"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_group">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._End_group(std._Node_base)">
+      <summary></summary>
+      <param name="_Back"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_assert_group(bool)">
+      <summary></summary>
+      <param name="_Neg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._End_assert_group(std._Node_base)">
+      <summary></summary>
+      <param name="_Nx"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_capture_group(unsigned int)">
+      <summary></summary>
+      <param name="_Idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Add_backreference(unsigned int)">
+      <summary></summary>
+      <param name="_Idx"></param>
+    </member>
+    <member name="M:std._Builder`3._Begin_if(std._Node_base)">
+      <summary></summary>
+      <param name="_Start"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Else_if(std._Node_base,std._Node_base)">
+      <summary></summary>
+      <param name="_Start"></param>
+      <param name="_End"></param>
+    </member>
+    <member name="M:std._Builder`3._Add_rep(int,int,bool)">
+      <summary></summary>
+      <param name="_Min"></param>
+      <param name="_Max"></param>
+      <param name="_Greedy"></param>
+    </member>
+    <member name="M:std._Builder`3._End_pattern">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Builder`3._Tidy">
+      <summary></summary>
+    </member>
+    <member name="M:std._Matcher`4._Do_if(std._Node_if)">
+      <summary></summary>
+      <param name="_Node"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Do_rep0(std._Node_rep,bool)">
+      <summary></summary>
+      <param name="_Node"></param>
+      <param name="_Greedy"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Do_rep(std._Node_rep,bool,int)">
+      <summary></summary>
+      <param name="_Node"></param>
+      <param name="_Greedy"></param>
+      <param name="_Init_idx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Do_class(std._Node_base)">
+      <summary></summary>
+      <param name="_Nx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Better_match">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Is_wbound const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Get_ncap const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Match_pat(std._Node_base)">
+      <summary></summary>
+      <param name="_Nx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Matcher`4._Skip(_BidIt,_BidIt,std._Node_base)">
+      <summary></summary>
+      <param name="_First_arg"></param>
+      <param name="_Last"></param>
+      <param name="_Node_arg"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Cmp_chrange``3(_BidIt1,_BidIt1,_BidIt2,_BidIt2,_Pr)">
+      <summary></summary>
+      <typeparam name="_BidIt1"></typeparam>
+      <typeparam name="_BidIt2"></typeparam>
+      <typeparam name="_Pr"></typeparam>
+      <param name="_Begin1"></param>
+      <param name="_End1"></param>
+      <param name="_Begin2"></param>
+      <param name="_End2"></param>
+      <param name="_Pred"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Compare``3(_BidIt1,_BidIt1,_BidIt2,_BidIt2,const _RxTraits,std.regex_constants.syntax_option_type)">
+      <summary></summary>
+      <typeparam name="_BidIt1"></typeparam>
+      <typeparam name="_BidIt2"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Begin1"></param>
+      <param name="_End1"></param>
+      <param name="_Begin2"></param>
+      <param name="_End2"></param>
+      <param name="_Traits"></param>
+      <param name="_Sflags"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lookup_range``1(unsigned int,const std._Buf{_Elem})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Bufptr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lookup_equiv``2(_RxTraits._Uelem,const std._Sequence{_Elem},const _RxTraits)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_RxTraits"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_Eq"></param>
+      <param name="_Traits"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Lookup_coll``2(_BidIt,_BidIt,const std._Sequence{_Elem})">
+      <summary></summary>
+      <typeparam name="_BidIt"></typeparam>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_First"></param>
+      <param name="_Last"></param>
+      <param name="_Eq"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Error(std.regex_constants.error_type)">
+      <summary></summary>
+      <param name="_Code"></param>
+    </member>
+    <member name="M:std._Parser`3._Is_esc const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Trans">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Next">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Expect(std._Meta_type,std.regex_constants.error_type)">
+      <summary></summary>
+      <param name="_St"></param>
+      <param name="_Code"></param>
+    </member>
+    <member name="M:std._Parser`3._Do_digits(int,int)">
+      <summary></summary>
+      <param name="_Base"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._DecimalDigits">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._HexDigits(int)">
+      <summary></summary>
+      <param name="_Count"></param>
+    </member>
+    <member name="M:std._Parser`3._OctalDigits">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Do_ex_class(std._Meta_type)">
+      <summary></summary>
+      <param name="_End_arg"></param>
+    </member>
+    <member name="M:std._Parser`3._CharacterClassEscape(bool)">
+      <summary></summary>
+      <param name="_Addit"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._ClassEscape(bool)">
+      <summary></summary>
+      <param name="_Addit"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._ClassAtom">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._ClassRanges">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._CharacterClass">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Do_capture_group">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Do_noncapture_group">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Do_assert_group(bool)">
+      <summary></summary>
+      <param name="_Neg"></param>
+    </member>
+    <member name="M:std._Parser`3._Wrapped_disjunction">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._IsIdentityEscape const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._IdentityEscape">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Do_ffn(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Do_ffnx(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._CharacterEscape">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._AtomEscape">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Quantifier">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Alternative">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3._Disjunction">
+      <summary></summary>
+    </member>
+    <member name="M:std._Parser`3._Compile">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std._Parser`3.#ctor(const _RxTraits,_FwdIt,_FwdIt,std.regex_constants.syntax_option_type)">
+      <summary></summary>
+      <param name="_Tr"></param>
+      <param name="_Pfirst"></param>
+      <param name="_Plast"></param>
+      <param name="_Fx"></param>
+    </member>
+    <member name="M:std._Calculate_loop_simplicity(std._Node_base,std._Node_base,std._Node_rep)">
+      <summary></summary>
+      <param name="_Nx"></param>
+      <param name="_Ne"></param>
+      <param name="_Outer_rep"></param>
+    </member>
+    <member name="_REGEX_CHAR_CLASS_NAME">
+      <summary></summary>
+    </member>
+  </members>
+</doc>

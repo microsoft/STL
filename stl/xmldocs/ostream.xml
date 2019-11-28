@@ -1,0 +1,362 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.basic_ostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_ostream`2._Myios">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostream`2._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostream`2._Iter">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostream`2._Nput">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2.#ctor(std.basic_streambuf{_Elem,_Traits},bool)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <param name="_Isstd"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.#ctor(std._Uninitialized,bool)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="_Addit"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.#ctor(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.operator=(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.swap(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.#ctor(const std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.operator=(const std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.~basic_ostream">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostream`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostream`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ostream`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="T:std.basic_ostream`2._Sentry_base">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2._Sentry_base.#ctor(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Ostr"></param>
+    </member>
+    <member name="M:std.basic_ostream`2._Sentry_base.~_Sentry_base">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2._Sentry_base.operator=(const std.basic_ostream{_Elem,_Traits}._Sentry_base)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_ostream`2.sentry">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2.sentry.#ctor(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Ostr"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.sentry.~sentry">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2.sentry.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.sentry.#ctor(const std.basic_ostream{_Elem,_Traits}.sentry)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_ostream`2.sentry.operator=(const std.basic_ostream{_Elem,_Traits}.sentry)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.opfx">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.osfx">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2._Osfx">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(std.basic_ostream{_Elem,_Traits}(__cdecl )(std.basic_ostream{_Elem,_Traits}))">
+      <summary></summary>
+      <param name="_Pfn"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(std.basic_ostream{_Elem,_Traits}._Myios(__cdecl )(std.basic_ostream{_Elem,_Traits}._Myios))">
+      <summary></summary>
+      <param name="_Pfn"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(std.ios_base(__cdecl )(std.ios_base))">
+      <summary></summary>
+      <param name="_Pfn"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(bool)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(short)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(unsigned short)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(unsigned int)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(unsigned long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(unsigned long long)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(float)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(long double)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(const void)">
+      <summary></summary>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.operator&lt;&lt;(std.basic_ostream{_Elem,_Traits}._Mysb)">
+      <summary></summary>
+      <param name="_Strbuf"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.put(_Elem)">
+      <summary></summary>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.write(const _Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.flush">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.seekp(std.basic_ostream{_Elem,_Traits}.pos_type)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.seekp(std.basic_ostream{_Elem,_Traits}.off_type,std.ios_base.seekdir)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Way"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ostream`2.tellp">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_ostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="T:std.basic_ostream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="M:std.operator&lt;&lt;``2(std.basic_ostream{_Elem,_Traits},const char)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``2(std.basic_ostream{_Elem,_Traits},char)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``1(std.basic_ostream{char,_Traits},const char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``1(std.basic_ostream{char,_Traits},char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``2(std.basic_ostream{_Elem,_Traits},const _Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``2(std.basic_ostream{_Elem,_Traits},_Elem)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``1(std.basic_ostream{char,_Traits},const signed char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``1(std.basic_ostream{char,_Traits},signed char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``1(std.basic_ostream{char,_Traits},const unsigned char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``1(std.basic_ostream{char,_Traits},unsigned char)">
+      <summary></summary>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Ch"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std._Can_stream_out`3">
+      <summary></summary>
+      <typeparam name="_Ostr"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+    </member>
+    <member name="T:std._Can_stream_out`3">
+      <summary></summary>
+      <typeparam name="_Ostr"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+    </member>
+    <member name="M:std.operator&lt;&lt;``3(_Ostr,const _Ty)">
+      <summary></summary>
+      <typeparam name="_Ostr"></typeparam>
+      <typeparam name="_Ty"></typeparam>
+      <typeparam name="&lt;unnamed&gt;"></typeparam>
+      <param name="_Os"></param>
+      <param name="_Val"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.endl``2(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.ends``2(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.flush``2(std.basic_ostream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.operator&lt;&lt;``2(std.basic_ostream{_Elem,_Traits},const std.error_code)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Ostr"></param>
+      <param name="_Errcode"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

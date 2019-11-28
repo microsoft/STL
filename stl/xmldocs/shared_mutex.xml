@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.shared_mutex">
+      <summary></summary>
+    </member>
+    <member name="std.shared_mutex.native_handle_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.~shared_mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_mutex.unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.lock_shared">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.try_lock_shared">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_mutex.unlock_shared">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_mutex.native_handle">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_mutex.#ctor(const std.shared_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_mutex.operator=(const std.shared_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.shared_timed_mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.~shared_timed_mutex">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.lock_shared">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock_shared">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock_shared_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex._Try_lock_shared_until``1(_Time)">
+      <summary></summary>
+      <typeparam name="_Time"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock_shared_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.try_lock_shared_until(const xtime)">
+      <summary></summary>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_timed_mutex.unlock_shared">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_timed_mutex.#ctor(const std.shared_timed_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_timed_mutex.operator=(const std.shared_timed_mutex)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.shared_lock`1">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+    </member>
+    <member name="std.shared_lock`1.mutex_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor(std.shared_lock{_Mutex}.mutex_type)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor(std.shared_lock{_Mutex}.mutex_type,std.defer_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor(std.shared_lock{_Mutex}.mutex_type,std.try_to_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor(std.shared_lock{_Mutex}.mutex_type,std.adopt_lock_t)">
+      <summary></summary>
+      <param name="_Mtx"></param>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor``2(std.shared_lock{_Mutex}.mutex_type,const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Mtx"></param>
+      <param name="_Rel_time"></param>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor``2(std.shared_lock{_Mutex}.mutex_type,const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Mtx"></param>
+      <param name="_Abs_time"></param>
+    </member>
+    <member name="M:std.shared_lock`1.~shared_lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor(std.shared_lock{_Mutex})">
+      <summary></summary>
+      <param name="_Other"></param>
+    </member>
+    <member name="M:std.shared_lock`1.operator=(std.shared_lock{_Mutex})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.#ctor(const std.shared_lock{_Mutex})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.shared_lock`1.operator=(const std.shared_lock{_Mutex})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_lock`1.try_lock">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.try_lock_for``2(const std.chrono.duration{_Rep,_Period})">
+      <summary></summary>
+      <typeparam name="_Rep"></typeparam>
+      <typeparam name="_Period"></typeparam>
+      <param name="_Rel_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.try_lock_until``2(const std.chrono.time_point{_Clock,_Duration})">
+      <summary></summary>
+      <typeparam name="_Clock"></typeparam>
+      <typeparam name="_Duration"></typeparam>
+      <param name="_Abs_time"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.shared_lock`1.swap(std.shared_lock{_Mutex})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.shared_lock`1.release">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.owns_lock const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.operator bool const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.shared_lock`1.mutex const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.swap``1(std.shared_lock{_Mutex},std.shared_lock{_Mutex})">
+      <summary></summary>
+      <typeparam name="_Mutex"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="M:abs(double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:abs(float)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+    <member name="M:abs(long double)">
+      <summary></summary>
+      <param name="_Xx"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc>

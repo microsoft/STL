@@ -1,0 +1,840 @@
+<?xml version="1.0"?>
+<doc>
+  <members>
+    <member name="T:std.experimental.filesystem.v1.path">
+      <summary></summary>
+    </member>
+    <member name="M:std._Fiopen(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fiopen(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fiopen(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fgetc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fgetc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Byte"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fgetc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Wchar"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fgetc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Wchar"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fputc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Ch"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fputc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Byte"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fputc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Wchar"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Fputc``1(_Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Wchar"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ungetc``1(const _Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="&lt;unnamed&gt;"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ungetc``1(const _Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Byte"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ungetc``1(const _Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Byte"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ungetc``1(const _Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Byte"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ungetc``1(const _Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Wchar"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std._Ungetc``1(const _Elem,FILE)">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <param name="_Wchar"></param>
+      <param name="_File"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_filebuf`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_filebuf`2._Mysb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_filebuf`2._Cvt">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_filebuf`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_filebuf`2.#ctor(FILE)">
+      <summary></summary>
+      <param name="_File"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2.~basic_filebuf">
+      <summary></summary>
+    </member>
+    <member name="std.basic_filebuf`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_filebuf`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_filebuf`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_filebuf`2.#ctor(std._Uninitialized)">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2.#ctor(std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2.operator=(std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2._Assign_rv(std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2.swap(std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2.#ctor(const std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2.operator=(const std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="T:std.basic_filebuf`2._Initfl">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_filebuf`2._Newfl">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_filebuf`2._Openfl">
+      <summary></summary>
+    </member>
+    <member name="F:std.basic_filebuf`2._Closefl">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_filebuf`2.is_open const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const char,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const wchar_t,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.open(const unsigned short,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.close">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2._Lock">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_filebuf`2._Unlock">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_filebuf`2.overflow(std.basic_filebuf{_Elem,_Traits}.int_type)">
+      <summary></summary>
+      <param name="_Meta"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.pbackfail(std.basic_filebuf{_Elem,_Traits}.int_type)">
+      <summary></summary>
+      <param name="_Meta"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.underflow">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.uflow">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.xsgetn(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.xsputn(const _Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Ptr"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.seekoff(std.basic_filebuf{_Elem,_Traits}.off_type,std.ios_base.seekdir,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Off"></param>
+      <param name="_Way"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.seekpos(std.basic_filebuf{_Elem,_Traits}.pos_type,std.ios_base.openmode)">
+      <summary></summary>
+      <param name="_Pos"></param>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.setbuf(_Elem,std.streamsize)">
+      <summary></summary>
+      <param name="_Buffer"></param>
+      <param name="_Count"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.sync">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2.imbue(const std.locale)">
+      <summary></summary>
+      <param name="_Loc"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2._Init(FILE,std.basic_filebuf{_Elem,_Traits}._Initfl)">
+      <summary></summary>
+      <param name="_File"></param>
+      <param name="_Which"></param>
+    </member>
+    <member name="M:std.basic_filebuf`2._Endwrite">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_filebuf`2._Initcvt(const std.basic_filebuf{_Elem,_Traits}._Cvt)">
+      <summary></summary>
+      <param name="_Newcvt"></param>
+    </member>
+    <member name="M:std.swap``2(std.basic_filebuf{_Elem,_Traits},std.basic_filebuf{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.basic_ifstream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_ifstream`2._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ifstream`2._Myfb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ifstream`2._Myios">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(FILE)">
+      <summary></summary>
+      <param name="_File"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.operator=(std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ifstream`2._Assign_rv(std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.swap(std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.#ctor(const std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.operator=(const std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const wchar_t,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const unsigned short,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.~basic_ifstream">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ifstream`2.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ifstream`2.is_open const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.open(const char,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ifstream`2.close">
+      <summary></summary>
+    </member>
+    <member name="M:std.swap``2(std.basic_ifstream{_Elem,_Traits},std.basic_ifstream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.basic_ofstream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_ofstream`2._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ofstream`2._Myfb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_ofstream`2._Myios">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(FILE)">
+      <summary></summary>
+      <param name="_File"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.operator=(std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ofstream`2._Assign_rv(std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.swap(std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.#ctor(const std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.operator=(const std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const wchar_t,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const unsigned short,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.~basic_ofstream">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_ofstream`2.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ofstream`2.is_open const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.open(const char,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_ofstream`2.close">
+      <summary></summary>
+    </member>
+    <member name="M:std.swap``2(std.basic_ofstream{_Elem,_Traits},std.basic_ofstream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="T:std.basic_fstream`2">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+    </member>
+    <member name="std.basic_fstream`2._Mybase">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2._Myfb">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2._Myios">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2.char_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2.traits_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2.int_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2.pos_type">
+      <summary></summary>
+    </member>
+    <member name="std.basic_fstream`2.off_type">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(FILE)">
+      <summary></summary>
+      <param name="_File"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.operator=(std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_fstream`2._Assign_rv(std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.swap(std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="_Right"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.#ctor(const std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.operator=(const std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <param name="&lt;unnamed&gt;"></param>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const wchar_t,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const std.wstring,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open``1(const std._Identity_t{_Path_ish},std.ios_base.openmode,int)">
+      <summary></summary>
+      <typeparam name="_Path_ish"></typeparam>
+      <param name="_Path"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const wchar_t,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const unsigned short,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const unsigned short,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.~basic_fstream">
+      <summary></summary>
+    </member>
+    <member name="M:std.basic_fstream`2.rdbuf const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_fstream`2.is_open const">
+      <summary></summary>
+      <returns></returns>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const char,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const std.string,std.ios_base.openmode,int)">
+      <summary></summary>
+      <param name="_Str"></param>
+      <param name="_Mode"></param>
+      <param name="_Prot"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.open(const char,std.ios_base.open_mode)">
+      <summary></summary>
+      <param name="_Filename"></param>
+      <param name="_Mode"></param>
+    </member>
+    <member name="M:std.basic_fstream`2.close">
+      <summary></summary>
+    </member>
+    <member name="M:std.swap``2(std.basic_fstream{_Elem,_Traits},std.basic_fstream{_Elem,_Traits})">
+      <summary></summary>
+      <typeparam name="_Elem"></typeparam>
+      <typeparam name="_Traits"></typeparam>
+      <param name="_Left"></param>
+      <param name="_Right"></param>
+    </member>
+    <member name="_FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM">
+      <summary></summary>
+    </member>
+  </members>
+</doc>
