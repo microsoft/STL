@@ -1285,7 +1285,7 @@ private:
 #if defined(__cpp_concepts)
     requires(!is_array_v<_Ty0>)
 #endif // defined(__cpp_concepts)
-        friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
     // clang-format on
 
 #if defined(__cpp_concepts)
