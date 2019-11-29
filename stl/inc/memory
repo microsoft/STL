@@ -1283,7 +1283,7 @@ private:
     // clang-format off
     template <class _Ty0, class _Alloc, class... _Types>
 #if defined(__cpp_concepts)
-    requires(!is_array_v<_Ty0>)
+        requires(!is_array_v<_Ty0>)
 #endif // defined(__cpp_concepts)
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
     // clang-format on
