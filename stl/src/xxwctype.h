@@ -3,5 +3,5 @@
 
 // parameters for wchar_t character type
 
-#define CTYPE wchar_t
+#define CTYPE      wchar_t
 #define CNAME(fun) _W##fun

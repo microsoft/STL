@@ -39,8 +39,8 @@ _STD_BEGIN
     _CATCH_END
 
 #else // _HAS_EXCEPTIONS
-#define _TRY_IO_BEGIN { // begin try block
-#define _CATCH_IO_END } // catch block for _Myios
+#define _TRY_IO_BEGIN        { // begin try block
+#define _CATCH_IO_END        } // catch block for _Myios
 #define _CATCH_IO_(xtype, x) } // catch block for basic_ios x
 #endif // _HAS_EXCEPTIONS
 

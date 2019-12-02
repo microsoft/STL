@@ -53,11 +53,11 @@ You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to acknowled
 _FS_BEGIN
 using _Pchar = wchar_t; // UTF16
 #define _FS_ISSEP(x) ((x) == L'/' || (x) == L'\\')
-#define _FS_PREF L'\\'
+#define _FS_PREF     L'\\'
 
-#define _FS_COLON L':'
+#define _FS_COLON  L':'
 #define _FS_PERIOD L'.'
-#define _FS_SLASH L'/'
+#define _FS_SLASH  L'/'
 #define _FS_BSLASH L'\\'
 
 
@@ -1374,7 +1374,7 @@ private:
 
 #else // _HAS_EXCEPTIONS
 protected:
-    virtual __CLR_OR_THIS_CALL void _Doraise() const { // perform class-specific exception handling
+    virtual __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // _HAS_EXCEPTIONS

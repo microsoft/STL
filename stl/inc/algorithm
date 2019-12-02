@@ -2579,14 +2579,14 @@ void _Push_heap_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t
     // percolate _Hole to _Top or where _Val belongs, using _Pred
     using _Diff = _Iter_diff_t<_RanIt>;
     for (_Diff _Idx = (_Hole - 1) >> 1; // shift for codegen
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); //
+         _Top < _Hole && _DEBUG_LT_PRED(_Pred, _First[_Idx], _Val); //
          _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
-        *(_First + _Hole) = _STD move(*(_First + _Idx));
-        _Hole             = _Idx;
+        _First[_Hole] = _STD move(_First[_Idx]);
+        _Hole         = _Idx;
     }
 
-    *(_First + _Hole) = _STD move(_Val); // drop _Val into final hole
+    _First[_Hole] = _STD move(_Val); // drop _Val into final hole
 }
 
 template <class _RanIt, class _Pr>
@@ -2622,16 +2622,16 @@ void _Pop_heap_hole_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_di
     const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
     while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
         _Idx = 2 * _Idx + 2;
-        if (_DEBUG_LT_PRED(_Pred, *(_First + _Idx), *(_First + (_Idx - 1)))) {
+        if (_DEBUG_LT_PRED(_Pred, _First[_Idx], _First[_Idx - 1])) {
             --_Idx;
         }
-        *(_First + _Hole) = _STD move(*(_First + _Idx));
-        _Hole             = _Idx;
+        _First[_Hole] = _STD move(_First[_Idx]);
+        _Hole         = _Idx;
     }
 
     if (_Idx == _Max_sequence_non_leaf && _Bottom % 2 == 0) { // only child at bottom, move _Hole down to it
-        *(_First + _Hole) = _STD move(*(_First + (_Bottom - 1)));
-        _Hole             = _Bottom - 1;
+        _First[_Hole] = _STD move(_First[_Bottom - 1]);
+        _Hole         = _Bottom - 1;
     }
 
     _Push_heap_by_index(_First, _Hole, _Top, _STD move(_Val), _Pred);
@@ -2677,7 +2677,7 @@ void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
-        _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
+        _Iter_value_t<_RanIt> _Val = _STD move(_First[_Hole]);
         _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
     }
 }

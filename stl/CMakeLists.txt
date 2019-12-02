@@ -7,6 +7,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/any
     ${CMAKE_CURRENT_LIST_DIR}/inc/array
     ${CMAKE_CURRENT_LIST_DIR}/inc/atomic
+    ${CMAKE_CURRENT_LIST_DIR}/inc/bit
     ${CMAKE_CURRENT_LIST_DIR}/inc/bitset
     ${CMAKE_CURRENT_LIST_DIR}/inc/cassert
     ${CMAKE_CURRENT_LIST_DIR}/inc/ccomplex
@@ -158,6 +159,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory_resource
     ${CMAKE_CURRENT_LIST_DIR}/inc/mutex
     ${CMAKE_CURRENT_LIST_DIR}/inc/new
+    ${CMAKE_CURRENT_LIST_DIR}/inc/numbers
     ${CMAKE_CURRENT_LIST_DIR}/inc/numeric
     ${CMAKE_CURRENT_LIST_DIR}/inc/optional
     ${CMAKE_CURRENT_LIST_DIR}/inc/ostream

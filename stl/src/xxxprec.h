@@ -17,9 +17,9 @@ _EXTERN_C
 #define sqrtf(x) sqrt((double) (x))
 #endif // sqrtf
 
-#define BIG_EXP (2 * FMAXEXP) // very large, as exponents go
+#define BIG_EXP   (2 * FMAXEXP) // very large, as exponents go
 #define BITS_WORD (FBITS / 2) // all words same for now
-#define NBUF 4 // size of delay line for mulh
+#define NBUF      4 // size of delay line for mulh
 
 #define COPY_UP(j, n)                                       \
     {                                                       \

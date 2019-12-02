@@ -72,11 +72,6 @@ struct negation : bool_constant<!static_cast<bool>(_Trait::value)> {}; // The ne
 template <class _Trait>
 _INLINE_VAR constexpr bool negation_v = negation<_Trait>::value;
 
-#if _HAS_CXX20
-// ENUM CLASS endian
-enum class endian { little = 0, big = 1, native = little };
-#endif // _HAS_CXX20
-
 // STRUCT TEMPLATE _Arg_types
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. (sometimes)
@@ -1055,9 +1050,6 @@ template <class _Ty>
 _INLINE_VAR constexpr size_t alignment_of_v = alignof(_Ty);
 
 // STRUCT TEMPLATE aligned_storage
-#define _FITS(_Ty) _Align <= alignof(_Ty)
-#define _NEXT_ALIGN(_Ty) using type = typename _Aligned<_Len, _Align, _Ty, _FITS(_Ty)>::type
-
 template <class _Ty, size_t _Len>
 union _Align_type { // union with size _Len bytes and alignment of _Ty
     _Ty _Val;
@@ -1098,26 +1090,31 @@ struct _Aligned<_Len, _Align, double, false> {
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, int, false> {
-    _NEXT_ALIGN(double);
+    using _Next                 = double;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, short, false> {
-    _NEXT_ALIGN(int);
+    using _Next                 = int;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align>
 struct _Aligned<_Len, _Align, char, false> {
-    _NEXT_ALIGN(short);
+    using _Next                 = short;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 struct aligned_storage { // define type with size _Len and alignment _Align
-    using type = typename _Aligned<_Len, _Align, char, _FITS(char)>::type;
+    using _Next                 = char;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
-
-#undef _FITS
-#undef _NEXT_ALIGN
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
@@ -1149,13 +1146,19 @@ template <size_t _Len, class... _Types>
 using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
 
 // STRUCT TEMPLATE underlying_type
-template <class _Ty>
-struct underlying_type { // determine underlying type for enum
+template <class _Ty, bool = is_enum_v<_Ty>>
+struct _Underlying_type {
     using type = __underlying_type(_Ty);
 };
 
 template <class _Ty>
-using underlying_type_t = typename underlying_type<_Ty>::type;
+struct _Underlying_type<_Ty, false> {};
+
+template <class _Ty>
+struct underlying_type : _Underlying_type<_Ty> {}; // determine underlying type for enum
+
+template <class _Ty>
+using underlying_type_t = typename _Underlying_type<_Ty>::type;
 
 // STRUCT TEMPLATE rank
 template <class _Ty>
@@ -1473,7 +1476,7 @@ template <class _Ty>
 class reference_wrapper;
 
 #define _CONCATX(x, y) x##y
-#define _CONCAT(x, y) _CONCATX(x, y)
+#define _CONCAT(x, y)  _CONCATX(x, y)
 
 #define _IMPLEMENT_INVOKE(NAME_PREFIX, CONSTEXPR)                                                                      \
     /* FUNCTION TEMPLATE invoke */                                                                                     \

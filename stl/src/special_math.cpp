@@ -14,7 +14,7 @@
 #pragma warning(disable : 4702) // unreachable code
 
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-#define BOOST_MATH_DOMAIN_ERROR_POLICY errno_on_error
+#define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
 
 // Using headers from Boost.Math 1.66.0

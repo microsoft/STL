@@ -245,11 +245,7 @@ concept _Can_reference = requires { typename _With_reference<_Ty>; };
 // CONCEPT _Dereferenceable
 template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { *__t } -> _Can_reference;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    *__t; requires _Can_reference<decltype(*__t)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
 };
 // clang-format on
 
@@ -318,11 +314,7 @@ struct incrementable_traits<_Ty> {
 // clang-format off
 template <class _Ty>
 concept _Can_difference = requires(const _Ty& __a, const _Ty& __b) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { __a - __b } -> integral;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    __a - __b; requires integral<decltype(__a - __b)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
 };
 
 template <class _Ty>
@@ -433,15 +425,9 @@ struct _Iter_traits_difference<false> {
 // clang-format off
 template <class _It>
 concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { *__i } -> _Can_reference;
     { ++__i } -> same_as<_It&>;
     { *__i++ } -> _Can_reference;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    *__i; requires _Can_reference<decltype(*__i)>;
-    ++__i; requires same_as<decltype(++__i), _It&>;
-    *__i++; requires _Can_reference<decltype(*__i++)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
 };
 
 template <class _It>
@@ -519,21 +505,12 @@ struct _Iter_traits_category4<false> {
 template <class _It>
 concept _Cpp17_random_delta = totally_ordered<_It>
     && requires(_It __i, typename incrementable_traits<_It>::difference_type __n) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __i += __n } -> same_as<_It&>;
         { __i -= __n } -> same_as<_It&>;
         { __i +  __n } -> same_as<_It>;
         { __n +  __i } -> same_as<_It>;
         { __i -  __n } -> same_as<_It>;
         { __i -  __i } -> same_as<decltype(__n)>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        __i += __n; requires same_as<decltype(__i += __n), _It&>;
-        __i -= __n; requires same_as<decltype(__i -= __n), _It&>;
-        __i +  __n; requires same_as<decltype(__i + __n), _It>;
-        __n +  __i; requires same_as<decltype(__n + __i), _It>;
-        __i -  __n; requires same_as<decltype(__i - __n), _It>;
-        __i -  __i; requires same_as<decltype(__i - __i), decltype(__n)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
         {  __i[__n]  } -> convertible_to<iter_reference_t<_It>>;
     };
 // clang-format on
@@ -553,11 +530,7 @@ struct _Iter_traits_category3<false> {
 // clang-format off
 template <class _It>
 concept _Cpp17_bidi_delta = requires(_It __i) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { --__i } -> same_as<_It&>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    --__i; requires same_as<decltype(--__i), _It&>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     { __i-- } -> convertible_to<const _It&>;
     requires same_as<decltype(*__i--), iter_reference_t<_It>>;
 };
@@ -703,11 +676,7 @@ namespace ranges {
 // clang-format off
 template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { _STD ranges::iter_move(__t) } -> _Can_reference;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        _STD ranges::iter_move(__t); requires _Can_reference<decltype(_STD ranges::iter_move(__t))>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     }
 using iter_rvalue_reference_t = decltype(_STD ranges::iter_move(_STD declval<_Ty&>()));
 
@@ -741,32 +710,20 @@ template <class _Ty>
 concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && requires(_Ty __i) {
     typename iter_difference_t<_Ty>;
     requires signed_integral<iter_difference_t<_Ty>>;
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { ++__i } -> same_as<_Ty&>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    ++__i; requires same_as<decltype(++__i), _Ty&>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     __i++;
 };
 
 // CONCEPT incrementable
 template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { __t++ } -> same_as<_Ty>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    __t++; requires same_as<decltype(__t++), _Ty>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
 };
 
 // CONCEPT input_or_output_iterator
 template <class _It>
 concept input_or_output_iterator = requires(_It __i) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
     { *__i } -> _Can_reference;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-    *__i; requires _Can_reference<decltype(*__i)>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     requires weakly_incrementable<_It>;
 };
 
@@ -784,13 +741,8 @@ inline constexpr bool disable_sized_sentinel = false;
 template <class _Se, class _It>
 concept sized_sentinel_for = sentinel_for<_Se, _It> && !disable_sized_sentinel<remove_cv_t<_Se>, remove_cv_t<_It>>
     && requires(const _It& __i, const _Se& __s) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __s - __i } -> same_as<iter_difference_t<_It>>;
         { __i - __s } -> same_as<iter_difference_t<_It>>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        __s - __i; requires same_as<decltype(__s - __i), iter_difference_t<_It>>;
-        __i - __s; requires same_as<decltype(__i - __s), iter_difference_t<_It>>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 // clang-format on
 
@@ -855,13 +807,8 @@ concept forward_iterator = input_iterator<_It> && derived_from<_Iter_concept<_It
 template <class _It>
 concept bidirectional_iterator = forward_iterator<_It> && derived_from<_Iter_concept<_It>, bidirectional_iterator_tag>
     && requires(_It __i) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { --__i } -> same_as<_It&>;
         { __i-- } -> same_as<_It>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        --__i; requires same_as<decltype(--__i), _It&>;
-        __i--; requires same_as<decltype(__i--), _It>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // CONCEPT random_access_iterator
@@ -869,21 +816,12 @@ template <class _It>
 concept random_access_iterator = bidirectional_iterator<_It>
     && derived_from<_Iter_concept<_It>, random_access_iterator_tag> && totally_ordered<_It>
     && sized_sentinel_for<_It, _It> && requires(_It __i, const _It __j, const iter_difference_t<_It> __n) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { __i += __n } -> same_as<_It&>;
         { __j + __n } -> same_as<_It>;
         { __n + __j } -> same_as<_It>;
         { __i -= __n } -> same_as<_It&>;
         { __j - __n } -> same_as<_It>;
         { __j[__n] } -> same_as<iter_reference_t<_It>>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        __i += __n; requires same_as<decltype(__i += __n), _It&>;
-        __j + __n; requires same_as<decltype(__j + __n), _It>;
-        __n + __j; requires same_as<decltype(__n + __j), _It>;
-        __i -= __n; requires same_as<decltype(__i -= __n), _It&>;
-        __j - __n; requires same_as<decltype(__j - __n), _It>;
-        __j[__n]; requires same_as<decltype(__j[__n]), iter_reference_t<_It>>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // CONCEPT contiguous_iterator
@@ -893,11 +831,7 @@ concept contiguous_iterator = random_access_iterator<_It>
     && is_lvalue_reference_v<iter_reference_t<_It>>
     && same_as<iter_value_t<_It>, remove_cvref_t<iter_reference_t<_It>>>
     && requires(const _It& __i) {
-#if _HAS_EXACT_COMPOUND_REQUIREMENT
         { _STD to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_It>>>;
-#else // ^^^ _HAS_EXACT_COMPOUND_REQUIREMENT / !_HAS_EXACT_COMPOUND_REQUIREMENT vvv
-        _STD to_address(__i); requires same_as<decltype(_STD to_address(__i)), add_pointer_t<iter_reference_t<_It>>>;
-#endif // _HAS_EXACT_COMPOUND_REQUIREMENT
     };
 
 // CONCEPT indirectly_movable
@@ -1497,7 +1431,7 @@ struct _Ptr_move_cat<move_iterator<_Source*>, _Dest*> : _Ptr_move_cat<_Source*, 
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred)
 
 #else // _ITERATOR_DEBUG_LEVEL < 2
-#define _DEBUG_LT_PRED(pred, x, y) _Debug_lt_pred(pred, x, y)
+#define _DEBUG_LT_PRED(pred, x, y)                _Debug_lt_pred(pred, x, y)
 #define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _Debug_order_unchecked(first, last, pred)
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
     _Debug_order_set_unchecked<otherIter>(first, last, pred)
