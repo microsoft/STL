@@ -949,6 +949,13 @@ private:
 };
 #pragma warning(pop)
 
+// TRANSITION, Visual Studio 2019 16.5 + CUDA
+#if (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+#define _USE_FUNCTION_INT_0_SFINAE 0
+#else
+#define _USE_FUNCTION_INT_0_SFINAE 1
+#endif // (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+
 // CLASS TEMPLATE _Func_class
 template <class _Ret, class... _Types>
 class _Func_class : public _Arg_types<_Types...> {
@@ -976,7 +983,8 @@ public:
 protected:
     template <class _Fx, class _Function>
     using _Enable_if_callable_t =
-        enable_if_t<conjunction_v<negation<is_same<decay_t<_Fx>, _Function>>, _Is_invocable_r<_Ret, _Fx, _Types...>>>;
+        enable_if_t<conjunction_v<negation<is_same<decay_t<_Fx>, _Function>>, _Is_invocable_r<_Ret, _Fx, _Types...>>,
+            int>;
 
     bool _Empty() const noexcept {
         return !_Getimpl();
@@ -1125,7 +1133,11 @@ public:
         this->_Reset_copy(_Right);
     }
 
+#if _USE_FUNCTION_INT_0_SFINAE
+    template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx&, function> = 0>
+#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
     template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx&, function>>
+#endif // _USE_FUNCTION_INT_0_SFINAE
     function(_Fx _Func) {
         this->_Reset(_STD move(_Func));
     }
@@ -1142,7 +1154,11 @@ public:
         this->_Reset_alloc(_Right, _Ax);
     }
 
+#if _USE_FUNCTION_INT_0_SFINAE
+    template <class _Fx, class _Alloc, typename _Mybase::template _Enable_if_callable_t<_Fx&, function> = 0>
+#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
     template <class _Fx, class _Alloc, class = typename _Mybase::template _Enable_if_callable_t<_Fx&, function>>
+#endif // _USE_FUNCTION_INT_0_SFINAE
     function(allocator_arg_t, const _Alloc& _Ax, _Fx _Func) {
         this->_Reset_alloc(_STD move(_Func), _Ax);
     }
@@ -1172,7 +1188,11 @@ public:
         return *this;
     }
 
+#if _USE_FUNCTION_INT_0_SFINAE
+    template <class _Fx, typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function> = 0>
+#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
     template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function>>
+#endif // _USE_FUNCTION_INT_0_SFINAE
     function& operator=(_Fx&& _Func) {
         function(_STD forward<_Fx>(_Func)).swap(*this);
         return *this;
