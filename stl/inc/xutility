@@ -40,6 +40,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <intrin0.h>
 #include <utility>
 
 #pragma pack(push, _CRT_PACKING)
