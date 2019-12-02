@@ -2173,7 +2173,8 @@ _NODISCARD bool regex_match(_BidIt _First, _BidIt _Last, const basic_regex<_Elem
     // try to match regular expression to target text
     _Adl_verify_range(_First, _Last);
     return _Regex_match1(_Get_unwrapped(_First), _Get_unwrapped(_Last),
-        static_cast<match_results<_Unwrapped_t<_BidIt>>*>(nullptr), _Re, _Flgs | regex_constants::match_any, true);
+        static_cast<match_results<_Unwrapped_t<const _BidIt&>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
+        true);
 }
 
 template <class _Elem, class _RxTraits>
@@ -2272,7 +2273,7 @@ _NODISCARD bool regex_search(_BidIt _First, _BidIt _Last, const basic_regex<_Ele
     // search for regular expression match in target text
     _Adl_verify_range(_First, _Last);
     return _Regex_search2(_Get_unwrapped(_First), _Get_unwrapped(_Last),
-        static_cast<match_results<_Unwrapped_t<_BidIt>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
+        static_cast<match_results<_Unwrapped_t<const _BidIt&>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
         _Get_unwrapped(_First));
 }
 

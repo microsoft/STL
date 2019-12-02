@@ -1726,7 +1726,7 @@ struct _Boyer_moore_hash_delta_1_table { // stores the Boyer-Moore delta_1 table
     using _Value_t = _Iter_value_t<_RanItPat>;
     using _Diff    = _Iter_diff_t<_RanItPat>;
 
-    _Boyer_moore_hash_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<_RanItPat> _UPat_first,
+    _Boyer_moore_hash_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<const _RanItPat&> _UPat_first,
         const _Diff _Pat_size_arg, _Hash_ty&& _Hash_fn, _Pred_eq&& _Eq)
         : _Pat_first(_Pat_first_arg), _Pat_size(_Pat_size_arg),
           _Map(0, _STD move(_Hash_fn), _STD move(_Eq)) { // initialize a delta_1 hash table
@@ -1763,7 +1763,7 @@ struct _Boyer_moore_flat_delta_1_table { // stores the Boyer-Moore delta_1 table
     using _Value_t = _Iter_value_t<_RanItPat>;
     using _Diff    = _Iter_diff_t<_RanItPat>;
 
-    _Boyer_moore_flat_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<_RanItPat> _UPat_first,
+    _Boyer_moore_flat_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<const _RanItPat&> _UPat_first,
         const _Diff _Pat_size_arg, _Unused_parameter, _Unused_parameter)
         : _Pat_first(_Pat_first_arg), _Pat_size(_Pat_size_arg) { // initialize a delta_1 flat table
         _STD fill(_STD begin(_Table), _STD end(_Table), _Pat_size);

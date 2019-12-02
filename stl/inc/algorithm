@@ -1791,6 +1791,74 @@ _NODISCARD _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* termi
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE unique_copy
+#if _HAS_IF_CONSTEXPR
+// clang-format off
+#ifdef __cpp_lib_concepts
+template <class _InIt, class _OutIt>
+concept _Can_reread_dest = forward_iterator<_OutIt> && same_as<iter_value_t<_InIt>, iter_value_t<_OutIt>>;
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+template <class _InIt, class _OutIt>
+_INLINE_VAR constexpr bool _Can_reread_dest =
+    _Is_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
+#endif // __cpp_lib_concepts
+// clang-format on
+
+template <class _InIt, class _OutIt, class _Pr>
+_OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy compressing pairs that match
+    _Adl_verify_range(_First, _Last);
+
+    auto _UFirst      = _Get_unwrapped(_First);
+    const auto _ULast = _Get_unwrapped(_Last);
+
+    if (_UFirst == _ULast) {
+        return _Dest;
+    }
+
+    auto _UDest = _Get_unwrapped_unverified(_Dest);
+
+    if constexpr (_Is_fwd_iter_v<_InIt>) { // can reread the source for comparison
+        auto _Firstb = _UFirst;
+
+        *_UDest = *_Firstb;
+        ++_UDest;
+
+        while (++_UFirst != _ULast) {
+            if (!static_cast<bool>(_Pred(*_Firstb, *_UFirst))) { // copy unmatched
+                _Firstb = _UFirst;
+                *_UDest = *_Firstb;
+                ++_UDest;
+            }
+        }
+    } else if constexpr (_Can_reread_dest<_InIt, _OutIt>) { // assignment copies T; can reread dest for comparison
+        *_UDest = *_UFirst;
+
+        while (++_UFirst != _ULast) {
+            if (!static_cast<bool>(_Pred(*_UDest, *_UFirst))) {
+                *++_UDest = *_UFirst;
+            }
+        }
+
+        ++_UDest;
+    } else { // can't reread source or dest, construct a temporary
+        _Iter_value_t<_InIt> _Val = *_UFirst;
+
+        *_UDest = _Val;
+        ++_UDest;
+
+        while (++_UFirst != _ULast) {
+            if (!static_cast<bool>(_Pred(_Val, *_UFirst))) { // copy unmatched
+                _Val    = *_UFirst;
+                *_UDest = _Val;
+                ++_UDest;
+            }
+        }
+    }
+
+    _Seek_wrapped(_Dest, _UDest);
+    return _Dest;
+}
+
+#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _FwdIt, class _OutIt, class _Pr>
 _OutIt _Unique_copy_unchecked(_FwdIt _First, _FwdIt _Last, _OutIt _Dest, _Pr _Pred, true_type, _Any_tag) {
     // copy compressing pairs satisfying _Pred, forward source iterator
@@ -1865,6 +1933,7 @@ _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy
 
     return _Dest;
 }
+#endif // _HAS_IF_CONSTEXPR
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>

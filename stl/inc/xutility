@@ -312,7 +312,7 @@ template <class>
 struct _Cond_value_type {};
 
 // clang-format off
-template<class _Ty>
+template <class _Ty>
     requires is_object_v<_Ty>
 struct _Cond_value_type<_Ty> {
     using value_type = remove_cv_t<_Ty>;
@@ -411,8 +411,21 @@ concept _Cpp17_input_iterator = _Cpp17_iterator<_It> && equality_comparable<_It>
         requires signed_integral<typename incrementable_traits<_It>::difference_type>;
     };
 
+#if 1 // TRANSITION, VSO-1002863
+template <class _Ty>
+using _Member_iterator_category = typename _Ty::iterator_category;
+#endif // TRANSITION, VSO-1002863
+
 template <class _It>
-    requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>)
+    requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>
+        // Implements the proposed resolution of LWG-3283:
+#if 1 // TRANSITION, VSO-1002863
+        && (!requires { typename _It::iterator_category; }
+            || derived_from<_Member_iterator_category<_It>, output_iterator_tag>))
+#else // ^^^ workaround / no workaround vvv
+        && (!requires { typename _It::iterator_category; }
+            || derived_from<typename _It::iterator_category, output_iterator_tag>))
+#endif // TRANSITION, VSO-1002863
 struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
     using difference_type =
@@ -619,15 +632,15 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr decltype(auto) operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Custom) {
-                    return iter_move(static_cast<_Ty&&>(__t));
+                    return iter_move(static_cast<_Ty&&>(_Val));
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Fallback) {
-                    using _Ref = decltype(*static_cast<_Ty&&>(__t));
+                    using _Ref = decltype(*static_cast<_Ty&&>(_Val));
                     if constexpr (is_lvalue_reference_v<_Ref>) {
-                        return _STD move(*static_cast<_Ty&&>(__t));
+                        return _STD move(*static_cast<_Ty&&>(_Val));
                     } else {
-                        return *static_cast<_Ty&&>(__t);
+                        return *static_cast<_Ty&&>(_Val);
                     }
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -648,9 +661,9 @@ namespace ranges {
 // clang-format off
 template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
-        { _STD ranges::iter_move(__t) } -> _Can_reference;
+        { _RANGES iter_move(__t) } -> _Can_reference;
     }
-using iter_rvalue_reference_t = decltype(_STD ranges::iter_move(_STD declval<_Ty&>()));
+using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
 
 // CONCEPT readable
 template <class _It>
@@ -841,10 +854,10 @@ namespace ranges {
 
         template <class _Xty, class _Yty>
         _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(
-            _Xty&& __x, _Yty&& __y) noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(iter_move(__x)))) {
-            iter_value_t<remove_reference_t<_Xty>> __tmp(iter_move(__x));
-            *__x = iter_move(__y);
-            return __tmp;
+            _Xty&& _XVal, _Yty&& _YVal) noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(iter_move(_XVal)))) {
+            iter_value_t<remove_reference_t<_Xty>> _Tmp(iter_move(_XVal));
+            *_XVal = iter_move(_YVal);
+            return _Tmp;
         }
 
         class _Cpo {
@@ -874,14 +887,14 @@ namespace ranges {
         public:
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
-            constexpr void operator()(_Ty1&& __t1, _Ty2&& __t2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
+            constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
                 if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Custom) {
-                    iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
+                    iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Swap) {
-                    swap(*static_cast<_Ty1&&>(__t1), *static_cast<_Ty2&&>(__t2));
+                    swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
-                    *static_cast<_Ty1&&>(__t1) =
-                        _Iter_exchange_move(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
+                    *static_cast<_Ty1&&>(_Val1) =
+                        _Iter_exchange_move(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
                 } else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
                 }
@@ -894,6 +907,18 @@ namespace ranges {
         inline constexpr _Iter_swap::_Cpo iter_swap;
     }
 } // namespace ranges
+
+// ALIAS TEMPLATE _Iter_ref_t
+template <class _Iter>
+using _Iter_ref_t = iter_reference_t<_Iter>;
+
+// ALIAS TEMPLATE _Iter_value_t
+template <class _Iter>
+using _Iter_value_t = iter_value_t<_Iter>;
+
+// ALIAS TEMPLATE _Iter_diff_t
+template <class _Iter>
+using _Iter_diff_t = iter_difference_t<_Iter>;
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 // STRUCT TEMPLATE iterator_traits
@@ -929,7 +954,6 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
-#endif // __cpp_lib_concepts
 
 // ALIAS TEMPLATE _Iter_ref_t
 template <class _Iter>
@@ -942,6 +966,7 @@ using _Iter_value_t = typename iterator_traits<_Iter>::value_type;
 // ALIAS TEMPLATE _Iter_diff_t
 template <class _Iter>
 using _Iter_diff_t = typename iterator_traits<_Iter>::difference_type;
+#endif // __cpp_lib_concepts
 
 // ALIAS TEMPLATE _Common_diff_t
 template <class... _Iters>
@@ -992,22 +1017,19 @@ constexpr void _Verify_range(const _Ty* const _First, const _Ty* const _Last) no
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
 template <class _Iter, class = void>
-struct _Allow_inheriting_unwrap : true_type {};
+_INLINE_VAR constexpr bool _Allow_inheriting_unwrap_v = true;
 
 template <class _Iter>
-struct _Allow_inheriting_unwrap<_Iter, enable_if_t<!is_same_v<_Iter, typename _Iter::_Prevent_inheriting_unwrap>>>
-    : false_type {};
+_INLINE_VAR constexpr bool _Allow_inheriting_unwrap_v<_Iter, void_t<typename _Iter::_Prevent_inheriting_unwrap>> =
+    is_same_v<_Iter, typename _Iter::_Prevent_inheriting_unwrap>;
 
 template <class _Iter, class _Sentinel = _Iter, class = void>
-struct _Range_verifiable : false_type {};
+_INLINE_VAR constexpr bool _Range_verifiable_v = false;
 
 template <class _Iter, class _Sentinel>
-struct _Range_verifiable<_Iter, _Sentinel,
-    void_t<decltype(_Verify_range(_STD declval<const _Iter&>(), _STD declval<const _Sentinel&>()))>>
-    : _Allow_inheriting_unwrap<_Iter>::type {};
-
-template <class _Iter, class _Sentinel = _Iter>
-_INLINE_VAR constexpr bool _Range_verifiable_v = _Range_verifiable<_Iter, _Sentinel>::value;
+_INLINE_VAR constexpr bool _Range_verifiable_v<_Iter, _Sentinel,
+    void_t<decltype(_Verify_range(_STD declval<const _Iter&>(), _STD declval<const _Sentinel&>()))>> =
+    _Allow_inheriting_unwrap_v<_Iter>;
 
 #if _HAS_IF_CONSTEXPR
 template <class _Iter, class _Sentinel>
@@ -1042,80 +1064,93 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
 
 // FUNCTION TEMPLATE _Get_unwrapped
 template <class _Iter, class = void>
-struct _Unwrappable : false_type {};
+_INLINE_VAR constexpr bool _Unwrappable_v = false;
 
 template <class _Iter>
-struct _Unwrappable<_Iter, void_t<decltype(_STD declval<_Iter&>()._Seek_to(_STD declval<const _Iter&>()._Unwrapped()))>>
-    : _Allow_inheriting_unwrap<_Iter>::type {};
+_INLINE_VAR constexpr bool _Unwrappable_v<_Iter,
+    void_t<decltype(_STD declval<_Remove_cvref_t<_Iter>&>()._Seek_to(_STD declval<_Iter>()._Unwrapped()))>> =
+    _Allow_inheriting_unwrap_v<_Remove_cvref_t<_Iter>>;
 
+#if _HAS_IF_CONSTEXPR
 template <class _Iter>
-_INLINE_VAR constexpr bool _Unwrappable_v = _Unwrappable<_Iter>::value;
-
-template <class _Iter, enable_if_t<_Unwrappable_v<_Iter>, int> = 0>
-_NODISCARD constexpr auto _Get_unwrapped(const _Iter& _It) {
+_NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) {
     // unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
-    return _It._Unwrapped();
+    if constexpr (is_pointer_v<decay_t<_Iter>>) { // special-case pointers and arrays
+        return _It + 0;
+    } else if constexpr (_Unwrappable_v<_Iter>) {
+        return static_cast<_Iter&&>(_It)._Unwrapped();
+    } else {
+        return static_cast<_Iter&&>(_It);
+    }
+}
+#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
+template <class _Iter, enable_if_t<_Unwrappable_v<_Iter>, int> = 0>
+_NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) {
+    // unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
+    return static_cast<_Iter&&>(_It)._Unwrapped();
 }
 
 template <class _Iter, enable_if_t<!_Unwrappable_v<_Iter>, int> = 0>
-_NODISCARD constexpr const _Iter& _Get_unwrapped(const _Iter& _It) {
+_NODISCARD constexpr _Iter&& _Get_unwrapped(_Iter&& _It) {
     // (don't) unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
-    return _It;
-}
-
-template <class _Iter, enable_if_t<!_Unwrappable_v<_Iter>, int> = 0>
-_NODISCARD constexpr const _Iter&& _Get_unwrapped(const _Iter&& _It) {
-    // (don't) unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
-    return static_cast<const _Iter&&>(_It);
+    return static_cast<_Iter&&>(_It);
 }
 
 template <class _Ty>
 _NODISCARD constexpr _Ty* _Get_unwrapped(_Ty* const _Ptr) { // special case already-unwrapped pointers
     return _Ptr;
 }
+#endif // _HAS_IF_CONSTEXPR
 
 template <class _Iter>
-using _Unwrapped_t = _Remove_cvref_t<decltype(_Get_unwrapped(_STD declval<const _Iter&>()))>;
+using _Unwrapped_t = _Remove_cvref_t<decltype(_Get_unwrapped(_STD declval<_Iter>()))>;
 
 // FUNCTION TEMPLATE _Get_unwrapped_unverified
 template <class _Iter, class = bool>
-struct _Do_unwrap_when_unverified : false_type {};
+_INLINE_VAR constexpr bool _Do_unwrap_when_unverified_v = false;
 
 template <class _Iter>
-struct _Do_unwrap_when_unverified<_Iter, decltype(static_cast<bool>(_Iter::_Unwrap_when_unverified))>
-    : bool_constant<static_cast<bool>(_Iter::_Unwrap_when_unverified)> {};
+_INLINE_VAR constexpr bool
+    _Do_unwrap_when_unverified_v<_Iter, decltype(static_cast<bool>(_Iter::_Unwrap_when_unverified))> =
+        static_cast<bool>(_Iter::_Unwrap_when_unverified);
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Do_unwrap_when_unverified_v = _Do_unwrap_when_unverified<_Iter>::value;
+_INLINE_VAR constexpr bool _Unwrappable_for_unverified_v =
+    _Unwrappable_v<_Iter>&& _Do_unwrap_when_unverified_v<_Remove_cvref_t<_Iter>>;
 
+#if _HAS_IF_CONSTEXPR
 template <class _Iter>
-_INLINE_VAR constexpr bool _Unwrappable_for_unverified_v = _Unwrappable_v<_Iter>&& _Do_unwrap_when_unverified_v<_Iter>;
-
-template <class _Iter, enable_if_t<_Unwrappable_for_unverified_v<_Iter>, int> = 0>
-_NODISCARD constexpr auto _Get_unwrapped_unverified(const _Iter& _It) {
+_NODISCARD constexpr decltype(auto) _Get_unwrapped_unverified(_Iter&& _It) {
     // unwrap an iterator not previously subjected to _Adl_verify_range
-    return _It._Unwrapped();
+    if constexpr (is_pointer_v<decay_t<_Iter>>) { // special-case pointers and arrays
+        return _It + 0;
+    } else if constexpr (_Unwrappable_for_unverified_v<_Iter>) {
+        return static_cast<_Iter&&>(_It)._Unwrapped();
+    } else {
+        return static_cast<_Iter&&>(_It);
+    }
+}
+#else // ^^^_HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
+template <class _Iter, enable_if_t<_Unwrappable_for_unverified_v<_Iter>, int> = 0>
+_NODISCARD constexpr decltype(auto) _Get_unwrapped_unverified(_Iter&& _It) {
+    // unwrap an iterator not previously subjected to _Adl_verify_range
+    return static_cast<_Iter&&>(_It)._Unwrapped();
 }
 
 template <class _Iter, enable_if_t<!_Unwrappable_for_unverified_v<_Iter>, int> = 0>
-_NODISCARD constexpr const _Iter& _Get_unwrapped_unverified(const _Iter& _It) {
+_NODISCARD constexpr _Iter&& _Get_unwrapped_unverified(_Iter&& _It) {
     // (don't) unwrap an iterator not previously subjected to _Adl_verify_range
-    return _It;
-}
-
-template <class _Iter, enable_if_t<!_Unwrappable_for_unverified_v<_Iter>, int> = 0>
-_NODISCARD constexpr const _Iter&& _Get_unwrapped_unverified(const _Iter&& _It) {
-    // (don't) unwrap an iterator not previously subjected to _Adl_verify_range
-    return static_cast<const _Iter&&>(_It);
+    return static_cast<_Iter&&>(_It);
 }
 
 template <class _Ty>
 _NODISCARD constexpr _Ty* _Get_unwrapped_unverified(_Ty* const _Ptr) { // special case already-unwrapped pointers
     return _Ptr;
 }
+#endif // _HAS_IF_CONSTEXPR
 
 template <class _Iter>
-using _Unwrapped_unverified_t = _Remove_cvref_t<decltype(_Get_unwrapped_unverified(_STD declval<const _Iter&>()))>;
+using _Unwrapped_unverified_t = _Remove_cvref_t<decltype(_Get_unwrapped_unverified(_STD declval<_Iter>()))>;
 
 // FUNCTION TEMPLATE _Get_unwrapped_n
 struct _Distance_unknown {
@@ -1125,28 +1160,55 @@ struct _Distance_unknown {
 };
 
 template <class _Diff>
-_INLINE_VAR constexpr _Diff _Max_possible_v = static_cast<_Diff>(static_cast<make_unsigned_t<_Diff>>(-1) >> 1);
+_INLINE_VAR constexpr auto _Max_possible_v = _Diff{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
 
 template <class _Diff>
-_INLINE_VAR constexpr _Diff _Min_possible_v = -_Max_possible_v<_Diff> - 1;
+_INLINE_VAR constexpr auto _Min_possible_v = _Diff{-_Max_possible_v<_Diff> - 1};
 
 template <class _Iter, class = void>
-struct _Offset_verifiable : false_type {};
+_INLINE_VAR constexpr bool _Offset_verifiable_v = false;
 
 template <class _Iter>
-struct _Offset_verifiable<_Iter, void_t<decltype(_STD declval<const _Iter&>()._Verify_offset(_Iter_diff_t<_Iter>{}))>>
-    : true_type {};
+_INLINE_VAR constexpr bool
+    _Offset_verifiable_v<_Iter, void_t<decltype(_STD declval<const _Iter&>()._Verify_offset(_Iter_diff_t<_Iter>{}))>> =
+        true;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Offset_verifiable_v = _Offset_verifiable<_Iter>::value;
+_INLINE_VAR constexpr bool _Unwrappable_for_offset_v =
+    _Unwrappable_v<_Iter>&& _Offset_verifiable_v<_Remove_cvref_t<_Iter>>;
 
-template <class _Iter>
-_INLINE_VAR constexpr bool _Unwrappable_for_offset_v = _Unwrappable_v<_Iter>&& _Offset_verifiable_v<_Iter>;
+#if _HAS_IF_CONSTEXPR
+template <class _Iter, class _Diff>
+_NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
+    (void) _Off;
+    if constexpr (is_pointer_v<decay_t<_Iter>>) {
+        return _It + 0;
+    } else if constexpr (_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) {
+        // ask an iterator to assert that the iterator moved _Off positions is valid, and unwrap
+        using _IDiff     = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
+        using _CDiff     = common_type_t<_Diff, _IDiff>;
+        const auto _COff = static_cast<_CDiff>(_Off);
 
+        _STL_ASSERT(_COff <= static_cast<_CDiff>(_Max_possible_v<_IDiff>)
+                        && (is_unsigned_v<_Diff> || static_cast<_CDiff>(_Min_possible_v<_IDiff>) <= _COff),
+            "integer overflow");
+        (void) _COff;
+
+        _It._Verify_offset(static_cast<_IDiff>(_Off));
+        return static_cast<_Iter&&>(_It)._Unwrapped();
+    } else if constexpr (_Unwrappable_for_unverified_v<_Iter>) {
+        // iterator doesn't support offset-based asserts, or offset unknown; defer to unverified unwrap
+        return static_cast<_Iter&&>(_It)._Unwrapped();
+    } else {
+        // pass through iterator that doesn't participate in checking
+        return static_cast<_Iter&&>(_It);
+    }
+}
+#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _Iter, class _Diff, enable_if_t<_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>, int> = 0>
-_NODISCARD constexpr auto _Get_unwrapped_n(const _Iter& _It, const _Diff _Off) {
+_NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
     // ask an iterator to assert that the iterator moved _Off positions is valid, and unwrap
-    using _IDiff     = _Iter_diff_t<_Iter>;
+    using _IDiff     = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
     using _CDiff     = common_type_t<_Diff, _IDiff>;
     const auto _COff = static_cast<_CDiff>(_Off);
 
@@ -1156,7 +1218,7 @@ _NODISCARD constexpr auto _Get_unwrapped_n(const _Iter& _It, const _Diff _Off) {
     (void) _COff;
 
     _It._Verify_offset(static_cast<_IDiff>(_Off));
-    return _It._Unwrapped();
+    return static_cast<_Iter&&>(_It)._Unwrapped();
 }
 
 template <class _Iter, class _Diff,
@@ -1164,9 +1226,9 @@ template <class _Iter, class _Diff,
         _Unwrappable_for_unverified_v<_Iter> //
             && ((!_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) || is_same_v<_Diff, _Distance_unknown>),
         int> = 0>
-_NODISCARD constexpr auto _Get_unwrapped_n(const _Iter& _It, _Diff) {
+_NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, _Diff) {
     // iterator doesn't support offset-based asserts, or offset unknown; defer to unverified unwrap
-    return _It._Unwrapped();
+    return static_cast<_Iter&&>(_It)._Unwrapped();
 }
 
 template <class _Iter, class _Diff,
@@ -1174,65 +1236,55 @@ template <class _Iter, class _Diff,
         !_Unwrappable_for_unverified_v<_Iter> //
             && ((!_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) || is_same_v<_Diff, _Distance_unknown>),
         int> = 0>
-_NODISCARD constexpr const _Iter& _Get_unwrapped_n(const _Iter& _It, _Diff) {
-    // pass through lvalue iterator that doesn't participate in checking
-    return _It;
-}
-
-template <class _Iter, class _Diff,
-    enable_if_t<
-        !_Unwrappable_for_unverified_v<_Iter> //
-            && ((!_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) || is_same_v<_Diff, _Distance_unknown>),
-        int> = 0>
-_NODISCARD constexpr const _Iter&& _Get_unwrapped_n(const _Iter&& _It, _Diff) {
-    // pass through rvalue iterator that doesn't participate in checking
-    return static_cast<const _Iter&&>(_It);
+_NODISCARD constexpr _Iter&& _Get_unwrapped_n(_Iter&& _It, _Diff) {
+    // pass through iterator that doesn't participate in checking
+    return static_cast<_Iter&&>(_It);
 }
 
 template <class _Ty, class _Diff, enable_if_t<is_same_v<_Diff, _Distance_unknown> || is_integral_v<_Diff>, int> = 0>
 _NODISCARD constexpr _Ty* _Get_unwrapped_n(_Ty* const _Src, _Diff) {
     return _Src;
 }
+#endif // _HAS_IF_CONSTEXPR
 
 template <class _Iter>
-using _Unwrapped_n_t = _Remove_cvref_t<decltype(_Get_unwrapped_n(_STD declval<const _Iter&>(), _Iter_diff_t<_Iter>{}))>;
+using _Unwrapped_n_t =
+    _Remove_cvref_t<decltype(_Get_unwrapped_n(_STD declval<_Iter>(), _Iter_diff_t<_Remove_cvref_t<_Iter>>{}))>;
 
 // FUNCTION TEMPLATE _Seek_wrapped
 template <class _Iter, class _UIter, class = void>
-struct _Wrapped_seekable : false_type {};
+_INLINE_VAR constexpr bool _Wrapped_seekable_v = false;
 
 template <class _Iter, class _UIter>
-struct _Wrapped_seekable<_Iter, _UIter,
-    void_t<decltype(_STD declval<_Iter&>()._Seek_to(_STD declval<const _UIter&>()))>> : true_type {};
-
-template <class _Iter, class _UIter>
-_INLINE_VAR constexpr bool _Wrapped_seekable_v = _Wrapped_seekable<_Iter, _UIter>::value;
+_INLINE_VAR constexpr bool
+    _Wrapped_seekable_v<_Iter, _UIter, void_t<decltype(_STD declval<_Iter&>()._Seek_to(_STD declval<_UIter>()))>> =
+        true;
 
 #if _HAS_IF_CONSTEXPR
 template <class _Iter, class _UIter>
-constexpr void _Seek_wrapped(_Iter& _It, const _UIter& _UIt) {
+constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
     if constexpr (_Wrapped_seekable_v<_Iter, _UIter>) {
-        _It._Seek_to(_UIt);
+        _It._Seek_to(static_cast<_UIter&&>(_UIt));
     } else {
-        _It = _UIt;
+        _It = static_cast<_UIter&&>(_UIt);
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _Iter, class _UIter, enable_if_t<_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
-constexpr void _Seek_wrapped(_Iter& _It, const _UIter& _UIt) {
-    _It._Seek_to(_UIt);
+constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
+    _It._Seek_to(static_cast<_UIter&&>(_UIt));
 }
 
 template <class _Iter, class _UIter, enable_if_t<!_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
-constexpr void _Seek_wrapped(_Iter& _It, const _UIter& _UIt) {
-    _It = _UIt;
+constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
+    _It = static_cast<_UIter&&>(_UIt);
 }
-#endif // _HAS_IF_CONSTEXPR
 
 template <class _Ty>
 constexpr void _Seek_wrapped(_Ty*& _It, _Ty* const _UIt) {
     _It = _UIt;
 }
+#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 // STRUCT TEMPLATE _Is_allocator
@@ -1519,18 +1571,25 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
     if constexpr (_Is_random_iter_v<_InIt>) {
         _Where += _Off;
     } else {
-        if constexpr (is_signed_v<_Diff>) {
-            if constexpr (_Is_bidi_iter_v<_InIt>) {
-                for (; _Off < 0; ++_Off) {
-                    --_Where;
-                }
-            } else {
-                _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
+        if constexpr (is_signed_v<_Diff> && !_Is_bidi_iter_v<_InIt>) {
+            _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
+        }
+
+        auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+        constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+
+        if constexpr (is_signed_v<_Diff> && _Is_bidi_iter_v<_InIt>) {
+            for (; _Off < 0; ++_Off) {
+                --_UWhere;
             }
         }
 
         for (; 0 < _Off; --_Off) {
-            ++_Where;
+            ++_UWhere;
+        }
+
+        if constexpr (_Need_rewrap) {
+            _Seek_wrapped(_Where, _STD move(_UWhere));
         }
     }
 }
@@ -1539,23 +1598,38 @@ template <class _InIt, class _Diff>
 _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
     // increment iterator by offset, input iterators
     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
+
+    auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+    constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+
     for (; 0 < _Off; --_Off) {
-        ++_Where;
+        ++_UWhere;
+    }
+
+    if (_Need_rewrap) {
+        _Seek_wrapped(_Where, _STD move(_UWhere));
     }
 }
 
 template <class _BidIt, class _Diff>
 _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_tag) {
     // increment iterator by offset, bidirectional iterators
+    auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+    constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+
     for (; 0 < _Off; --_Off) {
-        ++_Where;
+        ++_UWhere;
     }
 
     // the following warning is triggered if _Diff is unsigned
 #pragma warning(suppress : 6294) // Ill-defined for-loop: initial condition does not satisfy test.
                                  // Loop body not executed.
     for (; _Off < 0; ++_Off) {
-        --_Where;
+        --_UWhere;
+    }
+
+    if (_Need_rewrap) {
+        _Seek_wrapped(_Where, _STD move(_UWhere));
     }
 }
 
@@ -1755,9 +1829,9 @@ public:
         current._Verify_offset(-_Off);
     }
 
-    template <class _BidIt2 = _BidIt, enable_if_t<_Unwrappable_v<_BidIt2>, int> = 0>
-    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<_BidIt2>> _Unwrapped() const {
-        return static_cast<reverse_iterator<_Unwrapped_t<_BidIt2>>>(current._Unwrapped());
+    template <class _BidIt2 = _BidIt, enable_if_t<_Unwrappable_v<const _BidIt2&>, int> = 0>
+    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<const _BidIt2&>> _Unwrapped() const {
+        return static_cast<reverse_iterator<_Unwrapped_t<const _BidIt2&>>>(current._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_BidIt>;
@@ -2049,13 +2123,13 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
-                    return __t;
+                    return _Val;
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return __t.begin();
+                    return _Val.begin();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return begin(static_cast<_Ty&&>(__t));
+                    return begin(static_cast<_Ty&&>(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
@@ -2064,7 +2138,7 @@ namespace ranges {
         };
     } // namespace _Begin
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Begin::_Cpo begin;
     }
 
@@ -2082,13 +2156,13 @@ namespace ranges {
         // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty& __t) {
-            { _Fake_decay_copy(__t.end()) } -> sentinel_for<decltype(begin(__t))>;
+            { _Fake_decay_copy(__t.end()) } -> sentinel_for<decltype(_RANGES begin(__t))>;
         };
 
         template <class _Ty>
         concept _Has_ADL = requires(_Ty&& __t) {
             { _Fake_decay_copy(end(static_cast<_Ty&&>(__t))) } ->
-                sentinel_for<decltype(begin(static_cast<_Ty&&>(__t)))>;
+                sentinel_for<decltype(_RANGES begin(static_cast<_Ty&&>(__t)))>;
         };
         // clang-format on
 
@@ -2120,13 +2194,13 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
-                    return __t + extent_v<remove_reference_t<_Ty>>;
+                    return _Val + extent_v<remove_reference_t<_Ty>>;
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return __t.end();
+                    return _Val.end();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return end(static_cast<_Ty&&>(__t));
+                    return end(static_cast<_Ty&&>(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2135,15 +2209,15 @@ namespace ranges {
         };
     } // namespace _End
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _End::_Cpo end;
     }
 
     // CONCEPT ranges::range
     template <class _Rng>
     concept _Range_impl = requires(_Rng&& __r) {
-        begin(static_cast<_Rng&&>(__r));
-        end(static_cast<_Rng&&>(__r));
+        _RANGES begin(static_cast<_Rng&&>(__r));
+        _RANGES end(static_cast<_Rng&&>(__r));
     };
 
     template <class _Rng>
@@ -2157,11 +2231,11 @@ namespace ranges {
 
     // ALIAS TEMPLATE ranges::iterator_t
     template <range _Rng>
-    using iterator_t = decltype(begin(_STD declval<_Rng&>()));
+    using iterator_t = decltype(_RANGES begin(_STD declval<_Rng&>()));
 
     // ALIAS TEMPLATE ranges::sentinel_t
     template <range _Rng>
-    using sentinel_t = decltype(end(_STD declval<_Rng&>()));
+    using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
     // ALIAS TEMPLATE ranges::range_difference_t
     template <class _Rng>
@@ -2183,15 +2257,15 @@ namespace ranges {
     struct _Cbegin_fn {
         // clang-format off
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& __t) const
-            noexcept(noexcept(begin(static_cast<_CTy&&>(__t))))
-            requires requires { begin(static_cast<_CTy&&>(__t)); } {
-            return begin(static_cast<_CTy&&>(__t));
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
+            requires requires { _RANGES begin(static_cast<_CTy&&>(_Val)); } {
+            return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
         // clang-format on
     };
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Cbegin_fn cbegin;
     }
 
@@ -2199,15 +2273,15 @@ namespace ranges {
     struct _Cend_fn {
         // clang-format off
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& __t) const
-            noexcept(noexcept(end(static_cast<_CTy&&>(__t))))
-            requires requires { end(static_cast<_CTy&&>(__t)); } {
-            return end(static_cast<_CTy&&>(__t));
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
+            requires requires { _RANGES end(static_cast<_CTy&&>(_Val)); } {
+            return _RANGES end(static_cast<_CTy&&>(_Val));
         }
         // clang-format on
     };
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Cend_fn cend;
     }
 
@@ -2235,8 +2309,8 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty&& __t) {
-            { begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
-            { end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(begin(static_cast<_Ty&&>(__t)))>;
+            { _RANGES begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
+            { _RANGES end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(_RANGES begin(static_cast<_Ty&&>(__t)))>;
         };
         // clang-format on
 
@@ -2251,7 +2325,7 @@ namespace ranges {
                 } else if constexpr (_Has_ADL<_Ty>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(rbegin(_STD declval<_Ty>())))};
                 } else if constexpr (_Can_make_reverse<_Ty>) {
-                    return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(end(_STD declval<_Ty>())))};
+                    return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -2264,13 +2338,13 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return __t.rbegin();
+                    return _Val.rbegin();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return rbegin(static_cast<_Ty&&>(__t));
+                    return rbegin(static_cast<_Ty&&>(_Val));
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Make_reverse) {
-                    return _STD make_reverse_iterator(end(static_cast<_Ty&&>(__t)));
+                    return _STD make_reverse_iterator(_RANGES end(static_cast<_Ty&&>(_Val)));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2279,7 +2353,7 @@ namespace ranges {
         };
     } // namespace _Rbegin
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Rbegin::_Cpo rbegin;
     }
 
@@ -2297,24 +2371,24 @@ namespace ranges {
         // clang-format off
         template <class _Ty>
         concept _Can_rbegin = requires(_Ty&& __t) {
-            rbegin(static_cast<_Ty&&>(__t));
+            _RANGES rbegin(static_cast<_Ty&&>(__t));
         };
 
         template <class _Ty>
         concept _Has_member = is_lvalue_reference_v<_Ty> && requires(_Ty& __t) {
-            { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(rbegin(__t))>;
+            { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
         };
 
         template <class _Ty>
         concept _Has_ADL = requires(_Ty&& __t) {
             { _Fake_decay_copy(rend(static_cast<_Ty&&>(__t))) } ->
-                sentinel_for<decltype(rbegin(static_cast<_Ty&&>(__t)))>;
+                sentinel_for<decltype(_RANGES rbegin(static_cast<_Ty&&>(__t)))>;
         };
 
         template <class _Ty>
         concept _Can_make_reverse = requires(_Ty&& __t) {
-            { begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
-            { end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(begin(static_cast<_Ty&&>(__t)))>;
+            { _RANGES begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
+            { _RANGES end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(_RANGES begin(static_cast<_Ty&&>(__t)))>;
         };
         // clang-format on
 
@@ -2330,7 +2404,8 @@ namespace ranges {
                     } else if constexpr (_Has_ADL<_Ty>) {
                         return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty>())))};
                     } else if constexpr (_Can_make_reverse<_Ty>) {
-                        return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(begin(_STD declval<_Ty>())))};
+                        return {_St::_Make_reverse,
+                            noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty>())))};
                     }
                 }
 
@@ -2344,13 +2419,13 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return __t.rend();
+                    return _Val.rend();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return rend(static_cast<_Ty&&>(__t));
+                    return rend(static_cast<_Ty&&>(_Val));
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Make_reverse) {
-                    return _STD make_reverse_iterator(begin(static_cast<_Ty&&>(__t)));
+                    return _STD make_reverse_iterator(_RANGES begin(static_cast<_Ty&&>(_Val)));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2359,7 +2434,7 @@ namespace ranges {
         };
     } // namespace _Rend
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Rend::_Cpo rend;
     }
 
@@ -2367,15 +2442,15 @@ namespace ranges {
     struct _Crbegin_fn {
         // clang-format off
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& __t) const
-            noexcept(noexcept(rbegin(static_cast<_CTy&&>(__t))))
-            requires requires { rbegin(static_cast<_CTy&&>(__t)); } {
-            return rbegin(static_cast<_CTy&&>(__t));
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
+            requires requires { _RANGES rbegin(static_cast<_CTy&&>(_Val)); } {
+            return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
         // clang-format on
     };
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Crbegin_fn crbegin;
     }
 
@@ -2383,15 +2458,15 @@ namespace ranges {
     struct _Crend_fn {
         // clang-format off
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& __t) const
-            noexcept(noexcept(rend(static_cast<_CTy&&>(__t))))
-            requires requires { rend(static_cast<_CTy&&>(__t)); } {
-            return rend(static_cast<_CTy&&>(__t));
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
+            requires requires { _RANGES rend(static_cast<_CTy&&>(_Val)); } {
+            return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
         // clang-format on
     };
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Crend_fn crend;
     }
 
@@ -2421,8 +2496,8 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_difference = requires(_Ty&& __t) {
-            { begin(__t) } -> forward_iterator;
-            { end(__t) } -> sized_sentinel_for<decltype(begin(__t))>;
+            { _RANGES begin(__t) } -> forward_iterator;
+            { _RANGES end(__t) } -> sized_sentinel_for<decltype(_RANGES begin(__t))>;
         };
         // clang-format on
 
@@ -2440,7 +2515,8 @@ namespace ranges {
                 } else if constexpr (_Has_ADL<_Ty, _UnCV>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(size(_STD declval<_Ty>())))};
                 } else if constexpr (_Can_difference<_Ty>) {
-                    return {_St::_Subtract, noexcept(end(_STD declval<_Ty&>()) - begin(_STD declval<_Ty&>()))};
+                    return {_St::_Subtract,
+                        noexcept(_RANGES end(_STD declval<_Ty&>()) - _RANGES begin(_STD declval<_Ty&>()))};
                 } else {
                     return {_St::_None};
                 }
@@ -2453,15 +2529,15 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()([[maybe_unused]] _Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr auto operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
                     return extent_v<remove_cvref_t<_Ty>>;
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return static_cast<_Ty&&>(__t).size();
+                    return static_cast<_Ty&&>(_Val).size();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return size(static_cast<_Ty&&>(__t));
+                    return size(static_cast<_Ty&&>(_Val));
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Subtract) {
-                    const auto _Delta = end(__t) - begin(__t);
+                    const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<make_unsigned_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2471,7 +2547,7 @@ namespace ranges {
         };
     } // namespace _Size
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Size::_Cpo size;
     }
 
@@ -2485,13 +2561,13 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_size = requires(_Ty&& __t) {
-            size(static_cast<_Ty&&>(__t));
+            _RANGES size(static_cast<_Ty&&>(__t));
         };
 
         template <class _Ty>
         concept _Can_begin_end = requires(_Ty&& __t) {
-            { begin(__t) } -> forward_iterator;
-            end(__t);
+            { _RANGES begin(__t) } -> forward_iterator;
+            _RANGES end(__t);
         };
         // clang-format on
 
@@ -2504,10 +2580,10 @@ namespace ranges {
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(static_cast<bool>(_STD declval<_Ty>().empty()))};
                 } else if constexpr (_Has_size<_Ty>) {
-                    return {_St::_Size, noexcept(size(_STD declval<_Ty>()))};
+                    return {_St::_Size, noexcept(_RANGES size(_STD declval<_Ty>()))};
                 } else if constexpr (_Can_begin_end<_Ty>) {
-                    constexpr auto _Nothrow =
-                        noexcept(static_cast<bool>(begin(_STD declval<_Ty&>()) == end(_STD declval<_Ty&>())));
+                    constexpr auto _Nothrow = noexcept(
+                        static_cast<bool>(_RANGES begin(_STD declval<_Ty&>()) == _RANGES end(_STD declval<_Ty&>())));
                     return {_St::_Compare, _Nothrow};
                 } else {
                     return {_St::_None};
@@ -2521,13 +2597,13 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr bool operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return static_cast<bool>(static_cast<_Ty&&>(__t).empty());
+                    return static_cast<bool>(static_cast<_Ty&&>(_Val).empty());
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Size) {
-                    return size(static_cast<_Ty&&>(__t)) == 0;
+                    return _RANGES size(static_cast<_Ty&&>(_Val)) == 0;
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Compare) {
-                    return static_cast<bool>(begin(__t) == end(__t));
+                    return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2536,7 +2612,7 @@ namespace ranges {
         };
     } // namespace _Empty
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Empty::_Cpo empty;
     }
 
@@ -2553,7 +2629,7 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_contiguous_iterator = requires(_Ty&& __t) {
-            { begin(static_cast<_Ty&&>(__t)) } -> contiguous_iterator;
+            { _RANGES begin(static_cast<_Ty&&>(__t)) } -> contiguous_iterator;
         };
         // clang-format on
 
@@ -2566,7 +2642,7 @@ namespace ranges {
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty&>().data())};
                 } else if constexpr (_Has_contiguous_iterator<_Ty>) {
-                    return {_St::_Address, noexcept(_STD to_address(begin(_STD declval<_Ty>())))};
+                    return {_St::_Address, noexcept(_STD to_address(_RANGES begin(_STD declval<_Ty>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -2579,11 +2655,11 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& __t) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
-                    return __t.data();
+                    return _Val.data();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Address) {
-                    return _STD to_address(begin(static_cast<_Ty&&>(__t)));
+                    return _STD to_address(_RANGES begin(static_cast<_Ty&&>(_Val)));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2592,7 +2668,7 @@ namespace ranges {
         };
     } // namespace _Data
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Data::_Cpo data;
     }
 
@@ -2600,15 +2676,15 @@ namespace ranges {
     struct _Cdata_fn {
         // clang-format off
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& __t) const
-            noexcept(noexcept(data(static_cast<_CTy&&>(__t))))
-            requires requires { data(static_cast<_CTy&&>(__t)); } {
-            return data(static_cast<_CTy&&>(__t));
+        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+            noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
+            requires requires { _RANGES data(static_cast<_CTy&&>(_Val)); } {
+            return _RANGES data(static_cast<_CTy&&>(_Val));
         }
         // clang-format on
     };
 
-    inline namespace __cpos {
+    inline namespace _Cpos {
         inline constexpr _Cdata_fn cdata;
     }
 
@@ -2619,7 +2695,7 @@ namespace ranges {
 #if 0 // TRANSITION, LWG-3264
         && !disable_sized_range<remove_cvref_t<_Rng>>
 #endif // TRANSITION, LWG-3264
-        && requires(_Rng& __r) { size(__r); };
+        && requires(_Rng& __r) { _RANGES size(__r); };
     // clang-format on
 
     // STRUCT ranges::view_base
@@ -2668,9 +2744,223 @@ namespace ranges {
     // CONCEPT ranges::contiguous_range
     template <class _Rng>
     concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng& __r) {
-        { data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
+        { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
     };
     // clang-format on
+
+    // CLASS ranges::_Not_quite_object
+    class _Not_quite_object {
+    public:
+        // Some overload sets in the library have the property that their constituent function templates are not visible
+        // to argument-dependent name lookup (ADL) and that they inhibit ADL when found via unqualified name lookup.
+        // This property allows these overload sets to be implemented as function objects. We derive such function
+        // objects from this type to remove some typical object-ish behaviors which helps users avoid depending on their
+        // non-specified object-ness.
+
+        struct _Construct_tag {};
+
+        _Not_quite_object() = delete;
+
+        constexpr explicit _Not_quite_object(_Construct_tag) noexcept {}
+
+        _Not_quite_object(const _Not_quite_object&) = delete;
+        _Not_quite_object& operator=(const _Not_quite_object&) = delete;
+
+        void operator&() const = delete;
+
+    protected:
+        ~_Not_quite_object() = default;
+    };
+
+    // CLASS ranges::_Advance_fn
+    class _Advance_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_or_output_iterator _It>
+        constexpr void operator()(_It& _Where, iter_difference_t<_It> _Off) const {
+            if constexpr (random_access_iterator<_It>) {
+                _Where += _Off;
+            } else {
+                if constexpr (!bidirectional_iterator<_It>) {
+                    _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
+                }
+
+                auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+
+                if constexpr (bidirectional_iterator<_It>) {
+                    for (; _Off < 0; ++_Off) {
+                        --_UWhere;
+                    }
+                }
+
+                for (; _Off > 0; --_Off) {
+                    ++_UWhere;
+                }
+
+                if constexpr (_Need_rewrap) {
+                    _Seek_wrapped(_Where, _STD move(_UWhere));
+                }
+            }
+        }
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+        constexpr void operator()(_It& _Where, _Se _Last) const {
+            if constexpr (assignable_from<_It&, _Se>) {
+                _Where = static_cast<_Se&&>(_Last);
+            } else if constexpr (sized_sentinel_for<_Se, _It>) {
+                (*this)(_Where, _Last - _Where);
+            } else {
+                _Adl_verify_range(_Where, _Last);
+
+                auto&& _UWhere              = _Get_unwrapped(static_cast<_It&&>(_Where));
+                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped(static_cast<_It&&>(_Where)))>;
+                auto&& _ULast               = _Get_unwrapped(static_cast<_Se&&>(_Last));
+
+                while (_UWhere != _ULast) {
+                    ++_UWhere;
+                }
+
+                if constexpr (_Need_rewrap) {
+                    _Seek_wrapped(_Where, static_cast<_It&&>(_UWhere));
+                }
+            }
+        }
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+        constexpr iter_difference_t<_It> operator()(_It& _Where, iter_difference_t<_It> _Off, _Se _Last) const {
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                const iter_difference_t<_It> _Delta = _Last - _Where;
+                if ((_Off < 0 && _Off <= _Delta) || (_Off > 0 && _Off >= _Delta)) {
+                    if constexpr (assignable_from<_It&, _Se>) {
+                        _Where = static_cast<_Se&&>(_Last);
+                    } else {
+                        (*this)(_Where, _Delta);
+                    }
+                    return _Off - _Delta;
+                }
+
+                (*this)(_Where, _Off);
+                return 0;
+            } else {
+                // performance note: develop unwrapping technology for (i, n, s)?
+                if constexpr (bidirectional_iterator<_It>) {
+                    for (; _Off < 0 && _Where != _Last; ++_Off) {
+                        --_Where;
+                    }
+                } else {
+                    _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
+                }
+
+                for (; _Off > 0 && _Where != _Last; --_Off) {
+                    ++_Where;
+                }
+
+                return _Off;
+            }
+        }
+    };
+
+    // VARIABLE ranges::advance
+    inline constexpr _Advance_fn advance{_Not_quite_object::_Construct_tag{}};
+
+    // CLASS ranges::_Distance_fn
+    class _Distance_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const {
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                return _Last - _First;
+            } else {
+                _Adl_verify_range(_First, _Last);
+                auto _UFirst                  = _Get_unwrapped(static_cast<_It&&>(_First));
+                const auto _ULast             = _Get_unwrapped(static_cast<_Se&&>(_Last));
+                iter_difference_t<_It> _Count = 0;
+                for (; _UFirst != _ULast; ++_UFirst) {
+                    ++_Count;
+                }
+
+                return _Count;
+            }
+        }
+
+        template <range _Rng>
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Val) const {
+            if constexpr (sized_range<_Rng>) {
+                return static_cast<range_difference_t<_Rng>>(_RANGES size(_Val));
+            } else {
+                return (*this)(_RANGES begin(_Val), _RANGES end(_Val));
+            }
+        }
+    };
+
+    // VARIABLE ranges::distance
+    inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
+
+    // CLASS ranges::_Next_fn
+    class _Next_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_or_output_iterator _It>
+        _NODISCARD constexpr _It operator()(_It _Where) const {
+            ++_Where;
+            return _Where;
+        }
+
+        template <input_or_output_iterator _It>
+        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off) const {
+            _RANGES advance(_Where, _Off);
+            return _Where;
+        }
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+        _NODISCARD constexpr _It operator()(_It _Where, _Se _Last) const {
+            _RANGES advance(_Where, static_cast<_Se&&>(_Last));
+            return _Where;
+        }
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off, _Se _Last) const {
+            _RANGES advance(_Where, _Off, static_cast<_Se&&>(_Last));
+            return _Where;
+        }
+    };
+
+    // VARIABLE ranges::next
+    inline constexpr _Next_fn next{_Not_quite_object::_Construct_tag{}};
+
+    // CLASS ranges::_Prev_fn
+    class _Prev_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <bidirectional_iterator _It>
+        _NODISCARD constexpr _It operator()(_It _Where) const {
+            --_Where;
+            return _Where;
+        }
+
+        template <bidirectional_iterator _It>
+        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off) const {
+            _STL_ASSERT(_Off != _Min_possible_v<iter_difference_t<_It>>, "integer overflow");
+            _RANGES advance(_Where, -_Off);
+            return _Where;
+        }
+
+        template <bidirectional_iterator _It>
+        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off, _It _Last) const {
+            _STL_ASSERT(_Off != _Min_possible_v<iter_difference_t<_It>>, "integer overflow");
+            _RANGES advance(_Where, -_Off, static_cast<_It&&>(_Last));
+            return _Where;
+        }
+    };
+
+    // VARIABLE ranges::prev
+    inline constexpr _Prev_fn prev{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -3186,9 +3476,9 @@ public:
         current._Verify_offset(_Off);
     }
 
-    template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
-    _NODISCARD constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() const {
-        return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(current._Unwrapped());
+    template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
+    _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const {
+        return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(current._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_type>;
@@ -3249,6 +3539,40 @@ template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
     return move_iterator<_Iter>(_It);
 }
+
+#ifdef __cpp_lib_concepts
+// STRUCT default_sentinel_t
+struct default_sentinel_t {};
+
+// VARIABLE default_sentinel
+inline constexpr default_sentinel_t default_sentinel{};
+
+// STRUCT unreachable_sentinel_t
+struct unreachable_sentinel_t {
+    template <weakly_incrementable _Winc>
+    _NODISCARD friend constexpr bool operator==(unreachable_sentinel_t, const _Winc&) noexcept {
+        return false;
+    }
+#if !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
+    template <weakly_incrementable _Winc>
+    _NODISCARD friend constexpr bool operator==(const _Winc&, unreachable_sentinel_t) noexcept {
+        return false;
+    }
+
+    template <weakly_incrementable _Winc>
+    _NODISCARD friend constexpr bool operator!=(unreachable_sentinel_t, const _Winc&) noexcept {
+        return true;
+    }
+    template <weakly_incrementable _Winc>
+    _NODISCARD friend constexpr bool operator!=(const _Winc&, unreachable_sentinel_t) noexcept {
+        return true;
+    }
+#endif // !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
+};
+
+// VARIABLE unreachable_sentinel
+inline constexpr unreachable_sentinel_t unreachable_sentinel{};
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE copy
 template <class _InIt, class _OutIt>
@@ -3735,17 +4059,16 @@ struct _Is_character_or_byte<byte> : true_type {};
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 // clang-format off
-template <class _FwdIt, class _Ty,
-    class _Value_type = _Iter_value_t<_FwdIt>,
-    class _Raw_ty = _Unwrap_enum_t<_Ty>,
-    class _Raw_value_type = _Unwrap_enum_t<_Value_type>>
+template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe =
     conjunction_v<
-        is_pointer<_FwdIt>,
         disjunction<
-            conjunction<_Is_character_or_byte<_Raw_ty>, _Is_character_or_byte<_Raw_value_type>>,
-            conjunction<is_same<bool, _Raw_ty>, is_same<bool, _Raw_value_type>>>,
+            conjunction<_Is_character_or_byte<_Unwrap_enum_t<_Ty>>, _Is_character_or_byte<_Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>,
+            conjunction<is_same<bool, _Unwrap_enum_t<_Ty>>, is_same<bool, _Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>>,
         is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+
+template <class _FwdIt, class _Ty>
+_INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 // clang-format on
 
 #if _HAS_IF_CONSTEXPR
@@ -3754,7 +4077,7 @@ void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { // copy _V
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Fill_memset_is_safe<_Unwrapped_t<_FwdIt>, _Ty>) {
+    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
         _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
     } else {
         for (; _UFirst != _ULast; ++_UFirst) {
@@ -3781,7 +4104,7 @@ template <class _FwdIt, class _Ty>
 void fill(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) { // copy _Val through [_First, _Last)
     _Adl_verify_range(_First, _Last);
     _Fill_unchecked1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val,
-        bool_constant<_Fill_memset_is_safe<_Unwrapped_t<_FwdIt>, _Ty>>{});
+        bool_constant<_Fill_memset_is_safe<_Unwrapped_t<const _FwdIt&>, _Ty>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
