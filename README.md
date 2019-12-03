@@ -53,7 +53,7 @@ issue. The [bug tag][] and [enhancement tag][] remain to be populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4835][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4842][], which will eventually become the next C++
 International Standard (which is sometimes referred to as C++2a, but we optimistically refer to it as C++20). The terms
 Working Draft (WD) and Working Paper (WP) are interchangeable; we often informally refer to these drafts as "the
 Standard" while being aware of the difference. (There are other relevant Standards; for example, supporting `/std:c++14`
@@ -257,7 +257,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4835]: https://wg21.link/n4835
+[N4842]: https://wg21.link/n4842
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
