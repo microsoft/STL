@@ -3548,27 +3548,31 @@ struct default_sentinel_t {};
 inline constexpr default_sentinel_t default_sentinel{};
 
 // STRUCT unreachable_sentinel_t
-struct unreachable_sentinel_t {
-    template <weakly_incrementable _Winc>
-    _NODISCARD friend constexpr bool operator==(unreachable_sentinel_t, const _Winc&) noexcept {
-        return false;
-    }
+struct unreachable_sentinel_t;
+namespace _Unreachable_sentinel_detail {
+    struct _Base {
+        template <weakly_incrementable _Winc>
+        _NODISCARD friend constexpr bool operator==(unreachable_sentinel_t, const _Winc&) noexcept {
+            return false;
+        }
 #if !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
-    template <weakly_incrementable _Winc>
-    _NODISCARD friend constexpr bool operator==(const _Winc&, unreachable_sentinel_t) noexcept {
-        return false;
-    }
+        template <weakly_incrementable _Winc>
+        _NODISCARD friend constexpr bool operator==(const _Winc&, unreachable_sentinel_t) noexcept {
+            return false;
+        }
 
-    template <weakly_incrementable _Winc>
-    _NODISCARD friend constexpr bool operator!=(unreachable_sentinel_t, const _Winc&) noexcept {
-        return true;
-    }
-    template <weakly_incrementable _Winc>
-    _NODISCARD friend constexpr bool operator!=(const _Winc&, unreachable_sentinel_t) noexcept {
-        return true;
-    }
+        template <weakly_incrementable _Winc>
+        _NODISCARD friend constexpr bool operator!=(unreachable_sentinel_t, const _Winc&) noexcept {
+            return true;
+        }
+        template <weakly_incrementable _Winc>
+        _NODISCARD friend constexpr bool operator!=(const _Winc&, unreachable_sentinel_t) noexcept {
+            return true;
+        }
 #endif // !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
-};
+    };
+} // namespace _Unreachable_sentinel_detail
+struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANSITION, /permissive-
 
 // VARIABLE unreachable_sentinel
 inline constexpr unreachable_sentinel_t unreachable_sentinel{};
