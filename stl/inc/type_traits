@@ -1775,6 +1775,14 @@ inline constexpr bool is_nothrow_invocable_r_v =
     _Invoke_traits<void, _Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx>::value;
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, VS 2019 16.5 Preview 2
+// FUNCTION is_constant_evaluated
+_NODISCARD constexpr bool is_constant_evaluated() noexcept {
+    return __builtin_is_constant_evaluated();
+}
+#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
 // STRUCT TEMPLATE _Weak_types
 template <class _Ty, class = void>
