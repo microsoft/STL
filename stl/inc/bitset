@@ -532,9 +532,14 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
         _CATCH_IO_(_Istr_t, _Istr)
     }
 
-    if (!_Changed) {
-        _State |= _Istr_t::failbit;
-    }
+    constexpr bool _Has_bits = _Bits > 0;
+
+    if
+        _CONSTEXPR_IF(_Has_bits) {
+            if (!_Changed) {
+                _State |= _Istr_t::failbit;
+            }
+        }
 
     _Istr.setstate(_State);
     _Right = bitset<_Bits>(_Str); // convert string and store
