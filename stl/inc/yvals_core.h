@@ -34,6 +34,7 @@
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> ispow2(), ceil2(), floor2(), log2p1()
 //            (log2p1() is called bit_length() as of D1956)
+// P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
@@ -979,17 +980,23 @@
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_int_pow2                 201806L
-#define __cpp_lib_list_remove_return_type  201806L
-#define __cpp_lib_math_constants           201907L
-#define __cpp_lib_nothrow_convertible      201806L
-#define __cpp_lib_remove_cvref             201711L
-#define __cpp_lib_shift                    201806L
-#define __cpp_lib_ssize                    201902L
-#define __cpp_lib_starts_ends_with         201711L
-#define __cpp_lib_to_address               201711L
-#define __cpp_lib_to_array                 201907L
-#define __cpp_lib_type_identity            201806L
-#define __cpp_lib_unwrap_ref               201811L
+
+#if defined(__clang__) || defined(__EDG__) \
+    || (defined(_MSC_VER) && _MSC_VER >= 1925 && !(_MSC_FULL_VER == 192528318 && _MSC_BUILD == 97))
+#define __cpp_lib_is_constant_evaluated 201811L
+#endif // TRANSITION, VS 2019 16.5 Preview 2 and toolset update
+
+#define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_math_constants          201907L
+#define __cpp_lib_nothrow_convertible     201806L
+#define __cpp_lib_remove_cvref            201711L
+#define __cpp_lib_shift                   201806L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
+#define __cpp_lib_to_address              201711L
+#define __cpp_lib_to_array                201907L
+#define __cpp_lib_type_identity           201806L
+#define __cpp_lib_unwrap_ref              201811L
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
