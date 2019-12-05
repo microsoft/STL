@@ -1255,7 +1255,7 @@ private:
     // clang-format off
     template <class _Ty0, class... _Types>
 #ifdef __cpp_concepts
-        requires(!is_array_v<_Ty0>)
+        requires (!is_array_v<_Ty0>)
 #endif // __cpp_concepts
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
     // clang-format on
@@ -1283,7 +1283,7 @@ private:
     // clang-format off
     template <class _Ty0, class _Alloc, class... _Types>
 #ifdef __cpp_concepts
-        requires(!is_array_v<_Ty0>)
+        requires (!is_array_v<_Ty0>)
 #endif // __cpp_concepts
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
     // clang-format on
@@ -2049,7 +2049,7 @@ private:
 // clang-format off
 template <class _Ty, class... _Types>
 #ifdef __cpp_concepts
-    requires(!is_array_v<_Ty>)
+    requires (!is_array_v<_Ty>)
 #endif // __cpp_concepts
 _NODISCARD shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
@@ -2128,7 +2128,7 @@ _NODISCARD shared_ptr<_Ty> make_shared(
 // clang-format off
 template <class _Ty, class _Alloc, class... _Types>
 #ifdef __cpp_concepts
-    requires(!is_array_v<_Ty>)
+    requires (!is_array_v<_Ty>)
 #endif // __cpp_concepts
 _NODISCARD shared_ptr<_Ty> allocate_shared(
         const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
