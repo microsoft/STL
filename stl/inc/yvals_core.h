@@ -173,6 +173,7 @@
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive
+// P1902R1 Missing Feature-Test Macros 2017-2019
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the
@@ -949,14 +950,18 @@
 
 // C++20
 #if _HAS_CXX20
-#define __cpp_lib_bind_front 201907L
+#define __cpp_lib_atomic_float 201711L
+#define __cpp_lib_bind_front   201907L
+
 #if defined(__clang__) || defined(__EDG__)
 #define __cpp_lib_bitops 201907L
 #else // ^^^ Clang and EDG / MSVC vvv
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
 // TRANSITION, VSO-1020212
 #endif // defined(__clang__) || defined(__EDG__)
+
 #define __cpp_lib_bounded_array_traits 201902L
+
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201811L
 #endif // __cpp_char8_t
@@ -973,9 +978,18 @@
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
+#define __cpp_lib_int_pow2                 201806L
 #define __cpp_lib_list_remove_return_type  201806L
 #define __cpp_lib_math_constants           201907L
+#define __cpp_lib_nothrow_convertible      201806L
+#define __cpp_lib_remove_cvref             201711L
+#define __cpp_lib_shift                    201806L
+#define __cpp_lib_ssize                    201902L
+#define __cpp_lib_starts_ends_with         201711L
+#define __cpp_lib_to_address               201711L
 #define __cpp_lib_to_array                 201907L
+#define __cpp_lib_type_identity            201806L
+#define __cpp_lib_unwrap_ref               201811L
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
