@@ -5,41 +5,37 @@
 
 #include <yvals.h>
 
-#include <mutex>
+#include <stdlib.h>
 #include <system_error>
-#include <thread>
 #include <xthreads.h>
-
-#if _HAS_EXCEPTIONS
-#include <exception>
-#include <string>
-
-#else // _HAS_EXCEPTIONS
-#include <cstdio>
-#endif // _HAS_EXCEPTIONS
-
-static const char* const msgs[] = { // error messages
-    "device or resource busy", "invalid argument", "no such process", "not enough memory", "operation not permitted",
-    "resource deadlock would occur", "resource unavailable try again"};
-
-static const int codes[] = { // system_error codes
-    (int) _STD errc::device_or_resource_busy, (int) _STD errc::invalid_argument, (int) _STD errc::no_such_process,
-    (int) _STD errc::not_enough_memory, (int) _STD errc::operation_not_permitted,
-    (int) _STD errc::resource_deadlock_would_occur, (int) _STD errc::resource_unavailable_try_again};
 
 _STD_BEGIN
 
-#if _HAS_EXCEPTIONS
-_CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int code) { // throw error object
-    throw _STD system_error(codes[code], _STD generic_category(), msgs[code]);
-}
+static constexpr const char* msgs[] = {
+    // error messages
+    "device or resource busy",
+    "invalid argument",
+    "no such process",
+    "not enough memory",
+    "operation not permitted",
+    "resource deadlock would occur",
+    "resource unavailable try again",
+};
 
-#else // _HAS_EXCEPTIONS
-_CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int code) { // report system error
-    _CSTD fputs(msgs[code], stderr);
-    _CSTD abort();
+static constexpr errc codes[] = {
+    // system_error codes
+    errc::device_or_resource_busy,
+    errc::invalid_argument,
+    errc::no_such_process,
+    errc::not_enough_memory,
+    errc::operation_not_permitted,
+    errc::resource_deadlock_would_occur,
+    errc::resource_unavailable_try_again,
+};
+
+[[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_Cpp_error(int code) { // throw error object
+    _THROW(system_error(static_cast<int>(codes[code]), _STD generic_category(), msgs[code]));
 }
-#endif // _HAS_EXCEPTIONS
 
 [[noreturn]] _CRTIMP2_PURE void __cdecl _Throw_C_error(int code) { // throw error object for C error
     switch (code) { // select the exception

@@ -101,7 +101,7 @@ public:
     using hasher      = _Hasher;
     using key_type    = _Kty;
     using mapped_type = _Ty;
-    using key_equal   = typename _Mytraits::key_equal;
+    using key_equal   = _Keyeq;
 
     using value_type      = pair<const _Kty, _Ty>;
     using allocator_type  = typename _Mybase::allocator_type;
@@ -513,7 +513,7 @@ public:
     using hasher      = _Hasher;
     using key_type    = _Kty;
     using mapped_type = _Ty;
-    using key_equal   = typename _Mytraits::key_equal;
+    using key_equal   = _Keyeq;
 
     using value_type      = pair<const _Kty, _Ty>;
     using allocator_type  = typename _Mybase::allocator_type;

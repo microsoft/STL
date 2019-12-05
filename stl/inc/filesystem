@@ -279,9 +279,9 @@ namespace filesystem {
     template <class _Src>
     _NODISCARD auto _Stringoid_from_Source(const _Src& _Source) {
         using _EcharT = _Iter_value_t<decay_t<_Src>>;
-        if constexpr (is_pointer_v<_Unwrapped_unverified_t<_Src>>) {
+        if constexpr (is_pointer_v<_Unwrapped_unverified_t<const _Src&>>) {
             return basic_string_view<_EcharT>(_Get_unwrapped_unverified(_Source));
-        } else if constexpr (is_pointer_v<_Unwrapped_t<_Src>>) {
+        } else if constexpr (is_pointer_v<_Unwrapped_t<const _Src&>>) {
             const auto _Data = _Get_unwrapped(_Source);
             auto _Next       = _Source;
             while (*_Next != _EcharT{}) {
@@ -1582,8 +1582,8 @@ namespace filesystem {
 
         using _Prevent_inheriting_unwrap = _Path_iterator;
 
-        template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
-        _NODISCARD _Path_iterator<_Unwrapped_t<_Base_iter>> _Unwrapped() const {
+        template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
+        _NODISCARD _Path_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const {
             return {_Position._Unwrapped(), _Element.native(), _Mypath};
         }
 
@@ -1592,7 +1592,7 @@ namespace filesystem {
         template <class _Other>
         friend class _Path_iterator;
 
-        template <class _Other, enable_if_t<_Wrapped_seekable_v<_Base_iter, _Other>, int> = 0>
+        template <class _Other, enable_if_t<_Wrapped_seekable_v<_Base_iter, const _Other&>, int> = 0>
         constexpr void _Seek_to(const _Path_iterator<_Other>& _It) {
             _Position._Seek_to(_It._Position);
             _Element = _It._Element;

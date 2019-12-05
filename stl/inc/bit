@@ -1,0 +1,151 @@
+// bit standard header (core)
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _BIT_
+#define _BIT_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX20
+#pragma message("The contents of <bit> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+
+#include <limits>
+#include <type_traits>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+enum class endian { little = 0, big = 1, native = little };
+
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+template <class _Ty>
+inline constexpr bool _Is_standard_unsigned_integer =
+    _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr bool ispow2(const _Ty _Val) noexcept {
+    return _Val != 0 && (_Val & (_Val - 1)) == 0;
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty ceil2(const _Ty _Val) noexcept /* strengthened */ {
+    if (_Val == 0) {
+        return 1;
+    }
+
+    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - _STD countl_zero(static_cast<_Ty>(_Val - 1))));
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty floor2(const _Ty _Val) noexcept {
+    if (_Val == 0) {
+        return 0;
+    }
+
+    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - 1 - _STD countl_zero(_Val)));
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty bit_length(const _Ty _Val) noexcept {
+    return static_cast<_Ty>(numeric_limits<_Ty>::digits - _STD countl_zero(_Val));
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty rotr(_Ty _Val, int _Rotation) noexcept;
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
+    constexpr auto _Digits = numeric_limits<_Ty>::digits;
+    const auto _Remainder  = _Rotation % _Digits;
+    if (_Remainder > 0) {
+        return static_cast<_Ty>(
+            static_cast<_Ty>(_Val << _Remainder) | static_cast<_Ty>(_Val >> (_Digits - _Remainder)));
+    } else if (_Remainder == 0) {
+        return _Val;
+    } else { // _Remainder < 0
+        return _STD rotr(_Val, -_Remainder);
+    }
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
+_NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
+    constexpr auto _Digits = numeric_limits<_Ty>::digits;
+    const auto _Remainder  = _Rotation % _Digits;
+    if (_Remainder > 0) {
+        return static_cast<_Ty>(
+            static_cast<_Ty>(_Val >> _Remainder) | static_cast<_Ty>(_Val << (_Digits - _Remainder)));
+    } else if (_Remainder == 0) {
+        return _Val;
+    } else { // _Remainder < 0
+        return _STD rotl(_Val, -_Remainder);
+    }
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
+_NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    if (_Val == 0) {
+        return _Digits;
+    }
+
+    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
+        return __builtin_clz(_Val) - (numeric_limits<unsigned int>::digits - _Digits);
+    } else {
+        return __builtin_clzll(_Val) - (numeric_limits<unsigned long long>::digits - _Digits);
+    }
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
+    return _STD countl_zero(static_cast<_Ty>(~_Val));
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr int countr_zero(const _Ty _Val) noexcept {
+    if (_Val == 0) {
+        return numeric_limits<_Ty>::digits;
+    }
+
+    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
+        return __builtin_ctz(_Val);
+    } else {
+        return __builtin_ctzll(_Val);
+    }
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+_NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
+    return _STD countr_zero(static_cast<_Ty>(~_Val));
+}
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+_NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
+    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
+        return __builtin_popcount(_Val);
+    } else {
+        return __builtin_popcountll(_Val);
+    }
+}
+#endif // __cpp_lib_bitops
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _HAS_CXX20
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _BIT_
