@@ -190,6 +190,8 @@ inline to_chars_result to_chars(char* const _First, char* const _Last, const uns
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 
+to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
+
 
 // FUNCTION TEMPLATE _Bit_cast
 template <class _To, class _From,

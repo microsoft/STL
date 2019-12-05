@@ -72,11 +72,6 @@ struct negation : bool_constant<!static_cast<bool>(_Trait::value)> {}; // The ne
 template <class _Trait>
 _INLINE_VAR constexpr bool negation_v = negation<_Trait>::value;
 
-#if _HAS_CXX20
-// ENUM CLASS endian
-enum class endian { little = 0, big = 1, native = little };
-#endif // _HAS_CXX20
-
 // STRUCT TEMPLATE _Arg_types
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. (sometimes)
@@ -1223,7 +1218,8 @@ using _Conditional_type = decltype(false ? _STD declval<_Ty1>() : _STD declval<_
 template <class _Ty1, class _Ty2, class = void>
 struct _Const_lvalue_cond_oper {};
 
-// N4810 [meta.trans.other]/3.3.4 (per P/R of LWG-3205): "Otherwise, if remove_cvref_t</**/> denotes a type..."
+// N4810 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): "Otherwise, if remove_cvref_t</**/> denotes
+// a type..."
 template <class _Ty1, class _Ty2>
 struct _Const_lvalue_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<const _Ty1&, const _Ty2&>>> {
     using type = remove_cvref_t<_Conditional_type<const _Ty1&, const _Ty2&>>;
@@ -1779,6 +1775,14 @@ inline constexpr bool is_nothrow_invocable_r_v =
     _Invoke_traits<void, _Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx>::value;
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, VS 2019 16.5 Preview 2
+// FUNCTION is_constant_evaluated
+_NODISCARD constexpr bool is_constant_evaluated() noexcept {
+    return __builtin_is_constant_evaluated();
+}
+#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
 // STRUCT TEMPLATE _Weak_types
 template <class _Ty, class = void>

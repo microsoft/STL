@@ -78,7 +78,7 @@ private:
 public:
     using hasher    = _Hasher;
     using key_type  = _Kty;
-    using key_equal = typename _Mytraits::key_equal;
+    using key_equal = _Keyeq;
 
     using value_type      = typename _Mybase::value_type;
     using allocator_type  = typename _Mybase::allocator_type;
@@ -346,7 +346,7 @@ private:
 public:
     using hasher    = _Hasher;
     using key_type  = _Kty;
-    using key_equal = typename _Mytraits::key_equal;
+    using key_equal = _Keyeq;
 
     using value_type      = typename _Mybase::value_type;
     using allocator_type  = typename _Mybase::allocator_type;

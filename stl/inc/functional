@@ -949,6 +949,13 @@ private:
 };
 #pragma warning(pop)
 
+// TRANSITION, Visual Studio 2019 16.5 + CUDA
+#if (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+#define _USE_FUNCTION_INT_0_SFINAE 0
+#else
+#define _USE_FUNCTION_INT_0_SFINAE 1
+#endif // (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+
 // CLASS TEMPLATE _Func_class
 template <class _Ret, class... _Types>
 class _Func_class : public _Arg_types<_Types...> {
@@ -976,7 +983,8 @@ public:
 protected:
     template <class _Fx, class _Function>
     using _Enable_if_callable_t =
-        enable_if_t<conjunction_v<negation<is_same<decay_t<_Fx>, _Function>>, _Is_invocable_r<_Ret, _Fx, _Types...>>>;
+        enable_if_t<conjunction_v<negation<is_same<decay_t<_Fx>, _Function>>, _Is_invocable_r<_Ret, _Fx, _Types...>>,
+            int>;
 
     bool _Empty() const noexcept {
         return !_Getimpl();
@@ -1099,7 +1107,9 @@ private:
 
 // STRUCT TEMPLATE _Get_function_impl
 template <class _Tx>
-struct _Get_function_impl;
+struct _Get_function_impl {
+    static_assert(_Always_false<_Tx>, "std::function does not accept non-function types as template arguments.");
+};
 
 #define _GET_FUNCTION_IMPL(CALL_OPT, X1, X2, X3)                                                  \
     template <class _Ret, class... _Types>                                                        \
@@ -1109,6 +1119,17 @@ struct _Get_function_impl;
 
 _NON_MEMBER_CALL(_GET_FUNCTION_IMPL, X1, X2, X3)
 #undef _GET_FUNCTION_IMPL
+
+#ifdef __cpp_noexcept_function_type
+#define _GET_FUNCTION_IMPL_NOEXCEPT(CALL_OPT, X1, X2, X3)                                                         \
+    template <class _Ret, class... _Types>                                                                        \
+    struct _Get_function_impl<_Ret CALL_OPT(_Types...) noexcept> {                                                \
+        static_assert(                                                                                            \
+            _Always_false<_Ret>, "std::function does not accept noexcept function types as template arguments."); \
+    };
+_NON_MEMBER_CALL(_GET_FUNCTION_IMPL_NOEXCEPT, X1, X2, X3)
+#undef _GET_FUNCTION_IMPL_NOEXCEPT
+#endif // __cpp_noexcept_function_type
 
 // CLASS TEMPLATE function
 template <class _Fty>
@@ -1125,7 +1146,11 @@ public:
         this->_Reset_copy(_Right);
     }
 
+#if _USE_FUNCTION_INT_0_SFINAE
+    template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx&, function> = 0>
+#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
     template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx&, function>>
+#endif // _USE_FUNCTION_INT_0_SFINAE
     function(_Fx _Func) {
         this->_Reset(_STD move(_Func));
     }
@@ -1142,7 +1167,11 @@ public:
         this->_Reset_alloc(_Right, _Ax);
     }
 
+#if _USE_FUNCTION_INT_0_SFINAE
+    template <class _Fx, class _Alloc, typename _Mybase::template _Enable_if_callable_t<_Fx&, function> = 0>
+#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
     template <class _Fx, class _Alloc, class = typename _Mybase::template _Enable_if_callable_t<_Fx&, function>>
+#endif // _USE_FUNCTION_INT_0_SFINAE
     function(allocator_arg_t, const _Alloc& _Ax, _Fx _Func) {
         this->_Reset_alloc(_STD move(_Func), _Ax);
     }
@@ -1172,7 +1201,11 @@ public:
         return *this;
     }
 
+#if _USE_FUNCTION_INT_0_SFINAE
+    template <class _Fx, typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function> = 0>
+#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
     template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function>>
+#endif // _USE_FUNCTION_INT_0_SFINAE
     function& operator=(_Fx&& _Func) {
         function(_STD forward<_Fx>(_Func)).swap(*this);
         return *this;
@@ -1244,19 +1277,17 @@ struct _Deduce_signature {}; // can't deduce signature when &_Fx::operator() is 
 
 template <class _Fx>
 struct _Deduce_signature<_Fx, void_t<decltype(&_Fx::operator())>>
-    : _Is_memfunptr<decltype(&_Fx::operator())>::_Guide_type {}; // N4687 23.14.13.2.1 [func.wrap.func.con]/12
+    : _Is_memfunptr<decltype(&_Fx::operator())>::_Guide_type {}; // N4842 [func.wrap.func.con]/12
 
 template <class _Fx>
 function(_Fx)->function<typename _Deduce_signature<_Fx>::type>;
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE swap
 template <class _Fty>
 void swap(function<_Fty>& _Left, function<_Fty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// TEMPLATE NULL POINTER COMPARISONS
 template <class _Fty>
 _NODISCARD bool operator==(const function<_Fty>& _Other, nullptr_t) noexcept {
     return !_Other;
@@ -1706,7 +1737,7 @@ struct _Boyer_moore_hash_delta_1_table { // stores the Boyer-Moore delta_1 table
     using _Value_t = _Iter_value_t<_RanItPat>;
     using _Diff    = _Iter_diff_t<_RanItPat>;
 
-    _Boyer_moore_hash_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<_RanItPat> _UPat_first,
+    _Boyer_moore_hash_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<const _RanItPat&> _UPat_first,
         const _Diff _Pat_size_arg, _Hash_ty&& _Hash_fn, _Pred_eq&& _Eq)
         : _Pat_first(_Pat_first_arg), _Pat_size(_Pat_size_arg),
           _Map(0, _STD move(_Hash_fn), _STD move(_Eq)) { // initialize a delta_1 hash table
@@ -1743,7 +1774,7 @@ struct _Boyer_moore_flat_delta_1_table { // stores the Boyer-Moore delta_1 table
     using _Value_t = _Iter_value_t<_RanItPat>;
     using _Diff    = _Iter_diff_t<_RanItPat>;
 
-    _Boyer_moore_flat_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<_RanItPat> _UPat_first,
+    _Boyer_moore_flat_delta_1_table(_RanItPat _Pat_first_arg, _Unwrapped_t<const _RanItPat&> _UPat_first,
         const _Diff _Pat_size_arg, _Unused_parameter, _Unused_parameter)
         : _Pat_first(_Pat_first_arg), _Pat_size(_Pat_size_arg) { // initialize a delta_1 flat table
         _STD fill(_STD begin(_Table), _STD end(_Table), _Pat_size);

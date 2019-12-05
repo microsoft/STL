@@ -114,30 +114,15 @@ struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
     template <class>
     using _Deduce_key = const _Kty&;
-    using key_equal   = _Keyeq;
 };
 
 #if _HAS_CXX20
-template <class _Hasher, class = void>
-inline constexpr bool _Transparent_key_equal_is_transparent = false;
-
-template <class _Hasher>
-inline constexpr bool
-    _Transparent_key_equal_is_transparent<_Hasher, void_t<typename _Hasher::transparent_key_equal::is_transparent>> =
-        true;
-
 template <class _Kty, class _Hasher, class _Keyeq>
-struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq, void_t<typename _Hasher::transparent_key_equal>> {
+struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
+    void_t<typename _Hasher::is_transparent, typename _Keyeq::is_transparent>> {
     // transparency selector for transparent hashed containers
-    static_assert(_Transparent_key_equal_is_transparent<_Hasher>,
-        "Transparent hash functions' transparent_key_equal must be transparent; see N4810 [unord.req]/17.1");
-    static_assert(_Is_any_of_v<_Keyeq, typename _Hasher::transparent_key_equal, equal_to<_Kty>>,
-        "When transparent hash functions are in use, the equality predicate must match transparent_key_equal "
-        "or be equal_to<KeyType>; see N4810 [unord.req]/17.2");
-
     template <class _Keyty>
     using _Deduce_key = const _Keyty&;
-    using key_equal   = typename _Hasher::transparent_key_equal;
 };
 #endif // _HAS_CXX20
 
@@ -154,18 +139,16 @@ public:
         bucket_size = 1 // 0 < bucket_size
     };
 
-    using typename _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq>::key_equal;
-
     _Uhash_compare() noexcept(
-        conjunction_v<is_nothrow_default_constructible<_Hasher>, is_nothrow_default_constructible<key_equal>>)
+        conjunction_v<is_nothrow_default_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
         : _Mypair(_Zero_then_variadic_args_t{}, _Zero_then_variadic_args_t{}, 0.0f) {}
 
     explicit _Uhash_compare(const _Hasher& _Hasharg) noexcept(
-        conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_default_constructible<key_equal>>)
+        conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
         : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _Zero_then_variadic_args_t{}, 0.0f) {}
 
-    explicit _Uhash_compare(const _Hasher& _Hasharg, const key_equal& _Keyeqarg) noexcept(
-        conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_copy_constructible<key_equal>>)
+    explicit _Uhash_compare(const _Hasher& _Hasharg, const _Keyeq& _Keyeqarg) noexcept(
+        conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_copy_constructible<_Keyeq>>)
         : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _One_then_variadic_args_t{}, _Keyeqarg, 0.0f) {}
 
     template <class _Keyty>
@@ -176,7 +159,7 @@ public:
 
     template <class _Keyty1, class _Keyty2>
     _NODISCARD bool operator()(const _Keyty1& _Keyval1, const _Keyty2& _Keyval2) const
-        noexcept(_Nothrow_compare<key_equal, _Keyty1, _Keyty2>) {
+        noexcept(_Nothrow_compare<_Keyeq, _Keyty1, _Keyty2>) {
         // test if _Keyval1 NOT equal to _Keyval2
         return !static_cast<bool>(_Mypair._Myval2._Get_first()(_Keyval1, _Keyval2));
     }
@@ -190,7 +173,7 @@ public:
     }
 
     void swap(_Uhash_compare& _Rhs) noexcept(
-        conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<key_equal>>) {
+        conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<_Keyeq>>) {
         _Swap_adl(_Mypair._Get_first(), _Rhs._Mypair._Get_first());
         auto& _Lsecond = _Mypair._Myval2;
         auto& _Rsecond = _Rhs._Mypair._Myval2;
@@ -198,7 +181,7 @@ public:
         _STD swap(_Lsecond._Myval2, _Rsecond._Myval2);
     }
 
-    _Compressed_pair<_Hasher, _Compressed_pair<key_equal, float>> _Mypair;
+    _Compressed_pair<_Hasher, _Compressed_pair<_Keyeq, float>> _Mypair;
 };
 
 // CLASS TEMPLATE _Reinterpret_move_iter
