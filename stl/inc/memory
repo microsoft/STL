@@ -1254,13 +1254,13 @@ private:
 
     // clang-format off
     template <class _Ty0, class... _Types>
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
         requires(!is_array_v<_Ty0>)
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
     // clang-format on
 
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
     // clang-format off
     template <class _Ty0>
         requires is_unbounded_array_v<_Ty0>
@@ -1278,17 +1278,17 @@ private:
         requires is_bounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> make_shared(const remove_extent_t<_Ty0>& _Val);
     // clang-format on
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 
     // clang-format off
     template <class _Ty0, class _Alloc, class... _Types>
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
         requires(!is_array_v<_Ty0>)
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
     // clang-format on
 
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
     // clang-format off
     template <class _Ty0, class _Alloc>
         requires is_unbounded_array_v<_Ty0>
@@ -1307,7 +1307,7 @@ private:
         requires is_bounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
     // clang-format on
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 
     template <class _Ux>
     void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
@@ -1556,7 +1556,7 @@ private:
     }
 };
 
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
 template <class _Ty>
 constexpr _Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
     return (_Val1 % _Val2 == 0) ? (_Val1 / _Val2) : (_Val1 / _Val2 + 1);
@@ -1753,7 +1753,7 @@ private:
         delete this;
     }
 };
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 
 // CLASS TEMPLATE _Ebco_base
 template <class _Ty,
@@ -1829,7 +1829,7 @@ private:
     }
 };
 
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
 template <class _Alloc>
 class _Uninitialized_rev_destroying_backout_al { // struct to undo partially constructed ranges in
                                                  // _Uninitialized_xxx_al algorithms
@@ -2043,14 +2043,14 @@ private:
         _Deallocate_plain(_Al, this);
     }
 };
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 
 // FUNCTION TEMPLATE make_shared
 // clang-format off
 template <class _Ty, class... _Types>
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
     requires(!is_array_v<_Ty>)
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 _NODISCARD shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
     shared_ptr<_Ty> _Ret;
@@ -2059,7 +2059,7 @@ _NODISCARD shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr
 }
 // clang-format on
 
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
 // clang-format off
 template <class _Ty>
     requires is_unbounded_array_v<_Ty>
@@ -2122,14 +2122,14 @@ _NODISCARD shared_ptr<_Ty> make_shared(
     return _Ret;
 }
 // clang-format on
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 
 // FUNCTION TEMPLATE allocate_shared
 // clang-format off
 template <class _Ty, class _Alloc, class... _Types>
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
     requires(!is_array_v<_Ty>)
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 _NODISCARD shared_ptr<_Ty> allocate_shared(
         const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
@@ -2147,7 +2147,7 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(
 }
 // clang-format on
 
-#if defined(__cpp_concepts)
+#ifdef __cpp_concepts
 // clang-format off
 template <class _Ty, class _Alloc>
     requires is_unbounded_array_v<_Ty>
@@ -2225,7 +2225,7 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(
     return _Ret;
 }
 // clang-format on
-#endif // defined(__cpp_concepts)
+#endif // __cpp_concepts
 
 // CLASS TEMPLATE weak_ptr
 template <class _Ty>
