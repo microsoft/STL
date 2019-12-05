@@ -907,7 +907,7 @@
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
 #define __cpp_lib_apply                      201603L
-#define __cpp_lib_array_constexpr            201603L
+#define __cpp_lib_array_constexpr            201803L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
 #if _HAS_STD_BYTE
@@ -940,7 +940,7 @@
 #define __cpp_lib_sample                201603L
 #define __cpp_lib_scoped_lock           201703L
 #define __cpp_lib_shared_ptr_weak_type  201606L
-#define __cpp_lib_string_view           201606L
+#define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 #define __cpp_lib_variant               201606L
 #else // _HAS_CXX17
