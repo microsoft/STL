@@ -354,7 +354,7 @@ public:
         }
     }
 
-    locale& operator=(const locale& _Right) noexcept {
+    const locale& operator=(const locale& _Right) noexcept {
         if (_Ptr != _Right._Ptr) { // different implementation, point at new one
             delete _Ptr->_Decref();
             _Ptr = _Right._Ptr;
