@@ -263,8 +263,8 @@ namespace {
 
 _EXTERN_C
 
-    [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_full_path_name(
-        const wchar_t* _Source, unsigned long _Target_size, wchar_t* _Target) noexcept { // calls GetFullPathNameW
+[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_full_path_name(
+    const wchar_t* _Source, unsigned long _Target_size, wchar_t* _Target) noexcept { // calls GetFullPathNameW
     const auto _Result = GetFullPathNameW(_Source, _Target_size, _Target, nullptr);
     return {_Result, _Result == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success};
 }
