@@ -896,7 +896,13 @@
 #ifndef _USING_V110_SDK71_
 #define __cpp_lib_shared_mutex 201505L
 #endif // _USING_V110_SDK71_
-#define __cpp_lib_shared_ptr_arrays             201707L
+
+#ifdef __cpp_concepts
+#define __cpp_lib_shared_ptr_arrays 201707L
+#else // __cpp_concepts
+#define __cpp_lib_shared_ptr_arrays 201611L
+#endif // __cpp_concepts
+
 #define __cpp_lib_transparent_operators         201510L
 #define __cpp_lib_type_trait_variable_templates 201510L
 #define __cpp_lib_uncaught_exceptions           201411L
