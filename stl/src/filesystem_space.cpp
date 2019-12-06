@@ -34,9 +34,8 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-
-    [[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
-        uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
+[[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
+    uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
     // get capacity information for the volume on which the file _Target resides
     __std_win_error _Last_error;
     if (GetFileAttributesW(_Target) == INVALID_FILE_ATTRIBUTES) {
