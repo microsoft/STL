@@ -121,7 +121,7 @@ namespace stdext {
         using referent_type   = _Ty;
         using key_compare     = _Tr;
         using value_compare   = typename _Mybase::_Value_compare;
-        using value_type      = typename _Mybase::value_type;
+        using value_type      = pair<const _Kty, _Ty>;
         using allocator_type  = typename _Mybase::allocator_type;
         using size_type       = typename _Mybase::size_type;
         using difference_type = typename _Mybase::difference_type;
@@ -311,7 +311,7 @@ namespace stdext {
         using referent_type   = _Ty; // old name, magically gone
         using key_compare     = _Tr;
         using value_compare   = typename _Mybase::_Value_compare;
-        using value_type      = typename _Mybase::value_type;
+        using value_type      = pair<const _Kty, _Ty>;
         using allocator_type  = typename _Mybase::allocator_type;
         using size_type       = typename _Mybase::size_type;
         using difference_type = typename _Mybase::difference_type;
