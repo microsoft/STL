@@ -16,15 +16,15 @@
 #include <Windows.h>
 
 namespace {
-    static_assert(sizeof(uintmax_t) == sizeof(ULARGE_INTEGER) && alignof(uintmax_t) == alignof(ULARGE_INTEGER),
-        "Size and alignment must match for reinterpret_cast<PULARGE_INTEGER>");
-
     [[nodiscard]] __std_win_error _Fs_space_attempt(wchar_t* const _Temp_buffer, const DWORD _Temp_buffer_characters,
         const wchar_t* const _Target, uintmax_t* const _Available, uintmax_t* const _Total_bytes,
         uintmax_t* const _Free_bytes) noexcept {
         if (GetVolumePathNameW(_Target, _Temp_buffer, _Temp_buffer_characters)) {
-            if (GetDiskFreeSpaceExW(_Temp_buffer, reinterpret_cast<PULARGE_INTEGER>(_Available),
-                    reinterpret_cast<PULARGE_INTEGER>(_Total_bytes), reinterpret_cast<PULARGE_INTEGER>(_Free_bytes))) {
+            ULARGE_INTEGER _Available_union, _Total_bytes_union, _Free_bytes_union;
+            if (GetDiskFreeSpaceExW(_Temp_buffer, &_Available_union, &_Total_bytes_union, &_Free_bytes_union)) {
+                *_Available = _Available_union.QuadPart;
+                *_Total_bytes = _Total_bytes_union.QuadPart;
+                *_Free_bytes = _Free_bytes_union.QuadPart;
                 return __std_win_error::_Success;
             }
         }
