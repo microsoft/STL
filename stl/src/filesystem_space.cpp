@@ -22,9 +22,9 @@ namespace {
         if (GetVolumePathNameW(_Target, _Temp_buffer, _Temp_buffer_characters)) {
             ULARGE_INTEGER _Available_union, _Total_bytes_union, _Free_bytes_union;
             if (GetDiskFreeSpaceExW(_Temp_buffer, &_Available_union, &_Total_bytes_union, &_Free_bytes_union)) {
-                *_Available = _Available_union.QuadPart;
+                *_Available   = _Available_union.QuadPart;
                 *_Total_bytes = _Total_bytes_union.QuadPart;
-                *_Free_bytes = _Free_bytes_union.QuadPart;
+                *_Free_bytes  = _Free_bytes_union.QuadPart;
                 return __std_win_error::_Success;
             }
         }
