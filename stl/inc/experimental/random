@@ -29,9 +29,7 @@ namespace experimental {
 
         template <class _IntType>
         _IntType randint(const _IntType _Min, const _IntType _Max) {
-            static_assert(_Is_any_of_v<remove_cv_t<_IntType>, short, int, long, long long, unsigned short, unsigned int,
-                              unsigned long, unsigned long long>,
-                "template argument does not meet the requirements for IntType.");
+            _RNG_REQUIRE_INTTYPE(randint(), _IntType);
             _STL_ASSERT(_Min <= _Max, "invalid min and max arguments for randint()");
             return uniform_int_distribution<_IntType>{_Min, _Max}(_Engine());
         }
