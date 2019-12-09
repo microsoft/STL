@@ -998,6 +998,7 @@
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
+#define __cpp_lib_experimental_randint    201511L
 
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED

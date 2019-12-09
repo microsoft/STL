@@ -130,6 +130,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/list
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/random
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/set
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/string
