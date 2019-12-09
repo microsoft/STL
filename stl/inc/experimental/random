@@ -28,7 +28,7 @@ namespace experimental {
         }
 
         template <class _IntType>
-        _IntType randint(_IntType _Min, _IntType _Max) {
+        _IntType randint(const _IntType _Min, const _IntType _Max) {
             static_assert(_Is_any_of_v<remove_cv_t<_IntType>, short, int, long, long long, unsigned short, unsigned int,
                               unsigned long, unsigned long long>,
                 "template argument does not meet the requirements for IntType.");
@@ -36,10 +36,7 @@ namespace experimental {
             return uniform_int_distribution<_IntType>{_Min, _Max}(_Engine());
         }
 
-        inline void reseed() {
-            _Engine().seed(random_device{}());
-        }
-        inline void reseed(default_random_engine::result_type _Value) {
+        inline void reseed(const default_random_engine::result_type _Value = random_device{}()) {
             _Engine().seed(_Value);
         }
     } // namespace fundamentals_v3
