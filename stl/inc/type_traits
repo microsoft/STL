@@ -1477,8 +1477,8 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
 // it to be constexpr, yet variant visit() is required to be constexpr and have invoke-like behavior. We solve this by
 // using a macro to stamp out a public non-constexpr and internal constexpr implementation.
 
-// Now that a Core Language issue affecting constexpr invoke() has been fixed, we’ll probably make this unconditional
-// and remove the macro (which would technically violate the strengthening rule in C++14/17 mode, but meh).
+// Now that a Core Language issue affecting constexpr invoke() has been fixed, we may make this unconditional
+// and remove the macro (which would technically violate the strengthening rule in C++14/17 mode).
 // TRANSITION, P1065R2
 
 template <class _Ty>
