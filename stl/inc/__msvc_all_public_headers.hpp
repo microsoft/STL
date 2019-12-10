@@ -140,6 +140,7 @@
 #include <cuchar>
 #include <cwchar>
 #include <cwctype>
+#include <experimental/algorithm>
 #include <experimental/deque>
 #include <experimental/filesystem>
 #include <experimental/forward_list>
