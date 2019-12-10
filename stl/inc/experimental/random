@@ -42,8 +42,8 @@ namespace experimental {
 
             uint32_t _Values[_N * _K];
             random_device _Rd;
-            generate(begin(_Values), end(_Values), ref(_Rd));
-            seed_seq _Seq(cbegin(_Values), cend(_Values));
+            _STD generate(_STD begin(_Values), _STD end(_Values), _STD ref(_Rd));
+            seed_seq _Seq(_STD cbegin(_Values), _STD cend(_Values));
 
             _Engine().seed(_Seq);
         }
