@@ -34,7 +34,20 @@ namespace experimental {
             return uniform_int_distribution<_IntType>{_Min, _Max}(_Engine());
         }
 
-        inline void reseed(const default_random_engine::result_type _Value = random_device{}()) {
+        inline void reseed() {
+            constexpr size_t _N = mt19937::state_size;
+            constexpr size_t _W = mt19937::word_size;
+            static_assert(_W % 32 == 0, "mt19937::word_size is not a multiple of 32");
+            constexpr size_t _K = _W / 32;
+
+            uint32_t _Values[_N * _K];
+            random_device _Rd;
+            generate(begin(_Values), end(_Values), ref(_Rd));
+            seed_seq _Seq(cbegin(_Values), cend(_Values));
+
+            _Engine().seed(_Seq);
+        }
+        inline void reseed(const default_random_engine::result_type _Value) {
             _Engine().seed(_Value);
         }
     } // namespace fundamentals_v3
