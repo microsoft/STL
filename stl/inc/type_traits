@@ -1473,7 +1473,7 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
     return _STD move(_Arg);
 }
 
-// Currently, invoke() isn’t depicted as constexpr in the Standard, and implementers are forbidden from “strengthening”
+// invoke() isn’t constexpr in C++17, and implementers are forbidden from “strengthening”
 // it to be constexpr, yet variant visit() is required to be constexpr and have invoke-like behavior. We solve this by
 // using a macro to stamp out a public non-constexpr and internal constexpr implementation.
 
