@@ -1478,7 +1478,7 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
 // using a macro to stamp out both public non-constexpr and internal constexpr implementations.
 
 // Now that a Core Language issue affecting constexpr invoke() has been fixed (CWG1581), we may make this unconditional
-// and remove the macro (which would technically violate the strengthening rule in C++14/17 mode).
+// and remove the macro (which violates the strengthening rule in C++14/17 mode).
 // TRANSITION, P1065R2
 
 template <class _Ty>
