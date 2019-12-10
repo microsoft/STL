@@ -617,14 +617,14 @@ struct _List_node_insert_op2 {
     using size_type      = typename _Alnode_traits::size_type;
     using value_type     = typename _Alnode_traits::value_type;
 
-    explicit _List_node_insert_op2(_Alnode& _Al_) : _Al(_Al_), _Added(0), _Tail(), _Head() {}
+    explicit _List_node_insert_op2(_Alnode& _Al_) : _Al(_Al_), _Added(0) {}
 
     _List_node_insert_op2(const _List_node_insert_op2&) = delete;
     _List_node_insert_op2& operator=(const _List_node_insert_op2&) = delete;
 
     template <class... _CArgT>
     void _Append_n(size_type _Count, const _CArgT&... _Carg) {
-        // Append _Count Ts constructed from _Carg to this insert operation.
+        // Append _Count elements constructed from _Carg
         if (_Count <= 0) {
             return;
         }
@@ -653,14 +653,14 @@ struct _List_node_insert_op2 {
 
     template <class _InIt, class _Sentinel>
     void _Append_range_unchecked(_InIt _First, const _Sentinel _Last) {
-        // Append new elements constructed from [_First, _Last) to this insert operation.
+        // Append the values in [_First, _Last)
         if (_First == _Last) { // throws
             return;
         }
 
         _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
         if (_Added == 0) {
-            _Newnode._Allocate(); // throws;
+            _Newnode._Allocate(); // throws
             _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
             const auto _Newhead = _STD exchange(_Newnode._Ptr, pointer{});
             _Head               = _Newhead;
@@ -681,11 +681,10 @@ struct _List_node_insert_op2 {
     }
 
     template <class _Val_types>
-    pointer _Attach_before(_List_val<_Val_types>& _My_data, const pointer _Insert_before) noexcept {
-        // Attach the elements in this insert operation before _Insert_before.
-        // If no elements were inserted, returns _Insert_before; otherwise returns a pointer
-        // to the first inserted list node.
-        // Resets *this to be empty.
+    pointer _Attach_before(_List_val<_Val_types>& _List_data, const pointer _Insert_before) noexcept {
+        // Attach the elements in *this before _Insert_before.
+        // If *this is empty, returns _Insert_before; otherwise returns a pointer to the first inserted list node.
+        // Resets *this to the default-initialized state.
 
         const auto _Local_added = _Added;
         if (_Local_added == 0) {
@@ -701,27 +700,24 @@ struct _List_node_insert_op2 {
         _Construct_in_place(_Local_tail->_Next, _Insert_before);
         _Insert_before->_Prev = _Local_tail;
 
-        _My_data._Mysize += _Local_added;
+        _List_data._Mysize += _Local_added;
         _Added = 0;
-        _Head  = pointer{};
-        _Tail  = pointer{};
         return _Local_head;
     }
 
     template <class _Val_types>
-    void _Attach_at_end(_List_val<_Val_types>& _My_data) noexcept {
-        _Attach_before(_My_data, _My_data._Myhead);
+    void _Attach_at_end(_List_val<_Val_types>& _List_data) noexcept {
+        _Attach_before(_List_data, _List_data._Myhead);
     }
 
     template <class _Val_types>
-    void _Attach_head(_List_val<_Val_types>& _My_data) {
+    void _Attach_head(_List_val<_Val_types>& _List_data) {
         _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
-        _Newnode._Allocate(); // throws, assumed nothrow hereafter
-        const auto _Local_added = _Added;
+        _Newnode._Allocate(); // throws
+        const auto _Local_added = _STD exchange(_Added, size_type{0});
         if (_Local_added == 0) {
             _Construct_in_place(_Newnode._Ptr->_Next, _Newnode._Ptr);
             _Construct_in_place(_Newnode._Ptr->_Prev, _Newnode._Ptr);
-            _My_data._Mysize = 0;
         } else {
             const auto _Local_head = _Head;
             const auto _Local_tail = _Tail;
@@ -729,12 +725,10 @@ struct _List_node_insert_op2 {
             _Construct_in_place(_Newnode._Ptr->_Prev, _Local_tail);
             _Construct_in_place(_Local_head->_Prev, _Newnode._Ptr);
             _Construct_in_place(_Local_tail->_Next, _Newnode._Ptr);
-            _My_data._Mysize = _Local_added;
-
-            _Added = 0;
         }
 
-        _My_data._Myhead = _Newnode._Release();
+        _List_data._Mysize = _Local_added;
+        _List_data._Myhead = _Newnode._Release();
     }
 
     ~_List_node_insert_op2() {

@@ -417,14 +417,14 @@ struct _Flist_insert_after_op2 {
     using pointer        = typename _Alnode_traits::pointer;
     using value_type     = typename _Alnode_traits::value_type;
 
-    explicit _Flist_insert_after_op2(_Alnode& _Al_) : _Al(_Al_), _Tail(), _Head() {}
+    explicit _Flist_insert_after_op2(_Alnode& _Al_) : _Al(_Al_), _Tail() {}
 
     _Flist_insert_after_op2(const _Flist_insert_after_op2&) = delete;
     _Flist_insert_after_op2& operator=(const _Flist_insert_after_op2&) = delete;
 
     template <class... _CArgT>
     void _Append_n(typename _Alnode_traits::size_type _Count, const _CArgT&... _Carg) {
-        // Append _Count copies of T, constructed from _Carg, to this insert-after operation
+        // Append _Count elements, constructed from _Carg
         if (_Count <= 0) {
             return;
         }
@@ -450,7 +450,7 @@ struct _Flist_insert_after_op2 {
 
     template <class _InIt, class _Sentinel>
     void _Append_range_unchecked(_InIt _First, const _Sentinel _Last) {
-        // Append the values in [_First, _Last) to this insert-after operation
+        // Append the values in [_First, _Last)
         if (_First == _Last) { // throws
             return;
         }
@@ -476,8 +476,8 @@ struct _Flist_insert_after_op2 {
     }
 
     pointer _Attach_after(pointer _After) noexcept {
-        // Attaches the values in this insert operation after _After, and resets *this to the default initialized state
-        auto _Local_tail = _Tail;
+        // Attaches the elements in *this after _After, and resets *this to the default-initialized state
+        const auto _Local_tail = _Tail;
         if (_Local_tail == pointer{}) {
             return _After;
         }
