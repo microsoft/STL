@@ -531,11 +531,11 @@ public:
 
     constexpr _Complex_base(const _Ty& _Realval, const _Ty& _Imagval) : _Valbase{{_Realval, _Imagval}} {}
 
-    void real(const _Ty& _Right) { // set real component
+    _CONSTEXPR20 void real(const _Ty& _Right) { // set real component
         this->_Val[_RE] = _Right;
     }
 
-    void imag(const _Ty& _Right) { // set imaginary component
+    _CONSTEXPR20 void imag(const _Ty& _Right) { // set imaginary component
         this->_Val[_IM] = _Right;
     }
 
@@ -549,19 +549,19 @@ public:
 
 protected:
     template <class _Other>
-    void _Add(const complex<_Other>& _Right) {
+    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) {
         this->_Val[_RE] = this->_Val[_RE] + static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] + static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    void _Sub(const complex<_Other>& _Right) {
+    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) {
         this->_Val[_RE] = this->_Val[_RE] - static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] - static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    void _Mul(const complex<_Other>& _Right) {
+    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) {
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
         _Ty _Rightimag = static_cast<_Ty>(_Right.imag());
 
@@ -635,46 +635,45 @@ public:
         : _Complex_base<float, _Fcomplex_value>(
             static_cast<float>(_Right._Val[_RE]), static_cast<float>(_Right._Val[_IM])) {}
 
-    complex<_Ty>& operator=(const _Ty& _Right) {
-
+    _CONSTEXPR20 complex<_Ty>& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
         return *this;
     }
 
-    complex& operator+=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator+=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] + _Right;
         return *this;
     }
 
-    complex& operator-=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator-=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] - _Right;
         return *this;
     }
 
-    complex& operator*=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator*=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] * _Right;
         _Val[_IM] = _Val[_IM] * _Right;
         return *this;
     }
 
-    complex& operator/=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator/=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] / _Right;
         _Val[_IM] = _Val[_IM] / _Right;
         return *this;
     }
 
-    complex& operator+=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
-    complex& operator-=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
-    complex& operator*=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -685,26 +684,26 @@ public:
     }
 
     template <class _Other>
-    complex& operator=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator=(const complex<_Other>& _Right) {
         _Val[_RE] = static_cast<_Ty>(_Right._Val[_RE]);
         _Val[_IM] = static_cast<_Ty>(_Right._Val[_IM]);
         return *this;
     }
 
     template <class _Other>
-    complex& operator+=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex<_Other>& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator-=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex<_Other>& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator*=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex<_Other>& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -735,46 +734,45 @@ public:
         : _Complex_base<double, _Dcomplex_value>(
             static_cast<double>(_Right._Val[_RE]), static_cast<double>(_Right._Val[_IM])) {}
 
-    complex<_Ty>& operator=(const _Ty& _Right) {
-
+    _CONSTEXPR20 complex<_Ty>& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
         return *this;
     }
 
-    complex& operator+=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator+=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] + _Right;
         return *this;
     }
 
-    complex& operator-=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator-=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] - _Right;
         return *this;
     }
 
-    complex& operator*=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator*=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] * _Right;
         _Val[_IM] = _Val[_IM] * _Right;
         return *this;
     }
 
-    complex& operator/=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator/=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] / _Right;
         _Val[_IM] = _Val[_IM] / _Right;
         return *this;
     }
 
-    complex& operator+=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
-    complex& operator-=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
-    complex& operator*=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -785,26 +783,26 @@ public:
     }
 
     template <class _Other>
-    complex& operator=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator=(const complex<_Other>& _Right) {
         _Val[_RE] = static_cast<_Ty>(_Right._Val[_RE]);
         _Val[_IM] = static_cast<_Ty>(_Right._Val[_IM]);
         return *this;
     }
 
     template <class _Other>
-    complex& operator+=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex<_Other>& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator-=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex<_Other>& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator*=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex<_Other>& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -831,46 +829,45 @@ public:
     constexpr complex(const _Lcomplex_value& _Right)
         : _Complex_base<long double, _Lcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
 
-    complex<_Ty>& operator=(const _Ty& _Right) {
-
+    _CONSTEXPR20 complex<_Ty>& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
         return *this;
     }
 
-    complex& operator+=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator+=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] + _Right;
         return *this;
     }
 
-    complex& operator-=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator-=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] - _Right;
         return *this;
     }
 
-    complex& operator*=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator*=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] * _Right;
         _Val[_IM] = _Val[_IM] * _Right;
         return *this;
     }
 
-    complex& operator/=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator/=(const _Ty& _Right) {
         _Val[_RE] = _Val[_RE] / _Right;
         _Val[_IM] = _Val[_IM] / _Right;
         return *this;
     }
 
-    complex& operator+=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
-    complex& operator-=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
-    complex& operator*=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -881,26 +878,26 @@ public:
     }
 
     template <class _Other>
-    complex& operator=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator=(const complex<_Other>& _Right) {
         _Val[_RE] = static_cast<_Ty>(_Right._Val[_RE]);
         _Val[_IM] = static_cast<_Ty>(_Right._Val[_IM]);
         return *this;
     }
 
     template <class _Other>
-    complex& operator+=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex<_Other>& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator-=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex<_Other>& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator*=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex<_Other>& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -939,7 +936,7 @@ public:
 
     constexpr complex(const _Ty& _Realval = _Ty(), const _Ty& _Imagval = _Ty()) : _Mybase(_Realval, _Imagval) {}
 
-    complex& operator=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         this->_Val[_RE] = _Right;
         this->_Val[_IM] = _Ty();
         return *this;
@@ -950,45 +947,45 @@ public:
         : _Mybase(static_cast<_Ty>(_Right.real()), static_cast<_Ty>(_Right.imag())) {}
 
     template <class _Other>
-    complex& operator=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator=(const complex<_Other>& _Right) {
         this->_Val[_RE] = static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = static_cast<_Ty>(_Right.imag());
         return *this;
     }
 
-    complex& operator+=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator+=(const _Ty& _Right) {
         this->_Val[_RE] = this->_Val[_RE] + _Right;
         return *this;
     }
 
-    complex& operator-=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator-=(const _Ty& _Right) {
         this->_Val[_RE] = this->_Val[_RE] - _Right;
         return *this;
     }
 
-    complex& operator*=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator*=(const _Ty& _Right) {
         this->_Val[_RE] = this->_Val[_RE] * _Right;
         this->_Val[_IM] = this->_Val[_IM] * _Right;
         return *this;
     }
 
-    complex& operator/=(const _Ty& _Right) {
+    _CONSTEXPR20 complex& operator/=(const _Ty& _Right) {
         this->_Val[_RE] = this->_Val[_RE] / _Right;
         this->_Val[_IM] = this->_Val[_IM] / _Right;
         return *this;
     }
 
-    complex& operator+=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
-    complex& operator-=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
-    complex& operator*=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -999,19 +996,19 @@ public:
     }
 
     template <class _Other>
-    complex& operator+=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator+=(const complex<_Other>& _Right) {
         this->_Add(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator-=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator-=(const complex<_Other>& _Right) {
         this->_Sub(_Right);
         return *this;
     }
 
     template <class _Other>
-    complex& operator*=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator*=(const complex<_Other>& _Right) {
         this->_Mul(_Right);
         return *this;
     }
@@ -1025,21 +1022,21 @@ public:
 
 // FUNCTION TEMPLATE operator+
 template <class _Ty>
-_NODISCARD complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp += _Right;
     return _Tmp;
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator+(const complex<_Ty>& _Left, const _Ty& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp.real(_Tmp.real() + _Right);
     return _Tmp;
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator+(const _Ty& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const _Ty& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp += _Right;
     return _Tmp;
@@ -1047,21 +1044,21 @@ _NODISCARD complex<_Ty> operator+(const _Ty& _Left, const complex<_Ty>& _Right) 
 
 // FUNCTION TEMPLATE operator-
 template <class _Ty>
-_NODISCARD complex<_Ty> operator-(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp -= _Right;
     return _Tmp;
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator-(const complex<_Ty>& _Left, const _Ty& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp.real(_Tmp.real() - _Right);
     return _Tmp;
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator-(const _Ty& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const _Ty& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp -= _Right;
     return _Tmp;
@@ -1069,14 +1066,14 @@ _NODISCARD complex<_Ty> operator-(const _Ty& _Left, const complex<_Ty>& _Right) 
 
 // FUNCTION TEMPLATE operator*
 template <class _Ty>
-_NODISCARD complex<_Ty> operator*(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp *= _Right;
     return _Tmp;
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp.real(_Tmp.real() * _Right);
     _Tmp.imag(_Tmp.imag() * _Right);
@@ -1084,7 +1081,7 @@ _NODISCARD complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right) 
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator*(const _Ty& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const _Ty& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp *= _Right;
     return _Tmp;
@@ -1099,7 +1096,7 @@ _NODISCARD complex<_Ty> operator/(const complex<_Ty>& _Left, const complex<_Ty>&
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator/(const complex<_Ty>& _Left, const _Ty& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp.real(_Tmp.real() / _Right);
     _Tmp.imag(_Tmp.imag() / _Right);
@@ -1107,7 +1104,7 @@ _NODISCARD complex<_Ty> operator/(const complex<_Ty>& _Left, const _Ty& _Right) 
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> operator/(const _Ty& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const _Ty& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp /= _Right;
     return _Tmp;
@@ -1115,13 +1112,13 @@ _NODISCARD complex<_Ty> operator/(const _Ty& _Left, const complex<_Ty>& _Right) 
 
 // FUNCTION TEMPLATE UNARY operator+
 template <class _Ty>
-_NODISCARD complex<_Ty> operator+(const complex<_Ty>& _Left) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left) {
     return _Left;
 }
 
 // FUNCTION TEMPLATE UNARY operator-
 template <class _Ty>
-_NODISCARD complex<_Ty> operator-(const complex<_Ty>& _Left) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left) {
     return complex<_Ty>(-_Left.real(), -_Left.imag());
 }
 
@@ -1682,7 +1679,7 @@ _NODISCARD _Ty arg(const complex<_Ty>& _Left) { // return phase angle of complex
 
 // FUNCTION TEMPLATE conj
 template <class _Ty>
-_NODISCARD complex<_Ty> conj(const complex<_Ty>& _Left) { // return complex conjugate
+_NODISCARD _CONSTEXPR20 complex<_Ty> conj(const complex<_Ty>& _Left) { // return complex conjugate
     return complex<_Ty>(real(_Left), -imag(_Left));
 }
 
@@ -1718,7 +1715,7 @@ _NODISCARD complex<_Ty> log10(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE norm
 template <class _Ty>
-_NODISCARD _Ty norm(const complex<_Ty>& _Left) { // return squared magnitude
+_NODISCARD _CONSTEXPR20 _Ty norm(const complex<_Ty>& _Left) { // return squared magnitude
     return real(_Left) * real(_Left) + imag(_Left) * imag(_Left);
 }
 
