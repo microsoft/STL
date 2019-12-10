@@ -22,13 +22,13 @@ _STD_BEGIN
 namespace experimental {
     inline namespace fundamentals_v3 {
 
-        inline default_random_engine& _Engine() {
+        _NODISCARD inline default_random_engine& _Engine() {
             thread_local default_random_engine _Eng{random_device{}()};
             return _Eng;
         }
 
         template <class _IntType>
-        _IntType randint(const _IntType _Min, const _IntType _Max) {
+        _NODISCARD _IntType randint(const _IntType _Min, const _IntType _Max) {
             _RNG_REQUIRE_INTTYPE(randint(), _IntType);
             _STL_ASSERT(_Min <= _Max, "invalid min and max arguments for randint()");
             return uniform_int_distribution<_IntType>{_Min, _Max}(_Engine());
