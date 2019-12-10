@@ -458,6 +458,13 @@
 #define _CONSTEXPR17 inline
 #endif // _HAS_CXX17
 
+// C++20 constexpr additions
+#if _HAS_CXX20
+#define _CONSTEXPR20 constexpr
+#else // ^^^ has C++20 constexpr additions / no C++20 constexpr additions vvv
+#define _CONSTEXPR20 inline
+#endif // _HAS_CXX20
+
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline
