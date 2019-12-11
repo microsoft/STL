@@ -109,35 +109,20 @@ namespace stdext {
 _STD_BEGIN
 using stdext::hash_compare; // TRANSITION, protobuf used this until v3.7.0, released Feb 28, 2019
 
-template <class _Kty, class _Hasher, class _Keyeq, class = void>
-struct _Uhash_choose_transparency {
-    // transparency selector for non-transparent hashed containers
-    template <class>
-    using _Deduce_key = const _Kty&;
-};
-
-#if _HAS_CXX20
-template <class _Kty, class _Hasher, class _Keyeq>
-struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
-    void_t<typename _Hasher::is_transparent, typename _Keyeq::is_transparent>> {
-    // transparency selector for transparent hashed containers
-    template <class _Keyty>
-    using _Deduce_key = const _Keyty&;
-};
-#endif // _HAS_CXX20
-
 template <class _Hasher, class _Kty>
 _INLINE_VAR constexpr bool _Nothrow_hash = noexcept(
     static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
 // CLASS TEMPLATE _Uhash_compare
 template <class _Kty, class _Hasher, class _Keyeq>
-class _Uhash_compare
-    : public _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> { // traits class for unordered containers
+class _Uhash_compare { // traits class for unordered containers
 public:
     enum { // parameters for hash table
         bucket_size = 1 // 0 < bucket_size
     };
+
+    using hasher    = _Hasher;
+    using key_equal = _Keyeq;
 
     _Uhash_compare() noexcept(
         conjunction_v<is_nothrow_default_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
@@ -1282,7 +1267,7 @@ public:
         _STD fill(_Vec._Mypair._Myval2._Myfirst, _Vec._Mypair._Myval2._Mylast, _Unchecked_end());
     }
 
-private:
+protected:
     template <class _Keyty>
     _NODISCARD _Nodeptr _Find_first(const _Keyty& _Keyval, const size_t _Hashval) const {
         // find node pointer to first node matching _Keyval (with hash _Hashval) if it exists; otherwise, end
@@ -1332,35 +1317,6 @@ private:
     }
 
 public:
-    template <class _Keyty = void>
-    _NODISCARD iterator find(typename _Traits::template _Deduce_key<_Keyty> _Keyval) {
-        return _List._Make_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
-    }
-
-    template <class _Keyty = void>
-    _NODISCARD const_iterator find(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
-        return _List._Make_const_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
-    }
-
-#if _HAS_CXX20
-    template <class _Keyty = void>
-    _NODISCARD bool contains(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
-        return static_cast<bool>(_Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate);
-    }
-#endif // _HAS_CXX20
-
-    template <class _Keyty = void>
-    _NODISCARD size_type count(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
-        const size_t _Hashval = _Traitsobj(_Keyval);
-        if
-            _CONSTEXPR_IF(_Multi) {
-                return _Equal_range(_Keyval, _Hashval)._Distance;
-            }
-        else {
-            return static_cast<bool>(_Find_last(_Keyval, _Hashval)._Duplicate);
-        }
-    }
-
     _DEPRECATE_STDEXT_HASH_LOWER_BOUND _NODISCARD iterator lower_bound(const key_type& _Keyval) {
         return _List._Make_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
     }
@@ -1391,7 +1347,7 @@ public:
         return _List._Make_const_iter(_Target);
     }
 
-private:
+protected:
     struct _Equal_range_result {
         _Unchecked_const_iterator _First;
         _Unchecked_const_iterator _Last;
@@ -1449,19 +1405,6 @@ private:
     }
 
 public:
-    template <class _Keyty = void>
-    _NODISCARD pair<iterator, iterator> equal_range(typename _Traits::template _Deduce_key<_Keyty> _Keyval) {
-        const auto _Result = _Equal_range(_Keyval, _Traitsobj(_Keyval));
-        return {_List._Make_iter(_Result._First._Ptr), _List._Make_iter(_Result._Last._Ptr)};
-    }
-
-    template <class _Keyty = void>
-    _NODISCARD pair<const_iterator, const_iterator> equal_range(
-        typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
-        const auto _Result = _Equal_range(_Keyval, _Traitsobj(_Keyval));
-        return {_List._Make_const_iter(_Result._First._Ptr), _List._Make_const_iter(_Result._Last._Ptr)};
-    }
-
     void swap(_Hash& _Right) noexcept(noexcept(_Traitsobj.swap(_Right._Traitsobj))) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Traitsobj.swap(_Right._Traitsobj);
@@ -1994,6 +1937,106 @@ protected:
     size_type _Mask; // the key mask
     size_type _Maxidx; // current maximum key value, must be a power of 2
 };
+
+template <class _Traits, class = void>
+struct _Hash_transparency_facade : _Hash<_Traits> {
+    // provide non-transparent versions of lookup functions
+    using key_type       = typename _Hash<_Traits>::key_type;
+    using iterator       = typename _Hash<_Traits>::iterator;
+    using const_iterator = typename _Hash<_Traits>::const_iterator;
+    using size_type      = typename _Hash<_Traits>::size_type;
+
+    using _Hash<_Traits>::_Hash;
+
+    _NODISCARD iterator find(const key_type& _Keyval) {
+        return this->_List._Make_iter(this->_Find(_Keyval, this->_Traitsobj(_Keyval)));
+    }
+
+    _NODISCARD const_iterator find(const key_type& _Keyval) const {
+        return this->_List._Make_const_iter(this->_Find(_Keyval, this->_Traitsobj(_Keyval)));
+    }
+
+#if _HAS_CXX20
+    _NODISCARD bool contains(const key_type& _Keyval) const {
+        return static_cast<bool>(this->_Find_last(_Keyval, this->_Traitsobj(_Keyval))._Duplicate);
+    }
+#endif // _HAS_CXX20
+
+    _NODISCARD size_type count(const key_type& _Keyval) const {
+        const size_t _Hashval = this->_Traitsobj(_Keyval);
+        if
+            _CONSTEXPR_IF(_Traits::_Multi) {
+                return this->_Equal_range(_Keyval, _Hashval)._Distance;
+            }
+        else {
+            return static_cast<bool>(this->_Find_last(_Keyval, _Hashval)._Duplicate);
+        }
+    }
+
+    _NODISCARD pair<iterator, iterator> equal_range(const key_type& _Keyval) {
+        const auto _Result = this->_Equal_range(_Keyval, this->_Traitsobj(_Keyval));
+        return {this->_List._Make_iter(_Result._First._Ptr), this->_List._Make_iter(_Result._Last._Ptr)};
+    }
+
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const key_type& _Keyval) const {
+        const auto _Result = this->_Equal_range(_Keyval, this->_Traitsobj(_Keyval));
+        return {this->_List._Make_const_iter(_Result._First._Ptr), this->_List._Make_const_iter(_Result._Last._Ptr)};
+    }
+};
+
+#if _HAS_CXX20
+template <class _Traits>
+struct _Hash_transparency_facade<_Traits, void_t<typename _Traits::key_compare::hasher::is_transparent,
+                                              typename _Traits::key_compare::key_equal::is_transparent>>
+    : _Hash<_Traits> {
+    // provide transparent versions of lookup functions
+
+    using iterator       = typename _Hash<_Traits>::iterator;
+    using const_iterator = typename _Hash<_Traits>::const_iterator;
+    using size_type      = typename _Hash<_Traits>::size_type;
+
+    using _Hash<_Traits>::_Hash;
+
+    template <class _Keyty>
+    _NODISCARD iterator find(const _Keyty& _Keyval) {
+        return this->_List._Make_iter(this->_Find(_Keyval, this->_Traitsobj(_Keyval)));
+    }
+
+    template <class _Keyty>
+    _NODISCARD const_iterator find(const _Keyty& _Keyval) const {
+        return this->_List._Make_const_iter(this->_Find(_Keyval, this->_Traitsobj(_Keyval)));
+    }
+
+    template <class _Keyty>
+    _NODISCARD bool contains(const _Keyty& _Keyval) const {
+        return static_cast<bool>(this->_Find_last(_Keyval, this->_Traitsobj(_Keyval))._Duplicate);
+    }
+
+    template <class _Keyty>
+    _NODISCARD size_type count(const _Keyty& _Keyval) const {
+        const size_t _Hashval = this->_Traitsobj(_Keyval);
+        if
+            _CONSTEXPR_IF(_Traits::_Multi) {
+                return this->_Equal_range(_Keyval, _Hashval)._Distance;
+            }
+        else {
+            return static_cast<bool>(this->_Find_last(_Keyval, _Hashval)._Duplicate);
+        }
+    }
+
+    template <class _Keyty>
+    _NODISCARD pair<iterator, iterator> equal_range(const _Keyty& _Keyval) {
+        const auto _Result = this->_Equal_range(_Keyval, this->_Traitsobj(_Keyval));
+        return {this->_List._Make_iter(_Result._First._Ptr), this->_List._Make_iter(_Result._Last._Ptr)};
+    }
+
+    template <class _Keyty>
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Keyty& _Keyval) const {
+        const auto _Result = this->_Equal_range(_Keyval, this->_Traitsobj(_Keyval));
+        return {this->_List._Make_const_iter(_Result._First._Ptr), this->_List._Make_const_iter(_Result._Last._Ptr)};
+    }
+};
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 // ALIAS TEMPLATE _Is_hasher FOR CONSTRAINING DEDUCTION GUIDES, N4687 26.2.7 [unord.req]/17.3

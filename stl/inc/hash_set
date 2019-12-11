@@ -25,7 +25,7 @@ _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS to acknowledge that you have received 
 namespace stdext {
     using _STD allocator;
     using _STD swap;
-    using _STD _Hash;
+    using _STD _Hash_transparency_facade;
     using _STD _Is_nothrow_swappable;
     using _STD _Swap_adl;
 
@@ -52,9 +52,7 @@ namespace stdext {
 
         template <class... _Args>
         using _In_place_key_extractor = _STD _In_place_key_extract_set<_Kty, _Args...>;
-        template <class>
-        using _Deduce_key = const _Kty&;
-        using key_equal   = _Tr;
+        using key_equal               = _Tr;
 
         _Hset_traits() = default;
 
@@ -89,9 +87,10 @@ namespace stdext {
 
     // CLASS TEMPLATE hash_set
     template <class _Kty, class _Tr = hash_compare<_Kty, less<_Kty>>, class _Alloc = allocator<_Kty>>
-    class hash_set : public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, false>> { // hash table of key values, unique keys
+    class hash_set : public _Hash_transparency_facade<_Hset_traits<_Kty, _Tr, _Alloc, false>> {
+        // hash table of key values, unique keys
     public:
-        using _Mybase         = _Hash<_Hset_traits<_Kty, _Tr, _Alloc, false>>;
+        using _Mybase         = _Hash_transparency_facade<_Hset_traits<_Kty, _Tr, _Alloc, false>>;
         using key_type        = _Kty;
         using key_compare     = _Tr;
         using value_compare   = typename _Mybase::_Value_compare;
@@ -235,10 +234,10 @@ namespace stdext {
 
     // CLASS TEMPLATE hash_multiset
     template <class _Kty, class _Tr = hash_compare<_Kty, less<_Kty>>, class _Alloc = allocator<_Kty>>
-    class hash_multiset
-        : public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, true>> { // hash table of key values, non-unique keys
+    class hash_multiset : public _Hash_transparency_facade<_Hset_traits<_Kty, _Tr, _Alloc, true>> {
+        // hash table of key values, non-unique keys
     public:
-        using _Mybase         = _Hash<_Hset_traits<_Kty, _Tr, _Alloc, true>>;
+        using _Mybase         = _Hash_transparency_facade<_Hset_traits<_Kty, _Tr, _Alloc, true>>;
         using key_type        = _Kty;
         using key_compare     = _Tr;
         using value_compare   = typename _Mybase::_Value_compare;

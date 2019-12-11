@@ -83,15 +83,17 @@ public:
 // CLASS TEMPLATE unordered_map
 template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>>
-class unordered_map : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
+class unordered_map
+    : public _Hash_transparency_facade<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
     // hash table of {key, mapped} values, unique keys
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<pair<const _Kty, _Ty>, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("unordered_map<Key, Value, Hasher, Eq, Allocator>", "pair<const Key, Value>"));
 
 private:
-    using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
-    using _Mybase        = _Hash<_Umap_traits<_Kty, _Ty, _Mytraits, _Alloc, false>>;
+    using _Mytraits = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
+    using _Mybase =
+        _Hash_transparency_facade<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>>;
     using _Alnode        = typename _Mybase::_Alnode;
     using _Alnode_traits = typename _Mybase::_Alnode_traits;
     using _Nodeptr       = typename _Mybase::_Nodeptr;
@@ -495,7 +497,8 @@ _NODISCARD bool operator!=(const unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Allo
 // CLASS TEMPLATE unordered_multimap
 template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>>
-class unordered_multimap : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
+class unordered_multimap
+    : public _Hash_transparency_facade<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
     // hash table of {key, mapped} values, non-unique keys
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<pair<const _Kty, _Ty>, typename _Alloc::value_type>,
@@ -503,8 +506,9 @@ public:
             "unordered_multimap<Key, Value, Hasher, Eq, Allocator>", "pair<const Key, Value>"));
 
 private:
-    using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
-    using _Mybase        = _Hash<_Umap_traits<_Kty, _Ty, _Mytraits, _Alloc, true>>;
+    using _Mytraits = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
+    using _Mybase =
+        _Hash_transparency_facade<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>>;
     using _Alnode        = typename _Mybase::_Alnode;
     using _Alnode_traits = typename _Mybase::_Alnode_traits;
     using _Key_compare   = typename _Mybase::_Key_compare;

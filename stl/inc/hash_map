@@ -28,7 +28,7 @@ namespace stdext {
     using _STD is_constructible_v;
     using _STD pair;
     using _STD swap;
-    using _STD _Hash;
+    using _STD _Hash_transparency_facade;
     using _STD _Is_nothrow_swappable;
     using _STD _Swap_adl;
     using _STD _Xout_of_range;
@@ -57,9 +57,7 @@ namespace stdext {
 
         template <class... _Args>
         using _In_place_key_extractor = _STD _In_place_key_extract_map<_Kty, _Args...>;
-        template <class>
-        using _Deduce_key = const _Kty&;
-        using key_equal   = _Tr;
+        using key_equal               = _Tr;
 
         _Hmap_traits() = default;
 
@@ -112,10 +110,10 @@ namespace stdext {
     // CLASS TEMPLATE hash_map
     template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
-    class hash_map : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>> {
+    class hash_map : public _Hash_transparency_facade<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>> {
         // hash table of {key, mapped} values, unique keys
     public:
-        using _Mybase         = _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>>;
+        using _Mybase         = _Hash_transparency_facade<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>>;
         using key_type        = _Kty;
         using mapped_type     = _Ty;
         using referent_type   = _Ty;
@@ -302,10 +300,10 @@ namespace stdext {
     // CLASS TEMPLATE hash_multimap
     template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
-    class hash_multimap : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>> {
+    class hash_multimap : public _Hash_transparency_facade<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>> {
         // hash table of {key, mapped} values, non-unique keys
     public:
-        using _Mybase         = _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>>;
+        using _Mybase         = _Hash_transparency_facade<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>>;
         using key_type        = _Kty;
         using mapped_type     = _Ty;
         using referent_type   = _Ty; // old name, magically gone

@@ -62,16 +62,17 @@ public:
 
 // CLASS TEMPLATE unordered_set
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>>
-class unordered_set : public _Hash<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
+class unordered_set
+    : public _Hash_transparency_facade<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
     // hash table of key-values, unique keys
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("unordered_set<T, Hasher, Eq, Allocator>", "T"));
 
 private:
-    using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
-    using _Mybase        = _Hash<_Uset_traits<_Kty, _Mytraits, _Alloc, false>>;
-    using _Alnode        = typename _Mybase::_Alnode;
+    using _Mytraits = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
+    using _Mybase = _Hash_transparency_facade<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>>;
+    using _Alnode = typename _Mybase::_Alnode;
     using _Alnode_traits = typename _Mybase::_Alnode_traits;
     using _Key_compare   = typename _Mybase::_Key_compare;
 
@@ -330,16 +331,17 @@ _NODISCARD bool operator!=(const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _
 
 // CLASS TEMPLATE unordered_multiset
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>>
-class unordered_multiset : public _Hash<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
+class unordered_multiset
+    : public _Hash_transparency_facade<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
     // hash table of key-values, non-unique keys
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("unordered_multiset<T, Hasher, Eq, Allocator>", "T"));
 
 private:
-    using _Mytraits      = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
-    using _Mybase        = _Hash<_Uset_traits<_Kty, _Mytraits, _Alloc, true>>;
-    using _Alnode        = typename _Mybase::_Alnode;
+    using _Mytraits = _Uhash_compare<_Kty, _Hasher, _Keyeq>;
+    using _Mybase = _Hash_transparency_facade<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>>;
+    using _Alnode = typename _Mybase::_Alnode;
     using _Alnode_traits = typename _Mybase::_Alnode_traits;
     using _Key_compare   = typename _Mybase::_Key_compare;
 
