@@ -1585,26 +1585,6 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE pow
 template <class _Ty>
-_NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, int _Right) {
-    complex<_Ty> _Tmp = _Left;
-    auto _Count       = static_cast<unsigned int>(_Right);
-
-    if (_Right < 0) {
-        _Count = 0 - _Count; // safe negation as unsigned
-    }
-
-    for (complex<_Ty> _Zv = complex<_Ty>(1);; _Tmp *= _Tmp) { // fold in _Left ^ (2 ^ _Count) as needed
-        if ((_Count & 1) != 0) {
-            _Zv *= _Tmp;
-        }
-
-        if ((_Count >>= 1) == 0) {
-            return _Right < 0 ? complex<_Ty>(1) / _Zv : _Zv;
-        }
-    }
-}
-
-template <class _Ty>
 complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) {
     if (0 <= _Left) {
         return _Ctraits<_Ty>::pow(_Left, _Right);
@@ -1804,39 +1784,63 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _L
     return _STD pow(type(_Left), type(_Right));
 }
 
-template <class _Ty1, class _Ty2>
+template <class _Ty1, class _Ty2,
+    enable_if_t<!((is_floating_point_v<_Ty1> || is_integral_v<_Ty1>) && is_integral_v<_Ty2>), int> = 0>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2& _Right) {
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
     return _STD pow(type(_Left), type(_Right));
+}
+
+template <class _Ty1, class _Ty2, enable_if_t<is_floating_point_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
+_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2 _Right) {
+    using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
+
+    type _Tmp   = _Left;
+    auto _Count = static_cast<make_signed_t<_Ty2>>(_Right);
+
+    if (_Right < 0) {
+        _Count = 0 - _Count; // safe negation as unsigned
+    }
+
+    for (type _Zv(1);; _Tmp *= _Tmp) { // fold in _Left ^ (2 ^ _Count) as needed
+        if ((_Count & 1) != 0) {
+            _Zv *= _Tmp;
+        }
+
+        if ((_Count >>= 1) == 0) {
+            return _Right < 0 ? type(1) / _Zv : _Zv;
+        }
+    }
+}
+
+template <class _Ty1, class _Ty2, enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
+_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, const _Ty2 _Right) {
+    // raise Gaussian integer to an integer power
+    using type = complex<_Ty1>;
+
+    type _Ans   = type(1, 0);
+    auto _Count = _Right;
+
+    if (_Count < 0) {
+        _Ans = type(0, 0); // ignore 1/type(0, 0) error
+    } else if (0 < _Count) { // raise to a positive power
+        for (type _Factor = _Left;; _Factor *= _Factor) { // fold in _Left^(2^N))
+            if ((_Count & 1) != 0) {
+                _Ans *= _Factor;
+            }
+
+            if ((_Count >>= 1) == 0) {
+                break;
+            }
+        }
+    }
+    return _Ans;
 }
 
 template <class _Ty1, class _Ty2>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, const complex<_Ty2>& _Right) {
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
     return _STD pow(type(_Left), type(_Right));
-}
-
-template <class _Ty1, class _Ty2, enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
-_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2& _Right) {
-    // raise Gaussian integer to an integer power
-    using type = complex<_Ty1>;
-
-    type _Ans = type(1, 0);
-
-    if (_Right < 0) {
-        _Ans = type(0, 0); // ignore 1/type(0, 0) error
-    } else if (0 < _Right) { // raise to a positive power
-        for (type _Factor = _Left;; _Factor *= _Factor) { // fold in _Left^(2^N))
-            if ((_Right & 1) != 0) {
-                _Ans *= _Factor;
-            }
-
-            if ((_Right >>= 1) == 0) {
-                break;
-            }
-        }
-    }
-    return _Ans;
 }
 
 // FUNCTION TEMPLATE operator>>
