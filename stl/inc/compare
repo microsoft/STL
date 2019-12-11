@@ -330,8 +330,7 @@ _NODISCARD constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
 
 // ALIAS TEMPLATE common_comparison_category_t
 template <class _Ty>
-inline constexpr bool _Is_comparison_category =
-    _Is_any_of_v<_Ty, partial_ordering, weak_ordering, strong_ordering>;
+inline constexpr bool _Is_comparison_category = _Is_any_of_v<_Ty, partial_ordering, weak_ordering, strong_ordering>;
 
 template <class... _Types>
 struct common_comparison_category {
