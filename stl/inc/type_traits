@@ -1473,16 +1473,16 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
     return _STD move(_Arg);
 }
 
-// std::invoke isn't constexpr in C++17, and implementers are forbidden from "strengthening"
-// constexpr, yet both std::apply and std::visit are required to be constexpr and have invoke-like behavior. We solve
-// this by using a macro to stamp out both public non-constexpr and internal constexpr implementations.
-
-// Now that a Core Language issue affecting constexpr invoke() has been fixed (CWG1581), we may make this unconditional
-// and remove the macro (which violates the strengthening rule in C++14/17 mode).
-// TRANSITION, P1065R2
-
 template <class _Ty>
 class reference_wrapper;
+
+// std::invoke isn't constexpr in C++17, and implementers are forbidden from
+// "strengthening" constexpr (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be
+// constexpr and have invoke-like behavior. We solve this by using a macro to stamp out both public non-constexpr and
+// internal constexpr implementations.
+
+// Now that a Core Language issue affecting constexpr std::invoke has been fixed (CWG-1581), we may make this
+// unconditional and remove the macro (which violates the strengthening rule in C++14/17 mode). TRANSITION, P1065R2
 
 #define _CONCATX(x, y) x##y
 #define _CONCAT(x, y)  _CONCATX(x, y)
