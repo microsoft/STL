@@ -35,18 +35,19 @@ namespace experimental {
         }
 
         inline void reseed() {
-            constexpr size_t _N = mt19937::state_size;
-            constexpr size_t _W = mt19937::word_size;
-            static_assert(_W % 32 == 0, "mt19937::word_size is not a multiple of 32");
-            constexpr size_t _K = _W / 32;
+            constexpr size_t _Nx = mt19937::state_size;
+            constexpr size_t _Wx = mt19937::word_size;
+            static_assert(_Wx % 32 == 0, "mt19937::word_size is not a multiple of 32");
+            constexpr size_t _Kx = _Wx / 32;
 
-            uint32_t _Values[_N * _K];
+            uint32_t _Values[_Nx * _Kx];
             random_device _Rd;
             _STD generate(_STD begin(_Values), _STD end(_Values), _STD ref(_Rd));
             seed_seq _Seq{_STD cbegin(_Values), _STD cend(_Values)};
 
             _Engine().seed(_Seq);
         }
+
         inline void reseed(const default_random_engine::result_type _Value) {
             _Engine().seed(_Value);
         }
