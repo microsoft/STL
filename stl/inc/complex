@@ -57,11 +57,11 @@ class complex<long double>;
 template <class _Ty>
 class _Ctraits {
 public:
-    static _Ty _Flt_eps() { // get epsilon
+    static constexpr _Ty _Flt_eps() { // get epsilon
         return numeric_limits<_Ty>::epsilon();
     }
 
-    static _Ty _Flt_max() {
+    static constexpr _Ty _Flt_max() {
         return (numeric_limits<_Ty>::max)();
     }
 
@@ -76,8 +76,8 @@ public:
         return _Ans;
     }
 
-    static _Ty _Infv() { // return infinity
-        return numeric_limits<_Ty>::infinity();
+    static constexpr _Ty _Infv() { // return infinity
+        return numeric_limits<double>::infinity();
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
@@ -90,8 +90,8 @@ public:
         return _CSTD _Dtest(&_Tmp) == _NANCODE;
     }
 
-    static _Ty _Nanv() { // return NaN
-        return numeric_limits<_Ty>::quiet_NaN();
+    static constexpr _Ty _Nanv() { // return NaN
+        return numeric_limits<double>::quiet_NaN();
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -175,12 +175,12 @@ class _Ctraits<long double> {
 public:
     using _Ty = long double;
 
-    static _Ty _Flt_eps() { // get epsilon
-        return LDBL_EPSILON;
+    static constexpr _Ty _Flt_eps() { // get epsilon
+        return numeric_limits<long double>::epsilon();
     }
 
-    static _Ty _Flt_max() {
-        return LDBL_MAX;
+    static constexpr _Ty _Flt_max() {
+        return (numeric_limits<long double>::max)();
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
@@ -191,7 +191,7 @@ public:
         return _CSTD _LExp(_Pleft, _Right, _Exponent);
     }
 
-    static _Ty _Infv() { // return infinity
+    static constexpr _Ty _Infv() { // return infinity
         return numeric_limits<long double>::infinity();
     }
 
@@ -203,7 +203,7 @@ public:
         return _CSTD _LDtest(&_Left) == _NANCODE;
     }
 
-    static _Ty _Nanv() { // return NaN
+    static constexpr _Ty _Nanv() { // return NaN
         return numeric_limits<long double>::quiet_NaN();
     }
 
@@ -288,12 +288,12 @@ class _Ctraits<double> {
 public:
     using _Ty = double;
 
-    static _Ty _Flt_eps() { // get epsilon
-        return DBL_EPSILON;
+    static constexpr _Ty _Flt_eps() { // get epsilon
+        return numeric_limits<double>::epsilon();
     }
 
-    static _Ty _Flt_max() {
-        return DBL_MAX;
+    static constexpr _Ty _Flt_max() {
+        return (numeric_limits<double>::max)();
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
@@ -304,7 +304,7 @@ public:
         return _CSTD _Exp(_Pleft, _Right, _Exponent);
     }
 
-    static _Ty _Infv() { // return infinity
+    static constexpr _Ty _Infv() { // return infinity
         return numeric_limits<double>::infinity();
     }
 
@@ -316,7 +316,7 @@ public:
         return _CSTD _Dtest(&_Left) == _NANCODE;
     }
 
-    static _Ty _Nanv() { // return NaN
+    static constexpr _Ty _Nanv() { // return NaN
         return numeric_limits<double>::quiet_NaN();
     }
 
@@ -408,12 +408,12 @@ class _Ctraits<float> {
 public:
     using _Ty = float;
 
-    static _Ty _Flt_eps() { // get epsilon
-        return FLT_EPSILON;
+    static constexpr _Ty _Flt_eps() { // get epsilon
+        return numeric_limits<float>::epsilon();
     }
 
-    static _Ty _Flt_max() {
-        return FLT_MAX;
+    static constexpr _Ty _Flt_max() {
+        return (numeric_limits<float>::max)();
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
@@ -424,7 +424,7 @@ public:
         return _CSTD _FExp(_Pleft, _Right, _Exponent);
     }
 
-    static _Ty _Infv() { // return infinity
+    static constexpr _Ty _Infv() { // return infinity
         return numeric_limits<float>::infinity();
     }
 
@@ -436,7 +436,7 @@ public:
         return _CSTD _FDtest(&_Left) == _NANCODE;
     }
 
-    static _Ty _Nanv() { // return NaN
+    static constexpr _Ty _Nanv() { // return NaN
         return numeric_limits<float>::quiet_NaN();
     }
 
