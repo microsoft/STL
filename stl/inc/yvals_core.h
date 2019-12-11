@@ -167,6 +167,7 @@
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1754R1 Rename Concepts To standard_case
+// P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
