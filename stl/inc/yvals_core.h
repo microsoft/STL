@@ -892,15 +892,13 @@
 #define __cpp_lib_logical_traits                   201510L
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
-#ifndef _USING_V110_SDK71_
-#define __cpp_lib_shared_mutex 201505L
-#endif // _USING_V110_SDK71_
-#define __cpp_lib_shared_ptr_arrays             201611L
-#define __cpp_lib_transparent_operators         201510L
-#define __cpp_lib_type_trait_variable_templates 201510L
-#define __cpp_lib_uncaught_exceptions           201411L
-#define __cpp_lib_unordered_map_try_emplace     201411L
-#define __cpp_lib_void_t                        201411L
+#define __cpp_lib_shared_mutex                     201505L
+#define __cpp_lib_shared_ptr_arrays                201611L
+#define __cpp_lib_transparent_operators            201510L
+#define __cpp_lib_type_trait_variable_templates    201510L
+#define __cpp_lib_uncaught_exceptions              201411L
+#define __cpp_lib_unordered_map_try_emplace        201411L
+#define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
