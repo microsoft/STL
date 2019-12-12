@@ -22,8 +22,22 @@ _STD_BEGIN
 namespace experimental {
     inline namespace fundamentals_v3 {
 
+        const seed_seq _Seed_engine() {
+            static_assert(
+                is_same_v<default_random_engine, mt19937>, "This code assumes that default_random_engine is mt19937");
+            constexpr size_t _Nx = mt19937::state_size;
+            constexpr size_t _Wx = mt19937::word_size;
+            static_assert(_Wx % 32 == 0, "mt19937::word_size is not a multiple of 32");
+            constexpr size_t _Kx = _Wx / 32;
+
+            uint32_t _Values[_Nx * _Kx];
+            random_device _Rd;
+            _STD generate(_STD begin(_Values), _STD end(_Values), _STD ref(_Rd));
+            return seed_seq(_STD cbegin(_Values), _STD cend(_Values));
+        }
+
         _NODISCARD inline default_random_engine& _Engine() {
-            thread_local default_random_engine _Eng{random_device{}()};
+            thread_local default_random_engine _Eng(_Seed_engine());
             return _Eng;
         }
 
@@ -35,19 +49,7 @@ namespace experimental {
         }
 
         inline void reseed() {
-            static_assert(
-                is_same_v<default_random_engine, mt19937>, "This code assumes that default_random_engine is mt19937");
-            constexpr size_t _Nx = mt19937::state_size;
-            constexpr size_t _Wx = mt19937::word_size;
-            static_assert(_Wx % 32 == 0, "mt19937::word_size is not a multiple of 32");
-            constexpr size_t _Kx = _Wx / 32;
-
-            uint32_t _Values[_Nx * _Kx];
-            random_device _Rd;
-            _STD generate(_STD begin(_Values), _STD end(_Values), _STD ref(_Rd));
-            seed_seq _Seq(_STD cbegin(_Values), _STD cend(_Values));
-
-            _Engine().seed(_Seq);
+            _Engine().seed(_Seed_engine());
         }
 
         inline void reseed(const default_random_engine::result_type _Value) {
