@@ -425,7 +425,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  201911L
+#define _MSVC_STL_UPDATE  201912L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -893,9 +893,7 @@
 #define __cpp_lib_logical_traits                   201510L
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
-#ifndef _USING_V110_SDK71_
-#define __cpp_lib_shared_mutex 201505L
-#endif // _USING_V110_SDK71_
+#define __cpp_lib_shared_mutex                     201505L
 
 #ifdef __cpp_concepts
 #define __cpp_lib_shared_ptr_arrays 201707L
@@ -984,10 +982,9 @@
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_int_pow2                 201806L
 
-#if defined(__clang__) || defined(__EDG__) \
-    || (defined(_MSC_VER) && _MSC_VER >= 1925 && !(_MSC_FULL_VER == 192528318 && _MSC_BUILD == 97))
+#if defined(__clang__) || defined(__EDG__) || (defined(_MSC_VER) && _MSC_VER >= 1925)
 #define __cpp_lib_is_constant_evaluated 201811L
-#endif // TRANSITION, VS 2019 16.5 Preview 2 and toolset update
+#endif // TRANSITION, VS 2019 16.5 Preview 2
 
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L

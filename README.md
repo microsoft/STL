@@ -11,7 +11,7 @@ If you're a programmer who just wants to use the STL, you **don't** need this re
 and select the "Desktop development with C++" workload.
 
 If you want to participate in the STL's development, welcome! You can report issues, comment on pull requests, and learn
-about what we're working on. Soon, you'll be able to submit pull requests to fix bugs or add features (see below).
+about what we're working on. You can also submit pull requests to fix bugs or add features (see below).
 
 Finally, you can take our code and use it in other apps and libraries (according to the terms of our license, like
 everything else).
@@ -25,7 +25,7 @@ We're in the process of moving all of our work on the STL to GitHub. Current sta
 
 * Build System: **In progress.** We're working on a CMake build system, which is currently capable of building one
 flavor of the STL (native desktop). We need to extend this to build all of the flavors required for the MSVC toolset
-(e.g. /clr, /clr:pure, OneCore, Spectre). Until that's done, we're keeping our legacy build system around in the
+(e.g. `/clr`, `/clr:pure`, OneCore, Spectre). Until that's done, we're keeping our legacy build system around in the
 `stl/msbuild` subdirectory. (We're keeping those files in this repo, even though they're unusable outside of Microsoft,
 because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
@@ -34,8 +34,8 @@ soon as possible.)
 harness, which extensively uses Microsoft-internal machinery.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
-However, that infrastructure requires manual review before building community-submitted pull requests, as we haven't
-yet hardened it against untrusted changes.
+Currently, it builds the STL (native desktop for x86, x64, ARM, and ARM64). Also, it strictly verifies that all of our
+files have been formatted with [clang-format][] and follow our other whitespace conventions.
 
 * Contribution Guidelines: **Coming soon.** Working on the STL's code involves following many rules. We have codebase
 conventions, Standard requirements, Microsoft-specific requirements, binary compatibility (ABI) requirements, and more.
@@ -47,7 +47,7 @@ libraries.)
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
 approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
 GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
-issue. The [bug tag][] and [enhancement tag][] remain to be populated.
+issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 * Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
 
@@ -139,7 +139,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.4 Preview 2 or later.
+1. Install Visual Studio 2019 16.4 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -158,7 +158,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.4 Preview 2 or later.
+1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.4 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -248,6 +248,7 @@ Copyright (c) Microsoft Corporation.
 
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+[clang-format]: https://clang.llvm.org/docs/ClangFormat.html
 [CMake]: https://cmake.org/download
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org

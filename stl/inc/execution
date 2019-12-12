@@ -103,22 +103,19 @@ namespace execution {
 } // namespace execution
 
 template <>
-struct is_execution_policy<execution::sequenced_policy> : true_type { // sequenced_policy is an execution policy
-};
+struct is_execution_policy<execution::sequenced_policy> : true_type {}; // sequenced_policy is an execution policy
 
 template <>
-struct is_execution_policy<execution::parallel_policy> : true_type { // parallel_policy is an execution policy
-};
+struct is_execution_policy<execution::parallel_policy> : true_type {}; // parallel_policy is an execution policy
 
 template <>
-struct is_execution_policy<execution::parallel_unsequenced_policy>
-    : true_type { // parallel_unsequenced_policy is an execution policy
-};
+struct is_execution_policy<execution::parallel_unsequenced_policy> : true_type {
+}; // parallel_unsequenced_policy is an execution policy
 
 // STRUCT _Parallelism_resources_exhausted
 struct _Parallelism_resources_exhausted : exception {
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const
-        noexcept override { // return pointer to message string
+    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+        // return pointer to message string
         return "Insufficient resources were available to use additional parallelism.";
     }
 
@@ -208,8 +205,8 @@ void _Run_available_chunked_work(_Work& _Operation) {
 
 // FUNCTION TEMPLATE _Run_chunked_parallel_work
 template <class _Work>
-void _Run_chunked_parallel_work(
-    const size_t _Hw_threads, _Work& _Operation) { // process chunks of _Operation on the thread pool
+void _Run_chunked_parallel_work(const size_t _Hw_threads, _Work& _Operation) {
+    // process chunks of _Operation on the thread pool
     const _Work_ptr _Work_op{_Operation};
     // setup complete, hereafter nothrow or terminate
     _Work_op._Submit_for_chunks(_Hw_threads, _Operation._Team._Chunks);
@@ -217,13 +214,11 @@ void _Run_chunked_parallel_work(
 }
 
 // CHUNK CALCULATION FUNCTIONS
-// The parallel algorithms library below assumes that distance(first, last) fits into a
-// size_t; forward iterators must refer to objects in memory and therefore must meet
-// this requirement.
+// The parallel algorithms library below assumes that distance(first, last) fits into a size_t;
+// forward iterators must refer to objects in memory and therefore must meet this requirement.
 //
-// Unlike the serial algorithms library, which can stay in the difference_type domain,
-// here we need to talk with vector (which speaks size_t), and with Windows, which wants
-// to speak unsigned int.
+// Unlike the serial algorithms library, which can stay in the difference_type domain, here we need
+// to talk with vector (which speaks size_t), and with Windows, which wants to speak unsigned int.
 //
 // This assumption should be localized to the chunk calculation functions; the rest of
 // the library assumes that chunk numbers can be static_cast into the difference_type domain.
@@ -415,8 +410,8 @@ struct _Parallel_choose_min_chunk {
         return _Selected_chunk.load(memory_order_relaxed) != _Still_active;
     }
 
-    void _Imbue(
-        const size_t _Chunk, const _Ty _Local_result) { // atomically sets the result to the lowest chunk's value
+    void _Imbue(const size_t _Chunk, const _Ty _Local_result) {
+        // atomically sets the result to the lowest chunk's value
         size_t _Expected = _Still_active;
         while (!_Selected_chunk.compare_exchange_weak(_Expected, _Chunk)) {
             // note: _Still_active is the maximum possible value, so it gets ignored implicitly
@@ -450,8 +445,8 @@ struct _Parallel_choose_max_chunk {
         return _Selected_chunk.load(memory_order_relaxed) != _Still_active;
     }
 
-    void _Imbue(
-        const size_t _Chunk, const _Ty _Local_result) { // atomically sets the result to the highest chunk's value
+    void _Imbue(const size_t _Chunk, const _Ty _Local_result) {
+        // atomically sets the result to the highest chunk's value
         size_t _Expected = _Still_active;
         while (!_Selected_chunk.compare_exchange_weak(_Expected, _Chunk)) {
             // wrap _Still_active down to 0 so that only 1 branch is necessary:
@@ -482,8 +477,8 @@ struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer 
         }
     }
 
-    static _Circular_buffer* _Allocate_circular_buffer(
-        const size_t _New_log_size) { // allocate a circular buffer with space for 2^_New_log_size elements
+    static _Circular_buffer* _Allocate_circular_buffer(const size_t _New_log_size) {
+        // allocate a circular buffer with space for 2^_New_log_size elements
         if (_New_log_size >= 32) {
             _Throw_parallelism_resources_exhausted();
         }
@@ -540,9 +535,9 @@ struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer 
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 template <class _Ty>
 class alignas(hardware_destructive_interference_size) _Work_stealing_deque {
-    // thread-local work-stealing deque, which allows efficient access from a single owner thread at the "bottom" of the
-    // queue, and any thread access to the "top" of the queue. Originally described in the paper "Dynamic Circular
-    // Work-Stealing Deque" by David Chase and Yossi Lev
+    // thread-local work-stealing deque, which allows efficient access from a single owner thread at the "bottom"
+    // of the queue, and any thread access to the "top" of the queue. Originally described in the paper
+    // "Dynamic Circular Work-Stealing Deque" by David Chase and Yossi Lev
 public:
     _Work_stealing_deque()                            = default;
     _Work_stealing_deque(const _Work_stealing_deque&) = delete;
@@ -557,8 +552,8 @@ public:
         // may be accessed by owning thread only
         const auto _Local_b = _Bottom.load();
         if (_Local_b == SIZE_MAX) {
-            // we assume that any input range won't be divided into more than SIZE_MAX subproblems; treat overflow of
-            // that kind as OOM
+            // we assume that any input range won't be divided into more than SIZE_MAX subproblems;
+            // treat overflow of that kind as OOM
             _Throw_parallelism_resources_exhausted();
         }
 
@@ -600,10 +595,9 @@ public:
 
             _Val = _Stealing_segment->_Subscript(_Local_t); // speculative read/write data race
             _Stealing_segment->_Release();
-            // The above is technically prohibited by the C++ memory model, but
-            // happens to be well defined on all hardware this implementation
-            // targets. Hardware with trap representations or similar must not
-            // use this implementation.
+            // The above is technically prohibited by the C++ memory model, but happens
+            // to be well defined on all hardware this implementation targets.
+            // Hardware with trap representations or similar must not use this implementation.
             _Desired_t = _Local_t + 1U;
         } while (!_Top.compare_exchange_strong(_Local_t, _Desired_t)); // if a data race occurred, try again
 
@@ -634,9 +628,8 @@ public:
             return true;
         }
 
-        // We're trying to read the last element that another thread may be
-        // trying to steal; see who gets to keep the element through _Top
-        // (effectively, steal from ourselves)
+        // We're trying to read the last element that another thread may be trying to steal;
+        // see who gets to keep the element through _Top (effectively, steal from ourselves)
         const auto _Desired_top = _Local_t + 1U;
         if (_Top.compare_exchange_strong(_Local_t, _Desired_top)) {
             _Bottom.store(_Desired_top);
@@ -791,8 +784,8 @@ struct _Static_partition_team { // common data for all static partitioned ops
         auto _This_chunk_size       = _Chunk_size;
         auto _This_chunk_start_at   = static_cast<_Diff>(_This_chunk_diff * _This_chunk_size);
         if (_This_chunk_diff < _Unchunked_items) {
-            // chunks at index lower than _Unchunked_items get an extra item, and need to shift forward by all their
-            // predecessors' extra items
+            // chunks at index lower than _Unchunked_items get an extra item,
+            // and need to shift forward by all their predecessors' extra items
             _This_chunk_start_at += _This_chunk_diff;
             ++_This_chunk_size;
         } else { // chunks without an extra item need to account for all the extra items
@@ -808,8 +801,8 @@ struct _Static_partition_team { // common data for all static partitioned ops
     }
 
     _Static_partition_key<_Diff> _Get_next_key() {
-        // retrieves the next static partition key to process, if it exists; otherwise, retrieves an invalid partition
-        // key
+        // retrieves the next static partition key to process, if it exists;
+        // otherwise, retrieves an invalid partition key
         const auto _This_chunk = _Consumed_chunks++;
         if (_This_chunk < _Chunks) {
             return _Get_chunk_key(_This_chunk);
@@ -837,30 +830,30 @@ struct _Static_partition_range<_RanIt, _Diff, true> {
     _URanIt _Start_at;
     using _Chunk_type = _Iterator_range<_URanIt>;
 
-    _RanIt _Populate(const _Static_partition_team<_Diff>& _Team,
-        _RanIt _First) { // statically partition a random-access iterator range and return next(_First, _Team._Count)
-                         // pre: _Populate hasn't yet been called on this instance
+    _RanIt _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First) {
+        // statically partition a random-access iterator range and return next(_First, _Team._Count)
+        // pre: _Populate hasn't yet been called on this instance
         auto _Result = _First + static_cast<_Target_diff>(_Team._Count); // does verification
         _Start_at    = _Get_unwrapped(_First);
         return _Result;
     }
 
-    bool _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First,
-        _RanIt _Last) { // statically partition a random-access iterator range and check if the range ends at _Last
-                        // pre: _Populate hasn't yet been called on this instance
+    bool _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First, _RanIt _Last) {
+        // statically partition a random-access iterator range and check if the range ends at _Last
+        // pre: _Populate hasn't yet been called on this instance
         _Adl_verify_range(_First, _Last);
         _Start_at = _Get_unwrapped(_First);
         return _Team._Count == _Last - _First;
     }
 
-    _URanIt _Get_first(size_t /* _Chunk_number */,
-        const _Diff _Offset) { // get the first iterator for _Chunk _Chunk_number (which is at offset _Offset)
+    _URanIt _Get_first(size_t /* _Chunk_number */, const _Diff _Offset) {
+        // get the first iterator for _Chunk _Chunk_number (which is at offset _Offset)
         return _Start_at + static_cast<_Target_diff>(_Offset);
     }
 
-    _Chunk_type _Get_chunk(const _Static_partition_key<_Diff> _Key)
-        const { // get a static partition chunk from a random-access range
-                // pre: _Key was generated by the _Static_partition_team instance passed to a previous call to _Populate
+    _Chunk_type _Get_chunk(const _Static_partition_key<_Diff> _Key) const {
+        // get a static partition chunk from a random-access range
+        // pre: _Key was generated by the _Static_partition_team instance passed to a previous call to _Populate
         const auto _First = _Start_at + static_cast<_Target_diff>(_Key._Start_at);
         return {_First, _First + static_cast<_Target_diff>(_Key._Size)};
     }
@@ -873,9 +866,9 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
     _Parallel_vector<_UFwdIt> _Division_points;
     using _Chunk_type = _Iterator_range<_UFwdIt>;
 
-    _FwdIt _Populate(const _Static_partition_team<_Diff>& _Team,
-        _FwdIt _First) { // statically partition a forward iterator range and return next(_First, _Team._Count)
-                         // pre: _Populate hasn't yet been called on this instance
+    _FwdIt _Populate(const _Static_partition_team<_Diff>& _Team, _FwdIt _First) {
+        // statically partition a forward iterator range and return next(_First, _Team._Count)
+        // pre: _Populate hasn't yet been called on this instance
         const auto _Chunks = _Team._Chunks;
         _Division_points.resize(_Chunks + 1);
         // The following potentially narrowing cast is OK because caller has ensured
@@ -898,9 +891,9 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
         return _First;
     }
 
-    bool _Populate(const _Static_partition_team<_Diff>& _Team, _FwdIt _First,
-        _FwdIt _Last) { // statically partition a forward iterator range and check if the range ends at _Last
-                        // pre: _Populate hasn't yet been called on this instance
+    bool _Populate(const _Static_partition_team<_Diff>& _Team, _FwdIt _First, _FwdIt _Last) {
+        // statically partition a forward iterator range and check if the range ends at _Last
+        // pre: _Populate hasn't yet been called on this instance
         const auto _Chunks = _Team._Chunks;
         _Division_points.resize(_Chunks + 1);
         const auto _Chunk_size      = _Team._Chunk_size;
@@ -1007,8 +1000,8 @@ struct _Static_partition_range_backward<_BidIt, _Diff, false> {
 
 // FUNCTION TEMPLATE _Distance_any
 template <class _InIt1, class _InIt2>
-_Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2,
-    _InIt2 _Last2) { // get the distance from 2 ranges which should have identical lengths
+_Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+    // get the distance from 2 ranges which should have identical lengths
     if constexpr (_Is_random_iter_v<_InIt1>) {
         (void) _First2; // TRANSITION, VSO-486357
         (void) _Last2; // TRANSITION, VSO-486357
@@ -2057,13 +2050,13 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
             if (_Count >= 2) {
                 _TRY_BEGIN
                 _Static_partitioned_equal2 _Operation{_Hw_threads, _Count, _Pass_fn(_Pred), _UFirst1, _UFirst2};
-                if (!_Operation._Basis1._Populate(
-                        _Operation._Team, _UFirst1, _ULast1)) { // left sequence didn't have length _Count
+                if (!_Operation._Basis1._Populate(_Operation._Team, _UFirst1, _ULast1)) {
+                    // left sequence didn't have length _Count
                     return false;
                 }
 
-                if (!_Operation._Basis2._Populate(
-                        _Operation._Team, _UFirst2, _ULast2)) { // right sequence didn't have length _Count
+                if (!_Operation._Basis2._Populate(_Operation._Team, _UFirst2, _ULast2)) {
+                    // right sequence didn't have length _Count
                     return false;
                 }
 
@@ -2963,8 +2956,8 @@ struct _Static_partitioned_stable_sort3 {
                         _Basis._Get_first(_Base, _Team._Get_chunk_offset(_Base)), _Pred);
                 }
 
-                if (!_Visitor._Go_to_parent()) { // temporary bits have been copied back to the input, no parent, so
-                                                 // we're done
+                if (!_Visitor._Go_to_parent()) {
+                    // temporary bits have been copied back to the input, no parent, so we're done
                     _Temp_buf._Destroy_all();
                     return _Cancellation_status::_Canceled;
                 }
@@ -3214,8 +3207,8 @@ struct _Static_partitioned_is_partitioned {
             return _Cancellation_status::_Canceled;
         }
 
-        // after determining the is_partitioned status for this chunk, we need to update the chunk numbers for leftmost
-        // F and rightmost T
+        // after determining the is_partitioned status for this chunk,
+        // we need to update the chunk numbers for leftmost F and rightmost T
         auto _Old_true = _Rightmost_true.load();
         if (_This_chunk_status & _Contains_true) {
             while (_Target_chunk_number > _Old_true) {
@@ -3799,8 +3792,8 @@ struct _Static_partitioned_set_subtraction {
         auto [_Range1_chunk_first, _Range1_chunk_last] = _Basis._Get_chunk(_Key);
         const bool _Last_chunk                         = _Chunk_number == _Team._Chunks - 1;
 
-        // Get appropriate range for _Range1. We don't want any spans of equal elements to reach across chunk
-        // boundaries.
+        // Get appropriate range for _Range1.
+        // We don't want any spans of equal elements to reach across chunk boundaries.
         if (!_Last_chunk) {
             // Slide _Range1_chunk_last to the left so that there are no copies of *_Range1_chunk_last in _Range1_chunk.
             // Note that we know that this chunk is not the last, so we can look at the element at _Range1_chunk_last.
@@ -3825,8 +3818,8 @@ struct _Static_partitioned_set_subtraction {
 
         // Publish results to rest of chunks.
         if (_Chunk_number == 0) {
-            // Chunk 0 is special as it has no predecessor; its local and total sums are the same and we can immediately
-            // put its results in _Dest.
+            // Chunk 0 is special as it has no predecessor;
+            // its local and total sums are the same and we can immediately put its results in _Dest.
             const auto _Num_results = _Set_oper_per_chunk._Update_dest(
                 _Range1_chunk_first, _Range1_chunk_last, _Range2_chunk_first, _Range2_chunk_last, _Dest, _Pred);
 
@@ -3972,8 +3965,8 @@ struct _Set_difference_per_chunk {
     template <class _RanIt1, class _RanIt2, class _RanIt3, class _Pr>
     _Common_diff_t<_RanIt1, _RanIt2, _RanIt3> _Update_dest(
         _RanIt1 _First1, const _RanIt1 _Last1, _RanIt2 _First2, _RanIt2 _Last2, _RanIt3 _Dest, _Pr _Pred) {
-        // Copy elements from [_First1, _Last1), except those in [_First2, _Last2) according to _Pred, to _Dest. Returns
-        // the number of elements stored.
+        // Copy elements from [_First1, _Last1), except those in [_First2, _Last2) according to _Pred, to _Dest.
+        // Returns the number of elements stored.
         return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, _Pred) - _Dest;
     }
 
@@ -4141,9 +4134,8 @@ _NODISCARD _Ty reduce(
                 _Static_partitioned_reduce2<decltype(_UFirst), _Ty, decltype(_Passed_fn)> _Operation{
                     _Count, _Chunks, _UFirst, _Passed_fn};
                 {
-                    // we don't use _Run_chunked_parallel_work here because the initial value
-                    // on background threads is synthesized from the input, but on this thread
-                    // the initial value is _Val
+                    // we don't use _Run_chunked_parallel_work here because the initial value on background threads
+                    // is synthesized from the input, but on this thread the initial value is _Val
                     const _Work_ptr _Work{_Operation};
                     // setup complete, hereafter nothrow or terminate
                     _Work._Submit_for_chunks(_Hw_threads, _Chunks);
@@ -4365,8 +4357,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
 }
 
 // PARALLEL FUNCTION TEMPLATE exclusive_scan
-struct _No_init_tag { // tag to indicate that no initial value is to be used
-};
+struct _No_init_tag {}; // tag to indicate that no initial value is to be used
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
 _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val) {

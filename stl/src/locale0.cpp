@@ -18,9 +18,7 @@
 #pragma init_seg(lib)
 
 _STD_BEGIN
-
-    [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL
-    _Xbad_alloc();
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_alloc();
 
 struct _Fac_node { // node for lazy facet recording
     _Fac_node(_Fac_node* _Nextarg, _Facet_base* _Facptrarg)
