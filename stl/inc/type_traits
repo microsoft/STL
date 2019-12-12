@@ -1481,9 +1481,6 @@ class reference_wrapper;
 // behavior. We solve this by using a macro to stamp out both public non-constexpr and internal constexpr
 // implementations.
 
-// Now that a Core Language issue affecting constexpr std::invoke has been fixed (CWG-1581), we may make this
-// unconditional and remove the macro (which violates the strengthening rule in C++14/17 mode). TRANSITION, P1065R2
-
 #define _CONCATX(x, y) x##y
 #define _CONCAT(x, y)  _CONCATX(x, y)
 
