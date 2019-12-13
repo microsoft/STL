@@ -109,7 +109,11 @@ public:
         _STL_DISABLE_DEPRECATED_WARNING
         __CLR_OR_THIS_CALL ~sentry() noexcept {
 #if _HAS_EXCEPTIONS
-            if (!_STD uncaught_exception()) { // TRANSITION, ArchivedOS-12000909
+#if _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+            if (_STD uncaught_exception() == 0) { // TRANSITION, ArchivedOS-12000909
+#else // ^^^ _HAS_DEPRECATED_UNCAUGHT_EXCEPTION / !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION vvv
+            if (_STD uncaught_exceptions() == 0) {
+#endif // !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION
                 this->_Myostr._Osfx();
             }
 #else // _HAS_EXCEPTIONS
