@@ -314,6 +314,7 @@ struct bit_not<void> {
     }
 };
 
+#if _HAS_DEPRECATED_NEGATORS
 _STL_DISABLE_DEPRECATED_WARNING
 // CLASS TEMPLATE unary_negate
 template <class _Fn>
@@ -362,6 +363,7 @@ _CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr binary_negate<_Fn> not2(const _Fn
     return binary_negate<_Fn>(_Func);
 }
 _STL_RESTORE_DEPRECATED_WARNING
+#endif // _HAS_DEPRECATED_NEGATORS
 
 #if _HAS_AUTO_PTR_ETC
 _STL_DISABLE_DEPRECATED_WARNING
