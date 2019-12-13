@@ -78,13 +78,13 @@ struct _Arg_types {}; // provide argument_type, etc. (sometimes)
 
 template <class _Ty1>
 struct _Arg_types<_Ty1> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _ARGUMENT_TYPE_NAME;
 };
 
 template <class _Ty1, class _Ty2>
 struct _Arg_types<_Ty1, _Ty2> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 second_argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 _SECOND_ARGUMENT_TYPE_NAME;
 };
 
 // STRUCT TEMPLATE is_function
@@ -97,7 +97,7 @@ struct _Is_function { // determine whether _Ty is a function
     template <class _Ret, class... _Types>                                                              \
     struct _Is_function<_Ret CALL_OPT(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> : _Arg_types<_Types...> { \
         using _Bool_type = true_type;                                                                   \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                     \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                               \
     };
 
 _NON_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_FUNCTION)
@@ -107,7 +107,7 @@ _NON_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_FUNCTION)
     template <class _Ret, class... _Types>                                                                    \
     struct _Is_function<_Ret(_Types..., ...) CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
         using _Bool_type = true_type;                                                                         \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                           \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                                     \
     };
 
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_FUNCTION_ELLIPSIS)
@@ -130,7 +130,7 @@ struct _Is_memfunptr { // base class for member function pointer predicates
     struct _Is_memfunptr<_Ret (CALL_OPT _Arg0::*)(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> \
         : _Arg_types<CV_OPT _Arg0*, _Types...> {                                          \
         using _Bool_type = true_type;                                                     \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                       \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                 \
         using _Class_type = _Arg0;                                                        \
         using _Guide_type = enable_if<!is_same_v<int REF_OPT, int&&>, _Ret(_Types...)>;   \
     };
@@ -143,7 +143,7 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
     struct _Is_memfunptr<_Ret (_Arg0::*)(_Types..., ...)                     \
             CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
         using _Bool_type = true_type;                                        \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;          \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;    \
         using _Class_type = _Arg0;                                           \
         using _Guide_type = enable_if<false>;                                \
     };
@@ -1798,7 +1798,7 @@ struct _Weak_result_type {}; // default definition
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 struct _Weak_result_type<_Ty, void_t<typename _Ty::result_type>> { // defined if _Ty::result_type exists
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::result_type result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::result_type _RESULT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -1809,7 +1809,7 @@ _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 struct _Weak_argument_type<_Ty, void_t<typename _Ty::argument_type>>
     : _Weak_result_type<_Ty> { // defined if _Ty::argument_type exists
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::argument_type argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::argument_type _ARGUMENT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -1821,8 +1821,8 @@ template <class _Ty>
 struct _Weak_binary_args<_Ty, void_t<typename _Ty::first_argument_type,
                                   typename _Ty::second_argument_type>>
     : _Weak_argument_type<_Ty> { // defined if both types exist
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::first_argument_type first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::second_argument_type second_argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::first_argument_type _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::second_argument_type _SECOND_ARGUMENT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -2161,8 +2161,8 @@ struct hash;
 
 template <class _Kty, bool _Enabled>
 struct _Conditionally_enabled_hash { // conditionally enabled hash base
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Kty argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Kty _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const _Kty& _Keyval) const
         noexcept(noexcept(hash<_Kty>::_Do_hash(_Keyval))) /* strengthened */ {
@@ -2192,8 +2192,8 @@ struct hash
 
 template <>
 struct hash<float> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef float argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef float _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(const float _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0F ? 0.0F : _Keyval); // map -0 to 0
     }
@@ -2201,8 +2201,8 @@ struct hash<float> {
 
 template <>
 struct hash<double> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef double argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef double _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(const double _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0 ? 0.0 : _Keyval); // map -0 to 0
     }
@@ -2210,8 +2210,8 @@ struct hash<double> {
 
 template <>
 struct hash<long double> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef long double argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef long double _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(const long double _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0L ? 0.0L : _Keyval); // map -0 to 0
     }
@@ -2219,8 +2219,8 @@ struct hash<long double> {
 
 template <>
 struct hash<nullptr_t> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef nullptr_t argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef nullptr_t _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(nullptr_t) const noexcept {
         void* _Null{};
         return _Hash_representation(_Null);

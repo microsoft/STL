@@ -50,6 +50,7 @@ public:
 
     explicit _Umap_traits(const _Tr& _Traits) noexcept(is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
 
+#if _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
     class value_compare {
     public:
         using first_argument_type  = value_type;
@@ -68,6 +69,9 @@ public:
 
         key_compare _Keycompobj;
     };
+#else // ^^^ _HAS_DEPRECATED_ADAPTOR_TYPEDEFS / !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS vvv
+    using value_compare = void;
+#endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
 
     template <class _Ty1, class _Ty2>
     static const _Kty& _Kfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract key from element value

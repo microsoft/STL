@@ -926,6 +926,22 @@
 #define _HAS_DEPRECATED_NEGATORS (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_NEGATORS
 
+#ifndef _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+#if _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#define _ARGUMENT_TYPE_NAME        argument_type
+#define _FIRST_ARGUMENT_TYPE_NAME  first_argument_type
+#define _SECOND_ARGUMENT_TYPE_NAME second_argument_type
+#define _RESULT_TYPE_NAME          result_type
+#else // ^^^ _HAS_DEPRECATED_ADAPTOR_TYPEDEFS / !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS vvv
+#define _ARGUMENT_TYPE_NAME        _Unnameable_argument
+#define _FIRST_ARGUMENT_TYPE_NAME  _Unnameable_first_argument
+#define _SECOND_ARGUMENT_TYPE_NAME _Unnameable_second_argument
+#define _RESULT_TYPE_NAME          _Unnameable_result
+#endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
 // LIBRARY FEATURE-TEST MACROS
 
 // C++14
