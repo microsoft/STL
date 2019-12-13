@@ -17,6 +17,9 @@
 #include <memory>
 #include <unordered_map>
 #endif // _HAS_CXX17
+#ifdef __cpp_lib_concepts
+#include <compare>
+#endif // __cpp_lib_concepts
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
