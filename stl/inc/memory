@@ -1690,9 +1690,9 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
 }
 
 // CLASS TEMPLATE _Ref_count_unbounded_array
-template <class _Ty>
-class _Ref_count_unbounded_array
-    : public _Ref_count_base { // handle reference counting for unbounded array in control block, no allocator
+template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
+class _Ref_count_unbounded_array : public _Ref_count_base { // handle reference counting for unbounded array with
+                                                            // non-trivial destruction in control block, no allocator
 public:
     explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base(), _Size(_Count) {
         _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Size);
@@ -1715,6 +1715,39 @@ private:
 
     virtual void _Destroy() noexcept override { // destroy managed resource
         _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        using _Storage = aligned_storage_t<_Max_value(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>)),
+            _Max_value(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>))>;
+        this->~_Ref_count_unbounded_array();
+        delete[] reinterpret_cast<_Storage*>(this);
+    }
+};
+
+template <class _Ty>
+class _Ref_count_unbounded_array<_Ty, true> : public _Ref_count_base { // handle reference counting for unbounded array
+                                                                       // with trivial destruction in control block,
+                                                                       // no allocator
+public:
+    explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base() {
+        _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Count);
+    }
+
+    explicit _Ref_count_unbounded_array(const size_t _Count, const remove_extent_t<_Ty>& _Val) : _Ref_count_base() {
+        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
+    }
+
+    ~_Ref_count_unbounded_array() = default; // nothing to do, _Ty is trivially destructible
+
+    auto _Get_ptr() {
+        return reinterpret_cast<remove_extent_t<_Ty>*>(
+            reinterpret_cast<char*>(this) + _Div_ceil(sizeof(*this), alignof(_Ty)) * alignof(_Ty));
+    }
+
+private:
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        // nothing to do, _Ty is trivially destructible
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
@@ -1965,7 +1998,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
 // CLASS TEMPLATE _Ref_count_unbounded_array_alloc
 template <class _Ty, class _Alloc>
 class __declspec(empty_bases) _Ref_count_unbounded_array_alloc : public _Ebco_base<_Alloc>, public _Ref_count_base {
-    // handle reference counting for object in control block, allocator
+    // handle reference counting for unbounded array in control block, allocator
 public:
     explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count)
         : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base(), _Size(_Count) {
@@ -1991,8 +2024,10 @@ private:
     ~_Ref_count_unbounded_array_alloc() = default; // nothing to do; _Storage._Value already destroyed by _Destroy()
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
-        _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, _Alty);
+        if constexpr (!is_trivially_destructible_v<remove_extent_t<_Ty>>) {
+            _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
+            _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, _Alty);
+        }
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
@@ -2033,8 +2068,10 @@ private:
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
-        _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Alty);
+        if constexpr (!is_trivially_destructible_v<_Ty>) {
+            _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
+            _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Alty);
+        }
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
