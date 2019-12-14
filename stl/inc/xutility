@@ -2072,6 +2072,14 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
 namespace ranges {
+    // VARIABLE TEMPLATE ranges::enable_safe_range
+    template <class>
+    inline constexpr bool enable_safe_range = false;
+
+    // CONCEPT ranges::safe_range
+    template <class _Rng>
+    concept _Safe_range_like = is_lvalue_reference_v<_Rng> || enable_safe_range<remove_cvref_t<_Rng>>;
+
     // CUSTOMIZATION POINT OBJECT ranges::begin
     namespace _Begin {
 #ifndef __clang__ // TRANSITION, VSO-895622
@@ -2101,13 +2109,9 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                constexpr bool _Is_lvalue = is_lvalue_reference_v<_Ty>;
-
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
-                    if constexpr (_Is_lvalue) {
-                        return {_St::_Array, true};
-                    }
-                } else if constexpr (_Is_lvalue && _Has_member<_Ty>) {
+                    return {_St::_Array, true};
+                } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(begin(_STD declval<_Ty>())))};
@@ -2121,7 +2125,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <class _Ty>
+            template <_Safe_range_like _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
@@ -2172,13 +2176,9 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                constexpr bool _Is_lvalue = is_lvalue_reference_v<_Ty>;
-
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
-                    if constexpr (_Is_lvalue) {
-                        return {_St::_Array, true};
-                    }
-                } else if constexpr (_Is_lvalue && _Has_member<_Ty>) {
+                    return {_St::_Array, true};
+                } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().end()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty>())))};
@@ -2192,7 +2192,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <class _Ty>
+            template <_Safe_range_like _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
@@ -2215,19 +2215,14 @@ namespace ranges {
 
     // CONCEPT ranges::range
     template <class _Rng>
-    concept _Range_impl = requires(_Rng&& __r) {
-        _RANGES begin(static_cast<_Rng&&>(__r));
-        _RANGES end(static_cast<_Rng&&>(__r));
+    concept range = requires(_Rng& __r) {
+        _RANGES begin(__r);
+        _RANGES end(__r);
     };
 
+    // CONCEPT ranges::safe_range
     template <class _Rng>
-    concept range = _Range_impl<_Rng&>;
-
-    // CONCEPT ranges::_Forwarding_range
-    // clang-format off
-    template <class _Rng>
-    concept _Forwarding_range = range<_Rng> && _Range_impl<_Rng>;
-    // clang-format on
+    concept safe_range = range<_Rng>&& _Safe_range_like<_Rng>;
 
     // ALIAS TEMPLATE ranges::iterator_t
     template <range _Rng>
@@ -2336,7 +2331,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <class _Ty>
+            template <_Safe_range_like _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
@@ -2417,7 +2412,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <class _Ty>
+            template <_Safe_range_like _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
