@@ -2714,7 +2714,7 @@ namespace ranges {
     // clang-format off
     // CONCEPT ranges::view
     template <class _Ty>
-    concept view = range<_Ty> && semiregular<_Ty> && enable_view<_Ty>;
+    concept view = range<_Ty> && movable<_Ty> && default_initializable<_Ty> && enable_view<_Ty>;
 
     // CONCEPT ranges::output_range
     template <class _Rng, class _Ty>

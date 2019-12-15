@@ -163,6 +163,7 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 //     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1456R1 Move-only Views
 // P1612R1 Relocating endian To <bit>
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
