@@ -66,7 +66,7 @@ public:
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
-        return _CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -77,7 +77,7 @@ public:
     }
 
     static _Ty _Infv() { // return infinity
-        return numeric_limits<double>::infinity();
+        return static_cast<_Ty>(numeric_limits<double>::infinity());
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
@@ -91,11 +91,11 @@ public:
     }
 
     static _Ty _Nanv() { // return NaN
-        return numeric_limits<double>::quiet_NaN();
+        return static_cast<_Ty>(numeric_limits<double>::quiet_NaN());
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
-        return _CSTD _Sinh(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD _Sinh(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 
     static _Ty asinh(_Ty _Left) {
@@ -114,27 +114,27 @@ public:
             _Ans = log(_Left) + _Ln2;
         }
 
-        return _Neg ? -_Ans : _Ans;
+        return static_cast<_Ty>(_Neg ? -_Ans : _Ans);
     }
 
     static _Ty atan2(_Ty _Yval, _Ty _Xval) { // return atan(_Yval / _Xval)
-        return _CSTD atan2(static_cast<double>(_Yval), static_cast<double>(_Xval));
+        return static_cast<_Ty>(_CSTD atan2(static_cast<double>(_Yval), static_cast<double>(_Xval)));
     }
 
     static _Ty cos(_Ty _Left) {
-        return _CSTD cos(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD cos(static_cast<double>(_Left)));
     }
 
     static _Ty exp(_Ty _Left) {
-        return _CSTD exp(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD exp(static_cast<double>(_Left)));
     }
 
     static _Ty ldexp(_Ty _Left, int _Exponent) { // return _Left * 2 ^ _Exponent
-        return _CSTD ldexp(static_cast<double>(_Left), _Exponent);
+        return static_cast<_Ty>(_CSTD ldexp(static_cast<double>(_Left), _Exponent));
     }
 
     static _Ty log(_Ty _Left) {
-        return _CSTD log(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD log(static_cast<double>(_Left)));
     }
 
     static _Ty log1p(_Ty _Left) { // return log(1 + _Left)
@@ -149,23 +149,23 @@ public:
     }
 
     static _Ty pow(_Ty _Left, _Ty _Right) {
-        return _CSTD pow(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD pow(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 
     static _Ty sin(_Ty _Left) {
-        return _CSTD sin(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD sin(static_cast<double>(_Left)));
     }
 
     static _Ty sqrt(_Ty _Left) {
-        return _CSTD sqrt(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD sqrt(static_cast<double>(_Left)));
     }
 
     static _Ty tan(_Ty _Left) {
-        return _CSTD tan(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD tan(static_cast<double>(_Left)));
     }
 
     static _Ty hypot(_Ty _Left, _Ty _Right) {
-        return _CSTD hypot(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD hypot(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 };
 
