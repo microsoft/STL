@@ -1579,7 +1579,6 @@ private:
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE TEMPLATE enable_safe_range
     template <class _Elem, class _Traits>
     inline constexpr bool enable_safe_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
