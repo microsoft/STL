@@ -2098,8 +2098,8 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_ADL = requires(_Ty&& __t) {
-            { _Fake_decay_copy(begin(static_cast<_Ty&&>(__t))) } -> input_or_output_iterator;
+        concept _Has_ADL = requires(_Ty& __t) {
+            { _Fake_decay_copy(begin(__t)) } -> input_or_output_iterator;
         };
         // clang-format on
 
@@ -2111,10 +2111,10 @@ namespace ranges {
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     return {_St::_Array, true};
-                } else if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
-                } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(begin(_STD declval<_Ty>())))};
+                } else if constexpr (_Has_member<_Ty&>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().begin()))};
+                } else if constexpr (_Has_ADL<_Ty&>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(begin(_STD declval<_Ty&>())))};
                 }
 
                 return {_St::_None};
@@ -2133,7 +2133,7 @@ namespace ranges {
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
                     return _Val.begin();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return begin(static_cast<_Ty&&>(_Val));
+                    return begin(_Val);
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
@@ -2164,9 +2164,8 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_ADL = requires(_Ty&& __t) {
-            { _Fake_decay_copy(end(static_cast<_Ty&&>(__t))) } ->
-                sentinel_for<decltype(_RANGES begin(static_cast<_Ty&&>(__t)))>;
+        concept _Has_ADL = requires(_Ty& __t) {
+            { _Fake_decay_copy(end(__t)) } -> sentinel_for<decltype(_RANGES begin(__t))>;
         };
         // clang-format on
 
@@ -2178,10 +2177,10 @@ namespace ranges {
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     return {_St::_Array, true};
-                } else if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().end()))};
-                } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty>())))};
+                } else if constexpr (_Has_member<_Ty&>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().end()))};
+                } else if constexpr (_Has_ADL<_Ty&>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty&>())))};
                 }
 
                 return {_St::_None};
@@ -2200,7 +2199,7 @@ namespace ranges {
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
                     return _Val.end();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return end(static_cast<_Ty&&>(_Val));
+                    return end(_Val);
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2221,8 +2220,10 @@ namespace ranges {
     };
 
     // CONCEPT ranges::safe_range
+    // clang-format off
     template <class _Rng>
-    concept safe_range = range<_Rng>&& _Safe_range_like<_Rng>;
+    concept safe_range = range<_Rng> && _Safe_range_like<_Rng>;
+    // clang-format on
 
     // ALIAS TEMPLATE ranges::iterator_t
     template <range _Rng>
@@ -2293,19 +2294,19 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty>
-        concept _Has_member = is_lvalue_reference_v<_Ty> && requires(_Ty& __t) {
+        concept _Has_member = requires(_Ty& __t) {
             { _Fake_decay_copy(__t.rbegin()) } -> input_or_output_iterator;
         };
 
         template <class _Ty>
-        concept _Has_ADL = requires(_Ty&& __t) {
-            { _Fake_decay_copy(rbegin(static_cast<_Ty&&>(__t))) } -> input_or_output_iterator;
+        concept _Has_ADL = requires(_Ty& __t) {
+            { _Fake_decay_copy(rbegin(__t)) } -> input_or_output_iterator;
         };
 
         template <class _Ty>
-        concept _Can_make_reverse = requires(_Ty&& __t) {
-            { _RANGES begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
-            { _RANGES end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(_RANGES begin(static_cast<_Ty&&>(__t)))>;
+        concept _Can_make_reverse = requires(_Ty& __t) {
+            { _RANGES begin(__t) } -> bidirectional_iterator;
+            { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
         };
         // clang-format on
 
@@ -2315,12 +2316,13 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rbegin()))};
-                } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(rbegin(_STD declval<_Ty>())))};
-                } else if constexpr (_Can_make_reverse<_Ty>) {
-                    return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty>())))};
+                if constexpr (_Has_member<_Ty&>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().rbegin()))};
+                } else if constexpr (_Has_ADL<_Ty&>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(rbegin(_STD declval<_Ty&>())))};
+                } else if constexpr (_Can_make_reverse<_Ty&>) {
+                    return {_St::_Make_reverse,
+                        noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty&>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -2337,9 +2339,9 @@ namespace ranges {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
                     return _Val.rbegin();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return rbegin(static_cast<_Ty&&>(_Val));
+                    return rbegin(_Val);
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Make_reverse) {
-                    return _STD make_reverse_iterator(_RANGES end(static_cast<_Ty&&>(_Val)));
+                    return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2370,20 +2372,19 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Has_member = is_lvalue_reference_v<_Ty> && requires(_Ty& __t) {
+        concept _Has_member = requires(_Ty& __t) {
             { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
         };
 
         template <class _Ty>
-        concept _Has_ADL = requires(_Ty&& __t) {
-            { _Fake_decay_copy(rend(static_cast<_Ty&&>(__t))) } ->
-                sentinel_for<decltype(_RANGES rbegin(static_cast<_Ty&&>(__t)))>;
+        concept _Has_ADL = requires(_Ty& __t) {
+            { _Fake_decay_copy(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
         };
 
         template <class _Ty>
-        concept _Can_make_reverse = requires(_Ty&& __t) {
-            { _RANGES begin(static_cast<_Ty&&>(__t)) } -> bidirectional_iterator;
-            { _RANGES end(static_cast<_Ty&&>(__t)) } -> same_as<decltype(_RANGES begin(static_cast<_Ty&&>(__t)))>;
+        concept _Can_make_reverse = requires(_Ty& __t) {
+            { _RANGES begin(__t) } -> bidirectional_iterator;
+            { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
         };
         // clang-format on
 
@@ -2394,13 +2395,13 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Can_rbegin<_Ty>) {
-                    if constexpr (_Has_member<_Ty>) {
-                        return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rend()))};
-                    } else if constexpr (_Has_ADL<_Ty>) {
-                        return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty>())))};
-                    } else if constexpr (_Can_make_reverse<_Ty>) {
+                    if constexpr (_Has_member<_Ty&>) {
+                        return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().rend()))};
+                    } else if constexpr (_Has_ADL<_Ty&>) {
+                        return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty&>())))};
+                    } else if constexpr (_Can_make_reverse<_Ty&>) {
                         return {_St::_Make_reverse,
-                            noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty>())))};
+                            noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty&>())))};
                     }
                 }
 
@@ -2418,9 +2419,9 @@ namespace ranges {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
                     return _Val.rend();
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Non_member) {
-                    return rend(static_cast<_Ty&&>(_Val));
+                    return rend(_Val);
                 } else if constexpr (_Choice<_Ty>._Strategy == _St::_Make_reverse) {
-                    return _STD make_reverse_iterator(_RANGES begin(static_cast<_Ty&&>(_Val)));
+                    return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
