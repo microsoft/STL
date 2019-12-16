@@ -54,6 +54,7 @@
 // P0771R1 noexcept For std::function's Move Constructor
 // P0777R1 Avoiding Unnecessary decay
 // P0809R0 Comparing Unordered Containers
+// P0883R2 Fixing Atomic Initialization
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive
@@ -853,6 +854,18 @@
 #define _DEPRECATE_EXPERIMENTAL_ERASE
 #endif // ^^^ warning disabled ^^^
 
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_ATOMIC_INIT                                                                               \
+    [[deprecated("warning STL4026: "                                                                               \
+                 "std::atomic_init() overloads are deprecated in C++20. "                                          \
+                 "The constructors of std::atomic provide equivalent functionality. "                              \
+                 "You can define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING "                                  \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_ATOMIC_INIT
+#endif // ^^^ warning disabled ^^^
+
 // next warning number: STL4027
 
 
@@ -946,6 +959,8 @@
 #endif // _HAS_CXX17
 
 // C++20
+#define __cpp_lib_atomic_value_initialization 201911L
+
 #if _HAS_CXX20
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_bind_front   201907L
