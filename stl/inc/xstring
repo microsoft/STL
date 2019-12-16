@@ -17,10 +17,6 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
-#include <xutility>
-#endif // __cpp_lib_concepts
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)

@@ -2077,7 +2077,7 @@ namespace ranges {
     inline constexpr bool enable_safe_range = false;
 
     template <class _Rng>
-    concept _Safe_range_like = is_lvalue_reference_v<_Rng> || enable_safe_range<remove_cvref_t<_Rng>>;
+    concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_safe_range<remove_cvref_t<_Rng>>;
 
     // CUSTOMIZATION POINT OBJECT ranges::begin
     namespace _Begin {
@@ -2124,7 +2124,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <_Safe_range_like _Ty>
+            template <_Should_range_access _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
@@ -2190,7 +2190,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <_Safe_range_like _Ty>
+            template <_Should_range_access _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Array) {
@@ -2221,7 +2221,7 @@ namespace ranges {
     // CONCEPT ranges::safe_range
     // clang-format off
     template <class _Rng>
-    concept safe_range = range<_Rng> && _Safe_range_like<_Rng>;
+    concept safe_range = range<_Rng> && _Should_range_access<_Rng>;
     // clang-format on
 
     // ALIAS TEMPLATE ranges::iterator_t
@@ -2332,7 +2332,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <_Safe_range_like _Ty>
+            template <_Should_range_access _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
@@ -2412,7 +2412,7 @@ namespace ranges {
 
         public:
             // clang-format off
-            template <_Safe_range_like _Ty>
+            template <_Should_range_access _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 if constexpr (_Choice<_Ty>._Strategy == _St::_Member) {
