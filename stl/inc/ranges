@@ -28,6 +28,10 @@ namespace ranges {
     // CONCEPT ranges::common_range
     template <class _Rng>
     concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+
+    // CONCEPT ranges::viewable_range
+    template <class _Rng>
+    concept viewable_range = range<_Rng> && (safe_range<_Rng> || view<decay_t<_Rng>>);
     // clang-format on
 } // namespace ranges
 _STD_END
