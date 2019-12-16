@@ -2320,8 +2320,8 @@ namespace ranges {
                 } else if constexpr (_Has_ADL<_Ty&>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(rbegin(_STD declval<_Ty&>())))};
                 } else if constexpr (_Can_make_reverse<_Ty&>) {
-                    return {_St::_Make_reverse,
-                        noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty&>())))};
+                    return {
+                        _St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty&>())))};
                 } else {
                     return {_St::_None};
                 }
