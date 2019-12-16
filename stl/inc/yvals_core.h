@@ -866,7 +866,7 @@
 #define _CXX20_DEPRECATE_ATOMIC_INIT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4027
+// next warning number: STL4028
 
 
 // LIBRARY FEATURE-TEST MACROS
