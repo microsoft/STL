@@ -2076,7 +2076,6 @@ namespace ranges {
     template <class>
     inline constexpr bool enable_safe_range = false;
 
-    // CONCEPT ranges::safe_range
     template <class _Rng>
     concept _Safe_range_like = is_lvalue_reference_v<_Rng> || enable_safe_range<remove_cvref_t<_Rng>>;
 
