@@ -164,10 +164,13 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 //     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1754R1 Rename Concepts To standard_case
+// P1870R1 safe_range
+// P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
@@ -425,7 +428,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  201911L
+#define _MSVC_STL_UPDATE  201912L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -451,12 +454,22 @@
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// C++17 constexpr additions
+// N4842 [dcl.constexpr]/1: "A function or static data member declared with the
+// constexpr or consteval specifier is implicitly an inline function or variable"
+
+// Functions that became constexpr in C++17
 #if _HAS_CXX17
 #define _CONSTEXPR17 constexpr
-#else // ^^^ has C++17 constexpr additions / no C++17 constexpr additions vvv
+#else // ^^^ constexpr in C++17 and later / inline (not constexpr) in C++14 vvv
 #define _CONSTEXPR17 inline
-#endif // _HAS_CXX17
+#endif // ^^^ inline (not constexpr) in C++14 ^^^
+
+// Functions that became constexpr in C++20
+#if _HAS_CXX20
+#define _CONSTEXPR20 constexpr
+#else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
+#define _CONSTEXPR20 inline
+#endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -893,15 +906,13 @@
 #define __cpp_lib_logical_traits                   201510L
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
-#ifndef _USING_V110_SDK71_
-#define __cpp_lib_shared_mutex 201505L
-#endif // _USING_V110_SDK71_
-#define __cpp_lib_shared_ptr_arrays             201611L
-#define __cpp_lib_transparent_operators         201510L
-#define __cpp_lib_type_trait_variable_templates 201510L
-#define __cpp_lib_uncaught_exceptions           201411L
-#define __cpp_lib_unordered_map_try_emplace     201411L
-#define __cpp_lib_void_t                        201411L
+#define __cpp_lib_shared_mutex                     201505L
+#define __cpp_lib_shared_ptr_arrays                201611L
+#define __cpp_lib_transparent_operators            201510L
+#define __cpp_lib_type_trait_variable_templates    201510L
+#define __cpp_lib_uncaught_exceptions              201411L
+#define __cpp_lib_unordered_map_try_emplace        201411L
+#define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
@@ -978,10 +989,9 @@
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_int_pow2                 201806L
 
-#if defined(__clang__) || defined(__EDG__) \
-    || (defined(_MSC_VER) && _MSC_VER >= 1925 && !(_MSC_FULL_VER == 192528318 && _MSC_BUILD == 97))
+#if defined(__clang__) || defined(__EDG__) || (defined(_MSC_VER) && _MSC_VER >= 1925)
 #define __cpp_lib_is_constant_evaluated 201811L
-#endif // TRANSITION, VS 2019 16.5 Preview 2 and toolset update
+#endif // TRANSITION, VS 2019 16.5 Preview 2
 
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L

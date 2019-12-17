@@ -608,25 +608,37 @@ struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
     }
 };
 
-// STRUCT TEMPLATE _List_node_insert_op
+// STRUCT TEMPLATE _List_node_insert_op2
 template <class _Alnode>
-struct _List_node_insert_op {
+struct _List_node_insert_op2 {
     // list insert operation which maintains exception safety
     using _Alnode_traits = allocator_traits<_Alnode>;
     using pointer        = typename _Alnode_traits::pointer;
     using size_type      = typename _Alnode_traits::size_type;
     using value_type     = typename _Alnode_traits::value_type;
 
-    explicit _List_node_insert_op(_Alnode& _Al_)
-        : _Al(_Al_), _Tail(pointer_traits<pointer>::pointer_to(_Base)), _Added(0) {}
+    explicit _List_node_insert_op2(_Alnode& _Al_) : _Al(_Al_), _Added(0) {}
 
-    _List_node_insert_op(const _List_node_insert_op&) = delete;
-    _List_node_insert_op& operator=(const _List_node_insert_op&) = delete;
+    _List_node_insert_op2(const _List_node_insert_op2&) = delete;
+    _List_node_insert_op2& operator=(const _List_node_insert_op2&) = delete;
 
     template <class... _CArgT>
     void _Append_n(size_type _Count, const _CArgT&... _Carg) {
-        // Append _Count Ts constructed from _Carg to this insert operation.
+        // Append _Count elements constructed from _Carg
+        if (_Count <= 0) {
+            return;
+        }
+
         _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
+        if (_Added == 0) {
+            _Newnode._Allocate(); // throws
+            _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), _Carg...); // throws
+            _Head = _Newnode._Ptr;
+            _Tail = _Newnode._Ptr;
+            ++_Added;
+            --_Count;
+        }
+
         for (; 0 < _Count; --_Count) {
             _Newnode._Allocate(); // throws
             _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), _Carg...); // throws
@@ -641,92 +653,102 @@ struct _List_node_insert_op {
 
     template <class _InIt, class _Sentinel>
     void _Append_range_unchecked(_InIt _First, const _Sentinel _Last) {
-        // Append new elements constructed from [_First, _Last) to this insert operation.
+        // Append the values in [_First, _Last)
+        if (_First == _Last) { // throws
+            return;
+        }
+
         _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
-        for (; _First != _Last; ++_First) {
+        if (_Added == 0) {
+            _Newnode._Allocate(); // throws
+            _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
+            const auto _Newhead = _STD exchange(_Newnode._Ptr, pointer{});
+            _Head               = _Newhead;
+            _Tail               = _Newhead;
+            ++_Added;
+            ++_First; // throws
+        }
+
+        while (_First != _Last) { // throws
             _Newnode._Allocate(); // throws
             _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
             _Construct_in_place(_Tail->_Next, _Newnode._Ptr);
             _Construct_in_place(_Newnode._Ptr->_Prev, _Tail);
-            _Tail = _Newnode._Ptr;
+            _Tail = _STD exchange(_Newnode._Ptr, pointer{});
             ++_Added;
+            ++_First; // throws
         }
-
-        _Newnode._Ptr = pointer{};
     }
 
     template <class _Val_types>
-    pointer _Attach_before(_List_val<_Val_types>& _My_data, const pointer _Insert_before) noexcept {
-        // Attach the elements in this insert operation before _Insert_before.
-        // If no elements were inserted, returns _Insert_before; otherwise returns a pointer
-        // to the first inserted list node.
-        // Resets *this to be empty.
-        if (_Added == 0) {
+    pointer _Attach_before(_List_val<_Val_types>& _List_data, const pointer _Insert_before) noexcept {
+        // Attach the elements in *this before _Insert_before.
+        // If *this is empty, returns _Insert_before; otherwise returns a pointer to the first inserted list node.
+        // Resets *this to the default-initialized state.
+
+        const auto _Local_added = _Added;
+        if (_Local_added == 0) {
             return _Insert_before;
         }
 
-        _My_data._Mysize += _STD exchange(_Added, size_type{0});
+        const auto _Local_head   = _Head;
+        const auto _Local_tail   = _Tail;
+        const auto _Insert_after = _Insert_before->_Prev;
 
-        _Construct_in_place(_Tail->_Next, _Insert_before); // assumed nothrow
-        const auto _Insert_after = _STD exchange(_Insert_before->_Prev, _Tail);
+        _Construct_in_place(_Local_head->_Prev, _Insert_after);
+        _Insert_after->_Next = _Local_head;
+        _Construct_in_place(_Local_tail->_Next, _Insert_before);
+        _Insert_before->_Prev = _Local_tail;
 
-        const auto _First_inserted = _Base._Next;
-        _Insert_after->_Next       = _First_inserted;
-        _First_inserted->_Prev     = _Insert_after;
-
-        _Destroy_in_place(_Base._Next);
-        _Tail = pointer_traits<pointer>::pointer_to(_Base);
-        return _First_inserted;
+        _List_data._Mysize += _Local_added;
+        _Added = 0;
+        return _Local_head;
     }
 
     template <class _Val_types>
-    void _Attach_at_end(_List_val<_Val_types>& _My_data) noexcept {
-        _Attach_before(_My_data, _My_data._Myhead);
+    void _Attach_at_end(_List_val<_Val_types>& _List_data) noexcept {
+        _Attach_before(_List_data, _List_data._Myhead);
     }
 
     template <class _Val_types>
-    void _Attach_head(_List_val<_Val_types>& _My_data) {
+    void _Attach_head(_List_val<_Val_types>& _List_data) {
         _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
-        _Newnode._Allocate(); // throws, assumed nothrow hereafter
-        if (_Added == 0) {
+        _Newnode._Allocate(); // throws
+        const auto _Local_added = _STD exchange(_Added, size_type{0});
+        if (_Local_added == 0) {
             _Construct_in_place(_Newnode._Ptr->_Next, _Newnode._Ptr);
             _Construct_in_place(_Newnode._Ptr->_Prev, _Newnode._Ptr);
-            _My_data._Mysize = 0;
         } else {
-            _Construct_in_place(_Newnode._Ptr->_Next, _Base._Next);
-            _Construct_in_place(_Newnode._Ptr->_Prev, _Tail);
-            _Base._Next->_Prev = _Newnode._Ptr;
-            _Tail->_Next       = _Newnode._Ptr;
-            _My_data._Mysize   = _STD exchange(_Added, size_type{0});
-            _Destroy_in_place(_Tail->_Next);
-            _Tail = pointer_traits<pointer>::pointer_to(_Base);
+            const auto _Local_head = _Head;
+            const auto _Local_tail = _Tail;
+            _Construct_in_place(_Newnode._Ptr->_Next, _Local_head);
+            _Construct_in_place(_Newnode._Ptr->_Prev, _Local_tail);
+            _Construct_in_place(_Local_head->_Prev, _Newnode._Ptr);
+            _Construct_in_place(_Local_tail->_Next, _Newnode._Ptr);
         }
 
-        _My_data._Myhead = _Newnode._Release();
+        _List_data._Mysize = _Local_added;
+        _List_data._Myhead = _Newnode._Release();
     }
 
-    ~_List_node_insert_op() {
+    ~_List_node_insert_op2() {
         if (_Added == 0) {
             return;
         }
 
-        _Construct_in_place(_Tail->_Next, nullptr);
-        pointer _Subject = _Base._Next;
+        _Construct_in_place(_Head->_Prev, pointer{});
+        _Construct_in_place(_Tail->_Next, pointer{});
+        pointer _Subject = _Head;
         while (_Subject) {
             value_type::_Freenode(_Al, _STD exchange(_Subject, _Subject->_Next));
         }
-
-        _Destroy_in_place(_Base._Next);
     }
 
 private:
     _Alnode& _Al;
+    size_type _Added; // if 0, the values of _Head and _Tail are indeterminate
     pointer _Tail; // points to the most recently appended element; it doesn't have _Next constructed
-    size_type _Added;
-    union {
-        value_type _Base; // only ever uses _Next, other members not constructed
-                          // _Next points to the first appended element
-    };
+    pointer _Head; // points to the first appended element; it doesn't have _Prev constructed
 };
 
 template <class _Traits>
@@ -796,7 +818,7 @@ private:
     void _Construct_n(_CRT_GUARDOVERFLOW size_type _Count) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _List_node_insert_op<_Alnode> _Appended(_Getal());
+        _List_node_insert_op2<_Alnode> _Appended(_Getal());
         _Appended._Append_n(_Count);
         _Appended._Attach_head(_Mypair._Myval2);
         _Proxy._Release();
@@ -817,7 +839,7 @@ private:
     void _Construct_n(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _List_node_insert_op<_Alnode> _Appended(_Getal());
+        _List_node_insert_op2<_Alnode> _Appended(_Getal());
         _Appended._Append_n(_Count, _Val);
         _Appended._Attach_head(_Mypair._Myval2);
         _Proxy._Release();
@@ -839,7 +861,7 @@ private:
     void _Construct_range_unchecked(_Iter _First, _Iter _Last) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _List_node_insert_op<_Alnode> _Appended(_Getal());
+        _List_node_insert_op2<_Alnode> _Appended(_Getal());
         _Appended._Append_range_unchecked(_First, _Last);
         _Appended._Attach_head(_Mypair._Myval2);
         _Proxy._Release();
@@ -1142,7 +1164,7 @@ public:
     void resize(_CRT_GUARDOVERFLOW size_type _Newsize) { // determine new length, padding with _Ty() elements as needed
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Mysize < _Newsize) { // pad to make larger
-            _List_node_insert_op<_Alnode> _Op(_Getal());
+            _List_node_insert_op2<_Alnode> _Op(_Getal());
             _Op._Append_n(_Newsize - _My_data._Mysize);
             _Op._Attach_at_end(_My_data);
         } else {
@@ -1156,7 +1178,7 @@ public:
         // determine new length, padding with _Val elements as needed
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Mysize < _Newsize) { // pad to make larger
-            _List_node_insert_op<_Alnode> _Op(_Getal());
+            _List_node_insert_op2<_Alnode> _Op(_Getal());
             _Op._Append_n(_Newsize - _My_data._Mysize, _Val);
             _Op._Attach_at_end(_My_data);
         } else {
@@ -1247,7 +1269,7 @@ private:
         auto _Old         = _Myend->_Next;
         for (;;) { // attempt to reuse a node
             if (_Old == _Myend) { // no more nodes to reuse, append the rest
-                _List_node_insert_op<_Alnode> _Op(_Getal());
+                _List_node_insert_op2<_Alnode> _Op(_Getal());
                 _Op._Append_range_unchecked(_UFirst, _ULast);
                 _Op._Attach_at_end(_Mypair._Myval2);
                 return;
@@ -1277,7 +1299,7 @@ public:
         auto _Old         = _Myend->_Next;
         for (;;) { // attempt to reuse a node
             if (_Old == _Myend) { // no more nodes to reuse, append the rest
-                _List_node_insert_op<_Alnode> _Op(_Getal());
+                _List_node_insert_op2<_Alnode> _Op(_Getal());
                 _Op._Append_n(_Count, _Val);
                 _Op._Attach_at_end(_Mypair._Myval2);
                 return;
@@ -1308,7 +1330,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-        _List_node_insert_op<_Alnode> _Op(_Getal());
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
         _Op._Append_n(_Count, _Val);
         return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
     }
@@ -1319,7 +1341,7 @@ public:
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         _Adl_verify_range(_First, _Last);
-        _List_node_insert_op<_Alnode> _Op(_Getal());
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
         _Op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
         return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
     }

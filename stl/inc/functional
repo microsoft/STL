@@ -866,7 +866,7 @@ private:
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
-        return typeid(void);
+        _CSTD abort();
 #endif // _HAS_STATIC_RTTI
     }
 
@@ -930,7 +930,7 @@ private:
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
-        return typeid(void);
+        _CSTD abort();
 #endif // _HAS_STATIC_RTTI
     }
 

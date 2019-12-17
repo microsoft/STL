@@ -28,7 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 
 _STD_BEGIN
-#ifdef __cpp_lib_shared_mutex
 // CLASS shared_mutex
 class shared_mutex { // class for mutual exclusion shared across threads
 public:
@@ -73,7 +72,6 @@ public:
 private:
     _Smtx_t _Myhandle;
 };
-#endif // __cpp_lib_shared_mutex
 
 // shared_timed_mutex is not supported under /clr
 #ifndef _M_CEE
