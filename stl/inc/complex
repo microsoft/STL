@@ -1784,14 +1784,13 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _L
     return _STD pow(type(_Left), type(_Right));
 }
 
-template <class _Ty1, class _Ty2,
-    enable_if_t<!((is_floating_point_v<_Ty1> || is_integral_v<_Ty1>) && is_integral_v<_Ty2>), int> = 0>
+template <class _Ty1, class _Ty2, enable_if_t<!is_integral_v<_Ty2>, int> = 0>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2& _Right) {
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
     return _STD pow(type(_Left), type(_Right));
 }
 
-template <class _Ty1, class _Ty2, enable_if_t<is_floating_point_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
+template <class _Ty1, class _Ty2, enable_if_t<!is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2 _Right) {
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
 
