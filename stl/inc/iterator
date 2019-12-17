@@ -8,7 +8,7 @@
 #define _ITERATOR_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <istream>
+#include <iosfwd>
 #include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
@@ -234,6 +234,177 @@ public:
 protected:
     const _Elem* _Mydelim; // pointer to delimiter string (NB: not freed)
     ostream_type* _Myostr; // pointer to output stream
+};
+
+// CLASS TEMPLATE istreambuf_iterator
+template <class _Elem, class _Traits>
+class istreambuf_iterator { // wrap stream buffer as input iterator
+public:
+    using iterator_category = input_iterator_tag;
+    using value_type        = _Elem;
+    using difference_type   = typename _Traits::off_type;
+    using pointer           = const _Elem*;
+    using reference         = _Elem;
+
+    using char_type      = _Elem;
+    using traits_type    = _Traits;
+    using streambuf_type = basic_streambuf<_Elem, _Traits>;
+    using istream_type   = basic_istream<_Elem, _Traits>;
+
+    using int_type = typename traits_type::int_type;
+
+    constexpr istreambuf_iterator() noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
+
+    istreambuf_iterator(streambuf_type* _Sb) noexcept : _Strbuf(_Sb), _Got(!_Sb), _Val() {}
+
+    istreambuf_iterator(istream_type& _Istr) noexcept : _Strbuf(_Istr.rdbuf()), _Got(!_Strbuf), _Val() {}
+
+private:
+    class _Istreambuf_proxy {
+    public:
+        _NODISCARD _Elem operator*() const {
+            return _Keep;
+        }
+
+    private:
+        friend istreambuf_iterator;
+        _Istreambuf_proxy(streambuf_type* _Strbuf_, _Elem _Keep_) : _Strbuf(_Strbuf_), _Keep(_Keep_) {}
+
+        streambuf_type* _Strbuf;
+        _Elem _Keep;
+    };
+
+public:
+    istreambuf_iterator(const _Istreambuf_proxy& _Px) noexcept : _Strbuf(_Px._Strbuf), _Got(!_Strbuf), _Val() {}
+
+    _NODISCARD _Elem operator*() const {
+        if (!_Got) {
+            _Peek();
+        }
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Strbuf, "istreambuf_iterator is not dereferenceable");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        return _Val;
+    }
+
+    istreambuf_iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Strbuf, "istreambuf_iterator is not incrementable");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        _Inc();
+        return *this;
+    }
+
+    _Istreambuf_proxy operator++(int) {
+        if (!_Got) {
+            _Peek();
+        }
+
+        _Istreambuf_proxy _Tmp{_Strbuf, _Val};
+        ++*this;
+        return _Tmp;
+    }
+
+    _NODISCARD bool equal(const istreambuf_iterator& _Right) const {
+        if (!_Got) {
+            _Peek();
+        }
+
+        if (!_Right._Got) {
+            _Right._Peek();
+        }
+
+        return (!_Strbuf && !_Right._Strbuf) || (_Strbuf && _Right._Strbuf);
+    }
+
+private:
+    void _Inc() { // skip to next input element
+        if (!_Strbuf || traits_type::eq_int_type(traits_type::eof(), _Strbuf->sbumpc())) {
+            _Strbuf = nullptr;
+            _Got    = true;
+        } else {
+            _Got = false;
+        }
+    }
+
+    _Elem _Peek() const { // peek at next input element
+        int_type _Meta;
+        if (!_Strbuf || traits_type::eq_int_type(traits_type::eof(), _Meta = _Strbuf->sgetc())) {
+            _Strbuf = nullptr;
+        } else {
+            _Val = traits_type::to_char_type(_Meta);
+        }
+
+        _Got = true;
+        return _Val;
+    }
+
+    mutable streambuf_type* _Strbuf; // the wrapped stream buffer
+    mutable bool _Got; // true if _Val is valid
+    mutable _Elem _Val; // next element to deliver
+};
+
+template <class _Elem, class _Traits>
+_NODISCARD bool operator==(
+    const istreambuf_iterator<_Elem, _Traits>& _Left, const istreambuf_iterator<_Elem, _Traits>& _Right) {
+    return _Left.equal(_Right);
+}
+
+template <class _Elem, class _Traits>
+_NODISCARD bool operator!=(
+    const istreambuf_iterator<_Elem, _Traits>& _Left, const istreambuf_iterator<_Elem, _Traits>& _Right) {
+    return !(_Left == _Right);
+}
+
+// CLASS TEMPLATE ostreambuf_iterator
+template <class _Elem, class _Traits>
+class ostreambuf_iterator { // wrap stream buffer as output iterator
+public:
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using difference_type   = void;
+    using pointer           = void;
+    using reference         = void;
+
+    using char_type      = _Elem;
+    using traits_type    = _Traits;
+    using streambuf_type = basic_streambuf<_Elem, _Traits>;
+    using ostream_type   = basic_ostream<_Elem, _Traits>;
+
+    ostreambuf_iterator(streambuf_type* _Sb) noexcept : _Failed(false), _Strbuf(_Sb) {}
+
+    ostreambuf_iterator(ostream_type& _Ostr) noexcept : _Failed(false), _Strbuf(_Ostr.rdbuf()) {}
+
+    ostreambuf_iterator& operator=(_Elem _Right) { // store element and increment
+        if (!_Strbuf || traits_type::eq_int_type(_Traits::eof(), _Strbuf->sputc(_Right))) {
+            _Failed = true;
+        }
+
+        return *this;
+    }
+
+    _NODISCARD ostreambuf_iterator& operator*() { // pretend to get designated element
+        return *this;
+    }
+
+    ostreambuf_iterator& operator++() { // pretend to preincrement
+        return *this;
+    }
+
+    ostreambuf_iterator& operator++(int) { // pretend to postincrement
+        return *this;
+    }
+
+    _NODISCARD bool failed() const noexcept {
+        return _Failed;
+    }
+
+private:
+    bool _Failed; // true if any stores have failed
+    streambuf_type* _Strbuf; // the wrapped stream buffer
 };
 _STD_END
 
