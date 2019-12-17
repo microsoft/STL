@@ -451,19 +451,22 @@
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// C++17 constexpr additions
+// N4842 [dcl.constexpr]/1: "A function or static data member declared with the
+// constexpr or consteval specifier is implicitly an inline function or variable"
+
+// Functions that became constexpr in C++17
 #if _HAS_CXX17
 #define _CONSTEXPR17 constexpr
-#else // ^^^ has C++17 constexpr additions / no C++17 constexpr additions vvv
+#else // ^^^ constexpr in C++17 and later / inline (not constexpr) in C++14 vvv
 #define _CONSTEXPR17 inline
-#endif // _HAS_CXX17
+#endif // ^^^ inline (not constexpr) in C++14 ^^^
 
-// C++20 constexpr additions
+// Functions that became constexpr in C++20
 #if _HAS_CXX20
 #define _CONSTEXPR20 constexpr
-#else // ^^^ has C++20 constexpr additions / no C++20 constexpr additions vvv
+#else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20 inline
-#endif // _HAS_CXX20
+#endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
