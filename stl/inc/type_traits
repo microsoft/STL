@@ -1849,7 +1849,7 @@ class reference_wrapper
 #if !_HAS_CXX20
     : public _Weak_types<_Ty>::type
 #endif // !_HAS_CXX20
-{ // stand-in for an assignable reference
+{
 public:
     static_assert(is_object_v<_Ty> || is_function_v<_Ty>,
         "reference_wrapper<T> requires T to be an object type or a function type.");
