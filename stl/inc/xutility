@@ -2114,9 +2114,9 @@ namespace ranges {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().begin()))};
                 } else if constexpr (_Has_ADL<_Ty&>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(begin(_STD declval<_Ty&>())))};
+                } else {
+                    return {_St::_None};
                 }
-
-                return {_St::_None};
             }
 
             template <class _Ty>
@@ -2180,9 +2180,9 @@ namespace ranges {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().end()))};
                 } else if constexpr (_Has_ADL<_Ty&>) {
                     return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty&>())))};
+                } else {
+                    return {_St::_None};
                 }
-
-                return {_St::_None};
             }
 
             template <class _Ty>
@@ -2366,11 +2366,6 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty>
-        concept _Can_rbegin = requires(_Ty&& __t) {
-            _RANGES rbegin(static_cast<_Ty&&>(__t));
-        };
-
-        template <class _Ty>
         concept _Has_member = requires(_Ty& __t) {
             { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
         };
@@ -2393,18 +2388,16 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                if constexpr (_Can_rbegin<_Ty>) {
-                    if constexpr (_Has_member<_Ty&>) {
-                        return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().rend()))};
-                    } else if constexpr (_Has_ADL<_Ty&>) {
-                        return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty&>())))};
-                    } else if constexpr (_Can_make_reverse<_Ty&>) {
-                        return {_St::_Make_reverse,
-                            noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty&>())))};
-                    }
+                if constexpr (_Has_member<_Ty&>) {
+                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty&>().rend()))};
+                } else if constexpr (_Has_ADL<_Ty&>) {
+                    return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty&>())))};
+                } else if constexpr (_Can_make_reverse<_Ty&>) {
+                    return {_St::_Make_reverse,
+                        noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty&>())))};
+                } else {
+                    return {_St::_None};
                 }
-
-                return {_St::_None};
             }
 
             template <class _Ty>
