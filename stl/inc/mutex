@@ -18,7 +18,6 @@
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <xcall_once.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -522,7 +521,21 @@ auto _Invoke_stored(tuple<_Types...>&& _Tuple)
     return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>());
 }
 
+// STRUCT once_flag
+struct once_flag { // opaque data structure for call_once()
+    constexpr once_flag() = default;
+    once_flag(const once_flag&) = delete;
+    once_flag& operator=(const once_flag&) = delete;
+
+    void* _Opaque = nullptr;
+};
+
 // FUNCTION TEMPLATE call_once
+using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
+
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
+    once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept;
+
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
 
 template <class _Tuple, class _Seq, size_t _Idx>

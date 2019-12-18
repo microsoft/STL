@@ -813,7 +813,7 @@ protected:
         return _Ptr;
     }
 
-    constexpr _Ptr_base() noexcept = default;
+    constexpr _Ptr_base() = default;
 
     ~_Ptr_base() = default;
 
@@ -1009,7 +1009,7 @@ public:
     using weak_type = weak_ptr<_Ty>;
 #endif // _HAS_CXX17
 
-    constexpr shared_ptr() noexcept {} // construct empty shared_ptr
+    constexpr shared_ptr() = default;
 
     constexpr shared_ptr(nullptr_t) noexcept {} // construct empty shared_ptr
 

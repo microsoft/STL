@@ -194,7 +194,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/version
     ${CMAKE_CURRENT_LIST_DIR}/inc/xatomic.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xbit_ops.h
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xcall_once.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu_tables.h
@@ -202,6 +201,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xhash
+    ${CMAKE_CURRENT_LIST_DIR}/inc/ximmortalize.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xiosbase
     ${CMAKE_CURRENT_LIST_DIR}/inc/xkeycheck.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocale

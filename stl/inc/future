@@ -155,9 +155,7 @@ private:
 // CLASS _Future_error_category
 class _Future_error_category : public _Generic_error_category { // categorize a future error
 public:
-    _Future_error_category() {
-        _Addr = _Future_addr;
-    }
+    constexpr _Future_error_category() noexcept : _Generic_error_category(_Future_addr) {}
 
     virtual const char* name() const noexcept override {
         return "future";

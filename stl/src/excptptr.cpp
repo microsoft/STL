@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <trnsctrl.h>
-#include <xcall_once.h>
+#include <ximmortalize.h>
 
 #include <Windows.h>
 
