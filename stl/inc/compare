@@ -512,7 +512,7 @@ struct compare_three_way_result {};
 
 template <class _Ty1, class _Ty2>
     requires requires(const remove_reference_t<_Ty1> __t, const remove_reference_t<_Ty2> __u) {
-        { __t <=> __u };
+        __t <=> __u;
     }
 struct compare_three_way_result<_Ty1, _Ty2> {
     using type =
