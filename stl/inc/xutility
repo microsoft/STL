@@ -5244,65 +5244,84 @@ public:
 #endif // ^^^ intrinsics unavailable ^^^
 
     // using multiply-shift instead of modulo to fairly map values in range [0, _Mod), adapted from arXiv:1805.10941v4
-    static constexpr _Udiff _Reduce(_Udiff _Value, _Udiff _Mod, size_t _Bitrange) noexcept {
+    static constexpr _Udiff _Reduce(
+        _Udiff _Value, _Udiff _Mod, size_t _Bitrange, _Udiff& _Multiply_result_lo) noexcept {
         constexpr auto _Udiff_bits = CHAR_BIT * sizeof(_Udiff);
         constexpr auto _Uint_bits  = CHAR_BIT * sizeof(uint32_t);
         // _Bitrange may not exceed the number of bits in result type
         _STL_INTERNAL_CHECK(_Bitrange <= _Udiff_bits);
         if (_Bitrange > _Uint_bits) {
-            uint64_t _Val_hi = 0;
-            uint64_t _Val_lo = __rng_umul128(_Value, _Mod, &_Val_hi);
+            uint64_t _Val_hi    = 0;
+            _Multiply_result_lo = static_cast<_Udiff>(__rng_umul128(_Value, _Mod, &_Val_hi));
 
             if (_Bitrange < _Udiff_bits) {
-                _Val_hi = __rng_shiftright128(_Val_lo, _Val_hi, static_cast<uint32_t>(_Bitrange));
+                _Val_hi = __rng_shiftright128(_Multiply_result_lo, _Val_hi, static_cast<uint32_t>(_Bitrange));
             }
             return static_cast<_Udiff>(_Val_hi);
         } else if (_Bitrange > _Uint_bits / 2) {
             // ensure promotion to ull to keep all bits
-            return static_cast<_Udiff>((static_cast<uint64_t>(_Value) * _Mod) >> _Bitrange);
+            const auto _Multiply_result = static_cast<uint64_t>(_Value) * _Mod;
+            _Multiply_result_lo         = static_cast<_Udiff>(_Multiply_result);
+            return static_cast<_Udiff>(_Multiply_result >> _Bitrange);
         }
 
+        const auto _Multiply_result = static_cast<uint32_t>(_Value) * _Mod;
+        _Multiply_result_lo         = static_cast<_Udiff>(_Multiply_result);
         // avoid unnecessary promotion to 64-bit for smaller types
         return static_cast<_Udiff>((static_cast<uint32_t>(_Value) * _Mod) >> _Bitrange);
-    }
-
-    _NODISCARD static constexpr bool _Is_power_of2(_Udiff _Value) noexcept {
-        return _Value && !(_Value & (_Value - 1));
     }
 
     _NODISCARD _Diff operator()(const _Diff _Index) { // adapt _Urng closed range to [0, _Index)
         constexpr auto _Udiff_bits = CHAR_BIT * sizeof(_Udiff);
         const auto _UIndex         = static_cast<_Udiff>(_Index);
-        _Udiff _Ret                = _Get_bits(); // random bits
-        _Udiff _Mask               = _Bmask; // 2^N - 1, _Ret is within [0, _Mask]
+        const auto _Out_max        = static_cast<_Udiff>(_Index - 1);
+        _Udiff _Rnd_val            = _Get_bits(); // random bits
+        _Udiff _Mask               = _Bmask; // 2^N - 1, _Rnd_val is within [0, _Mask]
         size_t _Bitrange           = _Bits;
 
-        while (_Mask < static_cast<_Udiff>(_Index - 1)) { // need more random bits
+        while (_Mask < _Out_max) { // need more random bits
             // if loop is entered, _Bits can't shift out of range
-            _Ret <<= _Bits;
-            _Ret |= _Get_bits();
+            _Rnd_val <<= _Bits;
+            _Rnd_val |= _Get_bits();
             _Mask <<= _Bits;
             _Mask |= _Bmask;
             _Bitrange += _Bits;
         }
 
-        // exceeding bits from _Get_bits() that don't fit into _Ret are discarded,
-        // therefore _Bitrange can never be larger than _Udiff_bits
+        // exceeding bits from _Get_bits() that don't fit into _Rnd_val are discarded,
+        // therefore _Bitrange shall never be larger than _Udiff_bits
         if (_Bitrange > _Udiff_bits) {
             _Bitrange = _Udiff_bits;
         }
 
-        _Udiff _Threshold = _Mask - (_Mask % _UIndex);
-        for (;;) { // try a sample random value
-            // _Ret is [0, _Mask], _UIndex - 1 <= _Mask, return if unbiased
-            if (_Ret < _Threshold || _Is_power_of2(_UIndex)) {
-                return static_cast<_Diff>(_Reduce(_Ret, _UIndex, _Bitrange));
+        _Udiff _Multiply_lo = 0;
+        _Diff _Result       = static_cast<_Diff>(_Reduce(_Rnd_val, _UIndex, _Bitrange, _Multiply_lo));
+        _Multiply_lo        = _Multiply_lo & _Mask;
+
+        // early exit if _Result is known not to be rejected, to avoid division
+        if (_Multiply_lo >= _Out_max) {
+            return _Result;
+        }
+
+        // get actual threshold value to determine rejection
+        const _Udiff _Threshold = (_Mask - _Out_max) % _UIndex;
+        for (;;) {
+            if (_Multiply_lo >= _Threshold) {
+                return static_cast<_Diff>(_Result);
             }
-            // re-use some bits of the previous iteration
-            _Ret <<= _Bits - 1; // avoid full shift
-            _Ret <<= 1;
-            _Ret |= _Get_bits();
-            _Ret &= _Mask;
+
+            // previous value was rejected, generate new
+            _Rnd_val = _Get_bits();
+            _Mask    = _Bmask;
+            while (_Mask < _Out_max) { // need more random bits
+                // if loop is entered, _Bits can't shift out of range
+                _Rnd_val <<= _Bits;
+                _Rnd_val |= _Get_bits();
+                _Mask <<= _Bits;
+                _Mask |= _Bmask;
+            }
+
+            _Result = static_cast<_Diff>(_Reduce(_Rnd_val, _UIndex, _Bitrange, _Multiply_lo));
         }
     }
 
