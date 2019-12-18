@@ -265,22 +265,25 @@ concept totally_ordered = equality_comparable<_Ty>
         { __x >= __y } -> _STL_BOOLEAN_CONCEPT;
     };
 
+// CONCEPT _Partially_ordered_with
+template <class _Ty1, class _Ty2>
+concept _Partially_ordered_with = requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {
+    { __t <  __u } -> _STL_BOOLEAN_CONCEPT;
+    { __t >  __u } -> _STL_BOOLEAN_CONCEPT;
+    { __t <= __u } -> _STL_BOOLEAN_CONCEPT;
+    { __t >= __u } -> _STL_BOOLEAN_CONCEPT;
+    { __u <  __t } -> _STL_BOOLEAN_CONCEPT;
+    { __u >  __t } -> _STL_BOOLEAN_CONCEPT;
+    { __u <= __t } -> _STL_BOOLEAN_CONCEPT;
+    { __u >= __t } -> _STL_BOOLEAN_CONCEPT;
+};
+
 // CONCEPT totally_ordered_with
 template <class _Ty1, class _Ty2>
 concept totally_ordered_with = totally_ordered<_Ty1> && totally_ordered<_Ty2>
     && common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
     && totally_ordered<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>>
-    && equality_comparable_with<_Ty1, _Ty2>
-    && requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {
-        { __t <  __u } -> _STL_BOOLEAN_CONCEPT;
-        { __t >  __u } -> _STL_BOOLEAN_CONCEPT;
-        { __t <= __u } -> _STL_BOOLEAN_CONCEPT;
-        { __t >= __u } -> _STL_BOOLEAN_CONCEPT;
-        { __u <  __t } -> _STL_BOOLEAN_CONCEPT;
-        { __u >  __t } -> _STL_BOOLEAN_CONCEPT;
-        { __u <= __t } -> _STL_BOOLEAN_CONCEPT;
-        { __u >= __t } -> _STL_BOOLEAN_CONCEPT;
-};
+    && equality_comparable_with<_Ty1, _Ty2> && _Partially_ordered_with<_Ty1, _Ty2>;
 
 // CONCEPT copyable
 template <class _Ty>
