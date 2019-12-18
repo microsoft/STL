@@ -1,0 +1,16 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+---
+  tests-root: '..\..\llvm-project\libcxx\test\std'
+  skipped-test-lists-relative-to-tests-root: true
+  skipped-test-directories:
+    - 'experimental'
+  skipped-test-file-names:
+    - 'nothing_to_do.pass.cpp'
+  skipped-tests-comment-list-files:
+    - 'magic_comments.txt'
+  skipped-tests-list-files:
+    - 'skipped_tests.txt'
+  configuration-files:
+    - 'usual_matrix.lst'

@@ -9,9 +9,7 @@
 #include <stdexcept>
 
 _STD_BEGIN
-
-    [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL
-    _Xbad_alloc() {
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_alloc() {
     _THROW(bad_alloc{});
 }
 

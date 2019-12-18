@@ -156,6 +156,7 @@ int main() {
         ".git"sv,
         ".vs"sv,
         ".vscode"sv,
+        "llvm-project"sv,
         "out"sv,
         "vcpkg"sv,
     };
