@@ -523,7 +523,7 @@ auto _Invoke_stored(tuple<_Types...>&& _Tuple)
 
 // STRUCT once_flag
 struct once_flag { // opaque data structure for call_once()
-    constexpr once_flag() = default;
+    constexpr once_flag()       = default;
     once_flag(const once_flag&) = delete;
     once_flag& operator=(const once_flag&) = delete;
 

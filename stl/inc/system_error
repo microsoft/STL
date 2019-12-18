@@ -11,8 +11,8 @@
 #include <cerrno>
 #include <cstdlib> // for strerror
 #include <stdexcept> // for runtime_error
-#include <ximmortalize.h>
 #include <xerrc.h>
+#include <ximmortalize.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -474,7 +474,7 @@ public:
 // CLASS _System_error_category
 class _System_error_category : public error_category { // categorize an operating system error
 public:
-    constexpr _System_error_category() noexcept : error_category(_System_addr) {};
+    constexpr _System_error_category() noexcept : error_category(_System_addr){};
 
     _NODISCARD virtual const char* name() const noexcept override {
         return "system";
