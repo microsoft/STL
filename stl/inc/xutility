@@ -5164,6 +5164,25 @@ _NODISCARD _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val
     return _First;
 }
 
+template <class _Value_type, _Value_type _Max_value>
+struct _Bit_information {
+    static constexpr _Value_type _Bit_count() {
+        _Value_type _Bits{CHAR_BIT * sizeof(_Value_type)};
+        _Value_type _Bmask{_Value_type(-1)};
+        for (; _Max_value < _Bmask; _Bmask >>= 1) {
+            --_Bits;
+        }
+        return _Bits;
+    }
+
+    static constexpr _Value_type _Bit_mask() {
+        _Value_type _Bmask{_Value_type(-1)};
+        for (; _Max_value < _Bmask; _Bmask >>= 1) {
+        }
+        return _Bmask;
+    }
+};
+
 // CLASS TEMPLATE _Rng_from_urng
 template <class _Diff, class _Urng>
 class _Rng_from_urng { // wrap a URNG as an RNG
@@ -5171,9 +5190,11 @@ public:
     using _Ty0 = make_unsigned_t<_Diff>;
     using _Ty1 = typename _Urng::result_type;
 
-    using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    using _Udiff     = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    using _Urgn_bits = _Bit_information<_Udiff, (_Urng::max)() - (_Urng::min)()>;
 
     explicit _Rng_from_urng(_Urng& _Func) : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(_Udiff(-1)) {
+        // _Bits and _Bmask are kept and initialized to prevent ABI break
         for (; (_Urng::max)() - (_Urng::min)() < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
@@ -5272,20 +5293,22 @@ public:
     }
 
     _NODISCARD _Diff operator()(const _Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        constexpr auto _Udiff_bits = CHAR_BIT * sizeof(_Udiff);
-        const auto _UIndex         = static_cast<_Udiff>(_Index);
-        const auto _Out_max        = static_cast<_Udiff>(_Index - 1);
-        _Udiff _Rnd_val            = _Get_bits(); // random bits
-        _Udiff _Mask               = _Bmask; // 2^N - 1, _Rnd_val is within [0, _Mask]
-        size_t _Bitrange           = _Bits;
+        constexpr auto _Udiff_bits  = CHAR_BIT * sizeof(_Udiff);
+        const auto _UIndex          = static_cast<_Udiff>(_Index);
+        const auto _Out_max         = static_cast<_Udiff>(_Index - 1);
+        constexpr _Udiff _Bit_count = _Urgn_bits::_Bit_count();
+        constexpr _Udiff _Bit_mask  = _Urgn_bits::_Bit_mask();
+        _Udiff _Rnd_val             = _Get_bits(); // random bits
+        _Udiff _Mask                = _Bit_mask; // 2^N - 1, _Rnd_val is within [0, _Mask]
+        size_t _Bitrange            = _Bit_count;
 
         while (_Mask < _Out_max) { // need more random bits
             // if loop is entered, _Bits can't shift out of range
-            _Rnd_val <<= _Bits;
+            _Rnd_val <<= _Bit_count;
             _Rnd_val |= _Get_bits();
-            _Mask <<= _Bits;
-            _Mask |= _Bmask;
-            _Bitrange += _Bits;
+            _Mask <<= _Bit_count;
+            _Mask |= _Bit_mask;
+            _Bitrange += _Bit_count;
         }
 
         // exceeding bits from _Get_bits() that don't fit into _Rnd_val are discarded,
@@ -5312,13 +5335,13 @@ public:
 
             // previous value was rejected, generate new
             _Rnd_val = _Get_bits();
-            _Mask    = _Bmask;
+            _Mask    = _Bit_mask;
             while (_Mask < _Out_max) { // need more random bits
-                // if loop is entered, _Bits can't shift out of range
-                _Rnd_val <<= _Bits;
+                // if loop is entered, _Bit_count can't shift out of range
+                _Rnd_val <<= _Bit_count;
                 _Rnd_val |= _Get_bits();
-                _Mask <<= _Bits;
-                _Mask |= _Bmask;
+                _Mask <<= _Bit_count;
+                _Mask |= _Bit_mask;
             }
 
             _Result = static_cast<_Diff>(_Reduce(_Rnd_val, _UIndex, _Bitrange, _Multiply_lo));
@@ -5326,10 +5349,11 @@ public:
     }
 
     _Udiff _Get_all_bits() {
-        _Udiff _Ret = 0;
+        constexpr auto _Bit_count = _Urgn_bits::_Bit_count();
+        _Udiff _Ret               = 0;
 
-        for (size_t _Num = 0; _Num < CHAR_BIT * sizeof(_Udiff); _Num += _Bits) { // don't mask away any bits
-            _Ret <<= _Bits - 1; // avoid full shift
+        for (size_t _Num = 0; _Num < CHAR_BIT * sizeof(_Udiff); _Num += _Bit_count) { // don't mask away any bits
+            _Ret <<= _Bit_count - 1; // avoid full shift
             _Ret <<= 1;
             _Ret |= _Get_bits();
         }
@@ -5342,16 +5366,19 @@ public:
 
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
+        constexpr auto _Bit_mask = _Urgn_bits::_Bit_mask();
         for (;;) { // repeat until random value is in range
             _Udiff _Val = _Ref() - (_Urng::min)();
 
-            if (_Val <= _Bmask) {
+            if (_Val <= _Bit_mask) {
                 return _Val;
             }
         }
     }
 
     _Urng& _Ref; // reference to URNG
+
+    // _Bits and _Bmask are kept and initialized to prevent ABI break
     size_t _Bits; // number of random bits generated by _Get_bits()
     _Udiff _Bmask; // 2^_Bits - 1
 };
