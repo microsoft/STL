@@ -623,7 +623,7 @@ _DestTy* transform_exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _Fw
 
 // FUNCTION TEMPLATE transform_inclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp, class _UnaryOp>
-_OutIt transform_inclusive_scan(
+_CONSTEXPR20 _OutIt transform_inclusive_scan(
     const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) {
     // compute partial noncommutative and associative transformed reductions including _Val into _Dest
     _Adl_verify_range(_First, _Last);
@@ -642,8 +642,8 @@ _OutIt transform_inclusive_scan(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp, class _UnaryOp>
-_DestTy* transform_inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op,
-    _UnaryOp _Transform_op, _Ty _Val) {
+_CONSTEXPR20 _DestTy* transform_inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize],
+    _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) {
     // compute partial noncommutative and associative transformed reductions including _Val into _Dest
     return _STD transform_inclusive_scan(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest),
         _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op), _STD move(_Val))
@@ -652,7 +652,7 @@ _DestTy* transform_inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt, class _BinOp, class _UnaryOp>
-_OutIt transform_inclusive_scan(
+_CONSTEXPR20 _OutIt transform_inclusive_scan(
     const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op, _UnaryOp _Transform_op) {
     // compute partial noncommutative and associative transformed reductions into _Dest
     _Adl_verify_range(_First, _Last);
@@ -679,7 +679,7 @@ _OutIt transform_inclusive_scan(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp, class _UnaryOp>
-_DestTy* transform_inclusive_scan(
+_CONSTEXPR20 _DestTy* transform_inclusive_scan(
     const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op, _UnaryOp _Transform_op) {
     // compute partial noncommutative and associative transformed reductions into _Dest
     return _STD transform_inclusive_scan(
