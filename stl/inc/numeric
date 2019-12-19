@@ -439,7 +439,7 @@ _DestTy* exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last
 
 // FUNCTION TEMPLATE inclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp>
-_OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op, _Ty _Val) {
+_CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op, _Ty _Val) {
     // compute partial noncommutative and associative reductions including _Val into _Dest, using _Reduce_op
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -457,7 +457,7 @@ _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinO
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp>
-_DestTy* inclusive_scan(
+_CONSTEXPR20 _DestTy* inclusive_scan(
     const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op, _Ty _Val) {
     // compute partial noncommutative and associative reductions including _Val into _Dest, using _Reduce_op
     return _STD inclusive_scan(
@@ -467,7 +467,7 @@ _DestTy* inclusive_scan(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt, class _BinOp>
-_OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op) {
+_CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op) {
     // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -493,7 +493,8 @@ _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinO
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp>
-_DestTy* inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op) {
+_CONSTEXPR20 _DestTy* inclusive_scan(
+    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op) {
     // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
     return _STD inclusive_scan(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op))
         ._Unwrapped();
@@ -501,14 +502,14 @@ _DestTy* inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt>
-_OutIt inclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
+_CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute partial noncommutative and associative reductions into _Dest
     return _STD inclusive_scan(_First, _Last, _Dest, plus<>{});
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize>
-_DestTy* inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
     // compute partial noncommutative and associative reductions into _Dest
     return _STD inclusive_scan(_First, _Last, _Dest, plus<>{});
 }
