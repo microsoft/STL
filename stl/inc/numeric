@@ -301,7 +301,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, const _FwdIt _First1, const _FwdI
 
 // FUNCTION TEMPLATE partial_sum
 template <class _InIt, class _OutIt, class _BinOp>
-_OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op) {
+_CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op) {
     // compute partial noncommutative and nonassociative reductions into _Dest, using _Reduce_op
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -331,7 +331,7 @@ _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp>
-_DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op) {
+_CONSTEXPR20 _DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op) {
     // compute partial noncommutative and nonassociative reductions into _Dest, using _Reduce_op
     return _STD partial_sum(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op))
         ._Unwrapped();
@@ -339,14 +339,14 @@ _DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Bi
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt>
-_OutIt partial_sum(_InIt _First, _InIt _Last, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt partial_sum(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // compute partial noncommutative and nonassociative reductions into _Dest
     return _STD partial_sum(_First, _Last, _Dest, plus<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize>
-_DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
     // compute partial noncommutative and nonassociative reductions into _Dest
     return _STD partial_sum(_First, _Last, _Dest, plus<>());
 }
