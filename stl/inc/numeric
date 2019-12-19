@@ -122,7 +122,7 @@ _NODISCARD _Iter_value_t<_FwdIt> reduce(
 
 // FUNCTION TEMPLATE inner_product
 template <class _InIt1, class _InIt2, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _Ty inner_product(
+_NODISCARD _CONSTEXPR20 _Ty inner_product(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
     // return noncommutative and nonassociative transform-reduction of sequences, using
     // _Reduce_op and _Transform_op
@@ -143,8 +143,8 @@ _NODISCARD _Ty inner_product(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val,
-    _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
+_NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
+    _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
     // return noncommutative and nonassociative transform-reduction of sequences, using
     // _Reduce_op and _Transform_op
     return _STD inner_product(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _STD move(_Val),
@@ -153,14 +153,15 @@ _NODISCARD _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, _RightTy
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _Ty>
-_NODISCARD _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Ty _Val) {
+_NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Ty _Val) {
     // return noncommutative and nonassociative transform-reduction of sequences
     return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>(), multiplies<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty>
-_NODISCARD _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
+_NODISCARD _CONSTEXPR20 _Ty inner_product(
+    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
     // return noncommutative and nonassociative transform-reduction of sequences
     return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>(), multiplies<>());
 }
