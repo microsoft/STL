@@ -23,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // FUNCTION TEMPLATE accumulate
 template <class _InIt, class _Ty, class _Fn>
-_NODISCARD _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val, _Fn _Reduce_op) {
+_NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val, _Fn _Reduce_op) {
     // return noncommutative and nonassociative reduction of _Val and all in [_First, _Last), using _Reduce_op
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -39,7 +39,7 @@ _NODISCARD _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val, _Fn _
 }
 
 template <class _InIt, class _Ty>
-_NODISCARD _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val) {
+_NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val) {
     // return noncommutative and nonassociative reduction of _Val and all in [_First, _Last)
     return _STD accumulate(_First, _Last, _Val, plus<>());
 }
