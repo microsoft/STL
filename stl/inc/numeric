@@ -811,7 +811,7 @@ _DestTy* adjacent_difference(
 
 // FUNCTION TEMPLATE iota
 template <class _FwdIt, class _Ty>
-void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
+_CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     // compute increasing sequence into [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
