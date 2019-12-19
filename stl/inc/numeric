@@ -355,7 +355,7 @@ _CONSTEXPR20 _DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_D
 #if _HAS_CXX17
 // FUNCTION TEMPLATE exclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp>
-_OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Ty _Val, _BinOp _Reduce_op) {
+_CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Ty _Val, _BinOp _Reduce_op) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -381,7 +381,7 @@ _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Ty _
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp>
-_DestTy* exclusive_scan(
+_CONSTEXPR20 _DestTy* exclusive_scan(
     const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val, _BinOp _Reduce_op) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     return _STD exclusive_scan(
@@ -391,14 +391,14 @@ _DestTy* exclusive_scan(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt, class _Ty>
-_OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest, _Ty _Val) {
+_CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest, _Ty _Val) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus<>{});
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty>
-_DestTy* exclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val) {
+_CONSTEXPR20 _DestTy* exclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus<>{});
 }
