@@ -725,7 +725,7 @@ _DestTy* transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _Fw
 
 // FUNCTION TEMPLATE adjacent_difference
 template <class _InIt, class _OutIt, class _BinOp>
-_OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Func) {
+_CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Func) {
     // compute adjacent differences into _Dest
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -753,7 +753,8 @@ _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _OutIt _Dest, 
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp>
-_DestTy* adjacent_difference(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Func) {
+_CONSTEXPR20 _DestTy* adjacent_difference(
+    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Func) {
     // compute adjacent differences into _Dest
     return _STD adjacent_difference(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
         ._Unwrapped();
@@ -761,14 +762,14 @@ _DestTy* adjacent_difference(const _InIt _First, const _InIt _Last, _DestTy (&_D
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt>
-_OutIt adjacent_difference(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
+_CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute adjacent differences into _Dest
     return _STD adjacent_difference(_First, _Last, _Dest, minus<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize>
-_DestTy* adjacent_difference(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* adjacent_difference(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
     // compute adjacent differences into _Dest
     return _STD adjacent_difference(_First, _Last, _Dest, minus<>());
 }
