@@ -568,7 +568,7 @@ _DestTy* inclusive_scan(
 
 // FUNCTION TEMPLATE transform_exclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp, class _UnaryOp>
-_OutIt transform_exclusive_scan(
+_CONSTEXPR20 _OutIt transform_exclusive_scan(
     const _InIt _First, const _InIt _Last, _OutIt _Dest, _Ty _Val, _BinOp _Reduce_op, _UnaryOp _Transform_op) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of transformed predecessors
     _Adl_verify_range(_First, _Last);
@@ -595,8 +595,8 @@ _OutIt transform_exclusive_scan(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp, class _UnaryOp>
-_DestTy* transform_exclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val,
-    _BinOp _Reduce_op, _UnaryOp _Transform_op) {
+_CONSTEXPR20 _DestTy* transform_exclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize],
+    _Ty _Val, _BinOp _Reduce_op, _UnaryOp _Transform_op) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of transformed predecessors
     return _STD transform_exclusive_scan(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _STD move(_Val),
         _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op))
