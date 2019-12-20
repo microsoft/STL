@@ -1231,7 +1231,7 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
             _Beta = _Wr * (_Zi / _Alfa) + _Zr;
         } else if (_Wi < -_Arcbig) { // imag part of w large negative
             _Alfa = -_Wi;
-            _Beta = _Wr * (_Zi / _Alfa) + _Zr;
+            _Beta = _Wr * (_Zi / _Alfa) - _Zr;
         } else { // shouldn't overflow
             _Alfa = 0;
             _Beta = _Wr * _Zi + _Wi * _Zr; // Im(w * z)
@@ -1239,7 +1239,7 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
 
         _Vx = _Ctraits<_Ty>::asinh(_Beta);
         if (_Alfa != 0) {
-            if (0 <= _Ux) {
+            if (0 <= _Vx) {
                 _Vx += _Ctraits<_Ty>::log(_Alfa);
             } else {
                 _Vx -= _Ctraits<_Ty>::log(_Alfa); // asinh(a*b) = asinh(a)+log(b)
@@ -1302,7 +1302,7 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
             _Beta = _Wr * (_Zr / _Alfa) - _Zi;
         } else if (_Wi < -_Arcbig) { // imag part of w large negative
             _Alfa = -_Wi;
-            _Beta = _Wr * (_Zr / _Alfa) - _Zi;
+            _Beta = _Wr * (_Zr / _Alfa) + _Zi;
         } else { // shouldn't overflow
             _Alfa = 0;
             _Beta = _Wr * _Zr - _Wi * _Zi; // Re(w * z)
@@ -1377,7 +1377,7 @@ _NODISCARD complex<_Ty> asinh(const complex<_Ty>& _Left) {
             _Beta = _Zr - _Wr * (_Zi / _Alfa);
         } else if (_Wi < -_Arcbig) { // imag part of w large negative
             _Alfa = -_Wi;
-            _Beta = _Zr - _Wr * (_Zi / _Alfa);
+            _Beta = -_Zr - _Wr * (_Zi / _Alfa);
         } else { // shouldn't overflow
             _Alfa = 0;
             _Beta = _Wi * _Zr - _Wr * _Zi; // Im(w * conj(z))
