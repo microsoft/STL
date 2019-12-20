@@ -165,6 +165,7 @@
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
+// P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1754R1 Rename Concepts To standard_case
@@ -990,6 +991,7 @@
 #endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
+#define __cpp_lib_constexpr_numeric        201911L
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
