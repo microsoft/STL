@@ -197,7 +197,7 @@ inline constexpr bool _Default_ops_transform_reduce_v = false;
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
 
 template <class _InIt1, class _InIt2, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _Ty transform_reduce(
+_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
     // return commutative and associative transform-reduction of sequences, using
     // _Reduce_op and _Transform_op
@@ -207,22 +207,26 @@ _NODISCARD _Ty transform_reduce(
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     if constexpr (_Default_ops_transform_reduce_v<_Unwrapped_t<const _InIt1&>, _Unwrapped_t<const _InIt2&>, _Ty,
                       _BinOp1, _BinOp2>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
-        (void) _Transform_op; // TRANSITION, VSO-486357
-        return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
-    } else {
-        for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            (void) _Reduce_op; // TRANSITION, VSO-486357
+            (void) _Transform_op; // TRANSITION, VSO-486357
+            return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
         }
-
-        return _Val;
     }
+    for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+    }
+
+    return _Val;
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _Ty transform_reduce(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val,
-    _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
+_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(const _InIt1 _First1, const _InIt1 _Last1,
+    _RightTy (&_First2)[_RightSize], _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
     // return commutative and associative transform-reduction of
     // sequences, using _Reduce_op and _Transform_op
     return _STD transform_reduce(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _STD move(_Val),
@@ -231,21 +235,22 @@ _NODISCARD _Ty transform_reduce(const _InIt1 _First1, const _InIt1 _Last1, _Righ
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _Ty>
-_NODISCARD _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
+_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
     return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty>
-_NODISCARD _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
+_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
+    _InIt1 _First1, _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
     return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _Ty, class _BinOp, class _UnaryOp>
-_NODISCARD _Ty transform_reduce(
+_NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     const _InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op, _UnaryOp _Transform_op) {
     // return commutative and associative reduction of transformed sequence, using
     // _Reduce_op and _Transform_op
