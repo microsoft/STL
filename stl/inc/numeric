@@ -75,20 +75,25 @@ _NODISCARD _CONSTEXPR20_ICE _Ty reduce(const _InIt _First, const _InIt _Last, _T
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
+    if (_STD is_constant_evaluated()) {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
+        }
+        return _Val;
+    } else
 #endif // __cpp_lib_is_constant_evaluated
-        {
+    {
+        if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
             (void) _Reduce_op; // TRANSITION, VSO-486357
             return _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
+        } else {
+            for (; _UFirst != _ULast; ++_UFirst) {
+                _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
+            }
+            return _Val;
         }
     }
-    for (; _UFirst != _ULast; ++_UFirst) {
-        _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
-    }
-
-    return _Val;
 }
 
 template <class _InIt, class _Ty>
@@ -205,22 +210,28 @@ _NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-    if constexpr (_Default_ops_transform_reduce_v<_Unwrapped_t<const _InIt1&>, _Unwrapped_t<const _InIt2&>, _Ty,
-                      _BinOp1, _BinOp2>) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
+    if (_STD is_constant_evaluated()) {
+        for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+        }
+        return _Val;
+    } else
 #endif // __cpp_lib_is_constant_evaluated
-        {
+    {
+        if constexpr (_Default_ops_transform_reduce_v<_Unwrapped_t<const _InIt1&>, _Unwrapped_t<const _InIt2&>, _Ty,
+                          _BinOp1, _BinOp2>) {
             (void) _Reduce_op; // TRANSITION, VSO-486357
             (void) _Transform_op; // TRANSITION, VSO-486357
             return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
+        } else {
+            for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+                _Val =
+                    _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+            }
+            return _Val;
         }
     }
-    for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
-    }
-
-    return _Val;
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
