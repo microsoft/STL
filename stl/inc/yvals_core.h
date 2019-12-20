@@ -474,9 +474,9 @@
 // Functions that became constexpr in C++20, and requires is_constant_evaluated
 #ifdef __cpp_lib_is_constant_evaluated
 #define _CONSTEXPR20_ICE constexpr
-#else // ^^^ constexpr witn is_constant_evaluated / vvv inline (not constexpr) without is_constant_evaluated vvv
-#define _CONSTEXPR20_ICE inline
-#endif // ^^^ inline (not constexpr) without is_constant_evaluated ^^^
+#else // ^^^ constexpr with is_constant_evaluated / vvv not constexpr without is_constant_evaluated vvv
+#define _CONSTEXPR20_ICE
+#endif // ^^^ not constexpr without is_constant_evaluated ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
