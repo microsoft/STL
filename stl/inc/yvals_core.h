@@ -869,13 +869,14 @@
 // P0768R1 [depr.relops]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
-#define _DEPRECATE_CXX20_REL_OPS                                                              \
-    [[deprecated("warning STL4027: "                                                          \
-                 "std::rel_ops is deprecated in C++20. It has been superseded by <compare>. " \
-                 "You can define _SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING or "              \
+#define _CXX20_DEPRECATE_REL_OPS                                                                \
+    [[deprecated("warning STL4027: "                                                            \
+                 "The namespace std::rel_ops and its contents are deprecated in C++20. "        \
+                 "Their use has been superseded by <compare> in conjunction with operator<=>. " \
+                 "You can define _SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING or "                \
                  "_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_CXX20_REL_OPS
+#define _CXX20_DEPRECATE_REL_OPS
 #endif // ^^^ warning disabled ^^^
 
 // next warning number: STL4028

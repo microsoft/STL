@@ -355,24 +355,24 @@ _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1
     return _Mypair(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
 }
 
-namespace _DEPRECATE_CXX20_REL_OPS rel_ops {
+namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
     template <class _Ty>
-    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left == _Right);
     }
 
     template <class _Ty>
-    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
         return _Right < _Left;
     }
 
     template <class _Ty>
-    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Right < _Left);
     }
 
     template <class _Ty>
-    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left < _Right);
     }
 } // namespace rel_ops
