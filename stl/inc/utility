@@ -355,7 +355,7 @@ _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1
     return _Mypair(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
 }
 
-namespace _DEPRECATE_CXX20_REL_OPS rel_ops { // nested namespace to hide relational operators from std
+namespace _DEPRECATE_CXX20_REL_OPS rel_ops {
     template <class _Ty>
     _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left == _Right);
