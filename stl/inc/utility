@@ -357,22 +357,22 @@ _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1
 
 namespace rel_ops { // nested namespace to hide relational operators from std
     template <class _Ty>
-    _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
+    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left == _Right);
     }
 
     template <class _Ty>
-    _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
+    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
         return _Right < _Left;
     }
 
     template <class _Ty>
-    _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
+    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Right < _Left);
     }
 
     template <class _Ty>
-    _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
+    _DEPRECATE_CXX20_REL_OPS _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left < _Right);
     }
 } // namespace rel_ops
