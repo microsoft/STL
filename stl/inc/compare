@@ -474,7 +474,7 @@ struct common_comparison_category {
 template <class... _Types>
 using common_comparison_category_t = typename common_comparison_category<_Types...>::type;
 
-#ifdef __cpp_lib_concepts
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 // clang-format off
 template <class _Ty, class _Cat>
 concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
@@ -518,7 +518,7 @@ struct compare_three_way {
     using is_transparent = int;
 };
 // clang-format on
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
 // Other components not yet implemented
 _STD_END
