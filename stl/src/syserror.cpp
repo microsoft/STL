@@ -20,6 +20,7 @@ static const _Win_errtab_t _Win_errtab[] = {
     {ERROR_ACCESS_DENIED, errc::permission_denied},
     {ERROR_ALREADY_EXISTS, errc::file_exists},
     {ERROR_BAD_UNIT, errc::no_such_device},
+    {ERROR_BROKEN_PIPE, errc::broken_pipe},
     {ERROR_BUFFER_OVERFLOW, errc::filename_too_long},
     {ERROR_BUSY, errc::device_or_resource_busy},
     {ERROR_BUSY_DRIVE, errc::device_or_resource_busy},
