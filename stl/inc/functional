@@ -334,7 +334,7 @@ private:
 
 // FUNCTION TEMPLATE not1
 template <class _Fn>
-_NODISCARD _CXX17_DEPRECATE_NEGATORS constexpr unary_negate<_Fn> not1(const _Fn& _Func) {
+_CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr unary_negate<_Fn> not1(const _Fn& _Func) {
     return unary_negate<_Fn>(_Func);
 }
 
@@ -358,7 +358,7 @@ private:
 
 // FUNCTION TEMPLATE not2
 template <class _Fn>
-_NODISCARD _CXX17_DEPRECATE_NEGATORS constexpr binary_negate<_Fn> not2(const _Fn& _Func) {
+_CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr binary_negate<_Fn> not2(const _Fn& _Func) {
     return binary_negate<_Fn>(_Func);
 }
 _STL_RESTORE_DEPRECATED_WARNING
