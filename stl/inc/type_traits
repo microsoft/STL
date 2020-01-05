@@ -1683,11 +1683,11 @@ struct _Invoke_traits { // selected when _Callable isn't callable with _Args
 };
 
 template <class... _Types>
-struct _Invoke_traits<void_t<decltype(_STD invoke(_STD declval<_Types>()...))>,
+struct _Invoke_traits<void_t<decltype(_STD _Invoker<_Types...>::_Call(_STD declval<_Types>()...))>,
     _Types...> { // selected when _Callable is callable with _Args
-    using type                  = decltype(_STD invoke(_STD declval<_Types>()...));
+    using type                  = decltype(_STD _Invoker<_Types...>::_Call(_STD declval<_Types>()...));
     using _Is_invocable         = true_type;
-    using _Is_nothrow_invocable = bool_constant<noexcept(_STD invoke(_STD declval<_Types>()...))>;
+    using _Is_nothrow_invocable = bool_constant<noexcept(_STD _Invoker<_Types...>::_Call(_STD declval<_Types>()...))>;
     template <class _Rx>
     using _Is_invocable_r = bool_constant<disjunction_v<is_void<_Rx>, is_convertible<type, _Rx>>>;
     template <class _Rx>
