@@ -660,7 +660,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     switch (_Last_error) {
     case __std_win_error::_Invalid_parameter: // Older Windows versions
     case __std_win_error::_Invalid_function: // Windows 10 1607
-    case __std_win_error::_Not_supported: // Current Windows versions on ReFS (DevCom-857535)
+    case __std_win_error::_Not_supported: // POSIX delete not supported by the file system (e.g. DevCom-857535)
         break; // try non-POSIX delete below
     default:
         return {false, _Last_error};
