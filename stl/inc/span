@@ -533,8 +533,10 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
             _STL_VERIFY(_Offset <= this->size(), "Offset out of range in span::subspan()");
-            _STL_VERIFY(
-                _Count == dynamic_extent || _Count <= this->size() - _Offset, "Count out of range in span::subspan()");
+
+            if constexpr (_Count != dynamic_extent) {
+                _STL_VERIFY(_Count <= this->size() - _Offset, "Count out of range in span::subspan()");
+            }
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return {_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
