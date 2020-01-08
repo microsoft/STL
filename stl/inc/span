@@ -400,7 +400,7 @@ public:
 
     template <size_t _Size>
         requires (_Extent == dynamic_extent || _Extent == _Size)
-    constexpr span(element_type (&_Arr)[_Size]) noexcept : _Mybase(_Size), _Mydata(_Arr) {}
+    constexpr span(type_identity_t<element_type> (&_Arr)[_Size]) noexcept : _Mybase(_Size), _Mydata(_Arr) {}
 
     template <size_t _Size>
         requires (_Extent == dynamic_extent || _Extent == _Size)
