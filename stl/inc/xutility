@@ -833,10 +833,6 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out> && writable<
 // CUSTOMIZATION POINT OBJECT iter_swap
 namespace ranges {
     namespace _Iter_swap {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void iter_swap();
-#endif // TRANSITION, VSO-895622
-
         template <class _Ty1, class _Ty2>
         void iter_swap(_Ty1, _Ty2) = delete;
 
@@ -2081,10 +2077,6 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::begin
     namespace _Begin {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void begin();
-#endif // TRANSITION, VSO-895622
-
         template <class _Ty>
         void begin(_Ty&&) = delete;
         template <class _Ty>
@@ -2147,10 +2139,6 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void end();
-#endif // TRANSITION, VSO-895622
-
         template <class _Ty>
         void end(_Ty&&) = delete;
         template <class _Ty>
@@ -2282,10 +2270,6 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void rbegin();
-#endif // TRANSITION, VSO-895622
-
         template <class _Ty>
         void rbegin(_Ty&&) = delete;
         template <class _Ty>
@@ -2355,10 +2339,6 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void rend();
-#endif // TRANSITION, VSO-895622
-
         template <class _Ty>
         void rend(_Ty&&) = delete;
         template <class _Ty>
@@ -2464,10 +2444,6 @@ namespace ranges {
 
     // CUSTOMIZATION POINT OBJECT ranges::size
     namespace _Size {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void size();
-#endif // TRANSITION, VSO-895622
-
         template <class _Ty>
         void size(_Ty&&) = delete;
 
