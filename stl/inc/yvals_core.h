@@ -993,9 +993,9 @@
 #define __cpp_lib_is_constant_evaluated 201811L
 #endif // TRANSITION, VS 2019 16.5 Preview 2
 
+#define __cpp_lib_is_nothrow_convertible  201806L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
-#define __cpp_lib_nothrow_convertible     201806L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_shift                   201806L
 #define __cpp_lib_ssize                   201902L
