@@ -76,6 +76,7 @@ _NODISCARD _CONSTEXPR20_ICE _Ty reduce(const _InIt _First, const _InIt _Last, _T
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
 #ifdef __cpp_lib_is_constant_evaluated
+    // TRANSITION, DevCom-878972
     if (_STD is_constant_evaluated()) {
         for (; _UFirst != _ULast; ++_UFirst) {
             _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
@@ -211,6 +212,7 @@ _NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
 #ifdef __cpp_lib_is_constant_evaluated
+    // TRANSITION, DevCom-878972
     if (_STD is_constant_evaluated()) {
         for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
             _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
