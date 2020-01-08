@@ -1348,7 +1348,8 @@ _NODISCARD constexpr _Distance_unknown _Idl_distance1(const _Iter&, const _Iter&
 }
 
 template <class _Checked, class _Iter>
-_NODISCARD constexpr _Iter_diff_t<_Checked> _Idl_distance1(const _Iter& _First, const _Iter& _Last, random_access_iterator_tag) {
+_NODISCARD constexpr _Iter_diff_t<_Checked> _Idl_distance1(
+    const _Iter& _First, const _Iter& _Last, random_access_iterator_tag) {
     // _Idl_distance for random-access iterators
     return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
 }
