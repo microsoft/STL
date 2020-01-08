@@ -1011,10 +1011,10 @@
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
-// Functions that became constexpr in C++20, and requires is_constant_evaluated
+// Functions that became constexpr in C++20, and require is_constant_evaluated
 #ifdef __cpp_lib_is_constant_evaluated
 #define _CONSTEXPR20_ICE constexpr
-#else // ^^^ constexpr with is_constant_evaluated / vvv not constexpr without is_constant_evaluated vvv
+#else // ^^^ constexpr with is_constant_evaluated / not constexpr without is_constant_evaluated vvv
 #define _CONSTEXPR20_ICE
 #endif // ^^^ not constexpr without is_constant_evaluated ^^^
 
