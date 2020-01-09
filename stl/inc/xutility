@@ -1330,7 +1330,7 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 // FUNCTION TEMPLATE _Idl_distance
 #if _HAS_IF_CONSTEXPR
 template <class _Checked, class _Iter>
-auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
+_NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     // tries to get the distance between _First and _Last if they are random-access iterators
     if constexpr (_Is_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
@@ -1342,19 +1342,20 @@ auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _Checked, class _Iter>
-_Distance_unknown _Idl_distance1(const _Iter&, const _Iter&, input_iterator_tag) {
+_NODISCARD constexpr _Distance_unknown _Idl_distance1(const _Iter&, const _Iter&, input_iterator_tag) {
     // _Idl_distance for non-random-access iterators
     return {};
 }
 
 template <class _Checked, class _Iter>
-_Iter_diff_t<_Checked> _Idl_distance1(const _Iter& _First, const _Iter& _Last, random_access_iterator_tag) {
+_NODISCARD constexpr _Iter_diff_t<_Checked> _Idl_distance1(
+    const _Iter& _First, const _Iter& _Last, random_access_iterator_tag) {
     // _Idl_distance for random-access iterators
     return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
 }
 
 template <class _Checked, class _Iter>
-auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
+_NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     // tries to get the distance between _First and _Last if they are random-access iterators
     return _Idl_distance1<_Checked>(_First, _Last, _Iter_cat_t<_Iter>());
 }

@@ -165,6 +165,7 @@
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
+// P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1754R1 Rename Concepts To standard_case
@@ -1016,12 +1017,23 @@
 #define __cpp_lib_to_array                201907L
 #define __cpp_lib_type_identity           201806L
 #define __cpp_lib_unwrap_ref              201811L
+
+#ifdef __cpp_lib_is_constant_evaluated
+#define __cpp_lib_constexpr_numeric 201911L
+#endif // __cpp_lib_is_constant_evaluated
+
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
+// Functions that became constexpr in C++20, and require is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated
+#define _CONSTEXPR20_ICE constexpr
+#else // ^^^ constexpr with is_constant_evaluated / inline without is_constant_evaluated vvv
+#define _CONSTEXPR20_ICE inline
+#endif // __cpp_lib_is_constant_evaluated
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
