@@ -984,7 +984,6 @@
 #endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
-#define __cpp_lib_constexpr_numeric        201911L
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
@@ -1005,6 +1004,11 @@
 #define __cpp_lib_to_array                201907L
 #define __cpp_lib_type_identity           201806L
 #define __cpp_lib_unwrap_ref              201811L
+
+#ifdef __cpp_lib_is_constant_evaluated
+#define __cpp_lib_constexpr_numeric 201911L
+#endif // __cpp_lib_is_constant_evaluated
+
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
