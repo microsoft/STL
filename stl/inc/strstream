@@ -34,8 +34,14 @@ public:
     }; // set if character array ownership given away
     using _Strstate = int;
 
-    explicit __CLR_OR_THIS_CALL strstreambuf(streamsize _Count = 0) {
-        // construct with empty character array, suggested initial size
+    // construct with empty character array
+    __CLR_OR_THIS_CALL strstreambuf() {
+        // construct with empty character array
+        _Init(0);
+    }
+
+    explicit __CLR_OR_THIS_CALL strstreambuf(streamsize _Count) {
+        // construct with suggested initial size
         _Init(_Count);
     }
 
