@@ -37,6 +37,9 @@ language.support\support.exception\except.nested\rethrow_if_nested.pass.cpp
 # Testing nonstandard behavior
 utilities\template.bitset\bitset.cons\string_ctor.pass.cpp
 
+# This test has undefined behavior under N4842 [basic.start.term]/6
+thread\futures\futures.task\futures.task.members\dtor.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
