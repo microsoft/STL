@@ -118,7 +118,7 @@ struct pointer_traits<_Ty*> {
 
     using _Reftype = conditional_t<is_void_v<_Ty>, char, _Ty>&;
 
-    _NODISCARD static pointer pointer_to(_Reftype _Val) noexcept {
+    _NODISCARD static _CONSTEXPR20 pointer pointer_to(_Reftype _Val) noexcept {
         return _STD addressof(_Val);
     }
 };
