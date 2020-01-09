@@ -35,7 +35,12 @@ public:
     using off_type   = typename _Traits::off_type;
     using state_type = typename _Codecvt::state_type;
 
-    explicit wbuffer_convert(_Mysb* _Strbuf = nullptr)
+    wbuffer_convert() : _State(), _Pcvt(new _Codecvt), _Mystrbuf(nullptr), _Status(_Unused), _Nback(0) {
+        // construct without buffer pointer
+        _Loc = locale(_Loc, _Pcvt);
+    }
+
+    explicit wbuffer_convert(_Mysb* _Strbuf)
         : _State(), _Pcvt(new _Codecvt), _Mystrbuf(_Strbuf), _Status(_Unused),
           _Nback(0) { // construct with byte stream buffer pointer
         _Loc = locale(_Loc, _Pcvt);
