@@ -449,7 +449,10 @@ public:
 
     static constexpr result_type default_seed = 1u;
 
-    explicit linear_congruential_engine(result_type _Sx = default_seed) noexcept // strengthened
+    linear_congruential_engine() noexcept // strengthened
+        : _Prev(_Get_linear_congruential_seed<result_type, _Cx, _Mx>(default_seed)) {}
+
+    explicit linear_congruential_engine(result_type _Sx) noexcept // strengthened
         : _Prev(_Get_linear_congruential_seed<result_type, _Cx, _Mx>(_Sx)) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, linear_congruential_engine> = 0>
@@ -527,7 +530,10 @@ public:
     static constexpr _Uint increment  = _Cx;
     static constexpr _Uint modulus    = _Mx;
 
-    explicit linear_congruential(_Uint _X0 = 1u) noexcept // strengthened
+    linear_congruential() noexcept // strengthened
+        : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(1u)) {}
+
+    explicit linear_congruential(_Uint _X0) noexcept // strengthened
         : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_X0)) {}
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, linear_congruential> = 0>
@@ -898,7 +904,9 @@ public:
 
     using _Mybase::default_seed;
 
-    explicit subtract_with_carry(_Ty _X0 = default_seed) : _Mybase(_X0) {}
+    subtract_with_carry() : _Mybase(default_seed) {}
+
+    explicit subtract_with_carry(_Ty _X0) : _Mybase(_X0) {}
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry> = 0>
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
@@ -925,7 +933,9 @@ public:
 
     using _Mybase::default_seed;
 
-    explicit subtract_with_carry_engine(_Ty _X0 = default_seed) : _Mybase(_X0) {}
+    subtract_with_carry_engine() : _Mybase(default_seed) {}
+
+    explicit subtract_with_carry_engine(_Ty _X0) : _Mybase(_X0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
     explicit subtract_with_carry_engine(_Seed_seq& _Seq) : _Mybase() {
@@ -1087,8 +1097,11 @@ public:
 
     static constexpr _Ty default_seed = 5489U;
 
-    explicit mersenne_twister(_Ty _X0 = default_seed, _Ty _Dxarg = _WMSK, _Ty _Fxarg = static_cast<_Ty>(1812433253))
-        : _Dxval(_Dxarg) {
+    mersenne_twister() : _Dxval(_WMSK) {
+        seed(default_seed, static_cast<_Ty>(1812433253));
+    }
+
+    explicit mersenne_twister(_Ty _X0, _Ty _Dxarg = _WMSK, _Ty _Fxarg = static_cast<_Ty>(1812433253)) : _Dxval(_Dxarg) {
         seed(_X0, _Fxarg);
     }
 
@@ -1250,7 +1263,9 @@ public:
 
     static constexpr result_type default_seed = 5489U;
 
-    explicit mersenne_twister_engine(result_type _X0 = default_seed) : _Mybase(_X0, _Dx, _Fx) {}
+    mersenne_twister_engine() : _Mybase(default_seed, _Dx, _Fx) {}
+
+    explicit mersenne_twister_engine(result_type _X0) : _Mybase(_X0, _Dx, _Fx) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
     explicit mersenne_twister_engine(_Seed_seq& _Seq) : _Mybase(default_seed, _Dx, _Fx) {
@@ -1751,7 +1766,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_int;
 
-        explicit param_type(result_type _Min0 = 0, result_type _Max0 = 9) {
+        param_type() {
+            _Init(0, 9);
+        }
+
+        explicit param_type(result_type _Min0, result_type _Max0 = 9) {
             _Init(_Min0, _Max0);
         }
 
@@ -1781,7 +1800,9 @@ public:
         result_type _Max;
     };
 
-    explicit uniform_int(_Ty _Min0 = 0, _Ty _Max0 = 9) : _Par(_Min0, _Max0) {}
+    uniform_int() : _Par(0, 9) {}
+
+    explicit uniform_int(_Ty _Min0, _Ty _Max0 = 9) : _Par(_Min0, _Max0) {}
 
     explicit uniform_int(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -1908,14 +1929,17 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_int_distribution;
 
-        explicit param_type(result_type _Min0 = 0, result_type _Max0 = (numeric_limits<_Ty>::max)())
+        param_type() : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
+
+        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)())
             : _Mypbase(_Min0, _Max0) {}
 
         param_type(const _Mypbase& _Right) : _Mypbase(_Right) {}
     };
 
-    explicit uniform_int_distribution(_Ty _Min0 = 0, _Ty _Max0 = (numeric_limits<_Ty>::max)())
-        : _Mybase(_Min0, _Max0) {}
+    uniform_int_distribution() : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
+
+    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) : _Mybase(_Min0, _Max0) {}
 
     explicit uniform_int_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
 };
@@ -1938,7 +1962,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = bernoulli_distribution;
 
-        explicit param_type(double _P0 = 0.5) {
+        param_type() {
+            _Init(0.5);
+        }
+
+        explicit param_type(double _P0) {
             _Init(_P0);
         }
 
@@ -1963,7 +1991,9 @@ public:
         double _Px;
     };
 
-    explicit bernoulli_distribution(double _P0 = 0.5) : _Par(_P0) {}
+    bernoulli_distribution() : _Par(0.5) {}
+
+    explicit bernoulli_distribution(double _P0) : _Par(_P0) {}
 
     explicit bernoulli_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2056,7 +2086,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = geometric_distribution;
 
-        explicit param_type(_Ty1 _P0 = _Ty1(0.5)) {
+        param_type() {
+            _Init(_Ty1(0.5));
+        }
+
+        explicit param_type(_Ty1 _P0) {
             _Init(_P0);
         }
 
@@ -2082,7 +2116,9 @@ public:
         _Ty1 _Log_1_p;
     };
 
-    explicit geometric_distribution(_Ty1 _P0 = _Ty1(0.5)) : _Par(_P0) {}
+    geometric_distribution() : _Par(_Ty1(0.5)) {}
+
+    explicit geometric_distribution(_Ty1 _P0) : _Par(_P0) {}
 
     explicit geometric_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2204,7 +2240,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = poisson_distribution;
 
-        explicit param_type(_Ty1 _Mean0 = _Ty1(1)) {
+        param_type() {
+            _Init(_Ty1(1));
+        }
+
+        explicit param_type(_Ty1 _Mean0) {
             _Init(_Mean0);
         }
 
@@ -2237,7 +2277,9 @@ public:
         _Small_poisson_distribution<_Ty> _Small;
     };
 
-    explicit poisson_distribution(_Ty1 _Mean0 = _Ty1(1)) : _Par(_Mean0) {}
+    poisson_distribution() : _Par(_Ty1(1)) {}
+
+    explicit poisson_distribution(_Ty1 _Mean0) : _Par(_Mean0) {}
 
     explicit poisson_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2352,7 +2394,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = binomial_distribution;
 
-        explicit param_type(_Ty _T0 = 1, _Ty1 _P0 = _Ty1(0.5)) {
+        param_type() {
+            _Init(1, _Ty1(0.5));
+        }
+
+        explicit param_type(_Ty _T0, _Ty1 _P0 = _Ty1(0.5)) {
             _Init(_T0, _P0);
         }
 
@@ -2398,7 +2444,9 @@ public:
         _Small_poisson_distribution<_Ty> _Small;
     };
 
-    explicit binomial_distribution(_Ty _T0 = 1, _Ty1 _P0 = _Ty1(0.5)) : _Par(_T0, _P0) {}
+    binomial_distribution() : _Par(1, _Ty1(0.5)) {}
+
+    explicit binomial_distribution(_Ty _T0, _Ty1 _P0 = _Ty1(0.5)) : _Par(_T0, _P0) {}
 
     explicit binomial_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2528,7 +2576,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = uniform_real;
 
-        explicit param_type(_Ty _Min0 = _Ty{0}, _Ty _Max0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{0}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) {
             _Init(_Min0, _Max0);
         }
 
@@ -2559,7 +2611,9 @@ public:
         result_type _Max;
     };
 
-    explicit uniform_real(_Ty _Min0 = _Ty{0}, _Ty _Max0 = _Ty{1}) : _Par(_Min0, _Max0) {}
+    uniform_real() : _Par(_Ty{0}, _Ty{1}) {}
+
+    explicit uniform_real(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Par(_Min0, _Max0) {}
 
     explicit uniform_real(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2651,12 +2705,16 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_real_distribution;
 
-        explicit param_type(_Ty _Min0 = _Ty{0}, _Ty _Max0 = _Ty{1}) : _Mypbase(_Min0, _Max0) {}
+        param_type() : _Mypbase(_Ty{0}, _Ty{1}) {}
+
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Mypbase(_Min0, _Max0) {}
 
         param_type(const _Mypbase& _Right) : _Mypbase(_Right) {}
     };
 
-    explicit uniform_real_distribution(_Ty _Min0 = _Ty{0}, _Ty _Max0 = _Ty{1}) : _Mybase(_Min0, _Max0) {}
+    uniform_real_distribution() : _Mybase(_Ty{0}, _Ty{1}) {}
+
+    explicit uniform_real_distribution(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Mybase(_Min0, _Max0) {}
 
     explicit uniform_real_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
 };
@@ -2682,7 +2740,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = exponential_distribution;
 
-        explicit param_type(_Ty _Lambda0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{1});
+        }
+
+        explicit param_type(_Ty _Lambda0) {
             _Init(_Lambda0);
         }
 
@@ -2706,7 +2768,9 @@ public:
         _Ty _Lambda;
     };
 
-    explicit exponential_distribution(_Ty _Lambda0 = _Ty{1}) : _Par(_Lambda0) {}
+    exponential_distribution() : _Par(_Ty{1}) {}
+
+    explicit exponential_distribution(_Ty _Lambda0) : _Par(_Lambda0) {}
 
     explicit exponential_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2799,7 +2863,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = normal_distribution;
 
-        explicit param_type(_Ty _Mean0 = 0.0, _Ty _Sigma0 = 1.0) {
+        param_type() {
+            _Init(0.0, 1.0);
+        }
+
+        explicit param_type(_Ty _Mean0, _Ty _Sigma0 = 1.0) {
             _Init(_Mean0, _Sigma0);
         }
 
@@ -2833,7 +2901,9 @@ public:
         _Ty _Sigma;
     };
 
-    explicit normal_distribution(_Ty _Mean0 = 0.0, _Ty _Sigma0 = 1.0) : _Par(_Mean0, _Sigma0), _Valid(false), _X2(0) {}
+    normal_distribution() : _Par(0.0, 1.0), _Valid(false), _X2(0) {}
+
+    explicit normal_distribution(_Ty _Mean0, _Ty _Sigma0 = 1.0) : _Par(_Mean0, _Sigma0), _Valid(false), _X2(0) {}
 
     explicit normal_distribution(const param_type& _Par0) : _Par(_Par0), _Valid(false), _X2(0) {}
 
@@ -2973,7 +3043,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = gamma_distribution;
 
-        explicit param_type(_Ty _Alpha0 = _Ty{1}, _Ty _Beta0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{1}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) {
             _Init(_Alpha0, _Beta0);
         }
 
@@ -3009,7 +3083,9 @@ public:
         exponential_distribution<_Ty> _Exp;
     };
 
-    explicit gamma_distribution(_Ty _Alpha0 = _Ty{1}, _Ty _Beta0 = _Ty{1}) : _Par(_Alpha0, _Beta0) {}
+    gamma_distribution() : _Par(_Ty{1}, _Ty{1}) {}
+
+    explicit gamma_distribution(_Ty _Alpha0, _Ty _Beta0 = _Ty{1}) : _Par(_Alpha0, _Beta0) {}
 
     explicit gamma_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3164,7 +3240,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = weibull_distribution;
 
-        explicit param_type(_Ty _A0 = _Ty{1}, _Ty _B0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{1}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _A0, _Ty _B0 = _Ty{1}) {
             _Init(_A0, _B0);
         }
 
@@ -3195,7 +3275,9 @@ public:
         _Ty _Bx;
     };
 
-    explicit weibull_distribution(_Ty _A0 = _Ty{1}, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
+    weibull_distribution() : _Par(_Ty{1}, _Ty{1}) {}
+
+    explicit weibull_distribution(_Ty _A0, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
 
     explicit weibull_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3296,7 +3378,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = extreme_value_distribution;
 
-        explicit param_type(_Ty _A0 = _Ty{0}, _Ty _B0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{0}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _A0, _Ty _B0 = _Ty{1}) {
             _Init(_A0, _B0);
         }
 
@@ -3326,7 +3412,9 @@ public:
         _Ty _Bx;
     };
 
-    explicit extreme_value_distribution(_Ty _A0 = _Ty{0}, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
+    extreme_value_distribution() : _Par(_Ty{0}, _Ty{1}) {}
+
+    explicit extreme_value_distribution(_Ty _A0, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
 
     explicit extreme_value_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3429,7 +3517,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = lognormal_distribution;
 
-        explicit param_type(_Ty _M0 = _Ty{0}, _Ty _S0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{0}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _M0, _Ty _S0 = _Ty{1}) {
             _Init(_M0, _S0);
         }
 
@@ -3459,7 +3551,9 @@ public:
         _Ty _Sx;
     };
 
-    explicit lognormal_distribution(_Ty _M0 = _Ty{0}, _Ty _S0 = _Ty{1}) : _Par(_M0, _S0) {}
+    lognormal_distribution() : _Par(_Ty{0}, _Ty{1}) {}
+
+    explicit lognormal_distribution(_Ty _M0, _Ty _S0 = _Ty{1}) : _Par(_M0, _S0) {}
 
     explicit lognormal_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3560,7 +3654,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = chi_squared_distribution;
 
-        explicit param_type(_Ty _N0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{1});
+        }
+
+        explicit param_type(_Ty _N0) {
             _Init(_N0);
         }
 
@@ -3584,7 +3682,9 @@ public:
         _Ty _Nx;
     };
 
-    explicit chi_squared_distribution(_Ty _N0 = _Ty{1}) : _Par(_N0) {}
+    chi_squared_distribution() : _Par(_Ty{1}) {}
+
+    explicit chi_squared_distribution(_Ty _N0) : _Par(_N0) {}
 
     explicit chi_squared_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3677,7 +3777,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = cauchy_distribution;
 
-        explicit param_type(_Ty _A0 = _Ty{0}, _Ty _B0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{0}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _A0, _Ty _B0 = _Ty{1}) {
             _Init(_A0, _B0);
         }
 
@@ -3707,7 +3811,9 @@ public:
         _Ty _Bx;
     };
 
-    explicit cauchy_distribution(_Ty _A0 = _Ty{0}, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
+    cauchy_distribution() : _Par(_Ty{0}, _Ty{1}) {}
+
+    explicit cauchy_distribution(_Ty _A0, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
 
     explicit cauchy_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3858,7 +3964,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = fisher_f_distribution;
 
-        explicit param_type(_Ty _M0 = _Ty{1}, _Ty _N0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{1}, _Ty{1});
+        }
+
+        explicit param_type(_Ty _M0, _Ty _N0 = _Ty{1}) {
             _Init(_M0, _N0);
         }
 
@@ -3889,7 +3999,9 @@ public:
         _Ty _Nx;
     };
 
-    explicit fisher_f_distribution(_Ty _M0 = _Ty{1}, _Ty _N0 = _Ty{1}) : _Par(_M0, _N0) {}
+    fisher_f_distribution() : _Par(_Ty{1}, _Ty{1}) {}
+
+    explicit fisher_f_distribution(_Ty _M0, _Ty _N0 = _Ty{1}) : _Par(_M0, _N0) {}
 
     explicit fisher_f_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3995,7 +4107,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = student_t_distribution;
 
-        explicit param_type(_Ty _N0 = _Ty{1}) {
+        param_type() {
+            _Init(_Ty{1});
+        }
+
+        explicit param_type(_Ty _N0) {
             _Init(_N0);
         }
 
@@ -4019,7 +4135,9 @@ public:
         _Ty _Nx;
     };
 
-    explicit student_t_distribution(_Ty _N0 = _Ty{1}) : _Par(_N0) {}
+    student_t_distribution() : _Par(_Ty{1}) {}
+
+    explicit student_t_distribution(_Ty _N0) : _Par(_N0) {}
 
     explicit student_t_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -4127,7 +4245,11 @@ public:
     struct param_type { // parameter package
         using distribution_type = negative_binomial_distribution;
 
-        explicit param_type(_Ty _K0 = 1, double _P0 = 0.5) {
+        param_type() {
+            _Init(1, 0.5);
+        }
+
+        explicit param_type(_Ty _K0, double _P0 = 0.5) {
             _Init(_K0, _P0);
         }
 
@@ -4160,7 +4282,9 @@ public:
         double _Px;
     };
 
-    explicit negative_binomial_distribution(_Ty _K0 = 1, double _P0 = 0.5) : _Par(_K0, _P0) {}
+    negative_binomial_distribution() : _Par(1, 0.5) {}
+
+    explicit negative_binomial_distribution(_Ty _K0, double _P0 = 0.5) : _Par(_K0, _P0) {}
 
     explicit negative_binomial_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -4945,7 +5069,7 @@ class random_device { // class to generate random numbers (from hardware where a
 public:
     using result_type = unsigned int;
 
-    explicit random_device() {}
+    random_device() {}
 
     explicit random_device(const string&) {}
 
