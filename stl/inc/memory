@@ -1823,8 +1823,7 @@ public:
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Ty2, class _Dx2,
         enable_if_t<
@@ -1952,8 +1951,7 @@ public:
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
