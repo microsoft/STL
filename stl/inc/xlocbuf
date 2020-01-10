@@ -41,20 +41,20 @@ public:
     }
 
     explicit wbuffer_convert(_Mysb* _Strbuf)
-        : _State(), _Pcvt(new _Codecvt), _Mystrbuf(_Strbuf), _Status(_Unused),
-          _Nback(0) { // construct with byte stream buffer pointer
+        : _State(), _Pcvt(new _Codecvt), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
+        // construct with byte stream buffer pointer
         _Loc = locale(_Loc, _Pcvt);
     }
 
     wbuffer_convert(_Mysb* _Strbuf, const _Codecvt* _Pcvt_arg)
-        : _State(), _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused),
-          _Nback(0) { // construct with byte stream buffer pointer and codecvt
+        : _State(), _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
+        // construct with byte stream buffer pointer and codecvt
         _Loc = locale(_Loc, _Pcvt);
     }
 
     wbuffer_convert(_Mysb* _Strbuf, const _Codecvt* _Pcvt_arg, state_type _State_arg)
-        : _State(_State_arg), _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused),
-          _Nback(0) { // construct with byte stream buffer pointer, codecvt, and state
+        : _State(_State_arg), _Pcvt(_Pcvt_arg), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
+        // construct with byte stream buffer pointer, codecvt, and state
         _Loc = locale(_Loc, _Pcvt);
     }
 
