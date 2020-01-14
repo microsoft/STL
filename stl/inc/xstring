@@ -4269,7 +4269,10 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     // return string + string
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
+    using _String_type = basic_string<_Elem, _Traits, _Alloc>;
+    // same as basic_string::_Alty_traits
+    using _Alty_traits = allocator_traits<typename allocator_traits<_Alloc>::template rebind_alloc<_Elem>>;
+    _String_type _Ans(_Alty_traits::select_on_container_copy_construction(_Left.get_allocator()));
     _Ans.reserve(_Left.size() + _Right.size());
     _Ans += _Left;
     _Ans += _Right;
