@@ -34,7 +34,8 @@ public:
         return _LeastMaxValue;
     }
     constexpr explicit counting_semaphore(ptrdiff_t _Desired) {
-        _STL_ASSERT(_Desired >= 0 && _Desired <= max(), "Desired value for the semaphore falls outside of semaphore range");
+        _STL_ASSERT(
+            _Desired >= 0 && _Desired <= max(), "Desired value for the semaphore falls outside of semaphore range");
         atomic_init(&_Counter, _Desired);
     }
     ~counting_semaphore()                         = default;
