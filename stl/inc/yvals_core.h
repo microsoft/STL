@@ -305,13 +305,11 @@
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__CUDACC__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION
-#elif defined(__clang__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694
-#else // vvv C1XX or non-CUDA EDG vvv
+#elif defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694/CUDA/ICC
+#else // vvv C1XX or IntelliSense vvv
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or non-CUDA EDG ^^^
+#endif // ^^^ C1XX or IntelliSense ^^^
 #endif // _HAS_CONDITIONAL_EXPLICIT
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
