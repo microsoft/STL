@@ -67,6 +67,8 @@ void _Uses_allocator_construct(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_all
         _STD forward<_Types>(_Args)...); // TRANSITION, if constexpr
 }
 
+#if !_HAS_CXX20
+
 template <class _Alloc, class... _Types>
 auto _Uses_allocator_piecewise2(true_type, _Alloc& _Al, tuple<_Types...>&& _Tuple) {
     return _STD tuple_cat(tuple<allocator_arg_t, _Alloc&>(allocator_arg, _Al), _STD move(_Tuple));
@@ -133,6 +135,8 @@ void _Uses_allocator_construct(
     _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Pair.second)));
 }
+
+#endif // !_HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {

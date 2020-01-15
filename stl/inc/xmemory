@@ -2068,6 +2068,101 @@ void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satis
         }
     }
 }
+
+#if _HAS_CXX20
+
+template <class>
+struct _Is_pair : false_type {};
+
+template <class _Ty1, class _Ty2>
+struct _Is_pair<pair<_Ty1, _Ty2>> : true_type {};
+
+template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_pair<_Ty>::value, int> = 0>
+auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) {
+    if constexpr (!uses_allocator_v<_Ty, _Alloc>) {
+        static_assert(is_constructible_v<_Ty, _Types...>,
+            "uses_allocator_v<_Ty, _Alloc> is false but _Ty is not constructible from _Types...");
+        return _STD forward_as_tuple(_STD forward<_Types>(_Args)...);
+    } else {
+        if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Types...>) {
+            using _Return_type = _STD tuple<allocator_arg_t, const _Alloc&, _Types&&...>;
+            return _ReturnType(allocator_arg, _Al, _STD forward<_Types>(_Args)...);
+        } else if constexpr (is_constructible_v<_Ty, _Types..., _Alloc>) {
+            return _STD forward_as_tuple(_STD forward<_Types>(_Args)..., _Al);
+        } else {
+            static_assert(
+                _Always_false<_Ty>, "uses_allocator_v<_Ty, _Alloc> is true but _Ty is not constructible with _Alloc");
+        }
+    }
+}
+
+template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_pair<_Ty>::value, int> = 0>
+auto uses_allocator_construction_args(const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) {
+    return _STD make_tuple(piecewise_construct,
+        _STD apply(
+            [&_Al](auto&& _Tuple_args) {
+                return uses_allocator_construction_args<typename _Ty::first_type>(
+                    _Al, _STD forward<decltype(_Tuple_args)>(_Tuple_args)...);
+            },
+            _STD forward<_Tuple1>(_Tup1)),
+        _STD apply(
+            [&_Al](auto&& _Tuple_args) {
+                return uses_allocator_construction_args<typename _Ty::second_type>(
+                    _Al, _STD forward<decltype(_Tuple_args)>(_Tuple_args)...);
+            },
+            _STD forward<_Tuple2>(_Tup2)));
+}
+
+template <class _Ty, class _Alloc, enable_if_t<_Is_pair<_Ty>::value, int> = 0>
+auto uses_allocator_construction_args(const _Alloc& _Al) {
+    // equivalent to
+    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>(), tuple<>());
+    return _STD make_tuple(piecewise_construct, uses_allocator_construction_args<typename _Ty::first_type>(_Al),
+        uses_allocator_construction_args<typename _Ty::second_type>(_Al));
+}
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_pair<_Ty>::value, int> = 0>
+auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) {
+    // equivalent to
+    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_STD forward<_Uty1>(_Val1)), _STD forward_as_tuple(_STD forward<_Uty2>(_Val2)));
+    return _STD make_tuple(piecewise_construct,
+        uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD forward<_Uty1>(_Val1)),
+        uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
+}
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_pair<_Ty>::value, int> = 0>
+auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) {
+    // equivalent to
+    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(pr.first), _STD forward_as_tuple(pr.second));
+    return _STD make_tuple(piecewise_construct,
+        uses_allocator_construction_args<typename _Ty::first_type>(_Al, _Pair.first),
+        uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
+}
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_pair<_Ty>::value, int> = 0>
+auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) {
+    // equivalent to
+    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_STD move(pr).first), _STD forward_as_tuple(_STD move(pr).second));
+    return _STD make_tuple(piecewise_construct,
+        uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD move(_Pair).first),
+        uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD move(_Pair).second));
+}
+
+template <class _Ty, class _Alloc, class... _Types>
+_Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
+    return _STD make_from_tuple<_Ty>(uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+}
+
+template <class _Ty, class _Alloc, class... _Types>
+_Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& _Al, _Types&&... _Args) {
+    return ::new (static_cast<void*>(_Ptr)) _Ty(make_obj_using_allocator<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+}
+
+#endif // _HAS_CXX20
+
 _STD_END
 
 #pragma pop_macro("new")
