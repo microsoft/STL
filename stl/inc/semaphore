@@ -42,17 +42,16 @@ public:
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(ptrdiff_t _Update = 1) {
-        _STL_ASSERT(_Update >= 0 && _Update <= (max() - _Counter.load()), "The semaphore has been released more times than acquired");
-        _Counter.fetch_add(_Update, memory_order_release);
+        _Counter.fetch_add(_Update, memory_order::release);
     }
     void acquire() {
         while (!try_acquire()) {
         }
     }
     bool try_acquire() noexcept {
-        ptrdiff_t _Old     = _Counter.load(memory_order_acquire);
+        ptrdiff_t _Old     = _Counter.load(memory_order::acquire);
         ptrdiff_t _Desired = _Old - 1;
-        if (_Old > 0 && _Counter.compare_exchange_strong(_Old, _Desired, memory_order_acquire)) {
+        if (_Old > 0 && _Counter.compare_exchange_strong(_Old, _Desired)) {
             return true;
         }
         return false;
@@ -64,7 +63,7 @@ public:
     template <class _Clock, class _Duration>
     bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         while (!try_acquire()) {
-            if (_Clock::now() > _Abs_time) {
+            if (_Clock::now() >= _Abs_time) {
                 return false;
             }
         }
@@ -72,7 +71,7 @@ public:
     }
 
 private:
-    atomic_ptrdiff_t _Counter;
+    atomic<ptrdiff_t> _Counter;
 };
 using binary_semaphore = counting_semaphore<1>;
 _STD_END
