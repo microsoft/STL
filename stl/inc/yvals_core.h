@@ -1025,6 +1025,8 @@
 #define __cpp_lib_constexpr_numeric 201911L
 #endif // __cpp_lib_is_constant_evaluated
 
+#define __cpp_lib_semaphore 201907L
+
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
