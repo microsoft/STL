@@ -51,8 +51,9 @@ public:
         }
     }
     bool try_acquire() noexcept {
-        if (__counter.load(memory_order_acquire) > 0) {
-            __counter--;
+        ptrdiff_t __old     = __counter.load(memory_order_acquire);
+        ptrdiff_t __desired = __old - 1;
+        if (__old > 0 && __counter.compare_exchange_strong(__old, __desired, memory_order_acquire)) {
             return true;
         }
         return false;
