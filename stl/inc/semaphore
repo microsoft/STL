@@ -33,39 +33,38 @@ public:
         // _LeastMaxValue is used here so that things such as binary_semaphore are
         return _LeastMaxValue;
     }
-    constexpr explicit counting_semaphore(ptrdiff_t __desired) {
-        assert(__desired >= 0 && __desired <= max());
-        atomic_init(&__counter, __desired);
+    constexpr explicit counting_semaphore(ptrdiff_t _Desired) {
+        _STL_ASSERT(_Desired >= 0 && _Desired <= max(), "Desired value for the semaphore falls outside of semaphore range");
+        atomic_init(&_Counter, _Desired);
     }
     ~counting_semaphore()                         = default;
     counting_semaphore(const counting_semaphore&) = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
-    void release(ptrdiff_t __update = 1) {
-        assert(__update >= 0 && __update <= (max() - __counter.load())
-               && "You have released this semaphore more times than you have acquired");
-        __counter.fetch_add(__update, memory_order_release);
+    void release(ptrdiff_t _Update = 1) {
+        _STL_ASSERT(_Update >= 0 && _Update <= (max() - _Counter.load()), "The semaphore has been released more times than acquired");
+        _Counter.fetch_add(_Update, memory_order_release);
     }
     void acquire() {
         while (!try_acquire()) {
         }
     }
     bool try_acquire() noexcept {
-        ptrdiff_t __old     = __counter.load(memory_order_acquire);
-        ptrdiff_t __desired = __old - 1;
-        if (__old > 0 && __counter.compare_exchange_strong(__old, __desired, memory_order_acquire)) {
+        ptrdiff_t _Old     = _Counter.load(memory_order_acquire);
+        ptrdiff_t _Desired = _Old - 1;
+        if (_Old > 0 && _Counter.compare_exchange_strong(_Old, _Desired, memory_order_acquire)) {
             return true;
         }
         return false;
     }
     template <class _Rep, class _Period>
-    bool try_acquire_for(const chrono::duration<_Rep, _Period>& __rel_time) {
-        return try_acquire_until(chrono::steady_clock::now() + __rel_time);
+    bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+        return try_acquire_until(chrono::steady_clock::now() + _Rel_time);
     }
     template <class _Clock, class _Duration>
-    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& __abs_time) {
+    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         while (!try_acquire()) {
-            if (_Clock::now() > __abs_time) {
+            if (_Clock::now() > _Abs_time) {
                 return false;
             }
         }
@@ -73,7 +72,7 @@ public:
     }
 
 private:
-    atomic_ptrdiff_t __counter;
+    atomic_ptrdiff_t _Counter;
 };
 using binary_semaphore = counting_semaphore<1>;
 _STD_END
