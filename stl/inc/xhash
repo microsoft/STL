@@ -1930,14 +1930,14 @@ protected:
         auto _First2            = _Right._Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
         if (_First2 == _Right._Unchecked_end()) {
             // no matching bucket, therefore no matching run
-            return {false, {}};
+            return {};
         }
 
         const auto _Bucket_hi = _Right._Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
         for (; _Right._Traitsobj(_Traits::_Kfn(*_First2), _Keyval); ++_First2) {
             // find first matching element in _Right
             if (_First2 == _Bucket_hi) {
-                return {false, {}};
+                return {};
             }
         }
 
@@ -1963,8 +1963,8 @@ protected:
                     }
 
                     if (_Left_range_end || _Right_range_end) {
-                        // one equal_range is a prefix of the other; different lengths mean not equal though
-                        return {false, {}};
+                        // one equal_range is a prefix of the other; not equal
+                        return {};
                     }
                 }
 
@@ -1988,15 +1988,15 @@ protected:
                     }
 
                     if (_Left_range_end || _Right_range_end) {
-                        // different number of elements in the range, fail
-                        return {false, {}};
+                        // different number of elements in the range, not a permutation
+                        return {};
                     }
                 }
             }
         else {
-            // equivalence check the first element when !_Standard
+            // check the first elements for equivalence when !_Standard
             if (_Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2))) {
-                return {false, {}};
+                return {};
             }
 
             // trim matching prefixes
@@ -2024,8 +2024,8 @@ protected:
                 }
 
                 if (_Left_range_end || _Right_range_end) {
-                    // one equal_range is a prefix of the other; different lengths mean not equal though
-                    return {false, {}};
+                    // one equal_range is a prefix of the other; not equal
+                    return {};
                 }
             }
 
@@ -2051,8 +2051,8 @@ protected:
                 }
 
                 if (_Left_range_end || _Right_range_end) {
-                    // different number of elements in the range, fail
-                    return {false, {}};
+                    // different number of elements in the range, not a permutation
+                    return {};
                 }
             }
         }
@@ -2061,9 +2061,6 @@ protected:
     _NODISCARD bool _Multi_equal(const _Hash& _Right) const {
         static_assert(_Traits::_Multi, "This function only works with multi containers");
         _STL_INTERNAL_CHECK(this->size() == _Right.size());
-
-        const auto _End = _Right._Unchecked_end();
-
         const auto _Last1 = _Unchecked_end();
         auto _First1      = _Unchecked_begin();
         while (_First1 != _Last1) {

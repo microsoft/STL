@@ -4683,7 +4683,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count(
 
 // FUNCTION TEMPLATE is_permutation
 template <class _InIt, class _Ty, class _Pr>
-_NODISCARD _InIt _Find_pr(_InIt _First, _InIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _InIt _Find_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
     for (; _First != _Last; ++_First) {
         if (_Pred(*_First, _Val)) {
             break;
@@ -4694,7 +4694,7 @@ _NODISCARD _InIt _Find_pr(_InIt _First, _InIt _Last, const _Ty& _Val, _Pr _Pred)
 }
 
 template <class _InIt, class _Ty, class _Pr>
-_NODISCARD _Iter_diff_t<_InIt> _Count_pr(_InIt _First, _InIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
     _Iter_diff_t<_InIt> _Count = 0;
 
     for (; _First != _Last; ++_First) {
@@ -4727,8 +4727,9 @@ void _Trim_matching_suffixes(
 #endif // !_HAS_IF_CONSTEXPR
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD bool _Check_match_counts(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
+_NODISCARD bool _Check_match_counts(const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), after matching prefix removal
+    _STL_INTERNAL_CHECK(!_Pred(*_First1, *_First2));
     _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
 #if _HAS_IF_CONSTEXPR
     if constexpr (_Is_bidi_iter_v<_FwdIt1> && _Is_bidi_iter_v<_FwdIt2>) {
@@ -4746,13 +4747,13 @@ _NODISCARD bool _Check_match_counts(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Fi
         if (_Next1 == _Find_pr(_First1, _Next1, *_Next1, _Pred)) { // new value, compare match counts
             _Iter_diff_t<_FwdIt2> _Count2 = _Count_pr(_First2, _Last2, *_Next1, _Pred);
             if (_Count2 == 0) {
-                return false; // second range lacks value, fail
+                return false; // second range lacks value, not a permutation
             }
 
             _FwdIt1 _Skip1                = _Next_iter(_Next1);
             _Iter_diff_t<_FwdIt1> _Count1 = _Count_pr(_Skip1, _Last1, *_Next1, _Pred) + 1;
             if (_Count2 != _Count1) {
-                return false; // match counts differ, fail
+                return false; // match counts differ, not a permutation
             }
         }
     }
@@ -4816,7 +4817,7 @@ bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
     // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, arbitrary iterators
     for (;;) { // trim matching prefix
         if (_First1 == _Last1) {
-            return _First2 == _Last2; // sequence equal
+            return _First2 == _Last2; // sequences are equal
         }
 
         if (_First2 == _Last2) {
@@ -4839,11 +4840,11 @@ bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
                 return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
             }
 
-            return false; // sequence 1 shorter than sequence 2, fail
+            return false; // sequence 1 is shorter than sequence 2, not a permutation
         }
 
         if (_Next2 == _Last2) {
-            return false; // sequence 1 longer than sequence 2, fail
+            return false; // sequence 1 is longer than sequence 2, not a permutation
         }
 
         ++_Next1;
