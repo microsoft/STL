@@ -236,9 +236,10 @@ public:
     template <class _Ty, class... _Types>
     void construct(_Ty* _Ptr, _Types&&... _Args) { // construct with varying allocator styles
 #if _HAS_CXX20
-        _STD apply([_Ptr, this](auto&&... _New_args) { //
-            _Scoped_outermost_traits<scoped_allocator_adaptor>::construct(
-                _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
+        _STD apply(
+            [_Ptr, this](auto&&... _New_args) {
+                _Scoped_outermost_traits<scoped_allocator_adaptor>::construct(
+                    _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
             },
             uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
