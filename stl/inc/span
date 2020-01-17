@@ -225,22 +225,7 @@ template <size_t _Extent>
 struct _Span_extent_type {
     constexpr _Span_extent_type() noexcept = default;
 
-    constexpr explicit _Span_extent_type([[maybe_unused]] const size_t _Size) noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Size == _Extent, "Mismatch between static extent and size of initializing data");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-    }
-
-    template <size_t _OtherExtent>
-    constexpr explicit _Span_extent_type(const _Span_extent_type<_OtherExtent> _Ext) noexcept {
-        static_assert(_OtherExtent == _Extent || _OtherExtent == dynamic_extent,
-            "Mismatch between static extent and size of initializing data");
-#if _CONTAINER_DEBUG_LEVEL > 0
-        if constexpr (_OtherExtent == dynamic_extent) {
-            _STL_VERIFY(_Ext.size() == _Extent, "Mismatch between static extent and size of initializing data");
-        }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-    }
+    constexpr explicit _Span_extent_type(size_t) noexcept {}
 
     _NODISCARD constexpr size_t size() const noexcept {
         return _Extent;
@@ -252,9 +237,6 @@ struct _Span_extent_type<dynamic_extent> {
     constexpr _Span_extent_type() noexcept = default;
 
     constexpr explicit _Span_extent_type(const size_t _Size) noexcept : _Mysize(_Size) {}
-
-    template <size_t _OtherExtent>
-    constexpr explicit _Span_extent_type(const _Span_extent_type<_OtherExtent> _Ext) noexcept : _Mysize(_Ext.size()) {}
 
     _NODISCARD constexpr size_t size() const noexcept {
         return _Mysize;
