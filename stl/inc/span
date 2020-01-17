@@ -363,6 +363,7 @@ public:
     constexpr span(_It _First, size_type _Count) noexcept // strengthened
         : _Mybase(_Count), _Mydata(_STD to_address(_First)) {
 #if _CONTAINER_DEBUG_LEVEL > 0
+        (void) (_First + _Count); // Implicit bounds checking for checked iterators
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent, "span construction from invalid range as count != extent");
         }
@@ -412,6 +413,7 @@ public:
     constexpr span(pointer _Ptr, size_type _Count) noexcept // strengthened
         : _Mybase(_Count), _Mydata(_Ptr) {
 #if _CONTAINER_DEBUG_LEVEL > 0
+        (void) (_Ptr + _Count); // Implicit bounds checking for checked iterators
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent, "span construction from invalid range as count != extent");
         }
