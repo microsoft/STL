@@ -140,7 +140,7 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
 }
 
 template <class _Ptr>
-_NODISCARD auto to_address(const _Ptr& _Val) noexcept {
+_NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     if constexpr (_Has_to_address_v<_Ptr>) {
         return pointer_traits<_Ptr>::to_address(_Val);
     } else {
