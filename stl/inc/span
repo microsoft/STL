@@ -373,8 +373,8 @@ public:
     template <_Is_span_compatible_iterator<element_type> _It, _Is_span_compatible_sentinel<_It> _Sentinel>
     constexpr span(_It _First, _Sentinel _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_STD to_address(_First)) {
-        _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
+        _Adl_verify_range(_First, _Last);
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Last - _First == _Extent, "span construction from invalid range as last - first != extent");
         }
@@ -422,8 +422,8 @@ public:
 
     constexpr span(pointer _First, pointer _Last) noexcept // strengthened
         : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_First) {
-        _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
+        _Adl_verify_range(_First, _Last);
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Last - _First == _Extent, "span construction from invalid range as last - first != extent");
         }
