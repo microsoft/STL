@@ -1941,57 +1941,10 @@ protected:
             }
         }
 
+        _Unchecked_const_iterator _Left_stop_at;
         if
             _CONSTEXPR_IF(_Traits::_Standard) {
-                // trim matching prefixes
-                while (*_First1 == *_First2) {
-                    // the right equal_range ends at the end of the bucket or on the first nonequal element
-                    bool _Right_range_end = _First2 == _Bucket_hi;
-                    ++_First2;
-                    if (!_Right_range_end) {
-                        _Right_range_end = _Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2));
-                    }
-
-                    // the left equal_range ends at the end of the container or on the first nonequal element
-                    ++_First1;
-                    const bool _Left_range_end =
-                        _First1 == _Unchecked_end() || _Traitsobj(_Keyval, _Traits::_Kfn(*_First1));
-
-                    if (_Left_range_end && _Right_range_end) {
-                        // the equal_ranges were completely equal
-                        return {true, _First1};
-                    }
-
-                    if (_Left_range_end || _Right_range_end) {
-                        // one equal_range is a prefix of the other; not equal
-                        return {};
-                    }
-                }
-
-                // found a mismatched element, find the end of the equal_ranges and dispatch to _Check_match_counts
-                auto _Last1 = _First1;
-                auto _Last2 = _First2;
-                for (;;) {
-                    bool _Right_range_end = _Last2 == _Bucket_hi;
-                    ++_Last2;
-                    if (!_Right_range_end) {
-                        _Right_range_end = _Right._Traitsobj(_Keyval, _Traits::_Kfn(*_Last2));
-                    }
-
-                    ++_Last1;
-                    const bool _Left_range_end =
-                        _Last1 == _Unchecked_end() || _Traitsobj(_Keyval, _Traits::_Kfn(*_Last1));
-
-                    if (_Left_range_end && _Right_range_end) {
-                        // equal_ranges had the same length, check for permutation
-                        return {_Check_match_counts(_First1, _Last1, _First2, _Last2, equal_to<>{}), _Last1};
-                    }
-
-                    if (_Left_range_end || _Right_range_end) {
-                        // different number of elements in the range, not a permutation
-                        return {};
-                    }
-                }
+                _Left_stop_at = _Unchecked_end();
             }
         else {
             // check the first elements for equivalence when !_Standard
@@ -1999,61 +1952,58 @@ protected:
                 return {};
             }
 
-            // trim matching prefixes
             const size_t _LHashval   = _Traitsobj(_Keyval);
             const size_type _LBucket = _LHashval & _Mask;
             const auto _LBucket_hi   = _Vec._Mypair._Myval2._Myfirst[(_LBucket << 1) + 1];
-            while (*_First1 == *_First2) {
-                // the right equal_range ends at the end of the bucket or on the first greater element
-                bool _Right_range_end = _First2 == _Bucket_hi;
-                ++_First2;
-                if (!_Right_range_end) {
-                    _Right_range_end = _Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2));
-                }
+            _Left_stop_at            = _LBucket_hi;
+            ++_Left_stop_at;
+        }
 
-                // the left equal_range ends at the end of the bucket or on the first greater element
-                bool _Left_range_end = _First1 == _LBucket_hi;
-                ++_First1;
-                if (!_Left_range_end) {
-                    _Left_range_end = _Traitsobj(_Keyval, _Traits::_Kfn(*_First1));
-                }
-
-                if (_Left_range_end && _Right_range_end) {
-                    // all elements in both equal_ranges were equal, and the ranges were the same length, match
-                    return {true, _First1};
-                }
-
-                if (_Left_range_end || _Right_range_end) {
-                    // one equal_range is a prefix of the other; not equal
-                    return {};
-                }
+        // trim matching prefixes
+        while (*_First1 == *_First2) {
+            // the right equal_range ends at the end of the bucket or on the first nonequal element
+            bool _Right_range_end = _First2 == _Bucket_hi;
+            ++_First2;
+            if (!_Right_range_end) {
+                _Right_range_end = _Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2));
             }
 
-            // found a mismatched element, find the end of the equal_ranges and dispatch to _Check_match_counts
-            auto _Last1 = _First1;
-            auto _Last2 = _First2;
-            for (;;) {
-                bool _Right_range_end = _Last2 == _Bucket_hi;
-                ++_Last2;
-                if (!_Right_range_end) {
-                    _Right_range_end = _Right._Traitsobj(_Keyval, _Traits::_Kfn(*_Last2));
-                }
+            // the left equal_range ends at the end of the container or on the first nonequal element
+            ++_First1;
+            const bool _Left_range_end = _First1 == _Left_stop_at || _Traitsobj(_Keyval, _Traits::_Kfn(*_First1));
 
-                bool _Left_range_end = _Last1 == _LBucket_hi;
-                ++_Last1;
-                if (!_Left_range_end) {
-                    _Left_range_end = _Traitsobj(_Keyval, _Traits::_Kfn(*_Last1));
-                }
+            if (_Left_range_end && _Right_range_end) {
+                // the equal_ranges were completely equal
+                return {true, _First1};
+            }
 
-                if (_Left_range_end && _Right_range_end) {
-                    // equal_ranges had the same length, check for permutation
-                    return {_Check_match_counts(_First1, _Last1, _First2, _Last2, equal_to<>{}), _Last1};
-                }
+            if (_Left_range_end || _Right_range_end) {
+                // one equal_range is a prefix of the other; not equal
+                return {};
+            }
+        }
 
-                if (_Left_range_end || _Right_range_end) {
-                    // different number of elements in the range, not a permutation
-                    return {};
-                }
+        // found a mismatched element, find the end of the equal_ranges and dispatch to _Check_match_counts
+        auto _Last1 = _First1;
+        auto _Last2 = _First2;
+        for (;;) {
+            bool _Right_range_end = _Last2 == _Bucket_hi;
+            ++_Last2;
+            if (!_Right_range_end) {
+                _Right_range_end = _Right._Traitsobj(_Keyval, _Traits::_Kfn(*_Last2));
+            }
+
+            ++_Last1;
+            const bool _Left_range_end = _Last1 == _Left_stop_at || _Traitsobj(_Keyval, _Traits::_Kfn(*_Last1));
+
+            if (_Left_range_end && _Right_range_end) {
+                // equal_ranges had the same length, check for permutation
+                return {_Check_match_counts(_First1, _Last1, _First2, _Last2, equal_to<>{}), _Last1};
+            }
+
+            if (_Left_range_end || _Right_range_end) {
+                // different number of elements in the range, not a permutation
+                return {};
             }
         }
     }
