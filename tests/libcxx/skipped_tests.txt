@@ -196,38 +196,6 @@ utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 # C++20 P0019R8 "atomic_ref"
 language.support\support.limits\support.limits.general\atomic.version.pass.cpp
 
-# C++20 P0122R7 "<span>" (and subsequent patch papers)
-containers\views\types.pass.cpp
-containers\views\span.cons\array.pass.cpp
-containers\views\span.cons\assign.pass.cpp
-containers\views\span.cons\container.pass.cpp
-containers\views\span.cons\copy.pass.cpp
-containers\views\span.cons\deduct.pass.cpp
-containers\views\span.cons\default.pass.cpp
-containers\views\span.cons\ptr_len.pass.cpp
-containers\views\span.cons\ptr_ptr.pass.cpp
-containers\views\span.cons\span.pass.cpp
-containers\views\span.cons\stdarray.pass.cpp
-containers\views\span.elem\back.pass.cpp
-containers\views\span.elem\data.pass.cpp
-containers\views\span.elem\front.pass.cpp
-containers\views\span.elem\op_idx.pass.cpp
-containers\views\span.iterators\begin.pass.cpp
-containers\views\span.iterators\end.pass.cpp
-containers\views\span.iterators\rbegin.pass.cpp
-containers\views\span.iterators\rend.pass.cpp
-containers\views\span.objectrep\as_bytes.pass.cpp
-containers\views\span.objectrep\as_writable_bytes.pass.cpp
-containers\views\span.obs\empty.pass.cpp
-containers\views\span.obs\size.pass.cpp
-containers\views\span.obs\size_bytes.pass.cpp
-containers\views\span.sub\first.pass.cpp
-containers\views\span.sub\last.pass.cpp
-containers\views\span.sub\subspan.pass.cpp
-containers\views\span.tuple\get.pass.cpp
-containers\views\span.tuple\tuple_element.pass.cpp
-containers\views\span.tuple\tuple_size.pass.cpp
-
 # C++20 P0202R3 "constexpr For <algorithm> And exchange()"
 algorithms\alg.modifying.operations\alg.copy\copy_backward.pass.cpp
 algorithms\alg.modifying.operations\alg.copy\copy_if.pass.cpp
@@ -303,6 +271,9 @@ algorithms\alg.sorting\alg.sort\is.sorted\is_sorted_comp.pass.cpp
 algorithms\alg.sorting\alg.sort\is.sorted\is_sorted_until_comp.pass.cpp
 algorithms\alg.sorting\alg.sort\is.sorted\is_sorted_until.pass.cpp
 algorithms\alg.sorting\alg.sort\is.sorted\is_sorted.pass.cpp
+containers\views\span.sub\first.pass.cpp
+containers\views\span.sub\last.pass.cpp
+containers\views\span.sub\subspan.pass.cpp
 utilities\utility\exchange\exchange.pass.cpp
 
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
@@ -608,6 +579,10 @@ utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
 # Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
+# Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
+containers\views\span.cons\ptr_len.pass.cpp
+containers\views\span.cons\ptr_ptr.pass.cpp
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -616,6 +591,12 @@ thread\macro.pass.cpp
 # <concepts> hasn't been enabled for Clang yet.
 iterators\iterator.primitives\iterator.traits\pointer.pass.cpp
 iterators\iterator.primitives\std.iterator.tags\contiguous_iterator_tag.pass.cpp
+
+# Clang 9 doesn't support comparison rewriting; implemented in Clang 10.
+containers\views\span.iterators\begin.pass.cpp
+containers\views\span.iterators\end.pass.cpp
+containers\views\span.iterators\rbegin.pass.cpp
+containers\views\span.iterators\rend.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
