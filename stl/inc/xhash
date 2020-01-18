@@ -1916,13 +1916,14 @@ protected:
     }
 
     struct _Multi_equal_check_result {
-        bool _Equal_possible;
-        _Unchecked_const_iterator _Subsequent_first; // only useful if _Equal_possible
+        bool _Equal_possible = false;
+        _Unchecked_const_iterator _Subsequent_first{}; // only useful if _Equal_possible
     };
 
     _NODISCARD _Multi_equal_check_result _Multi_equal_check_equal_range(
         const _Hash& _Right, _Unchecked_const_iterator _First1) const {
-        // check equal_range of elements matching *_First1 match the equal_range of elements in _Right
+        // check that an equal_range of elements starting with *_First1 are a permutation of the corresponding
+        // equal_range of elements in _Right
         auto& _Keyval = _Traits::_Kfn(*_First1);
         // find the start of the matching run in the other container
         const size_t _Hashval   = _Right._Traitsobj(_Keyval);
@@ -2014,7 +2015,7 @@ protected:
         const auto _Last1 = _Unchecked_end();
         auto _First1      = _Unchecked_begin();
         while (_First1 != _Last1) {
-            auto _Result = _Multi_equal_check_equal_range(_Right, _First1);
+            const auto _Result = _Multi_equal_check_equal_range(_Right, _First1);
             if (!_Result._Equal_possible) {
                 return false;
             }
