@@ -139,6 +139,7 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
     return _Val;
 }
 
+// constexpr per pending LWG issue, submitted 2020-01-14
 template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     if constexpr (_Has_to_address_v<_Ptr>) {
