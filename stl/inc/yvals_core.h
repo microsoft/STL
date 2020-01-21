@@ -1025,7 +1025,8 @@
 #define __cpp_lib_unwrap_ref              201811L
 
 #ifdef __cpp_lib_is_constant_evaluated
-#define __cpp_lib_constexpr_numeric 201911L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_numeric    201911L
 #endif // __cpp_lib_is_constant_evaluated
 
 #endif // _HAS_CXX20
