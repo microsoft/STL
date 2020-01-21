@@ -511,7 +511,8 @@ struct compare_three_way_result<_Ty1, _Ty2> {
 struct compare_three_way {
     template <class _Ty1, class _Ty2>
         requires three_way_comparable_with<_Ty1, _Ty2> // TRANSITION, BUILTIN-PTR-THREE-WAY
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const {
+    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+        noexcept(noexcept(_STD forward<_Ty1>(_Left) <=> _STD forward<_Ty2>(_Right))) /* strengthened */ {
         return _STD forward<_Ty1>(_Left) <=> _STD forward<_Ty2>(_Right);
     }
 
