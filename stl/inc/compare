@@ -517,6 +517,28 @@ struct compare_three_way {
 
     using is_transparent = int;
 };
+
+constexpr auto _Synth_three_way = []<class _Ty1, class _Ty2>(const _Ty1& __t, const _Ty2& __u)
+    requires requires {
+        { __t < __u } -> bool;
+        { __u < __t } -> bool;
+    }
+{
+    if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
+        return __t <=> __u;
+    } else {
+        if (__t < __u) {
+            return weak_ordering::less;
+        } else if (__u < __t) {
+            return weak_ordering::greater;
+        } else {
+            return weak_ordering::equivalent;
+        }
+    }
+};
+
+template <class _Ty1, class _Ty2 = _Ty1>
+using _Synth_three_way_result = decltype(_Synth_three_way(_STD declval<_Ty1&>, _STD declval<_Ty2&>()));
 // clang-format on
 #endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
