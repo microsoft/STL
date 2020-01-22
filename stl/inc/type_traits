@@ -563,6 +563,7 @@ struct is_standard_layout : bool_constant<__is_standard_layout(_Ty)> {}; // dete
 template <class _Ty>
 _INLINE_VAR constexpr bool is_standard_layout_v = __is_standard_layout(_Ty);
 
+#if _HAS_DEPRECATED_IS_LITERAL_TYPE
 // STRUCT TEMPLATE is_literal_type
 template <class _Ty>
 struct _CXX17_DEPRECATE_IS_LITERAL_TYPE is_literal_type : bool_constant<__is_literal_type(_Ty)> {
@@ -571,6 +572,7 @@ struct _CXX17_DEPRECATE_IS_LITERAL_TYPE is_literal_type : bool_constant<__is_lit
 
 template <class _Ty>
 _CXX17_DEPRECATE_IS_LITERAL_TYPE _INLINE_VAR constexpr bool is_literal_type_v = __is_literal_type(_Ty);
+#endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
 
 // STRUCT TEMPLATE is_trivial
 #if 1 // TRANSITION, VSO-119526 and LLVM-41915

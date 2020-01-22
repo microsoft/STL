@@ -183,6 +183,9 @@
 // P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
+// _HAS_CXX20 indirectly controls:
+// P0619R4 Removing C++17-Deprecated Features
+
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
 // Other C++20 deprecation warnings
@@ -902,6 +905,14 @@
 
 // next warning number: STL4029
 
+// P0619R4 Removing C++17-Deprecated Features
+#ifndef _HAS_FEATURES_REMOVED_IN_CXX20
+#define _HAS_FEATURES_REMOVED_IN_CXX20 (!_HAS_CXX20)
+#endif // _HAS_FEATURES_REMOVED_IN_CXX20
+
+#ifndef _HAS_DEPRECATED_IS_LITERAL_TYPE
+#define _HAS_DEPRECATED_IS_LITERAL_TYPE (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
 
 // LIBRARY FEATURE-TEST MACROS
 
