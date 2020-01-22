@@ -3662,9 +3662,6 @@ _DestTy* copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE copy_n
-template <class _InIt, class _Diff, class _OutIt>
-constexpr _OutIt _Copy_n_core(_InIt _First, _Diff _Count, _OutIt _Dest) {}
-
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _OutIt>
 _CONSTEXPR20_ICE _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
@@ -4966,7 +4963,6 @@ _CONSTEXPR20_ICE void reverse(const _BidIt _First, const _BidIt _Last) { // reve
     constexpr bool _Allow_vectorization =
         conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
 
-    // repeated loop is TRANSITION, DevCom-889321
     if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
