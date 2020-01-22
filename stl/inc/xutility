@@ -3584,24 +3584,18 @@ _CONSTEXPR20_ICE _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest)
     // note: _Copy_unchecked has callers other than the copy family
     if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _First != _Last; ++_Dest, (void) ++_First) {
-                *_Dest = *_First;
-            }
-
-            return _Dest;
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
-    } else {
-        for (; _First != _Last; ++_Dest, (void) ++_First) {
-            *_Dest = *_First;
-        }
-
-        return _Dest;
     }
+
+    for (; _First != _Last; ++_Dest, (void) ++_First) {
+        *_Dest = *_First;
+    }
+
+    return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt, class _OutIt>
@@ -3669,19 +3663,7 @@ _DestTy* copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize
 
 // FUNCTION TEMPLATE copy_n
 template <class _InIt, class _Diff, class _OutIt>
-constexpr _OutIt _Copy_n_core(_InIt _First, _Diff _Count, _OutIt _Dest) {
-    for (;;) {
-        *_Dest = *_First;
-        ++_Dest;
-        --_Count;
-        if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
-                           // see LWG-2471
-            return _Dest;
-        }
-
-        ++_First;
-    }
-}
+constexpr _OutIt _Copy_n_core(_InIt _First, _Diff _Count, _OutIt _Dest) {}
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _OutIt>
@@ -3693,15 +3675,25 @@ _CONSTEXPR20_ICE _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
-            if (_STD is_constant_evaluated()) {
-                _UDest = _Copy_n_core(_UFirst, _Count, _UDest);
-            } else
+            if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
             {
                 _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+                _Seek_wrapped(_Dest, _UDest);
+                return _Dest;
             }
-        } else {
-            _UDest = _Copy_n_core(_UFirst, _Count, _UDest);
+        }
+
+        for (;;) {
+            *_UDest = *_UFirst;
+            ++_UDest;
+            --_Count;
+            if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
+                               // see LWG-2471
+                break;
+            }
+
+            ++_UFirst;
         }
 
         _Seek_wrapped(_Dest, _UDest);
@@ -3715,7 +3707,17 @@ template <class _InIt, class _Diff, class _OutIt>
 _OutIt _Copy_n_unchecked4(_InIt _First, _Diff _Count, _OutIt _Dest, false_type) {
     // copy [_First, _First + _Count) to [_Dest, ...), no special optimization
     // pre: 0 < _Count
-    return _Copy_n_core(_First, _Count, _Dest);
+    for (;;) {
+        *_Dest = *_First;
+        ++_Dest;
+        --_Count;
+        if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
+                           // see LWG-2471
+            return _Dest;
+        }
+
+        ++_First;
+    }
 }
 
 template <class _InIt, class _Diff, class _OutIt>
@@ -3845,21 +3847,18 @@ _CONSTEXPR20_ICE _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _D
     auto _UDest        = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     if constexpr (_Ptr_copy_cat<decltype(_ULast), decltype(_UDest)>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            while (_UFirst != _ULast) {
-                *--_UDest = *--_ULast;
-            }
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             _UDest = _Copy_backward_memmove(_UFirst, _ULast, _UDest);
-        }
-    } else {
-        while (_UFirst != _ULast) {
-            *--_UDest = *--_ULast;
+            _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
         }
     }
 
+    while (_UFirst != _ULast) {
+        *--_UDest = *--_ULast;
+    }
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
@@ -3909,24 +3908,18 @@ _CONSTEXPR20_ICE _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest)
     // note: _Move_unchecked has callers other than the move family
     if constexpr (_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _First != _Last; ++_Dest, (void) ++_First) {
-                *_Dest = _STD move(*_First);
-            }
-
-            return _Dest;
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
-    } else {
-        for (; _First != _Last; ++_Dest, (void) ++_First) {
-            *_Dest = _STD move(*_First);
-        }
-
-        return _Dest;
     }
+
+    for (; _First != _Last; ++_Dest, (void) ++_First) {
+        *_Dest = _STD move(*_First);
+    }
+
+    return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt, class _OutIt>
@@ -4000,24 +3993,18 @@ _CONSTEXPR20_ICE _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last,
     // note: _Move_backward_unchecked has callers other than the move_backward family
     if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            while (_First != _Last) {
-                *--_Dest = _STD move(*--_Last);
-            }
-
-            return _Dest;
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             return _Copy_backward_memmove(_First, _Last, _Dest);
         }
-    } else {
-        while (_First != _Last) {
-            *--_Dest = _STD move(*--_Last);
-        }
-
-        return _Dest;
     }
+
+    while (_First != _Last) {
+        *--_Dest = _STD move(*--_Last);
+    }
+
+    return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _BidIt1, class _BidIt2>
@@ -4114,19 +4101,16 @@ _CONSTEXPR20_ICE void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _UFirst != _ULast; ++_UFirst) {
-                *_UFirst = _Val;
-            }
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
+            return;
         }
-    } else {
-        for (; _UFirst != _ULast; ++_UFirst) {
-            *_UFirst = _Val;
-        }
+    }
+
+    for (; _UFirst != _ULast; ++_UFirst) {
+        *_UFirst = _Val;
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
@@ -4172,20 +4156,18 @@ _CONSTEXPR20_ICE _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& 
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-            if (_STD is_constant_evaluated()) {
-                for (; 0 < _Count; --_Count, (void) ++_UDest) {
-                    *_UDest = _Val;
-                }
-            } else
+            if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
             {
                 _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
                 _UDest += _Count;
+                _Seek_wrapped(_Dest, _UDest);
+                return _Dest;
             }
-        } else {
-            for (; 0 < _Count; --_Count, (void) ++_UDest) {
-                *_UDest = _Val;
-            }
+        }
+
+        for (; 0 < _Count; --_Count, (void) ++_UDest) {
+            *_UDest = _Val;
         }
 
         _Seek_wrapped(_Dest, _UDest);
@@ -4297,15 +4279,7 @@ _NODISCARD _CONSTEXPR20_ICE bool equal(const _InIt1 _First1, const _InIt1 _Last1
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     if constexpr (decltype(_Equal_memcmp_is_safe(_UFirst1, _UFirst2, _Pred))::value) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-                if (!_Pred(*_UFirst1, *_UFirst2)) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             const auto _First1_ch = reinterpret_cast<const char*>(_UFirst1);
@@ -4313,15 +4287,15 @@ _NODISCARD _CONSTEXPR20_ICE bool equal(const _InIt1 _First1, const _InIt1 _Last1
             const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_ULast1) - _First1_ch);
             return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }
-    } else {
-        for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-            if (!_Pred(*_UFirst1, *_UFirst2)) {
-                return false;
-            }
-        }
-
-        return true;
     }
+
+    for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+        if (!_Pred(*_UFirst1, *_UFirst2)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt1, class _InIt2, class _Pr>
@@ -4601,7 +4575,7 @@ _NODISCARD _CONSTEXPR20_ICE bool _Lex_compare_unchecked(
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
         return _Lex_compare_unchecked(_First1, _Last1, _First2, _Last2, _Pred, _Lex_compare_optimize<void>{});
-    } else
+    }
 #endif // __cpp_lib_is_constant_evaluated
     {
         (void) _Pred;
@@ -4717,7 +4691,7 @@ _NODISCARD _CONSTEXPR20_ICE _InIt _Find_unchecked1(_InIt _First, const _InIt _La
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
         return _Find_unchecked1(_First, _Last, _Val, false_type{});
-    } else
+    }
 #endif // __cpp_lib_is_constant_evaluated
     {
         _First = static_cast<_InIt>(
@@ -4995,54 +4969,41 @@ _CONSTEXPR20_ICE void reverse(const _BidIt _First, const _BidIt _Last) { // reve
     // repeated loop is TRANSITION, DevCom-889321
     if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-                _STD iter_swap(_UFirst, _ULast);
-            }
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             __std_reverse_trivially_swappable_1(_UFirst, _ULast);
+            return;
         }
     } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-                _STD iter_swap(_UFirst, _ULast);
-            }
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             __std_reverse_trivially_swappable_2(_UFirst, _ULast);
+            return;
         }
     } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-                _STD iter_swap(_UFirst, _ULast);
-            }
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             __std_reverse_trivially_swappable_4(_UFirst, _ULast);
+            return;
         }
     } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-                _STD iter_swap(_UFirst, _ULast);
-            }
-        } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
             __std_reverse_trivially_swappable_8(_UFirst, _ULast);
+            return;
         }
-    } else
+    }
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-    {
-        for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-            _STD iter_swap(_UFirst, _ULast);
-        }
+
+    for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
+        _STD iter_swap(_UFirst, _ULast);
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
