@@ -77,7 +77,7 @@ public:
     }
 
     static _Ty _Infv() { // return infinity
-        return static_cast<_Ty>(numeric_limits<double>::infinity());
+        return numeric_limits<_Ty>::infinity();
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
@@ -91,7 +91,7 @@ public:
     }
 
     static _Ty _Nanv() { // return NaN
-        return static_cast<_Ty>(numeric_limits<double>::quiet_NaN());
+        return numeric_limits<_Ty>::quiet_NaN();
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -1795,7 +1795,7 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _L
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
 
     type _Tmp   = _Left;
-    auto _Count = static_cast<make_signed_t<_Ty2>>(_Right);
+    auto _Count = static_cast<make_unsigned_t<_Ty2>>(_Right);
 
     if (_Right < 0) {
         _Count = 0 - _Count; // safe negation as unsigned
@@ -1813,22 +1813,21 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _L
 }
 
 template <class _Ty1, class _Ty2, enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
-_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, const _Ty2 _Right) {
+_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2 _Right) {
     // raise Gaussian integer to an integer power
     using type = complex<_Ty1>;
 
-    type _Ans   = type(1, 0);
-    auto _Count = _Right;
+    type _Ans = type(1, 0);
 
-    if (_Count < 0) {
+    if (_Right < 0) {
         _Ans = type(0, 0); // ignore 1/type(0, 0) error
-    } else if (0 < _Count) { // raise to a positive power
+    } else if (0 < _Right) { // raise to a positive power
         for (type _Factor = _Left;; _Factor *= _Factor) { // fold in _Left^(2^N))
-            if ((_Count & 1) != 0) {
+            if ((_Right & 1) != 0) {
                 _Ans *= _Factor;
             }
 
-            if ((_Count >>= 1) == 0) {
+            if ((_Right >>= 1) == 0) {
                 break;
             }
         }
