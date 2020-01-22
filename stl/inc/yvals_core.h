@@ -39,6 +39,7 @@
 // P0063R3 C11 Standard Library
 // P0074R0 owner_less<>
 // P0092R1 <chrono> floor(), ceil(), round(), abs()
+// P0202R3 constexpr For <algorithm> And exchange()
 // P0340R3 SFINAE-Friendly underlying_type
 // P0414R2 shared_ptr<T[]>, shared_ptr<T[N]>
 // P0418R2 atomic compare_exchange memory_order Requirements
@@ -54,6 +55,7 @@
 // P0771R1 noexcept For std::function's Move Constructor
 // P0777R1 Avoiding Unnecessary decay
 // P0809R0 Comparing Unordered Containers
+// P0879R0 constexpr For Swapping Functions
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive

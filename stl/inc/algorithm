@@ -1263,7 +1263,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 
 // FUNCTION TEMPLATE swap_ranges
 template <class _FwdIt1, class _FwdIt2>
-constexpr _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+_CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...), no special optimization
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         _STD iter_swap(_First1, _First2);
@@ -2994,23 +2994,22 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
 }
 
 // FUNCTION TEMPLATE merge
-constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
-    // combine _Idl_distance results (both unknown)
+_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
     return {};
 }
 
 template <class _Diff1>
-constexpr _Distance_unknown _Idl_dist_add(_Diff1, _Distance_unknown) { // combine _Idl_distance results (right unknown)
+_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Diff1, _Distance_unknown) {
     return {};
 }
 
 template <class _Diff2>
-constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Diff2) { // combine _Idl_distance results (left unknown)
+_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Diff2) {
     return {};
 }
 
 template <class _Diff1, class _Diff2>
-constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) { // combine _Idl_distance results (both known)
+_NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
     return _Lhs + _Rhs;
 }
 

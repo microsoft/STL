@@ -4865,7 +4865,7 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _FwdIt1, class _FwdIt2>
-_CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
     return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
 }
