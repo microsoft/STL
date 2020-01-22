@@ -57,7 +57,6 @@
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive
-// P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
 
 // _HAS_CXX17 directly controls:
@@ -136,6 +135,7 @@
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
+// P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
@@ -143,6 +143,7 @@
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> ispow2(), ceil2(), floor2(), log2p1()
 //            (log2p1() is called bit_length() as of D1956)
+// P0591R4 Utility Functions For Uses-Allocator Construction
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
