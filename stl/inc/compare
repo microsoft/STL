@@ -525,7 +525,7 @@ struct compare_three_way {
 
 inline constexpr auto _Synth_three_way = []<class _Ty1, class _Ty2>(const _Ty1& __t, const _Ty2& __u)
     requires requires {
-        { __t < __u } -> bool;
+        { __t < __u } -> convertible_to<bool>;
         { __u < __t } -> bool;
     }
 {
