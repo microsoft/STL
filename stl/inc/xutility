@@ -4574,13 +4574,11 @@ _NODISCARD _CONSTEXPR20_ICE bool _Lex_compare_unchecked(
         return _Lex_compare_unchecked(_First1, _Last1, _First2, _Last2, _Pred, _Lex_compare_optimize<void>{});
     }
 #endif // __cpp_lib_is_constant_evaluated
-    {
-        (void) _Pred;
-        const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
-        const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-        const int _Ans   = _CSTD memcmp(_First1, _First2, _Num1 < _Num2 ? _Num1 : _Num2);
-        return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
-    }
+    (void) _Pred;
+    const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
+    const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
+    const int _Ans   = _CSTD memcmp(_First1, _First2, _Num1 < _Num2 ? _Num1 : _Num2);
+    return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
@@ -4690,11 +4688,9 @@ _NODISCARD _CONSTEXPR20_ICE _InIt _Find_unchecked1(_InIt _First, const _InIt _La
         return _Find_unchecked1(_First, _Last, _Val, false_type{});
     }
 #endif // __cpp_lib_is_constant_evaluated
-    {
-        _First = static_cast<_InIt>(
-            _CSTD memchr(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
-        return _First ? _First : _Last;
-    }
+    _First =
+        static_cast<_InIt>(_CSTD memchr(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+    return _First ? _First : _Last;
 }
 
 template <class _InIt, class _Ty>
