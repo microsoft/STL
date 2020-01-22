@@ -16,7 +16,7 @@
 #include <concepts>
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 #include <xtr1common>
-#endif // __cpp_lib_concepts
+#endif // !__cpp_lib_concepts
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
