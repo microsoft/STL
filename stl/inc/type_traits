@@ -1702,6 +1702,7 @@ struct _Invoke_traits<void_t<decltype(_STD invoke(_STD declval<_Types>()...))>,
         conjunction_v<_Is_nothrow_invocable, disjunction<is_void<_Rx>, _Is_nothrow_convertible<type, _Rx>>>>;
 };
 
+#if _HAS_DEPRECATED_RESULT_OF
 // STRUCT TEMPLATE result_of
 template <class _Fty>
 struct _CXX17_DEPRECATE_RESULT_OF result_of { // explain usage
@@ -1722,6 +1723,7 @@ _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 using result_of_t _CXX17_DEPRECATE_RESULT_OF = typename result_of<_Ty>::type;
 _STL_RESTORE_DEPRECATED_WARNING
+#endif // _HAS_DEPRECATED_RESULT_OF
 
 template <class _Callable, class... _Args>
 using _Invoke_result_t = typename _Invoke_traits<void, _Callable, _Args...>::type;
@@ -2292,7 +2294,9 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD cref;
     using _STD ref;
     using _STD reference_wrapper;
+#if _HAS_DEPRECATED_RESULT_OF
     using _STD result_of;
+#endif // _HAS_DEPRECATED_RESULT_OF
     using _STD hash;
 } // namespace tr1
 _STL_RESTORE_DEPRECATED_WARNING
