@@ -14,7 +14,7 @@
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#else // __cpp_lib_concepts
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 #include <xtr1common>
 #endif // __cpp_lib_concepts
 
