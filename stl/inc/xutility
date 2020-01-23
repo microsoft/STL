@@ -1377,78 +1377,6 @@ struct _Unwrap_enum<_Elem, false> { // passthrough non-enum type
 template <class _Elem>
 using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 
-// ALGORITHM DISPATCH TRAITS
-template <class>
-class move_iterator;
-
-template <class _Source, class _Dest>
-struct _Ptr_cat_helper { // determines _Ptr_cat's result in the most general case
-    using _USource                        = _Unwrap_enum_t<_Source>;
-    using _UDest                          = _Unwrap_enum_t<_Dest>;
-    static constexpr bool _Really_trivial = conjunction_v<
-        bool_constant<sizeof(_USource) == sizeof(_UDest) && is_same_v<bool, _USource> == is_same_v<bool, _UDest>>,
-        is_integral<_USource>, is_integral<_UDest>>;
-    static constexpr bool _Trivially_copyable = _Really_trivial;
-};
-
-template <class _Elem>
-struct _Ptr_cat_helper<_Elem, _Elem> { // determines _Ptr_cat's result when the types are the same
-    static constexpr bool _Really_trivial     = is_trivial_v<_Elem>;
-    static constexpr bool _Trivially_copyable = is_trivially_copyable_v<_Elem>;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, const _Anything*> {
-    // determines _Ptr_cat's result when all we do is add const to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, volatile _Anything*> {
-    // determines _Ptr_cat's result when all we do is add volatile to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, const volatile _Anything*> {
-    // determines _Ptr_cat's result when all we do is add cv to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-struct _False_copy_cat {
-    static constexpr bool _Really_trivial     = false;
-    static constexpr bool _Trivially_copyable = false;
-};
-
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat : _False_copy_cat {}; // return pointer copy optimization category for arbitrary iterators
-
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat<_Source*, _Dest*>
-    : conditional_t<is_trivially_assignable_v<_Dest&, _Source&>,
-          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {
-}; // return pointer copy optimization category for pointers
-
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat<move_iterator<_Source*>, _Dest*> : _Ptr_copy_cat<_Source*, _Dest*> {
-}; // return pointer copy optimization category for move iterators
-
-template <class _Source, class _Dest>
-struct _Ptr_move_cat : _False_copy_cat {}; // return pointer move optimization category for arbitrary iterators
-
-template <class _Source, class _Dest>
-struct _Ptr_move_cat<_Source*, _Dest*>
-    : conditional_t<is_trivially_assignable_v<_Dest&, _Source>,
-          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {
-}; // return pointer move optimization category for pointers
-
-template <class _Source, class _Dest>
-struct _Ptr_move_cat<move_iterator<_Source*>, _Dest*> : _Ptr_move_cat<_Source*, _Dest*> {
-}; // return pointer move optimization category for move iterators
-
 // DEBUG TESTING MACROS
 
 #if _ITERATOR_DEBUG_LEVEL < 2
@@ -1486,7 +1414,7 @@ constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept
 // FUNCTION TEMPLATE _Debug_order_unchecked
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Sentinel, class _Pr>
-void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
+constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
     if constexpr (_Is_fwd_iter_v<_InIt>) {
         if (_First != _Last) {
@@ -1502,12 +1430,12 @@ void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt, class _Sentinel, class _Pr>
-void _Debug_order_unchecked2(_InIt, _Sentinel, _Pr&, input_iterator_tag) {
+constexpr void _Debug_order_unchecked2(_InIt, _Sentinel, _Pr&, input_iterator_tag) {
     // (don't) test if range is ordered by predicate, input iterators
 }
 
 template <class _FwdIt, class _Sentinel, class _Pr>
-void _Debug_order_unchecked2(_FwdIt _First, _Sentinel _Last, _Pr& _Pred, forward_iterator_tag) {
+constexpr void _Debug_order_unchecked2(_FwdIt _First, _Sentinel _Last, _Pr& _Pred, forward_iterator_tag) {
     // test if range is ordered by predicate, forward iterators
     if (_First != _Last) {
         for (_FwdIt _Next = _First; ++_Next != _Last; _First = _Next) {
@@ -1517,7 +1445,7 @@ void _Debug_order_unchecked2(_FwdIt _First, _Sentinel _Last, _Pr& _Pred, forward
 }
 
 template <class _InIt, class _Sentinel, class _Pr>
-void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
+constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
     _Debug_order_unchecked2(_First, _Last, _Pred, _Iter_cat_t<_InIt>());
 }
@@ -1526,7 +1454,7 @@ void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
 // FUNCTION TEMPLATE _Debug_order_set_unchecked
 #if _HAS_IF_CONSTEXPR
 template <class _OtherIt, class _InIt, class _Pr>
-void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
+constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
     if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>> && _Is_fwd_iter_v<_InIt>) {
         _Debug_order_unchecked(_First, _Last, _Pred);
@@ -1551,13 +1479,14 @@ void _Debug_order_set_unchecked2(_InIt, _InIt, _Pr&, input_iterator_tag,
 }
 
 template <class _FwdIt, class _Pr>
-void _Debug_order_set_unchecked2(_FwdIt _First, _FwdIt _Last, _Pr& _Pred, forward_iterator_tag, _Priority_tag<1>) {
+constexpr void _Debug_order_set_unchecked2(
+    _FwdIt _First, _FwdIt _Last, _Pr& _Pred, forward_iterator_tag, _Priority_tag<1>) {
     // test if range is ordered by predicate, forward iterators and same types
     _Debug_order_unchecked2(_First, _Last, _Pred, forward_iterator_tag{});
 }
 
 template <class _OtherIt, class _InIt, class _Pr>
-void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
+constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
     _Debug_order_set_unchecked2(_First, _Last, _Pred, _Iter_cat_t<_InIt>(),
         _Priority_tag<is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>>>());
@@ -3569,8 +3498,72 @@ inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE copy
+template <class _Source, class _Dest>
+struct _Ptr_cat_helper {
+    using _USource                        = _Unwrap_enum_t<_Source>;
+    using _UDest                          = _Unwrap_enum_t<_Dest>;
+    static constexpr bool _Really_trivial = conjunction_v<
+        bool_constant<sizeof(_USource) == sizeof(_UDest) && is_same_v<bool, _USource> == is_same_v<bool, _UDest>>,
+        is_integral<_USource>, is_integral<_UDest>>;
+    static constexpr bool _Trivially_copyable = _Really_trivial;
+};
+
+template <class _Elem>
+struct _Ptr_cat_helper<_Elem, _Elem> { // determines _Ptr_cat's result when the types are the same
+    static constexpr bool _Really_trivial     = is_trivial_v<_Elem>;
+    static constexpr bool _Trivially_copyable = is_trivially_copyable_v<_Elem>;
+};
+
+template <class _Anything>
+struct _Ptr_cat_helper<_Anything*, const _Anything*> {
+    // determines _Ptr_cat's result when all we do is add const to a pointer
+    static constexpr bool _Really_trivial     = true;
+    static constexpr bool _Trivially_copyable = true;
+};
+
+template <class _Anything>
+struct _Ptr_cat_helper<_Anything*, volatile _Anything*> {
+    // determines _Ptr_cat's result when all we do is add volatile to a pointer
+    static constexpr bool _Really_trivial     = true;
+    static constexpr bool _Trivially_copyable = true;
+};
+
+template <class _Anything>
+struct _Ptr_cat_helper<_Anything*, const volatile _Anything*> {
+    // determines _Ptr_cat's result when all we do is add cv to a pointer
+    static constexpr bool _Really_trivial     = true;
+    static constexpr bool _Trivially_copyable = true;
+};
+
+struct _False_copy_cat {
+    static constexpr bool _Really_trivial     = false;
+    static constexpr bool _Trivially_copyable = false;
+};
+
+template <class _Source, class _Dest>
+struct _Ptr_copy_cat : _False_copy_cat {}; // unwrap the pointer-like type and dispatch to _Ptr_cat_helper for copy
+
+template <class _Source, class _Dest>
+struct _Ptr_copy_cat<_Source*, _Dest*>
+    : conditional_t<is_trivially_assignable_v<_Dest&, _Source&>,
+          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {};
+
+template <class _Source, class _Dest>
+struct _Ptr_copy_cat<move_iterator<_Source*>, _Dest*> : _Ptr_copy_cat<_Source*, _Dest*> {};
+
+template <class _Source, class _Dest>
+struct _Ptr_move_cat : _False_copy_cat {}; // unwrap the pointer-like type and dispatch to _Ptr_cat_helper for move
+
+template <class _Source, class _Dest>
+struct _Ptr_move_cat<_Source*, _Dest*>
+    : conditional_t<is_trivially_assignable_v<_Dest&, _Source>,
+          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {};
+
+template <class _Source, class _Dest>
+struct _Ptr_move_cat<move_iterator<_Source*>, _Dest*> : _Ptr_move_cat<_Source*, _Dest*> {};
+
 template <class _InIt, class _OutIt>
-_OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) { // implement copy-like function as memmove
+_OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last));
     char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_Dest));
@@ -3586,18 +3579,23 @@ _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _O
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _OutIt>
-_OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
+_CONSTEXPR20_ICE _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
-    // note: _Copy_unchecked is called directly from elsewhere in the STL
+    // note: _Copy_unchecked has callers other than the copy family
     if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
-        return _Copy_memmove(_First, _Last, _Dest);
-    } else {
-        for (; _First != _Last; ++_Dest, (void) ++_First) {
-            *_Dest = *_First;
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            return _Copy_memmove(_First, _Last, _Dest);
         }
-
-        return _Dest;
     }
+
+    for (; _First != _Last; ++_Dest, (void) ++_First) {
+        *_Dest = *_First;
+    }
+
+    return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt, class _OutIt>
@@ -3619,13 +3617,13 @@ _OutIt _Copy_unchecked1(_InIt _First, _InIt _Last, _OutIt _Dest, true_type) {
 template <class _InIt, class _OutIt>
 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
-    // note: _Copy_unchecked is called directly from elsewhere in the STL
+    // note: _Copy_unchecked has callers other than the copy family
     return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
 template <class _InIt, class _OutIt>
-_OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_First, _Last) to [_Dest, ...)
+_CONSTEXPR20_ICE _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_First, _Last) to [_Dest, ...)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -3636,7 +3634,8 @@ _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_First, _Last) t
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize>
-_DestTy* copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) { // copy [_First, _Last) to [_Dest, ...)
+_CONSTEXPR20_ICE _DestTy* copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
+    // copy [_First, _Last) to [_Dest, ...)
     return _STD copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
 }
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
@@ -3665,25 +3664,33 @@ _DestTy* copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize
 // FUNCTION TEMPLATE copy_n
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _OutIt>
-_OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _First + _Count) to [_Dest, ...)
+_CONSTEXPR20_ICE _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
+    // copy [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable) {
-            _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
-        } else {
-            for (;;) {
-                *_UDest = *_UFirst;
-                ++_UDest;
-                --_Count;
-                if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
-                                   // see LWG-2471
-                    break;
-                }
-
-                ++_UFirst;
+#ifdef __cpp_lib_is_constant_evaluated
+            if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+            {
+                _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+                _Seek_wrapped(_Dest, _UDest);
+                return _Dest;
             }
+        }
+
+        for (;;) {
+            *_UDest = *_UFirst;
+            ++_UDest;
+            --_Count;
+            if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
+                               // see LWG-2471
+                break;
+            }
+
+            ++_UFirst;
         }
 
         _Seek_wrapped(_Dest, _UDest);
@@ -3734,7 +3741,7 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _SourceTy, size_t _SourceSize, class _Diff, class _OutIt>
-_OutIt copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _OutIt _Dest) {
+_CONSTEXPR20_ICE _OutIt copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _OutIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...), array source
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
@@ -3746,7 +3753,7 @@ _OutIt copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _OutIt _Dest) 
 }
 
 template <class _InIt, class _Diff, class _DestTy, size_t _DestSize>
-_DestTy* copy_n(_InIt _First, _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20_ICE _DestTy* copy_n(_InIt _First, _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
     // copy [_First, _First + _Count) to [_Dest, ...), array dest
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
@@ -3758,7 +3765,7 @@ _DestTy* copy_n(_InIt _First, _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
 }
 
 template <class _SourceTy, size_t _SourceSize, class _Diff, class _DestTy, size_t _DestSize>
-_DestTy* copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20_ICE _DestTy* copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
     // copy [_First, _First + _Count) to [_Dest, ...), array source/dest
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
@@ -3829,20 +3836,26 @@ _BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_Bid
 
 #if _HAS_IF_CONSTEXPR
 template <class _BidIt1, class _BidIt2>
-_BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
+_CONSTEXPR20_ICE _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     if constexpr (_Ptr_copy_cat<decltype(_ULast), decltype(_UDest)>::_Trivially_copyable) {
-        _UDest = _Copy_backward_memmove(_UFirst, _ULast, _UDest);
-    } else {
-        while (_UFirst != _ULast) {
-            *--_UDest = *--_ULast;
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            _UDest = _Copy_backward_memmove(_UFirst, _ULast, _UDest);
+            _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
         }
     }
 
+    while (_UFirst != _ULast) {
+        *--_UDest = *--_ULast;
+    }
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
@@ -3887,18 +3900,23 @@ _BidIt2 copy_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 // FUNCTION TEMPLATE move
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _OutIt>
-_OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
+_CONSTEXPR20_ICE _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
-    // note: _Move_unchecked is called directly from elsewhere in the STL
+    // note: _Move_unchecked has callers other than the move family
     if constexpr (_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable) {
-        return _Copy_memmove(_First, _Last, _Dest);
-    } else {
-        for (; _First != _Last; ++_Dest, (void) ++_First) {
-            *_Dest = _STD move(*_First);
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            return _Copy_memmove(_First, _Last, _Dest);
         }
-
-        return _Dest;
     }
+
+    for (; _First != _Last; ++_Dest, (void) ++_First) {
+        *_Dest = _STD move(*_First);
+    }
+
+    return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt, class _OutIt>
@@ -3920,13 +3938,13 @@ _OutIt _Move_unchecked1(_InIt _First, _InIt _Last, _OutIt _Dest, true_type) {
 template <class _InIt, class _OutIt>
 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...), choose optimization
-    // note: _Move_unchecked is called directly from elsewhere in the STL
+    // note: _Move_unchecked has callers other than the move family
     return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
 template <class _InIt, class _OutIt>
-_OutIt move(_InIt _First, _InIt _Last, _OutIt _Dest) {
+_CONSTEXPR20_ICE _OutIt move(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -3967,18 +3985,23 @@ _DestTy* move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize
 // FUNCTION TEMPLATE move_backward
 #if _HAS_IF_CONSTEXPR
 template <class _BidIt1, class _BidIt2>
-_BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
+_CONSTEXPR20_ICE _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
-    // note: _Move_backward_unchecked is called directly from elsewhere in the STL
+    // note: _Move_backward_unchecked has callers other than the move_backward family
     if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
-        return _Copy_backward_memmove(_First, _Last, _Dest);
-    } else {
-        while (_First != _Last) {
-            *--_Dest = _STD move(*--_Last);
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            return _Copy_backward_memmove(_First, _Last, _Dest);
         }
-
-        return _Dest;
     }
+
+    while (_First != _Last) {
+        *--_Dest = _STD move(*--_Last);
+    }
+
+    return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _BidIt1, class _BidIt2>
@@ -4000,14 +4023,15 @@ _BidIt2 _Move_backward_unchecked1(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, 
 template <class _BidIt1, class _BidIt2>
 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest), choose optimization
-    // note: _Move_backward_unchecked is called directly from elsewhere in the STL
+    // note: _Move_backward_unchecked has callers other than the move_backward family
     return _Move_backward_unchecked1(
         _First, _Last, _Dest, bool_constant<_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
 template <class _BidIt1, class _BidIt2>
-_BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) { // move [_First, _Last) backwards to [..., _Dest)
+_CONSTEXPR20_ICE _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
+    // move [_First, _Last) backwards to [..., _Dest)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -4067,16 +4091,23 @@ _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Ty>
-void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { // copy _Val through [_First, _Last)
+_CONSTEXPR20_ICE void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
+    // copy _Val through [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-        _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
-    } else {
-        for (; _UFirst != _ULast; ++_UFirst) {
-            *_UFirst = _Val;
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
+            return;
         }
+    }
+
+    for (; _UFirst != _ULast; ++_UFirst) {
+        *_UFirst = _Val;
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
@@ -4115,18 +4146,25 @@ void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* ter
 // FUNCTION TEMPLATE fill_n
 #if _HAS_IF_CONSTEXPR
 template <class _OutIt, class _Diff, class _Ty>
-_OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {
+_CONSTEXPR20_ICE _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {
     // copy _Val _Count times through [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
-            _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
-            _UDest += _Count;
-        } else {
-            for (; 0 < _Count; --_Count, (void) ++_UDest) {
-                *_UDest = _Val;
+#ifdef __cpp_lib_is_constant_evaluated
+            if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+            {
+                _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
+                _UDest += _Count;
+                _Seek_wrapped(_Dest, _UDest);
+                return _Dest;
             }
+        }
+
+        for (; 0 < _Count; --_Count, (void) ++_UDest) {
+            *_UDest = _Val;
         }
 
         _Seek_wrapped(_Dest, _UDest);
@@ -4230,26 +4268,31 @@ typename _Equal_memcmp_is_safe_helper<remove_const_t<_Obj1>, remove_const_t<_Obj
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20_ICE bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, ...) using _Pred
     _Adl_verify_range(_First1, _Last1);
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     if constexpr (decltype(_Equal_memcmp_is_safe(_UFirst1, _UFirst2, _Pred))::value) {
-        const auto _First1_ch = reinterpret_cast<const char*>(_UFirst1);
-        const auto _First2_ch = reinterpret_cast<const char*>(_UFirst2);
-        const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_ULast1) - _First1_ch);
-        return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-    } else {
-        for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-            if (!_Pred(*_UFirst1, *_UFirst2)) {
-                return false;
-            }
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            const auto _First1_ch = reinterpret_cast<const char*>(_UFirst1);
+            const auto _First2_ch = reinterpret_cast<const char*>(_UFirst2);
+            const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_ULast1) - _First1_ch);
+            return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }
-
-        return true;
     }
+
+    for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+        if (!_Pred(*_UFirst1, *_UFirst2)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt1, class _InIt2, class _Pr>
@@ -4292,7 +4335,8 @@ _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Pr, enable_if_t<!is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
+_NODISCARD _CONSTEXPR20_ICE bool equal(
+    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, ...) using _Pred
     return _STD equal(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
 }
@@ -4318,14 +4362,14 @@ _NODISCARD bool equal(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2>
-_NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
+_NODISCARD _CONSTEXPR20_ICE bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
     // compare [_First1, _Last1) to [_First2, ...)
     return _STD equal(_First1, _Last1, _First2, equal_to<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize>
-_NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
+_NODISCARD _CONSTEXPR20_ICE bool equal(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
     // compare [_First1, _Last1) to [_First2, ...)
     return _STD equal(_First1, _Last1, _First2, equal_to<>());
 }
@@ -4351,7 +4395,8 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20_ICE bool equal(
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, _Last2) using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4435,7 +4480,8 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2>
-_NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
+_NODISCARD _CONSTEXPR20_ICE bool equal(
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
     // compare [_First1, _Last1) to [_First2, _Last2)
     return _STD equal(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
@@ -4485,27 +4531,27 @@ using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
     void>>; // checks the lex_compare element types for memcmp safety
 
 template <class _InIt1, class _InIt2, class _Pr>
-_Lex_compare_optimize<void> _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
+constexpr _Lex_compare_optimize<void> _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
     // return lex_compare optimization category for arbitrary iterators
     return {};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-_Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
+constexpr _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
     _Obj1* const&, _Obj2* const&, const less<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and less<_FTy>
     return {};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-_Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
+constexpr _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
     _Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and greater<_FTy>
     return {};
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
-bool _Lex_compare_unchecked(
+_NODISCARD constexpr bool _Lex_compare_unchecked(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<void>) {
     // order [_First1, _Last1) vs. [_First2, _Last2) using _Pred, no special optimization
     for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) { // something to compare, do it
@@ -4520,9 +4566,15 @@ bool _Lex_compare_unchecked(
 }
 
 template <class _InIt1, class _InIt2, class _Pr, class _Memcmp_pr>
-bool _Lex_compare_unchecked(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr, _Lex_compare_optimize<_Memcmp_pr>) {
+_NODISCARD _CONSTEXPR20_ICE bool _Lex_compare_unchecked(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<_Memcmp_pr>) {
     // order [_First1, _Last1) vs. [_First2, _Last2) memcmp optimization
+#ifdef __cpp_lib_is_constant_evaluated
+    if (_STD is_constant_evaluated()) {
+        return _Lex_compare_unchecked(_First1, _Last1, _First2, _Last2, _Pred, _Lex_compare_optimize<void>{});
+    }
+#endif // __cpp_lib_is_constant_evaluated
+    (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
     const int _Ans   = _CSTD memcmp(_First1, _First2, _Num1 < _Num2 ? _Num1 : _Num2);
@@ -4530,7 +4582,8 @@ bool _Lex_compare_unchecked(
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD bool lexicographical_compare(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20_ICE bool lexicographical_compare(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // order [_First1, _Last1) vs. [_First2, _Last2) using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4543,7 +4596,7 @@ _NODISCARD bool lexicographical_compare(_InIt1 _First1, _InIt1 _Last1, _InIt2 _F
 }
 
 template <class _InIt1, class _InIt2>
-_NODISCARD bool lexicographical_compare(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+_NODISCARD _CONSTEXPR20_ICE bool lexicographical_compare(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, less<>());
 }
@@ -4572,59 +4625,47 @@ _NODISCARD bool lexicographical_compare(
 
 // FUNCTION TEMPLATE find
 template <class _Ty>
-bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag) { // signed _Elem, signed _Ty
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag) { // signed _Elem, signed _Ty
     return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
 }
 
 template <class _Ty>
-bool _Within_limits(const _Ty& _Val, true_type, false_type, true_type) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, false_type, true_type) {
     // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
     return _Val <= SCHAR_MAX || static_cast<_Ty>(SCHAR_MIN) <= _Val;
 }
 
 template <class _Ty>
-bool _Within_limits(const _Ty& _Val, true_type, false_type, false_type) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, false_type, false_type) {
     // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
     return _Val <= SCHAR_MAX;
 }
 
 template <class _Ty>
-bool _Within_limits(const _Ty& _Val, false_type, true_type, _Any_tag) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, true_type, _Any_tag) {
     // unsigned _Elem, signed _Ty
     return 0 <= _Val && _Val <= UCHAR_MAX;
 }
 
 template <class _Ty>
-bool _Within_limits(const _Ty& _Val, false_type, false_type, _Any_tag) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, false_type, _Any_tag) {
     // unsigned _Elem, unsigned _Ty
     return _Val <= UCHAR_MAX;
 }
 
 template <class _InIt, class _Ty>
-bool _Within_limits(_InIt, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
+_NODISCARD constexpr bool _Within_limits(_InIt, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
     using _Elem = remove_pointer_t<_InIt>;
     return _Within_limits(_Val, is_signed<_Elem>{}, is_signed<_Ty>{}, bool_constant<-1 == static_cast<_Ty>(-1)>{});
 }
 
 template <class _InIt>
-bool _Within_limits(_InIt, const bool&) { // bools are always within the limits of _Elem
+_NODISCARD constexpr bool _Within_limits(_InIt, const bool&) { // bools are always within the limits of _Elem
     return true;
 }
 
 template <class _InIt, class _Ty>
-_InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, true_type) {
-    // find first byte matching integral _Val
-    if (!_Within_limits(_First, _Val)) {
-        return _Last;
-    }
-
-    _First =
-        static_cast<_InIt>(_CSTD memchr(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
-    return _First ? _First : _Last;
-}
-
-template <class _InIt, class _Ty>
-_InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, false_type) {
+_NODISCARD constexpr _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, false_type) {
     // find first matching _Val
     for (; _First != _Last; ++_First) {
         if (*_First == _Val) {
@@ -4636,7 +4677,24 @@ _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, false_t
 }
 
 template <class _InIt, class _Ty>
-_InIt _Find_unchecked(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
+_NODISCARD _CONSTEXPR20_ICE _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, true_type) {
+    // find first byte matching integral _Val
+    if (!_Within_limits(_First, _Val)) {
+        return _Last;
+    }
+
+#ifdef __cpp_lib_is_constant_evaluated
+    if (_STD is_constant_evaluated()) {
+        return _Find_unchecked1(_First, _Last, _Val, false_type{});
+    }
+#endif // __cpp_lib_is_constant_evaluated
+    _First =
+        static_cast<_InIt>(_CSTD memchr(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+    return _First ? _First : _Last;
+}
+
+template <class _InIt, class _Ty>
+_NODISCARD _CONSTEXPR20_ICE _InIt _Find_unchecked(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
     // activate optimization for pointers to (const) bytes and integral values
     using _Memchr_opt = bool_constant<
@@ -4647,7 +4705,7 @@ _InIt _Find_unchecked(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
 }
 
 template <class _InIt, class _Ty>
-_NODISCARD _InIt find(_InIt _First, const _InIt _Last, const _Ty& _Val) { // find first matching _Val
+_NODISCARD _CONSTEXPR20_ICE _InIt find(_InIt _First, const _InIt _Last, const _Ty& _Val) { // find first matching _Val
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First, _Find_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
     return _First;
@@ -4660,7 +4718,7 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
 
 // FUNCTION TEMPLATE count
 template <class _InIt, class _Ty>
-_NODISCARD _Iter_diff_t<_InIt> count(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
+_NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // count elements that match _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst               = _Get_unwrapped(_First);
@@ -4684,7 +4742,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count(
 
 // FUNCTION TEMPLATE is_permutation
 template <class _InIt, class _Ty, class _Pr>
-_NODISCARD _InIt _Find_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD constexpr _InIt _Find_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
     for (; _First != _Last; ++_First) {
         if (_Pred(*_First, _Val)) {
             break;
@@ -4695,7 +4753,7 @@ _NODISCARD _InIt _Find_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr 
 }
 
 template <class _InIt, class _Ty, class _Pr>
-_NODISCARD _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD constexpr _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
     _Iter_diff_t<_InIt> _Count = 0;
 
     for (; _First != _Last; ++_First) {
@@ -4728,7 +4786,7 @@ void _Trim_matching_suffixes(
 #endif // !_HAS_IF_CONSTEXPR
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD bool _Check_match_counts(
+_NODISCARD _CONSTEXPR20 bool _Check_match_counts(
     const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), after matching prefix removal
     _STL_INTERNAL_CHECK(!_Pred(*_First1, *_First2));
@@ -4764,7 +4822,7 @@ _NODISCARD bool _Check_match_counts(
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
         if (!_Pred(*_First1, *_First2)) {
@@ -4781,7 +4839,7 @@ _NODISCARD bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
     _Adl_verify_range(_First1, _Last1);
     const auto _UFirst1 = _Get_unwrapped(_First1);
@@ -4792,14 +4850,15 @@ _NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _FwdIt1, class _RightTy, size_t _RightSize, class _Pr, enable_if_t<!is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(
+    _FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
     return _STD is_permutation(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
 }
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _FwdIt1, class _FwdIt2>
-bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
     return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
 }
@@ -4807,14 +4866,14 @@ bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _FwdIt1, class _RightTy, size_t _RightSize>
-_NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
     return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
 }
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
+_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
     forward_iterator_tag, forward_iterator_tag) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, arbitrary iterators
     for (;;) { // trim matching prefix
@@ -4855,7 +4914,7 @@ bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
+_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
     random_access_iterator_tag, random_access_iterator_tag) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, random-access iterators
     if (_Last1 - _First1 != _Last2 - _First2) {
@@ -4873,7 +4932,8 @@ bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(
+    _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4882,7 +4942,7 @@ _NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
 }
 
 template <class _FwdIt1, class _FwdIt2>
-_NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2)
     return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
@@ -4890,7 +4950,7 @@ _NODISCARD bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2,
 // FUNCTION TEMPLATE reverse
 #if _HAS_IF_CONSTEXPR
 template <class _BidIt>
-void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [_First, _Last)
+_CONSTEXPR20_ICE void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
@@ -4898,20 +4958,44 @@ void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [
     using _Elem = remove_pointer_t<decltype(_UFirst)>;
     constexpr bool _Allow_vectorization =
         conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+
     if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
-        __std_reverse_trivially_swappable_1(_UFirst, _ULast);
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
-        __std_reverse_trivially_swappable_2(_UFirst, _ULast);
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
-        __std_reverse_trivially_swappable_4(_UFirst, _ULast);
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
-        __std_reverse_trivially_swappable_8(_UFirst, _ULast);
-    } else
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-    {
-        for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
-            _STD iter_swap(_UFirst, _ULast);
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            __std_reverse_trivially_swappable_1(_UFirst, _ULast);
+            return;
         }
+    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            __std_reverse_trivially_swappable_2(_UFirst, _ULast);
+            return;
+        }
+    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            __std_reverse_trivially_swappable_4(_UFirst, _ULast);
+            return;
+        }
+    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            __std_reverse_trivially_swappable_8(_UFirst, _ULast);
+            return;
+        }
+    }
+#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+
+    for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
+        _STD iter_swap(_UFirst, _ULast);
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -4986,7 +5070,7 @@ void reverse(_ExPo&&, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
 
 // FUNCTION TEMPLATE rotate
 template <class _BidIt>
-pair<_BidIt, _BidIt> _Reverse_until_sentinel_unchecked(_BidIt _First, _BidIt _Sentinel, _BidIt _Last) {
+constexpr pair<_BidIt, _BidIt> _Reverse_until_sentinel_unchecked(_BidIt _First, _BidIt _Sentinel, _BidIt _Last) {
     // reverse until either _First or _Last hits _Sentinel
     while (_First != _Sentinel && _Last != _Sentinel) {
         _STD iter_swap(_First, --_Last);
@@ -4998,7 +5082,7 @@ pair<_BidIt, _BidIt> _Reverse_until_sentinel_unchecked(_BidIt _First, _BidIt _Se
 
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt>
-_FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
+_CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     // exchange the ranges [_First, _Mid) and [_Mid, _Last)
     // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
     // returns the iterator pointing at *_First's new home
@@ -5130,7 +5214,7 @@ _FwdIt rotate(_ExPo&&, _FwdIt _First, _FwdIt _Mid, _FwdIt _Last) noexcept /* ter
 
 // FUNCTION TEMPLATE find_if
 template <class _InIt, class _Pr>
-_NODISCARD _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred) { // find first satisfying _Pred
+_NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred) { // find first satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -5146,7 +5230,7 @@ _NODISCARD _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred) { // find f
 
 // FUNCTION TEMPLATE lower_bound
 template <class _FwdIt, class _Ty, class _Pr>
-_NODISCARD _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element not before _Val, using _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst                = _Get_unwrapped(_First);
@@ -5165,6 +5249,12 @@ _NODISCARD _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val
 
     _Seek_wrapped(_First, _UFirst);
     return _First;
+}
+
+template <class _FwdIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+    // find first element not before _Val, using operator<
+    return _STD lower_bound(_First, _Last, _Val, less<>());
 }
 
 // CLASS TEMPLATE _Rng_from_urng

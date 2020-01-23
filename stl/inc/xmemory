@@ -1997,7 +1997,8 @@ struct _Alloc_temporary {
 
 // FUNCTION TEMPLATE remove
 template <class _FwdIt, class _Ty>
-_NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { // remove each matching _Val
+_NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
+    // remove each matching _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -2018,7 +2019,8 @@ _NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { /
 
 // FUNCTION TEMPLATE remove_if
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) { // remove each satisfying _Pred
+_NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
+    // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);

@@ -128,6 +128,7 @@
 // _HAS_CXX20 directly controls:
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0122R7 <span>
+// P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
 // P0356R5 bind_front()
@@ -155,6 +156,7 @@
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
 //     (partially implemented, lerp() not yet constexpr)
+// P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
 //     (partially implemented)
@@ -1025,7 +1027,8 @@
 #define __cpp_lib_unwrap_ref              201811L
 
 #ifdef __cpp_lib_is_constant_evaluated
-#define __cpp_lib_constexpr_numeric 201911L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_numeric    201911L
 #endif // __cpp_lib_is_constant_evaluated
 
 #endif // _HAS_CXX20
