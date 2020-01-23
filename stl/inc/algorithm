@@ -2709,7 +2709,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     auto _ULast        = _Get_unwrapped(_Last);
     using _Diff        = _Iter_diff_t<_RanIt>;
     _Diff _Count       = _ULast - _UFirst;
-    if (2 <= _Count) {
+    if (1 < _Count) {
         _Iter_value_t<_RanIt> _Val = _STD move(*--_ULast);
         _Push_heap_by_index(_UFirst, --_Count, _Diff(0), _STD move(_Val), _Pass_fn(_Pred));
     }
@@ -2764,7 +2764,7 @@ _CONSTEXPR20 void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // pop *_First to *(_Last - 1) and reheap, using _Pred
-    if (2 <= _Last - _First) {
+    if (1 < _Last - _First) {
         --_Last;
         _Iter_value_t<_RanIt> _Val = _STD move(*_Last);
         _Pop_heap_hole_unchecked(_First, _Last, _Last, _STD move(_Val), _Pred);
@@ -2879,7 +2879,7 @@ _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* 
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // order heap by repeatedly popping, using _Pred
-    for (; 2 <= _Last - _First; --_Last) {
+    for (; 1 < _Last - _First; --_Last) {
         _Pop_heap_unchecked(_First, _Last, _Pred);
     }
 }
@@ -3523,7 +3523,7 @@ _CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<
         const _Iter_diff_t<_RanIt> _Count = _Last - _First;
 
         if (_Count <= _ISORT_MAX) {
-            if (2 <= _Count) {
+            if (1 < _Count) {
                 _Insertion_sort_unchecked2(_First, _Last, _Pred);
             }
 
@@ -3678,7 +3678,7 @@ void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_d
         _First = _Insertion_sort_unchecked2(_First, _STD next(_First, _Diffsort_max), _Pred);
     }
 
-    if (2 <= _Count) {
+    if (1 < _Count) {
         _Insertion_sort_unchecked2(_First, _Last, _Pred); // sort partial last chunk
     }
 }
@@ -3720,7 +3720,7 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     // sort preserving order of equivalents, using _Pred
     using _Diff = _Iter_diff_t<_BidIt>;
     if (_Count <= _ISORT_MAX) {
-        if (2 < _Count) {
+        if (1 < _Count) {
             _Insertion_sort_unchecked2(_First, _Last, _Pred); // small
         }
     } else { // sort halves and merge
@@ -3748,7 +3748,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        if (_Count > 1) {
+        if (1 < _Count) {
             _Insertion_sort_unchecked2(_UFirst, _ULast, _Pass_fn(_Pred));
         }
 
@@ -3899,7 +3899,7 @@ _CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr 
     for (;;) {
         const _Iter_diff_t<_RanIt> _Count = _Last - _First;
         if (_Count <= _ISORT_MAX) {
-            if (2 <= _Count) {
+            if (1 < _Count) {
                 _Insertion_sort_unchecked2(_UFirst, _ULast, _Pass_fn(_Pred)); // sort any remainder
             }
 

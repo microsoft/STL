@@ -2673,11 +2673,11 @@ bool _Process_sort_work_item(const _RanIt _Basis, _Pr _Pred, _Sort_work_item<_Ra
     const auto _Last             = _First + _Size;
     const auto _Ideal            = _Wi._Ideal;
     if (_Size <= _Diffsort_max) {
-        if (2 <= _Size) {
+        if (1 < _Size) {
             _Insertion_sort_unchecked2(_First, _Last, _Pred);
-            _Work_complete += _Size;
         }
 
+        _Work_complete += _Size;
         return false;
     }
 
