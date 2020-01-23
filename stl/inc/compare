@@ -476,10 +476,6 @@ using common_comparison_category_t = typename common_comparison_category<_Types.
 
 #if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 // clang-format off
-template <class _Ty1, class _Ty2>
-    requires _Is_comparison_category<_Ty1> && _Is_comparison_category<_Ty2>
-struct _Common_type2<_Ty1, _Ty2, _Ty1, _Ty2> : common_comparison_category<_Ty1, _Ty2> {};
-
 template <class _Ty, class _Cat>
 concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
 
@@ -501,7 +497,7 @@ concept three_way_comparable_with = three_way_comparable<_Ty1, _Cat> && three_wa
 
 template <class _Ty1, class _Ty2 = _Ty1>
 using compare_three_way_result_t =
-    decltype(_STD declval<const remove_reference_t<_Ty1>>() <=> _STD declval<const remove_reference_t<_Ty2>>());
+    decltype(_STD declval<const remove_reference_t<_Ty1>&>() <=> _STD declval<const remove_reference_t<_Ty2>&>());
 
 template <class _Ty1, class _Ty2 = _Ty1>
 struct compare_three_way_result {};
