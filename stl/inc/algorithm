@@ -27,7 +27,7 @@ _END_EXTERN_C
 
 _STD_BEGIN
 // COMMON SORT PARAMETERS
-constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
+_INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 // STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
@@ -3521,8 +3521,13 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
     // order [_First, _Last), using _Pred
     for (;;) {
-        if (_Last - _First < _ISORT_MAX) { // small
-            _Insertion_sort_unchecked(_First, _Last, _Pred);
+        const _Iter_diff_t<_RanIt> _Count = _Last - _First;
+
+        if (_Count <= _ISORT_MAX) {
+            if (2 <= _Count) {
+                _Insertion_sort_unchecked(_First, _Last, _Pred);
+            }
+
             return;
         }
 
