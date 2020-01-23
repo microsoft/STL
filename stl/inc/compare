@@ -21,15 +21,23 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, toolset update AND Visual Studio 2019 16.5 Preview 2 release
+#if defined(__clang__) || defined(__EDG__) || (defined(_MSC_VER) && defined(__cpp_impl_p1959r0))
+#define _HAS_EQUALITY_COMPARISON_CATEGORIES 0
+#else // ^^^ implements P1959R0 / doesn't implement P1959R0 vvv
+#define _HAS_EQUALITY_COMPARISON_CATEGORIES 1
+#endif // ^^^ doesn't implement P1959R0 ^^^
+
 _STD_BEGIN
 using _Literal_zero = decltype(nullptr);
 using _Compare_t    = signed char;
 
 // These "pretty" enumerator names are safe since they reuse names of user-facing entities.
-enum class _Compare_eq : _Compare_t { equal = 0, equivalent = equal, nonequal = 1, nonequivalent = nonequal };
+enum class _Compare_eq : _Compare_t { equal = 0, equivalent = equal, _Nonequal = 1, _Nonequivalent = _Nonequal };
 enum class _Compare_ord : _Compare_t { less = -1, greater = 1 };
 enum class _Compare_ncmp : _Compare_t { unordered = -127 };
 
+#if _HAS_EQUALITY_COMPARISON_CATEGORIES
 // CLASS weak_equality
 class weak_equality {
 public:
@@ -43,8 +51,7 @@ public:
         return _Val._Value == 0;
     }
 
-#ifdef __cpp_impl_three_way_comparison
-    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
     _NODISCARD friend constexpr bool operator==(const weak_equality&, const weak_equality&) noexcept = default;
 
     _NODISCARD friend constexpr weak_equality operator<=>(const weak_equality _Val, _Literal_zero) noexcept {
@@ -66,14 +73,14 @@ public:
     _NODISCARD friend constexpr bool operator!=(_Literal_zero, const weak_equality _Val) noexcept {
         return _Val._Value != 0;
     }
-#endif // __cpp_impl_three_way_comparison
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
 private:
     _Compare_t _Value;
 };
 
 inline constexpr weak_equality weak_equality::equivalent(_Compare_eq::equivalent);
-inline constexpr weak_equality weak_equality::nonequivalent(_Compare_eq::nonequivalent);
+inline constexpr weak_equality weak_equality::nonequivalent(_Compare_eq::_Nonequivalent);
 
 // CLASS strong_equality
 class strong_equality {
@@ -94,8 +101,7 @@ public:
         return _Val._Value == 0;
     }
 
-#ifdef __cpp_impl_three_way_comparison
-    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
     _NODISCARD friend constexpr bool operator==(const strong_equality&, const strong_equality&) noexcept = default;
 
     _NODISCARD friend constexpr strong_equality operator<=>(const strong_equality _Val, _Literal_zero) noexcept {
@@ -117,16 +123,17 @@ public:
     _NODISCARD friend constexpr bool operator!=(_Literal_zero, const strong_equality _Val) noexcept {
         return _Val._Value != 0;
     }
-#endif // __cpp_impl_three_way_comparison
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
 private:
     _Compare_t _Value;
 };
 
 inline constexpr strong_equality strong_equality::equal(_Compare_eq::equal);
-inline constexpr strong_equality strong_equality::nonequal(_Compare_eq::nonequal);
+inline constexpr strong_equality strong_equality::nonequal(_Compare_eq::_Nonequal);
 inline constexpr strong_equality strong_equality::equivalent(_Compare_eq::equivalent);
-inline constexpr strong_equality strong_equality::nonequivalent(_Compare_eq::nonequivalent);
+inline constexpr strong_equality strong_equality::nonequivalent(_Compare_eq::_Nonequivalent);
+#endif // _HAS_EQUALITY_COMPARISON_CATEGORIES
 
 // CLASS partial_ordering
 class partial_ordering {
@@ -143,16 +150,17 @@ public:
     static const partial_ordering greater;
     static const partial_ordering unordered;
 
+#if _HAS_EQUALITY_COMPARISON_CATEGORIES
     constexpr operator weak_equality() const noexcept {
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
+#endif // _HAS_EQUALITY_COMPARISON_CATEGORIES
 
     _NODISCARD friend constexpr bool operator==(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value == 0;
     }
 
-#ifdef __cpp_impl_three_way_comparison
-    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
     _NODISCARD friend constexpr bool operator==(const partial_ordering&, const partial_ordering&) noexcept = default;
 #else // ^^^ supports <=> and P1185 / supports neither vvv
     _NODISCARD friend constexpr bool operator!=(const partial_ordering _Val, _Literal_zero) noexcept {
@@ -166,7 +174,7 @@ public:
     _NODISCARD friend constexpr bool operator!=(_Literal_zero, const partial_ordering _Val) noexcept {
         return !_Val._Is_ordered || 0 != _Val._Value;
     }
-#endif // __cpp_impl_three_way_comparison
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
     _NODISCARD friend constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Is_ordered && _Val._Value < 0;
@@ -232,9 +240,11 @@ public:
     static const weak_ordering equivalent;
     static const weak_ordering greater;
 
+#if _HAS_EQUALITY_COMPARISON_CATEGORIES
     constexpr operator weak_equality() const noexcept {
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
+#endif // _HAS_EQUALITY_COMPARISON_CATEGORIES
 
     constexpr operator partial_ordering() const noexcept {
         return partial_ordering{static_cast<_Compare_ord>(_Value)};
@@ -244,8 +254,7 @@ public:
         return _Val._Value == 0;
     }
 
-#ifdef __cpp_impl_three_way_comparison
-    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
     _NODISCARD friend constexpr bool operator==(const weak_ordering&, const weak_ordering&) noexcept = default;
 #else // ^^^ supports <=> and P1185 / supports neither vvv
     _NODISCARD friend constexpr bool operator!=(const weak_ordering _Val, _Literal_zero) noexcept {
@@ -259,7 +268,7 @@ public:
     _NODISCARD friend constexpr bool operator!=(_Literal_zero, const weak_ordering _Val) noexcept {
         return 0 != _Val._Value;
     }
-#endif // __cpp_impl_three_way_comparison
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
     _NODISCARD friend constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
@@ -324,6 +333,7 @@ public:
     static const strong_ordering equivalent;
     static const strong_ordering greater;
 
+#if _HAS_EQUALITY_COMPARISON_CATEGORIES
     constexpr operator weak_equality() const noexcept {
         return weak_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
@@ -331,6 +341,7 @@ public:
     constexpr operator strong_equality() const noexcept {
         return strong_equality{static_cast<_Compare_eq>(_Value != 0)};
     }
+#endif // _HAS_EQUALITY_COMPARISON_CATEGORIES
 
     constexpr operator partial_ordering() const noexcept {
         return partial_ordering{static_cast<_Compare_ord>(_Value)};
@@ -344,8 +355,7 @@ public:
         return _Val._Value == 0;
     }
 
-#ifdef __cpp_impl_three_way_comparison
-    // This declaration additionally requires P1185, but that proposal has no feature-test macro.
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
     _NODISCARD friend constexpr bool operator==(const strong_ordering&, const strong_ordering&) noexcept = default;
 #else // ^^^ supports <=> and P1185 / supports neither vvv
     _NODISCARD friend constexpr bool operator!=(const strong_ordering _Val, _Literal_zero) noexcept {
@@ -359,7 +369,7 @@ public:
     _NODISCARD friend constexpr bool operator!=(_Literal_zero, const strong_ordering _Val) noexcept {
         return 0 != _Val._Value;
     }
-#endif // __cpp_impl_three_way_comparison
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
     _NODISCARD friend constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
@@ -413,12 +423,12 @@ inline constexpr strong_ordering strong_ordering::equivalent(_Compare_eq::equiva
 inline constexpr strong_ordering strong_ordering::greater(_Compare_ord::greater);
 
 // FUNCTION is_eq
-_NODISCARD constexpr bool is_eq(const weak_equality _Comp) noexcept {
+_NODISCARD constexpr bool is_eq(const partial_ordering _Comp) noexcept {
     return _Comp == 0;
 }
 
 // FUNCTION is_neq
-_NODISCARD constexpr bool is_neq(const weak_equality _Comp) noexcept {
+_NODISCARD constexpr bool is_neq(const partial_ordering _Comp) noexcept {
     return _Comp != 0;
 }
 
@@ -444,26 +454,17 @@ _NODISCARD constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
 
 // ALIAS TEMPLATE common_comparison_category_t
 template <class _Ty>
-inline constexpr bool _Is_comparison_category =
-    _Is_any_of_v<_Ty, weak_equality, strong_equality, partial_ordering, weak_ordering, strong_ordering>;
+inline constexpr bool _Is_comparison_category = _Is_any_of_v<_Ty, partial_ordering, weak_ordering, strong_ordering>;
 
 template <class... _Types>
 struct common_comparison_category {
     static constexpr bool _All_comparison_categories     = (_Is_comparison_category<_Types> && ...);
-    static constexpr bool _At_least_one_weak_equality    = _Is_any_of_v<weak_equality, _Types...>;
-    static constexpr bool _At_least_one_strong_equality  = _Is_any_of_v<strong_equality, _Types...>;
     static constexpr bool _At_least_one_partial_ordering = _Is_any_of_v<partial_ordering, _Types...>;
     static constexpr bool _At_least_one_weak_ordering    = _Is_any_of_v<weak_ordering, _Types...>;
 
-    static constexpr bool _Bullet_4_2 =
-        _At_least_one_weak_equality
-        || (_At_least_one_strong_equality && (_At_least_one_partial_ordering || _At_least_one_weak_ordering));
-
     using type = conditional_t<_All_comparison_categories,
-        conditional_t<_Bullet_4_2, weak_equality,
-            conditional_t<_At_least_one_strong_equality, strong_equality,
-                conditional_t<_At_least_one_partial_ordering, partial_ordering,
-                    conditional_t<_At_least_one_weak_ordering, weak_ordering, strong_ordering>>>>,
+        conditional_t<_At_least_one_partial_ordering, partial_ordering,
+            conditional_t<_At_least_one_weak_ordering, weak_ordering, strong_ordering>>,
         void>;
 };
 

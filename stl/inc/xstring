@@ -1204,17 +1204,6 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
-#ifdef __cpp_lib_concepts
-    _NODISCARD friend constexpr const_iterator begin(basic_string_view _Right) noexcept {
-        // non-member overload to model the exposition-only forwarding-range concept
-        return _Right.begin();
-    }
-    _NODISCARD friend constexpr const_iterator end(basic_string_view _Right) noexcept {
-        // Ditto modeling forwarding-range
-        return _Right.end();
-    }
-#endif // __cpp_lib_concepts
-
     _NODISCARD constexpr const_iterator cbegin() const noexcept {
         return begin();
     }
@@ -1584,6 +1573,12 @@ private:
     size_type _Mysize;
 };
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <class _Elem, class _Traits>
+    inline constexpr bool enable_safe_range<basic_string_view<_Elem, _Traits>> = true;
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATES operator== FOR basic_string_view
 template <class _Elem, class _Traits>

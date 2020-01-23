@@ -1238,11 +1238,11 @@ public:
     }
 
     void set_value(_Ty& _Val) {
-        _MyPromise._Get_state_for_set()._Set_value(&_Val, false);
+        _MyPromise._Get_state_for_set()._Set_value(_STD addressof(_Val), false);
     }
 
     void set_value_at_thread_exit(_Ty& _Val) {
-        _MyPromise._Get_state_for_set()._Set_value(&_Val, true);
+        _MyPromise._Get_state_for_set()._Set_value(_STD addressof(_Val), true);
     }
 
     void set_exception(exception_ptr _Exc) {

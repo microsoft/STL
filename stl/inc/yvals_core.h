@@ -128,9 +128,12 @@
 
 // _HAS_CXX20 directly controls:
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
+// P0122R7 <span>
+// P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
 // P0356R5 bind_front()
+// P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
@@ -154,20 +157,29 @@
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
 //     (partially implemented, lerp() not yet constexpr)
+// P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1024R3 Enhancing span Usability
+// P1085R2 Removing span Comparisons
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
-//     (partially implemented)
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1394R4 Range Constructor For span
+// P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
+// P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1754R1 Rename Concepts To standard_case
+// P1870R1 safe_range
+// P1872R0 span Should Have size_type, Not index_type
+// P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
@@ -300,13 +312,11 @@
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__CUDACC__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION
-#elif defined(__clang__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694
-#else // vvv C1XX or non-CUDA EDG vvv
+#elif defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694/CUDA/ICC
+#else // vvv C1XX or IntelliSense vvv
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or non-CUDA EDG ^^^
+#endif // ^^^ C1XX or IntelliSense ^^^
 #endif // _HAS_CONDITIONAL_EXPLICIT
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
@@ -425,7 +435,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  201911L
+#define _MSVC_STL_UPDATE  201912L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -451,12 +461,22 @@
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// C++17 constexpr additions
+// N4842 [dcl.constexpr]/1: "A function or static data member declared with the
+// constexpr or consteval specifier is implicitly an inline function or variable"
+
+// Functions that became constexpr in C++17
 #if _HAS_CXX17
 #define _CONSTEXPR17 constexpr
-#else // ^^^ has C++17 constexpr additions / no C++17 constexpr additions vvv
+#else // ^^^ constexpr in C++17 and later / inline (not constexpr) in C++14 vvv
 #define _CONSTEXPR17 inline
-#endif // _HAS_CXX17
+#endif // ^^^ inline (not constexpr) in C++14 ^^^
+
+// Functions that became constexpr in C++20
+#if _HAS_CXX20
+#define _CONSTEXPR20 constexpr
+#else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
+#define _CONSTEXPR20 inline
+#endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -854,10 +874,23 @@
 #define _DEPRECATE_EXPERIMENTAL_ERASE
 #endif // ^^^ warning disabled ^^^
 
+// P0768R1 [depr.relops]
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_REL_OPS                                                                                      \
+    [[deprecated("warning STL4027: "                                                                                  \
+                 "The namespace std::rel_ops and its contents are deprecated in C++20. "                              \
+                 "Their use is superseded by C++20's <=> operator and automatic rewrites of relational expressions. " \
+                 "You can define _SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING or "                                      \
+                 "_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_REL_OPS
+#endif // ^^^ warning disabled ^^^
+
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_ATOMIC_INIT                                                  \
-    [[deprecated("warning STL4027: "                                                  \
+    [[deprecated("warning STL4028: "                                                  \
                  "std::atomic_init() overloads are deprecated in C++20. "             \
                  "The constructors of std::atomic provide equivalent functionality. " \
                  "You can define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING "     \
@@ -866,7 +899,7 @@
 #define _CXX20_DEPRECATE_ATOMIC_INIT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4028
+// next warning number: STL4029
 
 
 // LIBRARY FEATURE-TEST MACROS
@@ -905,15 +938,13 @@
 #define __cpp_lib_logical_traits                   201510L
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
-#ifndef _USING_V110_SDK71_
-#define __cpp_lib_shared_mutex 201505L
-#endif // _USING_V110_SDK71_
-#define __cpp_lib_shared_ptr_arrays             201611L
-#define __cpp_lib_transparent_operators         201510L
-#define __cpp_lib_type_trait_variable_templates 201510L
-#define __cpp_lib_uncaught_exceptions           201411L
-#define __cpp_lib_unordered_map_try_emplace     201411L
-#define __cpp_lib_void_t                        201411L
+#define __cpp_lib_shared_mutex                     201505L
+#define __cpp_lib_shared_ptr_arrays                201611L
+#define __cpp_lib_transparent_operators            201510L
+#define __cpp_lib_type_trait_variable_templates    201510L
+#define __cpp_lib_uncaught_exceptions              201411L
+#define __cpp_lib_unordered_map_try_emplace        201411L
+#define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
@@ -987,33 +1018,46 @@
 #endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
+#define __cpp_lib_constexpr_memory         201811L
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_int_pow2                 201806L
 
-#if defined(__clang__) || defined(__EDG__) \
-    || (defined(_MSC_VER) && _MSC_VER >= 1925 && !(_MSC_FULL_VER == 192528318 && _MSC_BUILD == 97))
+#if defined(__clang__) || defined(__EDG__) || (defined(_MSC_VER) && _MSC_VER >= 1925)
 #define __cpp_lib_is_constant_evaluated 201811L
-#endif // TRANSITION, VS 2019 16.5 Preview 2 and toolset update
+#endif // TRANSITION, VS 2019 16.5 Preview 2
 
+#define __cpp_lib_is_nothrow_convertible  201806L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
-#define __cpp_lib_nothrow_convertible     201806L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_shift                   201806L
+#define __cpp_lib_span                    201902L
 #define __cpp_lib_ssize                   201902L
 #define __cpp_lib_starts_ends_with        201711L
 #define __cpp_lib_to_address              201711L
 #define __cpp_lib_to_array                201907L
 #define __cpp_lib_type_identity           201806L
 #define __cpp_lib_unwrap_ref              201811L
+
+#ifdef __cpp_lib_is_constant_evaluated
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_numeric    201911L
+#endif // __cpp_lib_is_constant_evaluated
+
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
+// Functions that became constexpr in C++20, and require is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated
+#define _CONSTEXPR20_ICE constexpr
+#else // ^^^ constexpr with is_constant_evaluated / inline without is_constant_evaluated vvv
+#define _CONSTEXPR20_ICE inline
+#endif // __cpp_lib_is_constant_evaluated
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
