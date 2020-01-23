@@ -27,7 +27,7 @@ _END_EXTERN_C
 
 _STD_BEGIN
 // COMMON SORT PARAMETERS
-const int _ISORT_MAX = 32; // maximum size for insertion sort
+constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 // STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
@@ -3520,11 +3520,22 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 template <class _RanIt, class _Pr>
 _CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
     // order [_First, _Last), using _Pred
-    _Iter_diff_t<_RanIt> _Count = 0;
-    while (_ISORT_MAX < (_Count = _Last - _First) && 0 < _Ideal) { // divide and conquer by quicksort
+    for (;;) {
+        if (_Last - _First < _ISORT_MAX) { // small
+            _Insertion_sort_unchecked(_First, _Last, _Pred);
+            return;
+        }
+
+        if (_Ideal <= 0) { // heap sort if too many divisions
+            _Make_heap_unchecked(_First, _Last, _Pred);
+            _Sort_heap_unchecked(_First, _Last, _Pred);
+            return;
+        }
+
+        // divide and conquer by quicksort
         auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
 
-        _Ideal = _Ideal / 2 + _Ideal / 4; // allow 1.5 log2(N) divisions
+        _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 
         if (_Mid.first - _First < _Last - _Mid.second) { // loop on second half
             _Sort_unchecked(_First, _Mid.first, _Ideal, _Pred);
@@ -3533,13 +3544,6 @@ _CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<
             _Sort_unchecked(_Mid.second, _Last, _Ideal, _Pred);
             _Last = _Mid.first;
         }
-    }
-
-    if (_ISORT_MAX < _Count) { // heap sort if too many divisions
-        _Make_heap_unchecked(_First, _Last, _Pred);
-        _Sort_heap_unchecked(_First, _Last, _Pred);
-    } else if (2 <= _Count) {
-        _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     }
 }
 
