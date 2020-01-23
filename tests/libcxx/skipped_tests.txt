@@ -47,13 +47,6 @@ containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
-# libcxx incorrectly assumes moved-from non-POCMA containers are empty
-# See https://reviews.llvm.org/D61366
-containers\associative\map\map.cons\move_assign.pass.cpp
-containers\associative\multimap\multimap.cons\move_assign.pass.cpp
-containers\associative\multiset\multiset.cons\move_assign.pass.cpp
-containers\associative\set\set.cons\move_assign.pass.cpp
-
 # libcxx incorrectly thinks subspan<Offset, Count> can produce a span of dynamic extent
 # See https://reviews.llvm.org/D73138
 containers\views\span.sub\subspan.pass.cpp
