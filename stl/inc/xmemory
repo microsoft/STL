@@ -2075,14 +2075,7 @@ void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satis
 
 #if _HAS_CXX20
 
-// VARIABLE TEMPLATE _Is_pair_v
-template <class>
-inline constexpr bool _Is_pair_v = false;
-
-template <class _Ty1, class _Ty2>
-inline constexpr bool _Is_pair_v<pair<_Ty1, _Ty2>> = true;
-
-template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_pair_v<_Ty>, int> = 0>
+template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
 constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
     if constexpr (!uses_allocator_v<_Ty, _Alloc>) {
         static_assert(is_constructible_v<_Ty, _Types...>,
@@ -2103,7 +2096,7 @@ constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _
     }
 }
 
-template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_pair_v<_Ty>, int> = 0>
+template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
     return _STD make_tuple(piecewise_construct,
@@ -2121,7 +2114,7 @@ constexpr auto uses_allocator_construction_args(
             _STD forward<_Tuple2>(_Tup2)));
 }
 
-template <class _Ty, class _Alloc, enable_if_t<_Is_pair_v<_Ty>, int> = 0>
+template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
     // equivalent to
     // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>(), tuple<>());
@@ -2129,7 +2122,7 @@ constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
         uses_allocator_construction_args<typename _Ty::second_type>(_Al));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_pair_v<_Ty>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
     // equivalent to
     // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2139,7 +2132,7 @@ constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1
         uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_pair_v<_Ty>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
     // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2149,7 +2142,7 @@ constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_U
         uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_pair_v<_Ty>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
