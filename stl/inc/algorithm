@@ -3394,23 +3394,22 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 // FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
-_CONSTEXPR20_ICE _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
+_CONSTEXPR20_ICE _BidIt _Insertion_sort_unchecked2(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last), using _Pred
-    if (_First != _Last) {
-        for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
-            _BidIt _Next1              = _Next;
-            _Iter_value_t<_BidIt> _Val = _STD move(*_Next);
+    _STL_INTERNAL_CHECK(_First != _Last);
+    for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
+        _BidIt _Next1              = _Next;
+        _Iter_value_t<_BidIt> _Val = _STD move(*_Next);
 
-            if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
-                _Move_backward_unchecked(_First, _Next, ++_Next1);
-                *_First = _STD move(_Val);
-            } else { // look for insertion point after first
-                for (_BidIt _First1 = _Next1; _DEBUG_LT_PRED(_Pred, _Val, *--_First1); _Next1 = _First1) {
-                    *_Next1 = _STD move(*_First1); // move hole down
-                }
-
-                *_Next1 = _STD move(_Val); // insert element in hole
+        if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
+            _Move_backward_unchecked(_First, _Next, ++_Next1);
+            *_First = _STD move(_Val);
+        } else { // look for insertion point after first
+            for (_BidIt _First1 = _Next1; _DEBUG_LT_PRED(_Pred, _Val, *--_First1); _Next1 = _First1) {
+                *_Next1 = _STD move(*_First1); // move hole down
             }
+
+            *_Next1 = _STD move(_Val); // insert element in hole
         }
     }
 
@@ -3525,7 +3524,7 @@ _CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<
 
         if (_Count <= _ISORT_MAX) {
             if (2 <= _Count) {
-                _Insertion_sort_unchecked(_First, _Last, _Pred);
+                _Insertion_sort_unchecked2(_First, _Last, _Pred);
             }
 
             return;
@@ -3676,10 +3675,12 @@ void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_d
     // pre: _Count == distance(_First, _Last)
     constexpr auto _Diffsort_max = static_cast<_Iter_diff_t<_BidIt>>(_ISORT_MAX);
     for (; _Diffsort_max < _Count; _Count -= _Diffsort_max) { // sort chunks
-        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _Diffsort_max), _Pred);
+        _First = _Insertion_sort_unchecked2(_First, _STD next(_First, _Diffsort_max), _Pred);
     }
 
-    _Insertion_sort_unchecked(_First, _Last, _Pred); // sort partial last chunk
+    if (2 <= _Count) {
+        _Insertion_sort_unchecked2(_First, _Last, _Pred); // sort partial last chunk
+    }
 }
 
 template <class _BidIt, class _Pr>
@@ -3719,7 +3720,9 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     // sort preserving order of equivalents, using _Pred
     using _Diff = _Iter_diff_t<_BidIt>;
     if (_Count <= _ISORT_MAX) {
-        _Insertion_sort_unchecked(_First, _Last, _Pred); // small
+        if (2 < _Count) {
+            _Insertion_sort_unchecked2(_First, _Last, _Pred); // small
+        }
     } else { // sort halves and merge
         const auto _Half_count      = static_cast<_Diff>(_Count / 2);
         const auto _Half_count_ceil = static_cast<_Diff>(_Count - _Half_count);
@@ -3746,7 +3749,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
         if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
+            _Insertion_sort_unchecked2(_UFirst, _ULast, _Pass_fn(_Pred));
         }
 
         return;
@@ -3893,7 +3896,17 @@ _CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr 
         return; // nothing to do
     }
 
-    while (_ISORT_MAX < _ULast - _UFirst) { // divide and conquer, ordering partition containing Nth
+    for (;;) {
+        const _Iter_diff_t<_RanIt> _Count = _Last - _First;
+        if (_Count <= _ISORT_MAX) {
+            if (2 <= _Count) {
+                _Insertion_sort_unchecked2(_UFirst, _ULast, _Pass_fn(_Pred)); // sort any remainder
+            }
+
+            return;
+        }
+
+        // divide and conquer, ordering partition containing Nth
         auto _UMid = _Partition_by_median_guess_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
 
         if (_UMid.second <= _UNth) {
@@ -3904,8 +3917,6 @@ _CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr 
             _ULast = _UMid.first;
         }
     }
-
-    _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred)); // sort any remainder
 }
 
 template <class _RanIt>

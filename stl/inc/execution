@@ -2673,8 +2673,11 @@ bool _Process_sort_work_item(const _RanIt _Basis, _Pr _Pred, _Sort_work_item<_Ra
     const auto _Last             = _First + _Size;
     const auto _Ideal            = _Wi._Ideal;
     if (_Size <= _Diffsort_max) {
-        _Insertion_sort_unchecked(_First, _Last, _Pred);
-        _Work_complete += _Size;
+        if (2 <= _Size) {
+            _Insertion_sort_unchecked2(_First, _Last, _Pred);
+            _Work_complete += _Size;
+        }
+
         return false;
     }
 
@@ -3015,7 +3018,7 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
         if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
+            _Insertion_sort_unchecked2(_UFirst, _ULast, _Pass_fn(_Pred));
         }
 
         return;
