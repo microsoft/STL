@@ -55,6 +55,7 @@
 // P0777R1 Avoiding Unnecessary decay
 // P0809R0 Comparing Unordered Containers
 // P0883R2 Fixing Atomic Initialization
+// P0935R0 Eradicating Unnecessarily Explicit Default Constructors
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive
