@@ -20,11 +20,11 @@ jobs:
       inputs:
         targetType: filePath
         filePath: $(Build.SourcesDirectory)/azure-devops/install_msvc_preview.ps1
-    - task: CacheBeta@0
+    - task: Cache@2
       displayName: Cache vcpkg
       timeoutInMinutes: 10
       inputs:
-        key: $(vcpkgResponseFile) | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD
+        key: '"${{ parameters.targetPlatform}}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD'
         path: '$(vcpkgLocation)'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
@@ -36,7 +36,7 @@ jobs:
       displayName: 'Run vcpkg'
       timeoutInMinutes: 10
       inputs:
-        vcpkgArguments: '@$(vcpkgResponseFile)'
+        vcpkgArguments: 'boost-math:${{ parameters.targetPlatform }}-windows'
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
     - task: run-cmake@0
