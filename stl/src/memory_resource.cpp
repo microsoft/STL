@@ -11,11 +11,11 @@ namespace pmr {
     static memory_resource* _Default_resource = nullptr;
 
     extern "C" _CRT_SATELLITE_1 _Aligned_new_delete_resource_impl* __cdecl _Aligned_new_delete_resource() noexcept {
-        return &_Immortalize<_Aligned_new_delete_resource_impl>();
+        return &_Immortalize_pointer<_Aligned_new_delete_resource_impl>();
     }
 
     extern "C" _CRT_SATELLITE_1 _Unaligned_new_delete_resource_impl* __cdecl _Unaligned_new_delete_resource() noexcept {
-        return &_Immortalize<_Unaligned_new_delete_resource_impl>();
+        return &_Immortalize_pointer<_Unaligned_new_delete_resource_impl>();
     }
 
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept {
@@ -66,7 +66,7 @@ namespace pmr {
             }
         };
 
-        return &_Immortalize<_Null_resource>();
+        return &_Immortalize_pointer<_Null_resource>();
     }
 
 } // namespace pmr

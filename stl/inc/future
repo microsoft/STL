@@ -172,7 +172,7 @@ public:
 };
 
 _NODISCARD inline const error_category& future_category() noexcept {
-    return _Immortalize<_Future_error_category>();
+    return _Immortalize_two_pointers<_Future_error_category>();
 }
 
 // STRUCT TEMPLATE _State_deleter

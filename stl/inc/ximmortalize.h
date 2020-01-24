@@ -7,6 +7,10 @@
 #ifndef _XIMMORTALIZE_H
 #define _XIMMORTALIZE_H
 #include <yvals.h>
+#ifndef _M_CEE_PURE
+#include <atomic>
+#endif
+
 #if _STL_COMPILER_PREPROCESSOR
 
 #pragma pack(push, _CRT_PACKING)
@@ -39,6 +43,16 @@ constexpr _Ty& _Immortalize() noexcept { // return a reference to an object that
 }
 #pragma warning(pop)
 
+template <class _Ty>
+_Ty& _Immortalize_pointer() noexcept {
+    return _Immortalize<_Ty>();
+}
+
+template <class _Ty>
+_Ty& _Immortalize_two_pointers() noexcept {
+    return _Immortalize<_Ty>();
+}
+
 #else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
 template <class _Ty>
 union _Immortalizer_impl {
@@ -65,6 +79,33 @@ _Immortalizer_impl<_Ty>
 template <class _Ty>
 constexpr _Ty& _Immortalize() noexcept { // return a reference to an object that will live forever
     return _Immortalizer_impl<_Ty>::_Instance._Storage;
+}
+
+template <class _Ty>
+_Ty& _Immortalize_pointer() noexcept {
+    static atomic<uintptr_t> _Storage;
+    static_assert(sizeof(_Storage) == sizeof(_Ty), "Bad _Immortalize_pointer storage size");
+    if (_Storage.load(_STD memory_order_acquire) == 0) {
+        _Ty _Target;
+        _Storage.store(reinterpret_cast<uintptr_t&>(_Target), _STD memory_order_release);
+    }
+
+    return reinterpret_cast<_Ty&>(_Storage);
+}
+
+template <class _Ty>
+_Ty& _Immortalize_two_pointers() noexcept {
+    using _Arr = uintptr_t[2];
+    static atomic<uintptr_t> _Storage[2];
+    static_assert(sizeof(_Storage) == sizeof(_Ty), "Bad _Immortalize_two_pointers storage size");
+    static_assert(sizeof(_Storage) == sizeof(_Arr), "Bad assumptions about atomic layout");
+    if (_Storage[0].load(_STD memory_order_acquire) == 0) {
+        _Ty _Target;
+        _Storage[1].store(reinterpret_cast<_Arr&>(_Target)[1], _STD memory_order_relaxed);
+        _Storage[0].store(reinterpret_cast<_Arr&>(_Target)[0], _STD memory_order_release);
+    }
+
+    return reinterpret_cast<_Ty&>(_Storage);
 }
 #endif // _M_CEE_PURE
 _STD_END
