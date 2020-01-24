@@ -2074,6 +2074,16 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
 namespace ranges {
+    // VARIABLE TEMPLATE _Has_complete_elements
+    template <class>
+    static constexpr bool _Has_complete_elements = false;
+
+    // clang-format off
+    template <class _Ty>
+        requires requires(_Ty& __t) { sizeof(__t[0]); }
+    static constexpr bool _Has_complete_elements<_Ty> = true;
+    // clang-format on
+
     // VARIABLE TEMPLATE ranges::enable_safe_range
     template <class>
     inline constexpr bool enable_safe_range = false;
@@ -2110,8 +2120,12 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
+                    static_assert(_Has_complete_elements<_Ty>,
+                        "The range access customization point objects "
+                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
+                        "do not accept arrays of incomplete element types.");
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
@@ -2181,10 +2195,14 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 using _UnRef = remove_reference_t<_Ty>;
 
                 if constexpr (is_array_v<_UnRef>) {
+                    static_assert(_Has_complete_elements<_UnRef>,
+                        "The range access customization point objects "
+                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
+                        "do not accept arrays of incomplete element types.");
                     if constexpr (extent_v<_UnRef> != 0) {
                         return {_St::_Array, true};
                     } else {
@@ -2326,7 +2344,7 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rbegin()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
@@ -2399,7 +2417,7 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rend()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
@@ -2509,7 +2527,7 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 using _UnCV = remove_cvref_t<_Ty>;
 
                 if constexpr (is_array_v<_UnCV>) {
@@ -2586,7 +2604,7 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
@@ -2653,7 +2671,7 @@ namespace ranges {
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_CHECK(is_lvalue_reference_v<_Ty>);
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty>().data())};
                 } else if constexpr (_Has_contiguous_iterator<_Ty>) {
