@@ -673,8 +673,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
 // FUNCTION TEMPLATE _Equal_rev_pred_unchecked
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD _CONSTEXPR20_ICE bool _Equal_rev_pred_unchecked(
-    _InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2) using _Pred
     if constexpr (decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
 #ifdef __cpp_lib_is_constant_evaluated
@@ -728,8 +727,8 @@ bool _Equal_rev_pred_unchecked(const _InIt1 _First1, const _InIt2 _First2, const
 // FUNCTION TEMPLATE search
 #if _HAS_IF_CONSTEXPR
 template <class _FwdItHaystack, class _FwdItPat, class _Pr>
-_NODISCARD _CONSTEXPR20_ICE _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1,
-    const _FwdItPat _First2, const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
+_NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
+    const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1       = _Get_unwrapped(_First1);
@@ -828,7 +827,7 @@ _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, _F
 #endif // _HAS_CXX17
 
 template <class _FwdItHaystack, class _FwdItPat>
-_NODISCARD _CONSTEXPR20_ICE _FwdItHaystack search(
+_NODISCARD _CONSTEXPR20 _FwdItHaystack search(
     const _FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2, const _FwdItPat _Last2) {
     // find first [_First2, _Last2) match
     return _STD search(_First1, _Last1, _First2, _Last2, equal_to<>());
@@ -1274,7 +1273,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
 template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
-_CONSTEXPR20_ICE _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
+_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
     // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
 #ifdef __cpp_lib_is_constant_evaluated
     if (!_STD is_constant_evaluated())
@@ -1293,7 +1292,7 @@ _CONSTEXPR20_ICE _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _T
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
 
 template <class _FwdIt1, class _FwdIt2>
-_CONSTEXPR20_ICE _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+_CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
     const auto _UFirst1 = _Get_unwrapped(_First1);
@@ -1305,7 +1304,7 @@ _CONSTEXPR20_ICE _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _FwdIt1, class _DestTy, size_t _DestSize>
-_CONSTEXPR20_ICE _DestTy* swap_ranges(_FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* swap_ranges(_FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[_DestSize]) {
     // swap [_First1, _Last1) with [_Dest, ...), array dest
     return _STD swap_ranges(_First1, _Last1, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
 }
@@ -2084,7 +2083,7 @@ _DestTy* reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _DestTy (&_Dest)[_De
 
 // FUNCTION TEMPLATE rotate_copy
 template <class _FwdIt, class _OutIt>
-_CONSTEXPR20_ICE _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
     // copy rotating [_First, _Last)
     _Adl_verify_range(_First, _Mid);
     _Adl_verify_range(_Mid, _Last);
@@ -3014,7 +3013,7 @@ _NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
 }
 
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_CONSTEXPR20_ICE _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // copy merging ranges, both using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -3056,7 +3055,7 @@ _CONSTEXPR20_ICE _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _In
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20_ICE _DestTy* merge(
+_CONSTEXPR20 _DestTy* merge(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // copy merging ranges, both using _Pred, array dest
     return _STD merge(_First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
@@ -3065,15 +3064,14 @@ _CONSTEXPR20_ICE _DestTy* merge(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_CONSTEXPR20_ICE _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // copy merging ranges, both using operator<
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20_ICE _DestTy* merge(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // copy merging ranges, both using operator<, array dest
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
@@ -3394,7 +3392,7 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 // FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
-_CONSTEXPR20_ICE _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
+_CONSTEXPR20 _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last), using _Pred
     if (_First != _Last) {
         for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
@@ -3518,7 +3516,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 }
 
 template <class _RanIt, class _Pr>
-_CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
+_CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
     // order [_First, _Last), using _Pred
     _Iter_diff_t<_RanIt> _Count = 0;
     while (_ISORT_MAX < (_Count = _Last - _First) && 0 < _Ideal) { // divide and conquer by quicksort
@@ -3544,7 +3542,7 @@ _CONSTEXPR20_ICE void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<
 }
 
 template <class _RanIt, class _Pr>
-_CONSTEXPR20_ICE void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First, _Last), using _Pred
+_CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First, _Last), using _Pred
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -3552,7 +3550,7 @@ _CONSTEXPR20_ICE void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt>
-_CONSTEXPR20_ICE void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last), using operator<
+_CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last), using operator<
     _STD sort(_First, _Last, less<>());
 }
 
@@ -3873,7 +3871,7 @@ _RanIt partial_sort_copy(
 
 // FUNCTION TEMPLATE nth_element
 template <class _RanIt, class _Pr>
-_CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     // order Nth element, using _Pred
     _Adl_verify_range(_First, _Nth);
     _Adl_verify_range(_Nth, _Last);
@@ -3900,7 +3898,7 @@ _CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr 
 }
 
 template <class _RanIt>
-_CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element, using operator<
+_CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element, using operator<
     _STD nth_element(_First, _Nth, _Last, less<>());
 }
 
@@ -3976,8 +3974,7 @@ _NODISCARD bool includes(
 
 // FUNCTION TEMPLATE set_union
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_CONSTEXPR20_ICE _OutIt set_union(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4009,7 +4006,7 @@ _CONSTEXPR20_ICE _OutIt set_union(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20_ICE _DestTy* set_union(
+_CONSTEXPR20 _DestTy* set_union(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
@@ -4018,14 +4015,14 @@ _CONSTEXPR20_ICE _DestTy* set_union(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_CONSTEXPR20_ICE _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20_ICE _DestTy* set_union(
+_CONSTEXPR20 _DestTy* set_union(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
@@ -4176,7 +4173,7 @@ _DestTy* set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
 
 // FUNCTION TEMPLATE set_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_CONSTEXPR20_ICE _OutIt set_difference(
+_CONSTEXPR20 _OutIt set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // take set [_First2, _Last2) from [_First1, _Last1), using _Pred
     _Adl_verify_range(_First1, _Last1);
@@ -4208,7 +4205,7 @@ _CONSTEXPR20_ICE _OutIt set_difference(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20_ICE _DestTy* set_difference(
+_CONSTEXPR20 _DestTy* set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // take set [_First2, _Last2) from [_First1, _Last1), array dest
     return _STD set_difference(
@@ -4218,14 +4215,14 @@ _CONSTEXPR20_ICE _DestTy* set_difference(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_CONSTEXPR20_ICE _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // take set [_First2, _Last2) from [_First1, _Last1), using operator<
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20_ICE _DestTy* set_difference(
+_CONSTEXPR20 _DestTy* set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // take set [_First2, _Last2) from [_First1, _Last1), array dest
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
@@ -4269,7 +4266,7 @@ _DestTy* set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 
 
 // FUNCTION TEMPLATE set_symmetric_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_CONSTEXPR20_ICE _OutIt set_symmetric_difference(
+_CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), using _Pred
     _Adl_verify_range(_First1, _Last1);
@@ -4303,7 +4300,7 @@ _CONSTEXPR20_ICE _OutIt set_symmetric_difference(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20_ICE _DestTy* set_symmetric_difference(
+_CONSTEXPR20 _DestTy* set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_symmetric_difference(
@@ -4313,7 +4310,7 @@ _CONSTEXPR20_ICE _DestTy* set_symmetric_difference(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_CONSTEXPR20_ICE _OutIt set_symmetric_difference(
+_CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
@@ -4321,7 +4318,7 @@ _CONSTEXPR20_ICE _OutIt set_symmetric_difference(
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20_ICE _DestTy* set_symmetric_difference(
+_CONSTEXPR20 _DestTy* set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
