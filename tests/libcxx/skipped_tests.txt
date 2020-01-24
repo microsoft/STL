@@ -37,6 +37,20 @@ language.support\support.exception\except.nested\rethrow_if_nested.pass.cpp
 # Testing nonstandard behavior
 utilities\template.bitset\bitset.cons\string_ctor.pass.cpp
 
+# This test has undefined behavior under N4842 [basic.start.term]/6
+thread\futures\futures.task\futures.task.members\dtor.pass.cpp
+
+# libcxx is incorrect on what the type passed to allocator construct should be
+# See https://reviews.llvm.org/D61364
+containers\associative\map\map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
+containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
+containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
+containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
+
+# libcxx incorrectly thinks subspan<Offset, Count> can produce a span of dynamic extent
+# See https://reviews.llvm.org/D73138
+containers\views\span.sub\subspan.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -193,114 +207,6 @@ utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 # C++20 P0019R8 "atomic_ref"
 language.support\support.limits\support.limits.general\atomic.version.pass.cpp
 
-# C++20 P0122R7 "<span>" (and subsequent patch papers)
-containers\views\types.pass.cpp
-containers\views\span.cons\array.pass.cpp
-containers\views\span.cons\assign.pass.cpp
-containers\views\span.cons\container.pass.cpp
-containers\views\span.cons\copy.pass.cpp
-containers\views\span.cons\deduct.pass.cpp
-containers\views\span.cons\default.pass.cpp
-containers\views\span.cons\ptr_len.pass.cpp
-containers\views\span.cons\ptr_ptr.pass.cpp
-containers\views\span.cons\span.pass.cpp
-containers\views\span.cons\stdarray.pass.cpp
-containers\views\span.elem\back.pass.cpp
-containers\views\span.elem\data.pass.cpp
-containers\views\span.elem\front.pass.cpp
-containers\views\span.elem\op_idx.pass.cpp
-containers\views\span.iterators\begin.pass.cpp
-containers\views\span.iterators\end.pass.cpp
-containers\views\span.iterators\rbegin.pass.cpp
-containers\views\span.iterators\rend.pass.cpp
-containers\views\span.objectrep\as_bytes.pass.cpp
-containers\views\span.objectrep\as_writable_bytes.pass.cpp
-containers\views\span.obs\empty.pass.cpp
-containers\views\span.obs\size.pass.cpp
-containers\views\span.obs\size_bytes.pass.cpp
-containers\views\span.sub\first.pass.cpp
-containers\views\span.sub\last.pass.cpp
-containers\views\span.sub\subspan.pass.cpp
-containers\views\span.tuple\get.pass.cpp
-containers\views\span.tuple\tuple_element.pass.cpp
-containers\views\span.tuple\tuple_size.pass.cpp
-
-# C++20 P0202R3 "constexpr For <algorithm> And exchange()"
-algorithms\alg.modifying.operations\alg.copy\copy_backward.pass.cpp
-algorithms\alg.modifying.operations\alg.copy\copy_if.pass.cpp
-algorithms\alg.modifying.operations\alg.copy\copy_n.pass.cpp
-algorithms\alg.modifying.operations\alg.copy\copy.pass.cpp
-algorithms\alg.modifying.operations\alg.fill\fill_n.pass.cpp
-algorithms\alg.modifying.operations\alg.fill\fill.pass.cpp
-algorithms\alg.modifying.operations\alg.generate\generate_n.pass.cpp
-algorithms\alg.modifying.operations\alg.generate\generate.pass.cpp
-algorithms\alg.modifying.operations\alg.partitions\is_partitioned.pass.cpp
-algorithms\alg.modifying.operations\alg.partitions\partition_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.partitions\partition_point.pass.cpp
-algorithms\alg.modifying.operations\alg.remove\remove_copy_if.pass.cpp
-algorithms\alg.modifying.operations\alg.remove\remove_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.remove\remove_if.pass.cpp
-algorithms\alg.modifying.operations\alg.remove\remove.pass.cpp
-algorithms\alg.modifying.operations\alg.replace\replace_copy_if.pass.cpp
-algorithms\alg.modifying.operations\alg.replace\replace_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.replace\replace_if.pass.cpp
-algorithms\alg.modifying.operations\alg.replace\replace.pass.cpp
-algorithms\alg.modifying.operations\alg.reverse\reverse_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.transform\binary_transform.pass.cpp
-algorithms\alg.modifying.operations\alg.transform\unary_transform.pass.cpp
-algorithms\alg.modifying.operations\alg.unique\unique_copy_pred.pass.cpp
-algorithms\alg.modifying.operations\alg.unique\unique_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.unique\unique_pred.pass.cpp
-algorithms\alg.modifying.operations\alg.unique\unique.pass.cpp
-algorithms\alg.nonmodifying\alg.adjacent.find\adjacent_find_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.adjacent.find\adjacent_find.pass.cpp
-algorithms\alg.nonmodifying\alg.all_of\all_of.pass.cpp
-algorithms\alg.nonmodifying\alg.any_of\any_of.pass.cpp
-algorithms\alg.nonmodifying\alg.count\count_if.pass.cpp
-algorithms\alg.nonmodifying\alg.count\count.pass.cpp
-algorithms\alg.nonmodifying\alg.equal\equal_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.equal\equal.pass.cpp
-algorithms\alg.nonmodifying\alg.find.end\find_end_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.find.end\find_end.pass.cpp
-algorithms\alg.nonmodifying\alg.find.first.of\find_first_of_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.find.first.of\find_first_of.pass.cpp
-algorithms\alg.nonmodifying\alg.find\find_if_not.pass.cpp
-algorithms\alg.nonmodifying\alg.find\find_if.pass.cpp
-algorithms\alg.nonmodifying\alg.find\find.pass.cpp
-algorithms\alg.nonmodifying\alg.foreach\for_each_n.pass.cpp
-algorithms\alg.nonmodifying\alg.foreach\test.pass.cpp
-algorithms\alg.nonmodifying\alg.is_permutation\is_permutation_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.is_permutation\is_permutation.pass.cpp
-algorithms\alg.nonmodifying\alg.none_of\none_of.pass.cpp
-algorithms\alg.nonmodifying\alg.search\search_n_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.search\search_n.pass.cpp
-algorithms\alg.nonmodifying\alg.search\search_pred.pass.cpp
-algorithms\alg.nonmodifying\alg.search\search.pass.cpp
-algorithms\alg.nonmodifying\mismatch\mismatch_pred.pass.cpp
-algorithms\alg.nonmodifying\mismatch\mismatch.pass.cpp
-algorithms\alg.sorting\alg.binary.search\binary.search\binary_search_comp.pass.cpp
-algorithms\alg.sorting\alg.binary.search\binary.search\binary_search.pass.cpp
-algorithms\alg.sorting\alg.binary.search\equal.range\equal_range_comp.pass.cpp
-algorithms\alg.sorting\alg.binary.search\equal.range\equal_range.pass.cpp
-algorithms\alg.sorting\alg.binary.search\lower.bound\lower_bound_comp.pass.cpp
-algorithms\alg.sorting\alg.binary.search\lower.bound\lower_bound.pass.cpp
-algorithms\alg.sorting\alg.binary.search\upper.bound\upper_bound_comp.pass.cpp
-algorithms\alg.sorting\alg.binary.search\upper.bound\upper_bound.pass.cpp
-algorithms\alg.sorting\alg.heap.operations\is.heap\is_heap_comp.pass.cpp
-algorithms\alg.sorting\alg.heap.operations\is.heap\is_heap_until_comp.pass.cpp
-algorithms\alg.sorting\alg.heap.operations\is.heap\is_heap_until.pass.cpp
-algorithms\alg.sorting\alg.heap.operations\is.heap\is_heap.pass.cpp
-algorithms\alg.sorting\alg.lex.comparison\lexicographical_compare_comp.pass.cpp
-algorithms\alg.sorting\alg.lex.comparison\lexicographical_compare.pass.cpp
-algorithms\alg.sorting\alg.set.operations\includes\includes_comp.pass.cpp
-algorithms\alg.sorting\alg.set.operations\includes\includes.pass.cpp
-algorithms\alg.sorting\alg.set.operations\set.intersection\set_intersection_comp.pass.cpp
-algorithms\alg.sorting\alg.set.operations\set.intersection\set_intersection.pass.cpp
-algorithms\alg.sorting\alg.sort\is.sorted\is_sorted_comp.pass.cpp
-algorithms\alg.sorting\alg.sort\is.sorted\is_sorted_until_comp.pass.cpp
-algorithms\alg.sorting\alg.sort\is.sorted\is_sorted_until.pass.cpp
-algorithms\alg.sorting\alg.sort\is.sorted\is_sorted.pass.cpp
-utilities\utility\exchange\exchange.pass.cpp
 
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 utilities\time\days.pass.cpp
@@ -538,21 +444,11 @@ language.support\support.limits\support.limits.general\compare.version.pass.cpp
 language.support\support.limits\support.limits.general\numeric.version.pass.cpp
 numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
 
-# C++20 P0879R0 "constexpr For Swapping Functions"
-algorithms\alg.modifying.operations\alg.swap\iter_swap.pass.cpp
-algorithms\alg.modifying.operations\alg.swap\swap_ranges.pass.cpp
-language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
-utilities\utility\utility.swap\swap.pass.cpp
-utilities\utility\utility.swap\swap_array.pass.cpp
-
 # C++20 P0896R4 "<ranges>"
 language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
 language.support\support.limits\support.limits.general\functional.version.pass.cpp
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
-
-# C++20 P1006R1 "constexpr For pointer_traits<T*>::pointer_to()"
-utilities\memory\pointer.traits\pointer_to.pass.cpp
 
 # C++20 P1023R0 "constexpr For std::array Comparisons"
 containers\sequences\array\compare.pass.cpp
@@ -608,6 +504,10 @@ utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
 # Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
+# Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
+containers\views\span.cons\ptr_len.pass.cpp
+containers\views\span.cons\ptr_ptr.pass.cpp
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -616,6 +516,12 @@ thread\macro.pass.cpp
 # <concepts> hasn't been enabled for Clang yet.
 iterators\iterator.primitives\iterator.traits\pointer.pass.cpp
 iterators\iterator.primitives\std.iterator.tags\contiguous_iterator_tag.pass.cpp
+
+# Clang 9 doesn't support comparison rewriting; implemented in Clang 10.
+containers\views\span.iterators\begin.pass.cpp
+containers\views\span.iterators\end.pass.cpp
+containers\views\span.iterators\rbegin.pass.cpp
+containers\views\span.iterators\rend.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -1048,18 +954,6 @@ containers\unord\unord.map\unord.map.cnstr\deduct_const.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp
-
-# Not yet analyzed. Assertion failed: m1.empty()
-containers\associative\map\map.cons\move_assign.pass.cpp
-containers\associative\multimap\multimap.cons\move_assign.pass.cpp
-containers\associative\multiset\multiset.cons\move_assign.pass.cpp
-containers\associative\set\set.cons\move_assign.pass.cpp
-
-# Not yet analyzed. Assertion failed: controller->check<Args&&...>()
-containers\associative\map\map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
-containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
-containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
-containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
 # Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
 localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\utf_sanity_check.pass.cpp

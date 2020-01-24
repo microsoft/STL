@@ -1845,7 +1845,11 @@ template <class _Ty, class _Uty>
 struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>> : true_type {};
 
 template <class _Ty>
-class reference_wrapper : public _Weak_types<_Ty>::type { // stand-in for an assignable reference
+class reference_wrapper
+#if !_HAS_CXX20
+    : public _Weak_types<_Ty>::type
+#endif // !_HAS_CXX20
+{
 public:
     static_assert(is_object_v<_Ty> || is_function_v<_Ty>,
         "reference_wrapper<T> requires T to be an object type or a function type.");
@@ -1945,10 +1949,10 @@ template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assigna
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
 #endif // _HAS_CXX17
-void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
+_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
 template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
-void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
+_CONSTEXPR20 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
 
 // STRUCT TEMPLATE _Swappable_with_helper
 template <class _Ty1, class _Ty2, class = void>

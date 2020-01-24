@@ -131,10 +131,6 @@ concept _Has_class_or_enum_type = __is_class(remove_reference_t<_Ty>) || __is_en
 // CUSTOMIZATION POINT OBJECT ranges::swap
 namespace ranges {
     namespace _Swap {
-#ifndef __clang__ // TRANSITION, VSO-895622
-        void swap();
-#endif // TRANSITION
-
         template <class _Ty>
         void swap(_Ty&, _Ty&) = delete;
 
