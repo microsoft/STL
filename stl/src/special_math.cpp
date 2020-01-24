@@ -28,6 +28,7 @@
 #include <boost/math/special_functions/laguerre.hpp>
 #include <boost/math/special_functions/legendre.hpp>
 #include <boost/math/special_functions/spherical_harmonic.hpp>
+#include <boost/math/special_functions/zeta.hpp>
 #include <boost/math/tools/config.hpp>
 #include <boost/math/tools/precision.hpp>
 
