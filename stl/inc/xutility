@@ -2076,12 +2076,12 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 namespace ranges {
     // VARIABLE TEMPLATE _Has_complete_elements
     template <class>
-    static constexpr bool _Has_complete_elements = false;
+    inline constexpr bool _Has_complete_elements = false;
 
     // clang-format off
     template <class _Ty>
         requires requires(_Ty& __t) { sizeof(__t[0]); }
-    static constexpr bool _Has_complete_elements<_Ty> = true;
+    inline constexpr bool _Has_complete_elements<_Ty> = true;
     // clang-format on
 
     // VARIABLE TEMPLATE ranges::enable_safe_range
@@ -2125,7 +2125,7 @@ namespace ranges {
                     static_assert(_Has_complete_elements<_Ty>,
                         "The range access customization point objects "
                         "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays with incomplete element type.");
+                        "do not accept arrays with incomplete element types.");
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
@@ -2202,7 +2202,7 @@ namespace ranges {
                     static_assert(_Has_complete_elements<_UnRef>,
                         "The range access customization point objects "
                         "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays with incomplete element type.");
+                        "do not accept arrays with incomplete element types.");
                     if constexpr (extent_v<_UnRef> != 0) {
                         return {_St::_Array, true};
                     } else {
