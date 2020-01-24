@@ -4,7 +4,6 @@
 // system_error message mapping
 
 #include <cstdlib>
-#include <memory>
 #include <system_error>
 
 #include <Windows.h>
@@ -113,27 +112,57 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
     unsigned long _Message_id, char* _Narrow, unsigned long _Size) { // convert to name of Windows error, return 0 for
                                                                      // failure, otherwise return number of chars
                                                                      // written pre: _Size < INT_MAX
-    const unique_ptr<wchar_t[]> _Wide(new wchar_t[_Size]); // not using make_unique because we want default-init
-    const auto _First = _Wide.get();
-    unsigned long _Wide_chars =
-        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, _Message_id, 0, _First, _Size, 0);
+    unsigned long _Chars = FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, _Message_id, 0, _Narrow, _Size, 0);
 
     // remove any trailing whitespace
-    while (_Wide_chars != 0) {
-        switch (_First[--_Wide_chars]) {
-        case L' ':
-        case L'\n':
-        case L'\r':
-        case L'\t':
-        case L'\0':
+    while (_Chars != 0) {
+        switch (_Narrow[--_Chars]) {
+        case ' ':
+        case '\n':
+        case '\r':
+        case '\t':
+        case '\0':
             continue;
         default:
-            return static_cast<unsigned long>(
-                WideCharToMultiByte(CP_ACP, 0, _First, _Wide_chars + 1, _Narrow, _Size, 0, 0));
+            return _Chars;
         }
     }
 
     return 0;
+}
+
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Winerror_message2(
+    unsigned long _Message_id, const char** _Ptr_str) noexcept { // convert to name of Windows error, return 0 for
+                                                                 // failure, otherwise return number of chars
+    unsigned long _Chars =
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0,
+            _Message_id, 0, reinterpret_cast<char*>(_Ptr_str), 0, 0);
+
+    // remove any trailing whitespace
+    while (_Chars != 0) {
+        switch ((*_Ptr_str)[--_Chars]) {
+        case ' ':
+        case '\n':
+        case '\r':
+        case '\t':
+        case '\0':
+            continue;
+        default:
+            return _Chars;
+        }
+    }
+
+    // FormatMessageA returned a message being only whitespaces?
+    if (*_Ptr_str != nullptr) {
+        _Winerror_message2_free(*_Ptr_str);
+    }
+
+    return 0;
+}
+
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Winerror_message2_free(const char* _Str) noexcept {
+    LocalFree(const_cast<char*>(_Str));
 }
 
 struct _Sys_errtab_t { // maps error_code to NTBS
