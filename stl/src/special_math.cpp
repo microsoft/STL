@@ -8,7 +8,6 @@
 #include <utility>
 
 #pragma warning(push)
-#pragma warning(disable : 4265) // '%s': class has virtual functions, but destructor is not virtual
 #pragma warning(disable : 4619) // #pragma warning: there is no warning number '%d'
 #pragma warning(disable : 4643) // Forward declaring '%s' in namespace std is not permitted by the C++ Standard
 #pragma warning(disable : 4702) // unreachable code
