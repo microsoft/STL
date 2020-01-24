@@ -2125,7 +2125,7 @@ namespace ranges {
                     static_assert(_Has_complete_elements<_Ty>,
                         "The range access customization point objects "
                         "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays of incomplete element types.");
+                        "do not accept arrays with incomplete element type.");
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
@@ -2202,7 +2202,7 @@ namespace ranges {
                     static_assert(_Has_complete_elements<_UnRef>,
                         "The range access customization point objects "
                         "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays of incomplete element types.");
+                        "do not accept arrays with incomplete element type.");
                     if constexpr (extent_v<_UnRef> != 0) {
                         return {_St::_Array, true};
                     } else {
