@@ -949,12 +949,11 @@ private:
 };
 #pragma warning(pop)
 
-// TRANSITION, Visual Studio 2019 16.5 + CUDA
-#if (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+#ifdef __CUDACC__ // TRANSITION, CUDA
 #define _USE_FUNCTION_INT_0_SFINAE 0
 #else
 #define _USE_FUNCTION_INT_0_SFINAE 1
-#endif // (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+#endif // __CUDACC__
 
 // CLASS TEMPLATE _Func_class
 template <class _Ret, class... _Types>
