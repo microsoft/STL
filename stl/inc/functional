@@ -772,8 +772,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#pragma warning(push)
-#pragma warning(disable : 4265) // class has virtual functions, but destructor is not virtual (/Wall)
 // CLASS TEMPLATE _Func_base
 template <class _Rx, class... _Types>
 class __declspec(novtable) _Func_base { // abstract base for implementation types
@@ -798,16 +796,12 @@ public:
 private:
     virtual const void* _Get() const noexcept = 0;
 };
-#pragma warning(pop)
 
 // ALIAS TEMPLATE _Is_large
 constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
 _INLINE_VAR constexpr bool _Is_large = (_Space_size < sizeof(_Impl)) || !_Impl::_Nothrow_move::value;
-
-#pragma warning(push)
-#pragma warning(disable : 4265) // class has virtual functions, but destructor is not virtual (/Wall)
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // CLASS TEMPLATE _Func_impl
@@ -947,7 +941,6 @@ private:
 
     _Callable _Callee;
 };
-#pragma warning(pop)
 
 // TRANSITION, Visual Studio 2019 16.5 + CUDA
 #if (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
