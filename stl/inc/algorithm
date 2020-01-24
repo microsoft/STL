@@ -3669,7 +3669,7 @@ template <class _BidIt, class _Pr>
 void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_diff_t<_BidIt> _Count, _Pr _Pred) {
     // insertion sort every chunk of distance _ISORT_MAX in [_First, _Last)
     // pre: _Count == distance(_First, _Last)
-    for (; _Count <= _ISORT_MAX; _Count -= _ISORT_MAX) { // sort chunks
+    for (; _ISORT_MAX < _Count; _Count -= _ISORT_MAX) { // sort chunks
         _First = _Insertion_sort_unchecked(_First, _STD next(_First, _ISORT_MAX), _Pred);
     }
 
@@ -3884,7 +3884,7 @@ _CONSTEXPR20_ICE void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr 
         return; // nothing to do
     }
 
-    while (_ULast - _UFirst <= _ISORT_MAX) { // divide and conquer, ordering partition containing Nth
+    while (_ISORT_MAX < _ULast - _UFirst) { // divide and conquer, ordering partition containing Nth
         auto _UMid = _Partition_by_median_guess_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
 
         if (_UMid.second <= _UNth) {
