@@ -53,7 +53,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4842][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4849][], which will eventually become the next C++
 International Standard (which is sometimes referred to as C++2a, but we optimistically refer to it as C++20). The terms
 Working Draft (WD) and Working Paper (WP) are interchangeable; we often informally refer to these drafts as "the
 Standard" while being aware of the difference. (There are other relevant Standards; for example, supporting `/std:c++14`
@@ -139,7 +139,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.4 or later.
+1. Install Visual Studio 2019 16.5 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -158,7 +158,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.4 or later.
+1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.5 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -258,7 +258,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4842]: https://wg21.link/n4842
+[N4849]: https://wg21.link/n4849
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
