@@ -24,7 +24,7 @@ jobs:
       displayName: Cache vcpkg
       timeoutInMinutes: 10
       inputs:
-        key: '"${{ parameters.targetPlatform}}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD'
+        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD'
         path: '$(vcpkgLocation)'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
