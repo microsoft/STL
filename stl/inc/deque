@@ -1028,6 +1028,7 @@ public:
         return *(begin() + static_cast<difference_type>(_Pos));
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
@@ -1036,6 +1037,7 @@ public:
         return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
@@ -1044,6 +1046,7 @@ public:
         return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "front() called on empty deque");
@@ -1052,6 +1055,7 @@ public:
         return *_Unchecked_begin();
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "front() called on empty deque");
@@ -1060,6 +1064,7 @@ public:
         return *_Unchecked_begin();
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "back() called on empty deque");
@@ -1068,6 +1073,7 @@ public:
         return *(_Unchecked_end() - 1);
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "back() called on empty deque");

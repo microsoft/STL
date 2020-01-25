@@ -1180,6 +1180,7 @@ public:
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}
 
+    _TEMPLATE_CDL
     constexpr basic_string_view(
         _In_reads_(_Count) const const_pointer _Cts, const size_type _Count) noexcept // strengthened
         : _Mydata(_Cts), _Mysize(_Count) {
@@ -1258,6 +1259,7 @@ public:
         return _Min_value(static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < _Mysize, "string_view subscript out of range");
@@ -1271,6 +1273,7 @@ public:
         return _Mydata[_Off];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize != 0, "cannot call front on empty string_view");
@@ -1278,6 +1281,7 @@ public:
         return _Mydata[0];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize != 0, "cannot call back on empty string_view");
@@ -1285,6 +1289,7 @@ public:
         return _Mydata[_Mysize - 1];
     }
 
+    _TEMPLATE_CDL
     constexpr void remove_prefix(const size_type _Count) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize >= _Count, "cannot remove prefix longer than total size");
@@ -1293,6 +1298,7 @@ public:
         _Mysize -= _Count;
     }
 
+    _TEMPLATE_CDL
     constexpr void remove_suffix(const size_type _Count) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize >= _Count, "cannot remove suffix longer than total size");
@@ -3486,6 +3492,7 @@ public:
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference operator[](const size_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
@@ -3493,6 +3500,7 @@ public:
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
@@ -3535,6 +3543,7 @@ public:
         _Eos(_Old_size - 1);
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
@@ -3543,6 +3552,7 @@ public:
         return _Mypair._Myval2._Myptr()[0];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
@@ -3551,6 +3561,7 @@ public:
         return _Mypair._Myval2._Myptr()[0];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
@@ -3559,6 +3570,7 @@ public:
         return _Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize - 1];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");

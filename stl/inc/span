@@ -359,7 +359,7 @@ public:
     // clang-format off
     constexpr span() noexcept requires (_Extent == 0 || _Extent == dynamic_extent) = default;
 
-    template <_Is_span_compatible_iterator<element_type> _It>
+    template <_Is_span_compatible_iterator<element_type> _It _COMMA_INT_CDL>
     constexpr span(_It _First, size_type _Count) noexcept // strengthened
         : _Mybase(_Count), _Mydata(_STD to_address(_Get_unwrapped_n(_First, _Count))) {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -369,7 +369,8 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-    template <_Is_span_compatible_iterator<element_type> _It, _Is_span_compatible_sentinel<_It> _Sentinel>
+    template <_Is_span_compatible_iterator<element_type> _It, _Is_span_compatible_sentinel<_It> _Sentinel
+        _COMMA_INT_CDL>
     constexpr span(_It _First, _Sentinel _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_STD to_address(_First)) {
         _Adl_verify_range(_First, _Last);
@@ -409,6 +410,7 @@ public:
     template <size_t _Ext = _Extent, enable_if_t<_Ext == 0 || _Ext == dynamic_extent, int> = 0>
     constexpr span() noexcept {}
 
+    _TEMPLATE_CDL
     constexpr span(pointer _Ptr, size_type _Count) noexcept // strengthened
         : _Mybase(_Count), _Mydata(_Ptr) {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -418,6 +420,7 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
+    _TEMPLATE_CDL
     constexpr span(pointer _First, pointer _Last) noexcept // strengthened
         : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_First) {
         _Adl_verify_range(_First, _Last);
@@ -461,7 +464,7 @@ public:
 #endif // !__cpp_lib_concepts
 
     // [span.sub] Subviews
-    template <size_t _Count>
+    template <size_t _Count _COMMA_INT_CDL>
     _NODISCARD constexpr span<element_type, _Count> first() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Count <= _Extent, "Count out of range in span::first()");
@@ -474,6 +477,7 @@ public:
         return {_Mydata, _Count};
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr span<element_type, dynamic_extent> first(const size_type _Count) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -482,7 +486,7 @@ public:
         return {_Mydata, _Count};
     }
 
-    template <size_t _Count>
+    template <size_t _Count _COMMA_INT_CDL>
     _NODISCARD constexpr span<element_type, _Count> last() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Count <= _Extent, "Count out of range in span::last()");
@@ -495,6 +499,7 @@ public:
         return {_Mydata + (this->size() - _Count), _Count};
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr span<element_type, dynamic_extent> last(const size_type _Count) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -503,7 +508,7 @@ public:
         return {_Mydata + (this->size() - _Count), _Count};
     }
 
-    template <size_t _Offset, size_t _Count = dynamic_extent>
+    template <size_t _Offset, size_t _Count = dynamic_extent _COMMA_INT_CDL>
     _NODISCARD constexpr span<element_type,
         _Count != dynamic_extent ? _Count : (_Extent != dynamic_extent ? _Extent - _Offset : dynamic_extent)>
         subspan() const noexcept /* strengthened */ {
@@ -524,6 +529,7 @@ public:
         return {_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr span<element_type, dynamic_extent> subspan(
         const size_type _Offset, const size_type _Count = dynamic_extent) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -535,6 +541,7 @@ public:
     }
 
     // [span.obs] Observers
+    _TEMPLATE_CDL
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->size() <= dynamic_extent / sizeof(element_type),
@@ -548,6 +555,7 @@ public:
     }
 
     // [span.elem] Element access
+    _TEMPLATE_CDL
     _NODISCARD constexpr reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->size(), "span index out of range");
@@ -555,6 +563,7 @@ public:
         return _Mydata[_Off];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->size() > 0, "front of empty span");
@@ -562,6 +571,7 @@ public:
         return _Mydata[0];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->size() > 0, "back of empty span");

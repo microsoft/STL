@@ -178,6 +178,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #error _ITERATOR_DEBUG_LEVEL != 0 must imply _CONTAINER_DEBUG_LEVEL == 1.
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
+#if _CONTAINER_DEBUG_LEVEL > 0
+#define _TEMPLATE_CDL  template <int _Cdl = _CONTAINER_DEBUG_LEVEL>
+#define _COMMA_INT_CDL , int _Cdl = _CONTAINER_DEBUG_LEVEL
+#else // _CONTAINER_DEBUG_LEVEL > 0
+#define _TEMPLATE_CDL
+#define _COMMA_INT_CDL
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
 #define _STL_REPORT_ERROR(mesg)              \
     do {                                     \
         _RPTF0(_CRT_ASSERT, mesg);           \

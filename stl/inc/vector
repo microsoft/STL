@@ -1494,6 +1494,7 @@ public:
         return static_cast<size_type>(_My_data._Myend - _My_data._Myfirst);
     }
 
+    _TEMPLATE_CDL
     _NODISCARD _Ty& operator[](const size_type _Pos) noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1504,6 +1505,7 @@ public:
         return _My_data._Myfirst[_Pos];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1532,6 +1534,7 @@ public:
         return _My_data._Myfirst[_Pos];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD _Ty& front() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1541,6 +1544,7 @@ public:
         return *_My_data._Myfirst;
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const _Ty& front() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1550,6 +1554,7 @@ public:
         return *_My_data._Myfirst;
     }
 
+    _TEMPLATE_CDL
     _NODISCARD _Ty& back() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1559,6 +1564,7 @@ public:
         return _My_data._Mylast[-1];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const _Ty& back() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -2585,6 +2591,7 @@ public:
         return (*this)[_Off];
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference operator[](size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
@@ -2595,6 +2602,7 @@ public:
         return *_It;
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference operator[](size_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
@@ -2605,6 +2613,7 @@ public:
         return *_It;
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
@@ -2613,6 +2622,7 @@ public:
         return *begin();
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
@@ -2621,6 +2631,7 @@ public:
         return *begin();
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
@@ -2629,6 +2640,7 @@ public:
         return *(end() - 1);
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");

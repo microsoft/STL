@@ -886,6 +886,7 @@ public:
         return static_cast<allocator_type>(_Getal());
     }
 
+    _TEMPLATE_CDL
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "front() called on empty forward_list");
@@ -894,6 +895,7 @@ public:
         return _Mypair._Myval2._Myhead->_Myval;
     }
 
+    _TEMPLATE_CDL
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "front() called on empty forward_list");
