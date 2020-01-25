@@ -2195,12 +2195,6 @@ public:
 template <class _Ty>
 constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get _Ty's size after being EBCO'd
 
-struct _SOCCC_allocator_arg_t {
-    explicit _SOCCC_allocator_arg_t() = default;
-}; // tag type for copy constructing allocator with allocator_traits::select_on_container_copy_construction
-
-_INLINE_VAR constexpr _SOCCC_allocator_arg_t _SOCCC_allocator_arg{};
-
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
@@ -2290,12 +2284,6 @@ public:
     }
 
     explicit basic_string(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t(), _Al) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
-    }
-
-    basic_string(_SOCCC_allocator_arg_t, const _Alloc& _Al) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _Alty_traits::select_on_container_copy_construction(_Al)) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
@@ -4280,7 +4268,9 @@ void swap(basic_string<_Elem, _Traits, _Alloc>& _Left,
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans(_SOCCC_allocator_arg, _Left._Getal());
+    using _String_type = basic_string<_Elem, _Traits, _Alloc>;
+    using _Alty_traits = allocator_traits<_Rebind_alloc_t<_Alloc, _Elem>>;
+    _String_type _Ans(_Alty_traits::select_on_container_copy_construction(_Left._Getal()));
     _Ans.reserve(_Left.size() + _Right.size());
     _Ans += _Left;
     _Ans += _Right;
@@ -4291,8 +4281,9 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     _In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     using _String_type = basic_string<_Elem, _Traits, _Alloc>;
+    using _Alty_traits = allocator_traits<_Rebind_alloc_t<_Alloc, _Elem>>;
     using _Size_type   = typename _String_type::size_type;
-    _String_type _Ans(_SOCCC_allocator_arg, _Right._Getal());
+    _String_type _Ans(_Alty_traits::select_on_container_copy_construction(_Right._Getal()));
     _Ans.reserve(_Convert_size<_Size_type>(_Traits::length(_Left) + _Right.size()));
     _Ans += _Left;
     _Ans += _Right;
@@ -4302,7 +4293,9 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const _Elem _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans(_SOCCC_allocator_arg, _Right._Getal());
+    using _String_type = basic_string<_Elem, _Traits, _Alloc>;
+    using _Alty_traits = allocator_traits<_Rebind_alloc_t<_Alloc, _Elem>>;
+    _String_type _Ans(_Alty_traits::select_on_container_copy_construction(_Right._Getal()));
     _Ans.reserve(1 + _Right.size());
     _Ans += _Left;
     _Ans += _Right;
@@ -4313,8 +4306,9 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     using _String_type = basic_string<_Elem, _Traits, _Alloc>;
+    using _Alty_traits = allocator_traits<_Rebind_alloc_t<_Alloc, _Elem>>;
     using _Size_type   = typename _String_type::size_type;
-    _String_type _Ans(_SOCCC_allocator_arg, _Left._Getal());
+    _String_type _Ans(_Alty_traits::select_on_container_copy_construction(_Right._Getal()));
     _Ans.reserve(_Convert_size<_Size_type>(_Left.size() + _Traits::length(_Right)));
     _Ans += _Left;
     _Ans += _Right;
@@ -4324,7 +4318,9 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans(_SOCCC_allocator_arg, _Left._Getal());
+    using _String_type = basic_string<_Elem, _Traits, _Alloc>;
+    using _Alty_traits = allocator_traits<_Rebind_alloc_t<_Alloc, _Elem>>;
+    _String_type _Ans(_Alty_traits::select_on_container_copy_construction(_Left._Getal()));
     _Ans.reserve(_Left.size() + 1);
     _Ans += _Left;
     _Ans += _Right;
