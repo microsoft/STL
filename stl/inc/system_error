@@ -488,8 +488,8 @@ public:
         const char* _Msg     = nullptr;
         const size_t _Length = _Winerror_message2(static_cast<unsigned long>(_Errcode), &_Msg);
         if (_Length == 0) {
-            constexpr char _Unknwn_err[] = "unknown error";
-            return string(_Unknwn_err, std::size(_Unknwn_err) - 1);
+            static constexpr char _Unknwn_err[] = "unknown error";
+            return string(_Unknwn_err, _STD size(_Unknwn_err) - 1);
         } else {
             const unique_ptr<const char[], decltype(&_Winerror_message2_free)> _Ptr(_Msg, &_Winerror_message2_free);
             return string(_Msg, _Length);
