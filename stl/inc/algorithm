@@ -27,7 +27,7 @@ _END_EXTERN_C
 
 _STD_BEGIN
 // COMMON SORT PARAMETERS
-const int _ISORT_MAX = 32; // maximum size for insertion sort
+_INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 // STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
@@ -3518,11 +3518,22 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
     // order [_First, _Last), using _Pred
-    _Iter_diff_t<_RanIt> _Count = 0;
-    while (_ISORT_MAX < (_Count = _Last - _First) && 0 < _Ideal) { // divide and conquer by quicksort
+    for (;;) {
+        if (_Last - _First <= _ISORT_MAX) { // small
+            _Insertion_sort_unchecked(_First, _Last, _Pred);
+            return;
+        }
+
+        if (_Ideal <= 0) { // heap sort if too many divisions
+            _Make_heap_unchecked(_First, _Last, _Pred);
+            _Sort_heap_unchecked(_First, _Last, _Pred);
+            return;
+        }
+
+        // divide and conquer by quicksort
         auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
 
-        _Ideal = _Ideal / 2 + _Ideal / 4; // allow 1.5 log2(N) divisions
+        _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 
         if (_Mid.first - _First < _Last - _Mid.second) { // loop on second half
             _Sort_unchecked(_First, _Mid.first, _Ideal, _Pred);
@@ -3531,13 +3542,6 @@ _CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_Ran
             _Sort_unchecked(_Mid.second, _Last, _Ideal, _Pred);
             _Last = _Mid.first;
         }
-    }
-
-    if (_ISORT_MAX < _Count) { // heap sort if too many divisions
-        _Make_heap_unchecked(_First, _Last, _Pred);
-        _Sort_heap_unchecked(_First, _Last, _Pred);
-    } else if (2 <= _Count) {
-        _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     }
 }
 
@@ -3663,9 +3667,8 @@ template <class _BidIt, class _Pr>
 void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_diff_t<_BidIt> _Count, _Pr _Pred) {
     // insertion sort every chunk of distance _ISORT_MAX in [_First, _Last)
     // pre: _Count == distance(_First, _Last)
-    constexpr auto _Diffsort_max = static_cast<_Iter_diff_t<_BidIt>>(_ISORT_MAX);
-    for (; _Diffsort_max < _Count; _Count -= _Diffsort_max) { // sort chunks
-        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _Diffsort_max), _Pred);
+    for (; _ISORT_MAX < _Count; _Count -= _ISORT_MAX) { // sort chunks
+        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _ISORT_MAX), _Pred);
     }
 
     _Insertion_sort_unchecked(_First, _Last, _Pred); // sort partial last chunk
@@ -3734,10 +3737,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
-        }
-
+        _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
         return;
     }
 
