@@ -96,6 +96,23 @@ static const _Win_errtab_t _Win_errtab[] = {
     {WSAEWOULDBLOCK, errc::operation_would_block},
 };
 
+static unsigned long _TrimEnd(const char* _Str, unsigned long _Size) { // remove trailing whitespaces
+    while (_Size != 0) {
+        switch (_Str[--_Size]) {
+        case ' ':
+        case '\n':
+        case '\r':
+        case '\t':
+        case '\0':
+            continue;
+        default:
+            return _Size;
+        }
+    }
+
+    return 0;
+}
+
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(
     int _Errcode) { // convert Windows error to Posix error if possible, otherwise 0
     const _Win_errtab_t* _Ptr = &_Win_errtab[0];
@@ -112,53 +129,28 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
     unsigned long _Message_id, char* _Narrow, unsigned long _Size) { // convert to name of Windows error, return 0 for
                                                                      // failure, otherwise return number of chars
                                                                      // written pre: _Size < INT_MAX
-    unsigned long _Chars = FormatMessageA(
+    const unsigned long _Chars = FormatMessageA(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, _Message_id, 0, _Narrow, _Size, 0);
 
-    // remove any trailing whitespace
-    while (_Chars != 0) {
-        switch (_Narrow[--_Chars]) {
-        case ' ':
-        case '\n':
-        case '\r':
-        case '\t':
-        case '\0':
-            continue;
-        default:
-            return _Chars;
-        }
-    }
-
-    return 0;
+    return _TrimEnd(_Narrow, _Chars);
 }
 
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Winerror_message2(
     unsigned long _Message_id, const char** _Ptr_str) noexcept { // convert to name of Windows error, return 0 for
                                                                  // failure, otherwise return number of chars
-    unsigned long _Chars =
+                                                                 // written pre: *_Ptr_str == nullptr
+    const unsigned long _Chars =
         FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0,
             _Message_id, 0, reinterpret_cast<char*>(_Ptr_str), 0, 0);
 
-    // remove any trailing whitespace
-    while (_Chars != 0) {
-        switch ((*_Ptr_str)[--_Chars]) {
-        case ' ':
-        case '\n':
-        case '\r':
-        case '\t':
-        case '\0':
-            continue;
-        default:
-            return _Chars;
-        }
-    }
+    const size_t _Length = _TrimEnd(*_Ptr_str, _Chars);
 
     // FormatMessageA returned a message being only whitespaces?
-    if (*_Ptr_str != nullptr) {
+    if (_Length == 0 && *_Ptr_str != nullptr) {
         _Winerror_message2_free(*_Ptr_str);
     }
 
-    return 0;
+    return _Length;
 }
 
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Winerror_message2_free(const char* _Str) noexcept {
