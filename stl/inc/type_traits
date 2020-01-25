@@ -494,7 +494,7 @@ _INLINE_VAR constexpr bool is_function_v =
     !is_reference_v<_Ty> && !is_const_v<const _Ty>; // determine whether _Ty is a function
 
 template <class _Ty>
-struct is_function : bool_constant<is_function_v<_Ty>> {}; 
+struct is_function : bool_constant<is_function_v<_Ty>> {};
 
 template <class _Ty>
 struct _Is_function { // determine whether _Ty is a function
