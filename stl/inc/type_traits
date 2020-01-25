@@ -490,36 +490,16 @@ struct is_volatile : bool_constant<is_volatile_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_function
 template <class _Ty>
-struct _Is_function { // determine whether _Ty is a function
-    using _Bool_type = false_type; // NB: members are user-visible via _Weak_types
-}; // still here for _Weak_types
-
-#define _IS_FUNCTION(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                                           \
-    template <class _Ret, class... _Types>                                                              \
-    struct _Is_function<_Ret CALL_OPT(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> : _Arg_types<_Types...> { \
-        using _Bool_type = true_type;                                                                   \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                     \
-    };
-
-_NON_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_FUNCTION)
-#undef _IS_FUNCTION
-
-#define _IS_FUNCTION_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                                                            \
-    template <class _Ret, class... _Types>                                                                    \
-    struct _Is_function<_Ret(_Types..., ...) CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
-        using _Bool_type = true_type;                                                                         \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                           \
-    };
-
-_CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_FUNCTION_ELLIPSIS)
-#undef _IS_FUNCTION_ELLIPSIS
-
-template <class _Ty>
 _INLINE_VAR constexpr bool is_function_v =
     !is_reference_v<_Ty> && !is_const_v<const _Ty>; // determine whether _Ty is a function
 
 template <class _Ty>
 struct is_function : bool_constant<is_function_v<_Ty>> {}; 
+
+template <class _Ty>
+struct _Is_function { // determine whether _Ty is a function
+    using _Bool_type = is_function<_Ty>; // NB: members are user-visible via _Weak_types
+};
 
 // STRUCT TEMPLATE is_pod
 template <class _Ty>
