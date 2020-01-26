@@ -866,10 +866,40 @@ _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
+// STRUCT TEMPLATE _Repeat_type_in_tuple
+template <class _Ty, class... _Meta>
+struct _Repeat_type_in_tuple {
+    static_assert(_Always_false<_Ty>, "Requires index_sequence as second template argument.");
+};
+
+template <class _Ty, size_t... _Ix>
+struct _Repeat_type_in_tuple<_Ty, index_sequence<_Ix...>> {
+    using type = tuple<typename remove_reference_t<decltype(_Ix, declval<_Identity<_Ty>>())>::type...>;
+};
+
+// STRUCT TEMPLATE _Is_tuple_like
+template <class _Ty, class = int>
+struct _Is_tuple_like : false_type {};
+
+template <class _Ty>
+struct _Is_tuple_like<_Ty, decltype((void)tuple_size<_Ty>::size, 0)> : true_type {}; 
+
+// STRUCT TEMPLATE _View_custom_as_tuple
+template <class _Ty, class... _Meta>
+struct _View_custom_as_tuple {
+    static_assert(_Always_false<_Ty>, "Requires index_sequence as second template argument.");
+};
+
+template <class _Ty, size_t... _Ix>
+struct _View_custom_as_tuple<_Ty, index_sequence<_Ix...>> {
+    using type = tuple<tuple_element_t<_Ix, _Ty>...>;
+};
+
 // STRUCT TEMPLATE _View_as_tuple
-template <class _Ty, class... _For_array>
-struct _View_as_tuple { // tuple_cat() supports only tuples, pairs, and arrays
-    static_assert(_Always_false<_Ty>, "Unsupported tuple_cat arguments.");
+template <class _Ty>
+struct _View_as_tuple {
+    static_assert(_Is_tuple_like<_Ty>::value, "Unsupported tuple_cat arguments.");
+    using type = typename _View_custom_as_tuple<_Ty, make_index_sequence<tuple_size<_Ty>::size>>::type;
 };
 
 template <class... _Types>
@@ -882,14 +912,9 @@ struct _View_as_tuple<pair<_Ty1, _Ty2>> { // view a pair as a tuple
     using type = tuple<_Ty1, _Ty2>;
 };
 
-template <class _Ty, class... _Types>
-struct _View_as_tuple<array<_Ty, 0>, _Types...> { // view an array as a tuple; ends recursion at 0
-    using type = tuple<_Types...>;
-};
-
-template <class _Ty, size_t _Size, class... _Types>
-struct _View_as_tuple<array<_Ty, _Size>, _Types...>
-    : _View_as_tuple<array<_Ty, _Size - 1>, _Ty, _Types...> { // view an array as a tuple; counts down to 0
+template <class _Ty, size_t _Size>
+struct _View_as_tuple<array<_Ty, _Size>> { // view an array as a tuple
+    using type = typename _Repeat_type_in_tuple<_Ty, make_index_sequence<_Size>>::type;
 };
 
 // STRUCT TEMPLATE _Repeat_for
