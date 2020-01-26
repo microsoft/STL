@@ -10,7 +10,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cerrno>
 #include <cstdlib> // for strerror
-#include <memory> // for unique_ptr
 #include <stdexcept> // for runtime_error
 #include <xcall_once.h>
 #include <xerrc.h>
@@ -437,6 +436,22 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Winerror_message2(
     unsigned long _Message_id, const char** _Ptr_str) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Winerror_message2_free(const char* _Str) noexcept;
 
+struct _Winerror_message_caller {
+    const char* _Str;
+    size_t _Length;
+
+    _Winerror_message_caller(unsigned long _Ec) noexcept : _Str(nullptr), _Length(_Winerror_message2(_Ec, &_Str)) {}
+
+    _Winerror_message_caller(const _Winerror_message_caller&) = delete;
+    _Winerror_message_caller& operator=(const _Winerror_message_caller&) = delete;
+
+    ~_Winerror_message_caller() {
+        if (_Str) {
+            _Winerror_message2_free(_Str);
+        }
+    }
+};
+
 // CLASS _Generic_error_category
 class _Generic_error_category : public error_category { // categorize a generic error
 public:
@@ -485,14 +500,12 @@ public:
     }
 
     _NODISCARD virtual string message(int _Errcode) const override {
-        const char* _Msg     = nullptr;
-        const size_t _Length = _Winerror_message2(static_cast<unsigned long>(_Errcode), &_Msg);
-        if (_Length == 0) {
+        _Winerror_message_caller _Msg(static_cast<unsigned long>(_Errcode));
+        if (_Msg._Length == 0) {
             static constexpr char _Unknwn_err[] = "unknown error";
             return string(_Unknwn_err, _STD size(_Unknwn_err) - 1);
         } else {
-            const unique_ptr<const char[], decltype(&_Winerror_message2_free)> _Ptr(_Msg, &_Winerror_message2_free);
-            return string(_Msg, _Length);
+            return string(_Msg._Str, _Msg._Length);
         }
     }
 

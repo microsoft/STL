@@ -148,6 +148,7 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Winerror_message2(
     // FormatMessageA returned a message being only whitespaces?
     if (_Length == 0 && *_Ptr_str != nullptr) {
         _Winerror_message2_free(*_Ptr_str);
+        *_Ptr_str = nullptr;
     }
 
     return _Length;
