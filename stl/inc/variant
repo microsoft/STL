@@ -148,22 +148,6 @@ struct _Meta_transform_<_Fn, _List<_Types...>> {
     using type = _List<_Meta_invoke<_Fn, _Types>...>;
 };
 
-// ALIAS TEMPLATE _Meta_repeat_n_c
-template <class, class, template <class...> class>
-struct _Meta_repeat_n_c_;
-template <size_t _Count, class _Ty, template <class...> class _Continue>
-using _Meta_repeat_n_c =
-    // construct a sequence consisting of repetitions of _Ty
-    typename _Meta_repeat_n_c_<_Ty, make_index_sequence<_Count>, _Continue>::type;
-
-template <class _Ty, size_t>
-using _Meta_repeat_first_helper = _Ty;
-
-template <class _Ty, size_t... _Idxs, template <class...> class _Continue>
-struct _Meta_repeat_n_c_<_Ty, index_sequence<_Idxs...>, _Continue> {
-    using type = _Continue<_Meta_repeat_first_helper<_Ty, _Idxs>...>;
-};
-
 // ALIAS TEMPLATE _Meta_at_c
 template <class _List, size_t _Idx, class = void>
 struct _Meta_at_;

@@ -866,15 +866,21 @@ _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
-// STRUCT TEMPLATE _Repeat_type_in_tuple
-template <class _Ty, class _Indices>
-struct _Repeat_type_in_tuple {
-    static_assert(_Always_false<_Ty>, "Requires index_sequence as second template argument.");
-};
+// ALIAS TEMPLATE _Meta_repeat_n_c
+template <class, class, template <class...> class>
+struct _Meta_repeat_n_c_;
 
-template <class _Ty, size_t... _Ix>
-struct _Repeat_type_in_tuple<_Ty, index_sequence<_Ix...>> {
-    using type = tuple<typename remove_reference_t<decltype(_Ix, declval<_Identity<_Ty>>())>::type...>;
+template <size_t _Count, class _Ty, template <class...> class _Continue>
+using _Meta_repeat_n_c =
+    // construct a sequence consisting of repetitions of _Ty
+    typename _Meta_repeat_n_c_<_Ty, make_index_sequence<_Count>, _Continue>::type;
+
+template <class _Ty, size_t>
+using _Meta_repeat_first_helper = _Ty;
+
+template <class _Ty, size_t... _Idxs, template <class...> class _Continue>
+struct _Meta_repeat_n_c_<_Ty, index_sequence<_Idxs...>, _Continue> {
+    using type = _Continue<_Meta_repeat_first_helper<_Ty, _Idxs>...>;
 };
 
 // STRUCT TEMPLATE _Is_tuple_like
@@ -882,7 +888,7 @@ template <class _Ty, class = void>
 _INLINE_VAR constexpr bool _Is_tuple_like_v = false;
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_tuple_like_v<_Ty, decltype((void) tuple_size_v<_Ty>, 0)> = true;
+_INLINE_VAR constexpr bool _Is_tuple_like_v<_Ty, void_t<decltype(tuple_size_v<_Ty>)>> = true;
 
 // STRUCT TEMPLATE _View_custom_as_tuple
 template <class _Ty, class _Indices>
@@ -914,7 +920,7 @@ struct _View_as_tuple<pair<_Ty1, _Ty2>> { // view a pair as a tuple
 
 template <class _Ty, size_t _Size>
 struct _View_as_tuple<array<_Ty, _Size>> { // view an array as a tuple
-    using type = typename _Repeat_type_in_tuple<_Ty, make_index_sequence<_Size>>::type;
+    using type = _Meta_repeat_n_c<_Size, _Ty, tuple>;
 };
 
 // STRUCT TEMPLATE _Repeat_for
