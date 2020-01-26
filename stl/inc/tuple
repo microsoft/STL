@@ -867,7 +867,7 @@ template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
 // STRUCT TEMPLATE _Repeat_type_in_tuple
-template <class _Ty, class... _Meta>
+template <class _Ty, class _Indices>
 struct _Repeat_type_in_tuple {
     static_assert(_Always_false<_Ty>, "Requires index_sequence as second template argument.");
 };
@@ -878,14 +878,14 @@ struct _Repeat_type_in_tuple<_Ty, index_sequence<_Ix...>> {
 };
 
 // STRUCT TEMPLATE _Is_tuple_like
-template <class _Ty, class = int>
-struct _Is_tuple_like : false_type {};
+template <class _Ty, class = void>
+_INLINE_VAR constexpr bool _Is_tuple_like_v = false;
 
 template <class _Ty>
-struct _Is_tuple_like<_Ty, decltype((void)tuple_size<_Ty>::size, 0)> : true_type {}; 
+_INLINE_VAR constexpr bool _Is_tuple_like_v<_Ty, decltype((void) tuple_size_v<_Ty>, 0)> = true;
 
 // STRUCT TEMPLATE _View_custom_as_tuple
-template <class _Ty, class... _Meta>
+template <class _Ty, class _Indices>
 struct _View_custom_as_tuple {
     static_assert(_Always_false<_Ty>, "Requires index_sequence as second template argument.");
 };
@@ -898,8 +898,8 @@ struct _View_custom_as_tuple<_Ty, index_sequence<_Ix...>> {
 // STRUCT TEMPLATE _View_as_tuple
 template <class _Ty>
 struct _View_as_tuple {
-    static_assert(_Is_tuple_like<_Ty>::value, "Unsupported tuple_cat arguments.");
-    using type = typename _View_custom_as_tuple<_Ty, make_index_sequence<tuple_size<_Ty>::size>>::type;
+    static_assert(_Is_tuple_like_v<_Ty>, "Unsupported tuple_cat arguments.");
+    using type = typename _View_custom_as_tuple<_Ty, make_index_sequence<tuple_size_v<_Ty>>>::type;
 };
 
 template <class... _Types>
