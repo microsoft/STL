@@ -72,21 +72,6 @@ struct negation : bool_constant<!static_cast<bool>(_Trait::value)> {}; // The ne
 template <class _Trait>
 _INLINE_VAR constexpr bool negation_v = negation<_Trait>::value;
 
-// STRUCT TEMPLATE _Arg_types
-template <class... _Types>
-struct _Arg_types {}; // provide argument_type, etc. (sometimes)
-
-template <class _Ty1>
-struct _Arg_types<_Ty1> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 argument_type;
-};
-
-template <class _Ty1, class _Ty2>
-struct _Arg_types<_Ty1, _Ty2> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 second_argument_type;
-};
-
 // STRUCT TEMPLATE is_void
 template <class _Ty>
 _INLINE_VAR constexpr bool is_void_v = is_same_v<remove_cv_t<_Ty>, void>;
@@ -219,7 +204,6 @@ template <class _Ty>
 struct remove_pointer<_Ty* volatile> {
     using type = _Ty;
 };
-
 
 template <class _Ty>
 struct remove_pointer<_Ty* const volatile> {
@@ -365,13 +349,6 @@ _INLINE_VAR constexpr bool is_fundamental_v = is_arithmetic_v<_Ty> || is_void_v<
 template <class _Ty>
 struct is_fundamental : bool_constant<is_fundamental_v<_Ty>> {}; // determine whether _Ty is a fundamental type
 
-// STRUCT TEMPLATE is_object
-template <class _Ty>
-_INLINE_VAR constexpr bool is_object_v = !is_function_v<_Ty> && !is_reference_v<_Ty> && !is_void_v<_Ty>;
-
-template <class _Ty>
-struct is_object : bool_constant<is_object_v<_Ty>> {}; // determine whether _Ty is an object type
-
 // STRUCT TEMPLATE is_convertible
 template <class _From, class _To>
 struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
@@ -435,107 +412,40 @@ struct is_volatile : bool_constant<is_volatile_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_function
 template <class _Ty>
-struct _Is_function { // determine whether _Ty is a function
-    using _Bool_type = false_type; // NB: members are user-visible via _Weak_types
-};
-
-#define _IS_FUNCTION(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                                           \
-    template <class _Ret, class... _Types>                                                              \
-    struct _Is_function<_Ret CALL_OPT(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> : _Arg_types<_Types...> { \
-        using _Bool_type = true_type;                                                                   \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                     \
-    };
-
-_NON_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_FUNCTION)
-#undef _IS_FUNCTION
-
-#define _IS_FUNCTION_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                                                            \
-    template <class _Ret, class... _Types>                                                                    \
-    struct _Is_function<_Ret(_Types..., ...) CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
-        using _Bool_type = true_type;                                                                         \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                           \
-    };
-
-_CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_FUNCTION_ELLIPSIS)
-#undef _IS_FUNCTION_ELLIPSIS
-
-template <class _Ty>
 _INLINE_VAR constexpr bool is_function_v =
     !is_const_v<const _Ty> && !is_reference_v<_Ty>; // determine whether _Ty is a function
 
 template <class _Ty>
 struct is_function : bool_constant<is_function_v<_Ty>> {};
 
+// STRUCT TEMPLATE is_object
 template <class _Ty>
-struct _Is_memfunptr { // base class for member function pointer predicates
-    using _Bool_type = false_type; // NB: members are user-visible via _Weak_types
-};
+_INLINE_VAR constexpr bool is_object_v = !is_function_v<_Ty> && !is_reference_v<_Ty> && !is_void_v<_Ty>;
 
-#define _IS_MEMFUNPTR(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                            \
-    template <class _Ret, class _Arg0, class... _Types>                                   \
-    struct _Is_memfunptr<_Ret (CALL_OPT _Arg0::*)(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> \
-        : _Arg_types<CV_OPT _Arg0*, _Types...> {                                          \
-        using _Bool_type = true_type;                                                     \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                       \
-        using _Class_type = _Arg0;                                                        \
-        using _Guide_type = enable_if<!is_same_v<int REF_OPT, int&&>, _Ret(_Types...)>;   \
-    };
-
-_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
-#undef _IS_MEMFUNPTR
-
-#define _IS_MEMFUNPTR_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                          \
-    template <class _Ret, class _Arg0, class... _Types>                      \
-    struct _Is_memfunptr<_Ret (_Arg0::*)(_Types..., ...)                     \
-            CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
-        using _Bool_type = true_type;                                        \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;          \
-        using _Class_type = _Arg0;                                           \
-        using _Guide_type = enable_if<false>;                                \
-    };
-
-_CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
-#undef _IS_MEMFUNPTR_ELLIPSIS
+template <class _Ty>
+struct is_object : bool_constant<is_object_v<_Ty>> {}; // determine whether _Ty is an object type
 
 // STRUCT TEMPLATE is_member_function_pointer
-template <class _Ty>
-struct _Is_member_pointer {
-    static constexpr bool value = false;
-};
+template <class>
+_INLINE_VAR constexpr bool is_member_function_pointer_v = // determine whether _Ty is a pointer to member function
+    false;
 
 template <class _Ty1, class _Ty2>
-struct _Is_member_pointer<_Ty1 _Ty2::*> {
-    static constexpr bool value = true;
-    using _Member_type          = _Ty2;
-};
-
-template <class _Ty>
-_INLINE_VAR constexpr bool is_member_function_pointer_v = // determine whether _Ty is a pointer to member function
-    conjunction_v<is_member_pointer<_Ty>, is_function<typename _Is_member_pointer<_Ty>::_Member_type>>;
+_INLINE_VAR constexpr bool is_member_function_pointer_v<_Ty1 _Ty2::*> = is_function_v<_Ty1>;
 
 template <class _Ty>
 struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<_Ty>> {};
 
-
-template <class _Ty, bool _Pmf = is_member_function_pointer_v<_Ty>>
-struct _Is_member_object_pointer { // determine whether _Ty is a pointer to member object
-    static constexpr bool value = false;
-};
-
 // STRUCT TEMPLATE is_member_object_pointer
-template <class _Ty>
+template <class>
 _INLINE_VAR constexpr bool is_member_object_pointer_v = // determine whether _Ty is a pointer to member object
-    conjunction_v<_Is_member_pointer<_Ty>::value,
-        negation<is_function<typename _Is_member_pointer<_Ty>::_Member_type>>>;
+    false;
+
+template <class _Ty1, class _Ty2>
+_INLINE_VAR constexpr bool is_member_object_pointer_v<_Ty1 _Ty2::*> = !is_function_v<_Ty1>;
 
 template <class _Ty>
 struct is_member_object_pointer : bool_constant<is_member_object_pointer_v<_Ty>> {};
-
-template <class _Ty1, class _Ty2>
-struct _Is_member_object_pointer<_Ty1 _Ty2::*, false> {
-    static constexpr bool value = true;
-    using _Class_type           = _Ty2;
-};
 
 // STRUCT TEMPLATE is_pod
 template <class _Ty>
@@ -1489,6 +1399,60 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
     return _STD move(_Arg);
 }
 
+template <class _Ty, bool _Pmf = is_member_function_pointer_v<_Ty>>
+struct _Is_member_object_pointer { // determine whether _Ty is a pointer to member object
+    static constexpr bool value = false;
+};
+
+template <class _Ty1, class _Ty2>
+struct _Is_member_object_pointer<_Ty1 _Ty2::*, false> {
+    static constexpr bool value = true;
+    using _Class_type           = _Ty2;
+};
+
+// STRUCT TEMPLATE _Arg_types
+template <class... _Types>
+struct _Arg_types {}; // provide argument_type, etc. (sometimes)
+
+template <class _Ty1>
+struct _Arg_types<_Ty1> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 argument_type;
+};
+
+template <class _Ty1, class _Ty2>
+struct _Arg_types<_Ty1, _Ty2> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 first_argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 second_argument_type;
+};
+
+template <class _Ty>
+struct _Memfunptr_args { // base class for member function pointer predicates
+};
+
+#define _MEMFUNPTR_ARGS(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                            \
+    template <class _Ret, class _Arg0, class... _Types>                                     \
+    struct _Memfunptr_args<_Ret (CALL_OPT _Arg0::*)(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> \
+        : _Arg_types<CV_OPT _Arg0*, _Types...> {                                            \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                         \
+        using _Class_type = _Arg0;                                                          \
+        using _Guide_type = enable_if<!is_same_v<int REF_OPT, int&&>, _Ret(_Types...)>;     \
+    };
+
+_MEMBER_CALL_CV_REF_NOEXCEPT(_MEMFUNPTR_ARGS)
+#undef _MEMFUNPTR_ARGS
+
+#define _MEMFUNPTR_ARGS_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                        \
+    template <class _Ret, class _Arg0, class... _Types>                      \
+    struct _Memfunptr_args<_Ret (_Arg0::*)(_Types..., ...)                   \
+            CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;          \
+        using _Class_type = _Arg0;                                           \
+        using _Guide_type = enable_if<false>;                                \
+    };
+
+_CLASS_DEFINE_CV_REF_NOEXCEPT(_MEMFUNPTR_ARGS_ELLIPSIS)
+#undef _MEMFUNPTR_ARGS_ELLIPSIS
+
 template <class _Ty>
 class reference_wrapper;
 
@@ -1578,7 +1542,7 @@ class reference_wrapper;
                                                                                                                        \
     template <class _Callable, class _Ty1, class _Removed_cvref>                                                       \
     struct _CONCAT(NAME_PREFIX, _Invoker1)<_Callable, _Ty1, _Removed_cvref, true, false>                               \
-        : conditional_t<is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,   \
+        : conditional_t<is_base_of_v<typename _Memfunptr_args<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>, \
               _CONCAT(NAME_PREFIX, _Invoker_pmf_object),                                                               \
               conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>,                            \
                   _CONCAT(NAME_PREFIX, _Invoker_pmf_refwrap),                                                          \
@@ -1661,7 +1625,6 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
         return _STD invoke(_STD forward<_Valtys>(_Vals)...);
     }
 };
-
 
 // TYPE TRAITS FOR invoke()
 template <class _To>
@@ -1806,6 +1769,28 @@ _NODISCARD constexpr bool is_constant_evaluated() noexcept {
 #endif // _HAS_CXX20
 
 // STRUCT TEMPLATE _Weak_types
+template <class _Ty>
+struct _Function_args { // determine whether _Ty is a function
+};
+
+#define _FUNCTION_ARGS(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                                           \
+    template <class _Ret, class... _Types>                                                                \
+    struct _Function_args<_Ret CALL_OPT(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> : _Arg_types<_Types...> { \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                       \
+    };
+
+_NON_MEMBER_CALL_CV_REF_NOEXCEPT(_FUNCTION_ARGS)
+#undef _FUNCTION_ARGS
+
+#define _FUNCTION_ARGS_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                                                            \
+    template <class _Ret, class... _Types>                                                                      \
+    struct _Function_args<_Ret(_Types..., ...) CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                             \
+    };
+
+_CLASS_DEFINE_CV_REF_NOEXCEPT(_FUNCTION_ARGS_ELLIPSIS)
+#undef _FUNCTION_ARGS_ELLIPSIS
+
 template <class _Ty, class = void>
 struct _Weak_result_type {}; // default definition
 
@@ -1842,10 +1827,10 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 template <class _Ty>
 struct _Weak_types { // provide nested types (sometimes)
-    using _Is_f_or_pf = _Is_function<remove_pointer_t<_Ty>>;
-    using _Is_pmf     = _Is_memfunptr<remove_cv_t<_Ty>>;
-    using type        = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _Is_f_or_pf,
-        conditional_t<is_member_function_pointer_v<_Ty>, _Is_pmf, _Weak_binary_args<_Ty>>>;
+    using _F_or_pf_args = _Function_args<remove_pointer_t<_Ty>>;
+    using _Pmf_args     = _Memfunptr_args<remove_cv_t<_Ty>>;
+    using type          = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _F_or_pf_args,
+        conditional_t<is_member_function_pointer_v<_Ty>, _Pmf_args, _Weak_binary_args<_Ty>>>;
 };
 
 // CLASS TEMPLATE reference_wrapper
