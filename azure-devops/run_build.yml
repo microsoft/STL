@@ -35,17 +35,9 @@ jobs:
         vcpkgDirectory: '$(vcpkgLocation)'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg'
-      condition: ne(variables.CACHE_RESTORED, 'true')
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-math'
-        vcpkgDirectory: '$(vcpkgLocation)'
-        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
-    - task: run-vcpkg@0
-      displayName: 'Set RUNVCPKG_VCPKG_ROOT'
-      condition: eq(variables.CACHE_RESTORED, 'true')
-      inputs:
-        vcpkgArguments: ''
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
     - task: run-cmake@0
