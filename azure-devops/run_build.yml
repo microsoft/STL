@@ -25,14 +25,17 @@ jobs:
       inputs:
         key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD'
         path: '$(vcpkgLocation)'
+        cacheHitVar: CACHE_RESTORED
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
+      condition: ne(variables.CACHE_RESTORED, 'true')
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-build:x86-windows'
         vcpkgDirectory: '$(vcpkgLocation)'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg'
+      condition: ne(variables.CACHE_RESTORED, 'true')
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-math:${{ parameters.targetPlatform }}-windows'
