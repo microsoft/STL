@@ -2195,6 +2195,8 @@ public:
 template <class _Ty>
 constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get _Ty's size after being EBCO'd
 
+struct _String_constructor_concat_tag {};
+
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
@@ -2429,6 +2431,33 @@ public:
             }
 
         _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
+        _Proxy._Release();
+    }
+
+    explicit basic_string(_String_constructor_concat_tag, const basic_string& _Alsource, const _Elem* const _Left_ptr,
+        const size_type _Left_size, const _Elem* const _Right_ptr, const size_type _Right_size)
+        : _Mypair(
+            _One_then_variadic_args_t(), _Alty_traits::select_on_container_copy_construction(_Alsource._Getal())) {
+        _STL_INTERNAL_CHECK(_Left_size < max_size());
+        _STL_INTERNAL_CHECK(_Right_size < max_size());
+        _STL_INTERNAL_CHECK(max_size() - _Left_size >= _Right_size);
+        const auto _New_size    = _Left_size + _Right_size;
+        size_type _New_capacity = _BUF_SIZE - 1;
+        _Elem* _Ptr             = _Mypair._Myval2._Bx._Buf;
+        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
+        if (_New_capacity < _New_size) {
+            _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
+            const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
+            _Ptr                    = _Unfancy(_Fancyptr);
+            _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _Fancyptr);
+        }
+
+        _Mypair._Myval2._Mysize = _New_size;
+        _Mypair._Myval2._Myres  = _New_capacity;
+        _Traits::copy(_Ptr, _Left_ptr, _Left_size);
+        _STL_INTERNAL_CHECK(_Elem() == _Right_ptr[_Right_size]);
+        _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, _Right_size + 1);
         _Proxy._Release();
     }
 
@@ -4269,11 +4298,12 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     // return string + string
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
-    _Ans.reserve(_Left.size() + _Right.size());
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    if (_Left.max_size() - _Left.size() < _Right.size()) {
+        _Xlength_error("string too long");
+    }
+
+    return basic_string<_Elem, _Traits, _Alloc>(_String_constructor_concat_tag{}, _Left,
+        _Left.c_str(), _Left.size(), _Right.c_str(), _Right.size());
 }
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -4281,21 +4311,24 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     _In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     using _String_type = basic_string<_Elem, _Traits, _Alloc>;
     using _Size_type   = typename _String_type::size_type;
-    _String_type _Ans;
-    _Ans.reserve(_Convert_size<_Size_type>(_Traits::length(_Left) + _Right.size()));
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    const auto _Left_size = _Convert_size<_Size_type>(_Traits::length(_Left));
+    if (_Right.max_size() - _Right.size() < _Left_size) {
+        _Xlength_error("string too long");
+    }
+
+    return basic_string<_Elem, _Traits, _Alloc>(_String_constructor_concat_tag{}, _Right,
+        _Left, _Left_size, _Right.c_str(), _Right.size());
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const _Elem _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
-    _Ans.reserve(1 + _Right.size());
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    if (_Right.size() == _Right.max_size()) {
+        _Xlength_error("string too long");
+    }
+
+    return basic_string<_Elem, _Traits, _Alloc>(_String_constructor_concat_tag{}, _Right,
+        _STD addressof(_Left), 1, _Right.c_str(), _Right.size());
 }
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -4303,21 +4336,24 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     using _String_type = basic_string<_Elem, _Traits, _Alloc>;
     using _Size_type   = typename _String_type::size_type;
-    _String_type _Ans;
-    _Ans.reserve(_Convert_size<_Size_type>(_Left.size() + _Traits::length(_Right)));
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    const auto _Right_size = _Convert_size<_Size_type>(_Traits::length(_Right));
+    if (_Left.max_size() - _Left.size() < _Right_size) {
+        _Xlength_error("string too long");
+    }
+
+    return basic_string<_Elem, _Traits, _Alloc>(_String_constructor_concat_tag{}, _Left,
+        _Left.c_str(), _Left.size(), _Right, _Right_size);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
-    _Ans.reserve(_Left.size() + 1);
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    if (_Left.size() == _Left.max_size()) {
+        _Xlength_error("string too long");
+    }
+
+    return basic_string<_Elem, _Traits, _Alloc>(_String_constructor_concat_tag{}, _Left,
+        _Left.c_str(), _Left.size(), _STD addressof(_Right), 1);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
