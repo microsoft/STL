@@ -1781,12 +1781,10 @@ inline constexpr bool is_nothrow_invocable_r_v =
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, VS 2019 16.5 Preview 2
 // FUNCTION is_constant_evaluated
 _NODISCARD constexpr bool is_constant_evaluated() noexcept {
     return __builtin_is_constant_evaluated();
 }
-#endif // __cpp_lib_is_constant_evaluated
 #endif // _HAS_CXX20
 
 // STRUCT TEMPLATE _Weak_types
@@ -1949,10 +1947,10 @@ template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assigna
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
 #endif // _HAS_CXX17
-void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
+_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
 template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
-void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
+_CONSTEXPR20 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
 
 // STRUCT TEMPLATE _Swappable_with_helper
 template <class _Ty1, class _Ty2, class = void>

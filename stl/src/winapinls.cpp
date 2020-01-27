@@ -5,8 +5,10 @@
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
+#include <algorithm>
 #include <ctype.h>
 #include <stdlib.h>
+#include <string_view>
 
 namespace {
     struct LCIDTOLOCALENAME {
@@ -255,6 +257,9 @@ namespace {
     };
     // clang-format on
 
+    static_assert(_STD is_sorted(_STD begin(LcidToLocaleNameTable), _STD end(LcidToLocaleNameTable),
+        [](const auto& left, const auto& right) { return left.lcid < right.lcid; }));
+
     // Map of locale name to an index in LcidToLocaleNameTable, for Windows XP.
     // Data in this table has been obtained from National Language Support (NLS) API Reference.
     // The table is sorted to improve search performance.
@@ -490,6 +495,13 @@ namespace {
         { L"zu-za"      , 112 },
     };
     // clang-format on
+
+    // This static_assert is case-sensitive, which is more than sufficient for the case-insensitive runtime lookups.
+    static_assert(_STD is_sorted(
+        _STD begin(LocaleNameToIndexTable), _STD end(LocaleNameToIndexTable), [](const auto& left, const auto& right) {
+            return _STD wstring_view{left.name} < _STD wstring_view{right.name};
+        }));
+
 } // unnamed namespace
 
 // __wcsnicmp_ascii

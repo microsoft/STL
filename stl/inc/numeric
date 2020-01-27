@@ -70,41 +70,36 @@ inline constexpr bool _Plus_on_arithmetic_ranges_reduction_v = false;
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
 
 template <class _InIt, class _Ty, class _BinOp>
-_NODISCARD _CONSTEXPR20_ICE _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op) {
+_NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op) {
     // return commutative and associative reduction of _Val and [_First, _Last), using _Reduce_op
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
+    if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
 #ifdef __cpp_lib_is_constant_evaluated
-    // TRANSITION, DevCom-878972
-    if (_STD is_constant_evaluated()) {
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
-        }
-        return _Val;
-    } else
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-    {
-        if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
+        {
             (void) _Reduce_op; // TRANSITION, VSO-486357
             return _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
-        } else {
-            for (; _UFirst != _ULast; ++_UFirst) {
-                _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
-            }
-            return _Val;
         }
     }
+
+    for (; _UFirst != _ULast; ++_UFirst) {
+        _Val = _Reduce_op(_STD move(_Val), *_UFirst); // Requirement missing from N4713
+    }
+
+    return _Val;
 }
 
 template <class _InIt, class _Ty>
-_NODISCARD _CONSTEXPR20_ICE _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _Val) {
+_NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _Val) {
     // return commutative and associative reduction of _Val and [_First, _Last)
     return _STD reduce(_First, _Last, _STD move(_Val), plus<>{});
 }
 
 template <class _InIt>
-_NODISCARD _CONSTEXPR20_ICE _Iter_value_t<_InIt> reduce(const _InIt _First, const _InIt _Last) {
+_NODISCARD _CONSTEXPR20 _Iter_value_t<_InIt> reduce(const _InIt _First, const _InIt _Last) {
     // return commutative and associative reduction of
     // iterator_traits<_InIt>::value_type{} and [_First, _Last)
     return _STD reduce(_First, _Last, _Iter_value_t<_InIt>{}, plus<>{});
@@ -203,7 +198,7 @@ inline constexpr bool _Default_ops_transform_reduce_v = false;
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
 
 template <class _InIt1, class _InIt2, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
+_NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
     // return commutative and associative transform-reduction of sequences, using
     // _Reduce_op and _Transform_op
@@ -211,35 +206,29 @@ _NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
+    if constexpr (_Default_ops_transform_reduce_v<_Unwrapped_t<const _InIt1&>, _Unwrapped_t<const _InIt2&>, _Ty,
+                      _BinOp1, _BinOp2>) {
 #ifdef __cpp_lib_is_constant_evaluated
-    // TRANSITION, DevCom-878972
-    if (_STD is_constant_evaluated()) {
-        for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-            _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
-        }
-        return _Val;
-    } else
+        // TRANSITION, DevCom-878972
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-    {
-        if constexpr (_Default_ops_transform_reduce_v<_Unwrapped_t<const _InIt1&>, _Unwrapped_t<const _InIt2&>, _Ty,
-                          _BinOp1, _BinOp2>) {
+        {
             (void) _Reduce_op; // TRANSITION, VSO-486357
             (void) _Transform_op; // TRANSITION, VSO-486357
             return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
-        } else {
-            for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
-                _Val =
-                    _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
-            }
-            return _Val;
         }
     }
+
+    for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_UFirst1, *_UFirst2)); // Requirement missing from N4713
+    }
+    return _Val;
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(const _InIt1 _First1, const _InIt1 _Last1,
-    _RightTy (&_First2)[_RightSize], _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
+_NODISCARD _CONSTEXPR20 _Ty transform_reduce(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
+    _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
     // return commutative and associative transform-reduction of
     // sequences, using _Reduce_op and _Transform_op
     return _STD transform_reduce(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _STD move(_Val),
@@ -248,15 +237,14 @@ _NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(const _InIt1 _First1, const _In
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _Ty>
-_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
+_NODISCARD _CONSTEXPR20 _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
     return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty>
-_NODISCARD _CONSTEXPR20_ICE _Ty transform_reduce(
-    _InIt1 _First1, _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
+_NODISCARD _CONSTEXPR20 _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
     return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }

@@ -43,8 +43,6 @@ namespace Concurrency {
             virtual void destroy()                                               = 0;
         };
 
-#pragma warning(push)
-#pragma warning(disable : 4265) // non-virtual destructor in base class
         class stl_critical_section_vista final : public stl_critical_section_interface {
         public:
             stl_critical_section_vista() {
@@ -264,8 +262,6 @@ namespace Concurrency {
         };
 
 #endif // _STL_CONCRT_SUPPORT
-
-#pragma warning(pop)
 
         inline bool are_win7_sync_apis_available() {
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
