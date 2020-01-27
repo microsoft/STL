@@ -28,7 +28,7 @@ jobs:
         cacheHitVar: CACHE_RESTORED
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
-      condition: and(ne(variables.CACHE_RESTORED, 'true'), not(contains('${{ parameters.targetPlatform }}', 'arm')))
+      condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-build:x86-windows'
