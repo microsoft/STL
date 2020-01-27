@@ -16,8 +16,18 @@
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
 
-// Using headers from Boost.Math 1.66.0
-#include <boost/math/special_functions.hpp>
+// Using headers from Boost.Math
+#include <boost/math/special_functions/bessel.hpp>
+#include <boost/math/special_functions/beta.hpp>
+#include <boost/math/special_functions/ellint_1.hpp>
+#include <boost/math/special_functions/ellint_2.hpp>
+#include <boost/math/special_functions/ellint_3.hpp>
+#include <boost/math/special_functions/expint.hpp>
+#include <boost/math/special_functions/hermite.hpp>
+#include <boost/math/special_functions/laguerre.hpp>
+#include <boost/math/special_functions/legendre.hpp>
+#include <boost/math/special_functions/spherical_harmonic.hpp>
+#include <boost/math/special_functions/zeta.hpp>
 #include <boost/math/tools/config.hpp>
 #include <boost/math/tools/precision.hpp>
 
