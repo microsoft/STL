@@ -12,6 +12,7 @@
 #pragma warning(disable : 4643) // Forward declaring '%s' in namespace std is not permitted by the C++ Standard
 #pragma warning(disable : 4702) // unreachable code
 
+#define BOOST_CHRONO_HEADER_ONLY
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
