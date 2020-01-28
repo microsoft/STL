@@ -2197,6 +2197,10 @@ constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get 
 
 struct _String_constructor_concat_tag {};
 
+[[noreturn]] inline void _Xlen_string() {
+    _Xlength_error("string too long");
+}
+
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
@@ -4151,7 +4155,7 @@ private:
         // reallocate to store exactly _New_size elements, new buffer prepared by
         // _Fn(_New_ptr, _New_size, _Args...)
         if (_New_size > max_size()) {
-            _Xlen(); // result too long
+            _Xlen_string(); // result too long
         }
 
         const size_type _Old_capacity = _Mypair._Myval2._Myres;
@@ -4179,7 +4183,7 @@ private:
         auto& _My_data            = _Mypair._Myval2;
         const size_type _Old_size = _My_data._Mysize;
         if (max_size() - _Old_size < _Size_increase) {
-            _Xlen(); // result too long
+            _Xlen_string(); // result too long
         }
 
         const size_type _New_size     = _Old_size + _Size_increase;
@@ -4245,10 +4249,6 @@ private:
         _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
     }
 
-    [[noreturn]] static void _Xlen() {
-        _Xlength_error("string too long");
-    }
-
 public:
     void _Orphan_all() noexcept { // used by filesystem::path
         _Mypair._Myval2._Orphan_all();
@@ -4299,7 +4299,7 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     // return string + string
     if (_Left.max_size() - _Left.size() < _Right.size()) {
-        _Xlength_error("string too long");
+        _Xlen_string();
     }
 
     return basic_string<_Elem, _Traits, _Alloc>(
@@ -4313,7 +4313,7 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     using _Size_type      = typename _String_type::size_type;
     const auto _Left_size = _Convert_size<_Size_type>(_Traits::length(_Left));
     if (_Right.max_size() - _Right.size() < _Left_size) {
-        _Xlength_error("string too long");
+        _Xlen_string();
     }
 
     return basic_string<_Elem, _Traits, _Alloc>(
@@ -4324,7 +4324,7 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const _Elem _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     if (_Right.size() == _Right.max_size()) {
-        _Xlength_error("string too long");
+        _Xlen_string();
     }
 
     return basic_string<_Elem, _Traits, _Alloc>(
@@ -4338,7 +4338,7 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     using _Size_type       = typename _String_type::size_type;
     const auto _Right_size = _Convert_size<_Size_type>(_Traits::length(_Right));
     if (_Left.max_size() - _Left.size() < _Right_size) {
-        _Xlength_error("string too long");
+        _Xlen_string();
     }
 
     return basic_string<_Elem, _Traits, _Alloc>(
@@ -4349,7 +4349,7 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem _Right) {
     if (_Left.size() == _Left.max_size()) {
-        _Xlength_error("string too long");
+        _Xlen_string();
     }
 
     return basic_string<_Elem, _Traits, _Alloc>(
