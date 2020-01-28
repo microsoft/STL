@@ -2456,8 +2456,8 @@ public:
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Traits::copy(_Ptr, _Left_ptr, _Left_size);
-        _STL_INTERNAL_CHECK(_Elem() == _Right_ptr[_Right_size]);
-        _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, _Right_size + 1);
+        _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, _Right_size);
+        _Traits::assign(_Ptr[_New_size], _Elem());
         _Proxy._Release();
     }
 
