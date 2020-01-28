@@ -3304,7 +3304,7 @@ struct _Static_partitioned_is_heap_until {
 
         const auto _Initial = _Max_value(_Chunk_offset, _Diff{1});
         for (_Diff _Off = _Initial; _Off < _Last; ++_Off) {
-            if (_DEBUG_LT_PRED(_Pred, _Range_first[(_Off - 1) >> 1], _Range_first[_Off])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_Range_first + ((_Off - 1) >> 1)), *(_Range_first + _Off))) {
                 _Results._Imbue(_Key._Chunk_number, _Range_first + _Off);
                 return _Cancellation_status::_Canceled;
             }
@@ -3746,7 +3746,7 @@ void _Place_elements_from_indices(
     const auto _Last_index = _Indices_first + _Num_results;
     for (; _Indices_first != _Last_index; ++_Indices_first) {
         const auto _Curr_index = *_Indices_first;
-        *_Dest                 = _First[static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index)];
+        *_Dest                 = *(_First + static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index));
         ++_Dest;
     }
 }
@@ -3896,10 +3896,10 @@ struct _Set_intersection_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range1_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                     ++_Index_chunk_first;
                     ++_Curr_range1_index;
@@ -3981,12 +3981,12 @@ struct _Set_difference_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range2_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                 ++_Index_chunk_first;
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     ++_Curr_range1_index;
                 }
 

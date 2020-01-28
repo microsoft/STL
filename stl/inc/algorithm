@@ -877,7 +877,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
                 auto _UMid                   = _UFirst;
 
-                while (_UOld_first != _UFirst && _Pred(_UFirst[-1], _Val)) { // back up over any skipped prefix
+                while (_UOld_first != _UFirst && _Pred(*(_UFirst - 1), _Val)) { // back up over any skipped prefix
                     --_Count1;
                     --_UFirst;
                 }
@@ -958,7 +958,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
             _FwdIt _Mid                  = _First;
 
-            while (_Old_first != _First && _Pred(_First[-1], _Val)) {
+            while (_Old_first != _First && _Pred(*(_First - 1), _Val)) {
                 --_Count1; // back up over any skipped prefix
                 --_First;
             }
@@ -2123,12 +2123,12 @@ _SampleIt _Sample_reservoir_unchecked(
             return _Dest + _Sample_pop;
         }
 
-        _Dest[_Sample_pop] = *_First;
+        *(_Dest + _Sample_pop) = *_First;
     }
     for (; _First != _Last; ++_First) {
         const auto _Idx = _RngFunc(++_PopSize);
         if (_Idx < _SCount) {
-            _Dest[static_cast<_Diff_sample>(_Idx)] = *_First; // again, valid narrowing because _Idx < _SCount
+            *(_Dest + static_cast<_Diff_sample>(_Idx)) = *_First; // again, valid narrowing because _Idx < _SCount
         }
     }
     return _Dest + _SCount;
@@ -2690,14 +2690,14 @@ _CONSTEXPR20 void _Push_heap_by_index(
     // percolate _Hole to _Top or where _Val belongs, using _Pred
     using _Diff = _Iter_diff_t<_RanIt>;
     for (_Diff _Idx = (_Hole - 1) >> 1; // shift for codegen
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, _First[_Idx], _Val); //
+         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); //
          _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
-        _First[_Hole] = _STD move(_First[_Idx]);
-        _Hole         = _Idx;
+        *(_First + _Hole) = _STD move(*(_First + _Idx));
+        _Hole             = _Idx;
     }
 
-    _First[_Hole] = _STD move(_Val); // drop _Val into final hole
+    *(_First + _Hole) = _STD move(_Val); // drop _Val into final hole
 }
 
 template <class _RanIt, class _Pr>
@@ -2735,16 +2735,16 @@ _CONSTEXPR20 void _Pop_heap_hole_by_index(
     const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
     while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
         _Idx = 2 * _Idx + 2;
-        if (_DEBUG_LT_PRED(_Pred, _First[_Idx], _First[_Idx - 1])) {
+        if (_DEBUG_LT_PRED(_Pred, *(_First + _Idx), *(_First + (_Idx - 1)))) {
             --_Idx;
         }
-        _First[_Hole] = _STD move(_First[_Idx]);
-        _Hole         = _Idx;
+        *(_First + _Hole) = _STD move(*(_First + _Idx));
+        _Hole             = _Idx;
     }
 
     if (_Idx == _Max_sequence_non_leaf && _Bottom % 2 == 0) { // only child at bottom, move _Hole down to it
-        _First[_Hole] = _STD move(_First[_Bottom - 1]);
-        _Hole         = _Bottom - 1;
+        *(_First + _Hole) = _STD move(*(_First + (_Bottom - 1)));
+        _Hole             = _Bottom - 1;
     }
 
     _Push_heap_by_index(_First, _Hole, _Top, _STD move(_Val), _Pred);
@@ -2792,7 +2792,7 @@ _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
-        _Iter_value_t<_RanIt> _Val = _STD move(_First[_Hole]);
+        _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
         _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
     }
 }
@@ -2815,7 +2815,7 @@ _CONSTEXPR20 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _P
     using _Diff       = _Iter_diff_t<_RanIt>;
     const _Diff _Size = _Last - _First;
     for (_Diff _Off = 1; _Off < _Size; ++_Off) {
-        if (_DEBUG_LT_PRED(_Pred, _First[(_Off - 1) >> 1], _First[_Off])) { // shift for codegen
+        if (_DEBUG_LT_PRED(_Pred, *(_First + ((_Off - 1) >> 1)), *(_First + _Off))) { // shift for codegen
             return _First + _Off;
         }
     }
