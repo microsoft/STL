@@ -1426,8 +1426,7 @@ struct _Arg_types<_Ty1, _Ty2> {
 };
 
 template <class _Ty>
-struct _Memfunptr_args { // base class for member function pointer predicates
-};
+struct _Memfunptr_args {}; // base class for member function pointer predicates
 
 #define _MEMFUNPTR_ARGS(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                            \
     template <class _Ret, class _Arg0, class... _Types>                                     \
@@ -1770,8 +1769,7 @@ _NODISCARD constexpr bool is_constant_evaluated() noexcept {
 
 // STRUCT TEMPLATE _Weak_types
 template <class _Ty>
-struct _Function_args { // determine whether _Ty is a function
-};
+struct _Function_args {}; // determine whether _Ty is a function
 
 #define _FUNCTION_ARGS(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                                           \
     template <class _Ret, class... _Types>                                                                \
