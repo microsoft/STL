@@ -59,6 +59,7 @@
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive
+// P1423R3 char8_t Backward Compatibility Remediation
 // P1902R1 Missing Feature-Test Macros 2017-2019
 
 // _HAS_CXX17 directly controls:
@@ -1007,7 +1008,7 @@
 #define __cpp_lib_bounded_array_traits 201902L
 
 #ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201811L
+#define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
