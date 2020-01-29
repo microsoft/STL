@@ -1252,16 +1252,12 @@ private:
         _Owner._Call_deleter = false;
     }
 
+#ifdef __cpp_concepts
     // clang-format off
     template <class _Ty0, class... _Types>
-#ifdef __cpp_concepts
         requires (!is_array_v<_Ty0>)
-#endif // __cpp_concepts
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
-    // clang-format on
 
-#ifdef __cpp_concepts
-    // clang-format off
     template <class _Ty0>
         requires is_unbounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> make_shared(const size_t _Count);
@@ -1277,19 +1273,11 @@ private:
     template <class _Ty0>
         requires is_bounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> make_shared(const remove_extent_t<_Ty0>& _Val);
-    // clang-format on
-#endif // __cpp_concepts
 
-    // clang-format off
     template <class _Ty0, class _Alloc, class... _Types>
-#ifdef __cpp_concepts
         requires (!is_array_v<_Ty0>)
-#endif // __cpp_concepts
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
-    // clang-format on
-
-#ifdef __cpp_concepts
-    // clang-format off
+    
     template <class _Ty0, class _Alloc>
         requires is_unbounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const size_t _Count);
@@ -1307,7 +1295,13 @@ private:
         requires is_bounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
     // clang-format on
-#endif // __cpp_concepts
+#else // ^^^ __cpp_concepts / !__cpp_concepts vvv    
+    template <class _Ty0, class... _Types>
+    friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
+
+    template <class _Ty0, class _Alloc, class... _Types>
+    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+#endif // !__cpp_concepts
 
     template <class _Ux>
     void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
@@ -1559,7 +1553,9 @@ private:
 #ifdef __cpp_concepts
 template <class _Ty>
 constexpr _Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
-    return (_Val1 % _Val2 == 0) ? (_Val1 / _Val2) : (_Val1 / _Val2 + 1);
+    using _Signed   = make_signed_t<_Ty>;
+    const auto _Res = _STD div(_Signed(_Val1), _Signed(_Val2));
+    return (_Res.rem == 0) ? (_Res.quot) : (_Res.quot + 1);
 }
 
 template <class _NoThrowIt>
@@ -1576,11 +1572,9 @@ struct _Uninitialized_rev_destroying_backout { // struct to undo partially const
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
 
     ~_Uninitialized_rev_destroying_backout() {
-        if (_Last != _First) {
-            do {
-                --_Last;
-                _STD destroy_at(_Last);
-            } while (_Last != _First);
+        while (_Last != _First) {
+            --_Last;
+            _STD destroy_at(_Last);
         }
     }
 
@@ -1597,18 +1591,15 @@ struct _Uninitialized_rev_destroying_backout { // struct to undo partially const
 };
 
 template <class _Ty>
-void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, const size_t _Size) {
-    if (_Size != 0) {
-        size_t _Idx = _Size;
-        do {
-            --_Idx;
-            // TRANSITION, LLVM-42404
-            if constexpr ((rank_v<_Ty>) > 0) {
-                _Reverse_destroy_multidimensional_n(_Arr[_Idx], extent_v<_Ty>);
-            } else {
-                _Destroy_in_place(_Arr[_Idx]);
-            }
-        } while (_Idx > 0);
+void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) {
+    while (_Size > 0) {
+        --_Size;
+        // TRANSITION, LLVM-42404
+        if constexpr ((rank_v<_Ty>) > 0) {
+            _Reverse_destroy_multidimensional_n(_Arr[_Size], extent_v<_Ty>);
+        } else {
+            _Destroy_in_place(_Arr[_Size]);
+        }
     }
 }
 
@@ -1624,16 +1615,16 @@ void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_
             _RERAISE;
             _CATCH_END
         }
-    } else {
-        if constexpr (_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial) {
+    } else if constexpr (_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial) {
+        if (0 < _Size) {
             _Copy_memmove(_In, _In + _Size, _Out);
-        } else {
-            _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
-            for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-                _Backout._Emplace_back(_In[_Idx]);
-            }
-            _Backout._Release();
         }
+    } else {
+        _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back(_In[_Idx]);
+        }
+        _Backout._Release();
     }
 }
 
@@ -1649,16 +1640,16 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
             _RERAISE;
             _CATCH_END
         }
-    } else {
-        if constexpr (_Use_memset_value_construct_v<_Ty*>) {
+    } else if constexpr (_Use_memset_value_construct_v<_Ty*>) {
+        if (0 < _Size) {
             _Zero_range(_Out, _Out + _Size);
-        } else {
-            _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
-            for (size_t _Count = 0; _Count < _Size; ++_Count) {
-                _Backout._Emplace_back();
-            }
-            _Backout._Release();
         }
+    } else {
+        _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
+        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+            _Backout._Emplace_back();
+        }
+        _Backout._Release();
     }
 }
 
@@ -1674,18 +1665,16 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
             _RERAISE;
             _CATCH_END
         }
-    } else {
+    } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
         if (0 < _Size) {
-            if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
-                _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
-            } else {
-                _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
-                for (size_t _Count = 0; _Count < _Size; ++_Count) {
-                    _Backout._Emplace_back(_Val);
-                }
-                _Backout._Release();
-            }
+            _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
         }
+    } else {
+        _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
+        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+            _Backout._Emplace_back(_Val);
+        }
+        _Backout._Release();
     }
 }
 
@@ -1875,11 +1864,9 @@ public:
     _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
 
     ~_Uninitialized_rev_destroying_backout_al() {
-        if (_Last != _First) {
-            do {
-                --_Last;
-                allocator_traits<_Alloc>::destroy(_Al, _Last);
-            } while (_Last != _First);
+        while (_Last != _First) {
+            --_Last;
+            allocator_traits<_Alloc>::destroy(_Al, _Last);
         }
     }
 
@@ -1901,18 +1888,15 @@ private:
 };
 
 template <class _Ty, class _Alloc>
-void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, const size_t _Size, _Alloc& _Al) {
-    if (_Size != 0) {
-        size_t _Idx = _Size;
-        do {
-            --_Idx;
-            // TRANSITION, LLVM-42404
-            if constexpr ((rank_v<_Ty>) > 0) {
-                _Reverse_destroy_multidimensional_n_al(_Arr[_Idx], extent_v<_Ty>, _Al);
-            } else {
-                allocator_traits<_Alloc>::destroy(_Al, _Arr + _Idx);
-            }
-        } while (_Idx > 0);
+void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Alloc& _Al) {
+    while (_Size > 0) {
+        --_Size;
+        // TRANSITION, LLVM-42404
+        if constexpr ((rank_v<_Ty>) > 0) {
+            _Reverse_destroy_multidimensional_n_al(_Arr[_Size], extent_v<_Ty>, _Al);
+        } else {
+            allocator_traits<_Alloc>::destroy(_Al, _Arr + _Size);
+        }
     }
 }
 
@@ -1928,18 +1912,18 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
             _RERAISE;
             _CATCH_END
         }
-    } else {
-        if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial>,
-                          _Uses_default_construct<_Alloc, _Ty*, _Ty>>) {
+    } else if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial>,
+                             _Uses_default_construct<_Alloc, _Ty*, _Ty>>) {
+        (void) _Al;
+        if (0 < _Size) {
             _Copy_memmove(_In, _In + _Size, _Out);
-            (void) _Al;
-        } else {
-            _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
-            for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-                _Backout._Emplace_back(_In[_Idx]);
-            }
-            _Backout._Release();
         }
+    } else {
+        _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back(_In[_Idx]);
+        }
+        _Backout._Release();
     }
 }
 
@@ -1955,17 +1939,17 @@ void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const
             _RERAISE;
             _CATCH_END
         }
-    } else {
-        if constexpr (_Use_memset_value_construct_v<_Ty*> && _Uses_default_construct<_Alloc, _Ty*>::value) {
-            (void) _Al;
+    } else if constexpr (_Use_memset_value_construct_v<_Ty*> && _Uses_default_construct<_Alloc, _Ty*>::value) {
+        (void) _Al;
+        if (0 < _Size) {
             _Zero_range(_Out, _Out + _Size);
-        } else {
-            _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
-            for (size_t _Count = 0; _Count < _Size; ++_Count) {
-                _Backout._Emplace_back();
-            }
-            _Backout._Release();
         }
+    } else {
+        _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
+        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+            _Backout._Emplace_back();
+        }
+        _Backout._Release();
     }
 }
 
@@ -1981,17 +1965,17 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
             _RERAISE;
             _CATCH_END
         }
-    } else {
-        if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-            (void) _Al;
+    } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+        (void) _Al;
+        if (0 < _Size) {
             _CSTD memset(_Out, static_cast<unsigned char>(_Val), static_cast<size_t>(_Size));
-        } else {
-            _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
-            for (size_t _Count = 0; _Count < _Size; ++_Count) {
-                _Backout._Emplace_back(_Val);
-            }
-            _Backout._Release();
         }
+    } else {
+        _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
+        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+            _Backout._Emplace_back(_Val);
+        }
+        _Backout._Release();
     }
 }
 
@@ -2024,7 +2008,7 @@ private:
     ~_Ref_count_unbounded_array_alloc() = default; // nothing to do; _Storage._Value already destroyed by _Destroy()
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        if constexpr (!is_trivially_destructible_v<remove_extent_t<_Ty>>) {
+        if constexpr (!conjunction_v<is_trivially_destructible<remove_extent_t<_Ty>>, _Uses_default_destroy<_Alloc, _Ty*>>) {
             _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
             _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, _Alty);
         }
@@ -2068,7 +2052,7 @@ private:
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        if constexpr (!is_trivially_destructible_v<_Ty>) {
+        if constexpr (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
             _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
             _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Alty);
         }
