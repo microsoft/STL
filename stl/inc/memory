@@ -1277,7 +1277,7 @@ private:
     template <class _Ty0, class _Alloc, class... _Types>
         requires (!is_array_v<_Ty0>)
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
-    
+
     template <class _Ty0, class _Alloc>
         requires is_unbounded_array_v<_Ty0>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const size_t _Count);
