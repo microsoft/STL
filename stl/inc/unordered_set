@@ -49,11 +49,7 @@ public:
 
     explicit _Uset_traits(const _Tr& _Traits) noexcept(is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
 
-#if _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
-    using value_compare = key_compare;
-#else // ^^^ _HAS_DEPRECATED_ADAPTOR_TYPEDEFS / !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS vvv
-    using value_compare = void;
-#endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+    using value_compare = void; // TRANSITION, remove when _Standard becomes unconditionally true
 
     static const _Kty& _Kfn(const value_type& _Val) noexcept {
         return _Val;

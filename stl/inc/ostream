@@ -108,17 +108,17 @@ public:
 
         _STL_DISABLE_DEPRECATED_WARNING
         __CLR_OR_THIS_CALL ~sentry() noexcept {
-#if _HAS_EXCEPTIONS
-#if _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
-            if (_STD uncaught_exception() == 0) { // TRANSITION, ArchivedOS-12000909
+#if !_HAS_EXCEPTIONS
+            const bool _Zero_uncaught_exceptions = true;
+#elif _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+            const bool _Zero_uncaught_exceptions = !_STD uncaught_exception(); // TRANSITION, ArchivedOS-12000909
 #else // ^^^ _HAS_DEPRECATED_UNCAUGHT_EXCEPTION / !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION vvv
-            if (_STD uncaught_exceptions() == 0) {
+            const bool _Zero_uncaught_exceptions = _STD uncaught_exceptions() == 0;
 #endif // !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+
+            if (_Zero_uncaught_exceptions) {
                 this->_Myostr._Osfx();
             }
-#else // _HAS_EXCEPTIONS
-            this->_Myostr._Osfx();
-#endif // _HAS_EXCEPTIONS
         }
         _STL_RESTORE_DEPRECATED_WARNING
 
