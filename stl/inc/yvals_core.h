@@ -59,7 +59,6 @@
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1164R1 Making create_directory() Intuitive
-// P1423R3 char8_t Backward Compatibility Remediation
 // P1902R1 Missing Feature-Test Macros 2017-2019
 
 // _HAS_CXX17 directly controls:
@@ -173,6 +172,7 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1394R4 Range Constructor For span
+// P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
 // P1645R1 constexpr For <numeric> Algorithms
