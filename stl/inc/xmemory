@@ -1995,6 +1995,19 @@ struct _Alloc_temporary {
     }
 };
 
+template <class _Alloc>
+_NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _Rhs) noexcept {
+    if
+        _CONSTEXPR_IF(allocator_traits<_Alloc>::is_always_equal::value) {
+            (void) _Lhs;
+            (void) _Rhs;
+            return true;
+        }
+    else {
+        return _Lhs == _Rhs;
+    }
+}
+
 // FUNCTION TEMPLATE remove
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
