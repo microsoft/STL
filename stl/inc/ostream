@@ -925,7 +925,7 @@ template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
 #endif // __cpp_char8_t
 
-#if _HAS_CXX20
+#if _HAS_CXX20 && !_HAS_STREAM_INSERTIONS_REMOVED_BY_P1423
 template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, wchar_t) = delete;
 template <class _Traits>
@@ -949,7 +949,7 @@ template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char16_t*) = delete;
 template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
-#endif // !_HAS_CXX20
+#endif // _HAS_CXX20 && !_HAS_STREAM_INSERTIONS_REMOVED_BY_P1423
 
 template <class _Ostr, class _Ty, class = void>
 struct _Can_stream_out : false_type {};

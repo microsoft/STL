@@ -586,6 +586,12 @@
 #endif // _M_FP_EXCEPT
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
 
+// P1423R3 char8_t Backward Compatibility Remediation
+// Controls whether we allow the stream insertions this proposal forbids
+#ifndef _HAS_STREAM_INSERTIONS_REMOVED_BY_P1423
+#define _HAS_STREAM_INSERTIONS_REMOVED_BY_P1423 0
+#endif // _HAS_STREAM_INSERTIONS_REMOVED_BY_P1423
+
 // P0174R2 Deprecating Vestigial Library Parts
 // P0521R0 Deprecating shared_ptr::unique()
 // Other C++17 deprecation warnings
