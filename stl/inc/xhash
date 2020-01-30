@@ -376,15 +376,15 @@ public:
     static constexpr bool _Multi            = _Traits::_Multi;
 
 #if !_HAS_IF_CONSTEXPR
-    template <class _Traits>
-    friend bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, false_type);
+    template <class _TraitsT>
+    friend bool _Hash_equal_elements(const _Hash<_TraitsT>& _Left, const _Hash<_TraitsT>& _Right, false_type);
 
-    template <class _Traits>
-    friend bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, true_type);
+    template <class _TraitsT>
+    friend bool _Hash_equal_elements(const _Hash<_TraitsT>& _Left, const _Hash<_TraitsT>& _Right, true_type);
 #endif // !_HAS_IF_CONSTEXPR
 
-    template <class _Traits>
-    friend bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right);
+    template <class _TraitsT>
+    friend bool _Hash_equal(const _Hash<_TraitsT>& _Left, const _Hash<_TraitsT>& _Right);
 
 protected:
     _Hash(const _Key_compare& _Parg, const allocator_type& _Al)
