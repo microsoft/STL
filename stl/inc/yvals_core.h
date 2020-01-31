@@ -588,9 +588,9 @@
 
 // P1423R3 char8_t Backward Compatibility Remediation
 // Controls whether we allow the stream insertions this proposal forbids
-#ifndef _HAS_STREAM_INSERTIONS_REMOVED_BY_P1423
-#define _HAS_STREAM_INSERTIONS_REMOVED_BY_P1423 0
-#endif // _HAS_STREAM_INSERTIONS_REMOVED_BY_P1423
+#ifndef _HAS_STREAM_INSERTIONS_REMOVED_IN_CXX20
+#define _HAS_STREAM_INSERTIONS_REMOVED_IN_CXX20 (!_HAS_CXX20)
+#endif // _HAS_STREAM_INSERTIONS_REMOVED_IN_CXX20
 
 // P0174R2 Deprecating Vestigial Library Parts
 // P0521R0 Deprecating shared_ptr::unique()
