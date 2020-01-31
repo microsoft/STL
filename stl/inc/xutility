@@ -3490,21 +3490,21 @@ struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(unreachable_sentinel_t, const _Winc&) noexcept {
+        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
 #if !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(const _Winc&, unreachable_sentinel_t) noexcept {
+        _NODISCARD friend constexpr bool operator==(const _Winc&, const unreachable_sentinel_t&) noexcept {
             return false;
         }
 
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator!=(unreachable_sentinel_t, const _Winc&) noexcept {
+        _NODISCARD friend constexpr bool operator!=(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return true;
         }
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator!=(const _Winc&, unreachable_sentinel_t) noexcept {
+        _NODISCARD friend constexpr bool operator!=(const _Winc&, const unreachable_sentinel_t&) noexcept {
             return true;
         }
 #endif // !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L

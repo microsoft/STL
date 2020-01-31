@@ -50,7 +50,10 @@ public:
     }
 
 #if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-    _NODISCARD friend constexpr bool operator==(const partial_ordering&, const partial_ordering&) noexcept = default;
+#ifndef __clang__ // TRANSITION, LLVM-41991
+    _NODISCARD
+#endif // TRANSITION, LLVM-41991
+    friend constexpr bool operator==(const partial_ordering&, const partial_ordering&) noexcept = default;
 #else // ^^^ supports <=> and P1185 / supports neither vvv
     _NODISCARD friend constexpr bool operator!=(const partial_ordering _Val, _Literal_zero) noexcept {
         return !_Val._Is_ordered || _Val._Value != 0;
@@ -138,7 +141,10 @@ public:
     }
 
 #if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-    _NODISCARD friend constexpr bool operator==(const weak_ordering&, const weak_ordering&) noexcept = default;
+#ifndef __clang__ // TRANSITION, LLVM-41991
+    _NODISCARD
+#endif // TRANSITION, LLVM-41991
+    friend constexpr bool operator==(const weak_ordering&, const weak_ordering&) noexcept = default;
 #else // ^^^ supports <=> and P1185 / supports neither vvv
     _NODISCARD friend constexpr bool operator!=(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value != 0;
@@ -229,7 +235,10 @@ public:
     }
 
 #if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-    _NODISCARD friend constexpr bool operator==(const strong_ordering&, const strong_ordering&) noexcept = default;
+#ifndef __clang__ // TRANSITION, LLVM-41991
+    _NODISCARD
+#endif // TRANSITION, LLVM-41991
+    friend constexpr bool operator==(const strong_ordering&, const strong_ordering&) noexcept = default;
 #else // ^^^ supports <=> and P1185 / supports neither vvv
     _NODISCARD friend constexpr bool operator!=(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value != 0;

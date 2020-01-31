@@ -32,7 +32,7 @@ _STD_BEGIN
 template <class _Ty1, class _Ty2>
 concept _Same_impl = // Must be a distinct concept to provide symmetric subsumption for same_as
 #ifdef __clang__
-    __is_same(_Ty1 _Ty2);
+    __is_same(_Ty1, _Ty2);
 #else // ^^^ use intrinsic / no intrinsic vvv
     is_same_v<_Ty1, _Ty2>;
 #endif // __clang__
@@ -160,7 +160,7 @@ namespace ranges {
             template <class _Ty1, class _Ty2, size_t _Size>
             constexpr void operator()(_Ty1 (&__t)[_Size], _Ty2 (&__u)[_Size]) const
                 noexcept(noexcept((*this)(__t[0], __u[0])))
-                requires requires { (*this)(__t[0], __u[0]); } {
+                requires requires(const _Cpo& __f) { __f(__t[0], __u[0]); } { // TRANSITION, LLVM-44689
                 for (size_t __i = 0; __i < _Size; ++__i) {
                     (*this)(__t[__i], __u[__i]);
                 }
