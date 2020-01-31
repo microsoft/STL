@@ -4447,7 +4447,7 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
 #if _CONTAINER_DEBUG_LEVEL == 1
     _STL_VERIFY(_STD addressof(_Left) != _STD addressof(_Right),
         "You cannot concatenate the same moved string to itself. See "
-        "N4842 [res.on.arguments]/1.3: If a function argument binds to an rvalue reference "
+        "N4849 [res.on.arguments]/1.3: If a function argument binds to an rvalue reference "
         "parameter, the implementation may assume that this parameter is a unique reference "
         "to this argument");
 #endif // _CONTAINER_DEBUG_LEVEL == 1
