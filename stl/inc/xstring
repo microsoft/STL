@@ -2482,29 +2482,38 @@ public:
         const auto _Right_capacity = _Right_data._Myres;
         // overflow is OK due to max_size() checks:
         const auto _New_size = static_cast<size_type>(_Left_size + _Right_size);
-        if (_Allocators_equal(_Getal(), _Right._Getal()) && _Right_capacity > _Left_capacity
-            && _Left_size <= _Right_capacity - _Right_size) {
-            // take _Right's buffer, max_size() is OK because we're under _Right's capacity
+        if (_Right_size <= _Left_capacity - _Left_size && _Left_capacity >= _Right_capacity) {
+            // take _Left's buffer, max_size() is OK because the result fits in _Left's capacity
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
-            _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
-            // _Right had more capacity than left, therefore _Right did not have the minimum capacity,
-            // therefore _Right had _Large_string_engaged(), therefore after _Take_contents we have
-            // _Large_string_engaged() and can save that branch
-            _STL_INTERNAL_CHECK(_My_data._Large_string_engaged());
-            const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
-            _Traits::move(_Ptr + _Left_size, _Ptr, _My_data._Mysize + 1);
-            _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
+            _Take_contents(_Left, bool_constant<_Can_memcpy_val>{});
+            const auto _Ptr = _My_data._Myptr();
+            _Traits::copy(_Ptr + _My_data._Mysize, _Right_data._Myptr(), _Right_size);
             _My_data._Mysize = _New_size;
             _Traits::assign(_Ptr[_New_size], _Elem());
             return;
         }
 
-        if (_Right_size < _Left_capacity - _Left_size) {
-            // take _Left's buffer, max_size() is OK because we're under _Left's capacity
+        if (_Allocators_equal(_Getal(), _Right._Getal()) && _Left_size <= _Right_capacity - _Right_size) {
+            // take _Right's buffer, max_size() is OK because the result fits in _Right's capacity
+            // At this point, we have tested:
+            // !(_Right_size <= _Left_capacity - _Left_size && _Left_capacity >= _Right_capacity)
+            //     && _Left_size <= _Right_capacity - _Right_size
+            // therefore: (demorgan)
+            // (_Right_size > _Left_capacity - _Left_size || _Left_capacity < _Right_capacity)
+            //     && _Left_size <= _Right_capacity - _Right_size
+            // therefore: (distribute)
+            // (_Right_size > _Left_capacity - _Left_size && _Left_size <= _Right_capacity - _Right_size)
+            // || (_Left_capacity < _Right_capacity && _Left_size <= _Right_capacity - _Right_size)
+            // therefore: either the result fits in _Right's capacity but not in _Left's capacity, so _Right must have
+            //     had more capacity, OR we explicitly tested that _Right had more capacity
+            // therefore: _Right must be in large mode (since it's capacity is larger than the minimum), so save that
+            //     branch
+            _STL_INTERNAL_CHECK(_Right_data._Large_string_engaged());
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
-            _Take_contents(_Left, bool_constant<_Can_memcpy_val>{});
-            const auto _Ptr = _My_data._Myptr();
-            _Traits::copy(_Ptr + _My_data._Mysize, _Right_data._Myptr(), _Right_size);
+            _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
+            const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
+            _Traits::move(_Ptr + _Left_size, _Ptr, _My_data._Mysize);
+            _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
             _My_data._Mysize = _New_size;
             _Traits::assign(_Ptr[_New_size], _Elem());
             return;
@@ -4435,13 +4444,13 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
-#if _ITERATOR_DEBUG_LEVEL == 2
+#if _CONTAINER_DEBUG_LEVEL == 1
     _STL_VERIFY(_STD addressof(_Left) != _STD addressof(_Right),
         "You cannot concatenate the same moved string to itself. See "
         "N4842 [res.on.arguments]/1.3: If a function argument binds to an rvalue reference "
         "parameter, the implementation may assume that this parameter is a unique reference "
         "to this argument");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // _CONTAINER_DEBUG_LEVEL == 1
     return {_String_constructor_concat_tag{}, _Left, _Right};
 }
 
