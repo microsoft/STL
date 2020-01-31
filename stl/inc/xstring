@@ -2196,6 +2196,7 @@ template <class _Ty>
 constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get _Ty's size after being EBCO'd
 
 struct _String_constructor_concat_tag {
+    // tag to select constructors used by basic_string's concatenation operators (operator+)
     explicit _String_constructor_concat_tag() = default;
 };
 
@@ -2508,7 +2509,7 @@ public:
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
-            _Traits::move(_Ptr + _Left_size, _Ptr, _My_data._Mysize + 1);
+            _Traits::move(_Ptr + _Left_size, _Ptr, _Right_size + 1);
             _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
             _My_data._Mysize = _New_size;
             return;
