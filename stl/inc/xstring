@@ -2481,7 +2481,7 @@ public:
         const auto _Left_capacity  = _Left_data._Myres;
         const auto _Right_capacity = _Right_data._Myres;
         // overflow is OK due to max_size() checks:
-        const auto _New_size = static_cast<size_type>(_Left_size + _Right_size);
+        const auto _New_size     = static_cast<size_type>(_Left_size + _Right_size);
         const bool _Fits_in_left = _Right_size <= _Left_capacity - _Left_size;
         if (_Fits_in_left && _Right_capacity <= _Left_capacity) {
             // take _Left's buffer, max_size() is OK because _Fits_in_left
