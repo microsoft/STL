@@ -54,7 +54,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\stdhndlr.cpp;
             $(CrtRoot)\github\stl\src\stdthrow.cpp;
             $(CrtRoot)\github\stl\src\syserror.cpp;
-            $(CrtRoot)\github\stl\src\syserror_import_lib.cpp;
             $(CrtRoot)\github\stl\src\cond.cpp;
             $(CrtRoot)\github\stl\src\cthread.cpp;
             $(CrtRoot)\github\stl\src\mutex.cpp;

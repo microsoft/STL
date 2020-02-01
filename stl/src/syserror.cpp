@@ -8,6 +8,10 @@
 
 #include <Windows.h>
 
+#ifdef _DLL
+#include "syserror_import_lib.cpp"
+#endif
+
 _STD_BEGIN
 struct _Win_errtab_t { // maps Windows error to Posix error
     int _Windows;
