@@ -3490,21 +3490,21 @@ struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(unreachable_sentinel_t, const _Winc&) noexcept {
+        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
 #if !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(const _Winc&, unreachable_sentinel_t) noexcept {
+        _NODISCARD friend constexpr bool operator==(const _Winc&, const unreachable_sentinel_t&) noexcept {
             return false;
         }
 
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator!=(unreachable_sentinel_t, const _Winc&) noexcept {
+        _NODISCARD friend constexpr bool operator!=(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return true;
         }
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator!=(const _Winc&, unreachable_sentinel_t) noexcept {
+        _NODISCARD friend constexpr bool operator!=(const _Winc&, const unreachable_sentinel_t&) noexcept {
             return true;
         }
 #endif // !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
@@ -4095,18 +4095,15 @@ struct _Is_character_or_byte<byte> : true_type {};
 #endif // _HAS_STD_BYTE
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
-// clang-format off
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe =
-    conjunction_v<
-        disjunction<
-            conjunction<_Is_character_or_byte<_Unwrap_enum_t<_Ty>>, _Is_character_or_byte<_Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>,
-            conjunction<is_same<bool, _Unwrap_enum_t<_Ty>>, is_same<bool, _Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>>,
-        is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<
+    disjunction<conjunction<_Is_character_or_byte<_Unwrap_enum_t<_Ty>>,
+                    _Is_character_or_byte<_Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>,
+        conjunction<is_same<bool, _Unwrap_enum_t<_Ty>>, is_same<bool, _Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>>,
+    is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
-// clang-format on
 
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Ty>

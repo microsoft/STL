@@ -16,6 +16,10 @@
 #include <type_traits>
 #include <xutility>
 
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
+#include <compare>
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -121,6 +125,10 @@ struct _Span_iterator {
         return _Tmp;
     }
 
+    _NODISCARD friend constexpr _Span_iterator operator+(const difference_type _Off, _Span_iterator _Next) noexcept {
+        return _Next += _Off;
+    }
+
     constexpr _Span_iterator& operator-=(const difference_type _Off) noexcept {
         _Verify_offset(-_Off);
         _Myptr -= _Off;
@@ -133,13 +141,21 @@ struct _Span_iterator {
         return _Tmp;
     }
 
-    _NODISCARD constexpr difference_type operator-(const _Span_iterator& _Right) const noexcept {
+    // clang-format off
+#ifdef __cpp_lib_concepts
+    template <class _Ty2>
+    requires same_as<remove_cv_t<_Ty2>, value_type>
+#else // ^^^ use concepts / no concepts vvv
+    template <class _Ty2, enable_if_t<is_same_v<remove_cv_t<_Ty2>, value_type>, int> = 0>
+#endif // __cpp_lib_concepts
+    _NODISCARD constexpr difference_type operator-(const _Span_iterator<_Ty2>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(
             _Mybegin == _Right._Mybegin && _Myend == _Right._Myend, "cannot subtract incompatible span iterators");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
         return _Myptr - _Right._Myptr;
     }
+    // clang-format on
 
     _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
@@ -153,6 +169,15 @@ struct _Span_iterator {
         return _Myptr == _Right._Myptr;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
+    _NODISCARD constexpr strong_ordering operator<=>(const _Span_iterator& _Right) const noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
+        _STL_VERIFY(
+            _Mybegin == _Right._Mybegin && _Myend == _Right._Myend, "cannot compare incompatible span iterators");
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+        return _Myptr <=> _Right._Myptr;
+    }
+#else // ^^^ use spaceship / no spaceship vvv
     _NODISCARD constexpr bool operator!=(const _Span_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -176,6 +201,7 @@ struct _Span_iterator {
     _NODISCARD constexpr bool operator>=(const _Span_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
     friend constexpr void _Verify_range(const _Span_iterator& _First, const _Span_iterator& _Last) noexcept {
@@ -203,11 +229,6 @@ struct _Span_iterator {
     pointer _Myend   = nullptr;
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 };
-
-template <class _Ty>
-_NODISCARD _Span_iterator<_Ty> operator+(const ptrdiff_t _Off, _Span_iterator<_Ty> _Next) noexcept {
-    return _Next += _Off;
-}
 
 template <class _Ty>
 struct pointer_traits<_Span_iterator<_Ty>> {
