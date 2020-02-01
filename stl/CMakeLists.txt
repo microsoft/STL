@@ -242,6 +242,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/parallel_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
 )
 
@@ -282,6 +283,7 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/stdhndlr.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/stdthrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/taskscheduler.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/thread0.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/uncaught_exception.cpp

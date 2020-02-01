@@ -8,9 +8,10 @@
 #define _SYSTEM_ERROR_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_system_error_abi.hpp>
 #include <cerrno>
-#include <cstdlib> // for strerror
-#include <stdexcept> // for runtime_error
+#include <cstdlib>
+#include <stdexcept>
 #include <xcall_once.h>
 #include <xerrc.h>
 
@@ -432,22 +433,20 @@ protected:
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int);
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Winerror_message2(
-    unsigned long _Message_id, const char** _Ptr_str) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Winerror_message2_free(const char* _Str) noexcept;
 
-struct _Winerror_message_caller {
-    const char* _Str;
+struct _System_error_message {
+    char* _Str;
     size_t _Length;
 
-    _Winerror_message_caller(unsigned long _Ec) noexcept : _Str(nullptr), _Length(_Winerror_message2(_Ec, &_Str)) {}
+    _System_error_message(unsigned long _Ec) noexcept
+        : _Str(nullptr), _Length(_CSTD __std_system_error_allocate_message(_Ec, &_Str)) {}
 
-    _Winerror_message_caller(const _Winerror_message_caller&) = delete;
-    _Winerror_message_caller& operator=(const _Winerror_message_caller&) = delete;
+    _System_error_message(const _System_error_message&) = delete;
+    _System_error_message& operator=(const _System_error_message&) = delete;
 
-    ~_Winerror_message_caller() {
+    ~_System_error_message() {
         if (_Str) {
-            _Winerror_message2_free(_Str);
+            _CSTD __std_system_error_free_message(_Str);
         }
     }
 };
@@ -500,10 +499,10 @@ public:
     }
 
     _NODISCARD virtual string message(int _Errcode) const override {
-        _Winerror_message_caller _Msg(static_cast<unsigned long>(_Errcode));
+        _System_error_message _Msg(static_cast<unsigned long>(_Errcode));
         if (_Msg._Length == 0) {
-            static constexpr char _Unknwn_err[] = "unknown error";
-            return string(_Unknwn_err, _STD size(_Unknwn_err) - 1);
+            static constexpr char _Unknown_error[] = "unknown error";
+            return string(_Unknown_error, _STD size(_Unknown_error) - 1);
         } else {
             return string(_Msg._Str, _Msg._Length);
         }
