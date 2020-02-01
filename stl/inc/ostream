@@ -912,14 +912,48 @@ basic_ostream<char, _Traits>& operator<<(
 }
 
 #ifdef __cpp_char8_t // These deleted overloads are specified in P1423.
+// don't insert a UTF-8 NTBS
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(
-    basic_ostream<char, _Traits>&, const char8_t*) = delete; // don't insert a UTF-8 NTBS
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char8_t*) = delete;
+template <class _Traits>
+basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char8_t*) = delete;
+
+// don't insert a UTF-8 code unit
+template <class _Traits>
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char8_t) = delete;
+template <class _Traits>
+basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
+#endif // __cpp_char8_t
+
+#if !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
+#ifdef _NATIVE_WCHAR_T_DEFINED
+template <class _Traits>
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, wchar_t) = delete;
 
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(
-    basic_ostream<char, _Traits>&, char8_t) = delete; // don't insert a UTF-8 code unit
-#endif // __cpp_char8_t
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const wchar_t*) = delete;
+#endif // _NATIVE_WCHAR_T_DEFINED
+
+template <class _Traits>
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char16_t) = delete;
+template <class _Traits>
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char32_t) = delete;
+
+template <class _Traits>
+basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char16_t) = delete;
+template <class _Traits>
+basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char32_t) = delete;
+
+template <class _Traits>
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char16_t*) = delete;
+template <class _Traits>
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, const char32_t*) = delete;
+
+template <class _Traits>
+basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char16_t*) = delete;
+template <class _Traits>
+basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
+#endif // !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
 template <class _Ostr, class _Ty, class = void>
 struct _Can_stream_out : false_type {};

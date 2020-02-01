@@ -51,6 +51,13 @@ containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 # See https://reviews.llvm.org/D73138
 containers\views\span.sub\subspan.pass.cpp
 
+# libcxx doesn't yet implement P1423R3, so it expects an "old" value for __cpp_lib_char8_t
+language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
+language.support\support.limits\support.limits.general\istream.version.pass.cpp
+language.support\support.limits\support.limits.general\limits.version.pass.cpp
+language.support\support.limits\support.limits.general\locale.version.pass.cpp
+language.support\support.limits\support.limits.general\ostream.version.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"

@@ -173,6 +173,7 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1394R4 Range Constructor For span
+// P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
 // P1645R1 constexpr For <numeric> Algorithms
@@ -585,6 +586,12 @@
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 1
 #endif // _M_FP_EXCEPT
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
+
+// P1423R3 char8_t Backward Compatibility Remediation
+// Controls whether we allow the stream insertions this proposal forbids
+#ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
+#define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (!_HAS_CXX20)
+#endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
 // P0174R2 Deprecating Vestigial Library Parts
 // P0521R0 Deprecating shared_ptr::unique()
@@ -1008,7 +1015,7 @@
 #define __cpp_lib_bounded_array_traits 201902L
 
 #ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201811L
+#define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
