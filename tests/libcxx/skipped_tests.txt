@@ -745,6 +745,11 @@ language.support\cmp\cmp.strongord\strongord.pass.cpp
 language.support\cmp\cmp.weakeq\cmp.weakeq.pass.cpp
 language.support\cmp\cmp.weakord\weakord.pass.cpp
 
+# Comment: "Test C99 compound literal."
+# Code: `(int[]){3, 4}`
+# error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
+containers\sequences\array\array.creation\to_array.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
