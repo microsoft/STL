@@ -834,7 +834,7 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
 #if _HAS_CXX17
 // FUNCTION TEMPLATE _Abs_u
 template <class _Arithmetic>
-[[nodiscard]] constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
+_NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
     // computes absolute value of _Val (converting to an unsigned integer type if necessary to avoid overflow
     // representing the negation of the minimum value)
     if constexpr (is_floating_point_v<_Arithmetic>) {
