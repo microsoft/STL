@@ -590,12 +590,6 @@
 #endif // _M_FP_EXCEPT
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
 
-// P1423R3 char8_t Backward Compatibility Remediation
-// Controls whether we allow the stream insertions this proposal forbids
-#ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
-#define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (!_HAS_CXX20)
-#endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
-
 // P0174R2 Deprecating Vestigial Library Parts
 // P0521R0 Deprecating shared_ptr::unique()
 // Other C++17 deprecation warnings
@@ -961,6 +955,12 @@
 #define _SECOND_ARGUMENT_TYPE_NAME _Unnameable_second_argument
 #define _RESULT_TYPE_NAME          _Unnameable_result
 #endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+// P1423R3 char8_t Backward Compatibility Remediation
+// Controls whether we allow the stream insertions this proposal forbids
+#ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
+#define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
 // LIBRARY FEATURE-TEST MACROS
 
