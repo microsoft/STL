@@ -64,7 +64,7 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     return _Length;
 }
 
-void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_invalid_ char* _Str) noexcept {
+void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_invalid_ char* const _Str) noexcept {
     LocalFree(_Str);
 }
 
