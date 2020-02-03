@@ -173,6 +173,7 @@
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1394R4 Range Constructor For span
+// P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
 // P1612R1 Relocating endian To <bit>
 // P1645R1 constexpr For <numeric> Algorithms
@@ -183,6 +184,9 @@
 // P1872R0 span Should Have size_type, Not index_type
 // P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
+
+// _HAS_CXX20 indirectly controls:
+// P0619R4 Removing C++17-Deprecated Features
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
@@ -903,6 +907,60 @@
 
 // next warning number: STL4029
 
+// P0619R4 Removing C++17-Deprecated Features
+#ifndef _HAS_FEATURES_REMOVED_IN_CXX20
+#define _HAS_FEATURES_REMOVED_IN_CXX20 (!_HAS_CXX20)
+#endif // _HAS_FEATURES_REMOVED_IN_CXX20
+
+#ifndef _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+#ifndef _HAS_DEPRECATED_IS_LITERAL_TYPE
+#define _HAS_DEPRECATED_IS_LITERAL_TYPE (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
+
+#ifndef _HAS_DEPRECATED_NEGATORS
+#define _HAS_DEPRECATED_NEGATORS (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_NEGATORS
+
+#ifndef _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
+#define _HAS_DEPRECATED_RAW_STORAGE_ITERATOR (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
+
+#ifndef _HAS_DEPRECATED_RESULT_OF
+#define _HAS_DEPRECATED_RESULT_OF (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_RESULT_OF
+
+#ifndef _HAS_DEPRECATED_SHARED_PTR_UNIQUE
+#define _HAS_DEPRECATED_SHARED_PTR_UNIQUE (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_SHARED_PTR_UNIQUE
+
+#ifndef _HAS_DEPRECATED_TEMPORARY_BUFFER
+#define _HAS_DEPRECATED_TEMPORARY_BUFFER (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
+
+#ifndef _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+#define _HAS_DEPRECATED_UNCAUGHT_EXCEPTION (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+
+#if _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#define _ARGUMENT_TYPE_NAME        argument_type
+#define _FIRST_ARGUMENT_TYPE_NAME  first_argument_type
+#define _SECOND_ARGUMENT_TYPE_NAME second_argument_type
+#define _RESULT_TYPE_NAME          result_type
+#else // ^^^ _HAS_DEPRECATED_ADAPTOR_TYPEDEFS / !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS vvv
+#define _ARGUMENT_TYPE_NAME        _Unnameable_argument
+#define _FIRST_ARGUMENT_TYPE_NAME  _Unnameable_first_argument
+#define _SECOND_ARGUMENT_TYPE_NAME _Unnameable_second_argument
+#define _RESULT_TYPE_NAME          _Unnameable_result
+#endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+// P1423R3 char8_t Backward Compatibility Remediation
+// Controls whether we allow the stream insertions this proposal forbids
+#ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
+#define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
 // LIBRARY FEATURE-TEST MACROS
 
@@ -1008,7 +1066,7 @@
 #define __cpp_lib_bounded_array_traits 201902L
 
 #ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201811L
+#define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L

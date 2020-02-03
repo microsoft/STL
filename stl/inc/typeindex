@@ -61,8 +61,8 @@ private:
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<type_index> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const type_index& _Keyval) const noexcept {
         return _Keyval.hash_code();

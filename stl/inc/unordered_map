@@ -50,24 +50,7 @@ public:
 
     explicit _Umap_traits(const _Tr& _Traits) noexcept(is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
 
-    class value_compare {
-    public:
-        using first_argument_type  = value_type;
-        using second_argument_type = value_type;
-        using result_type          = bool;
-
-        _NODISCARD bool operator()(const value_type& _Left, const value_type& _Right) const
-            noexcept(noexcept(_Keycompobj(_Left.first, _Right.first))) /* strengthened */ {
-            // test if _Left precedes _Right by comparing just keys
-            return _Keycompobj(_Left.first, _Right.first);
-        }
-
-        value_compare(const key_compare& _Keycomparg) noexcept(
-            is_nothrow_copy_constructible_v<key_compare>) /* strengthened */
-            : _Keycompobj(_Keycomparg) {}
-
-        key_compare _Keycompobj;
-    };
+    using value_compare = void; // TRANSITION, remove when _Standard becomes unconditionally true
 
     template <class _Ty1, class _Ty2>
     static const _Kty& _Kfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract key from element value
