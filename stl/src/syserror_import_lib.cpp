@@ -36,13 +36,17 @@ _EXTERN_C
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
     _In_ const char* const _Str, _In_ size_t _Size) noexcept {
-    if (_Size != 0) {
-        do {
-            --_Size;
-        } while (_Whitespace_bitmap._Test(_Str[_Size]));
-    }
+    for (;;) {
+        if (_Size == 0) {
+            return _Size;
+        }
 
-    return _Size;
+        --_Size;
+        if (!_Whitespace_bitmap._Test(_Str[_Size])) {
+            ++_Size;
+            return _Size;
+        }
+    }
 }
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
