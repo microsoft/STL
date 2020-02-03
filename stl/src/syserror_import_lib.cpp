@@ -51,21 +51,13 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_traili
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     _In_ const unsigned long _Message_id, _Out_ char** const _Ptr_str) noexcept {
-    // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
-    // pre: *_Ptr_str == nullptr
+    // convert to name of Windows error, return 0 for failure, otherwise return number of chars in buffer
+    // __std_system_error_free_message should be called even if 0 is returned
     const unsigned long _Chars =
         FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr, _Message_id, 0, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
-    const size_t _Length = _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
-
-    // FormatMessageA returned a message containing only whitespaces
-    if (_Length == 0 && *_Ptr_str != nullptr) {
-        _CSTD __std_system_error_free_message(*_Ptr_str);
-        *_Ptr_str = nullptr;
-    }
-
-    return _Length;
+    return _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
 }
 
 void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_ptr_invalid_ char* const _Str) noexcept {

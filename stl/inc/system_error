@@ -445,9 +445,7 @@ struct _System_error_message {
     _System_error_message& operator=(const _System_error_message&) = delete;
 
     ~_System_error_message() {
-        if (_Str) {
-            _CSTD __std_system_error_free_message(_Str);
-        }
+        _CSTD __std_system_error_free_message(_Str);
     }
 };
 
