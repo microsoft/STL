@@ -50,7 +50,7 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_traili
 }
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
-    const unsigned long _Message_id, _Out_ char** const _Ptr_str) noexcept {
+    _In_ const unsigned long _Message_id, _Out_ char** const _Ptr_str) noexcept {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
     // pre: *_Ptr_str == nullptr
     const unsigned long _Chars =
@@ -68,7 +68,7 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     return _Length;
 }
 
-void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_invalid_ char* const _Str) noexcept {
+void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_ptr_invalid_ char* const _Str) noexcept {
     LocalFree(_Str);
 }
 
