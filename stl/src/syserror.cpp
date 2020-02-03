@@ -118,7 +118,8 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
     // pre: _Size < INT_MAX
     const unsigned long _Chars = FormatMessageA(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0, _Message_id, 0, _Narrow, _Size, 0);
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, _Message_id, 0, _Narrow, _Size, nullptr);
+
 
     return _CSTD __std_get_string_size_without_trailing_whitespace(_Narrow, _Chars);
 }
