@@ -49,7 +49,7 @@ public:
 
     explicit _Uset_traits(const _Tr& _Traits) noexcept(is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
 
-    using value_compare = key_compare;
+    using value_compare = void; // TRANSITION, remove when _Standard becomes unconditionally true
 
     static const _Kty& _Kfn(const value_type& _Val) noexcept {
         return _Val;
