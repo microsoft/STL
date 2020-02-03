@@ -50,8 +50,8 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
     // pre: *_Ptr_str == nullptr
     const unsigned long _Chars =
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
-            _Message_id, 0, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr, _Message_id, 0, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
     const size_t _Length = _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
 
