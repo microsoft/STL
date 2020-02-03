@@ -1616,7 +1616,7 @@ void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_
             _CATCH_END
         }
     } else if constexpr (_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial) {
-        if (0 < _Size) {
+        if (_Size > 0) {
             _Copy_memmove(_In, _In + _Size, _Out);
         }
     } else {
@@ -1641,7 +1641,7 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
             _CATCH_END
         }
     } else if constexpr (_Use_memset_value_construct_v<_Ty*>) {
-        if (0 < _Size) {
+        if (_Size > 0) {
             _Zero_range(_Out, _Out + _Size);
         }
     } else {
@@ -1666,7 +1666,7 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
             _CATCH_END
         }
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
-        if (0 < _Size) {
+        if (_Size > 0) {
             _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
         }
     } else {
@@ -1749,8 +1749,8 @@ private:
 
 // CLASS TEMPLATE _Ref_count_bounded_array
 template <class _Ty>
-class _Ref_count_bounded_array
-    : public _Ref_count_base { // handle reference counting for bounded array in control block, no allocator
+class _Ref_count_bounded_array : public _Ref_count_base { // handle reference counting for bounded array in control
+                                                          // block, no allocator
 public:
     _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {}
 
@@ -1915,7 +1915,7 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
     } else if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial>,
                              _Uses_default_construct<_Alloc, _Ty*, _Ty>>) {
         (void) _Al;
-        if (0 < _Size) {
+        if (_Size > 0) {
             _Copy_memmove(_In, _In + _Size, _Out);
         }
     } else {
@@ -1941,7 +1941,7 @@ void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const
         }
     } else if constexpr (_Use_memset_value_construct_v<_Ty*> && _Uses_default_construct<_Alloc, _Ty*>::value) {
         (void) _Al;
-        if (0 < _Size) {
+        if (_Size > 0) {
             _Zero_range(_Out, _Out + _Size);
         }
     } else {
@@ -1967,7 +1967,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         }
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
         (void) _Al;
-        if (0 < _Size) {
+        if (_Size > 0) {
             _CSTD memset(_Out, static_cast<unsigned char>(_Val), static_cast<size_t>(_Size));
         }
     } else {
