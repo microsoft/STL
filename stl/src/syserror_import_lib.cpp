@@ -32,9 +32,10 @@ namespace {
 
 } // unnamed namespace
 
-extern "C" {
-unsigned long __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
-    const char* const _Str, unsigned long _Size) noexcept {
+_EXTERN_C
+
+_NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
+    _In_ const char* const _Str, _In_ size_t _Size) noexcept {
     if (_Size != 0) {
         do {
             --_Size;
@@ -45,7 +46,7 @@ unsigned long __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_w
 }
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
-    unsigned long _Message_id, _Out_ char** _Ptr_str) noexcept {
+    const unsigned long _Message_id, _Out_ char** const _Ptr_str) noexcept {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
     // pre: *_Ptr_str == nullptr
     const unsigned long _Chars =
@@ -54,7 +55,7 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
 
     const size_t _Length = _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
 
-    // FormatMessageA returned a message being only whitespaces?
+    // FormatMessageA returned a message containing only whitespaces
     if (_Length == 0 && *_Ptr_str != nullptr) {
         _CSTD __std_system_error_free_message(*_Ptr_str);
         *_Ptr_str = nullptr;
@@ -66,4 +67,5 @@ _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
 void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_invalid_ char* _Str) noexcept {
     LocalFree(_Str);
 }
-}
+
+_END_EXTERN_C

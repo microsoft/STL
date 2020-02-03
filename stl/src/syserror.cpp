@@ -120,8 +120,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
     const unsigned long _Chars = FormatMessageA(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, _Message_id, 0, _Narrow, _Size, nullptr);
 
-
-    return _CSTD __std_get_string_size_without_trailing_whitespace(_Narrow, _Chars);
+    return static_cast<unsigned long>(_CSTD __std_get_string_size_without_trailing_whitespace(_Narrow, _Chars));
 }
 
 struct _Sys_errtab_t { // maps error_code to NTBS

@@ -20,17 +20,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef _M_CEE_PURE
 #define __CLRCALL_PURE_OR_STDCALL __clrcall
 #else
-#define __CLRCALL_PURE_OR_STDCALL __cdecl
+#define __CLRCALL_PURE_OR_STDCALL __stdcall
 #endif
 
 _EXTERN_C
 
-_NODISCARD unsigned long __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
-    _In_ const char* const _Str, _In_ unsigned long _Size) noexcept;
+_NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
+    _In_ const char* const _Str, _In_ size_t _Size) noexcept;
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
-    unsigned long _Message_id, _Out_ char** _Ptr_str) noexcept;
-void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_invalid_ char* _Str) noexcept;
+    const unsigned long _Message_id, _Out_ char** const _Ptr_str) noexcept;
+void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_invalid_ char* const _Str) noexcept;
 
 _END_EXTERN_C
 
