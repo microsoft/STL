@@ -99,10 +99,10 @@ static const _Win_errtab_t _Win_errtab[] = {
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(
     int _Errcode) { // convert Windows error to Posix error if possible, otherwise 0
-    const _Win_errtab_t* _Ptr = &_Win_errtab[0];
-    for (; _Ptr != _STD end(_Win_errtab); ++_Ptr) {
-        if (_Ptr->_Windows == _Errcode) {
-            return static_cast<int>(_Ptr->_Posix);
+
+    for (const auto& [_Windows, _Posix] : _Win_errtab) {
+        if (_Windows == _Errcode) {
+            return static_cast<int>(_Posix);
         }
     }
 
@@ -224,10 +224,10 @@ static const _Sys_errtab_t _Sys_errtab[] = {
 };
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int _Errcode) { // convert to name of generic error
-    const _Sys_errtab_t* _Ptr = &_Sys_errtab[0];
-    for (; _Ptr != _STD end(_Sys_errtab); ++_Ptr) {
-        if ((int) _Ptr->_Errcode == _Errcode) {
-            return _Ptr->_Name;
+
+    for (const auto& [_Code, _Name] : _Sys_errtab) {
+        if (static_cast<int>(_Code) == _Errcode) {
+            return _Name;
         }
     }
 
