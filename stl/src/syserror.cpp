@@ -99,9 +99,9 @@ static const _Win_errtab_t _Win_errtab[] = {
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int _Errcode) {
     // convert Windows error to Posix error if possible, otherwise 0
-    for (const auto& [_Windows, _Posix] : _Win_errtab) {
-        if (_Windows == _Errcode) {
-            return static_cast<int>(_Posix);
+    for (const auto& _Entry : _Win_errtab) {
+        if (_Entry._Windows == _Errcode) {
+            return static_cast<int>(_Entry._Posix);
         }
     }
 
@@ -109,9 +109,9 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int _Errcode) {
 }
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
-    unsigned long _Message_id, char* _Narrow, unsigned long _Size) { // convert to name of Windows error, return 0 for
-                                                                     // failure, otherwise return number of chars
-                                                                     // written pre: _Size < INT_MAX
+    unsigned long _Message_id, char* _Narrow, unsigned long _Size) {
+    // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
+    // pre: _Size < INT_MAX
     const unique_ptr<wchar_t[]> _Wide(new wchar_t[_Size]); // not using make_unique because we want default-init
     const auto _First = _Wide.get();
     unsigned long _Wide_chars =
@@ -223,9 +223,9 @@ static const _Sys_errtab_t _Sys_errtab[] = {
 };
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int _Errcode) { // convert to name of generic error
-    for (const auto& [_Code, _Name] : _Sys_errtab) {
-        if (static_cast<int>(_Code) == _Errcode) {
-            return _Name;
+    for (const auto& _Entry : _Sys_errtab) {
+        if (static_cast<int>(_Entry._Errcode) == _Errcode) {
+            return _Entry._Name;
         }
     }
 
