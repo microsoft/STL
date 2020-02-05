@@ -97,9 +97,8 @@ static const _Win_errtab_t _Win_errtab[] = {
     {WSAEWOULDBLOCK, errc::operation_would_block},
 };
 
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(
-    int _Errcode) { // convert Windows error to Posix error if possible, otherwise 0
-
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int _Errcode) {
+    // convert Windows error to Posix error if possible, otherwise 0
     for (const auto& [_Windows, _Posix] : _Win_errtab) {
         if (_Windows == _Errcode) {
             return static_cast<int>(_Posix);
@@ -224,7 +223,6 @@ static const _Sys_errtab_t _Sys_errtab[] = {
 };
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int _Errcode) { // convert to name of generic error
-
     for (const auto& [_Code, _Name] : _Sys_errtab) {
         if (static_cast<int>(_Code) == _Errcode) {
             return _Name;
