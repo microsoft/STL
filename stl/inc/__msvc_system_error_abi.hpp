@@ -1,4 +1,4 @@
-// __msvc_system_error_abi.h internal header (core)
+// __msvc_system_error_abi.hpp internal header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -24,14 +24,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif
 
 _EXTERN_C
-
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
-    _In_ const char* const _Str, _In_ size_t _Size) noexcept;
+    const char* _Str, size_t _Size) noexcept;
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
-    _In_ const unsigned long _Message_id, _Out_ char** const _Ptr_str) noexcept;
-void __CLRCALL_PURE_OR_STDCALL __std_system_error_free_message(_Post_ptr_invalid_ char* const _Str) noexcept;
-
+    unsigned long _Message_id, char** _Ptr_str) noexcept;
+void __CLRCALL_PURE_OR_STDCALL __std_system_error_deallocate_message(char* _Str) noexcept;
 _END_EXTERN_C
 
 #pragma pop_macro("new")

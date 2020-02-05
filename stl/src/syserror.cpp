@@ -3,11 +3,13 @@
 
 // system_error message mapping
 
-#include <cstdlib>
 #include <system_error>
 
 #include <Windows.h>
 
+// TRANSITION, MSBuild
+// MSBuild has a hard requirement against including the same file in both a DLL and its import lib, so we include
+// the import lib .cpp here to make those functions available for internal use by other parts of our DLL.
 #ifdef _DLL
 #include "syserror_import_lib.cpp"
 #endif
@@ -18,7 +20,7 @@ struct _Win_errtab_t { // maps Windows error to Posix error
     errc _Posix;
 };
 
-static const _Win_errtab_t _Win_errtab[] = {
+static constexpr _Win_errtab_t _Win_errtab[] = {
     // table of Windows/Posix pairs
     {ERROR_ACCESS_DENIED, errc::permission_denied},
     {ERROR_ALREADY_EXISTS, errc::file_exists},
@@ -100,19 +102,18 @@ static const _Win_errtab_t _Win_errtab[] = {
     {WSAEWOULDBLOCK, errc::operation_would_block},
 };
 
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(
-    int _Errcode) { // convert Windows error to Posix error if possible, otherwise 0
-    const _Win_errtab_t* _Ptr = &_Win_errtab[0];
-    for (; _Ptr != _STD end(_Win_errtab); ++_Ptr) {
-        if (_Ptr->_Windows == _Errcode) {
-            return static_cast<int>(_Ptr->_Posix);
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int _Errcode) {
+    // convert Windows error to Posix error if possible, otherwise 0
+    for (const auto& _Entry : _Win_errtab) {
+        if (_Entry._Windows == _Errcode) {
+            return static_cast<int>(_Entry._Posix);
         }
     }
 
     return 0;
 }
 
-// TRANSITION, ABI
+// TRANSITION, ABI: _Winerror_message() is preserved for binary compatibility
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
     unsigned long _Message_id, char* _Narrow, unsigned long _Size) {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars written
@@ -128,7 +129,7 @@ struct _Sys_errtab_t { // maps error_code to NTBS
     const char* _Name;
 };
 
-static const _Sys_errtab_t _Sys_errtab[] = {
+static constexpr _Sys_errtab_t _Sys_errtab[] = {
     // table of Posix code/name pairs
     {errc::address_family_not_supported, "address family not supported"},
     {errc::address_in_use, "address in use"},
@@ -211,10 +212,9 @@ static const _Sys_errtab_t _Sys_errtab[] = {
 };
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int _Errcode) { // convert to name of generic error
-    const _Sys_errtab_t* _Ptr = &_Sys_errtab[0];
-    for (; _Ptr != _STD end(_Sys_errtab); ++_Ptr) {
-        if ((int) _Ptr->_Errcode == _Errcode) {
-            return _Ptr->_Name;
+    for (const auto& _Entry : _Sys_errtab) {
+        if (static_cast<int>(_Entry._Errcode) == _Errcode) {
+            return _Entry._Name;
         }
     }
 

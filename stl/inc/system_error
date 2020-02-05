@@ -438,14 +438,14 @@ struct _System_error_message {
     char* _Str;
     size_t _Length;
 
-    _System_error_message(unsigned long _Ec) noexcept
+    explicit _System_error_message(const unsigned long _Ec) noexcept
         : _Str(nullptr), _Length(_CSTD __std_system_error_allocate_message(_Ec, &_Str)) {}
 
     _System_error_message(const _System_error_message&) = delete;
     _System_error_message& operator=(const _System_error_message&) = delete;
 
     ~_System_error_message() {
-        _CSTD __std_system_error_free_message(_Str);
+        _CSTD __std_system_error_deallocate_message(_Str);
     }
 };
 
@@ -478,7 +478,9 @@ public:
 
     _NODISCARD virtual string message(int _Errcode) const override {
         if (_Errcode == static_cast<int>(io_errc::stream)) {
-            return "iostream stream error";
+            static constexpr char _Iostream_error[] = "iostream stream error";
+            constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
+            return string(_Iostream_error, _Iostream_error_length);
         } else {
             return _Generic_error_category::message(_Errcode);
         }
@@ -497,10 +499,11 @@ public:
     }
 
     _NODISCARD virtual string message(int _Errcode) const override {
-        _System_error_message _Msg(static_cast<unsigned long>(_Errcode));
+        const _System_error_message _Msg(static_cast<unsigned long>(_Errcode));
         if (_Msg._Length == 0) {
             static constexpr char _Unknown_error[] = "unknown error";
-            return string(_Unknown_error, _STD size(_Unknown_error) - 1);
+            constexpr size_t _Unknown_error_length = sizeof(_Unknown_error) - 1; // TRANSITION, DevCom-906503
+            return string(_Unknown_error, _Unknown_error_length);
         } else {
             return string(_Msg._Str, _Msg._Length);
         }
