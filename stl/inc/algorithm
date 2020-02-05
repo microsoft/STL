@@ -17,14 +17,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-_EXTERN_C
-// See note about "noalias" in <xutility>
-__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
-    void* _First1, void* _Last1, void* _First2) noexcept;
-_END_EXTERN_C
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-
 _STD_BEGIN
 // COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
@@ -1259,38 +1251,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 }
 #endif // _HAS_CXX17
 
-
 // FUNCTION TEMPLATE swap_ranges
-template <class _FwdIt1, class _FwdIt2>
-_CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
-    // swap [_First1, _Last1) with [_First2, ...), no special optimization
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
-    }
-
-    return _First2;
-}
-
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
-_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
-    // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
-#ifdef __cpp_lib_is_constant_evaluated
-    if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-    {
-        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
-        return _First2 + (_Last1 - _First1);
-    }
-
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
-    }
-
-    return _First2;
-}
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
