@@ -14,7 +14,7 @@ namespace {
     struct _Whitespace_bitmap_t {
         bool _Is_whitespace[256];
 
-        explicit constexpr _Whitespace_bitmap_t() noexcept : _Is_whitespace{} {
+        constexpr _Whitespace_bitmap_t() noexcept : _Is_whitespace{} {
             _Is_whitespace[' ']  = true;
             _Is_whitespace['\n'] = true;
             _Is_whitespace['\r'] = true;
