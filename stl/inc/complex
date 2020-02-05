@@ -66,7 +66,7 @@ public:
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
-        return _CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -77,7 +77,7 @@ public:
     }
 
     static _Ty _Infv() { // return infinity
-        return numeric_limits<double>::infinity();
+        return numeric_limits<_Ty>::infinity();
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
@@ -91,11 +91,11 @@ public:
     }
 
     static _Ty _Nanv() { // return NaN
-        return numeric_limits<double>::quiet_NaN();
+        return numeric_limits<_Ty>::quiet_NaN();
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
-        return _CSTD _Sinh(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD _Sinh(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 
     static _Ty asinh(_Ty _Left) {
@@ -114,27 +114,27 @@ public:
             _Ans = log(_Left) + _Ln2;
         }
 
-        return _Neg ? -_Ans : _Ans;
+        return static_cast<_Ty>(_Neg ? -_Ans : _Ans);
     }
 
     static _Ty atan2(_Ty _Yval, _Ty _Xval) { // return atan(_Yval / _Xval)
-        return _CSTD atan2(static_cast<double>(_Yval), static_cast<double>(_Xval));
+        return static_cast<_Ty>(_CSTD atan2(static_cast<double>(_Yval), static_cast<double>(_Xval)));
     }
 
     static _Ty cos(_Ty _Left) {
-        return _CSTD cos(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD cos(static_cast<double>(_Left)));
     }
 
     static _Ty exp(_Ty _Left) {
-        return _CSTD exp(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD exp(static_cast<double>(_Left)));
     }
 
     static _Ty ldexp(_Ty _Left, int _Exponent) { // return _Left * 2 ^ _Exponent
-        return _CSTD ldexp(static_cast<double>(_Left), _Exponent);
+        return static_cast<_Ty>(_CSTD ldexp(static_cast<double>(_Left), _Exponent));
     }
 
     static _Ty log(_Ty _Left) {
-        return _CSTD log(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD log(static_cast<double>(_Left)));
     }
 
     static _Ty log1p(_Ty _Left) { // return log(1 + _Left)
@@ -149,23 +149,23 @@ public:
     }
 
     static _Ty pow(_Ty _Left, _Ty _Right) {
-        return _CSTD pow(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD pow(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 
     static _Ty sin(_Ty _Left) {
-        return _CSTD sin(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD sin(static_cast<double>(_Left)));
     }
 
     static _Ty sqrt(_Ty _Left) {
-        return _CSTD sqrt(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD sqrt(static_cast<double>(_Left)));
     }
 
     static _Ty tan(_Ty _Left) {
-        return _CSTD tan(static_cast<double>(_Left));
+        return static_cast<_Ty>(_CSTD tan(static_cast<double>(_Left)));
     }
 
     static _Ty hypot(_Ty _Left, _Ty _Right) {
-        return _CSTD hypot(static_cast<double>(_Left), static_cast<double>(_Right));
+        return static_cast<_Ty>(_CSTD hypot(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
 };
 
@@ -1585,26 +1585,6 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE pow
 template <class _Ty>
-_NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, int _Right) {
-    complex<_Ty> _Tmp = _Left;
-    auto _Count       = static_cast<unsigned int>(_Right);
-
-    if (_Right < 0) {
-        _Count = 0 - _Count; // safe negation as unsigned
-    }
-
-    for (complex<_Ty> _Zv = complex<_Ty>(1);; _Tmp *= _Tmp) { // fold in _Left ^ (2 ^ _Count) as needed
-        if ((_Count & 1) != 0) {
-            _Zv *= _Tmp;
-        }
-
-        if ((_Count >>= 1) == 0) {
-            return _Right < 0 ? complex<_Ty>(1) / _Zv : _Zv;
-        }
-    }
-}
-
-template <class _Ty>
 complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) {
     if (0 <= _Left) {
         return _Ctraits<_Ty>::pow(_Left, _Right);
@@ -1804,20 +1784,36 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _L
     return _STD pow(type(_Left), type(_Right));
 }
 
-template <class _Ty1, class _Ty2>
+template <class _Ty1, class _Ty2, enable_if_t<!is_integral_v<_Ty2>, int> = 0>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2& _Right) {
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
     return _STD pow(type(_Left), type(_Right));
 }
 
-template <class _Ty1, class _Ty2>
-_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, const complex<_Ty2>& _Right) {
+template <class _Ty1, class _Ty2, enable_if_t<!is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
+_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2 _Right) {
     using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
-    return _STD pow(type(_Left), type(_Right));
+
+    type _Tmp   = _Left;
+    auto _Count = static_cast<make_unsigned_t<_Ty2>>(_Right);
+
+    if (_Right < 0) {
+        _Count = 0 - _Count; // safe negation as unsigned
+    }
+
+    for (type _Zv(1);; _Tmp *= _Tmp) { // fold in _Left ^ (2 ^ _Count) as needed
+        if ((_Count & 1) != 0) {
+            _Zv *= _Tmp;
+        }
+
+        if ((_Count >>= 1) == 0) {
+            return _Right < 0 ? type(1) / _Zv : _Zv;
+        }
+    }
 }
 
 template <class _Ty1, class _Ty2, enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
-_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2& _Right) {
+_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2 _Right) {
     // raise Gaussian integer to an integer power
     using type = complex<_Ty1>;
 
@@ -1837,6 +1833,12 @@ _NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2& _Right) {
         }
     }
     return _Ans;
+}
+
+template <class _Ty1, class _Ty2>
+_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, const complex<_Ty2>& _Right) {
+    using type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
+    return _STD pow(type(_Left), type(_Right));
 }
 
 // FUNCTION TEMPLATE operator>>

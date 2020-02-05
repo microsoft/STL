@@ -356,8 +356,8 @@ _NODISCARD inline error_condition make_error_condition(io_errc _Errno) noexcept 
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<error_code> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_code argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_code _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const error_code& _Keyval) const noexcept {
         return hash<int>{}(_Keyval.value());
@@ -366,8 +366,8 @@ struct hash<error_code> {
 
 template <>
 struct hash<error_condition> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_condition argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_condition _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const error_condition& _Keyval) const noexcept {
         return hash<int>{}(_Keyval.value());

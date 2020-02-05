@@ -39,13 +39,13 @@ _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty& _Max_value
 
 // FUNCTION TEMPLATE iter_swap (from <algorithm>)
 template <class _FwdIt1, class _FwdIt2>
-void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
+_CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
     swap(*_Left, *_Right);
 }
 
 // FUNCTION TEMPLATE swap
 template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> _Enabled>
-void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
+_CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     if (&_Left != &_Right) {
         _Ty* _First1 = _Left;
         _Ty* _Last1  = _First1 + _Size;
@@ -61,7 +61,8 @@ template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assigna
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled>
 #endif // _HAS_CXX17
-void swap(_Ty& _Left, _Ty& _Right) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
+_CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right) noexcept(
+    is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
     _Ty _Tmp = _STD move(_Left);
     _Left    = _STD move(_Right);
     _Right   = _STD move(_Tmp);
@@ -69,7 +70,7 @@ void swap(_Ty& _Left, _Ty& _Right) noexcept(is_nothrow_move_constructible_v<_Ty>
 
 // FUNCTION TEMPLATE _Swap_adl
 template <class _Ty>
-void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
+_CONSTEXPR20 void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     swap(_Left, _Right);
 }
 
@@ -355,24 +356,24 @@ _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1
     return _Mypair(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
 }
 
-namespace rel_ops { // nested namespace to hide relational operators from std
+namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
     template <class _Ty>
-    _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left == _Right);
     }
 
     template <class _Ty>
-    _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
         return _Right < _Left;
     }
 
     template <class _Ty>
-    _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Right < _Left);
     }
 
     template <class _Ty>
-    _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left < _Right);
     }
 } // namespace rel_ops
@@ -566,7 +567,7 @@ _NODISCARD constexpr const _Ty2&& get(
 
 // FUNCTION TEMPLATE exchange
 template <class _Ty, class _Other = _Ty>
-_Ty exchange(_Ty& _Val, _Other&& _New_val) noexcept(
+_CONSTEXPR20 _Ty exchange(_Ty& _Val, _Other&& _New_val) noexcept(
     conjunction_v<is_nothrow_move_constructible<_Ty>, is_nothrow_assignable<_Ty&, _Other>>) /* strengthened */ {
     // assign _New_val to _Val, return previous _Val
     _Ty _Old_val = static_cast<_Ty&&>(_Val);

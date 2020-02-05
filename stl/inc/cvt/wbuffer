@@ -43,7 +43,14 @@ namespace stdext {
             using off_type   = typename _Traits::off_type;
             using state_type = typename _Traits::state_type;
 
-            explicit wbuffer_convert(_Mysb* _Strbuf = nullptr)
+            wbuffer_convert() : _Pcvt(new _Codecvt), _Mystrbuf(nullptr), _Status(_Unused), _Nback(0) {
+                static state_type _State0;
+
+                _State = _State0;
+                _Loc   = _STD locale(_Loc, _Pcvt);
+            }
+
+            explicit wbuffer_convert(_Mysb* _Strbuf)
                 : _Pcvt(new _Codecvt), _Mystrbuf(_Strbuf), _Status(_Unused), _Nback(0) {
                 static state_type _State0;
 
