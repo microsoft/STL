@@ -8,10 +8,10 @@
 #include <time.h>
 #include <xtimec.h>
 
-#define NSEC_PER_SEC  1000000000L
-#define NSEC_PER_MSEC 1000000L
-#define NSEC_PER_USEC 1000L
-#define MSEC_PER_SEC  1000
+constexpr long NSEC_PER_SEC = 1000000000L;
+constexpr long NSEC_PER_MSEC = 1000000L;
+constexpr long NSEC_PER_USEC = 1000L;
+constexpr int MSEC_PER_SEC = 1000;
 
 static void xtime_normalize(xtime* xt) { // adjust so that 0 <= nsec < 1 000 000 000
     while (xt->nsec < 0) { // normalize target time
