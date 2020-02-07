@@ -38,27 +38,28 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */ : container(_STD addressof(_Cont)) {}
+    explicit _CONSTEXPR20 back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
+        : container(_STD addressof(_Cont)) {}
 
-    back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
+    _CONSTEXPR20 back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
         container->push_back(_Val);
         return *this;
     }
 
-    back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
+    _CONSTEXPR20 back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
         container->push_back(_STD move(_Val));
         return *this;
     }
 
-    _NODISCARD back_insert_iterator& operator*() noexcept /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 back_insert_iterator& operator*() noexcept /* strengthened */ {
         return *this;
     }
 
-    back_insert_iterator& operator++() noexcept /* strengthened */ {
+    _CONSTEXPR20 back_insert_iterator& operator++() noexcept /* strengthened */ {
         return *this;
     }
 
-    back_insert_iterator operator++(int) noexcept /* strengthened */ {
+    _CONSTEXPR20 back_insert_iterator operator++(int) noexcept /* strengthened */ {
         return *this;
     }
 
@@ -68,7 +69,7 @@ protected:
 
 // FUNCTION TEMPLATE back_inserter
 template <class _Container>
-_NODISCARD back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
     // return a back_insert_iterator
     return back_insert_iterator<_Container>(_Cont);
 }
