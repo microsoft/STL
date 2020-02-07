@@ -99,6 +99,13 @@ constexpr bool run_tests() {
         array_empty1.swap(array_empty2);
     }
 
+    // test array::fill
+    {
+        array<int, 2> foo = {};
+        foo.fill(1);
+        assert(foo[0] == 1 && foo[1] == 1);
+    }
+
     return true;
 }
 
