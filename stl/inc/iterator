@@ -148,32 +148,32 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
+    _CONSTEXPR20 insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
         : container(_STD addressof(_Cont)), iter(_Where) {}
 
-    insert_iterator& operator=(
+    _CONSTEXPR20 insert_iterator& operator=(
         const typename _Container::value_type& _Val) { // insert into container and increment stored iterator
         iter = container->insert(iter, _Val);
         ++iter;
         return *this;
     }
 
-    insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+    _CONSTEXPR20 insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
 
         iter = container->insert(iter, _STD move(_Val));
         ++iter;
         return *this;
     }
 
-    _NODISCARD insert_iterator& operator*() { // pretend to return designated value
+    _NODISCARD _CONSTEXPR20 insert_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
-    insert_iterator& operator++() { // pretend to preincrement
+    _CONSTEXPR20 insert_iterator& operator++() { // pretend to preincrement
         return *this;
     }
 
-    insert_iterator& operator++(int) { // pretend to postincrement
+    _CONSTEXPR20 insert_iterator& operator++(int) { // pretend to postincrement
         return *this;
     }
 
@@ -184,7 +184,7 @@ protected:
 
 // FUNCTION TEMPLATE inserter
 template <class _Container>
-_NODISCARD insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
+_NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
 

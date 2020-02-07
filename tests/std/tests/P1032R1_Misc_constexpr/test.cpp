@@ -12,6 +12,7 @@ using namespace std;
 
 struct constexpr_container {
     using value_type = int;
+    using iterator   = array<value_type, 6>::iterator;
 
     array<value_type, 6> buffer{};
     size_t selected = 0;
@@ -20,6 +21,13 @@ struct constexpr_container {
     }
     constexpr void push_front(const value_type i) {
         buffer[selected++] = i;
+    }
+    constexpr iterator insert(iterator where, const value_type i) {
+        *where = i;
+        return where;
+    }
+    constexpr iterator begin() {
+        return std::next(buffer.begin());
     }
 };
 
@@ -150,6 +158,22 @@ constexpr bool run_tests() {
 
         assert(input.buffer[0] == 42 && input.buffer[1] == 1729 && input.buffer[2] == 1234 && input.buffer[3] == 4
                && input.buffer[4] == 5 && input.buffer[5] == 0);
+    }
+
+    // test insert_inserter
+    {
+        constexpr_container input;
+        int toBeMoved = 5;
+        auto tested   = inserter(input, input.begin());
+
+        *tested++   = 42;
+        *(++tested) = 1729;
+        *tested++   = 1234;
+        tested      = 4;
+        tested      = std::move(toBeMoved);
+
+        assert(input.buffer[0] == 0 && input.buffer[1] == 42 && input.buffer[2] == 1729 && input.buffer[3] == 1234
+               && input.buffer[4] == 4 && input.buffer[5] == 5);
     }
 
     return true;
