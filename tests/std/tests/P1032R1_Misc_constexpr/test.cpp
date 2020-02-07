@@ -18,6 +18,9 @@ struct constexpr_container {
     constexpr void push_back(const value_type i) {
         buffer[selected++] = i;
     }
+    constexpr void push_front(const value_type i) {
+        buffer[selected++] = i;
+    }
 };
 
 constexpr bool run_tests() {
@@ -122,6 +125,22 @@ constexpr bool run_tests() {
         constexpr_container input;
         int toBeMoved = 5;
         auto tested   = back_inserter(input);
+
+        *tested++   = 42;
+        *(++tested) = 1729;
+        *tested++   = 1234;
+        tested      = 4;
+        tested      = std::move(toBeMoved);
+
+        assert(input.buffer[0] == 42 && input.buffer[1] == 1729 && input.buffer[2] == 1234 && input.buffer[3] == 4
+               && input.buffer[4] == 5 && input.buffer[5] == 0);
+    }
+
+    // test front_inserter
+    {
+        constexpr_container input;
+        int toBeMoved = 5;
+        auto tested   = front_inserter(input);
 
         *tested++   = 42;
         *(++tested) = 1729;

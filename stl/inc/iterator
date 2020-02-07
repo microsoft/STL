@@ -93,27 +93,28 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
+    explicit _CONSTEXPR20 front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
-    front_insert_iterator& operator=(const typename _Container::value_type& _Val) { // push value into container
+    _CONSTEXPR20 front_insert_iterator& operator=(
+        const typename _Container::value_type& _Val) { // push value into container
         container->push_front(_Val);
         return *this;
     }
 
-    front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+    _CONSTEXPR20 front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
         container->push_front(_STD move(_Val));
         return *this;
     }
 
-    _NODISCARD front_insert_iterator& operator*() { // pretend to return designated value
+    _NODISCARD _CONSTEXPR20 front_insert_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
-    front_insert_iterator& operator++() { // pretend to preincrement
+    _CONSTEXPR20 front_insert_iterator& operator++() { // pretend to preincrement
         return *this;
     }
 
-    front_insert_iterator operator++(int) { // pretend to postincrement
+    _CONSTEXPR20 front_insert_iterator operator++(int) { // pretend to postincrement
         return *this;
     }
 
@@ -123,7 +124,7 @@ protected:
 
 // FUNCTION TEMPLATE front_inserter
 template <class _Container>
-_NODISCARD front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
+_NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
     return front_insert_iterator<_Container>(_Cont);
 }
 
