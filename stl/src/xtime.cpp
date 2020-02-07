@@ -10,7 +10,6 @@
 
 constexpr long _Nsec_per_sec  = 1000000000L;
 constexpr long _Nsec_per_msec = 1000000L;
-constexpr long _Nsec_per_usec = 1000L;
 constexpr int _Msec_per_sec   = 1000;
 
 static void xtime_normalize(xtime* xt) { // adjust so that 0 <= nsec < 1 000 000 000
@@ -45,7 +44,7 @@ static xtime xtime_diff(const xtime* xt,
 
 constexpr long long _Epoch       = 0x19DB1DED53E8000LL;
 constexpr long _Nsec100_per_sec  = _Nsec_per_sec / 100;
-constexpr long _Nsec100_per_msec = _Nsec_per_msec / 100;
+//constexpr long _Nsec100_per_msec = _Nsec_per_msec / 100;
 
 _EXTERN_C
 
