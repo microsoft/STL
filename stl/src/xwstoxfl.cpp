@@ -13,7 +13,7 @@ _EXTERN_C_UNLESS_PURE
 
 constexpr int _Base   = 16; // hexadecimal
 constexpr int _Ndig   = 7; // hexadecimal digits per long element
-constexpr int _Maxsig = (5 * _Ndig); // maximum significant digits to keep
+constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
 int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
     int maxsig) { // convert wide string to array of long plus exponent

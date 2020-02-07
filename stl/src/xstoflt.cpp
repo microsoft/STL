@@ -12,7 +12,7 @@ _EXTERN_C_UNLESS_PURE
 
 constexpr int _Base   = 10; // decimal
 constexpr int _Ndig   = 9; // decimal digits per long word
-constexpr int _Maxsig = (5 * _Ndig); // maximum significant digits to keep
+constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
 int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
     int maxsig) { // convert string to array of long plus exponent

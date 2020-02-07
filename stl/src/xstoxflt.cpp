@@ -13,7 +13,7 @@ _EXTERN_C_UNLESS_PURE
 
 constexpr int _Base   = 16; // hexadecimal
 constexpr int _Ndig   = 7; // hexadecimal digits per long element
-constexpr int _Maxsig = (5 * _Ndig); // maximum significant digits to keep
+constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
 int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
     int maxsig) { // convert string to array of long plus exponent

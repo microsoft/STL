@@ -268,8 +268,8 @@ _FS_DLL unsigned long long __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fn
 // 1968 is leap year #17
 
 
-constexpr UINT64 _Win_ticks_per_second = 10000000ULL;
-constexpr UINT64 _Win_ticks_from_epoch = (((1970 - 1601) * 365 + 3 * 24 + 17) * 86400ULL * _Win_ticks_per_second);
+constexpr uint64_t _Win_ticks_per_second = 10000000ULL;
+constexpr uint64_t _Win_ticks_from_epoch = ((1970 - 1601) * 365 + 3 * 24 + 17) * 86400ULL * _Win_ticks_per_second;
 
 
 _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) { // get last write time
