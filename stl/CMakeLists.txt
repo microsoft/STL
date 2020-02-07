@@ -3,6 +3,7 @@
 
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/algorithm
     ${CMAKE_CURRENT_LIST_DIR}/inc/any
     ${CMAKE_CURRENT_LIST_DIR}/inc/array
@@ -242,6 +243,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/parallel_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
 )
 
