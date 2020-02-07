@@ -3,8 +3,10 @@
 
 #include <array>
 #include <assert.h>
+#include <functional>
 #include <iterator>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -174,6 +176,14 @@ constexpr bool run_tests() {
 
         assert(input.buffer[0] == 0 && input.buffer[1] == 42 && input.buffer[2] == 1729 && input.buffer[3] == 1234
                && input.buffer[4] == 4 && input.buffer[5] == 5);
+    }
+
+    // test default_inserter
+    {
+        string_view in     = "This is some string";
+        string_view needle = "some";
+        default_searcher foo{needle.begin(), needle.end()};
+        auto [first, second] = foo(in.begin(), in.end());
     }
 
     return true;
