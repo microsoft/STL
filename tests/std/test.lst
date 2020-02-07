@@ -259,6 +259,7 @@ tests\P1135R6_atomic_flag_test
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric
+tests\P1645R1_Misc_constexpr
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
