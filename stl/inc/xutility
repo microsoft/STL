@@ -21,7 +21,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#else
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#endif
+
+#if _USE_STD_VECTOR_ALGORITHMS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -37,7 +43,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
 _END_EXTERN_C
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
 
@@ -4972,7 +4978,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<decltype(_UFirst)>;
     constexpr bool _Allow_vectorization =
         conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
@@ -5010,7 +5016,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
             return;
         }
     }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
         _STD iter_swap(_UFirst, _ULast);
@@ -5025,7 +5031,7 @@ void _Reverse_unchecked1(_BidIt _First, _BidIt _Last, integral_constant<size_t, 
     }
 }
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
 template <class _BidIt>
 void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 1>) {
     // reverse elements in [_First, _Last), pointers to trivially swappable of size 1
@@ -5049,12 +5055,12 @@ void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_const
     // reverse elements in [_First, _Last), pointers to trivially swappable of size 8
     __std_reverse_trivially_swappable_8(_First, _Last);
 }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 template <class _BidIt>
 void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
     // reverse elements in [_First, _Last), choose optimization
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<_BidIt>;
     constexpr size_t _Opt =
         is_pointer_v<_BidIt> //
@@ -5065,7 +5071,7 @@ void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
             : 0;
 #else // ^^^ vectorize / no vectorize vvv
     constexpr size_t _Opt = 0;
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
     _Reverse_unchecked1(_First, _Last, integral_constant<size_t, _Opt>{});
 }
 
@@ -5286,7 +5292,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
     return _First2;
 }
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
 template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
 _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
     // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
@@ -5304,7 +5310,7 @@ _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _
 
     return _First2;
 }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 // CLASS TEMPLATE _Rng_from_urng
 template <class _Diff, class _Urng>
