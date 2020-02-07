@@ -377,9 +377,7 @@ namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
         return !(_Left < _Right);
     }
 } // namespace rel_ops
-_STD_END
 
-_STD_BEGIN
 // STRUCTS FOR STRUCTURED BINDINGS tuple_size AND tuple_element
 template <class _Tuple>
 struct tuple_size;
