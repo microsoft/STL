@@ -68,7 +68,7 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 
 // VARIABLE TEMPLATE _New_alignof
 template <class _Ty>
-_INLINE_VAR constexpr size_t _New_alignof = _Max_value(alignof(_Ty),
+_INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
     static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
 );
 
@@ -168,7 +168,7 @@ _DECLSPEC_ALLOCATOR void* _Allocate(const size_t _Bytes) {
 #if defined(_M_IX86) || defined(_M_X64)
     if (_Bytes >= _Big_allocation_threshold) {
         // boost the alignment of big allocations to help autovectorization
-        _Passed_align = _Max_value(_Align, _Big_allocation_alignment);
+        _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
     }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
@@ -181,7 +181,7 @@ void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
     size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
     if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
-        _Passed_align = _Max_value(_Align, _Big_allocation_alignment);
+        _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
     }
 #endif // defined(_M_IX86) || defined(_M_X64)
 

@@ -1818,13 +1818,13 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* _Shifts, const _R
     for (_Diff _Idx = _Pat_size; _Idx > 0; --_Idx, (void) --_Suffix) {
         _Suffix_fn[static_cast<size_t>(_Idx - 1)] = _Suffix;
         while (_Suffix < _Pat_size && !_Eq(_Pat_first[_Idx - 1], _Pat_first[_Suffix])) {
-            _Shifts[_Suffix] = _Min_value(_Shifts[_Suffix], _Pat_size - _Idx);
+            _Shifts[_Suffix] = (_STD min)(_Shifts[_Suffix], _Pat_size - _Idx);
             _Suffix          = _Suffix_fn[static_cast<size_t>(_Suffix)];
         }
     }
 
     for (_Diff _Idx = 0; _Idx <= _Suffix; ++_Idx) {
-        _Shifts[_Idx] = _Min_value(_Shifts[_Idx], _Pat_size + _Suffix - _Idx);
+        _Shifts[_Idx] = (_STD min)(_Shifts[_Idx], _Pat_size + _Suffix - _Idx);
     }
 }
 
@@ -1862,7 +1862,7 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
                 --_Idx;
                 --_UFirst;
             } while (_Eq(*_UFirst, _UPat_first[_Idx]));
-            _Shift = _Max_value(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
+            _Shift = (_STD max)(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
         }
     }
 

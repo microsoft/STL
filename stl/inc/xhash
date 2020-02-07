@@ -289,7 +289,7 @@ struct _Hash_vec {
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return _Min_value(static_cast<size_type>((numeric_limits<difference_type>::max)()),
+        return (_STD min)(static_cast<size_type>((numeric_limits<difference_type>::max)()),
             _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
@@ -1050,7 +1050,7 @@ public:
 
     void rehash(size_type _Buckets) { // rebuild table with at least _Buckets buckets
         // don't violate a.bucket_count() >= a.size() / a.max_load_factor() invariant:
-        _Buckets = _Max_value(_Min_load_factor_buckets(_List.size()), _Buckets);
+        _Buckets = (_STD max)(_Min_load_factor_buckets(_List.size()), _Buckets);
         if (_Buckets <= _Maxidx) { // we already have enough buckets; nothing to do
             return;
         }
@@ -1788,7 +1788,7 @@ protected:
 
     _NODISCARD size_type _Desired_grow_bucket_count(const size_type _For_size) const noexcept {
         const size_type _Old_buckets = bucket_count();
-        const size_type _Req_buckets = _Max_value(_Min_buckets, _Min_load_factor_buckets(_For_size));
+        const size_type _Req_buckets = (_STD max)(_Min_buckets, _Min_load_factor_buckets(_For_size));
         if (_Old_buckets >= _Req_buckets) {
             // we already have enough buckets so there's no need to change the count
             return _Old_buckets;
