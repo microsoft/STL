@@ -47,6 +47,39 @@ constexpr bool run_tests() {
         assert(pair1.first == 1 && pair1.second == 2 && pair2.first == 3 && pair2.second == 4);
     }
 
+    // test empty tuple
+    {
+        allocator<int> alloc;
+        tuple<> tuple_alloc{allocator_arg_t{}, alloc};
+        tuple<> tuple_alloc_copy{allocator_arg_t{}, alloc, tuple_alloc};
+        tuple<> tuple_alloc_value{_Alloc_exact_args_t{}, alloc};
+
+        swap(tuple_alloc, tuple_alloc_copy);
+        tuple_alloc.swap(tuple_alloc_copy);
+    }
+
+    // test tuple
+    {
+        allocator<int> alloc;
+        tuple<short, int> conversionInput{short(1), 1};
+        const tuple<short, int> constConversionInput{short(1), 1};
+        pair<short, int> conversionInputPair{short(1), 1};
+        const pair<short, int> constConversionInputPair{short(1), 1};
+
+        tuple<int, double> tuple_alloc{allocator_arg_t{}, alloc};
+        tuple<int, double> tuple_alloc_value{allocator_arg_t{}, alloc, 1, 2.0};
+        tuple<int, double> tuple_alloc_conversion{allocator_arg_t{}, alloc, short(1), 1};
+        tuple<int, double> tuple_alloc_conversion_tuple{allocator_arg_t{}, alloc, conversionInput};
+        tuple<int, double> tuple_alloc_conversion_const_tuple{allocator_arg_t{}, alloc, constConversionInput};
+        tuple<int, double> tuple_alloc_conversion_pair{allocator_arg_t{}, alloc, conversionInputPair};
+        tuple<int, double> tuple_alloc_conversion_const_pair{allocator_arg_t{}, alloc, constConversionInputPair};
+        tuple<int, double> tuple_alloc_copy{allocator_arg_t{}, alloc, tuple_alloc};
+        tuple<int, double> tuple_alloc_move{allocator_arg_t{}, alloc, std::move(tuple_alloc)};
+
+        swap(tuple_alloc, tuple_alloc_copy);
+        tuple_alloc.swap(tuple_alloc_copy);
+    }
+
     return true;
 }
 
