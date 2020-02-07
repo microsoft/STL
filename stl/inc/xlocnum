@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <iterator>
 #include <streambuf>
 
 #pragma pack(push, _CRT_PACKING)

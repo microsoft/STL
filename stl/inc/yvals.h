@@ -201,9 +201,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _DEBUG
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-#define _STL_INTERNAL_CHECK(cond) _STL_VERIFY(cond, "STL internal check: " _CRT_STRINGIZE(cond))
+#define _STL_INTERNAL_CHECK(...)         _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
+#define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
-#define _STL_INTERNAL_CHECK(cond) _Analysis_assume_(cond)
+#define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
+#define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
 #include <use_ansi.h>

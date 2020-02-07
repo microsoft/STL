@@ -186,9 +186,22 @@ SpaceAfterCStyleCast: true
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
 # Standard:        Cpp11
+
+# NOTE: _STD_BEGIN, _STD_END, etc. aren't macros for complete statements, but telling clang-format that they are
+# produces the behavior that we want (with no block indentation).
 # StatementMacros:
 #   - Q_UNUSED
 #   - QT_REQUIRE_VERSION
+StatementMacros:
+  - _STD_BEGIN
+  - _STD_END
+  - _STDEXT_BEGIN
+  - _STDEXT_END
+  - _EXTERN_C
+  - _END_EXTERN_C
+  - _EXTERN_C_UNLESS_PURE
+  - _END_EXTERN_C_UNLESS_PURE
+
 # TabWidth:        8
 # UseTab:          Never
 ...

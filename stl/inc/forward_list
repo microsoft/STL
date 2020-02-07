@@ -411,71 +411,101 @@ public:
 };
 
 template <class _Alnode>
-struct _Flist_insert_after_op {
+struct _Flist_insert_after_op2 {
     // forward_list insert-after operation which maintains exception safety
     using _Alnode_traits = allocator_traits<_Alnode>;
     using pointer        = typename _Alnode_traits::pointer;
     using value_type     = typename _Alnode_traits::value_type;
 
-    explicit _Flist_insert_after_op(_Alnode& _Al_) : _Al(_Al_), _Tail(_STD addressof(_Base)) {}
+    explicit _Flist_insert_after_op2(_Alnode& _Al_) : _Al(_Al_), _Tail() {}
 
-    _Flist_insert_after_op(const _Flist_insert_after_op&) = delete;
-    _Flist_insert_after_op& operator=(const _Flist_insert_after_op&) = delete;
+    _Flist_insert_after_op2(const _Flist_insert_after_op2&) = delete;
+    _Flist_insert_after_op2& operator=(const _Flist_insert_after_op2&) = delete;
 
     template <class... _CArgT>
-    pointer _Append_n(typename _Alnode_traits::size_type _Count, const _CArgT&... _Carg) {
-        // Append _Count copies of T, constructed from _Carg, to this insert-after operation
+    void _Append_n(typename _Alnode_traits::size_type _Count, const _CArgT&... _Carg) {
+        // Append _Count elements, constructed from _Carg
+        if (_Count <= 0) {
+            return;
+        }
+
         _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
+        if (_Tail == pointer{}) {
+            _Newnode._Allocate(); // throws
+            _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), _Carg...); // throws
+            _Head = _Newnode._Ptr;
+            _Tail = _Newnode._Ptr;
+            --_Count;
+        }
+
         for (; 0 < _Count; --_Count) {
             _Newnode._Allocate(); // throws
             _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), _Carg...); // throws
-            _Construct_in_place(*_Tail, _Newnode._Ptr); // nothrow
-            _Tail = _STD addressof(_Newnode._Ptr->_Next);
+            _Construct_in_place(_Tail->_Next, _Newnode._Ptr);
+            _Tail = _Newnode._Ptr;
         }
 
-        return _Newnode._Release();
+        (void) _Newnode._Release();
     }
 
     template <class _InIt, class _Sentinel>
-    pointer _Append_range_unchecked(_InIt _First, const _Sentinel _Last) {
-        // Append the values in [_First, _Last) to this insert-after operation
-        _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
-        for (; _First != _Last; ++_First) {
-            _Newnode._Allocate(); // throws
-            _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
-            _Construct_in_place(*_Tail, _Newnode._Ptr); // nothrow
-            _Tail = _STD addressof(_Newnode._Ptr->_Next);
+    void _Append_range_unchecked(_InIt _First, const _Sentinel _Last) {
+        // Append the values in [_First, _Last)
+        if (_First == _Last) { // throws
+            return;
         }
 
-        return _Newnode._Release();
+        _Alloc_construct_ptr<_Alnode> _Newnode(_Al);
+        if (_Tail == pointer{}) {
+            _Newnode._Allocate(); // throws
+            _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
+            const auto _Newhead = _Newnode._Release();
+            _Head               = _Newhead;
+            _Tail               = _Newhead;
+            ++_First; // throws
+        }
+
+        while (_First != _Last) { // throws
+            _Newnode._Allocate(); // throws
+            _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
+            const auto _Newtail = _Newnode._Release();
+            _Construct_in_place(_Tail->_Next, _Newtail);
+            _Tail = _Newtail;
+            ++_First; // throws
+        }
     }
 
-    void _Attach_after(pointer _After) noexcept {
-        // Attaches the values in this insert operation after _After, and resets *this to the default initialized state
+    pointer _Attach_after(pointer _After) noexcept {
+        // Attaches the elements in *this after _After, and resets *this to the default-initialized state
+        const auto _Local_tail = _Tail;
+        if (_Local_tail == pointer{}) {
+            return _After;
+        }
 
-        // The following can't exchange because the _Construct_in_place might construct _Base
-        _Construct_in_place(*_Tail, _After->_Next);
-        _After->_Next = _Base;
-        _Destroy_in_place(_Base);
-        _Tail = _STD addressof(_Base);
+        _Construct_in_place(_Local_tail->_Next, _After->_Next);
+        _After->_Next = _Head;
+        _Tail         = pointer{};
+
+        return _Local_tail;
     }
 
-    ~_Flist_insert_after_op() {
-        _Construct_in_place(*_Tail, nullptr);
-        pointer _Subject = _Base;
+    ~_Flist_insert_after_op2() {
+        if (_Tail == pointer{}) {
+            return;
+        }
+
+        _Construct_in_place(_Tail->_Next, pointer{});
+        pointer _Subject = _Head;
         while (_Subject) {
             value_type::_Freenode(_Al, _STD exchange(_Subject, _Subject->_Next));
         }
-
-        _Destroy_in_place(_Base);
     }
 
 private:
     _Alnode& _Al;
-    pointer* _Tail; // points to not constructed pointer member in the last list node in *this
-    union {
-        pointer _Base;
-    };
+    pointer _Tail; // Points to the most recently constructed node. If pointer{}, the value of _Head is indeterminate.
+                   // _Tail->_Next is not constructed.
+    pointer _Head; // Points at the first constructed node.
 };
 
 // CLASS TEMPLATE forward_list
@@ -518,7 +548,7 @@ public:
 
     explicit forward_list(_CRT_GUARDOVERFLOW size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t(), _Al) { // construct list from _Count * _Ty(), optional allocator
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_n(_Count);
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
@@ -526,7 +556,7 @@ public:
 
     forward_list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val)
         : _Mypair(_Zero_then_variadic_args_t()) { // construct list from _Count * _Val
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_n(_Count, _Val);
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
@@ -534,7 +564,7 @@ public:
 
     forward_list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t(), _Al) { // construct list from _Count * _Val, allocator
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_n(_Count, _Val);
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
@@ -547,14 +577,14 @@ public:
 
     forward_list(const forward_list& _Right)
         : _Mypair(_One_then_variadic_args_t(), _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
     forward_list(const forward_list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
@@ -563,7 +593,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t()) {
         _Adl_verify_range(_First, _Last);
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
@@ -572,7 +602,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
         _Adl_verify_range(_First, _Last);
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
@@ -590,7 +620,7 @@ public:
         if
             _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
                 if (_Getal() != _Right._Getal()) {
-                    _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+                    _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
                     _Insert_op._Append_range_unchecked(
                         _STD make_move_iterator(_Right._Unchecked_begin()), _Default_sentinel{});
                     _Alloc_proxy();
@@ -808,7 +838,7 @@ private:
             auto _Next = _Ptr->_Next;
             if (!_Next) {
                 // list too short, insert remaining _Newsize objects initialized from _Vals...
-                _Flist_insert_after_op<_Alnode> _Insert_op(_Al);
+                _Flist_insert_after_op2<_Alnode> _Insert_op(_Al);
                 _Insert_op._Append_n(_Newsize, _Vals...);
                 _Insert_op._Attach_after(_Ptr);
                 return;
@@ -887,7 +917,7 @@ private:
         for (; _UFirst != _ULast; ++_UFirst) {
             auto _Next = _Myfirst->_Next;
             if (!_Myfirst->_Next) {
-                _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
+                _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
                 _Insert_op._Append_range_unchecked(_UFirst, _ULast);
                 _Insert_op._Attach_after(_Myfirst);
                 return;
@@ -935,10 +965,9 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Count != 0) {
-            _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
-            const auto _Result_ptr = _Insert_op._Append_n(_Count, _Val);
-            _Insert_op._Attach_after(_Where._Ptr);
-            _Where._Ptr = _Result_ptr;
+            _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
+            _Insert_op._Append_n(_Count, _Val);
+            _Where._Ptr = _Insert_op._Attach_after(_Where._Ptr);
         }
 
         return _Make_iter(_Where._Ptr);
@@ -959,10 +988,9 @@ public:
             return _Make_iter(_Where._Ptr);
         }
 
-        _Flist_insert_after_op<_Alnode> _Insert_op(_Getal());
-        const auto _Result_ptr = _Insert_op._Append_range_unchecked(_UFirst, _ULast);
-        _Insert_op._Attach_after(_Where._Ptr);
-        return _Make_iter(_Result_ptr);
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
+        _Insert_op._Append_range_unchecked(_UFirst, _ULast);
+        return _Make_iter(_Insert_op._Attach_after(_Where._Ptr));
     }
 
 private:

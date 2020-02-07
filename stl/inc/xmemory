@@ -761,11 +761,11 @@ public:
         using other = allocator<_Other>;
     };
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _Ty* address(_Ty& _Val) const noexcept {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD _Ty* address(_Ty& _Val) const noexcept {
         return _STD addressof(_Val);
     }
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS const _Ty* address(const _Ty& _Val) const noexcept {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD const _Ty* address(const _Ty& _Val) const noexcept {
         return _STD addressof(_Val);
     }
 
@@ -784,7 +784,7 @@ public:
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _DECLSPEC_ALLOCATOR _Ty* allocate(
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD _DECLSPEC_ALLOCATOR _Ty* allocate(
         _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
     }
@@ -799,7 +799,7 @@ public:
         _Ptr->~_Uty();
     }
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS size_t max_size() const noexcept {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD size_t max_size() const noexcept {
         return static_cast<size_t>(-1) / sizeof(_Ty);
     }
 };
@@ -1908,9 +1908,10 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#if _HAS_DEPRECATED_TEMPORARY_BUFFER
 // FUNCTION TEMPLATE get_temporary_buffer
 template <class _Ty>
-_NODISCARD _CXX17_DEPRECATE_TEMPORARY_BUFFER pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
+_CXX17_DEPRECATE_TEMPORARY_BUFFER _NODISCARD pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
     return _Get_temporary_buffer<_Ty>(_Count);
 }
 
@@ -1919,6 +1920,7 @@ template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
     _Return_temporary_buffer(_Pbuf);
 }
+#endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
 
 // STRUCT TEMPLATE _In_place_key_extract_set
 // assumes _Args have already been _Remove_cvref_t'd
@@ -1995,9 +1997,23 @@ struct _Alloc_temporary {
     }
 };
 
+template <class _Alloc>
+_NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _Rhs) noexcept {
+    if
+        _CONSTEXPR_IF(allocator_traits<_Alloc>::is_always_equal::value) {
+            (void) _Lhs;
+            (void) _Rhs;
+            return true;
+        }
+    else {
+        return _Lhs == _Rhs;
+    }
+}
+
 // FUNCTION TEMPLATE remove
 template <class _FwdIt, class _Ty>
-_NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { // remove each matching _Val
+_NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
+    // remove each matching _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -2018,7 +2034,8 @@ _NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { /
 
 // FUNCTION TEMPLATE remove_if
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) { // remove each satisfying _Pred
+_NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
+    // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);

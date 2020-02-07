@@ -7,6 +7,7 @@
     },
     "files.eol": "\r\n",
     "files.exclude": {
+        "llvm-project": true,
         "stl/msbuild": true,
         "vcpkg": true
     },
