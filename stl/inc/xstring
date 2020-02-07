@@ -1306,7 +1306,8 @@ public:
         *this  = _Tmp;
     }
 
-    constexpr size_type copy(_Out_writes_(_Count) _Elem* const _Ptr, size_type _Count, const size_type _Off = 0) const {
+    _CONSTEXPR20 size_type copy(
+        _Out_writes_(_Count) _Elem* const _Ptr, size_type _Count, const size_type _Off = 0) const {
         // copy [_Off, _Off + Count) to [_Ptr, _Ptr + _Count)
         _Check_offset(_Off);
         _Count = _Clamp_suffix_size(_Off, _Count);
