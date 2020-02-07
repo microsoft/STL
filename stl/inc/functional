@@ -185,36 +185,36 @@ struct bit_not {
 // STRUCT TEMPLATE SPECIALIZATION divides
 template <>
 struct divides<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION modulus
 template <>
 struct modulus<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION negate
 template <>
 struct negate<void> {
-    using is_transparent = int;
-
     template <class _Ty>
     constexpr auto operator()(_Ty&& _Left) const -> decltype(-_STD forward<_Ty>(_Left)) {
         return -_STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION equal_to
@@ -238,83 +238,83 @@ struct negate<void> {
 // STRUCT TEMPLATE SPECIALIZATION logical_and
 template <>
 struct logical_and<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION logical_or
 template <>
 struct logical_or<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION logical_not
 template <>
 struct logical_not<void> {
-    using is_transparent = int;
-
     template <class _Ty>
     constexpr auto operator()(_Ty&& _Left) const -> decltype(!_STD forward<_Ty>(_Left)) {
         return !_STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_and
 template <>
 struct bit_and<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_or
 template <>
 struct bit_or<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_xor
 template <>
 struct bit_xor<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_not
 template <>
 struct bit_not<void> {
-    using is_transparent = int;
-
     template <class _Ty>
     constexpr auto operator()(_Ty&& _Left) const -> decltype(~_STD forward<_Ty>(_Left)) {
         return ~_STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 
 #if _HAS_DEPRECATED_NEGATORS
@@ -661,12 +661,12 @@ _NODISCARD _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
 #if _HAS_CXX20
 // STRUCT identity
 struct identity {
-    using is_transparent = int;
-
     template <class _Ty>
     _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
         return _STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 #endif // _HAS_CXX20
 
@@ -2200,6 +2200,66 @@ private:
     void* _Data;
 };
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // STRUCT ranges::not_equal_to
+    struct not_equal_to {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires equality_comparable_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+            return !static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
+    // STRUCT ranges::greater
+    struct greater {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+            return static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
+    // STRUCT ranges::greater_equal
+    struct greater_equal {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+            return !static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
+    // STRUCT ranges::less_equal
+    struct less_equal {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+            return !static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

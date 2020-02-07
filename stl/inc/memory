@@ -2253,8 +2253,6 @@ struct owner_less<weak_ptr<_Ty>> {
 
 template <>
 struct owner_less<void> {
-    using is_transparent = int;
-
     template <class _Ty, class _Uty>
     _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2274,6 +2272,8 @@ struct owner_less<void> {
     _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION hash
