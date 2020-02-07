@@ -6,8 +6,8 @@
 //
 // This file may be changed, renamed, or removed at any time.
 
-#ifndef _MSVC_ALL_PUBLIC_HEADERS_HPP
-#define _MSVC_ALL_PUBLIC_HEADERS_HPP
+#ifndef __MSVC_ALL_PUBLIC_HEADERS_HPP
+#define __MSVC_ALL_PUBLIC_HEADERS_HPP
 
 #pragma warning(push)
 #pragma warning(1 : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
@@ -211,4 +211,4 @@
 
 #pragma warning(pop)
 
-#endif // _MSVC_ALL_PUBLIC_HEADERS_HPP
+#endif // __MSVC_ALL_PUBLIC_HEADERS_HPP
