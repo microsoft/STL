@@ -35,6 +35,18 @@ constexpr bool run_tests() {
         moveAssignmentConvertible = std::move(moveAssignment);
     }
 
+    // test pair::swap
+    {
+        pair<int, int> pair1{1, 2};
+        pair<int, int> pair2{3, 4};
+
+        swap(pair1, pair2);
+        assert(pair1.first == 3 && pair1.second == 4 && pair2.first == 1 && pair2.second == 2);
+
+        pair1.swap(pair2);
+        assert(pair1.first == 1 && pair1.second == 2 && pair2.first == 3 && pair2.second == 4);
+    }
+
     return true;
 }
 
