@@ -42,8 +42,8 @@ static xtime xtime_diff(const xtime* xt,
 }
 
 
-constexpr long long _Epoch       = 0x19DB1DED53E8000LL;
-constexpr long _Nsec100_per_sec  = _Nsec_per_sec / 100;
+constexpr long long _Epoch      = 0x19DB1DED53E8000LL;
+constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
 _EXTERN_C
 
