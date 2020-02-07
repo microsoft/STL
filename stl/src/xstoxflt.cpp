@@ -70,7 +70,7 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
 
     if (maxsig < nsig) { // discard excess digit after rounding up
         if (_Base / 2 <= buf[maxsig]) {
-            ++buf[maxsig - 1]; // okay if digit becomes BASE
+            ++buf[maxsig - 1]; // okay if digit becomes _Base
         }
 
         nsig = maxsig;

@@ -27,7 +27,7 @@ int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
     }
 
     lo[0] = 0; // power of ten exponent
-    lo[1] = 0; // first NDIG-digit word of fraction
+    lo[1] = 0; // first _Ndig-digit word of fraction
 
     while (*s == L'0') { // strip leading zeros
         ++s;
@@ -69,7 +69,7 @@ int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
 
     if (maxsig < nsig) { // discard excess digit after rounding up
         if (_Base / 2 <= buf[maxsig]) {
-            ++buf[maxsig - 1]; // okay if digit becomes BASE
+            ++buf[maxsig - 1]; // okay if digit becomes _Base
         }
 
         nsig = maxsig;
@@ -86,7 +86,7 @@ int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
 
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
-        int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% NDIG)
+        int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
 
         word = wordidx % _Ndig == 0 ? 0 : 1;
         for (; bufidx < nsig; ++wordidx, ++bufidx) {

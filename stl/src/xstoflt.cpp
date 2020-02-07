@@ -69,7 +69,7 @@ int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
     }
 
     if (sticky) {
-        buf[maxsig - 1] += 1; // okay if digit becomes BASE
+        buf[maxsig - 1] += 1; // okay if digit becomes _Base
     }
 
     for (; 0 < nsig && buf[nsig - 1] == '\0'; --nsig) {
