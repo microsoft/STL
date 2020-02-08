@@ -9,7 +9,7 @@
 
 #include <Windows.h>
 
-#define NITEMS 20
+constexpr int _Nitems = 20;
 
 namespace {
     struct _At_thread_exit_data { // data for condition-variable slot
@@ -20,7 +20,7 @@ namespace {
     };
 
     struct _At_thread_exit_block { // block of condition-variable slots
-        _At_thread_exit_data data[NITEMS];
+        _At_thread_exit_data data[_Nitems];
         int num_used;
         _At_thread_exit_block* next;
     };
@@ -40,14 +40,14 @@ void _Cnd_register_at_thread_exit(
 
     _Lock_at_thread_exit_mutex();
     while (block != 0) { // loop through list of blocks
-        if (block->num_used == NITEMS) { // block is full; move to next block and allocate
+        if (block->num_used == _Nitems) { // block is full; move to next block and allocate
             if (block->next == 0) {
                 block->next = (_At_thread_exit_block*) calloc(1, sizeof(_At_thread_exit_block));
             }
 
             block = block->next;
         } else { // found block with available space
-            for (int i = 0; i < NITEMS; ++i) { // find empty slot
+            for (int i = 0; i < _Nitems; ++i) { // find empty slot
                 if (block->data[i].mtx == 0) { // store into empty slot
                     block->data[i].id._Id = GetCurrentThreadId();
                     block->data[i].mtx    = mtx;
@@ -69,7 +69,7 @@ void _Cnd_unregister_at_thread_exit(_Mtx_t mtx) { // unregister condition variab
 
     _Lock_at_thread_exit_mutex();
     while (block != 0) { // loop through list of blocks
-        for (int i = 0; block->num_used != 0 && i < NITEMS; ++i) {
+        for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx == mtx) { // release slot
                 block->data[i].mtx = 0;
                 --block->num_used;
@@ -88,7 +88,7 @@ void _Cnd_do_broadcast_at_thread_exit() { // notify condition variables waiting 
 
     _Lock_at_thread_exit_mutex();
     while (block != 0) { // loop through list of blocks
-        for (int i = 0; block->num_used != 0 && i < NITEMS; ++i) {
+        for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx != 0 && block->data[i].id._Id == currentThreadId) { // notify and release slot
                 if (block->data[i].res) {
                     *block->data[i].res = 1;
