@@ -93,7 +93,7 @@ public:
 
     static _Ty asinh(_Ty _Left) {
         constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
-        constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658L;
+        constexpr _Ty _Ln2    = 0.69314718055994530941723212145817658L;
 
         bool _Neg = _Left < 0;
         _Ty _Ans;
@@ -199,7 +199,7 @@ public:
 
     static _Ty asinh(_Ty _Left) {
         constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
-        constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658L;
+        constexpr _Ty _Ln2    = 0.69314718055994530941723212145817658L;
 
         const bool _Neg = _Left < 0;
         _Ty _Ans;
@@ -419,7 +419,7 @@ public:
 
     static _Ty asinh(_Ty _Left) {
         constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
-        constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658F;
+        constexpr _Ty _Ln2    = 0.69314718055994530941723212145817658F;
 
         const bool _Neg = _Left < 0;
         _Ty _Ans;
@@ -1156,7 +1156,7 @@ _NODISCARD _Ty abs(const complex<_Ty>& _Left) {
 template <class _Ty>
 _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
     constexpr _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(numeric_limits<_Ty>::max);
-    constexpr _Ty _Pi = static_cast<_Ty>(3.1415926535897932384626433832795029L);
+    constexpr _Ty _Pi     = static_cast<_Ty>(3.1415926535897932384626433832795029L);
 
     const _Ty _Re = real(_Left);
     const _Ty _Im = imag(_Left);
@@ -1384,7 +1384,7 @@ _NODISCARD complex<_Ty> asin(const complex<_Ty>& _Left) {
 template <class _Ty>
 _NODISCARD complex<_Ty> atanh(const complex<_Ty>& _Left) {
     constexpr _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(numeric_limits<_Ty>::max);
-    constexpr _Ty _Piby2 = static_cast<_Ty>(1.5707963267948966192313216916397514L);
+    constexpr _Ty _Piby2  = static_cast<_Ty>(1.5707963267948966192313216916397514L);
 
     _Ty _Re = real(_Left);
     _Ty _Im = imag(_Left);
