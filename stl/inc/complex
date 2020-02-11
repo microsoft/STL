@@ -99,6 +99,7 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
         constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658L;
 
         bool _Neg = _Left < 0;
@@ -108,7 +109,7 @@ public:
             _Left = -_Left;
         }
 
-        if (_Left < 2 / _Flt_eps()) {
+        if (_Left < _Bounds) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
         } else {
             _Ans = log(_Left) + _Ln2;
@@ -212,6 +213,7 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
         constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658L;
 
         const bool _Neg = _Left < 0;
@@ -221,7 +223,7 @@ public:
             _Left = -_Left;
         }
 
-        if (_Left < 2 / _Flt_eps()) {
+        if (_Left < _Bounds) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
         } else {
             _Ans = log(_Left) + _Ln2;
@@ -325,6 +327,9 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
+        constexpr _Ty _Ln2    = 0.69314718055994530941723212145817658L;
+
         if (_Isnan(_Left) || _Isinf(_Left) || _Left == 0) {
             return 0;
         } else { // _Left finite nonzero
@@ -335,11 +340,10 @@ public:
                 _Left = -_Left;
             }
 
-            if (_Left < 2 / _Flt_eps()) {
+            if (_Left < _Bounds) {
                 _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
             } else {
-                _Ans = log(_Left) // _Left big, compute log(_Left+_Left)
-                       + static_cast<_Ty>(0.69314718055994530941723212145817658L);
+                _Ans = log(_Left) + _Ln2; // _Left big, compute log(_Left+_Left)                       
             }
 
             return _Neg ? -_Ans : _Ans;
@@ -445,6 +449,7 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        constexpr _Ty _Bounds = 2 / std::numeric_limits<_Ty>::epsilon();
         constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658F;
 
         const bool _Neg = _Left < 0;
@@ -454,7 +459,7 @@ public:
             _Left = -_Left;
         }
 
-        if (_Left < 2 / _Flt_eps()) {
+        if (_Left < _Bounds) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
         } else {
             _Ans = log(_Left) + _Ln2;
