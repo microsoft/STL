@@ -47,12 +47,6 @@ class StlTest(Test):
         flags.extend(self.envlst_entry.getEnvVal('PM_CL', '').split())
         link_flags.extend(self.envlst_entry.getEnvVal('PM_LINK', '').split())
 
-        if self.suite.name == 'libc++':
-            libcxx_support_path =\
-                os.path.join(self.config.stl_src_root,
-                             'llvm-project', 'libcxx', 'test', 'support')
-            compile_flags.append('/I' + libcxx_support_path)
-
         flags.extend(default_cxx.flags or [])
         compile_flags.extend(default_cxx.compile_flags or [])
         link_flags.extend(default_cxx.link_flags or [])

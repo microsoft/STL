@@ -65,12 +65,12 @@ class Configuration(object):
         self.lit_config = lit_config
         self.link_shared = True
         self.long_tests = None
+        self.msvc_toolset_libs_root = None
         self.skip_list_path = None
         self.skip_list_root = None
         self.stl_build_root = None
         self.stl_compilation_env = None
-        self.stl_dll_root = None
-        self.stl_importlib_root = None
+        self.cxx_library_root = None
         self.stl_lib_env_var = None
         self.stl_path_env_var = None
         self.stl_src_root = None
@@ -189,10 +189,10 @@ class Configuration(object):
         self.stl_build_root = Path(stl_build_root)
 
     def configure_library_roots(self):
-        stl_dll_root = self.get_lit_conf('stl_dll_root', None)
-        stl_importlib_root = self.get_lit_conf('stl_importlib_root', None)
+        cxx_runtime_root = self.get_lit_conf('cxx_runtime_root', None)
+        cxx_library_root = self.get_lit_conf('cxx_library_root', None)
 
-        if stl_dll_root is None or stl_importlib_root is None:
+        if cxx_runtime_root is None or cxx_library_root is None:
             if self.stl_build_root is None:
                 self.configure_build_root()
 
@@ -207,23 +207,23 @@ class Configuration(object):
             else:
                 subfolder_name = self.target_arch.lower()
 
-            if stl_dll_root is None:
-                stl_dll_root = self.stl_build_root / 'bin' / subfolder_name
+            if cxx_runtime_root is None:
+                cxx_runtime_root = self.stl_build_root / 'bin' / subfolder_name
 
                 self.lit_config.note(
-                        "stl_dll_root was not specified. Defaulting to: %s." %
-                        str(stl_dll_root))
+                    "cxx_runtime_root was not specified. Defaulting to: %s." %
+                    str(cxx_runtime_root))
 
-            if stl_importlib_root is None:
-                stl_importlib_root =\
+            if cxx_library_root is None:
+                cxx_library_root =\
                     self.stl_build_root / 'lib' / subfolder_name
 
                 self.lit_config.note(
-                    "stl_importlib_root was not specified. Defaulting to: %s."
-                    % str(stl_importlib_root))
+                    "cxx_library_root was not specified. Defaulting to: %s."
+                    % str(cxx_library_root))
 
-        self.stl_dll_root = stl_dll_root
-        self.stl_importlib_root = stl_importlib_root
+        self.cxx_runtime_root = cxx_runtime_root
+        self.cxx_library_root = cxx_library_root
 
     # Note: This relies on kernel32.lib and ucrt.lib being in the LIB env var
     def configure_lib_env_var(self):
@@ -232,14 +232,11 @@ class Configuration(object):
         if stl_lib_env_var is None:
             stl_lib_env_var = self.config.environment.get('LIB', '')
 
-            if self.stl_importlib_root is None:
-                self.configure_library_roots()
-
             if stl_lib_env_var != '':
-                stl_lib_env_var = ';'.join((str(self.stl_importlib_root),
+                stl_lib_env_var = ';'.join((str(self.cxx_library_root),
                                             stl_lib_env_var))
             else:
-                stl_lib_env_var = self.stl_importlib_root
+                stl_lib_env_var = self.cxx_library_root
 
         self.stl_lib_env_var = stl_lib_env_var
 
@@ -249,14 +246,14 @@ class Configuration(object):
         if stl_path_env_var is None:
             stl_path_env_var = self.config.environment.get('PATH', '')
 
-            if self.stl_dll_root is None:
+            if self.cxx_runtime_root is None:
                 self.configure_library_roots()
 
             if stl_path_env_var != '':
-                stl_path_env_var = ';'.join((str(self.stl_dll_root),
+                stl_path_env_var = ';'.join((str(self.cxx_runtime_root),
                                             stl_path_env_var))
             else:
-                stl_path_env_var = self.stl_dll_root
+                stl_path_env_var = self.cxx_runtime_root
 
         self.stl_path_env_var = stl_path_env_var
 
@@ -352,9 +349,12 @@ class Configuration(object):
 
         self.config.expected_failures = expected_failures
 
+    # TODO: Have configuring the compiler have the same flow as everything
+    # else.
     def configure_default_compiler(self):
         self.default_compiler = CXXCompiler(None)
         self.configure_compile_flags()
+        self.configure_link_flags()
 
         if self.stl_compilation_env is None:
             self.configure_compilation_env()
@@ -380,6 +380,24 @@ class Configuration(object):
                     shlex.split(additional_flags)
 
     def configure_compile_flags_header_includes(self):
+        if self.cxx_headers is None:
+            self.configure_cxx_headers()
+
+        self.default_compiler.compile_flags += ['/X']
+        self.default_compiler.compile_flags += ['/I' + str(self.cxx_headers)]
+
+        if self.config.name == 'libc++':
+            if self.stl_src_root is None:
+                self.configure_stl_src_root()
+
+            libcxx_support_path =\
+                self.stl_src_root / 'llvm-project' / 'libcxx'\
+                                  / 'test' / 'support'
+
+            self.default_compiler.compile_flags.append(
+                '/I' + str(libcxx_support_path))
+
+    def configure_cxx_headers(self):
         cxx_headers = self.get_lit_conf('cxx_headers')
 
         if cxx_headers is None:
@@ -390,11 +408,22 @@ class Configuration(object):
 
             if not os.path.isdir(cxx_headers):
                 self.lit_config.fatal("cxx_headers='%s' is not a directory."
-                                      % cxx_headers)
-
-        self.default_compiler.compile_flags += ['/I' + str(cxx_headers)]
+                                      % str(cxx_headers))
 
         self.cxx_headers = cxx_headers
+
+    def configure_link_flags(self):
+        if self.cxx_library_root is None:
+            self.configure_cxx_library_roots()
+
+        if self.msvc_toolset_libs_root is None:
+            self.configure_msvc_toolset_libs_root()
+
+        self.default_compiler.link_flags.append(
+            '/LIBPATH:' + str(self.cxx_library_root))
+
+        self.default_compiler.link_flags.append(
+            '/LIBPATH:' + str(self.cxx_library_root))
 
     def get_test_format(self):
         from stl.test.format import StlTestFormat
