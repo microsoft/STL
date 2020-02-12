@@ -1244,7 +1244,7 @@ using _Iterator_base = _Iterator_base12;
 struct _Leave_proxy_unbound {
     explicit _Leave_proxy_unbound() = default;
 }; // tag to indicate that a proxy is being allocated before it is safe to bind to a
-                                // _Container_base12
+   // _Container_base12
 
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
