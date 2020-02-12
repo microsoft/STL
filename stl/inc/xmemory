@@ -28,13 +28,12 @@ template <size_t _Ty_size>
 _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
     constexpr bool _Overflow_is_possible = _Ty_size > 1;
 
-    if
-        _CONSTEXPR_IF(_Overflow_is_possible) {
-            constexpr size_t _Max_possible = static_cast<size_t>(-1) / _Ty_size;
-            if (_Count > _Max_possible) {
-                _Throw_bad_array_new_length(); // multiply overflow
-            }
+    if _CONSTEXPR_IF (_Overflow_is_possible) {
+        constexpr size_t _Max_possible = static_cast<size_t>(-1) / _Ty_size;
+        if (_Count > _Max_possible) {
+            _Throw_bad_array_new_length(); // multiply overflow
         }
+    }
 
     return _Count * _Ty_size;
 }
@@ -940,13 +939,11 @@ template <class _Alloc>
 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
-    if
-        _CONSTEXPR_IF(conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
-            (void) _First;
-            (void) _Last;
-            (void) _Al;
-        }
-    else {
+    if _CONSTEXPR_IF (conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
+        (void) _First;
+        (void) _Last;
+        (void) _Al;
+    } else {
         for (; _First != _Last; ++_First) {
             allocator_traits<_Alloc>::destroy(_Al, _Unfancy(_First));
         }
@@ -958,12 +955,10 @@ void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Las
 template <class _NoThrowFwdIt>
 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
-    if
-        _CONSTEXPR_IF(is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
-            (void) _First;
-            (void) _Last;
-        }
-    else {
+    if _CONSTEXPR_IF (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+        (void) _First;
+        (void) _Last;
+    } else {
         for (; _First != _Last; ++_First) {
             _Destroy_in_place(*_First);
         }
@@ -1244,7 +1239,7 @@ using _Iterator_base = _Iterator_base12;
 struct _Leave_proxy_unbound {
     explicit _Leave_proxy_unbound() = default;
 }; // tag to indicate that a proxy is being allocated before it is safe to bind to a
-                                // _Container_base12
+   // _Container_base12
 
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
@@ -2006,13 +2001,11 @@ struct _Alloc_temporary {
 
 template <class _Alloc>
 _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _Rhs) noexcept {
-    if
-        _CONSTEXPR_IF(allocator_traits<_Alloc>::is_always_equal::value) {
-            (void) _Lhs;
-            (void) _Rhs;
-            return true;
-        }
-    else {
+    if _CONSTEXPR_IF (allocator_traits<_Alloc>::is_always_equal::value) {
+        (void) _Lhs;
+        (void) _Rhs;
+        return true;
+    } else {
         return _Lhs == _Rhs;
     }
 }
