@@ -357,7 +357,7 @@ struct _Vec_iter_types {
 
 // STRUCT _Value_init_tag
 struct _Value_init_tag { // tag to request value-initialization
-    explicit _Value_init_tag() = default;
+    explicit _Value_init_tag() =  default;
 };
 
 // CLASS TEMPLATE _Vector_val
@@ -558,21 +558,22 @@ private:
     }
 
     void _Move_construct(vector& _Right, false_type) { // move from _Right, possibly moving its contents
-        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
-            if (_Getal() != _Right._Getal()) {
-                const auto& _Right_data   = _Right._Mypair._Myval2;
-                const pointer _Rightfirst = _Right_data._Myfirst;
-                const pointer _Rightlast  = _Right_data._Mylast;
-                if (_Rightfirst != _Rightlast) {
-                    _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
-                    _Tidy_guard<vector> _Guard{this};
-                    auto& _My_data   = _Mypair._Myval2;
-                    _My_data._Mylast = _Umove(_Rightfirst, _Rightlast, _My_data._Myfirst);
-                    _Guard._Target   = nullptr;
+        if
+            _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
+                if (_Getal() != _Right._Getal()) {
+                    const auto& _Right_data   = _Right._Mypair._Myval2;
+                    const pointer _Rightfirst = _Right_data._Myfirst;
+                    const pointer _Rightlast  = _Right_data._Mylast;
+                    if (_Rightfirst != _Rightlast) {
+                        _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
+                        _Tidy_guard<vector> _Guard{this};
+                        auto& _My_data   = _Mypair._Myval2;
+                        _My_data._Mylast = _Umove(_Rightfirst, _Rightlast, _My_data._Myfirst);
+                        _Guard._Target   = nullptr;
+                    }
+                    return;
                 }
-                return;
             }
-        }
 
         _Move_construct(_Right, true_type{});
     }
@@ -1752,7 +1753,7 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
+vector(_Iter, _Iter, _Alloc = _Alloc())->vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Alloc>
@@ -2312,11 +2313,12 @@ public:
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>)
         : _Mybase(_STD move(_Right), _Al) {
-        if _CONSTEXPR_IF (!_Alvbase_traits::is_always_equal::value) {
-            if (this->_Getal() != _Right._Getal()) {
-                return;
+        if
+            _CONSTEXPR_IF(!_Alvbase_traits::is_always_equal::value) {
+                if (this->_Getal() != _Right._Getal()) {
+                    return;
+                }
             }
-        }
 
         this->_Swap_proxy_and_iterators(_Right);
     }
