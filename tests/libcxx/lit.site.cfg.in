@@ -16,6 +16,7 @@ config.skip_list_root              = "@LIBCXX_SKIP_LIST_ROOT@"
 config.stl_build_root              = "@STL_BUILD_ROOT@"
 config.stl_src_root                = "@STL_SOURCE_DIR@"
 config.target_arch                 = "@VCLIBS_TARGET_ARCHITECTURE@"
+config.libcxx_test_source_root     = "@LIBCXX_SOURCE_DIR@/test/std"
 
 config.loaded_site_config = True
 lit_config.load_config(config, "@LIBCXX_SOURCE_DIR@/test/lit.cfg")

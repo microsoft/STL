@@ -55,6 +55,7 @@ class Configuration(object):
     # pylint: disable=redefined-outer-name
     def __init__(self, lit_config, config):
         self.config = config
+        self.cxx_headers = None
         self.cxx_library_root = None
         self.cxx_runtime_root = None
         self.default_compiler = None
@@ -75,6 +76,9 @@ class Configuration(object):
         self.stl_path_env_var = None
         self.stl_src_root = None
         self.target_arch = None
+
+        # TODO: Move this into configure like everything else
+        self.config.test_source_root = self.config.libcxx_test_source_root
 
     def get_lit_conf(self, name, default=None):
         val = self.lit_config.params.get(name, None)
@@ -383,12 +387,12 @@ class Configuration(object):
         if self.cxx_headers is None:
             self.configure_cxx_headers()
 
-        self.default_compiler.compile_flags += ['/X']
+        # self.default_compiler.compile_flags += ['/X']
         self.default_compiler.compile_flags += ['/I' + str(self.cxx_headers)]
 
         if self.config.name == 'libc++':
             if self.stl_src_root is None:
-                self.configure_stl_src_root()
+                self.configure_src_root()
 
             libcxx_support_path =\
                 self.stl_src_root / 'llvm-project' / 'libcxx'\
@@ -414,7 +418,7 @@ class Configuration(object):
 
     def configure_link_flags(self):
         if self.cxx_library_root is None:
-            self.configure_cxx_library_roots()
+            self.configure_library_roots()
 
         if self.msvc_toolset_libs_root is None:
             self.configure_msvc_toolset_libs_root()
@@ -423,7 +427,15 @@ class Configuration(object):
             '/LIBPATH:' + str(self.cxx_library_root))
 
         self.default_compiler.link_flags.append(
-            '/LIBPATH:' + str(self.cxx_library_root))
+            '/LIBPATH:' + str(self.msvc_toolset_libs_root))
+
+    def configure_msvc_toolset_libs_root(self):
+        msvc_toolset_libs_root = self.get_lit_conf('msvc_toolset_libs_root')
+
+        if msvc_toolset_libs_root is None:
+            self.lit_config.fatal('msvc_toolset_libs_root must be specified')
+
+        self.msvc_toolset_libs_root = Path(msvc_toolset_libs_root)
 
     def get_test_format(self):
         from stl.test.format import StlTestFormat
