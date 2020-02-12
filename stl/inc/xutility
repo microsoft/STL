@@ -193,18 +193,30 @@ using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 
 // ITERATOR STUFF (from <iterator>)
 // ITERATOR TAGS (from <iterator>)
-struct input_iterator_tag {};
+struct input_iterator_tag {
+    explicit input_iterator_tag() = default;
+};
 
-struct output_iterator_tag {};
+struct output_iterator_tag {
+    explicit output_iterator_tag() = default;
+};
 
-struct forward_iterator_tag : input_iterator_tag {};
+struct forward_iterator_tag : input_iterator_tag {
+    explicit forward_iterator_tag() : input_iterator_tag() {}
+};
 
-struct bidirectional_iterator_tag : forward_iterator_tag {};
+struct bidirectional_iterator_tag : forward_iterator_tag {
+    explicit bidirectional_iterator_tag() : forward_iterator_tag() {}
+};
 
-struct random_access_iterator_tag : bidirectional_iterator_tag {};
+struct random_access_iterator_tag : bidirectional_iterator_tag {
+    explicit random_access_iterator_tag() : bidirectional_iterator_tag() {}
+};
 
 #ifdef __cpp_lib_concepts
-struct contiguous_iterator_tag : random_access_iterator_tag {};
+struct contiguous_iterator_tag : random_access_iterator_tag {
+    explicit contiguous_iterator_tag() : random_access_iterator_tag() {}
+};
 
 // ALIAS TEMPLATE _With_reference
 template <class _Ty>
@@ -2695,7 +2707,9 @@ namespace ranges {
         // objects from this type to remove some typical object-ish behaviors which helps users avoid depending on their
         // non-specified object-ness.
 
-        struct _Construct_tag {};
+        struct _Construct_tag {
+            explicit _Construct_tag() = default;
+        };
 
         _Not_quite_object() = delete;
 
@@ -4539,7 +4553,9 @@ struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
 #endif // _HAS_STD_BYTE
 
 template <class _Memcmp_pr>
-struct _Lex_compare_optimize {}; // optimization tag for lexicographical_compare
+struct _Lex_compare_optimize {
+    explicit _Lex_compare_optimize() = default;
+}; // optimization tag for lexicographical_compare
 
 template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
 using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<

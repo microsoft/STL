@@ -801,17 +801,17 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    list() : _Mypair(_Zero_then_variadic_args_t()) {
+    list() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Alloc_sentinel_and_proxy();
     }
 
-    explicit list(const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    explicit list(const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alloc_sentinel_and_proxy();
     }
 
 private:
     template <class _Any_alloc>
-    explicit list(_Move_allocator_tag, _Any_alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _STD move(_Al)) {
+    explicit list(_Move_allocator_tag, _Any_alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
         _Alloc_sentinel_and_proxy();
     }
 
@@ -826,12 +826,12 @@ private:
 
 public:
     explicit list(_CRT_GUARDOVERFLOW size_type _Count)
-        : _Mypair(_Zero_then_variadic_args_t()) { // construct list from _Count * _Ty()
+        : _Mypair(_Zero_then_variadic_args_t{}) { // construct list from _Count * _Ty()
         _Construct_n(_Count);
     }
 
     explicit list(_CRT_GUARDOVERFLOW size_type _Count, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct list from _Count * _Ty(), with allocator
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Ty(), with allocator
         _Construct_n(_Count);
     }
 
@@ -847,12 +847,12 @@ private:
 
 public:
     list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val)
-        : _Mypair(_Zero_then_variadic_args_t()) { // construct list from _Count * _Val
+        : _Mypair(_Zero_then_variadic_args_t{}) { // construct list from _Count * _Val
         _Construct_n(_Count, _Val);
     }
 
     list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct list from _Count * _Val, allocator
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Val, allocator
         _Construct_n(_Count, _Val);
     }
 
@@ -869,32 +869,32 @@ private:
 
 public:
     list(const list& _Right)
-        : _Mypair(_One_then_variadic_args_t(), _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
-    list(const list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(const list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t()) {
+    list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Adl_verify_range(_First, _Last);
         _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Adl_verify_range(_First, _Last);
         _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-    list(list&& _Right) : _Mypair(_One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+    list(list&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
     }
 
-    list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         if
             _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
                 if (_Getal() != _Right._Getal()) {
@@ -1021,11 +1021,11 @@ public:
         return _Op._Transfer_before(_Where);
     }
 
-    list(initializer_list<_Ty> _Ilist) : _Mypair(_Zero_then_variadic_args_t()) {
+    list(initializer_list<_Ty> _Ilist) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Construct_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 
-    list(initializer_list<_Ty> _Ilist, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(initializer_list<_Ty> _Ilist, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 

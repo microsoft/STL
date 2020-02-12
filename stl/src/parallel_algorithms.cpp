@@ -157,7 +157,7 @@ static DWORD _Get_number_of_processors() noexcept {
     return _Info.dwNumberOfProcessors;
 }
 
-extern "C" {
+EXTERN_C_START
 
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
@@ -296,4 +296,4 @@ void __stdcall __std_execution_wake_by_address_all(const volatile void* _Address
 #endif // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 ^^^
 }
 
-} // extern "C"
+EXTERN_C_END // extern "C"

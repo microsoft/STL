@@ -1313,6 +1313,7 @@ using _Container_proxy_ptr = _Container_proxy_ptr12<_Rebind_alloc_t<_Alloc, _Con
 struct _Zero_then_variadic_args_t {}; // tag type for value-initializing first, constructing second from remaining args
 
 struct _One_then_variadic_args_t {
+    explicit _One_then_variadic_args_t() = default;
 }; // tag type for constructing first from one arg, constructing second from remaining args
 
 template <class _Ty1, class _Ty2, bool = is_empty_v<_Ty1> && !is_final_v<_Ty1>>

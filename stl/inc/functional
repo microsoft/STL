@@ -818,7 +818,7 @@ public:
 
     template <class _Other1, class _Other2>
     _Func_impl(_Other1&& _Val, _Other2&& _Ax)
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Other2>(_Ax), _STD forward<_Other1>(_Val)) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Other2>(_Ax), _STD forward<_Other1>(_Val)) {}
 
     // dtor non-virtual due to _Delete_this()
 
@@ -1454,7 +1454,7 @@ private:
 
 public:
     explicit _Binder(_Fx&& _Func, _Types&&... _Args)
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                           \
     template <class... _Unbound>                                                                              \
