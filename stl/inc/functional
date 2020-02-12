@@ -669,7 +669,9 @@ struct identity {
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE not_fn
-struct _Not_fn_tag {};
+struct _Not_fn_tag {
+    explicit _Not_fn_tag() = default;
+};
 
 template <class _Decayed>
 class _Not_fn : private _Ebco_base<_Decayed> {

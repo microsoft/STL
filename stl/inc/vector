@@ -357,6 +357,7 @@ struct _Vec_iter_types {
 
 // STRUCT _Value_init_tag
 struct _Value_init_tag { // tag to request value-initialization
+    explicit _Value_init_tag() =  default;
 };
 
 // CLASS TEMPLATE _Vector_val

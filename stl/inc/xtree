@@ -875,11 +875,11 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
     struct _Copy_tag {
-        explicit _Copy_tag{} = default;
+        explicit _Copy_tag() = default;
     };
 
     struct _Move_tag {
-        explicit _Move_tag{} = default;
+        explicit _Move_tag() = default;
     };
 
     _Tree(const key_compare& _Parg) : _Mypair(_One_then_variadic_args_t{}, _Parg, _Zero_then_variadic_args_t{}) {

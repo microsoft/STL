@@ -202,20 +202,20 @@ struct output_iterator_tag {
 };
 
 struct forward_iterator_tag : input_iterator_tag {
-    explicit forward_iterator_tag() : input_iterator_tag() {}
+    explicit forward_iterator_tag() = default;
 };
 
 struct bidirectional_iterator_tag : forward_iterator_tag {
-    explicit bidirectional_iterator_tag() : forward_iterator_tag() {}
+    explicit bidirectional_iterator_tag() = default;
 };
 
 struct random_access_iterator_tag : bidirectional_iterator_tag {
-    explicit random_access_iterator_tag() : bidirectional_iterator_tag() {}
+    explicit random_access_iterator_tag() = default;
 };
 
 #ifdef __cpp_lib_concepts
 struct contiguous_iterator_tag : random_access_iterator_tag {
-    explicit contiguous_iterator_tag() : random_access_iterator_tag() {}
+    explicit contiguous_iterator_tag() = default;
 };
 
 // ALIAS TEMPLATE _With_reference
@@ -1475,10 +1475,12 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <size_t _Value>
 struct _Priority_tag : _Priority_tag<_Value - 1> { // priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <>
 struct _Priority_tag<0> { // base case priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <class _InIt, class _Pr>
