@@ -3,11 +3,7 @@
 {
     "editor.formatOnSave": true,
     "files.associations": {
-        "**/stl/inc/**": "cpp",
-        "xutility": "cpp",
-        "vector": "cpp",
-        "execution": "cpp",
-        "optional": "cpp"
+        "**/stl/inc/**": "cpp"
     },
     "files.eol": "\r\n",
     "files.exclude": {
