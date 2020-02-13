@@ -34,7 +34,7 @@ if ($ENV{PM_COMPILER} && $ENV{PM_COMPILER} eq "clang-cl" && $ENV{CLANG_TARGET} &
 my $RunPL = "";
 if ($ENV{PM_CL} && $ENV{PM_CL} =~ m/[\-\/]BE / )
 {
-    $RunPL = $testdir . "\\RunBE.pl";
+    $RunPL = $testdir . "\\runbe.pl";
 }
 else
 {

@@ -3,7 +3,7 @@
 "%1" "clang-format.exe -style=file -i" ^
 stl/inc ^
 stl/src ^
-tests/tr1 ^
+tests ^
 tools
 @echo If your build fails here, you need to format the following files with:
 @clang-format.exe --version
