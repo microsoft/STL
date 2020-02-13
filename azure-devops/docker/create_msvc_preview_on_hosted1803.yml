@@ -1,0 +1,5 @@
+jobs:
+- template: create_msvc_preview_docker_image.yml
+  parameters:
+    pool: # Parameter name
+      vmImage: win1803 # The parameter value is a map.

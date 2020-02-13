@@ -1,0 +1,18 @@
+# Creates and publish the docker image containing latest available MSVC preview toolset.
+parameters:
+  pool: {} # 'pool' is a parameter name, its value is a map, default is an empty map.
+
+jobs:
+- job:
+  pool: ${{ parameters.pool }}
+
+  steps:
+  - task: Docker@2
+    displayName: build MSVC preview toolset image and publish on Azure Container Registry
+    inputs:
+      containerRegistry: lukka.azurecr.io
+      repository: 'msvc_preview'
+      # Do not use buildid in here or any dynamic value, but hardcode it to 'latest'.
+      # When you pull this image without a tag, you will get the 'latest', i.e. the most
+      # recently created and pushed.
+      tags: latest

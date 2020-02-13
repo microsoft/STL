@@ -1,0 +1,17 @@
+parameters:
+  targetPlatform: "targetPlatform-not-provided"
+  pool: { name: pool-name-not-provided }
+
+jobs:
+  - job: ${{ parameters.targetPlatform }}
+    variables:
+      vcpkgLocation: "$(Build.SourcesDirectory)/vcpkg"
+      vcpkgResponseFile: $(Build.SourcesDirectory)/azure-devops/vcpkg_windows.txt
+    pool: ${{ parameters.pool }}
+    container:
+      image: lukka.azurecr.io/msvc_preview:latest
+      endpoint: "lukka.azurecr.io"
+    steps:
+      - template: run_build_docker.yml
+        parameters:
+          targetPlatform: ${{ parameters.targetPlatform }}

@@ -1,0 +1,8 @@
+variables:
+  system.debug: true
+
+jobs:
+  - template: azure-devops/run_jobs_docker.yml
+    parameters:
+      pool:
+        vmImage: "win1803"

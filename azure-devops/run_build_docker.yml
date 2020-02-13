@@ -1,0 +1,69 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+  targetPlatform: "not-defined"
+
+steps:
+  - powershell: |
+      git clean -ffdx
+      git reset --hard HEAD
+    enabled: false
+  - checkout: self
+    submodules: recursive
+  - powershell: |
+      if (-not (Test-Path env:targetPlatform))
+      {
+        Write-Host "##vso[task.logissue type=error;]Missing template parameter targetPlatform"
+        Write-Host '##vso[task.complete result=Failed;]'
+      }
+    displayName: "Check parameter targetPlatform is defined"
+    env:
+      targetPlatform: ${{ parameters.targetPlatform }}
+  - task: Cache@2
+    displayName: Cache vcpkg
+    timeoutInMinutes: 10
+    inputs:
+      key: $(vcpkgResponseFile) | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD
+      path: "$(vcpkgLocation)"
+  - task: lucappa.cmake-ninja-vcpkg-tasks.d855c326-b1c0-4d6f-b1c7-440ade6835fb.run-vcpkg@0
+    displayName: "Run vcpkg to Install boost-build"
+    timeoutInMinutes: 10
+    inputs:
+      vcpkgArguments: "boost-build:x86-windows"
+      vcpkgDirectory: "$(vcpkgLocation)"
+  - task: lucappa.cmake-ninja-vcpkg-tasks.d855c326-b1c0-4d6f-b1c7-440ade6835fb.run-vcpkg@0
+    displayName: "Run vcpkg"
+    inputs:
+      vcpkgArguments: "@$(vcpkgResponseFile)"
+      vcpkgDirectory: "$(vcpkgLocation)"
+      vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
+  - task: lucappa.cmake-ninja-vcpkg-tasks.f2b1ec7d-bc54-4cc8-b9ed-1bc7f37c9dc6.run-cmake@0
+    displayName: "Build Support Tools"
+    timeoutInMinutes: 2
+    condition: eq('${{ parameters.targetPlatform }}', 'x64')
+    inputs:
+      cmakeListsTxtPath: "tools/CMakeLists.txt"
+      useVcpkgToolchainFile: true
+      buildDirectory: $(Build.ArtifactStagingDirectory)/tools
+  - powershell: |
+      &"$(Build.SourcesDirectory)/azure-devops/enforce-clang-format.ps1"
+    displayName: "Enforce clang-format"
+    timeoutInMinutes: 60
+    condition: eq('${{ parameters.targetPlatform }}', 'x64')
+    failOnStderr: true
+  - powershell: |
+      &"$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe"
+      write-host "If your build fails here, you need to fix the listed issues."
+    displayName: "Validate Files"
+    timeoutInMinutes: 2
+    condition: eq('${{ parameters.targetPlatform }}', 'x64')
+    failOnStderr: true
+  - task: lucappa.cmake-ninja-vcpkg-tasks.f2b1ec7d-bc54-4cc8-b9ed-1bc7f37c9dc6.run-cmake@0
+    displayName: "Build the STL"
+    timeoutInMinutes: 10
+    inputs:
+      cmakeListsTxtPath: "CMakeSettings.json"
+      useVcpkgToolchainFile: true
+      configurationRegexFilter: ".*${{ parameters.targetPlatform }}.*"
+      buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
