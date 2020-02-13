@@ -183,6 +183,7 @@
 // P1870R1 safe_range
 // P1872R0 span Should Have size_type, Not index_type
 // P1959R0 Removing weak_equality And strong_equality
+// P1976R2 Fixed-size span Construction From Dynamic Range
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -1091,7 +1092,7 @@
 #define __cpp_lib_math_constants           201907L
 #define __cpp_lib_remove_cvref             201711L
 #define __cpp_lib_shift                    201806L
-#define __cpp_lib_span                     201902L
+#define __cpp_lib_span                     202002L
 #define __cpp_lib_ssize                    201902L
 #define __cpp_lib_starts_ends_with         201711L
 #define __cpp_lib_to_address               201711L
