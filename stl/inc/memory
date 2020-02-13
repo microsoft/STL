@@ -308,6 +308,20 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#if _HAS_CXX20
+template <class _Ty, class... _Args_pack>
+/* constexpr */ _Ty* construct_at(_Ty* const _Location, _Args_pack&&... _Args) {
+    return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Args_pack>(_Args)...);
+}
+
+namespace ranges {
+    template <class _Ty, class... _Args_pack>
+    /* constexpr */ _Ty* construct_at(_Ty* const _Location, _Args_pack&&... _Args) {
+        return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Args_pack>(_Args)...);
+    }
+} // namespace ranges
+#endif // _HAS_CXX20
+
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy_at
 template <class _Ty>
