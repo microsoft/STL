@@ -21,9 +21,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
-constexpr int _Little_first   = 1;
-constexpr int _Big_first      = 2;
-constexpr int _Bytes_per_word = 4;
+_INLINE_VAR constexpr int _Little_first = 1;
+_INLINE_VAR constexpr int _Big_first    = 2;
 
 enum _CXX17_DEPRECATE_CODECVT_HEADER codecvt_mode { consume_header = 4, generate_header = 2, little_endian = 1 };
 

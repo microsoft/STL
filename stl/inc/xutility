@@ -193,30 +193,18 @@ using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 
 // ITERATOR STUFF (from <iterator>)
 // ITERATOR TAGS (from <iterator>)
-struct input_iterator_tag {
-    explicit input_iterator_tag() = default;
-};
+struct input_iterator_tag {};
 
-struct output_iterator_tag {
-    explicit output_iterator_tag() = default;
-};
+struct output_iterator_tag {};
 
-struct forward_iterator_tag : input_iterator_tag {
-    explicit forward_iterator_tag() = default;
-};
+struct forward_iterator_tag : input_iterator_tag {};
 
-struct bidirectional_iterator_tag : forward_iterator_tag {
-    explicit bidirectional_iterator_tag() = default;
-};
+struct bidirectional_iterator_tag : forward_iterator_tag {};
 
-struct random_access_iterator_tag : bidirectional_iterator_tag {
-    explicit random_access_iterator_tag() = default;
-};
+struct random_access_iterator_tag : bidirectional_iterator_tag {};
 
 #ifdef __cpp_lib_concepts
-struct contiguous_iterator_tag : random_access_iterator_tag {
-    explicit contiguous_iterator_tag() = default;
-};
+struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 // ALIAS TEMPLATE _With_reference
 template <class _Ty>
