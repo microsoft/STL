@@ -51,7 +51,9 @@ class StlTest(Test):
         compile_flags.extend(default_cxx.compile_flags or [])
         link_flags.extend(default_cxx.link_flags or [])
 
-        if ('clang' in os.path.basename(cxx)):
+        if ('clang' in os.path.basename(cxx) and
+                self.config.target_architecture.casefold() ==
+                'AMD64'.casefold()):
             compile_flags.append('-m64')
 
         self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags)
