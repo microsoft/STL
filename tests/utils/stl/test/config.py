@@ -165,6 +165,7 @@ class Configuration(object):
                     target_arch)
 
         self.target_arch = target_arch
+        self.config.target_arch = target_arch
 
     def configure_build_root(self):
         stl_build_root = self.get_lit_conf('stl_build_root', None)
