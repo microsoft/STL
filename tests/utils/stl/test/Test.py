@@ -44,12 +44,12 @@ class StlTest(Test):
         compile_flags = list()
         link_flags = list()
 
-        flags.extend(self.envlst_entry.getEnvVal('PM_CL', '').split())
-        link_flags.extend(self.envlst_entry.getEnvVal('PM_LINK', '').split())
-
         flags.extend(default_cxx.flags or [])
         compile_flags.extend(default_cxx.compile_flags or [])
         link_flags.extend(default_cxx.link_flags or [])
+
+        flags.extend(self.envlst_entry.getEnvVal('PM_CL', '').split())
+        link_flags.extend(self.envlst_entry.getEnvVal('PM_LINK', '').split())
 
         if ('clang' in os.path.basename(cxx) and
                 self.config.target_arch.casefold() ==
