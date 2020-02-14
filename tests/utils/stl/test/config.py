@@ -414,6 +414,8 @@ class Configuration(object):
             if not os.path.isdir(cxx_headers):
                 self.lit_config.fatal("cxx_headers='%s' is not a directory."
                                       % str(cxx_headers))
+        else:
+            cxx_headers = Path(cxx_headers)
 
         self.cxx_headers = cxx_headers
 

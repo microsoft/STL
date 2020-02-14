@@ -49,9 +49,9 @@ class CXXCompiler(object):
         elif out is not None:
             cmd += ['/Fe' + out]
 
-        cmd += self.flags
         if mode != self.CM_Link:
             cmd += self.compile_flags
+        cmd += self.flags
         cmd += flags
         if isinstance(source_files, list):
             cmd += source_files
