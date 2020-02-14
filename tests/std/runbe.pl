@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 use strict;
-# testenv\bin must be on the PERLLIB env var.
 use Run;
 
 if ($ENV{HAS_EDG} && $ENV{HAS_EDG} eq "yes")

@@ -4,8 +4,8 @@
 use strict;
 use File::Basename;
 
-# This file is just a stub to find and execute the real run.pl which is
-# housed in testenv\bin along with its counterpart run.pm
+# This file is part of a Microsoft-internal legacy test harness, which we hope to replace in the future.
+# Within the Microsoft-internal repo, this uses run.pl and run.pm in src\qa\VC\shared\testenv\bin .
 
 my $path = $ENV{PATH};
 $path =~ s/\//\\/g;
@@ -14,7 +14,7 @@ $path =~ s/\//\\/g;
 $path =~ m/.*?([^\;]*\\testenv\\bin)($|\\$|\\;|;).*/i;
 
 my $testenv = $1;
-my $testdir = dirname($0); # $0 contains the full path including the filename, dirname($0) extracts out the directory path.
+my $testdir = dirname($0); # $0 contains the full path including the filename, dirname($0) extracts the directory path.
 
 # add testenv to perllib so we don't have to search for it in other files.
 if ($ENV{PERLLIB})
