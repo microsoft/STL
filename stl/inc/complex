@@ -204,9 +204,7 @@ public:
         const bool _Neg = _Left < 0;
         _Ty _Ans;
 
-        if (_Neg) {
-            _Left = -_Left;
-        }
+        _Left = fabs(_Left);
 
         if (_Left < _Bounds) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -313,9 +311,7 @@ public:
             const bool _Neg = _Left < 0;
             _Ty _Ans;
 
-            if (_Neg) {
-                _Left = -_Left;
-            }
+            _Left = fabs(_Left);
 
             if (_Left < _Bounds) {
                 _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -424,9 +420,7 @@ public:
         const bool _Neg = _Left < 0;
         _Ty _Ans;
 
-        if (_Neg) {
-            _Left = -_Left;
-        }
+        _Left = fabs(_Left);
 
         if (_Left < _Bounds) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -1296,6 +1290,7 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
         }
 
         _Vx = 2 * _Ctraits<_Ty>::atan2(imag(sqrt(complex<_Ty>(_Re - 1, _Im))), _Zr);
+
         if (_Neg) {
             _Vx = -_Vx;
         }
