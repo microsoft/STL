@@ -98,9 +98,7 @@ public:
         bool _Neg = _Left < 0;
         _Ty _Ans;
 
-        if (_Neg) {
-            _Left = -_Left;
-        }
+        _Left = fabs(_Left);
 
         if (_Left < _Bounds) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
