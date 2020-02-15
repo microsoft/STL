@@ -108,7 +108,7 @@ public:
             _Ans = log(_Left) + _Ln2;
         }
 
-        return static_cast<_Ty>(_Neg ? -_Ans : _Ans);
+        return _Neg ? -_Ans : _Ans;
     }
 
     static _Ty atan2(_Ty _Yval, _Ty _Xval) { // return atan(_Yval / _Xval)
