@@ -71,7 +71,7 @@ class Configuration(object):
         self.skip_list_root = None
         self.stl_build_root = None
         self.stl_compilation_env = None
-        self.cxx_library_root = None
+        self.stl_inc_env_var = None
         self.stl_lib_env_var = None
         self.stl_path_env_var = None
         self.stl_src_root = None
@@ -230,6 +230,24 @@ class Configuration(object):
         self.cxx_runtime_root = cxx_runtime_root
         self.cxx_library_root = cxx_library_root
 
+    # We only do this because of a bug with force includes not respecting /I
+    def configure_inc_env_var(self):
+        stl_inc_env_var = self.get_lit_conf('stl_inc_env_var', None)
+
+        if stl_inc_env_var is None:
+            stl_inc_env_var = self.config.environment.get('INCLUDE', '')
+
+            if self.cxx_headers is None:
+                self.configure_cxx_headers()
+
+            if stl_inc_env_var != '':
+                stl_inc_env_var = ';'.join((str(self.cxx_headers),
+                                            stl_inc_env_var))
+            else:
+                stl_inc_env_var = self.stl_inc_env_var
+
+        self.stl_inc_env_var = stl_inc_env_var
+
     # Note: This relies on kernel32.lib and ucrt.lib being in the LIB env var
     def configure_lib_env_var(self):
         stl_lib_env_var = self.get_lit_conf('stl_lib_env_var', None)
@@ -269,11 +287,15 @@ class Configuration(object):
             stl_compilation_env = dict(self.config.environment)
 
         if self.stl_lib_env_var is None:
+            self.configure_inc_env_var()
+
+        if self.stl_lib_env_var is None:
             self.configure_lib_env_var()
 
         if self.stl_path_env_var is None:
             self.configure_path_env_var()
 
+        stl_compilation_env['INCLUDE'] = self.stl_inc_env_var
         stl_compilation_env['LIB'] = self.stl_lib_env_var
         stl_compilation_env['PATH'] = self.stl_path_env_var
 
@@ -384,6 +406,7 @@ class Configuration(object):
             self.default_compiler.compile_flags +=\
                     shlex.split(additional_flags)
 
+    # This is redundant
     def configure_compile_flags_header_includes(self):
         if self.cxx_headers is None:
             self.configure_cxx_headers()
