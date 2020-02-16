@@ -344,15 +344,15 @@ public:
     static _Ty log1p(_Ty _Left) { // return log(1 + _Left)
         if (_Isnan(_Left) || _Left == 0 || (_Isinf(_Left) && 0 < _Left)) {
             return _Left;
+        } else if (_Left > 0) { // compute log(1 + _Left) with fixup for small _Left
+            _Ty _Leftp1 = 1 + _Left;
+            return log(_Leftp1) - ((_Leftp1 - 1) - _Left) / _Leftp1;
         } else if (_Left < -1) {
             return _Nanv();
         } else if (_Left == -1) {
             return -_Infv();
         } else if (_Left == 0) {
             return _Left;
-        } else { // compute log(1 + _Left) with fixup for small _Left
-            _Ty _Leftp1 = 1 + _Left;
-            return log(_Leftp1) - ((_Leftp1 - 1) - _Left) / _Leftp1;
         }
     }
 
