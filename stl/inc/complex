@@ -135,7 +135,7 @@ public:
             return log(_Leftp1) - ((_Leftp1 - 1) - _Left) / _Leftp1;
         } else if (_Left == 0) {
             return _Left;
-        else {
+        } else {
             return _Nanv();
         }
     }
