@@ -135,7 +135,7 @@ public:
             return log(_Leftp1) - ((_Leftp1 - 1) - _Left) / _Leftp1;
         } else if (_Left == 0) {
             return _Left;
-        } else {
+        } else { // _Left < 0
             return _Nanv();
         }
     }
@@ -239,7 +239,7 @@ public:
             return log(_Leftp1) - ((_Leftp1 - 1) - _Left) / _Leftp1;
         } else if (_Left == 0) {
             return _Left;
-        } else {
+        } else { // _Left < 0
             return _Nanv();
         }
     }
@@ -351,7 +351,7 @@ public:
             return _Nanv();
         } else if (_Left == -1) {
             return -_Infv();
-        } else if (_Left == 0) {
+        } else { // _Left == 0
             return _Left;
         }
     }
@@ -455,7 +455,7 @@ public:
             return log(_Leftp1) - ((_Leftp1 - 1) - _Left) / _Leftp1;
         } else if (_Left == 0) {
             return _Left;
-        } else {
+        } else { // _Left < 0
             return _Nanv();
         }
     }
@@ -1280,12 +1280,8 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
             }
         }
 
-        bool _Neg = true;
-        if (_Im < 0) {
-            _Im = -_Im;
-        } else {
-            _Neg = false;
-        }
+        bool _Neg = _Im < 0;
+        _Im = abs(_Im);
 
         _Vx = 2 * _Ctraits<_Ty>::atan2(imag(sqrt(complex<_Ty>(_Re - 1, _Im))), _Zr);
 
@@ -1475,13 +1471,9 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
     } else if (_Ctraits<_Ty>::_Isnan(_Bv)) {
         return _Bv; // imaginary component is NaN
     } else { // neither component is NaN or INF
-        if (_Av < 0) {
-            _Av = -_Av;
-        }
 
-        if (_Bv < 0) {
-            _Bv = -_Bv;
-        }
+        _Av = abs(_Av);
+        _Bv = abs(_Bv);
 
         if (_Av < _Bv) { // ensure that |_Bv| <= |_Av|
             _Ty _Tmp = _Av;
