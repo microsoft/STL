@@ -56,4 +56,5 @@ class StlTest(Test):
                 'x64'.casefold()):
             compile_flags.append('-m64')
 
-        self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags)
+        self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags,
+                               default_cxx.compile_env)
