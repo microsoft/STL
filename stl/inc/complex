@@ -1765,11 +1765,13 @@ _NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2 _Right) {
     // raise Gaussian integer to an integer power
     using type = complex<_Ty1>;
 
-    type _Ans = type(1, 0);
-
     if (_Right < 0) {
-        _Ans = type(0, 0); // ignore 1/type(0, 0) error
-    } else if (0 < _Right) { // raise to a positive power
+        return type(0, 0); // ignore 1/type(0, 0) error
+    }
+
+    auto _Ans = type(1, 0);
+
+    if (0 < _Right) { // raise to a positive power
         for (type _Factor = _Left;; _Factor *= _Factor) { // fold in _Left^(2^N))
             if ((_Right & 1) != 0) {
                 _Ans *= _Factor;
@@ -1780,6 +1782,7 @@ _NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2 _Right) {
             }
         }
     }
+
     return _Ans;
 }
 
