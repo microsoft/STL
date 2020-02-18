@@ -11,13 +11,13 @@
 
 _EXTERN_C_UNLESS_PURE
 
-#define BASE   16 // hexadecimal
-#define NDIG   7 // hexadecimal digits per long element
-#define MAXSIG (5 * NDIG) // maximum significant digits to keep
+constexpr int _Base   = 16; // hexadecimal
+constexpr int _Ndig   = 7; // hexadecimal digits per long element
+constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
 int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
     int maxsig) { // convert string to array of long plus exponent
-    char buf[MAXSIG + 1]; // worst case, with room for rounding digit
+    char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen
     int word = 0; // current long word to fill
@@ -27,13 +27,13 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
     static const char vals[]   = {// values of hex digits
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15};
 
-    maxsig *= NDIG; // convert word count to digit count
-    if (MAXSIG < maxsig) {
-        maxsig = MAXSIG; // protect against bad call
+    maxsig *= _Ndig; // convert word count to digit count
+    if (_Maxsig < maxsig) {
+        maxsig = _Maxsig; // protect against bad call
     }
 
     lo[0] = 0; // power of ten exponent
-    lo[1] = 0; // first NDIG-digit word of fraction
+    lo[1] = 0; // first _Ndig-digit word of fraction
 
     while (*s == '0') { // strip leading zeros
         ++s;
@@ -69,8 +69,8 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
     }
 
     if (maxsig < nsig) { // discard excess digit after rounding up
-        if (BASE / 2 <= buf[maxsig]) {
-            ++buf[maxsig - 1]; // okay if digit becomes BASE
+        if (_Base / 2 <= buf[maxsig]) {
+            ++buf[maxsig - 1]; // okay if digit becomes _Base
         }
 
         nsig = maxsig;
@@ -88,14 +88,14 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
     lo[0] <<= 2; // change hex exponent to binary exponent
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
-        int wordidx = NDIG - nsig % NDIG; // next digit in word (% NDIG)
+        int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
 
-        word = wordidx % NDIG == 0 ? 0 : 1;
+        word = wordidx % _Ndig == 0 ? 0 : 1;
         for (; bufidx < nsig; ++wordidx, ++bufidx) {
-            if (wordidx % NDIG == 0) {
+            if (wordidx % _Ndig == 0) {
                 lo[++word] = buf[bufidx];
             } else {
-                lo[word] = lo[word] * BASE + buf[bufidx];
+                lo[word] = lo[word] * _Base + buf[bufidx];
             }
         }
 
