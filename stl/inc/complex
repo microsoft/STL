@@ -1574,10 +1574,10 @@ _NODISCARD complex<_Ty> pow(const _Ty& _Left, const complex<_Ty>& _Right) {
 
 template <class _Ty>
 _NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
-    if (imag(_Left) == 0) {
-        return pow(real(_Left), _Right);
-    } else {
+    if (imag(_Left) != 0) {
         return exp(_Right * log(_Left));
+    } else {
+        return pow(real(_Left), _Right);
     }
 }
 
@@ -1594,9 +1594,7 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
     int _Leftexp;
     _Ty _Rho = _Fabs(_Left, &_Leftexp); // get magnitude and scale factor
 
-    if (_Leftexp == 0) {
-        return complex<_Ty>(_Rho, _Rho); // argument is zero, INF, or NaN
-    } else { // compute in safest quadrant
+    if (_Leftexp != 0) { // compute in safest quadrant
         _Ty _Realmag = _Ctraits<_Ty>::ldexp(real(_Left) < 0 ? -real(_Left) : real(_Left), -_Leftexp);
         _Rho         = _Ctraits<_Ty>::ldexp(_Ctraits<_Ty>::sqrt(2 * (_Realmag + _Rho)), _Leftexp / 2 - 1);
 
@@ -1607,6 +1605,8 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
         } else {
             return complex<_Ty>(imag(_Left) / (2 * _Rho), _Rho);
         }
+    } else {        
+        return complex<_Ty>(_Rho, _Rho); // argument is zero, INF, or NaN
     }
 }
 
@@ -1618,13 +1618,12 @@ _NODISCARD complex<_Ty> tanh(const complex<_Ty>& _Left) {
     _Ty _Bv = _Sv * (_Ty{1} + _Tv * _Tv);
     _Ty _Dv = _Ty{1} + _Bv * _Sv;
 
-    if (_Ctraits<_Ty>::_Isinf(_Dv)) {
-        _Ty _Real = _Sv < _Ty ? -_Ty{1} : _Ty{0};
-
-        return complex<_Ty>(_Real, _Tv * _Ty{0});
+    if (!_Ctraits<_Ty>::_Isinf(_Dv)) {
+        return complex<_Ty>((_Ctraits<_Ty>::sqrt(_Ty{1} + _Sv * _Sv)) * _Bv / _Dv, _Tv / _Dv);
     }
 
-    return complex<_Ty>((_Ctraits<_Ty>::sqrt(_Ty{1} + _Sv * _Sv)) * _Bv / _Dv, _Tv / _Dv);
+    _Ty _Real = _Sv < _Ty ? -_Ty{1} : _Ty{0};
+    return complex<_Ty>(_Real, _Tv * _Ty{0});
 }
 
 // FUNCTION TEMPLATE arg
