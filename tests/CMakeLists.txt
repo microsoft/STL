@@ -4,7 +4,7 @@ set(STL_TEST_UTILS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/utils" CACHE PATH
     "Location of the stl test utilities")
 set(STL_BUILD_ROOT "${msvc_standard_libraries_BINARY_DIR}/out" CACHE PATH
     "Location of the output of the STL build")
-set(STL_HEADERS_DIR "${msvc_standard_libraries_BINARY_DIR}/inc" CACHE PATH
+set(STL_HEADERS_DIR "${STL_BUILD_ROOT}/inc" CACHE PATH
     "Location of the STL headers")
 set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
     "Location of the llvm-project source tree")

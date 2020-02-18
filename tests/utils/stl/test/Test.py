@@ -51,7 +51,7 @@ class StlTest(Test):
         flags.extend(envlst_entry.getEnvVal('PM_CL', '').split())
         link_flags.extend(envlst_entry.getEnvVal('PM_LINK', '').split())
 
-        if ('clang' in os.path.basename(cxx) and
+        if ('clang'.casefold() in os.path.basename(cxx).casefold() and
                 self.config.target_arch.casefold() ==
                 'x64'.casefold()):
             compile_flags.append('-m64')

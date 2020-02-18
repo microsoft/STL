@@ -6,6 +6,7 @@
 #
 #===----------------------------------------------------------------------===##
 
+import os
 import re
 
 import stl.util
@@ -19,14 +20,20 @@ class CXXCompiler(object):
 
     # A list of (re, str) two-tuples which are used to translate flags in the
     # order inserted into the list
-    _flag_translation_table = [(re.compile("^-"), "/")]
+    _msvc_flag_translation_table = [(re.compile("^-"), "/")]
 
     def __init__(self, path, flags=None, compile_flags=None,
                  link_flags=None, compile_env=None):
-        self.compile_flags = list(compile_flags or [])
-        self.flags = list(CXXCompiler._normalize_flags(flags) or [])
-        self.link_flags = list(CXXCompiler._normalize_flags(link_flags) or [])
         self.path = path
+        if path:
+            self.name = os.path.basename(path).split('.')[0]
+        else:
+            self.name = None
+
+        self.compile_flags = list(compile_flags or [])
+        self.flags = list(CXXCompiler._normalize_flags(self.name, flags) or [])
+        self.link_flags =\
+            list(CXXCompiler._normalize_flags(self.name, link_flags) or [])
 
         if compile_env is not None:
             self.compile_env = dict(compile_env)
@@ -46,6 +53,18 @@ class CXXCompiler(object):
             cmd += ['/c']
             if out is not None:
                 cmd += ['/Fo' + out]
+                if out is os.devnull and\
+                        self.name == 'cl' and\
+                        '/analyze-' not in self.compile_flags and\
+                        '/analyze-' not in self.flags and\
+                        '/analyze-' not in flags:
+                    filename = source_files[0]\
+                               if isinstance(source_files, list)\
+                               else source_files
+                    filename = os.path.basename(filename).rsplit('.', 1)[0] +\
+                        '.nativecodeanalysis.xml'
+
+                    cmd += ['/analyze:log' + filename]
         elif out is not None:
             cmd += ['/Fe' + out]
 
@@ -129,11 +148,14 @@ class CXXCompiler(object):
                     cc_stderr + link_stderr, rc)
 
     @staticmethod
-    def _normalize_flags(flags):
+    def _normalize_flags(name, flags):
+        if name != 'cl':
+            return flags
+
         if flags is None:
             return None
 
-        for regex, rep in CXXCompiler._flag_translation_table:
+        for regex, rep in CXXCompiler._msvc_flag_translation_table:
             flags = map(lambda flag: regex.sub(rep, flag), flags)
 
         return flags
