@@ -16,7 +16,7 @@ configure_lit_site_cfg(
   ${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
   MAIN_CONFIG ${LIBCXX_SOURCE_DIR}/test/lit.cfg)
 
-add_lit_testsuite(check-libcxx
+add_lit_target(check-libcxx
   "Running libcxx std tests"
   ${CMAKE_CURRENT_BINARY_DIR}
   DEPENDS msvc_stl)

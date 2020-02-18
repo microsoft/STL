@@ -14,7 +14,8 @@ import shlex
 from stl.test.executor import LocalExecutor
 from stl.compiler import CXXCompiler
 import stl.util
-import stl.test.skip_list
+import stl.test.file_parsing
+import stl.test.target_info
 
 
 def loadSiteConfig(lit_config, config, param_name, env_name):
@@ -76,9 +77,12 @@ class Configuration(object):
         self.stl_path_env_var = None
         self.stl_src_root = None
         self.target_arch = None
+        self.target_info = stl.test.target_info.WindowsLocalTI(lit_config)
 
         # TODO: Move this into configure like everything else
-        self.config.test_source_root = self.config.libcxx_test_source_root
+        self.config.test_source_root =\
+            getattr(self.config, 'libcxx_test_source_root',
+                    self.config.test_source_root)
 
     def get_lit_conf(self, name, default=None):
         val = self.lit_config.params.get(name, None)
@@ -121,10 +125,14 @@ class Configuration(object):
         self.configure_executor()
         self.configure_expected_failures()
 
-    # TODO: Don't hard-code features
+    # TODO: Don't hard-code features.
+    # TODO: Confirm theses are the only features we need to run the tests we
+    # want.
     def configure_features(self):
         self.config.available_features.add('long_tests')
         self.config.available_features.add('c++2a')
+        self.config.available_features.update(
+                self.target_info.features)
 
     def configure_test_src_root(self):
         test_src_root = self.get_lit_conf('test_source_root', None)
@@ -331,9 +339,10 @@ class Configuration(object):
 
         excludes.update(
             map(lambda x: os.path.join(str(self.skip_list_root), Path(x)),
-                stl.test.skip_list.parse_commented_file(self.skip_list_path)))
+                stl.test.file_parsing.parse_commented_file(
+                    self.skip_list_path)))
 
-        self.config.excludes = excludes
+        self.lit_config.excludes = excludes
 
     def configure_expected_failures_list_location(self):
         expected_failures_list_path = self.get_lit_conf(
@@ -371,10 +380,12 @@ class Configuration(object):
         expected_failures.update(
             map(lambda x: os.path.join(
                 str(self.expected_failures_list_root), Path(x)),
-                stl.test.skip_list.parse_commented_file(
+                stl.test.file_parsing.parse_commented_file(
                     self.expected_failures_list_path)))
 
-        self.config.expected_failures = expected_failures
+        self.lit_config.expected_failures = expected_failures
+        self.config.expected_failures =\
+            getattr(self.config, 'expected_failures', set())
 
     # TODO: Have configuring the compiler have the same flow as everything
     # else.

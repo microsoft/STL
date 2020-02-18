@@ -1,11 +1,13 @@
 from collections import namedtuple
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, FrozenSet, List, Optional, Set, TextIO, Tuple
+from typing import Dict, FrozenSet, List, Optional, Set, Tuple, Union
 import itertools
+import os
 import re
 
 _envlst_cache = dict()
+_preprocessed_file_cache = dict()
 
 
 @dataclass
@@ -26,6 +28,8 @@ class EnvEntry:
         if key not in self._env_keys:
             return default
 
+        # TODO: All of this is to avoid having to install frozendict.
+        # Reconsider this at a future date.
         return self._env_vals[self._env_keys.index(key)]
 
     def hasTag(self, tag: str) -> bool:
@@ -43,14 +47,13 @@ class _ParseCtx:
 
 
 _ENV_REGEX = re.compile(r"((?P<tags>(?:\w+,?)+)\t+)?(?P<env_vars_part>.+$)")
-_COMMENT_REGEX = re.compile(r"#.*$")
+_COMMENT_REGEX = re.compile(r"#.*", re.DOTALL)
 _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
 _CROSSLIST_REGEX = re.compile(r"^RUNALL_CROSSLIST$")
 
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
-    line = _COMMENT_REGEX.sub("", line)
     m = _ENV_REGEX.match(line)
     if m is not None:
         result = _TmpEnvEntry()
@@ -83,12 +86,11 @@ def _do_crosslist(ctx: _ParseCtx):
                              itertools.product(*ctx.result))
 
 
-def _parse_env_lst(env_list: TextIO, base_path: Path, ctx: _ParseCtx):
-    for line in env_list.readlines():
+def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
+    for line in parse_commented_file(env_lst):
         if (m:=_INCLUDE_REGEX.match(line)) is not None:
-            p = base_path / Path(m.group("filename"))
-            with p.open() as f:
-                _parse_env_lst(f, p.parent, ctx)
+            p = env_lst.parent / Path(m.group("filename"))
+            _parse_env_lst(p, ctx)
         elif _CROSSLIST_REGEX.match(line) is not None:
             ctx.result.append(ctx.current)
             ctx.current = []
@@ -100,14 +102,32 @@ def _parse_env_lst(env_list: TextIO, base_path: Path, ctx: _ParseCtx):
     return _do_crosslist(ctx)
 
 
-def parse_env_lst_file(env_list: str) -> Tuple[EnvEntry, ...]:
-    if env_list in _envlst_cache:
-        return _envlst_cache[env_list]
+def parse_commented_file(filename: Union[str, bytes, os.PathLike])\
+        -> List[str]:
+    if str(filename) in _preprocessed_file_cache:
+        return _preprocessed_file_cache[str(filename)]
+
+    filename_path = Path(filename)
+    result = list()
+    with filename_path.open() as f:
+        for line in f.readlines():
+            line = _COMMENT_REGEX.sub("", line)
+            if line is not None:
+                result.append(line.strip())
+
+        _preprocessed_file_cache[str(filename)] = result
+        return result
+
+
+def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike])\
+        -> Tuple[EnvEntry, ...]:
+    if str(env_list) in _envlst_cache:
+        return _envlst_cache[str(env_list)]
 
     env_list_path = Path(env_list)
     ctx = _ParseCtx()
-    with Path(env_list).open() as f:
+    with env_list_path.open() as f:
         res = tuple(map(EnvEntry,
-                        _parse_env_lst(f, env_list_path.parent, ctx)))
+                        _parse_env_lst(env_list_path, ctx)))
         _envlst_cache[env_list] = res
         return res

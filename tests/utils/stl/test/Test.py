@@ -11,13 +11,13 @@ _compiler_path_cache = dict()
 class StlTest(Test):
     def __init__(self, suite, path_in_suite, lit_config, test_config,
                  envlst_entry, env_num, default_cxx, file_path=None):
-        Test.__init__(self, suite, path_in_suite, test_config, file_path)
         self.env_num = env_num
-        self.envlst_entry = envlst_entry
-        self.lit_config = lit_config
-        self._configure_cxx(default_cxx)
+        Test.__init__(self, suite, path_in_suite, test_config, file_path)
+        self._configure_cxx(lit_config, envlst_entry, default_cxx)
 
         if self.getSourcePath() in test_config.expected_failures:
+            self.xfails = ['*']
+        elif self.getSourcePath() in lit_config.expected_failures:
             self.xfails = ['*']
 
     def getExecPath(self):
@@ -26,8 +26,8 @@ class StlTest(Test):
     def getFullName(self):
         return '.'.join((Test.getFullName(self), str(self.env_num)))
 
-    def _configure_cxx(self, default_cxx):
-        env_compiler = self.envlst_entry.getEnvVal('PM_COMPILER', 'cl')
+    def _configure_cxx(self, lit_config, envlst_entry, default_cxx):
+        env_compiler = envlst_entry.getEnvVal('PM_COMPILER', 'cl')
 
         if not os.path.isfile(env_compiler):
             cxx = _compiler_path_cache.get(env_compiler, None)
@@ -38,7 +38,7 @@ class StlTest(Test):
                 _compiler_path_cache[env_compiler] = cxx
 
         if not cxx:
-            self.lit_config.fatal('Could not find: %r' % env_compiler)
+            lit_config.fatal('Could not find: %r' % env_compiler)
 
         flags = list()
         compile_flags = list()
@@ -48,12 +48,12 @@ class StlTest(Test):
         compile_flags.extend(default_cxx.compile_flags or [])
         link_flags.extend(default_cxx.link_flags or [])
 
-        flags.extend(self.envlst_entry.getEnvVal('PM_CL', '').split())
-        link_flags.extend(self.envlst_entry.getEnvVal('PM_LINK', '').split())
+        flags.extend(envlst_entry.getEnvVal('PM_CL', '').split())
+        link_flags.extend(envlst_entry.getEnvVal('PM_LINK', '').split())
 
         if ('clang' in os.path.basename(cxx) and
                 self.config.target_arch.casefold() ==
-                'AMD64'.casefold()):
+                'x64'.casefold()):
             compile_flags.append('-m64')
 
         self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags)

@@ -15,7 +15,7 @@ import time
 import lit.Test        # pylint: disable=import-error
 import lit.TestRunner  # pylint: disable=import-error
 
-import stl.test.envlst
+import stl.test.file_parsing
 import stl.test.Test
 import stl.util
 
@@ -40,17 +40,16 @@ class StlTestFormat(object):
         for filename in os.listdir(source_path):
             # Ignore dot files and excluded tests.
             filepath = os.path.join(source_path, filename)
-            if filename.startswith('.') or filepath in localConfig.excludes:
+            if filename.startswith('.') or filepath in litConfig.excludes:
                 continue
 
             if not os.path.isdir(filepath):
                 if any([filename.endswith(ext)
                         for ext in localConfig.suffixes]):
                     for env_entry, env_num\
-                            in zip(stl.test.envlst.parse_env_lst_file(
+                            in zip(stl.test.file_parsing.parse_env_lst_file(
                             localConfig.envlst_path), itertools.count()):
-                        # TODO: Get rid of this copy the excludes dict is
-                        # massive
+                        # TODO: Get rid of this copy
                         test_config = copy.deepcopy(localConfig)
                         test_path_in_suite = path_in_suite + (filename,)
 
