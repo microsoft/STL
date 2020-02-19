@@ -265,8 +265,6 @@ constexpr bool test() {
 
         FunctionTakingSpan<int>({arr, 3});
         FunctionTakingSpan<int>({begin(arr), 3});
-        FunctionTakingSpan<int, 3>({arr, 3});
-        FunctionTakingSpan<int, 3>({begin(arr), 3});
         FunctionTakingSpan<const int>({arr, 3});
         FunctionTakingSpan<const int>({begin(arr), 3});
         FunctionTakingSpan<const int>({as_const(arr), 3});
@@ -318,7 +316,6 @@ constexpr bool test() {
         assert(sp_const_y.size() == 3);
 
         FunctionTakingSpan<int>({stl.begin(), 3});
-        FunctionTakingSpan<int, 3>({stl.begin(), 3});
         FunctionTakingSpan<const int>({stl.begin(), 3});
         FunctionTakingSpan<const int>({stl.cbegin(), 3});
 
@@ -375,7 +372,6 @@ constexpr bool test() {
         assert(sp_const_d.size() == 3);
 
         FunctionTakingSpan<int>({begin(arr), end(arr)});
-        FunctionTakingSpan<int, 3>({begin(arr), end(arr)});
         FunctionTakingSpan<const int>({begin(arr), end(arr)});
         FunctionTakingSpan<const int>({begin(arr), cend(arr)});
         FunctionTakingSpan<const int>({cbegin(arr), end(arr)});
@@ -403,7 +399,6 @@ constexpr bool test() {
         assert(sp_three_b.size() == 3);
 
         FunctionTakingSpan<int>({begin(arr), cend(arr)});
-        FunctionTakingSpan<int, 3>({begin(arr), cend(arr)});
 
         static_assert(is_same_v<decltype(span{begin(arr), cend(arr)}), span<int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), end(arr)}), span<const int>>);
@@ -591,21 +586,31 @@ constexpr bool test() {
 
     {
         static_assert(is_constructible_v<span<int>, ContiguousSizedRange&>);
-        static_assert(!is_constructible_v<span<int, 3>, ContiguousSizedRange&>);
+        static_assert(is_constructible_v<span<int, 3>, ContiguousSizedRange&>);
 
         static_assert(!is_constructible_v<span<int>, NonRange&>);
+        static_assert(!is_constructible_v<span<int, 3>, NonRange&>);
 
         static_assert(!is_constructible_v<span<int>, const ContiguousSizedRange&>);
+        static_assert(!is_constructible_v<span<int, 3>, const ContiguousSizedRange&>);
         static_assert(is_constructible_v<span<const int>, ContiguousSizedRange&>);
+        static_assert(is_constructible_v<span<const int, 3>, ContiguousSizedRange&>);
         static_assert(is_constructible_v<span<const int>, const ContiguousSizedRange&>);
+        static_assert(is_constructible_v<span<const int, 3>, const ContiguousSizedRange&>);
         static_assert(!is_constructible_v<span<double>, ContiguousSizedRange&>);
+        static_assert(!is_constructible_v<span<double, 3>, ContiguousSizedRange&>);
 
         static_assert(is_convertible_v<ContiguousSizedRange&, span<int>>);
+        static_assert(is_convertible_v<ContiguousSizedRange&, span<int, 3>>);
         static_assert(is_convertible_v<ContiguousSizedRange&, span<const int>>);
+        static_assert(is_convertible_v<ContiguousSizedRange&, span<const int, 3>>);
         static_assert(is_convertible_v<const ContiguousSizedRange&, span<const int>>);
+        static_assert(is_convertible_v<const ContiguousSizedRange&, span<const int, 3>>);
 
         static_assert(is_constructible_v<span<Base>, BasicRange<Base>&>);
+        static_assert(is_constructible_v<span<Base, 3>, BasicRange<Base>&>);
         static_assert(!is_constructible_v<span<Base>, BasicRange<Derived>&>);
+        static_assert(!is_constructible_v<span<Base, 3>, BasicRange<Derived>&>);
 
         ContiguousSizedRange user_range;
 
@@ -613,13 +618,23 @@ constexpr bool test() {
         span<const int> sp_2(user_range);
         span<const int> sp_3(as_const(user_range));
 
+        span<int, 3> sp_4(user_range);
+        span<const int, 3> sp_5(user_range);
+        span<const int, 3> sp_6(as_const(user_range));
+
         assert(sp_1.data() == user_range.data());
         assert(sp_2.data() == user_range.data());
         assert(sp_3.data() == user_range.data());
+        assert(sp_4.data() == user_range.data());
+        assert(sp_5.data() == user_range.data());
+        assert(sp_6.data() == user_range.data());
 
         assert(sp_1.size() == 3);
         assert(sp_2.size() == 3);
         assert(sp_3.size() == 3);
+        assert(sp_4.size() == 3);
+        assert(sp_5.size() == 3);
+        assert(sp_6.size() == 3);
 
         FunctionTakingSpan<int>(user_range);
         FunctionTakingSpan<const int>(user_range);
@@ -627,22 +642,33 @@ constexpr bool test() {
 
 #ifdef __cpp_lib_concepts
         static_assert(!is_constructible_v<span<int>, ContiguousSizedRange>);
+        static_assert(!is_constructible_v<span<int, 3>, ContiguousSizedRange>);
         static_assert(is_constructible_v<span<int>, SafeContiguousSizedRange>);
+        static_assert(is_constructible_v<span<int, 3>, SafeContiguousSizedRange>);
         static_assert(is_constructible_v<span<const int>, ContiguousSizedRange>);
+        static_assert(is_constructible_v<span<const int, 3>, ContiguousSizedRange>);
 
         static_assert(is_convertible_v<SafeContiguousSizedRange, span<int>>);
+        static_assert(is_convertible_v<SafeContiguousSizedRange, span<int, 3>>);
         static_assert(is_convertible_v<ContiguousSizedRange, span<const int>>);
+        static_assert(is_convertible_v<ContiguousSizedRange, span<const int, 3>>);
 
         SafeContiguousSizedRange safe_user_range;
 
-        span<int> sp_4(move(safe_user_range));
-        span<const int> sp_5(move(user_range));
+        span<int> sp_7(move(safe_user_range));
+        span<int, 3> sp_8(move(safe_user_range));
+        span<const int> sp_9(move(user_range));
+        span<const int, 3> sp_10(move(user_range));
 
-        assert(sp_4.data() == safe_user_range.data());
-        assert(sp_5.data() == user_range.data());
+        assert(sp_7.data() == safe_user_range.data());
+        assert(sp_8.data() == safe_user_range.data());
+        assert(sp_9.data() == user_range.data());
+        assert(sp_10.data() == user_range.data());
 
-        assert(sp_4.size() == 3);
-        assert(sp_5.size() == 3);
+        assert(sp_7.size() == 3);
+        assert(sp_8.size() == 3);
+        assert(sp_9.size() == 3);
+        assert(sp_10.size() == 3);
 
         FunctionTakingSpan<int>(move(safe_user_range));
         FunctionTakingSpan<const int>(move(user_range));
@@ -761,13 +787,10 @@ constexpr bool test() {
 
         FunctionTakingSpan<int>(orig_dyn);
         FunctionTakingSpan<int>(orig_three);
-        FunctionTakingSpan<int, 3>(orig_three);
         FunctionTakingSpan<const int>(orig_dyn);
         FunctionTakingSpan<const int>(orig_three);
         FunctionTakingSpan<const int>(orig_const_dyn);
         FunctionTakingSpan<const int>(orig_const_three);
-        FunctionTakingSpan<const int, 3>(orig_three);
-        FunctionTakingSpan<const int, 3>(orig_const_three);
 
         static_assert(is_same_v<decltype(span{orig_dyn}), span<int>>);
         static_assert(is_same_v<decltype(span{orig_three}), span<int, 3>>);

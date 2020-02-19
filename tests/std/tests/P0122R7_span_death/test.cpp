@@ -7,6 +7,7 @@
 #include <span>
 #include <stddef.h>
 #include <test_death.hpp>
+#include <vector>
 using namespace std;
 
 int globalArray[5]{10, 20, 30, 40, 50};
@@ -174,14 +175,27 @@ void test_case_algorithm_incompatible_transposed() {
 }
 
 void test_case_constructor_first_count_incompatible_extent() {
-    span<int, 3> sp(begin(globalArray), size(globalArray)); // span construction from invalid range as count != extent
+    span<int, 3> sp(begin(globalArray),
+        size(globalArray)); // Cannot construct span with static extent from range (first, count) as count != extent
     (void) sp;
 }
 
 void test_case_constructor_first_last_incompatible_extent() {
-    span<int, 3> sp(
-        begin(globalArray), end(globalArray)); // span construction from invalid range as last - first != extent
+    span<int, 3> sp(begin(globalArray), end(globalArray)); // Cannot construct span with static extent from range
+                                                           // (first, last) as last - first != extent
     (void) sp;
+}
+
+void test_case_constructor_range_incompatible_extent() {
+    vector<int> v(begin(globalArray), end(globalArray));
+    span<int, 3> sp(v); // Cannot construct span with static extent from range r as std::ranges::size(r) != extent
+    (void) sp;
+}
+
+void test_case_constructor_span_incompatible_extent() {
+    span<int, 5> sp(begin(globalArray), end(globalArray));
+    span<int, 3> sp2(sp); // Cannot construct span with static extent from other span s as s.size() != extent
+    (void) sp2;
 }
 
 void test_case_first_excessive_compiletime_count() {
@@ -321,6 +335,8 @@ int main(int argc, char* argv[]) {
     exec.add_death_tests({
         test_case_constructor_first_count_incompatible_extent,
         test_case_constructor_first_last_incompatible_extent,
+        test_case_constructor_range_incompatible_extent,
+        test_case_constructor_span_incompatible_extent,
         test_case_first_excessive_compiletime_count,
         test_case_first_excessive_runtime_count_dynamic_extent,
         test_case_first_excessive_runtime_count_static_extent,
