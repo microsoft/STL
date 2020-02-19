@@ -57,7 +57,6 @@ class complex<long double>;
 template <class _Ty>
 class _Ctraits {
 public:
-
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
         return static_cast<_Ty>(_CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
@@ -314,7 +313,7 @@ public:
             if (_Left < _Bounds) {
                 _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
             } else {
-                _Ans = log(_Left) + _Ln2; // _Left big, compute log(_Left+_Left)                       
+                _Ans = log(_Left) + _Ln2; // _Left big, compute log(_Left+_Left)
             }
 
             return _Neg ? -_Ans : _Ans;
@@ -1217,7 +1216,7 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
 template <class _Ty>
 _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
     constexpr _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(numeric_limits<_Ty>::max);
-    constexpr _Ty _Pi = static_cast<_Ty>(3.1415926535897932384626433832795029L);
+    constexpr _Ty _Pi     = static_cast<_Ty>(3.1415926535897932384626433832795029L);
     constexpr _Ty _Pi_75  = static_cast<_Ty>(0.75) * _Pi;
     constexpr _Ty _Pi_50  = static_cast<_Ty>(0.50) * _Pi;
     constexpr _Ty _Pi_25  = static_cast<_Ty>(0.25) * _Pi;
@@ -1281,7 +1280,7 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
         }
 
         bool _Neg = _Im < 0;
-        _Im = abs(_Im);
+        _Im       = abs(_Im);
 
         _Vx = 2 * _Ctraits<_Ty>::atan2(imag(sqrt(complex<_Ty>(_Re - 1, _Im))), _Zr);
 
@@ -1374,7 +1373,7 @@ template <class _Ty>
 _NODISCARD complex<_Ty> atanh(const complex<_Ty>& _Left) {
     constexpr _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(numeric_limits<_Ty>::max);
     constexpr _Ty _Piby2  = static_cast<_Ty>(1.5707963267948966192313216916397514L);
-    
+
     _Ty _Re = real(_Left);
     _Ty _Im = imag(_Left);
     _Ty _Ux;
@@ -1605,7 +1604,7 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
         } else {
             return complex<_Ty>(imag(_Left) / (2 * _Rho), _Rho);
         }
-    } else {        
+    } else {
         return complex<_Ty>(_Rho, _Rho); // argument is zero, INF, or NaN
     }
 }
