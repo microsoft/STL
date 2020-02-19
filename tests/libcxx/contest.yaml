@@ -6,6 +6,7 @@
   skipped-test-lists-relative-to-tests-root: true
   skipped-test-directories:
     - 'experimental'
+    - 'pstl'
   skipped-test-file-names:
     - 'nothing_to_do.pass.cpp'
   skipped-tests-comment-list-files:

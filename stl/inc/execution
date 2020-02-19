@@ -2749,15 +2749,13 @@ struct _Sort_operation { // context for background threads
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order [_First, _Last), using _Pred
-    using _Diff = _Iter_diff_t<_RanIt>;
     _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const _Diff _Ideal = _ULast - _UFirst;
+    const auto _UFirst                = _Get_unwrapped(_First);
+    const auto _ULast                 = _Get_unwrapped(_Last);
+    const _Iter_diff_t<_RanIt> _Ideal = _ULast - _UFirst;
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        constexpr auto _Diffsort_max = static_cast<_Diff>(_ISORT_MAX);
         size_t _Threads;
-        if (_Ideal > _Diffsort_max && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
+        if (_Ideal > _ISORT_MAX && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
             // parallelize when input is large enough and we aren't on a uniprocessor machine
             _TRY_BEGIN
             _Sort_operation _Operation(_UFirst, _Pass_fn(_Pred), _Threads, _Ideal); // throws
@@ -3014,10 +3012,7 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
-        }
-
+        _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
         return;
     }
 
@@ -3309,7 +3304,7 @@ struct _Static_partitioned_is_heap_until {
 
         const auto _Initial = _Max_value(_Chunk_offset, _Diff{1});
         for (_Diff _Off = _Initial; _Off < _Last; ++_Off) {
-            if (_DEBUG_LT_PRED(_Pred, _Range_first[(_Off - 1) >> 1], _Range_first[_Off])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_Range_first + ((_Off - 1) >> 1)), *(_Range_first + _Off))) {
                 _Results._Imbue(_Key._Chunk_number, _Range_first + _Off);
                 return _Cancellation_status::_Canceled;
             }
@@ -3751,7 +3746,7 @@ void _Place_elements_from_indices(
     const auto _Last_index = _Indices_first + _Num_results;
     for (; _Indices_first != _Last_index; ++_Indices_first) {
         const auto _Curr_index = *_Indices_first;
-        *_Dest                 = _First[static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index)];
+        *_Dest                 = *(_First + static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index));
         ++_Dest;
     }
 }
@@ -3901,10 +3896,10 @@ struct _Set_intersection_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range1_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                     ++_Index_chunk_first;
                     ++_Curr_range1_index;
@@ -3986,12 +3981,12 @@ struct _Set_difference_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range2_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                 ++_Index_chunk_first;
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     ++_Curr_range1_index;
                 }
 

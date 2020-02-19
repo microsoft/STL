@@ -29,8 +29,9 @@ public:
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
     using _Mysize_type   = typename _Mystr::size_type;
 
-    explicit basic_stringbuf(ios_base::openmode _Mode = ios_base::in | ios_base::out)
-        : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al() {}
+    basic_stringbuf() : _Seekhigh(nullptr), _Mystate(_Getstate(ios_base::in | ios_base::out)), _Al() {}
+
+    explicit basic_stringbuf(ios_base::openmode _Mode) : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al() {}
 
     explicit basic_stringbuf(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Al(_Str.get_allocator()) {
@@ -385,7 +386,9 @@ public:
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
 
-    explicit basic_istringstream(ios_base::openmode _Mode = ios_base::in)
+    basic_istringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in) {}
+
+    explicit basic_istringstream(ios_base::openmode _Mode)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode | ios_base::in) {}
 
     explicit basic_istringstream(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::in)
@@ -449,7 +452,9 @@ public:
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
 
-    explicit basic_ostringstream(ios_base::openmode _Mode = ios_base::out)
+    basic_ostringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::out) {}
+
+    explicit basic_ostringstream(ios_base::openmode _Mode)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode | ios_base::out) {}
 
     explicit basic_ostringstream(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::out)
@@ -519,7 +524,9 @@ public:
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
 
-    explicit basic_stringstream(ios_base::openmode _Mode = ios_base::in | ios_base::out)
+    basic_stringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in | ios_base::out) {}
+
+    explicit basic_stringstream(ios_base::openmode _Mode)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode) {}
 
     explicit basic_stringstream(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)

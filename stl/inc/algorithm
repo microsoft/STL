@@ -27,7 +27,7 @@ _END_EXTERN_C
 
 _STD_BEGIN
 // COMMON SORT PARAMETERS
-const int _ISORT_MAX = 32; // maximum size for insertion sort
+_INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 // STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
@@ -45,7 +45,9 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
         const auto _Attempt = _Temporary_buffer_size(_Requested_size);
-        if (_Requested_size <= _Optimistic_count) { // unconditionally engage stack space
+        // Since _Diff is a count of elements in a forward range, and forward iterators must denote objects in memory,
+        // it must fit in a size_t.
+        if (static_cast<size_t>(_Requested_size) <= _Optimistic_count) { // unconditionally engage stack space
             _Data     = reinterpret_cast<_Ty*>(&_Stack_space[0]);
             _Capacity = static_cast<ptrdiff_t>(_Requested_size); // in bounds due to if condition
             return;
@@ -80,7 +82,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
 // FUNCTION TEMPLATE for_each
 template <class _InIt, class _Fn>
-_Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
+_CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -97,7 +99,7 @@ void for_each(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept; /
 
 // FUNCTION TEMPLATE for_each_n
 template <class _InIt, class _Diff, class _Fn>
-_InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
+_CONSTEXPR20 _InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
     // perform function for each element [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
@@ -119,7 +121,7 @@ _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noe
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InTy, size_t _InSize, class _Diff, class _Fn>
-_InTy* for_each_n(_InTy (&_First)[_InSize], const _Diff _Count_raw, _Fn _Func) {
+_CONSTEXPR20 _InTy* for_each_n(_InTy (&_First)[_InSize], const _Diff _Count_raw, _Fn _Func) {
     // perform function for each element [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     _STL_VERIFY_ARRAY_SIZE(_First, _Count);
@@ -146,7 +148,8 @@ _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr 
 
 // FUNCTION TEMPLATE find_if_not
 template <class _InIt, class _Pr>
-_NODISCARD _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _Pred) { // find first element that satisfies !_Pred
+_NODISCARD _CONSTEXPR20 _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _Pred) {
+    // find first element that satisfies !_Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -167,7 +170,7 @@ _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _P
 
 // FUNCTION TEMPLATE adjacent_find
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find first satisfying _Pred with successor
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
@@ -186,7 +189,7 @@ _NODISCARD _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
 }
 
 template <class _FwdIt>
-_NODISCARD _FwdIt adjacent_find(const _FwdIt _First, const _FwdIt _Last) { // find first matching successor
+_NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, const _FwdIt _Last) { // find first matching successor
     return _STD adjacent_find(_First, _Last, equal_to<>());
 }
 
@@ -203,7 +206,8 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 
 // FUNCTION TEMPLATE count_if
 template <class _InIt, class _Pr>
-_NODISCARD _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) { // count elements satisfying _Pred
+_NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) {
+    // count elements satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst               = _Get_unwrapped(_First);
     const auto _ULast          = _Get_unwrapped(_Last);
@@ -225,7 +229,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(
 
 // FUNCTION TEMPLATE mismatch
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
     _Adl_verify_range(_First1, _Last1);
     auto _UFirst1      = _Get_unwrapped(_First1);
@@ -243,8 +247,9 @@ _NODISCARD pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _I
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _Pr, enable_if_t<!is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD pair<_InIt1, _RightTy*> mismatch(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _Pr _Pred) { // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
+_NODISCARD _CONSTEXPR20 pair<_InIt1, _RightTy*> mismatch(
+    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
+    // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
     const auto _Result =
         _STD mismatch(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
     return {_Result.first, _Result.second._Unwrapped()};
@@ -270,14 +275,14 @@ _NODISCARD pair<_FwdIt1, _RightTy*> mismatch(_ExPo&& _Exec, const _FwdIt1 _First
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2>
-_NODISCARD pair<_InIt1, _InIt2> mismatch(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
+_NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
     // return [_First1, _Last1)/[_First2, ...) mismatch
     return _STD mismatch(_First1, _Last1, _First2, equal_to<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize>
-_NODISCARD pair<_InIt1, _RightTy*> mismatch(
+_NODISCARD _CONSTEXPR20 pair<_InIt1, _RightTy*> mismatch(
     const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
     // return [_First1, _Last1)/[_First2, ...) mismatch, array source
     return _STD mismatch(_First1, _Last1, _First2, equal_to<>());
@@ -307,7 +312,8 @@ _NODISCARD pair<_FwdIt1, _RightTy*> mismatch(_ExPo&& _Exec, const _FwdIt1 _First
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -380,7 +386,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2>
-_NODISCARD pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+_NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
     return _STD mismatch(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
@@ -398,7 +404,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 // FUNCTION TEMPLATE all_of
 template <class _InIt, class _Pr>
-_NODISCARD bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
+_NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -418,7 +424,8 @@ _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
 
 // FUNCTION TEMPLATE any_of
 template <class _InIt, class _Pr>
-_NODISCARD bool any_of(const _InIt _First, const _InIt _Last, _Pr _Pred) { // test if any element satisfies _Pred
+_NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
+    // test if any element satisfies _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -438,7 +445,8 @@ _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pr
 
 // FUNCTION TEMPLATE none_of
 template <class _InIt, class _Pr>
-_NODISCARD bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) { // test if no elements satisfy _Pred
+_NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
+    // test if no elements satisfy _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -458,7 +466,7 @@ _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _P
 
 // FUNCTION TEMPLATE copy_if
 template <class _InIt, class _OutIt, class _Pr>
-_OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
+_CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -476,7 +484,7 @@ _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy eac
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
+_CONSTEXPR20 _DestTy* copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // copy each satisfying _Pred, array dest
     return _STD copy_if(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))._Unwrapped();
 }
@@ -507,7 +515,8 @@ _DestTy* copy_if(
 
 // FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
-pair<_OutIt1, _OutIt2> partition_copy(_InIt _First, _InIt _Last, _OutIt1 _Dest_true, _OutIt2 _Dest_false, _Pr _Pred) {
+_CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
+    _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _OutIt2 _Dest_false, _Pr _Pred) {
     // copy true partition to _Dest_true, false to _Dest_false
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -531,15 +540,16 @@ pair<_OutIt1, _OutIt2> partition_copy(_InIt _First, _InIt _Last, _OutIt1 _Dest_t
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTrueTy, size_t _DestTrueSize, class _OutIt2, class _Pr>
-pair<_DestTrueTy*, _OutIt2> partition_copy(_InIt _First, _InIt _Last, _DestTrueTy (&_Dest_true)[_DestTrueSize],
-    _OutIt2 _Dest_false, _Pr _Pred) { // copy true partition to _Dest_true, false to _Dest_false, array dest
+_CONSTEXPR20 pair<_DestTrueTy*, _OutIt2> partition_copy(
+    _InIt _First, _InIt _Last, _DestTrueTy (&_Dest_true)[_DestTrueSize], _OutIt2 _Dest_false, _Pr _Pred) {
+    // copy true partition to _Dest_true, false to _Dest_false, array dest
     const auto _Result = _STD partition_copy(
         _First, _Last, _Array_iterator<_DestTrueTy, _DestTrueSize>(_Dest_true), _Dest_false, _Pass_fn(_Pred));
     return {_Result.first._Unwrapped(), _Result.second};
 }
 
 template <class _InIt, class _OutIt1, class _DestFalseTy, size_t _DestFalseSize, class _Pr>
-pair<_OutIt1, _DestFalseTy*> partition_copy(
+_CONSTEXPR20 pair<_OutIt1, _DestFalseTy*> partition_copy(
     _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) {
     // copy true partition to _Dest_true, false to _Dest_false, array dest
     const auto _Result = _STD partition_copy(
@@ -548,8 +558,8 @@ pair<_OutIt1, _DestFalseTy*> partition_copy(
 }
 
 template <class _InIt, class _DestTrueTy, size_t _DestTrueSize, class _DestFalseTy, size_t _DestFalseSize, class _Pr>
-pair<_DestTrueTy*, _DestFalseTy*> partition_copy(_InIt _First, _InIt _Last, _DestTrueTy (&_Dest_true)[_DestTrueSize],
-    _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) {
+_CONSTEXPR20 pair<_DestTrueTy*, _DestFalseTy*> partition_copy(_InIt _First, _InIt _Last,
+    _DestTrueTy (&_Dest_true)[_DestTrueSize], _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) {
     // copy true partition to _Dest_true, false to _Dest_false, array dest
     const auto _Result = _STD partition_copy(_First, _Last, _Array_iterator<_DestTrueTy, _DestTrueSize>(_Dest_true),
         _Array_iterator<_DestFalseTy, _DestFalseSize>(_Dest_false), _Pass_fn(_Pred));
@@ -607,7 +617,7 @@ pair<_DestTrueTy*, _DestFalseTy*> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt
 
 // FUNCTION TEMPLATE is_partitioned
 template <class _InIt, class _Pr>
-_NODISCARD bool is_partitioned(const _InIt _First, const _InIt _Last, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if [_First, _Last) partitioned by _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -639,7 +649,7 @@ _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last,
 
 // FUNCTION TEMPLATE partition_point
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find beginning of false partition in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -665,22 +675,27 @@ _NODISCARD _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
 // FUNCTION TEMPLATE _Equal_rev_pred_unchecked
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2) using _Pred
     if constexpr (decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
-        const auto _First1_ch = reinterpret_cast<const char*>(_First1);
-        const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-        const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
-        return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-    } else {
-        for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
-            if (!_Pred(*_First1, *_First2)) {
-                return false;
-            }
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            const auto _First1_ch = reinterpret_cast<const char*>(_First1);
+            const auto _First2_ch = reinterpret_cast<const char*>(_First2);
+            const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
+            return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }
-
-        return true;
     }
+
+    for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
+        if (!_Pred(*_First1, *_First2)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
 template <class _InIt1, class _InIt2, class _Pr>
@@ -714,7 +729,7 @@ bool _Equal_rev_pred_unchecked(const _InIt1 _First1, const _InIt2 _First2, const
 // FUNCTION TEMPLATE search
 #if _HAS_IF_CONSTEXPR
 template <class _FwdItHaystack, class _FwdItPat, class _Pr>
-_NODISCARD _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
+_NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
     const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -814,8 +829,9 @@ _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, _F
 #endif // _HAS_CXX17
 
 template <class _FwdItHaystack, class _FwdItPat>
-_NODISCARD _FwdItHaystack search(const _FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2,
-    const _FwdItPat _Last2) { // find first [_First2, _Last2) match
+_NODISCARD _CONSTEXPR20 _FwdItHaystack search(
+    const _FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2, const _FwdItPat _Last2) {
+    // find first [_First2, _Last2) match
     return _STD search(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
 
@@ -829,7 +845,8 @@ _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, co
 #endif // _HAS_CXX17
 
 template <class _FwdItHaystack, class _Searcher>
-_NODISCARD _FwdItHaystack search(const _FwdItHaystack _First, const _FwdItHaystack _Last, const _Searcher& _Search) {
+_NODISCARD _CONSTEXPR20 _FwdItHaystack search(
+    const _FwdItHaystack _First, const _FwdItHaystack _Last, const _Searcher& _Search) {
     // find _Search's pattern in [_First, _Last)
     return _Search(_First, _Last).first;
 }
@@ -837,7 +854,8 @@ _NODISCARD _FwdItHaystack search(const _FwdItHaystack _First, const _FwdItHaysta
 // FUNCTION TEMPLATE search_n
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Diff, class _Ty, class _Pr>
-_NODISCARD _FwdIt search_n(const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _FwdIt search_n(
+    const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
     // find first _Count * _Val satisfying _Pred
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -861,7 +879,7 @@ _NODISCARD _FwdIt search_n(const _FwdIt _First, _FwdIt _Last, const _Diff _Count
                 _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
                 auto _UMid                   = _UFirst;
 
-                while (_UOld_first != _UFirst && _Pred(_UFirst[-1], _Val)) { // back up over any skipped prefix
+                while (_UOld_first != _UFirst && _Pred(*(_UFirst - 1), _Val)) { // back up over any skipped prefix
                     --_Count1;
                     --_UFirst;
                 }
@@ -942,7 +960,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
             _FwdIt _Mid                  = _First;
 
-            while (_Old_first != _First && _Pred(_First[-1], _Val)) {
+            while (_Old_first != _First && _Pred(*(_First - 1), _Val)) {
                 --_Count1; // back up over any skipped prefix
                 --_First;
             }
@@ -996,8 +1014,8 @@ _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, _FwdIt _Last, con
 #endif // _HAS_CXX17
 
 template <class _FwdIt, class _Diff, class _Ty>
-_NODISCARD _FwdIt search_n(
-    const _FwdIt _First, const _FwdIt _Last, const _Diff _Count, const _Ty& _Val) { // find first _Count * _Val match
+_NODISCARD _CONSTEXPR20 _FwdIt search_n(const _FwdIt _First, const _FwdIt _Last, const _Diff _Count, const _Ty& _Val) {
+    // find first _Count * _Val match
     return _STD search_n(_First, _Last, _Count, _Val, equal_to<>());
 }
 
@@ -1012,8 +1030,9 @@ _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Las
 // FUNCTION TEMPLATE find_end
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _FwdIt1 find_end(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
-    _Pr _Pred) { // find last [_First2, _Last2) satisfying _Pred
+_NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
+    _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
+    // find last [_First2, _Last2) satisfying _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1       = _Get_unwrapped(_First1);
@@ -1182,7 +1201,8 @@ _NODISCARD _FwdIt1 find_end(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2
 #endif // _HAS_IF_CONSTEXPR
 
 template <class _FwdIt1, class _FwdIt2>
-_NODISCARD _FwdIt1 find_end(_FwdIt1 const _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2) {
+_NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
+    _FwdIt1 const _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2) {
     // find last [_First2, _Last2) match
     return _STD find_end(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
@@ -1201,8 +1221,9 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
 
 // FUNCTION TEMPLATE find_first_of
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _FwdIt1 find_first_of(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
-    _Pr _Pred) { // look for one of [_First2, _Last2) satisfying _Pred with element
+_NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
+    _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
+    // look for one of [_First2, _Last2) satisfying _Pred with element
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1       = _Get_unwrapped(_First1);
@@ -1223,7 +1244,7 @@ _NODISCARD _FwdIt1 find_first_of(_FwdIt1 _First1, const _FwdIt1 _Last1, const _F
 }
 
 template <class _FwdIt1, class _FwdIt2>
-_NODISCARD _FwdIt1 find_first_of(const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+_NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) { // look for one of [_First2, _Last2) that matches element
     return _STD find_first_of(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
@@ -1243,7 +1264,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 
 // FUNCTION TEMPLATE swap_ranges
 template <class _FwdIt1, class _FwdIt2>
-_FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+_CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...), no special optimization
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         _STD iter_swap(_First1, _First2);
@@ -1254,15 +1275,26 @@ _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _F
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
 template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
-_Ty* _Swap_ranges_unchecked(_Ty* const _First1, _Ty* const _Last1, _Ty* const _First2) {
+_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
     // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
-    __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
-    return _First2 + (_Last1 - _First1);
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
+        return _First2 + (_Last1 - _First1);
+    }
+
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+        _STD iter_swap(_First1, _First2);
+    }
+
+    return _First2;
 }
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
 
 template <class _FwdIt1, class _FwdIt2>
-_FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+_CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
     const auto _UFirst1 = _Get_unwrapped(_First1);
@@ -1274,7 +1306,7 @@ _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _FwdIt1, class _DestTy, size_t _DestSize>
-_DestTy* swap_ranges(_FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* swap_ranges(_FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[_DestSize]) {
     // swap [_First1, _Last1) with [_Dest, ...), array dest
     return _STD swap_ranges(_First1, _Last1, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
 }
@@ -1300,7 +1332,7 @@ _DestTy* swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[
 
 // FUNCTION TEMPLATE transform
 template <class _InIt, class _OutIt, class _Fn>
-_OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
+_CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1316,7 +1348,7 @@ _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func)
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Fn>
-_DestTy* transform(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Fn _Func) {
+_CONSTEXPR20 _DestTy* transform(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Fn _Func) {
     // transform [_First, _Last) with _Func, array dest
     return _STD transform(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))._Unwrapped();
 }
@@ -1341,7 +1373,8 @@ _DestTy* transform(
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
-_OutIt transform(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _OutIt _Dest, _Fn _Func) {
+_CONSTEXPR20 _OutIt transform(
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _OutIt _Dest, _Fn _Func) {
     // transform [_First1, _Last1) and [_First2, ...) with _Func
     _Adl_verify_range(_First1, _Last1);
     auto _UFirst1      = _Get_unwrapped(_First1);
@@ -1359,21 +1392,24 @@ _OutIt transform(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _RightTy, size_t _RightSize, class _OutIt, class _Fn>
-_OutIt transform(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], const _OutIt _Dest,
-    _Fn _Func) { // transform [_First1, _Last1) and [_First2, ...), array source
+_CONSTEXPR20 _OutIt transform(
+    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], const _OutIt _Dest, _Fn _Func) {
+    // transform [_First1, _Last1) and [_First2, ...), array source
     return _STD transform(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Dest, _Pass_fn(_Func));
 }
 
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Fn>
-_DestTy* transform(const _InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _DestTy (&_Dest)[_DestSize],
-    _Fn _Func) { // transform [_First1, _Last1) and [_First2, ...), array dest
+_CONSTEXPR20 _DestTy* transform(
+    const _InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _DestTy (&_Dest)[_DestSize], _Fn _Func) {
+    // transform [_First1, _Last1) and [_First2, ...), array dest
     return _STD transform(_First1, _Last1, _First2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
         ._Unwrapped();
 }
 
 template <class _InIt1, class _RightTy, size_t _RightSize, class _DestTy, size_t _DestSize, class _Fn>
-_DestTy* transform(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _DestTy (&_Dest)[_DestSize], _Fn _Func) { // transform [_First1, _Last1) and [_First2, ...), array source/dest
+_CONSTEXPR20 _DestTy* transform(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
+    _DestTy (&_Dest)[_DestSize], _Fn _Func) {
+    // transform [_First1, _Last1) and [_First2, ...), array source/dest
     return _STD transform(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2),
         _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
         ._Unwrapped();
@@ -1419,7 +1455,7 @@ _DestTy* transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, _
 
 // FUNCTION TEMPLATE replace
 template <class _FwdIt, class _Ty>
-void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
+_CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
     // replace each matching _Oldval with _Newval
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1439,7 +1475,7 @@ void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& 
 
 // FUNCTION TEMPLATE replace_if
 template <class _FwdIt, class _Pr, class _Ty>
-void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
+_CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
     // replace each satisfying _Pred with _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1458,7 +1494,7 @@ void replace_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred, const _Ty
 
 // FUNCTION TEMPLATE replace_copy
 template <class _InIt, class _OutIt, class _Ty>
-_OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
+_CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1478,7 +1514,8 @@ _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval,
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty>
-_DestTy* replace_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Oldval, const _Ty& _Newval) {
+_CONSTEXPR20 _DestTy* replace_copy(
+    _InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval, array dest
     return _STD replace_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Oldval, _Newval)._Unwrapped();
 }
@@ -1510,7 +1547,7 @@ _DestTy* replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_
 
 // FUNCTION TEMPLATE replace_copy_if
 template <class _InIt, class _OutIt, class _Pr, class _Ty>
-_OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
+_CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
     // copy replacing each satisfying _Pred with _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1530,7 +1567,8 @@ _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Pr, class _Ty>
-_DestTy* replace_copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred, const _Ty& _Val) {
+_CONSTEXPR20 _DestTy* replace_copy_if(
+    _InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred, const _Ty& _Val) {
     // copy replacing each satisfying _Pred with _Val, array dest
     return _STD replace_copy_if(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred), _Val)
         ._Unwrapped();
@@ -1563,7 +1601,7 @@ _DestTy* replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest
 
 // FUNCTION TEMPLATE generate
 template <class _FwdIt, class _Fn>
-void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
+_CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -1583,7 +1621,8 @@ void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
 
 // FUNCTION TEMPLATE generate_n
 template <class _OutIt, class _Diff, class _Fn>
-_OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) { // replace [_Dest, _Dest + _Count) with _Func()
+_CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) {
+    // replace [_Dest, _Dest + _Count) with _Func()
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
@@ -1601,7 +1640,7 @@ _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) { // replace 
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _DestTy, size_t _DestSize, class _Diff, class _Fn>
-_DestTy* generate_n(_DestTy (&_Dest)[_DestSize], const _Diff _Count_raw, _Fn _Func) {
+_CONSTEXPR20 _DestTy* generate_n(_DestTy (&_Dest)[_DestSize], const _Diff _Count_raw, _Fn _Func) {
     // replace [_Dest, _Dest + _Count) with _Func(), array dest
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
@@ -1636,7 +1675,8 @@ _DestTy* generate_n(_ExPo&&, _DestTy (&_Dest)[_DestSize], const _Diff _Count_raw
 
 // FUNCTION TEMPLATE remove_copy
 template <class _InIt, class _OutIt, class _Ty>
-_OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) { // copy omitting each matching _Val
+_CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) {
+    // copy omitting each matching _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -1654,7 +1694,7 @@ _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) { /
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Ty>
-_DestTy* remove_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Val) {
+_CONSTEXPR20 _DestTy* remove_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Val) {
     // copy omitting each matching _Val, array dest
     return _STD remove_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Val)._Unwrapped();
 }
@@ -1685,7 +1725,7 @@ _DestTy* remove_copy(
 
 // FUNCTION TEMPLATE remove_copy_if
 template <class _InIt, class _OutIt, class _Pr>
-_OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy omitting each element satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1704,7 +1744,7 @@ _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* remove_copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
+_CONSTEXPR20 _DestTy* remove_copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // copy omitting each element satisfying _Pred, array dest
     return _STD remove_copy_if(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))._Unwrapped();
 }
@@ -1746,7 +1786,8 @@ _NODISCARD _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _P
 
 // FUNCTION TEMPLATE unique
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // remove each satisfying _Pred with previous
+_NODISCARD _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+    // remove each satisfying _Pred with previous
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -1770,7 +1811,7 @@ _NODISCARD _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // remove eac
 }
 
 template <class _FwdIt>
-_NODISCARD _FwdIt unique(_FwdIt _First, _FwdIt _Last) { // remove each matching previous
+_NODISCARD _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last) { // remove each matching previous
     return _STD unique(_First, _Last, equal_to<>());
 }
 
@@ -1804,7 +1845,8 @@ _INLINE_VAR constexpr bool _Can_reread_dest =
 // clang-format on
 
 template <class _InIt, class _OutIt, class _Pr>
-_OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy compressing pairs that match
+_CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
+    // copy compressing pairs that match
     _Adl_verify_range(_First, _Last);
 
     auto _UFirst      = _Get_unwrapped(_First);
@@ -1937,20 +1979,20 @@ _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* unique_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
+_CONSTEXPR20 _DestTy* unique_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // copy compressing pairs that match, array dest
     return _STD unique_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))._Unwrapped();
 }
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt>
-_OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy compressing pairs that match
+_CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy compressing pairs that match
     return _STD unique_copy(_First, _Last, _Dest, equal_to<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt, class _DestTy, size_t _DestSize>
-_DestTy* unique_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* unique_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
     // copy compressing pairs that match, array dest
     return _STD unique_copy(_First, _Last, _Dest, equal_to<>());
 }
@@ -2000,7 +2042,7 @@ _DestTy* unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_D
 
 // FUNCTION TEMPLATE reverse_copy
 template <class _BidIt, class _OutIt>
-_OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -2016,7 +2058,7 @@ _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _BidIt, class _DestTy, size_t _DestSize>
-_DestTy* reverse_copy(_BidIt _First, _BidIt _Last, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* reverse_copy(_BidIt _First, _BidIt _Last, _DestTy (&_Dest)[_DestSize]) {
     // copy reversing elements in [_First, _Last), array dest
     return _STD reverse_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
 }
@@ -2043,7 +2085,8 @@ _DestTy* reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _DestTy (&_Dest)[_De
 
 // FUNCTION TEMPLATE rotate_copy
 template <class _FwdIt, class _OutIt>
-_OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) { // copy rotating [_First, _Last)
+_CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
+    // copy rotating [_First, _Last)
     _Adl_verify_range(_First, _Mid);
     _Adl_verify_range(_Mid, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -2082,12 +2125,12 @@ _SampleIt _Sample_reservoir_unchecked(
             return _Dest + _Sample_pop;
         }
 
-        _Dest[_Sample_pop] = *_First;
+        *(_Dest + _Sample_pop) = *_First;
     }
     for (; _First != _Last; ++_First) {
         const auto _Idx = _RngFunc(++_PopSize);
         if (_Idx < _SCount) {
-            _Dest[static_cast<_Diff_sample>(_Idx)] = *_First; // again, valid narrowing because _Idx < _SCount
+            *(_Dest + static_cast<_Diff_sample>(_Idx)) = *_First; // again, valid narrowing because _Idx < _SCount
         }
     }
     return _Dest + _SCount;
@@ -2346,7 +2389,7 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
 // FUNCTION TEMPLATE partition
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Pr>
-_FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
+_CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
@@ -2644,22 +2687,23 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
 
 // FUNCTION TEMPLATE push_heap
 template <class _RanIt, class _Ty, class _Pr>
-void _Push_heap_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
+_CONSTEXPR20 void _Push_heap_by_index(
+    _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
     // percolate _Hole to _Top or where _Val belongs, using _Pred
     using _Diff = _Iter_diff_t<_RanIt>;
     for (_Diff _Idx = (_Hole - 1) >> 1; // shift for codegen
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, _First[_Idx], _Val); //
+         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); //
          _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
-        _First[_Hole] = _STD move(_First[_Idx]);
-        _Hole         = _Idx;
+        *(_First + _Hole) = _STD move(*(_First + _Idx));
+        _Hole             = _Idx;
     }
 
-    _First[_Hole] = _STD move(_Val); // drop _Val into final hole
+    *(_First + _Hole) = _STD move(_Val); // drop _Val into final hole
 }
 
 template <class _RanIt, class _Pr>
-void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // push *(_Last - 1) onto heap at [_First, _Last - 1), using _Pred
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -2673,15 +2717,17 @@ void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt>
-void push_heap(_RanIt _First, _RanIt _Last) { // push *(_Last - 1) onto heap at [_First, _Last - 1), using operator<
+_CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
+    // push *(_Last - 1) onto heap at [_First, _Last - 1), using operator<
     _STD push_heap(_First, _Last, less<>());
 }
 
 // FUNCTION TEMPLATE pop_heap
 template <class _RanIt, class _Ty, class _Pr>
-void _Pop_heap_hole_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Bottom, _Ty&& _Val,
-    _Pr _Pred) { // percolate _Hole to _Bottom, then push _Val, using _Pred
-                 // precondition: _Bottom != 0
+_CONSTEXPR20 void _Pop_heap_hole_by_index(
+    _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Bottom, _Ty&& _Val, _Pr _Pred) {
+    // percolate _Hole to _Bottom, then push _Val, using _Pred
+    _STL_INTERNAL_CHECK(_Bottom != 0);
     using _Diff      = _Iter_diff_t<_RanIt>;
     const _Diff _Top = _Hole;
     _Diff _Idx       = _Hole;
@@ -2691,23 +2737,23 @@ void _Pop_heap_hole_by_index(_RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_di
     const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
     while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
         _Idx = 2 * _Idx + 2;
-        if (_DEBUG_LT_PRED(_Pred, _First[_Idx], _First[_Idx - 1])) {
+        if (_DEBUG_LT_PRED(_Pred, *(_First + _Idx), *(_First + (_Idx - 1)))) {
             --_Idx;
         }
-        _First[_Hole] = _STD move(_First[_Idx]);
-        _Hole         = _Idx;
+        *(_First + _Hole) = _STD move(*(_First + _Idx));
+        _Hole             = _Idx;
     }
 
     if (_Idx == _Max_sequence_non_leaf && _Bottom % 2 == 0) { // only child at bottom, move _Hole down to it
-        _First[_Hole] = _STD move(_First[_Bottom - 1]);
-        _Hole         = _Bottom - 1;
+        *(_First + _Hole) = _STD move(*(_First + (_Bottom - 1)));
+        _Hole             = _Bottom - 1;
     }
 
     _Push_heap_by_index(_First, _Hole, _Top, _STD move(_Val), _Pred);
 }
 
 template <class _RanIt, class _Ty, class _Pr>
-void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _Dest, _Ty&& _Val, _Pr _Pred) {
+_CONSTEXPR20 void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _Dest, _Ty&& _Val, _Pr _Pred) {
     // pop *_First to *_Dest and reheap, using _Pred
     // precondition: _First != _Last
     // precondition: _First != _Dest
@@ -2717,7 +2763,7 @@ void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _Dest, _Ty&& _
 }
 
 template <class _RanIt, class _Pr>
-void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // pop *_First to *(_Last - 1) and reheap, using _Pred
     if (2 <= _Last - _First) {
         --_Last;
@@ -2727,49 +2773,51 @@ void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt, class _Pr>
-void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // pop *_First to *(_Last - 1) and reheap, using _Pred
+_CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+    // pop *_First to *(_Last - 1) and reheap, using _Pred
     _Adl_verify_range(_First, _Last);
     _Pop_heap_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
 }
 
 template <class _RanIt>
-void pop_heap(_RanIt _First, _RanIt _Last) { // pop *_First to *(_Last - 1) and reheap, using operator<
+_CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
+    // pop *_First to *(_Last - 1) and reheap, using operator<
     _STD pop_heap(_First, _Last, less<>());
 }
 
 // FUNCTION TEMPLATE make_heap
 template <class _RanIt, class _Pr>
-void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // make nontrivial [_First, _Last) into a heap, using _Pred
     using _Diff   = _Iter_diff_t<_RanIt>;
     _Diff _Bottom = _Last - _First;
     for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
-        _Iter_value_t<_RanIt> _Val = _STD move(_First[_Hole]);
+        _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
         _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
     }
 }
 
 template <class _RanIt, class _Pr>
-void make_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // make [_First, _Last) into a heap, using _Pred
+_CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // make [_First, _Last) into a heap, using _Pred
     _Adl_verify_range(_First, _Last);
     _Make_heap_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
 }
 
 template <class _RanIt>
-void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap, using operator<
+_CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap, using operator<
     _STD make_heap(_First, _Last, less<>());
 }
 
 // FUNCTION TEMPLATES is_heap AND is_heap_until
 template <class _RanIt, class _Pr>
-_RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap ordered by _Pred
     using _Diff       = _Iter_diff_t<_RanIt>;
     const _Diff _Size = _Last - _First;
     for (_Diff _Off = 1; _Off < _Size; ++_Off) {
-        if (_DEBUG_LT_PRED(_Pred, _First[(_Off - 1) >> 1], _First[_Off])) { // shift for codegen
+        if (_DEBUG_LT_PRED(_Pred, *(_First + ((_Off - 1) >> 1)), *(_First + _Off))) { // shift for codegen
             return _First + _Off;
         }
     }
@@ -2778,7 +2826,7 @@ _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt, class _Pr>
-_NODISCARD _RanIt is_heap_until(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap ordered by _Pred
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First, _Is_heap_until_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
@@ -2786,7 +2834,8 @@ _NODISCARD _RanIt is_heap_until(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt, class _Pr>
-_NODISCARD bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // test if range is a heap ordered by _Pred
+_NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+    // test if range is a heap ordered by _Pred
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -2794,13 +2843,13 @@ _NODISCARD bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // test if ran
 }
 
 template <class _RanIt>
-_NODISCARD _RanIt is_heap_until(_RanIt _First, _RanIt _Last) {
+_NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last) {
     // find extent of range that is a heap ordered by operator<
     return _STD is_heap_until(_First, _Last, less<>());
 }
 
 template <class _RanIt>
-_NODISCARD bool is_heap(_RanIt _First, _RanIt _Last) { // test if range is a heap ordered by operator<
+_NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last) { // test if range is a heap ordered by operator<
     return _STD is_heap(_First, _Last, less<>());
 }
 
@@ -2829,14 +2878,15 @@ _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* 
 
 // FUNCTION TEMPLATE sort_heap
 template <class _RanIt, class _Pr>
-void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order heap by repeatedly popping, using _Pred
+_CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+    // order heap by repeatedly popping, using _Pred
     for (; 2 <= _Last - _First; --_Last) {
         _Pop_heap_unchecked(_First, _Last, _Pred);
     }
 }
 
 template <class _RanIt, class _Pr>
-void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order heap by repeatedly popping, using _Pred
+_CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order heap by repeatedly popping, using _Pred
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -2850,20 +2900,13 @@ void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order heap by repeat
 }
 
 template <class _RanIt>
-void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping, using operator<
+_CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping, using operator<
     _STD sort_heap(_First, _Last, less<>());
-}
-
-// FUNCTION TEMPLATE lower_bound
-template <class _FwdIt, class _Ty>
-_NODISCARD _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // find first element not before _Val, using operator<
-    return _STD lower_bound(_First, _Last, _Val, less<>());
 }
 
 // FUNCTION TEMPLATE upper_bound
 template <class _FwdIt, class _Ty, class _Pr>
-_NODISCARD _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element that _Val is before, using _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst                = _Get_unwrapped(_First);
@@ -2885,14 +2928,14 @@ _NODISCARD _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr 
 }
 
 template <class _FwdIt, class _Ty>
-_NODISCARD _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find first element that _Val is before, using operator<
     return _STD upper_bound(_First, _Last, _Val, less<>());
 }
 
 // FUNCTION TEMPLATE equal_range
 template <class _FwdIt, class _Ty, class _Pr>
-_NODISCARD pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find range equivalent to _Val, using _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -2929,14 +2972,14 @@ _NODISCARD pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _
 }
 
 template <class _FwdIt, class _Ty>
-_NODISCARD pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+_NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find range equivalent to _Val, using operator<
     return _STD equal_range(_First, _Last, _Val, less<>());
 }
 
 // FUNCTION TEMPLATE binary_search
 template <class _FwdIt, class _Ty, class _Pr>
-_NODISCARD bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // test if _Val equivalent to some element, using _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -2946,34 +2989,33 @@ _NODISCARD bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr 
 }
 
 template <class _FwdIt, class _Ty>
-_NODISCARD bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+_NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // test if _Val equivalent to some element, using operator<
     return _STD binary_search(_First, _Last, _Val, less<>());
 }
 
 // FUNCTION TEMPLATE merge
-inline _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
-    // combine _Idl_distance results (both unknown)
+_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
     return {};
 }
 
 template <class _Diff1>
-_Distance_unknown _Idl_dist_add(_Diff1, _Distance_unknown) { // combine _Idl_distance results (right unknown)
+_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Diff1, _Distance_unknown) {
     return {};
 }
 
 template <class _Diff2>
-_Distance_unknown _Idl_dist_add(_Distance_unknown, _Diff2) { // combine _Idl_distance results (left unknown)
+_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Diff2) {
     return {};
 }
 
 template <class _Diff1, class _Diff2>
-auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) { // combine _Idl_distance results (both known)
+_NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
     return _Lhs + _Rhs;
 }
 
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // copy merging ranges, both using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -3015,7 +3057,8 @@ _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutI
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
+_CONSTEXPR20 _DestTy* merge(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // copy merging ranges, both using _Pred, array dest
     return _STD merge(_First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
         ._Unwrapped();
@@ -3023,14 +3066,14 @@ _DestTy* merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _De
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // copy merging ranges, both using operator<
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_DestTy* merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // copy merging ranges, both using operator<, array dest
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
@@ -3351,7 +3394,7 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 // FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
-_BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
+_CONSTEXPR20 _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last), using _Pred
     if (_First != _Last) {
         for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
@@ -3375,7 +3418,8 @@ _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt, class _Pr>
-void _Med3_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) { // sort median of three elements to middle
+_CONSTEXPR20 void _Med3_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
+    // sort median of three elements to middle
     if (_DEBUG_LT_PRED(_Pred, *_Mid, *_First)) {
         _STD iter_swap(_Mid, _First);
     }
@@ -3390,7 +3434,8 @@ void _Med3_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) { // s
 }
 
 template <class _RanIt, class _Pr>
-void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) { // sort median element to middle
+_CONSTEXPR20 void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
+    // sort median element to middle
     using _Diff        = _Iter_diff_t<_RanIt>;
     const _Diff _Count = _Last - _First;
     if (40 < _Count) { // Tukey's ninther
@@ -3406,7 +3451,7 @@ void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred
 }
 
 template <class _RanIt, class _Pr>
-pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last), using _Pred
     _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
     _Guess_median_unchecked(_First, _Mid, _Last - 1, _Pred);
@@ -3473,13 +3518,24 @@ pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt 
 }
 
 template <class _RanIt, class _Pr>
-void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
+_CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _Pr _Pred) {
     // order [_First, _Last), using _Pred
-    _Iter_diff_t<_RanIt> _Count;
-    while (_ISORT_MAX < (_Count = _Last - _First) && 0 < _Ideal) { // divide and conquer by quicksort
+    for (;;) {
+        if (_Last - _First <= _ISORT_MAX) { // small
+            _Insertion_sort_unchecked(_First, _Last, _Pred);
+            return;
+        }
+
+        if (_Ideal <= 0) { // heap sort if too many divisions
+            _Make_heap_unchecked(_First, _Last, _Pred);
+            _Sort_heap_unchecked(_First, _Last, _Pred);
+            return;
+        }
+
+        // divide and conquer by quicksort
         auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
 
-        _Ideal = _Ideal / 2 + _Ideal / 4; // allow 1.5 log2(N) divisions
+        _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 
         if (_Mid.first - _First < _Last - _Mid.second) { // loop on second half
             _Sort_unchecked(_First, _Mid.first, _Ideal, _Pred);
@@ -3489,17 +3545,10 @@ void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_RanIt> _Ideal, _
             _Last = _Mid.first;
         }
     }
-
-    if (_ISORT_MAX < _Count) { // heap sort if too many divisions
-        _Make_heap_unchecked(_First, _Last, _Pred);
-        _Sort_heap_unchecked(_First, _Last, _Pred);
-    } else if (2 <= _Count) {
-        _Insertion_sort_unchecked(_First, _Last, _Pred); // small
-    }
 }
 
 template <class _RanIt, class _Pr>
-void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First, _Last), using _Pred
+_CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First, _Last), using _Pred
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -3507,7 +3556,7 @@ void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First
 }
 
 template <class _RanIt>
-void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last), using operator<
+_CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last), using operator<
     _STD sort(_First, _Last, less<>());
 }
 
@@ -3620,9 +3669,8 @@ template <class _BidIt, class _Pr>
 void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_diff_t<_BidIt> _Count, _Pr _Pred) {
     // insertion sort every chunk of distance _ISORT_MAX in [_First, _Last)
     // pre: _Count == distance(_First, _Last)
-    constexpr auto _Diffsort_max = static_cast<_Iter_diff_t<_BidIt>>(_ISORT_MAX);
-    for (; _Diffsort_max < _Count; _Count -= _Diffsort_max) { // sort chunks
-        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _Diffsort_max), _Pred);
+    for (; _ISORT_MAX < _Count; _Count -= _ISORT_MAX) { // sort chunks
+        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _ISORT_MAX), _Pred);
     }
 
     _Insertion_sort_unchecked(_First, _Last, _Pred); // sort partial last chunk
@@ -3691,10 +3739,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
-        }
-
+        _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
         return;
     }
 
@@ -3722,7 +3767,7 @@ void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* termina
 
 // FUNCTION TEMPLATE partial_sort
 template <class _RanIt, class _Pr>
-void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // order [_First, _Last) up to _Mid, using _Pred
     _Adl_verify_range(_First, _Mid);
     _Adl_verify_range(_Mid, _Last);
@@ -3746,7 +3791,8 @@ void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
 }
 
 template <class _RanIt>
-void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last) { // order [_First, _Last) up to _Mid, using operator<
+_CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last) {
+    // order [_First, _Last) up to _Mid, using operator<
     _STD partial_sort(_First, _Mid, _Last, less<>());
 }
 
@@ -3768,7 +3814,7 @@ void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /*
 
 // FUNCTION TEMPLATE partial_sort_copy
 template <class _InIt, class _RanIt, class _Pr>
-_RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) {
+_CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) {
     // copy [_First1, _Last1) into [_First2, _Last2) using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -3800,7 +3846,7 @@ _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _La
 }
 
 template <class _InIt, class _RanIt>
-_RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2) {
+_CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2) {
     // copy [_First1, _Last1) into [_First2, _Last2), using operator<
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, less<>());
 }
@@ -3827,7 +3873,8 @@ _RanIt partial_sort_copy(
 
 // FUNCTION TEMPLATE nth_element
 template <class _RanIt, class _Pr>
-void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) { // order Nth element, using _Pred
+_CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
+    // order Nth element, using _Pred
     _Adl_verify_range(_First, _Nth);
     _Adl_verify_range(_Nth, _Last);
     auto _UFirst     = _Get_unwrapped(_First);
@@ -3853,7 +3900,7 @@ void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) { // order
 }
 
 template <class _RanIt>
-void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element, using operator<
+_CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element, using operator<
     _STD nth_element(_First, _Nth, _Last, less<>());
 }
 
@@ -3875,7 +3922,7 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* 
 
 // FUNCTION TEMPLATE includes
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -3899,7 +3946,7 @@ _NODISCARD bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _
 }
 
 template <class _InIt1, class _InIt2>
-_NODISCARD bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+_NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1), using operator<
     return _STD includes(_First1, _Last1, _First2, _Last2, less<>());
 }
@@ -3929,7 +3976,7 @@ _NODISCARD bool includes(
 
 // FUNCTION TEMPLATE set_union
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -3961,7 +4008,7 @@ _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* set_union(
+_CONSTEXPR20 _DestTy* set_union(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
@@ -3970,14 +4017,15 @@ _DestTy* set_union(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_DestTy* set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* set_union(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
@@ -4035,7 +4083,8 @@ _DestTy* set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _F
 
 // FUNCTION TEMPLATE set_intersection
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt set_intersection(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // AND sets [_First1, _Last1) and [_First2, _Last2), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4065,7 +4114,7 @@ _OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _L
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* set_intersection(
+_CONSTEXPR20 _DestTy* set_intersection(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // AND sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_intersection(
@@ -4075,14 +4124,15 @@ _DestTy* set_intersection(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // AND sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_DestTy* set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* set_intersection(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // AND sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
@@ -4125,7 +4175,8 @@ _DestTy* set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
 
 // FUNCTION TEMPLATE set_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt set_difference(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // take set [_First2, _Last2) from [_First1, _Last1), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4156,7 +4207,7 @@ _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Las
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* set_difference(
+_CONSTEXPR20 _DestTy* set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // take set [_First2, _Last2) from [_First1, _Last1), array dest
     return _STD set_difference(
@@ -4166,14 +4217,15 @@ _DestTy* set_difference(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // take set [_First2, _Last2) from [_First1, _Last1), using operator<
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_DestTy* set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
+_CONSTEXPR20 _DestTy* set_difference(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // take set [_First2, _Last2) from [_First1, _Last1), array dest
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
@@ -4216,7 +4268,8 @@ _DestTy* set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 
 
 // FUNCTION TEMPLATE set_symmetric_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
-_OutIt set_symmetric_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
+_CONSTEXPR20 _OutIt set_symmetric_difference(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), using _Pred
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4249,7 +4302,7 @@ _OutIt set_symmetric_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_DestTy* set_symmetric_difference(
+_CONSTEXPR20 _DestTy* set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_symmetric_difference(
@@ -4259,14 +4312,15 @@ _DestTy* set_symmetric_difference(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt1, class _InIt2, class _OutIt>
-_OutIt set_symmetric_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt set_symmetric_difference(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_DestTy* set_symmetric_difference(
+_CONSTEXPR20 _DestTy* set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
@@ -4592,7 +4646,8 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
 
 // FUNCTION TEMPLATE next_permutation
 template <class _BidIt, class _Pr>
-bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) { // permute and test for pure ascending, using _Pred
+_CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
+    // permute and test for pure ascending, using _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -4622,13 +4677,14 @@ bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) { // permute and t
 }
 
 template <class _BidIt>
-bool next_permutation(_BidIt _First, _BidIt _Last) { // permute and test for pure ascending, using operator<
+_CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
+    // permute and test for pure ascending, using operator<
     return _STD next_permutation(_First, _Last, less<>());
 }
 
 // FUNCTION TEMPLATE prev_permutation
 template <class _BidIt, class _Pr>
-bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
+_CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // reverse permute and test for pure descending, using _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -4659,13 +4715,14 @@ bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 }
 
 template <class _BidIt>
-bool prev_permutation(_BidIt _First, _BidIt _Last) { // reverse permute and test for pure descending, using operator<
+_CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
+    // reverse permute and test for pure descending, using operator<
     return _STD prev_permutation(_First, _Last, less<>());
 }
 
 // FUNCTION TEMPLATES is_sorted AND is_sorted_until
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+_NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find extent of range that is ordered by predicate
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
@@ -4684,7 +4741,8 @@ _NODISCARD _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 }
 
 template <class _FwdIt, class _Pr>
-_NODISCARD bool is_sorted(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // test if range is ordered by predicate
+_NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+    // test if range is ordered by predicate
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -4692,12 +4750,13 @@ _NODISCARD bool is_sorted(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // test if r
 }
 
 template <class _FwdIt>
-_NODISCARD _FwdIt is_sorted_until(_FwdIt _First, _FwdIt _Last) { // find extent of range that is ordered by operator<
+_NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(_FwdIt _First, _FwdIt _Last) {
+    // find extent of range that is ordered by operator<
     return _STD is_sorted_until(_First, _Last, less<>());
 }
 
 template <class _FwdIt>
-_NODISCARD bool is_sorted(_FwdIt _First, _FwdIt _Last) { // test if range is ordered by operator<
+_NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last) { // test if range is ordered by operator<
     return _STD is_sorted(_First, _Last, less<>());
 }
 

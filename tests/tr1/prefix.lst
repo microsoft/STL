@@ -1,0 +1,4 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+PM_CL="/nologo /Od /W4 /w14061 /w14242 /w14265 /w14749 /w14841 /w14842 /w15038 /sdl /WX /Zc:strictStrings /D_ENABLE_STL_INTERNAL_CHECK /D_ENFORCE_FACET_SPECIALIZATIONS=1 /D_CRT_SECURE_NO_WARNINGS /bigobj"
