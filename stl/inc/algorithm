@@ -45,7 +45,9 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
         const auto _Attempt = _Temporary_buffer_size(_Requested_size);
-        if (_Requested_size <= _Optimistic_count) { // unconditionally engage stack space
+        // Since _Diff is a count of elements in a forward range, and forward iterators must denote objects in memory,
+        // it must fit in a size_t.
+        if (static_cast<size_t>(_Requested_size) <= _Optimistic_count) { // unconditionally engage stack space
             _Data     = reinterpret_cast<_Ty*>(&_Stack_space[0]);
             _Capacity = static_cast<ptrdiff_t>(_Requested_size); // in bounds due to if condition
             return;

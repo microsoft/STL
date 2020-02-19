@@ -222,6 +222,7 @@ tests\P0758R1_is_nothrow_convertible
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
 tests\P0811R3_midpoint_lerp
+tests\P0896R4_P1614R2_comparisons
 tests\P0896R4_ranges_iterator_machinery
 tests\P0896R4_ranges_range_machinery
 tests\P0896R4_ranges_to_address
