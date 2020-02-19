@@ -15,6 +15,10 @@
 #include <concepts>
 #endif // __cpp_lib_concepts
 
+#if _HAS_CXX20 && defined(__cpp_impl_three_way_comparison)
+#include <compare>
+#endif // _HAS_CXX20 && defined(__cpp_impl_three_way_comparison)
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
