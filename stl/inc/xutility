@@ -4692,7 +4692,7 @@ constexpr auto lexicographical_compare_three_way(_InIt1 _First1, _InIt1 _Last1, 
         {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = memcmp(_UFirst1, _UFirst2, _Num1 < _Num2 ? _Num1 : _Num2);
+            const int _Ans   = _CSTD memcmp(_UFirst1, _UFirst2, _Num1 < _Num2 ? _Num1 : _Num2);
             if (const auto _CmpResult = _Comp(_Ans, 0); _CmpResult != 0) {
                 return _CmpResult;
             } else {
