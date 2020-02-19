@@ -4688,7 +4688,7 @@ constexpr auto lexicographical_compare_three_way(_InIt1 _First1, _InIt1 _Last1, 
                               _Is_character<remove_pointer_t<_UIt2>>, is_unsigned<remove_pointer_t<_UIt2>>>>>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
-#endif
+#endif // __cpp_lib_is_constant_evaluated
         {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
