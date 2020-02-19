@@ -406,11 +406,11 @@ public:
     constexpr span(type_identity_t<element_type> (&_Arr)[_Size]) noexcept : _Mybase(_Size), _Mydata(_Arr) {}
 
     template <class _OtherTy, size_t _Size>
-        requires (_Extent == dynamic_extent || _Extent == _Size) && is_convertible_v<_OtherTy*, element_type*>
+        requires (_Extent == dynamic_extent || _Extent == _Size) && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
     constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
     template <class _OtherTy, size_t _Size>
-        requires (_Extent == dynamic_extent || _Extent == _Size) && is_convertible_v<const _OtherTy*, element_type*>
+        requires (_Extent == dynamic_extent || _Extent == _Size) && is_convertible_v<const _OtherTy (*)[], element_type (*)[]>
     constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
     template <class _Rng>
@@ -454,13 +454,13 @@ public:
 
     template <class _OtherTy, size_t _Size,
         enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _Size>,
-                        is_convertible<_OtherTy*, element_type*>>,
+                        is_convertible<_OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
     constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
     template <class _OtherTy, size_t _Size,
         enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _Size>,
-                        is_convertible<const _OtherTy*, element_type*>>,
+                        is_convertible<const _OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
     constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
