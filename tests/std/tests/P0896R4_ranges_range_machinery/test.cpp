@@ -324,6 +324,7 @@ constexpr bool test_size() {
     STATIC_ASSERT(ranges::sized_range<Range> == is_valid<Size>);
     if constexpr (is_valid<Size>) {
         STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
+        STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
 
         STATIC_ASSERT(CanEmpty<Range>);
     }
