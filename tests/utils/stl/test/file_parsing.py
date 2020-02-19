@@ -8,6 +8,7 @@ import re
 
 _envlst_cache = dict()
 _preprocessed_file_cache = dict()
+_expected_result_entry_cache = dict()
 
 
 @dataclass
@@ -40,17 +41,24 @@ class EnvEntry:
     _env_vals: Tuple[str]
 
 
+@dataclass(frozen=True)
+class ExpectedResultEntry:
+    test_prefix: str
+    result: str
+
+
 @dataclass
 class _ParseCtx:
     current: List[_TmpEnvEntry] = field(default_factory=list)
     result: List[List[_TmpEnvEntry]] = field(default_factory=list)
 
 
-_ENV_REGEX = re.compile(r"((?P<tags>(?:\w+,?)+)\t+)?(?P<env_vars_part>.+$)")
-_COMMENT_REGEX = re.compile(r"#.*", re.DOTALL)
+_ENV_REGEX = re.compile(r'((?P<tags>(?:\w+,?)+)\t+)?(?P<env_vars_part>.+$)')
+_COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
 _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
-_CROSSLIST_REGEX = re.compile(r"^RUNALL_CROSSLIST$")
+_CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
+_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
 
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
@@ -119,6 +127,22 @@ def parse_commented_file(filename: Union[str, bytes, os.PathLike])\
         return result
 
 
+def parse_result_file(filename: Union[str, bytes, os.PathLike])\
+        -> List[ExpectedResultEntry]:
+    if str(filename) in _expected_result_entry_cache:
+        return _expected_result_entry_cache[str(filename)]
+
+    result = list()
+    for line in parse_commented_file(filename):
+        m = _EXPECTED_RESULT_REGEX.match(line)
+        prefix = m.group("prefix")
+        result = m.group("result")
+        result.append(ExpectedResultEntry(prefix, result))
+
+    _expected_result_entry_cache[str(filename)] = result
+    return result
+
+
 def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike])\
         -> Tuple[EnvEntry, ...]:
     if str(env_list) in _envlst_cache:
@@ -126,8 +150,7 @@ def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike])\
 
     env_list_path = Path(env_list)
     ctx = _ParseCtx()
-    with env_list_path.open() as f:
-        res = tuple(map(EnvEntry,
-                        _parse_env_lst(env_list_path, ctx)))
-        _envlst_cache[env_list] = res
-        return res
+    res = tuple(map(EnvEntry,
+                    _parse_env_lst(env_list_path, ctx)))
+    _envlst_cache[env_list] = res
+    return res

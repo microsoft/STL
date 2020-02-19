@@ -126,11 +126,12 @@ class Configuration(object):
         self.configure_expected_failures()
 
     # TODO: Don't hard-code features.
-    # TODO: Confirm theses are the only features we need to run the tests we
+    # TODO: Confirm these are the only features we need to run the tests we
     # want.
     def configure_features(self):
         self.config.available_features.add('long_tests')
         self.config.available_features.add('c++2a')
+        self.config.available_features.add('msvc')
         self.config.available_features.update(
                 self.target_info.features)
 
@@ -151,7 +152,7 @@ class Configuration(object):
                         "Could not infer stl_src_root from test_source_root. "
                         "test_source_root is None")
 
-            if self.name == 'libc++':
+            if self.config.name == 'libc++':
                 stl_src_root = self.test_src_root.parents[2]
             else:
                 stl_src_root = self.test_src_root.parents[1]
@@ -465,6 +466,11 @@ class Configuration(object):
 
         self.default_compiler.link_flags.append(
             '/LIBPATH:' + str(self.msvc_toolset_libs_root))
+
+        additional_flags = self.get_lit_conf('test_link_flags')
+        if additional_flags:
+            self.default_compiler.link_flags +=\
+                    shlex.split(additional_flags)
 
     def configure_msvc_toolset_libs_root(self):
         msvc_toolset_libs_root = self.get_lit_conf('msvc_toolset_libs_root')

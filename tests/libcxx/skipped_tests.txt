@@ -486,6 +486,11 @@ language.support\support.dynamic\destroying_delete_t_declaration.pass.cpp
 language.support\support.dynamic\destroying_delete_t.pass.cpp
 
 
+# *** COMPILER BUGS ***
+# Compiler bug: VSO-361805 "C1xx erroneously assumes that 'default' is a constexpr"
+diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp.0
+
+
 # *** MISSING LWG ISSUE RESOLUTIONS ***
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
