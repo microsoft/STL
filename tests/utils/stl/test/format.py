@@ -95,38 +95,42 @@ class StlTestFormat(object):
         if lit_config.noExecute:
             return lit.Test.Result(lit.Test.PASS)
 
-        script = lit.TestRunner.parseIntegratedTestScript(
-                test, require_script=False)
+        if test.expected_result is None:
+            script = lit.TestRunner.parseIntegratedTestScript(
+                    test, require_script=False)
 
-        if isinstance(script, lit.Test.Result):
-            return script
-        if lit_config.noExecute:
-            return lit.Test.Result(lit.Test.PASS)
+            if isinstance(script, lit.Test.Result):
+                return script
+            if lit_config.noExecute:
+                return lit.Test.Result(lit.Test.PASS)
 
         tmpDir, tmpBase = lit.TestRunner.getTempPaths(test)
-
-        if is_fail_test:
-            return self._evaluate_fail_test(test, test.cxx)
-        elif is_pass_test:
-            return self._evaluate_pass_test(test, tmpBase, lit_config,
-                                            test.cxx)
-        else:
-            # No other test type is supported
-            assert False
-
-    def _clean(self, exec_path):  # pylint: disable=no-self-use
-        stl.util.cleanFile(exec_path)
-        pass
-
-    def _evaluate_pass_test(self, test, tmpBase, lit_config,
-                            test_cxx):
-        execDir = os.path.dirname(test.getExecPath())
-        source_path = test.getSourcePath()
-        exec_path = tmpBase + '.exe'
 
         should_fail = test.isExpectedToFail()
         pass_var = lit.Test.XPASS if should_fail else lit.Test.PASS
         fail_var = lit.Test.XFAIL if should_fail else lit.Test.FAIL
+
+        if is_fail_test:
+            return self._evaluate_fail_test(test, tmpBase, test.cxx,
+                                            pass_var, fail_var)
+        elif is_pass_test:
+            return self._evaluate_pass_test(test, tmpBase, lit_config,
+                                            test.cxx, pass_var, fail_var)
+        else:
+            # No other test type is supported
+            assert False
+
+    @staticmethod
+    def _clean(filenames):
+        for filename in filenames:
+            stl.util.cleanFile(filename)
+
+    def _evaluate_pass_test(self, test, tmpBase, lit_config,
+                            test_cxx, pass_var, fail_var):
+        execDir = os.path.dirname(test.getExecPath())
+        source_path = test.getSourcePath()
+        exec_path = tmpBase + '.exe'
+        analyze_path = tmpBase + '.nativecodeanalysis.xml'
 
         # Create the output directory if it does not already exist.
         stl.util.mkdir_p(os.path.dirname(tmpBase))
@@ -140,7 +144,7 @@ class StlTestFormat(object):
             if rc != 0:
                 report = stl.util.makeReport(cmd, out, err, rc)
 
-                if not should_fail:
+                if not test.isExpectedToFail():
                     report += "Compilation failed unexpectedly!"
                 lit_config.note(report)
                 return lit.Test.Result(fail_var, report)
@@ -157,22 +161,35 @@ class StlTestFormat(object):
             if rc == 0:
                 return lit.Test.Result(pass_var, report)
             else:
-                if not should_fail:
+                if not test.isExpectedToFail():
                     report += "Compiled test failed unexpectedly!"
                 return lit.Test.Result(fail_var, report)
 
         finally:
             # Note that cleanup of exec_file happens in `_clean()`. If you
             # override this, cleanup is your reponsibility.
-            self._clean(exec_path)
+            StlTestFormat._clean((exec_path, analyze_path))
 
-    def _evaluate_fail_test(self, test, test_cxx):
+    def _evaluate_fail_test(self, test, tmpBase, test_cxx, pass_var, fail_var):
         source_path = test.getSourcePath()
+        analyze_path = tmpBase + '.nativecodeanalysis.xml'
 
-        cmd, out, err, rc = test_cxx.compile(source_path, out=os.devnull)
+        flags = list()
+        if test_cxx.name == 'cl' and\
+                ('/analyze' in test_cxx.flags or
+                 '/analyze' in test_cxx.compile_flags):
+            flags += ['/analyze:log' + analyze_path]
+
+            # Create the output directory if it does not already exist.
+            stl.util.mkdir_p(os.path.dirname(tmpBase))
+
+        cmd, out, err, rc = test_cxx.compile(source_path, os.devnull, flags)
         report = stl.util.makeReport(cmd, out, err, rc)
+
+        StlTestFormat._clean((analyze_path,))
         if rc != 0:
-            return lit.Test.Result(lit.Test.PASS, report)
+            return lit.Test.Result(pass_var, report)
         else:
-            report += 'Expected compilation to fail!\n'
-            return lit.Test.Result(lit.Test.FAIL, report)
+            if test.isExpectedToFail():
+                report += 'Expected compilation to fail!\n'
+            return lit.Test.Result(fail_var, report)

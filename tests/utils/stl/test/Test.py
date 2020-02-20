@@ -15,9 +15,20 @@ class StlTest(Test):
         Test.__init__(self, suite, path_in_suite, test_config, file_path)
         self._configure_cxx(lit_config, envlst_entry, default_cxx)
 
-        if self.getSourcePath() in test_config.expected_failures:
-            self.xfails = ['*']
-        elif self.getSourcePath() in lit_config.expected_failures:
+        source_path = self.getSourcePath()
+        test_name = suite.getSourcePath(path_in_suite) + '.' + str(env_num)
+
+        self.expected_result = None
+        if test_name in test_config.expected_results:
+            self.expected_result = test_config.expected_results[test_name]
+        elif test_name in lit_config.expected_results:
+            self.expected_result = lit_config.expected_results[test_name]
+        elif source_path in test_config.expected_results:
+            self.expected_result = test_config.expected_results[source_path]
+        elif source_path in lit_config.expected_results:
+            self.expected_result = lit_config.expected_results[source_path]
+
+        if self.expected_result is not None and self.expected_result.isFailure:
             self.xfails = ['*']
 
     def getExecPath(self):

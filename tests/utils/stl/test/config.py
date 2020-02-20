@@ -62,8 +62,8 @@ class Configuration(object):
         self.default_compiler = None
         self.execute_external = False
         self.executor = None
-        self.expected_failures_list_path = None
-        self.expected_failures_list_root = None
+        self.expected_results_list_path = None
+        self.expected_results_list_root = None
         self.lit_config = lit_config
         self.link_shared = True
         self.long_tests = None
@@ -123,7 +123,7 @@ class Configuration(object):
         self.configure_default_compiler()
         self.configure_excludes()
         self.configure_executor()
-        self.configure_expected_failures()
+        self.configure_expected_results()
 
     # TODO: Don't hard-code features.
     # TODO: Confirm these are the only features we need to run the tests we
@@ -345,48 +345,43 @@ class Configuration(object):
 
         self.lit_config.excludes = excludes
 
-    def configure_expected_failures_list_location(self):
-        expected_failures_list_path = self.get_lit_conf(
-            'expected_failures_list_path', None)
+    def configure_expected_results_list_location(self):
+        expected_results_list_path = self.get_lit_conf(
+            'expected_results_list_path', None)
 
-        if expected_failures_list_path is not None:
-            self.expected_failures_list_path = Path(
-                expected_failures_list_path)
+        if expected_results_list_path is not None:
+            self.expected_results_list_path = Path(
+                expected_results_list_path)
         else:
-            self.expected_failures_list_path = Path(os.devnull)
+            self.expected_results_list_path = Path(os.devnull)
 
-    def configure_expected_failures_list_root(self):
-        expected_failures_list_root = self.get_lit_conf(
-            'expected_failures_list_root', None)
+    def configure_expected_results_list_root(self):
+        expected_results_list_root = self.get_lit_conf(
+            'expected_results_list_root', None)
 
-        if expected_failures_list_root is not None:
-            self.expected_failures_list_root = Path(
-                expected_failures_list_root)
+        if expected_results_list_root is not None:
+            self.expected_results_list_root = Path(
+                expected_results_list_root)
         else:
-            self.expected_failures_list_root = Path('')
+            self.expected_results_list_root = Path('')
 
-    def configure_expected_failures(self):
-        expected_failures = self.get_lit_conf('expected_failures', set())
-        additional_expected_failures = self.get_lit_conf(
-            'additional_expected_failures', '')
+    def configure_expected_results(self):
+        expected_results = self.get_lit_conf('expected_results', dict())
 
-        expected_failures.update(additional_expected_failures.split(','))
+        if self.expected_results_list_path is None:
+            self.configure_expected_results_list_location()
 
-        if self.expected_failures_list_path is None:
-            self.configure_expected_failures_list_location()
+        if self.expected_results_list_root is None:
+            self.configure_expected_results_list_root()
 
-        if self.expected_failures_list_root is None:
-            self.configure_expected_failures_list_root()
+        expected_results.update(
+            map(lambda x: (str(self.expected_results_list_root / x[0]), x[1]),
+                stl.test.file_parsing.parse_result_file(
+                    self.expected_results_list_path).items()))
 
-        expected_failures.update(
-            map(lambda x: os.path.join(
-                str(self.expected_failures_list_root), Path(x)),
-                stl.test.file_parsing.parse_commented_file(
-                    self.expected_failures_list_path)))
-
-        self.lit_config.expected_failures = expected_failures
-        self.config.expected_failures =\
-            getattr(self.config, 'expected_failures', set())
+        self.lit_config.expected_results = expected_results
+        self.config.expected_results =\
+            getattr(self.config, 'expected_results', set())
 
     # TODO: Have configuring the compiler have the same flow as everything
     # else.

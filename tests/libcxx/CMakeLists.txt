@@ -6,9 +6,9 @@ set(LIBCXX_SKIP_LIST "${CMAKE_CURRENT_SOURCE_DIR}/skipped_tests.txt" CACHE PATH
     "Path to libcxx skip list")
 set(LIBCXX_SKIP_LIST_ROOT "${LIBCXX_SOURCE_DIR}/test/std" CACHE PATH
     "Directory from which all skip list entries are relative")
-set(LIBCXX_EXPECTED_FAILURES "${CMAKE_CURRENT_SOURCE_DIR}/expected_failures.txt" CACHE PATH
+set(LIBCXX_EXPECTED_RESULTS "${CMAKE_CURRENT_SOURCE_DIR}/expected_results.txt" CACHE PATH
     "Path to libcxx expected failures list")
-set(LIBCXX_EXPECTED_FAILURES_ROOT "${LIBCXX_SOURCE_DIR}/test/std" CACHE PATH
+set(LIBCXX_EXPECTED_RESULTS_ROOT "${LIBCXX_SOURCE_DIR}/test/std" CACHE PATH
     "Directory from which all expected failure entries are relative")
 
 configure_lit_site_cfg(

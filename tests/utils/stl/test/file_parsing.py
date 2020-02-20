@@ -6,6 +6,8 @@ import itertools
 import os
 import re
 
+import lit.Test
+
 _envlst_cache = dict()
 _preprocessed_file_cache = dict()
 _expected_result_entry_cache = dict()
@@ -39,12 +41,6 @@ class EnvEntry:
     _tags: FrozenSet[str]
     _env_keys: Tuple[str]
     _env_vals: Tuple[str]
-
-
-@dataclass(frozen=True)
-class ExpectedResultEntry:
-    test_prefix: str
-    result: str
 
 
 @dataclass
@@ -119,28 +115,29 @@ def parse_commented_file(filename: Union[str, bytes, os.PathLike])\
     result = list()
     with filename_path.open() as f:
         for line in f.readlines():
-            line = _COMMENT_REGEX.sub("", line)
-            if line is not None:
-                result.append(line.strip())
+            if(line:=_COMMENT_REGEX.sub("", line)):
+                line = line.strip()
+                if line:
+                    result.append(line)
 
         _preprocessed_file_cache[str(filename)] = result
         return result
 
 
 def parse_result_file(filename: Union[str, bytes, os.PathLike])\
-        -> List[ExpectedResultEntry]:
+        -> Dict[str, lit.Test.ResultCode]:
     if str(filename) in _expected_result_entry_cache:
         return _expected_result_entry_cache[str(filename)]
 
-    result = list()
+    res = dict()
     for line in parse_commented_file(filename):
         m = _EXPECTED_RESULT_REGEX.match(line)
         prefix = m.group("prefix")
         result = m.group("result")
-        result.append(ExpectedResultEntry(prefix, result))
+        res[prefix] = getattr(lit.Test, result)
 
-    _expected_result_entry_cache[str(filename)] = result
-    return result
+    _expected_result_entry_cache[str(filename)] = res
+    return res
 
 
 def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike])\

@@ -206,6 +206,21 @@ containers\unord\unord.set\max_size.pass.cpp
 utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 
 
+# *** CRT BUGS ***
+# We're permanently missing aligned_alloc().
+depr\depr.c.headers\stdlib_h.pass.cpp FAIL
+language.support\support.runtime\cstdlib.pass.cpp FAIL
+
+# OS-11107628 "_Exit allows cleanup in other DLLs"
+thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp FAIL
+thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp FAIL
+
+
+# *** STL BUGS ***
+# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
+strings\string.view\char.bad.fail.cpp
+
+
 # *** MISSING STL FEATURES ***
 # C++20 P0019R8 "atomic_ref"
 language.support\support.limits\support.limits.general\atomic.version.pass.cpp
@@ -605,3 +620,19 @@ language.support\cmp\cmp.strongeq\cmp.strongeq.pass.cpp
 language.support\cmp\cmp.strongord\strongord.pass.cpp
 language.support\cmp\cmp.weakeq\cmp.weakeq.pass.cpp
 language.support\cmp\cmp.weakord\weakord.pass.cpp
+
+# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
+depr\depr.c.headers\math_h.pass.cpp
+numerics\c.math\cmath.pass.cpp
+
+# Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.single.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
+
+# Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
+language.support\support.limits\support.limits.general\string.version.pass.cpp
+
+# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
+utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp

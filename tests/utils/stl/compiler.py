@@ -7,7 +7,6 @@
 #===----------------------------------------------------------------------===##
 
 import os
-import re
 
 import stl.util
 
@@ -18,10 +17,6 @@ class CXXCompiler(object):
     CM_Compile = 2
     CM_Link = 3
 
-    # A list of (re, str) two-tuples which are used to translate flags in the
-    # order inserted into the list
-    _msvc_flag_translation_table = [(re.compile("^-"), "/")]
-
     def __init__(self, path, flags=None, compile_flags=None,
                  link_flags=None, compile_env=None):
         self.path = path
@@ -30,18 +25,16 @@ class CXXCompiler(object):
         else:
             self.name = None
 
-        self.compile_flags = list(compile_flags or [])
-        self.flags = list(CXXCompiler._normalize_flags(self.name, flags) or [])
-        self.link_flags =\
-            list(CXXCompiler._normalize_flags(self.name, link_flags) or [])
+        self.compile_flags = compile_flags or []
+        self.flags = flags or []
+        self.link_flags = link_flags or []
 
         if compile_env is not None:
             self.compile_env = dict(compile_env)
         else:
             self.compile_env = None
 
-    def _basicCmd(self, source_files, out, mode=CM_Default, flags=[],
-                  input_is_cxx=None):
+    def _basicCmd(self, source_files, out, mode=CM_Default, flags=[]):
         cmd = []
         cmd += [self.path]
         if mode == self.CM_PreProcess:
@@ -53,18 +46,6 @@ class CXXCompiler(object):
             cmd += ['/c']
             if out is not None:
                 cmd += ['/Fo' + out]
-                if out is os.devnull and\
-                        self.name == 'cl' and\
-                        '/analyze-' not in self.compile_flags and\
-                        '/analyze-' not in self.flags and\
-                        '/analyze-' not in flags:
-                    filename = source_files[0]\
-                               if isinstance(source_files, list)\
-                               else source_files
-                    filename = os.path.basename(filename).rsplit('.', 1)[0] +\
-                        '.nativecodeanalysis.xml'
-
-                    cmd += ['/analyze:log' + filename]
         elif out is not None:
             cmd += ['/Fe' + out]
 
@@ -86,13 +67,11 @@ class CXXCompiler(object):
 
     def preprocessCmd(self, source_files, out=None, flags=[]):
         return self._basicCmd(source_files, out, flags=flags,
-                              mode=self.CM_PreProcess,
-                              input_is_cxx=True)
+                              mode=self.CM_PreProcess)
 
     def compileCmd(self, source_files, out=None, flags=[]):
         return self._basicCmd(source_files, out, flags=flags,
-                              mode=self.CM_Compile,
-                              input_is_cxx=True)
+                              mode=self.CM_Compile)
 
     def linkCmd(self, source_files, out=None, flags=[]):
         return self._basicCmd(source_files, out, flags=flags,
@@ -146,16 +125,3 @@ class CXXCompiler(object):
                 object_file, exec_path=out, flags=flags, cwd=cwd)
             return (cc_cmd + ['&'] + link_cmd, cc_stdout + link_stdout,
                     cc_stderr + link_stderr, rc)
-
-    @staticmethod
-    def _normalize_flags(name, flags):
-        if name != 'cl':
-            return flags
-
-        if flags is None:
-            return None
-
-        for regex, rep in CXXCompiler._msvc_flag_translation_table:
-            flags = map(lambda flag: regex.sub(rep, flag), flags)
-
-        return flags

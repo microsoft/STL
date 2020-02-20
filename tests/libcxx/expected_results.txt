@@ -5,14 +5,14 @@ utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp FAIL
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp FAIL
+thread\macro.pass.cpp.1 FAIL
 
 
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
-utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp FAIL
+utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp.0 FAIL
 
 # Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
-utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp FAIL
+utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp.0 FAIL
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -57,9 +57,6 @@ containers\sequences\array\array.cons\implicit_copy.pass.cpp FAIL
 containers\sequences\array\array.data\data_const.pass.cpp FAIL
 containers\sequences\array\array.data\data.pass.cpp FAIL
 containers\sequences\array\begin.pass.cpp FAIL
-
-# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-strings\string.view\char.bad.fail.cpp FAIL
 
 # Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
 algorithms\alg.sorting\alg.heap.operations\make.heap\make_heap_comp.pass.cpp FAIL
@@ -118,34 +115,6 @@ diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 
 # STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
 thread\futures\futures.promise\set_value_const.pass.cpp FAIL
-
-
-# *** CRT BUGS ***
-# We're permanently missing aligned_alloc().
-depr\depr.c.headers\stdlib_h.pass.cpp FAIL
-language.support\support.runtime\cstdlib.pass.cpp FAIL
-
-# OS-11107628 "_Exit allows cleanup in other DLLs"
-thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp FAIL
-thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp FAIL
-
-
-# *** LIKELY BOGUS TESTS ***
-# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
-depr\depr.c.headers\math_h.pass.cpp FAIL
-numerics\c.math\cmath.pass.cpp FAIL
-
-# Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp FAIL
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp FAIL
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.single.pass.cpp FAIL
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp FAIL
-
-# Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
-language.support\support.limits\support.limits.general\string.version.pass.cpp FAIL
-
-# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
-utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -316,7 +285,7 @@ numerics\rand\rand.eng\rand.eng.sub\io.pass.cpp FAIL
 thread\futures\futures.promise\set_rvalue.pass.cpp FAIL
 
 # Possible STL bugs in pair and tuple.
-utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp FAIL
+utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp.0 FAIL
 utilities\tuple\tuple.tuple\tuple.cnstr\PR31384.pass.cpp FAIL
 
 # Likely STL bugs in mersenne_twister; also fails at runtime
@@ -355,7 +324,7 @@ containers\associative\multimap\multimap.cons\deduct_const.pass.cpp FAIL
 containers\unord\unord.map\unord.map.cnstr\deduct_const.pass.cpp FAIL
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp.0 FAIL
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp FAIL
-utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp FAIL
+utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp.0 FAIL
 
 # Not yet analyzed. Assertion failed: m1.empty()
 containers\associative\map\map.cons\move_assign.pass.cpp FAIL
@@ -382,6 +351,4 @@ utilities/function.objects/func.search/func.search.bmh/default.pass.cpp PASS
 utilities/function.objects/func.search/func.search.bmh/hash.pass.cpp PASS
 utilities/function.objects/func.search/func.search.bmh/hash.pred.pass.cpp PASS
 utilities/function.objects/func.search/func.search.bmh/pred.pass.cpp PASS
-
-# Not yet analyzed.
-
+strings/c.strings/cuchar.pass.cpp PASS
