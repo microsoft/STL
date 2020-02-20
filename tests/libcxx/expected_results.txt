@@ -2,21 +2,16 @@
 # Compiler bug: VSO-120957 "alignas by-value parameters should be permitted"
 utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp FAIL
 
-
-# *** CLANG COMPILER BUGS ***
-# LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp.1 FAIL
-
-
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
 utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp.0 FAIL
 
 # Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp.0 FAIL
 
+
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp FAIL
+thread\macro.pass.cpp.1 FAIL
 
 
 # *** STL BUGS ***

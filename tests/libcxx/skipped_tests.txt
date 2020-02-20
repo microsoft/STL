@@ -208,12 +208,12 @@ utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
-depr\depr.c.headers\stdlib_h.pass.cpp FAIL
-language.support\support.runtime\cstdlib.pass.cpp FAIL
+depr\depr.c.headers\stdlib_h.pass.cpp
+language.support\support.runtime\cstdlib.pass.cpp
 
 # OS-11107628 "_Exit allows cleanup in other DLLs"
-thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp FAIL
-thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp FAIL
+thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp
+thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 
 
 # *** STL BUGS ***
