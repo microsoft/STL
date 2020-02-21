@@ -2483,10 +2483,6 @@ namespace ranges {
         inline constexpr _Size::_Cpo size;
     }
 
-    // ALIAS TEMPLATE ranges::range_size_t
-    template <sized_range _Rng>
-    using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
-
     // CUSTOMIZATION POINT OBJECT ranges::empty (Implements D2091R0)
     namespace _Empty {
         // clang-format off
@@ -2639,6 +2635,10 @@ namespace ranges {
 #endif // TRANSITION, LWG-3264
         && requires(_Rng& __r) { _RANGES size(__r); };
     // clang-format on
+
+    // ALIAS TEMPLATE ranges::range_size_t
+    template <sized_range _Rng>
+    using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
 
     // STRUCT ranges::view_base
     struct view_base {};
