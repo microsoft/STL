@@ -470,12 +470,6 @@
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
-#if 0 // TRANSITION: #ifdef __cpp_constexpr_dynamic_alloc
-#define _CONSTEXPR_NEW constexpr
-#else // ^^^__cpp_constexpr_dynamic_alloc / !__cpp_constexpr_dynamic_alloc  vvv
-#define _CONSTEXPR_NEW inline
-#endif // !__cpp_constexpr_dynamic_alloc
-
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline
