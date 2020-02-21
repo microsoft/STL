@@ -17,14 +17,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-_EXTERN_C
-// See note about "noalias" in <xutility>
-__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
-    void* _First1, void* _Last1, void* _First2) noexcept;
-_END_EXTERN_C
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-
 _STD_BEGIN
 // COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
@@ -34,13 +26,13 @@ template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
     using _CT = common_type_t<ptrdiff_t, _Diff>;
-    return static_cast<ptrdiff_t>(_Min_value(static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
+    return static_cast<ptrdiff_t>((_STD min)(static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
 }
 
 template <class _Ty>
 struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like attempt
     static constexpr size_t _Optimistic_size  = 4096; // default to ~1 page
-    static constexpr size_t _Optimistic_count = _Max_value(static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
+    static constexpr size_t _Optimistic_count = (_STD max)(static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
 
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
@@ -325,7 +317,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         using _CT         = _Common_diff_t<_InIt1, _InIt2>;
         const _CT _Count1 = _ULast1 - _UFirst1;
         const _CT _Count2 = _ULast2 - _UFirst2;
-        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>(_Min_value(_Count1, _Count2));
+        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
         while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
             ++_UFirst1;
@@ -362,7 +354,7 @@ pair<_InIt1, _InIt2> _Mismatch_unchecked(const _InIt1 _First1, const _InIt1 _Las
     using _CT         = _Common_diff_t<_InIt1, _InIt2>;
     const _CT _Count1 = _Last1 - _First1;
     const _CT _Count2 = _Last2 - _First2;
-    const auto _Count = static_cast<_Iter_diff_t<_InIt1>>(_Min_value(_Count1, _Count2));
+    const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
     return _STD mismatch(_First1, _First1 + _Count, _First2, _Pred);
 }
 
@@ -1261,38 +1253,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 }
 #endif // _HAS_CXX17
 
-
 // FUNCTION TEMPLATE swap_ranges
-template <class _FwdIt1, class _FwdIt2>
-_CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
-    // swap [_First1, _Last1) with [_First2, ...), no special optimization
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
-    }
-
-    return _First2;
-}
-
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
-_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
-    // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
-#ifdef __cpp_lib_is_constant_evaluated
-    if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-    {
-        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
-        return _First2 + (_Last1 - _First1);
-    }
-
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
-    }
-
-    return _First2;
-}
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
-
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
@@ -3365,7 +3326,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     }
 
     const _Diff _Count2 = _STD distance(_UMid, _ULast);
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Min_value(_Count1, _Count2)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min)(_Count1, _Count2)};
     _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
 }
@@ -3635,7 +3596,7 @@ void _Uninitialized_chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _
     while (_Chunk < _Count) {
         _Count -= _Chunk;
         const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = _Min_value(_Chunk, _Count);
+        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Backout._Last     = _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
@@ -3655,7 +3616,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
     while (_Chunk < _Count) {
         _Count -= _Chunk;
         const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = _Min_value(_Chunk, _Count);
+        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Dest              = _Merge_move(_First, _Mid1, _Mid2, _Dest, _Pred);
@@ -4535,14 +4496,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE max
-template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty&(max)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
-    noexcept(_DEBUG_LT_PRED(_Pred, _Left, _Right))) /* strengthened */ {
-    // return larger of _Left and _Right using _Pred
-    return _DEBUG_LT_PRED(_Pred, _Left, _Right) ? _Right : _Left;
-}
-
+// FUNCTION TEMPLATE max (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
@@ -4550,56 +4504,19 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     return *_Res;
 }
 
-#pragma warning(push)
-#pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
-template <class _Ty>
-_NODISCARD _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty&(max)(
-    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */ {
-    // return larger of _Left and _Right
-    if (_Left < _Right) {
-        _STL_ASSERT(!(_Right < _Left), "invalid comparator");
-        return _Right;
-    }
-
-    return _Left;
-}
-#pragma warning(pop)
-
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
     return (_STD max)(_Ilist, less<>());
 }
 
-// FUNCTION TEMPLATE min
-template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
-    noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
-    // return smaller of _Left and _Right using _Pred
-    return _DEBUG_LT_PRED(_Pred, _Right, _Left) ? _Right : _Left;
-}
-
+// FUNCTION TEMPLATE min (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
     const _Ty* _Res = _Min_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
     return *_Res;
 }
-
-#pragma warning(push)
-#pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
-template <class _Ty>
-_NODISCARD _Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty&(min)(
-    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */ {
-    // return smaller of _Left and _Right
-    if (_Right < _Left) {
-        _STL_ASSERT(!(_Left < _Right), "invalid comparator");
-        return _Right;
-    }
-
-    return _Left;
-}
-#pragma warning(pop)
 
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
