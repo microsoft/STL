@@ -7,11 +7,12 @@
 #===----------------------------------------------------------------------===##
 
 import os
+from typing import List
 
 import stl.util
 
 
-class CXXCompiler(object):
+class CXXCompiler:
     CM_Default = 0
     CM_PreProcess = 1
     CM_Compile = 2
@@ -30,11 +31,12 @@ class CXXCompiler(object):
         self.link_flags = link_flags or []
 
         if compile_env is not None:
-            self.compile_env = dict(compile_env)
+            self.compile_env = compile_env
         else:
             self.compile_env = None
 
-    def _basicCmd(self, source_files, out, mode=CM_Default, flags=[]):
+    def _basicCmd(self, source_files: List[str], out, mode=CM_Default,
+                  flags=[]):
         cmd = []
         cmd += [self.path]
         if mode == self.CM_PreProcess:
@@ -53,14 +55,9 @@ class CXXCompiler(object):
             cmd += self.compile_flags
         cmd += self.flags
         cmd += flags
-        if isinstance(source_files, list):
-            cmd += source_files
-        elif isinstance(source_files, str):
-            cmd += [source_files]
-        else:
-            raise TypeError('source_files must be a string or list')
+        cmd += source_files
 
-        if mode != self.CM_PreProcess and mode != self.CM_Compile:
+        if mode == self.CM_Default or mode == self.CM_Link:
             cmd += ['/link']
             cmd += self.link_flags
         return cmd
@@ -111,7 +108,7 @@ class CXXCompiler(object):
             raise TypeError('This function only accepts a single input file')
         if object_file is None:
             # Create, use and delete a temporary object file if none is given.
-            def with_fn(): return stl.util.guardedTempFilename(suffix='.o')
+            def with_fn(): return stl.util.guardedTempFilename(suffix='.obj')
         else:
             # Otherwise wrap the filename in a context manager function.
             def with_fn(): return stl.util.nullContext(object_file)

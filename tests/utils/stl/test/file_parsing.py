@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 from collections import namedtuple
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -31,7 +34,7 @@ class EnvEntry:
         if key not in self._env_keys:
             return default
 
-        # TODO: All of this is to avoid having to install frozendict.
+        # TRANSITION: All of this is to avoid having to install frozendict.
         # Reconsider this at a future date.
         return self._env_vals[self._env_keys.index(key)]
 

@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#python
+# python
 __pycache__/
-*.py[cod]
+*.py[cdo]
 
 .vs/
 .vscode/

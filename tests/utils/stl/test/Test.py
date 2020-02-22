@@ -1,8 +1,11 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 import os
+import shutil
 
 from lit.Test import Test
 
-import stl
 from stl.compiler import CXXCompiler
 
 _compiler_path_cache = dict()
@@ -45,7 +48,7 @@ class StlTest(Test):
 
             if cxx is None:
                 search_paths = self.config.environment['PATH']
-                cxx = stl.util.which(env_compiler, search_paths)
+                cxx = shutil.which(env_compiler, path=search_paths)
                 _compiler_path_cache[env_compiler] = cxx
 
         if not cxx:

@@ -18,41 +18,13 @@ import stl.test.file_parsing
 import stl.test.target_info
 
 
-def loadSiteConfig(lit_config, config, param_name, env_name):
-    # We haven't loaded the site specific configuration (the user is
-    # probably trying to run on a test file directly, and either the site
-    # configuration hasn't been created by the build system, or we are in an
-    # out-of-tree build situation).
-    site_cfg = lit_config.params.get(param_name,
-                                     os.environ.get(env_name))
-    if not site_cfg:
-        lit_config.warning('No site specific configuration file found!'
-                           ' Running the tests in the default configuration.')
-    elif not os.path.isfile(site_cfg):
-        lit_config.fatal(
-            "Specified site configuration file does not exist: '%s'" %
-            site_cfg)
-    else:
-        lit_config.note('using site specific configuration at %s' % site_cfg)
-        ld_fn = lit_config.load_config
-
-        # Null out the load_config function so that lit.site.cfg doesn't
-        # recursively load a config even if it tries.
-        # TODO: This is one hell of a hack. Fix it.
-        def prevent_reload_fn(*args, **kwargs):
-            pass
-        lit_config.load_config = prevent_reload_fn
-        ld_fn(config, site_cfg)
-        lit_config.load_config = ld_fn
-
-
 # Extract the value of a numeric macro such as __cplusplus or a feature-test
 # macro.
 def intMacroValue(token):
     return int(token.rstrip('LlUu'))
 
 
-class Configuration(object):
+class Configuration:
     # pylint: disable=redefined-outer-name
     def __init__(self, lit_config, config):
         self.config = config
@@ -78,11 +50,6 @@ class Configuration(object):
         self.stl_src_root = None
         self.target_arch = None
         self.target_info = stl.test.target_info.WindowsLocalTI(lit_config)
-
-        # TODO: Move this into configure like everything else
-        self.config.test_source_root =\
-            getattr(self.config, 'libcxx_test_source_root',
-                    self.config.test_source_root)
 
     def get_lit_conf(self, name, default=None):
         val = self.lit_config.params.get(name, None)
@@ -124,10 +91,14 @@ class Configuration(object):
         self.configure_excludes()
         self.configure_executor()
         self.configure_expected_results()
+        self.configure_test_dirs()
 
-    # TODO: Don't hard-code features.
-    # TODO: Confirm these are the only features we need to run the tests we
-    # want.
+    def configure_test_dirs(self):
+        self.config.test_subdirs =\
+            list(map(os.path.abspath, getattr(self.config,
+                                              'test_subdirs', [])))
+
+    # TRANSITION: Don't hard-code features.
     def configure_features(self):
         self.config.available_features.add('long_tests')
         self.config.available_features.add('c++2a')
@@ -383,8 +354,8 @@ class Configuration(object):
         self.config.expected_results =\
             getattr(self.config, 'expected_results', set())
 
-    # TODO: Have configuring the compiler have the same flow as everything
-    # else.
+    # TRANSITION: Have configuring the compiler have the same flow as
+    # everything else.
     def configure_default_compiler(self):
         self.default_compiler = CXXCompiler(None)
         self.configure_compile_flags()
@@ -395,11 +366,7 @@ class Configuration(object):
 
         self.default_compiler.compile_env = self.stl_compilation_env
 
-    # TODO: Create an interface which allows remote building of a test.
-    def configure_builder(self):
-        pass
-
-    # TODO: Create an interface which allows remote execution of a test.
+    # TRANSITION: Investigate using SSHExecutor for ARM
     def configure_executor(self):
         self.executor = LocalExecutor()
 
@@ -482,6 +449,6 @@ class Configuration(object):
             self.execute_external,
             self.executor)
 
-    # TODO: Might be nice to actually print something
+    # TRANSITION: Might be nice to actually print something
     def print_config_info(self):
         pass

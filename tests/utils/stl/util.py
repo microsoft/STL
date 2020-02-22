@@ -7,7 +7,7 @@
 #===----------------------------------------------------------------------===##
 
 from contextlib import contextmanager
-import errno
+from pathlib import Path
 import os
 import platform
 import signal
@@ -17,52 +17,22 @@ import tempfile
 import threading
 
 
-# FIXME: Most of these functions are cribbed from LIT
-def to_bytes(str):
-    # Encode to UTF-8 to get binary data.
-    if isinstance(str, bytes):
-        return str
-    return str.encode('utf-8')
-
-
-def to_string(bytes):
-    if isinstance(bytes, str):
-        return bytes
-    return to_bytes(bytes)
-
-
-def convert_string(bytes):
-    try:
-        return to_string(bytes.decode('utf-8'))
-    except AttributeError:  # 'str' object has no attribute 'decode'.
-        return str(bytes)
-    except UnicodeError:
-        return str(bytes)
-
-
-def cleanFile(filename):
-    try:
-        os.remove(filename)
-    except OSError:
-        pass
-
-
 @contextmanager
 def guardedTempFilename(suffix='', prefix='', dir=None):
-    # Creates and yeilds a temporary filename within a with statement. The file
+    # Creates and yields a temporary filename within a with statement. The file
     # is removed upon scope exit.
     handle, name = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
     os.close(handle)
     yield name
-    cleanFile(name)
+    Path(name).unlink(True)
 
 
 @contextmanager
 def guardedFilename(name):
-    # yeilds a filename within a with statement. The file is removed upon scope
+    # yields a filename within a with statement. The file is removed upon scope
     # exit.
     yield name
-    cleanFile(name)
+    Path(name).unlink(True)
 
 
 @contextmanager
@@ -81,87 +51,6 @@ def makeReport(cmd, out, err, rc):
         report += "Standard Error:\n--\n%s--\n" % err
     report += '\n'
     return report
-
-
-def capture(args, env=None):
-    """capture(command) - Run the given command (or argv list) in a shell and
-    return the standard output. Raises a CalledProcessError if the command
-    exits with a non-zero status."""
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         env=env)
-    out, err = p.communicate()
-    out = convert_string(out)
-    err = convert_string(err)
-    if p.returncode != 0:
-        raise subprocess.CalledProcessError(cmd=args,
-                                            returncode=p.returncode,
-                                            output="{}\n{}".format(out, err))
-    return out
-
-
-def which(command, paths=None):
-    """which(command, [paths]) - Look up the given command in the paths string
-    (or the PATH environment variable, if unspecified)."""
-
-    if paths is None:
-        paths = os.environ.get('PATH', '')
-
-    # Check for absolute match first.
-    if os.path.isfile(command):
-        return command
-
-    # Would be nice if Python had a lib function for this.
-    if not paths:
-        paths = os.defpath
-
-    # Get suffixes to search.
-    # On Cygwin, 'PATHEXT' may exist but it should not be used.
-    if os.pathsep == ';':
-        pathext = os.environ.get('PATHEXT', '').split(';')
-    else:
-        pathext = ['']
-
-    # Search the paths...
-    for path in paths.split(os.pathsep):
-        for ext in pathext:
-            p = os.path.join(path, command + ext)
-            if os.path.exists(p) and not os.path.isdir(p):
-                return p
-
-    return None
-
-
-def checkToolsPath(dir, tools):
-    for tool in tools:
-        if not os.path.exists(os.path.join(dir, tool)):
-            return False
-    return True
-
-
-def whichTools(tools, paths):
-    for path in paths.split(os.pathsep):
-        if checkToolsPath(path, tools):
-            return path
-    return None
-
-
-def mkdir_p(path):
-    """mkdir_p(path) - Make the "path" directory, if it does not exist; this
-    will also make directories for any missing parent directories."""
-    if not path or os.path.exists(path):
-        return
-
-    parent = os.path.dirname(path)
-    if parent != path:
-        mkdir_p(parent)
-
-    try:
-        os.mkdir(path)
-    except OSError:
-        e = sys.exc_info()[1]
-        # Ignore EEXIST, which may occur during a race condition.
-        if e.errno != errno.EEXIST:
-            raise
 
 
 class ExecuteCommandTimeoutException(Exception):
@@ -201,7 +90,7 @@ def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
         is raised.
     """
     if input is not None:
-        input = to_bytes(input)
+        input = input.encode()
 
     p = subprocess.Popen(command, cwd=cwd,
                          stdin=subprocess.PIPE,
@@ -229,8 +118,8 @@ def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
             timerObject.cancel()
 
     # Ensure the resulting output is always of string type.
-    out = convert_string(out)
-    err = convert_string(err)
+    out = out.decode()
+    err = err.decode()
 
     if hitTimeOut:
         raise ExecuteCommandTimeoutException(
@@ -254,8 +143,7 @@ def killProcessAndChildren(pid):
     using the psutil module which provides a simple platform
     neutral implementation.
 
-    TODO: Reimplement this without using psutil so we can
-          remove our dependency on it.
+    TRANSITION: Jobify this
     """
     if platform.system() == 'AIX':
         subprocess.call('kill -kill $(ps -o pid= -L{})'.format(pid),

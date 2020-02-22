@@ -11,6 +11,7 @@ import itertools
 import errno
 import os
 import time
+from pathlib import Path
 
 import lit.Test        # pylint: disable=import-error
 import lit.TestRunner  # pylint: disable=import-error
@@ -20,7 +21,7 @@ import stl.test.Test
 import stl.util
 
 
-class StlTestFormat(object):
+class StlTestFormat:
     """
     Custom test format handler for use with the test format used by msvc stl.
     """
@@ -32,11 +33,22 @@ class StlTestFormat(object):
 
     def getTestsInDirectory(self, testSuite, path_in_suite,
                             litConfig, localConfig):
-        # TODO Make these not asserts
+        # TRANSITION: Make these not asserts
         assert localConfig.envlst_path is not None
         assert os.path.isfile(localConfig.envlst_path)
 
         source_path = testSuite.getSourcePath(path_in_suite)
+
+        found = False
+        for prefix in getattr(localConfig, 'test_subdirs', []):
+            if os.path.commonpath((source_path, prefix)) == prefix or\
+                    os.path.commonpath((prefix, source_path)) == source_path:
+                found = True
+                break
+
+        if not found:
+            return
+
         for filename in os.listdir(source_path):
             # Ignore dot files and excluded tests.
             filepath = os.path.join(source_path, filename)
@@ -49,7 +61,7 @@ class StlTestFormat(object):
                     for env_entry, env_num\
                             in zip(stl.test.file_parsing.parse_env_lst_file(
                             localConfig.envlst_path), itertools.count()):
-                        # TODO: Get rid of this copy
+                        # TRANSITION: Get rid of this copy
                         test_config = copy.deepcopy(localConfig)
                         test_path_in_suite = path_in_suite + (filename,)
 
@@ -86,7 +98,7 @@ class StlTestFormat(object):
 
         if is_objcxx_test:
             return (lit.Test.UNSUPPORTED,
-                    "Ojbective-C tests are unsupported")
+                    "Objective-C tests are unsupported")
 
         if test.config.unsupported:
             return (lit.Test.UNSUPPORTED,
@@ -120,11 +132,6 @@ class StlTestFormat(object):
             # No other test type is supported
             assert False
 
-    @staticmethod
-    def _clean(filenames):
-        for filename in filenames:
-            stl.util.cleanFile(filename)
-
     def _evaluate_pass_test(self, test, tmpBase, lit_config,
                             test_cxx, pass_var, fail_var):
         execDir = os.path.dirname(test.getExecPath())
@@ -133,13 +140,14 @@ class StlTestFormat(object):
         analyze_path = tmpBase + '.nativecodeanalysis.xml'
 
         # Create the output directory if it does not already exist.
-        stl.util.mkdir_p(os.path.dirname(tmpBase))
+        Path(os.path.dirname(tmpBase)).mkdir(parents=True, exist_ok=True)
 
         try:
-            # TODO: Investigate whether or not we want to support compiling
-            # and linking in two steps like libcxx. Should be easy.
+            # TRANSITION: Investigate whether or not we want to support
+            # compiling and linking in two steps like libcxx. Should be easy.
+            # Not sure what additional value it would add.
             cmd, out, err, rc = test_cxx.compileLink(
-                source_path, exec_path=exec_path, cwd=execDir)
+                [source_path], exec_path=exec_path, cwd=execDir)
             compile_cmd = cmd
             if rc != 0:
                 report = stl.util.makeReport(cmd, out, err, rc)
@@ -166,9 +174,8 @@ class StlTestFormat(object):
                 return lit.Test.Result(fail_var, report)
 
         finally:
-            # Note that cleanup of exec_file happens in `_clean()`. If you
-            # override this, cleanup is your reponsibility.
-            StlTestFormat._clean((exec_path, analyze_path))
+            Path(exec_path).unlink(True)
+            Path(analyze_path).unlink(True)
 
     def _evaluate_fail_test(self, test, tmpBase, test_cxx, pass_var, fail_var):
         source_path = test.getSourcePath()
@@ -181,12 +188,12 @@ class StlTestFormat(object):
             flags += ['/analyze:log' + analyze_path]
 
             # Create the output directory if it does not already exist.
-            stl.util.mkdir_p(os.path.dirname(tmpBase))
+            Path(os.path.dirname(tmpBase)).mkdir(parents=True, exist_ok=True)
 
-        cmd, out, err, rc = test_cxx.compile(source_path, os.devnull, flags)
+        cmd, out, err, rc = test_cxx.compile([source_path], os.devnull, flags)
         report = stl.util.makeReport(cmd, out, err, rc)
 
-        StlTestFormat._clean((analyze_path,))
+        Path(analyze_path).unlink(True)
         if rc != 0:
             return lit.Test.Result(pass_var, report)
         else:

@@ -8,8 +8,6 @@
 
 """msvc stl python utilities"""
 
-__author__ = 'Curtis Bezault'
-__email__ = 'curtis.bezault@microsoft.com'
 __versioninfo__ = (0, 1, 0)
 __version__ = ' '.join(str(v) for v in __versioninfo__) + 'dev'
 

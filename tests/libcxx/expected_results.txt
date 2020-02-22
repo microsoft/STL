@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 # *** C1XX COMPILER BUGS ***
 # Compiler bug: VSO-120957 "alignas by-value parameters should be permitted"
 utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp FAIL
@@ -7,6 +10,10 @@ utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp.0 FAIL
 
 # Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp.0 FAIL
+
+#Compiler bug: VSO-1049320 "conditional operator errors"
+containers/views/span.cons/ptr_len.pass.cpp.0 FAIL
+containers/views/span.cons/ptr_ptr.pass.cpp.0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -321,12 +328,6 @@ containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp.0 FAIL
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp FAIL
 utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp.0 FAIL
 
-# Not yet analyzed. Assertion failed: m1.empty()
-containers\associative\map\map.cons\move_assign.pass.cpp FAIL
-containers\associative\multimap\multimap.cons\move_assign.pass.cpp FAIL
-containers\associative\multiset\multiset.cons\move_assign.pass.cpp FAIL
-containers\associative\set\set.cons\move_assign.pass.cpp FAIL
-
 # Not yet analyzed. Assertion failed: controller->check<Args&&...>()
 containers\associative\map\map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp FAIL
 containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp FAIL
@@ -336,8 +337,13 @@ containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp FA
 # Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
 localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\utf_sanity_check.pass.cpp FAIL
 
+# *** LIKELY BOGUS TESTS ***
+# Uses C99 compound literal extension
+# TRANSITION: Make a PR on libcxx to fix this
+containers/sequences/array/array.creation/to_array.pass.cpp.0 FAIL
+
 # Not yet implemented in libcxx and marked as XFAIL
-# TODO: Make a PR on libcxx to fix this
+# TRANSITION: Make a PR on libcxx to fix this
 utilities/function.objects/func.search/func.search.bm/default.pass.cpp PASS
 utilities/function.objects/func.search/func.search.bm/hash.pass.cpp PASS
 utilities/function.objects/func.search/func.search.bm/hash.pred.pass.cpp PASS

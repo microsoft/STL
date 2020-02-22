@@ -15,7 +15,7 @@ from stl.test import tracing
 from stl.util import executeCommand
 
 
-class Executor(object):
+class Executor:
     def __init__(self):
         self.target_info = None
 
@@ -125,7 +125,7 @@ class RemoteExecutor(Executor):
         try:
             self._execute_command_remote(['rm', '-rf', remote])
         except OSError:
-            # TODO: Log failure to delete?
+            # TRANSITION: Log failure to delete?
             pass
 
     def run(self, exe_path, cmd=None, work_dir='.', file_deps=None, env=None):
@@ -159,9 +159,6 @@ class RemoteExecutor(Executor):
             # avoid the 'Permission denied' error:
             chmod_cmd = ['chmod', '+x', target_exe_path]
 
-            # TODO(jroelofs): capture the copy_in and delete_remote commands,
-            # and conjugate them with '&&'s around the first tuple element
-            # returned here:
             return self._execute_command_remote(chmod_cmd + ['&&'] + cmd,
                                                 target_cwd,
                                                 env)
@@ -182,14 +179,13 @@ class SSHExecutor(RemoteExecutor):
         self.scp_command = 'scp'
         self.ssh_command = 'ssh'
 
-        # TODO(jroelofs): switch this on some -super-verbose-debug config flag
         if False:
             self.local_run = tracing.trace_function(
                 self.local_run, log_calls=True, log_results=True,
                 label='ssh_local')
 
     def _remote_temp(self, is_dir):
-        # TODO: detect what the target system is, and use the correct
+        # TRANSITION: detect what the target system is, and use the correct
         # mktemp command for it. (linux and darwin differ here, and I'm
         # sure windows has another way to do it)
 
