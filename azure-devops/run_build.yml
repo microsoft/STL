@@ -53,6 +53,7 @@ jobs:
       displayName: 'Enforce clang-format'
       timeoutInMinutes: 60
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      continueOnError: true
       inputs:
         filename: 'azure-devops/enforce-clang-format.cmd'
         failOnStandardError: true
@@ -61,12 +62,12 @@ jobs:
       displayName: 'Validate Files'
       timeoutInMinutes: 2
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      continueOnError: true
       inputs:
         filename: 'azure-devops/validate-files.cmd'
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
     - task: run-cmake@0
-      continueOnError: False
       displayName: 'Build the STL'
       timeoutInMinutes: 10
       inputs:
@@ -75,7 +76,7 @@ jobs:
         configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         cmakeAppendedArgs: '-DENBALE_XUNIT_OUTPUT=TRUE'
-    - task: Bash@3
+    - task: PowerShell@2
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       timeoutInMinutes: 120
       displayName: 'Run Tests'
