@@ -21,7 +21,7 @@ if(ENABLE_XUNIT_OUTPUT)
     string(APPEND LIBCXX_ADDITIONAL_LIT_FLAGS "--xunit-xml-output ${CMAKE_CURRENT_BINARY_DIR}/libcxx.test.xml")
 endif()
 
-add_test(NAME libcxx COMMAND ${Python3_EXECUTABLE} 
+add_test(NAME libcxx COMMAND ${Python3_EXECUTABLE}
     ${LLVM_LIT_LOCATION}
     ${ADDITIONAL_LIT_FLAGS}
     ${LIBCXX_ADDITIONAL_LIT_FLAGS}
