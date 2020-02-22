@@ -66,6 +66,7 @@ jobs:
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
     - task: run-cmake@0
+      continueOnError: False
       displayName: 'Build the STL'
       timeoutInMinutes: 10
       inputs:
@@ -73,3 +74,18 @@ jobs:
         useVcpkgToolchainFile: true
         configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        cmakeAppendedArgs: '-DENBALE_XUNIT_OUTPUT=TRUE'
+    - task: Bash@3
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      timeoutInMinutes: 120
+      displayName: 'Run Tests'
+      inputs:
+        targetType: inline
+        workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        script: 'ctest'
+    - task: PublishTestResults@2
+      displayName: 'Publish libcxx tests'
+      inputs:
+        testResultsFormat: xUnit
+        testResultsFiles: '**/libcxx.test.xml'
+        testRunTitle: 'libcxx'
