@@ -418,6 +418,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
 #endif // _HAS_CXX17
 
 
+#if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 // CLASS TEMPLATE raw_storage_iterator
 template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
@@ -462,6 +463,7 @@ public:
 private:
     _OutIt _Next;
 };
+#endif // _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 
 
 #if _HAS_AUTO_PTR_ETC
@@ -1205,10 +1207,12 @@ public:
         return get()[_Idx];
     }
 
-    _NODISCARD _CXX17_DEPRECATE_SHARED_PTR_UNIQUE bool unique() const noexcept {
+#if _HAS_DEPRECATED_SHARED_PTR_UNIQUE
+    _CXX17_DEPRECATE_SHARED_PTR_UNIQUE _NODISCARD bool unique() const noexcept {
         // return true if no other shared_ptr object owns this resource
         return this->use_count() == 1;
     }
+#endif // _HAS_DEPRECATED_SHARED_PTR_UNIQUE
 
     explicit operator bool() const noexcept {
         return get() != nullptr;
@@ -2211,9 +2215,9 @@ struct owner_less; // not defined
 
 template <class _Ty>
 struct owner_less<shared_ptr<_Ty>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2230,9 +2234,9 @@ struct owner_less<shared_ptr<_Ty>> {
 
 template <class _Ty>
 struct owner_less<weak_ptr<_Ty>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2249,8 +2253,6 @@ struct owner_less<weak_ptr<_Ty>> {
 
 template <>
 struct owner_less<void> {
-    using is_transparent = int;
-
     template <class _Ty, class _Uty>
     _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2270,6 +2272,8 @@ struct owner_less<void> {
     _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION hash
@@ -2284,8 +2288,8 @@ struct hash<unique_ptr<_Ty, _Dx>> : _Conditionally_enabled_hash<unique_ptr<_Ty, 
 
 template <class _Ty>
 struct hash<shared_ptr<_Ty>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const shared_ptr<_Ty>& _Keyval) const noexcept {
         return hash<typename shared_ptr<_Ty>::element_type*>()(_Keyval.get());

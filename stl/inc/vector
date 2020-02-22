@@ -1485,7 +1485,7 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return _Min_value(
+        return (_STD min)(
             static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
@@ -2855,8 +2855,8 @@ _NODISCARD bool operator!=(const vector<bool, _Alloc>& _Left, const vector<bool,
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Alloc>
 struct hash<vector<bool, _Alloc>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef vector<bool, _Alloc> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef vector<bool, _Alloc> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const vector<bool, _Alloc>& _Keyval) const noexcept {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());

@@ -1,0 +1,10 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+RUNALL_INCLUDE .\prefix.lst
+RUNALL_CROSSLIST
+PM_CL="/EHsc /MTd /std:c++latest /analyze"
+RUNALL_CROSSLIST
+PM_CL="/GR"
+PM_CL="/GR-"
+PM_CL="/GR- /D_HAS_STATIC_RTTI=0"

@@ -189,7 +189,7 @@ public:
     }
 
     void _Submit_for_chunks(const size_t _Hw_threads, const size_t _Chunks) const noexcept {
-        _Submit(_Min_value(_Hw_threads * _Oversubmission_multiplier, _Chunks));
+        _Submit((_STD min)(_Hw_threads * _Oversubmission_multiplier, _Chunks));
     }
 
 private:
@@ -229,7 +229,7 @@ constexpr size_t _Get_chunked_work_chunk_count(const size_t _Hw_threads, const _
     // get the number of chunks to break work into to parallelize
     const auto _Size_count = static_cast<size_t>(_Count); // no overflow due to forward iterators
     // we assume _Hw_threads * _Oversubscription_multiplier does not overflow
-    return _Min_value(_Hw_threads * _Oversubscription_multiplier, _Size_count);
+    return (_STD min)(_Hw_threads * _Oversubscription_multiplier, _Size_count);
 }
 
 // FUNCTION TEMPLATE _Get_least2_chunked_work_chunk_count
@@ -797,7 +797,7 @@ struct _Static_partition_team { // common data for all static partitioned ops
 
     _Diff _Get_chunk_offset(const size_t _This_chunk) const {
         const auto _This_chunk_diff = static_cast<_Diff>(_This_chunk);
-        return _This_chunk_diff * _Chunk_size + _Min_value(_This_chunk_diff, _Unchunked_items);
+        return _This_chunk_diff * _Chunk_size + (_STD min)(_This_chunk_diff, _Unchunked_items);
     }
 
     _Static_partition_key<_Diff> _Get_next_key() {
@@ -1026,7 +1026,7 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1
     if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
         const _CT _Count1 = _Last1 - _First1;
         const _CT _Count2 = _Last2 - _First2;
-        _Result           = _Min_value(_Count1, _Count2);
+        _Result           = (_STD min)(_Count1, _Count2);
     } else if constexpr (_Is_random_iter_v<_InIt1>) {
         for (auto _Count1 = _Last1 - _First1; 0 < _Count1 && _First2 != _Last2; --_Count1) {
             ++_First2;
@@ -2749,15 +2749,13 @@ struct _Sort_operation { // context for background threads
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // order [_First, _Last), using _Pred
-    using _Diff = _Iter_diff_t<_RanIt>;
     _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const _Diff _Ideal = _ULast - _UFirst;
+    const auto _UFirst                = _Get_unwrapped(_First);
+    const auto _ULast                 = _Get_unwrapped(_Last);
+    const _Iter_diff_t<_RanIt> _Ideal = _ULast - _UFirst;
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        constexpr auto _Diffsort_max = static_cast<_Diff>(_ISORT_MAX);
         size_t _Threads;
-        if (_Ideal > _Diffsort_max && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
+        if (_Ideal > _ISORT_MAX && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
             // parallelize when input is large enough and we aren't on a uniprocessor machine
             _TRY_BEGIN
             _Sort_operation _Operation(_UFirst, _Pass_fn(_Pred), _Threads, _Ideal); // throws
@@ -2816,7 +2814,7 @@ struct _Static_partitioned_temporary_buffer2 {
     ptrdiff_t _Get_offset(const size_t _Chunk_number) {
         // get the offset of the first element of the temporary buffer allocated to chunk _Chunk_number
         auto _Diff_chunk = static_cast<ptrdiff_t>(_Chunk_number);
-        return _Diff_chunk * _Chunk_size + _Min_value(_Diff_chunk, _Unchunked_items);
+        return _Diff_chunk * _Chunk_size + (_STD min)(_Diff_chunk, _Unchunked_items);
     }
 
     void _Destroy_all() { // destroy each element of the temporary buffer
@@ -2847,13 +2845,13 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
-    const size_t _Clamped_ideal_chunks = _Min_value(_Max_tree_height, _Log_ideal_chunks);
+    const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);
 
     // similarly, if _Clamped_ideal_chunks is odd, that would break our 2 to even power invariant,
     // so go to the next higher power of 2
     const auto _Ideal_tree_height = _Clamped_ideal_chunks + (_Clamped_ideal_chunks & 0x1U);
 
-    return _Min_value(_Count_max_tree_height, _Ideal_tree_height);
+    return (_STD min)(_Count_max_tree_height, _Ideal_tree_height);
 }
 
 struct _Bottom_up_merge_tree {
@@ -3014,10 +3012,7 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
-        }
-
+        _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
         return;
     }
 
@@ -3307,9 +3302,9 @@ struct _Static_partitioned_is_heap_until {
         const auto _Chunk_offset     = _Key._Start_at;
         const auto _Last             = _Chunk_offset + _Chunk_range_size;
 
-        const auto _Initial = _Max_value(_Chunk_offset, _Diff{1});
+        const auto _Initial = (_STD max)(_Chunk_offset, _Diff{1});
         for (_Diff _Off = _Initial; _Off < _Last; ++_Off) {
-            if (_DEBUG_LT_PRED(_Pred, _Range_first[(_Off - 1) >> 1], _Range_first[_Off])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_Range_first + ((_Off - 1) >> 1)), *(_Range_first + _Off))) {
                 _Results._Imbue(_Key._Chunk_number, _Range_first + _Off);
                 return _Cancellation_status::_Canceled;
             }
@@ -3751,7 +3746,7 @@ void _Place_elements_from_indices(
     const auto _Last_index = _Indices_first + _Num_results;
     for (; _Indices_first != _Last_index; ++_Indices_first) {
         const auto _Curr_index = *_Indices_first;
-        *_Dest                 = _First[static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index)];
+        *_Dest                 = *(_First + static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index));
         ++_Dest;
     }
 }
@@ -3901,10 +3896,10 @@ struct _Set_intersection_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range1_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                     ++_Index_chunk_first;
                     ++_Curr_range1_index;
@@ -3986,12 +3981,12 @@ struct _Set_difference_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range2_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                 ++_Index_chunk_first;
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     ++_Curr_range1_index;
                 }
 

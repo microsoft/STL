@@ -47,9 +47,9 @@ public:
 
     class value_compare {
     public:
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef value_type first_argument_type;
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef value_type second_argument_type;
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef value_type _FIRST_ARGUMENT_TYPE_NAME;
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef value_type _SECOND_ARGUMENT_TYPE_NAME;
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
         _NODISCARD bool operator()(const value_type& _Left, const value_type& _Right) const {
             // test if _Left precedes _Right by comparing just keys

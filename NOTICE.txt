@@ -127,3 +127,13 @@ In addition, certain files include the notices provided below.
 //  Recipient is granted the right to make copies in any form for
 //  internal distribution and to freely use the information supplied
 //  in the creation of products supporting Unicode.
+
+----------------------
+
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
