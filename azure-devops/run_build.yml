@@ -10,6 +10,7 @@ jobs:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - checkout: self
+      clean: true
       submodules: recursive
     - task: PowerShell@2
       displayName: 'Install MSVC Preview'
