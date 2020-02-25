@@ -31,6 +31,18 @@ using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept;
+
+template <class _Ty>
+union _Immortalizer_impl { // constructs _Ty, never destroys
+    constexpr _Immortalizer_impl() noexcept : _Storage{} {}
+    _Immortalizer_impl(const _Immortalizer_impl&) = delete;
+    _Immortalizer_impl& operator=(const _Immortalizer_impl&) = delete;
+    ~_Immortalizer_impl() {
+        // do nothing
+    }
+
+    _Ty _Storage;
+};
 _STD_END
 
 #pragma pop_macro("new")

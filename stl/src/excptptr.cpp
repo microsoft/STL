@@ -38,23 +38,11 @@ using namespace std;
 
 namespace {
     #ifdef _M_CEE_PURE
-    template <class _Ty>
-    struct _Immortalizer { // constructs _Ty, never destroys
-        _Immortalizer() { // construct _Ty inside _Storage
-            ::new (static_cast<void*>(&_Storage)) _Ty();
-        }
-
-        _Immortalizer(const _Immortalizer&) = delete;
-        _Immortalizer& operator=(const _Immortalizer&) = delete;
-
-        aligned_union_t<1, _Ty> _Storage;
-    };
-
     #pragma warning(push)
     #pragma warning(disable : 4640) // construction of local static object is not thread-safe (/Wall)
     template <class _Ty>
     _Ty& _Immortalize() { // return a reference to an object that will live forever
-        /* MAGIC */ static _Immortalizer<_Ty> _Static;
+        /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
         return reinterpret_cast<_Ty&>(_Static._Storage);
     }
     #pragma warning(pop)
@@ -69,10 +57,8 @@ namespace {
 
     template <class _Ty>
     _Ty& _Immortalize() { // return a reference to an object that will live forever
-        static_assert(sizeof(void*) == sizeof(once_flag), "TRANSITION, VSO-406237");
-        static_assert(alignof(void*) == alignof(once_flag), "TRANSITION, VSO-406237");
-        static void* _Flag = nullptr;
-        static aligned_union_t<1, _Ty> _Storage;
+        static once_flag _Flag;
+        alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
         if (_Execute_once(reinterpret_cast<once_flag&>(_Flag), _Immortalize_impl<_Ty>, &_Storage) == 0) {
             // _Execute_once should never fail if the callback never fails
             _STD terminate();

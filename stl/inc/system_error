@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <xerrc.h>
+#include <xcall_once.h>
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif
@@ -550,20 +551,6 @@ public:
 //
 // Inspecting the resulting assembly of any callers of _Immortalize_memcpy_image is recommended.
 //
-
-#if defined(_M_CEE_PURE) || defined(__cpp_constexpr_dynamic_alloc)
-template <class _Ty>
-union _Immortalizer_impl { // constructs _Ty, never destroys
-    constexpr _Immortalizer_impl() noexcept : _Storage{} {}
-    _Immortalizer_impl(const _Immortalizer_impl&) = delete;
-    _Immortalizer_impl& operator=(const _Immortalizer_impl&) = delete;
-    ~_Immortalizer_impl() {
-        // do nothing
-    }
-
-    _Ty _Storage;
-};
-#endif // defined(_M_CEE_PURE) || defined(__cpp_constexpr_dynamic_alloc)
 
 #if defined(_M_CEE_PURE)
 // /clr:pure doesn't ever do constant initialization, so rely on the CLR and magic statics
