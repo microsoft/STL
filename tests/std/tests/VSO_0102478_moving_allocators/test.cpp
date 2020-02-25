@@ -72,6 +72,8 @@ struct test_info {
 
 using expected_table_t = vector<test_info>;
 
+#pragma warning(push)
+#pragma warning(disable: 4640) // 'variable': construction of local static object is not thread-safe
 #if _ITERATOR_DEBUG_LEVEL == 0
 
 const expected_table_t& get_expected_moves_table() {
@@ -126,6 +128,7 @@ const expected_table_t& get_expected_copies_table() {
 }
 
 #endif // _ITERATOR_DEBUG_LEVEL == 0
+#pragma warning(pop)
 
 int query_expected_table(const expected_table_t& table, const string& type_name, const string& test_name) {
     auto exact_match = find_if(begin(table), end(table),

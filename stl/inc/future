@@ -153,11 +153,9 @@ private:
 };
 
 // CLASS _Future_error_category
-class _Future_error_category : public _Generic_error_category { // categorize a future error
+class _Future_error_category2 : public error_category { // categorize a future error
 public:
-    _Future_error_category() {
-        _Addr = _Future_addr;
-    }
+    constexpr _Future_error_category2() noexcept : error_category(_Future_addr) {}
 
     virtual const char* name() const noexcept override {
         return "future";
@@ -169,12 +167,12 @@ public:
             return _Name;
         }
 
-        return _Generic_error_category::message(_Errcode);
+        return _Syserror_map(_Errcode);
     }
 };
 
 _NODISCARD inline const error_category& future_category() noexcept {
-    return _Immortalize<_Future_error_category>();
+    return _Immortalize_memcpy_image<_Future_error_category2>();
 }
 
 // STRUCT TEMPLATE _State_deleter
