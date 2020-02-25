@@ -145,9 +145,7 @@
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
-// P0556R3 <bit> ispow2(), ceil2(), floor2(), log2p1()
-//            (called has_single_bit, bit_ceil, bit_floor, and bit_width as of
-//             P1956R1 adoption)
+// P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
@@ -183,6 +181,7 @@
 // P1754R1 Rename Concepts To standard_case
 // P1870R1 safe_range
 // P1872R0 span Should Have size_type, Not index_type
+// P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
