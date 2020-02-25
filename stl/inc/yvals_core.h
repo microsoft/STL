@@ -146,7 +146,8 @@
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> ispow2(), ceil2(), floor2(), log2p1()
-//            (log2p1() is called bit_length() as of D1956)
+//            (called has_single_bit, bit_ceil, bit_floor, and bit_width as of
+//             P1956R1 adoption)
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
@@ -1084,7 +1085,7 @@
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
-#define __cpp_lib_int_pow2                 201806L
+#define __cpp_lib_int_pow2                 202002L
 #define __cpp_lib_is_constant_evaluated    201811L
 #define __cpp_lib_is_nothrow_convertible   201806L
 #define __cpp_lib_list_remove_return_type  201806L
