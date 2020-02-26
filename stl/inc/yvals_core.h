@@ -145,8 +145,7 @@
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
-// P0556R3 <bit> ispow2(), ceil2(), floor2(), log2p1()
-//            (log2p1() is called bit_length() as of D1956)
+// P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
@@ -182,6 +181,7 @@
 // P1754R1 Rename Concepts To standard_case
 // P1870R1 safe_range
 // P1872R0 span Should Have size_type, Not index_type
+// P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
 // P????R? directory_entry::clear_cache()
 
@@ -1084,7 +1084,7 @@
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 201811L
 #define __cpp_lib_generic_unordered_lookup 201811L
-#define __cpp_lib_int_pow2                 201806L
+#define __cpp_lib_int_pow2                 202002L
 #define __cpp_lib_is_constant_evaluated    201811L
 #define __cpp_lib_is_nothrow_convertible   201806L
 #define __cpp_lib_list_remove_return_type  201806L

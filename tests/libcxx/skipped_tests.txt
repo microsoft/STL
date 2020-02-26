@@ -47,10 +47,6 @@ containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
-# libcxx incorrectly thinks subspan<Offset, Count> can produce a span of dynamic extent
-# See https://reviews.llvm.org/D73138
-containers\views\span.sub\subspan.pass.cpp
-
 # libcxx doesn't yet implement P1423R3, so it expects an "old" value for __cpp_lib_char8_t
 language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
 language.support\support.limits\support.limits.general\istream.version.pass.cpp
