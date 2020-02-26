@@ -3509,7 +3509,7 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, cons
 // FUNCTION TEMPLATE make_move_iterator
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
-    return move_iterator<_Iter>(_It);
+    return move_iterator<_Iter>(_STD move(_It));
 }
 
 #ifdef __cpp_lib_concepts
