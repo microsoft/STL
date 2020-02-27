@@ -38,15 +38,11 @@ using namespace std;
 
 namespace {
 #ifdef _M_CEE_PURE
-#pragma warning(push)
-#pragma warning(disable : 4640) // construction of local static object is not thread-safe (/Wall)
     template <class _Ty>
     _Ty& _Immortalize() { // return a reference to an object that will live forever
         /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
         return reinterpret_cast<_Ty&>(_Static._Storage);
     }
-#pragma warning(pop)
-
 #else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
     template <class _Ty>
     int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
