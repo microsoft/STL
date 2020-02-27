@@ -152,7 +152,6 @@ private:
     error_code _Mycode; // the stored error code
 };
 
-// CLASS _Future_error_category
 class _Future_error_category2 : public error_category { // categorize a future error
 public:
     constexpr _Future_error_category2() noexcept : error_category(_Future_addr) {}

@@ -457,7 +457,6 @@ struct _System_error_message {
     }
 };
 
-// CLASS _Generic_error_category
 class _Generic_error_category : public error_category { // categorize a generic error
 public:
     constexpr _Generic_error_category() noexcept : error_category(_Generic_addr) {}
@@ -471,7 +470,6 @@ public:
     }
 };
 
-// CLASS _Iostream_error_category
 class _Iostream_error_category2 : public error_category { // categorize an iostream error
 public:
     constexpr _Iostream_error_category2() noexcept : error_category(_Iostream_addr) {}
@@ -491,7 +489,6 @@ public:
     }
 };
 
-// CLASS _System_error_category
 class _System_error_category : public error_category { // categorize an operating system error
 public:
     constexpr _System_error_category() noexcept : error_category(_System_addr) {}
@@ -524,27 +521,28 @@ public:
 
 //
 // TRANSITION, VSO-1043450
-// The contents of this file are fairly unfortunate to provide a nonstandard guarantee.
+// _Immortalize_memcpy_image is used to provide a nonstandard guarantee.
 // Specifically, we want the error category objects returned from things like std::system_category() to always
 //   be available, even during DLL unload (otherwise, <system_error> would be a huge regression vs. legacy error codes).
 // Moreover, we need to be very conservative in the runtime support we request. Thus, we have these constraints:
 //
 // * can't use magic statics in standard modes, because that would inject a .TLS section into all binaries using 
-//   <system_error> and would likely put borderline programs over the TLS slot count limit
+//   <system_error> and would likely put borderline programs over the TLS slot count limit, and would destroy the
+//   variable during DLL unload
 // * can't declare the error_category as an ordinary constexpr variable for most compilers, because error_category
 //   has a virtual destructor (TRANSITION, __cpp_constexpr_dynamic_alloc)
 // * can't declare the error_category as an ordinary non-constexpr variable even with a constexpr constructor, because
 //   the compiler will emit code to destroy it which invalidates its use in these DLL shutdown scenarios
 //
-// As a result, we are left a somewhat unfortunate workaround: We create an atomic<uintptr_t> array to store the
-//   error_category instance, test if the first atomic is nonzero (acquire), and if so, we know we have formed the
-//   instance and can return a reinterpreted pointer to that storage. If the first atomic is zero, we write all except
-//   the first atomic (relaxed), then write the first one as a store-release. (The non-first values are transferred
-//   to other threads in the release sequence).
+// As a result, we use a workaround: We create an atomic<uintptr_t> array to store the error_category instance, test
+//   if the first atomic is nonzero (acquire), and if so, we know we have formed the instance and can return a
+//   reinterpreted pointer to that storage. If the first atomic is zero, we write all except the first atomic (relaxed),
+//   then write the first one as a store-release. (The non-first values are transferred to other threads in the
+//   release sequence).
 //
-// Acknowledged undefined and implementation defined behavior happening here:
+// Acknowledged undefined and implementation-defined behavior happening here:
 // * There is a data race when filling in the values other than the first atomic; this is OK on all hardware we target
-//   because the racing threads are all writing identical values.
+//   because the racing threads are all writing identical values that never change afterwards.
 // * We are reaching into the memory layout atomic<uintptr_t>[N] and assuming we can interpret that as some other type.
 // * We are assuming that virtual functions are implemented with a vfptr located as the first member of an object.
 // (there are probably others)
@@ -578,14 +576,14 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static atomic<uintptr_t> _Storage[_Pointer_count];
     static_assert(sizeof(_Storage) == sizeof(_Ty), "Bad storage size");
     static_assert(alignof(decltype(_Storage)) >= alignof(_Ty), "Bad alignment assumptions");
-    if (_Storage[0].load(_STD memory_order_acquire) != 0) {
+    if (_Storage[0].load(memory_order_acquire) != 0) {
         return reinterpret_cast<_Ty&>(_Storage);
     }
 
     const _Ty _Target;
     const auto _Target_iter = reinterpret_cast<const uintptr_t*>(_STD addressof(_Target));
     _CSTD memcpy(_Storage + 1, _Target_iter + 1, sizeof(_Ty) - sizeof(uintptr_t));
-    _Storage[0].store(_Target_iter[0], _STD memory_order_release);
+    _Storage[0].store(_Target_iter[0], memory_order_release);
     return reinterpret_cast<_Ty&>(_Storage);
 }
 #endif // choose immortalize strategy
