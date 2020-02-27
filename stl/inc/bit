@@ -35,12 +35,12 @@ template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr bool ispow2(const _Ty _Val) noexcept {
+_NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
     return _Val != 0 && (_Val & (_Val - 1)) == 0;
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty ceil2(const _Ty _Val) noexcept /* strengthened */ {
+_NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
     if (_Val == 0) {
         return 1;
     }
@@ -49,7 +49,7 @@ _NODISCARD constexpr _Ty ceil2(const _Ty _Val) noexcept /* strengthened */ {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty floor2(const _Ty _Val) noexcept {
+_NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
     if (_Val == 0) {
         return 0;
     }
@@ -58,7 +58,7 @@ _NODISCARD constexpr _Ty floor2(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty bit_length(const _Ty _Val) noexcept {
+_NODISCARD constexpr _Ty bit_width(const _Ty _Val) noexcept {
     return static_cast<_Ty>(numeric_limits<_Ty>::digits - _STD countl_zero(_Val));
 }
 

@@ -10,25 +10,25 @@
 
 _EXTERN_C_UNLESS_PURE
 
-#define BASE   10 // decimal
-#define NDIG   9 // decimal digits per long word
-#define MAXSIG (5 * NDIG) // maximum significant digits to keep
+constexpr int _Base   = 10; // decimal
+constexpr int _Ndig   = 9; // decimal digits per long word
+constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
 int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
     int maxsig) { // convert string to array of long plus exponent
-    char buf[MAXSIG + 1]; // worst case, with room for rounding digit
+    char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig   = 0; // number of significant digits seen
     int seen   = 0; // any valid field characters seen
     int sticky = 0; // note any nonzero digits discarded
     int word   = 0; // just before current long word to fill
 
-    maxsig *= NDIG; // convert word count to digit count
-    if (MAXSIG < maxsig) {
-        maxsig = MAXSIG; // protect against bad call
+    maxsig *= _Ndig; // convert word count to digit count
+    if (_Maxsig < maxsig) {
+        maxsig = _Maxsig; // protect against bad call
     }
 
     lo[0] = 0; // power of ten exponent
-    lo[1] = 0; // first NDIG-digit word of fraction
+    lo[1] = 0; // first _Ndig-digit word of fraction
 
     while (*s == '0') { // strip leading zeros
         seen = 1;
@@ -69,7 +69,7 @@ int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
     }
 
     if (sticky) {
-        buf[maxsig - 1] += 1; // okay if digit becomes BASE
+        buf[maxsig - 1] += 1; // okay if digit becomes _Base
     }
 
     for (; 0 < nsig && buf[nsig - 1] == '\0'; --nsig) {
@@ -82,14 +82,14 @@ int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
 
     if (seen) { // convert digit sequence to words
         int bufidx  = 0; // next digit in buffer
-        int wordidx = NDIG - nsig % NDIG; // next digit in word (% NDIG)
+        int wordidx = _Ndig - nsig % _Ndig; // next digit in word (% _Ndig)
 
-        word = wordidx % NDIG == 0 ? 0 : 1;
+        word = wordidx % _Ndig == 0 ? 0 : 1;
         for (; bufidx < nsig; ++wordidx, ++bufidx) {
-            if (wordidx % NDIG == 0) {
+            if (wordidx % _Ndig == 0) {
                 lo[++word] = buf[bufidx];
             } else {
-                lo[word] = lo[word] * BASE + buf[bufidx];
+                lo[word] = lo[word] * _Base + buf[bufidx];
             }
         }
 

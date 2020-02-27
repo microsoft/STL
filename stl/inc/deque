@@ -1002,7 +1002,7 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return _Min_value(
+        return (_STD min)(
             static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
@@ -1175,7 +1175,7 @@ public:
         _Orphan_all();
         auto _Myfirst       = _Unchecked_begin();
         const auto _Oldsize = _Mysize();
-        auto _Assign_count  = _Min_value(_Count, _Oldsize);
+        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
         for (; 0 < _Assign_count; --_Assign_count) {
             *_Myfirst = _Val;
             ++_Myfirst;

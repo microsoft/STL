@@ -234,8 +234,8 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<thread::id> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef thread::id argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef thread::id _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const thread::id _Keyval) const noexcept {
         return _Hash_representation(_Keyval._Id);
