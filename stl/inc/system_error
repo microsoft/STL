@@ -12,8 +12,8 @@
 #include <cerrno>
 #include <cstdlib>
 #include <stdexcept>
-#include <xerrc.h>
 #include <xcall_once.h>
+#include <xerrc.h>
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif
