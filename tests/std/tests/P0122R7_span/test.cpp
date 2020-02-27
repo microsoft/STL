@@ -218,6 +218,7 @@ constexpr bool test() {
 
     int arr[3]{10, 20, 30};
     array<int, 3> stl{{100, 200, 300}};
+    array<int*, 3> stl_nullptr{{nullptr, nullptr, nullptr}};
 
     {
         static_assert(is_nothrow_constructible_v<span<int>, int*, size_t>); // strengthened
@@ -565,28 +566,40 @@ constexpr bool test() {
         span<const int> sp_const_x(as_const(arr));
         span<const int> sp_const_y(stl);
         span<const int> sp_const_z(as_const(stl));
+        span<const int* const> sp_const_nullptr_1{stl_nullptr};
+        span<const int* const> sp_const_nullptr_2{as_const(stl_nullptr)};
         assert(sp_const_w.data() == begin(arr));
         assert(sp_const_x.data() == begin(arr));
         assert(sp_const_y.data() == stl.data());
         assert(sp_const_z.data() == stl.data());
+        assert(sp_const_nullptr_1.data() == stl_nullptr.data());
+        assert(sp_const_nullptr_2.data() == stl_nullptr.data());
         assert(sp_const_w.size() == 3);
         assert(sp_const_x.size() == 3);
         assert(sp_const_y.size() == 3);
         assert(sp_const_z.size() == 3);
+        assert(sp_const_nullptr_1.size() == 3);
+        assert(sp_const_nullptr_2.size() == 3);
 
         FunctionTakingSpan<int>(arr);
         FunctionTakingSpan<int>(stl);
+        FunctionTakingSpan<int*>(stl_nullptr);
         FunctionTakingSpan<int, 3>(arr);
         FunctionTakingSpan<int, 3>(stl);
+        FunctionTakingSpan<int*, 3>(stl_nullptr);
         FunctionTakingSpan<const int>(arr);
         FunctionTakingSpan<const int>(as_const(arr));
         FunctionTakingSpan<const int>(stl);
         FunctionTakingSpan<const int>(as_const(stl));
+        FunctionTakingSpan<const int* const>(stl_nullptr);
+        FunctionTakingSpan<const int* const>(as_const(stl_nullptr));
 
         static_assert(is_same_v<decltype(span{arr}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(arr)}), span<const int, 3>>);
         static_assert(is_same_v<decltype(span{stl}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(stl)}), span<const int, 3>>);
+        static_assert(is_same_v<decltype(span{stl_nullptr}), span<int*, 3>>);
+        static_assert(is_same_v<decltype(span{as_const(stl_nullptr)}), span<const int*, 3>>);
     }
 
     {
