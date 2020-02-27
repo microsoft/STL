@@ -1628,10 +1628,10 @@ STATIC_ASSERT(__cpp_lib_generic_unordered_lookup == 201811L);
 #if CXX20_MODE
 #ifndef __cpp_lib_int_pow2
 #error BOOM
-#elif __cpp_lib_int_pow2 != 201806L
+#elif __cpp_lib_int_pow2 != 202002L
 #error BOOM
 #else
-STATIC_ASSERT(__cpp_lib_int_pow2 == 201806L);
+STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #endif
 #else
 #ifdef __cpp_lib_int_pow2

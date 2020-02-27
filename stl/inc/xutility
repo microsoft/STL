@@ -2637,11 +2637,9 @@ namespace ranges {
     // clang-format off
     // CONCEPT ranges::sized_range
     template <class _Rng>
-    concept sized_range = range<_Rng>
-#if 0 // TRANSITION, LWG-3264
-        && !disable_sized_range<remove_cvref_t<_Rng>>
-#endif // TRANSITION, LWG-3264
-        && requires(_Rng& __r) { _RANGES size(__r); };
+    concept sized_range = range<_Rng> && requires(_Rng& __r) {
+        _RANGES size(__r);
+    };
     // clang-format on
 
     // STRUCT ranges::view_base
