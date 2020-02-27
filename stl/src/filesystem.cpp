@@ -751,6 +751,8 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 [[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
     uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
     // get capacity information for the volume on which the file _Target resides
+    static_assert(sizeof(uintmax_t) == sizeof(ULARGE_INTEGER) && alignof(uintmax_t) == alignof(ULARGE_INTEGER),
+        "Size and alignment must match for reinterpret_cast<PULARGE_INTEGER>");
     const auto _Available_c   = reinterpret_cast<PULARGE_INTEGER>(_Available);
     const auto _Total_bytes_c = reinterpret_cast<PULARGE_INTEGER>(_Total_bytes);
     const auto _Free_bytes_c  = reinterpret_cast<PULARGE_INTEGER>(_Free_bytes);
