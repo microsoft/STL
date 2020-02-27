@@ -310,23 +310,20 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 
 #if _HAS_CXX20
 template <class _Ty, class... _Types>
-_Ty* construct_at(_Ty* const _Location, _Types&&... _Args) {
+_Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+    is_nothrow_constructible_v<_Ty, _Types...>) /* strengthened */ {
     return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...);
 }
 
 namespace ranges {
-    template <class _Ty, class... _Types>
-    _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) {
-        return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
-            _Ty(_STD forward<_Types>(_Args)...);
-    }
+    using _STD construct_at;
 } // namespace ranges
 #endif // _HAS_CXX20
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy_at
 template <class _Ty>
-void destroy_at(_Ty* const _Location) { // destroy _Ty at memory address _Location
+void destroy_at(_Ty* const _Location) noexcept(noexcept(_Location->~_Ty())) /* strengthened */ {
     _Location->~_Ty();
 }
 
