@@ -4700,14 +4700,22 @@ constexpr auto lexicographical_compare_three_way(_InIt1 _First1, _InIt1 _Last1, 
             }
         }
     }
-    for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
+    for (;;) {
+        if (_UFirst1 == _ULast1) {
+            return _UFirst2 == _ULast2 ? strong_ordering::equal : strong_ordering::less;
+        }
+        
+        if (_UFirst2 == _ULast2) {
+            return strong_ordering::greater;
+        }
+        
         if (const auto _CmpResult = _Comp(*_UFirst1, *_UFirst2); _CmpResult != 0) {
             return _CmpResult;
         }
+        
+        ++_UFirst1;
+        ++_UFirst2;
     }
-
-    return _UFirst1 != _ULast1 ? strong_ordering::greater
-                               : _UFirst2 != _ULast2 ? strong_ordering::less : strong_ordering::equal;
 }
 
 template <class _InIt1, class _InIt2>
