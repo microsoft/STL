@@ -748,6 +748,74 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     return __std_win_error::_Success;
 }
 
+[[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
+    uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
+    // get capacity information for the volume on which the file _Target resides
+    const auto _Available_c   = reinterpret_cast<PULARGE_INTEGER>(_Available);
+    const auto _Total_bytes_c = reinterpret_cast<PULARGE_INTEGER>(_Total_bytes);
+    const auto _Free_bytes_c  = reinterpret_cast<PULARGE_INTEGER>(_Free_bytes);
+    if (GetDiskFreeSpaceExW(_Target, _Available_c, _Total_bytes_c, _Free_bytes_c)) {
+        return __std_win_error::_Success;
+    }
+
+    auto _Last_error         = __std_win_error{GetLastError()};
+    _Available_c->QuadPart   = ~0ull;
+    _Total_bytes_c->QuadPart = ~0ull;
+    _Free_bytes_c->QuadPart  = ~0ull;
+    if (_Last_error != __std_win_error::_Directory_name_is_invalid) {
+        return _Last_error;
+    }
+
+    // input could have been a file; canonicalize and remove the last component
+    __crt_unique_heap_ptr<wchar_t> _Buf;
+    DWORD _Actual_length;
+    {
+        const _STD _Fs_file _Handle(
+            _Target, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
+        if (_Last_error != __std_win_error::_Success) {
+            return _Last_error;
+        }
+
+        DWORD _Buf_count = MAX_PATH;
+        for (;;) {
+            _Buf           = _malloc_crt_t(wchar_t, _Buf_count);
+            _Actual_length = __vcrt_GetFinalPathNameByHandleW(
+                _Handle._Get(), _Buf.get() + 14, _Buf_count - 14, FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
+            if (_Actual_length == 0) {
+                return __std_win_error{GetLastError()};
+            }
+
+            _Actual_length += 14;
+            if (_Actual_length <= _Buf_count) {
+                break;
+            }
+
+            _Buf_count = _Actual_length;
+        }
+    } // close _Handle
+
+    const auto _Ptr = _Buf.get();
+
+    // we resolved the NT name, so add the DOS-to-NT prefix
+    memcpy(_Ptr, LR"(\\?\GLOBALROOT)", 14 * sizeof(wchar_t));
+
+    // insert null terminator at the last slash
+    auto _Cursor = _Ptr + _Actual_length;
+    do {
+        --_Cursor; // cannot run off start because DOS-to-NT prefix contains a backslash
+    } while (*_Cursor != L'\\');
+
+    *_Cursor = L'\0';
+    if (GetDiskFreeSpaceExW(_Ptr, _Available_c, _Total_bytes_c, _Free_bytes_c)) {
+        return __std_win_error::_Success;
+    }
+
+    _Available_c->QuadPart   = ~0ull;
+    _Total_bytes_c->QuadPart = ~0ull;
+    _Free_bytes_c->QuadPart  = ~0ull;
+    return __std_win_error{GetLastError()};
+}
+
 [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_temp_path(wchar_t* const _Target) noexcept {
     // calls GetTempPathW
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
