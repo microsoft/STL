@@ -4671,7 +4671,7 @@ _NODISCARD bool lexicographical_compare(
 // FUNCTION TEMPLATE lexicographical_compare_three_way
 template <class _InIt1, class _InIt2, class _Cmp>
 constexpr auto lexicographical_compare_three_way(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2,
-    _Cmp _Comp) -> common_comparison_category_t<decltype(_Comp(*_First1, *_First2)), strong_ordering> {
+    _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1      = _Get_unwrapped(_First1);
