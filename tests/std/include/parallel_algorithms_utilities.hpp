@@ -13,7 +13,7 @@ const size_t max_parallel_test_case_n = std::max(4u, std::thread::hardware_concu
 #endif // EXHAUSTIVE
 
 #pragma warning(push)
-#pragma warning(disable: 4640) // 'cases': construction of local static object is not thread-safe
+#pragma warning(disable : 4640) // 'cases': construction of local static object is not thread-safe
 template <typename Fx, typename... Args>
 void parallel_test_case(Fx fn, Args&... vals) {
     // call fn with "interesting" test case sizes and additional parameters

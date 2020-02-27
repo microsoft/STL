@@ -74,7 +74,7 @@ public:
 #ifdef __cpp_constexpr_dynamic_alloc
     constexpr
 #endif
-    virtual ~error_category() noexcept = default;
+        virtual ~error_category() noexcept = default;
 
     _NODISCARD virtual const char* name() const noexcept = 0;
 
@@ -526,7 +526,7 @@ public:
 //   be available, even during DLL unload (otherwise, <system_error> would be a huge regression vs. legacy error codes).
 // Moreover, we need to be very conservative in the runtime support we request. Thus, we have these constraints:
 //
-// * can't use magic statics in standard modes, because that would inject a .TLS section into all binaries using 
+// * can't use magic statics in standard modes, because that would inject a .TLS section into all binaries using
 //   <system_error> and would likely put borderline programs over the TLS slot count limit, and would destroy the
 //   variable during DLL unload
 // * can't declare the error_category as an ordinary constexpr variable for most compilers, because error_category

@@ -73,7 +73,7 @@ struct test_info {
 using expected_table_t = vector<test_info>;
 
 #pragma warning(push)
-#pragma warning(disable: 4640) // 'variable': construction of local static object is not thread-safe
+#pragma warning(disable : 4640) // 'variable': construction of local static object is not thread-safe
 #if _ITERATOR_DEBUG_LEVEL == 0
 
 const expected_table_t& get_expected_moves_table() {
