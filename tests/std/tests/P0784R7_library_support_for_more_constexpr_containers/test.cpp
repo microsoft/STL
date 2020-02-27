@@ -35,9 +35,9 @@ void test_runtime(const Ty& _Val) {
     std::destroy_at(asPtrTy);
 
     // test voidify:
-    const auto asCv = static_cast<const volatile _Ty*>(_AsPtrTy);
+    const auto asCv = static_cast<const volatile Ty*>(asPtrTy);
     std::construct_at(asCv, _Val);
-    assert(const_cast<const _Ty&>(*asCv) == _Val);
+    assert(const_cast<const Ty&>(*asCv) == _Val);
     std::destroy_at(asCv);
 }
 
