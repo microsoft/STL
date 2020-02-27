@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Change "ADMIN_PASSWORD" to the "AdminUser" password on the virtual machines, and "PERSONAL_ACCESS_TOKEN" to
-# a PAT with permission to register Azure DevOps agents, then  aste the contents of this file into an Azure
+# a PAT with permission to register Azure DevOps agents, then paste the contents of this file into an Azure
 # Cloud Shell Powershell prompt.
 
 # When demoing changes you may need to change the "STL/master" part of the below URIs to point to your desired
