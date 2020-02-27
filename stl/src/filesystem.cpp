@@ -748,6 +748,59 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     return __std_win_error::_Success;
 }
 
+namespace {
+    static_assert(sizeof(uintmax_t) == sizeof(ULARGE_INTEGER) && alignof(uintmax_t) == alignof(ULARGE_INTEGER),
+        "Size and alignment must match for reinterpret_cast<PULARGE_INTEGER>");
+
+} // unnamed namespace
+
+[[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
+    uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
+    // get capacity information for the directory on which the file _Target resides
+    __std_win_error _Last_error;    
+
+    DWORD _Attributes = GetFileAttributesW(_Target);
+    if (_Attributes != INVALID_FILE_ATTRIBUTES) {
+       if (_Attributes == FILE_ATTRIBUTE_DIRECTORY) {
+          if (GetDiskFreeSpaceExW(_Target, reinterpret_cast<PULARGE_INTEGER>(_Available),
+             reinterpret_cast<PULARGE_INTEGER>(_Total_bytes), reinterpret_cast<PULARGE_INTEGER>(_Free_bytes))) {
+             return __std_win_error::_Success;
+          } else {
+             _Last_error = __std_win_error{ GetLastError() };
+          }
+       } else {
+           constexpr DWORD _Dynamic_size = USHRT_MAX + 1; // assuming maximum NT path fits in a UNICODE_STRING
+           const auto _Temp_buf          = _malloc_crt_t(wchar_t, _Dynamic_size);
+
+           const wchar_t* _File_pos = _nullptr;
+           DWORD _GFPNW_result      = GetFullPathNameW(_Target, _Dynamic_size, _Temp_buf.get(), &_File_pos);
+           if (!_GFPNW_result) {
+               _Last_error = __std_win_error{GetLastError()};
+           } else {
+               if (_GFPNW_result > _Dynamic_size) {
+                   _Last_error = __std_win_error::_Filename_exceeds_range;
+               } else {
+                   *_File_pos = L'\0';
+                   if (GetDiskFreeSpaceExW(_Temp_buf.get(), reinterpret_cast<PULARGE_INTEGER>(_Available),
+                           reinterpret_cast<PULARGE_INTEGER>(_Total_bytes),
+                           reinterpret_cast<PULARGE_INTEGER>(_Free_bytes))) {
+                       return __std_win_error::_Success;
+                   } else {
+                       _Last_error = __std_win_error{GetLastError()};
+                   }
+               }
+           }
+       }
+    } else {
+        _Last_error = __std_win_error{GetLastError()};
+    }
+
+    *_Available   = ~0ull;
+    *_Total_bytes = ~0ull;
+    *_Free_bytes  = ~0ull;
+    return _Last_error;
+}
+
 [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_temp_path(wchar_t* const _Target) noexcept {
     // calls GetTempPathW
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
