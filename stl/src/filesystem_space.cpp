@@ -42,12 +42,11 @@ _EXTERN_C
         _Last_error = __std_win_error{GetLastError()};
     } else {
         {
-            constexpr DWORD _Static_size = MAX_PATH;
-            wchar_t _Temp_buf[_Static_size];
-            _Last_error = _Fs_space_attempt(_Temp_buf, _Static_size, _Target, _Available, _Total_bytes, _Free_bytes);
-            if (_Last_error == __std_win_error::_Success) {
-                return __std_win_error::_Success;
+            if (GetDiskFreeSpaceExW(_Target, reinterpret_cast<PULARGE_INTEGER>(_Available), 
+                      reinterpret_cast<PULARGE_INTEGER>(_Total_bytes), reinterpret_cast<PULARGE_INTEGER>(_Free_bytes))) {
+                 return _std_win_error::Success;
             }
+            _Last_error = __std_win_error{GetLastError()}
         }
 
         if (_Last_error == __std_win_error::_Filename_exceeds_range) {
