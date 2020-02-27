@@ -552,15 +552,11 @@ public:
 
 #if defined(_M_CEE_PURE)
 // /clr:pure doesn't ever do constant initialization, so rely on the CLR and magic statics
-
-#pragma warning(push)
-#pragma warning(disable : 4640) // construction of local static object is not thread-safe (/Wall)
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#pragma warning(pop)
 #elif defined(__cpp_constexpr_dynamic_alloc)
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
