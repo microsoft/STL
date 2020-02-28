@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _SYSTEM_ERROR_
 #define _SYSTEM_ERROR_
-#include <yvals_core.h>
+#include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_system_error_abi.hpp>
 #include <cerrno>
@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <xcall_once.h>
 #include <xerrc.h>
+#ifndef _M_CEE_PURE
+#include <atomic>
+#endif
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -68,7 +71,10 @@ public:
         _Addr = reinterpret_cast<uintptr_t>(this);
     }
 
-    virtual ~error_category() noexcept {}
+#ifdef __cpp_constexpr_dynamic_alloc
+    constexpr
+#endif
+        virtual ~error_category() noexcept = default;
 
     _NODISCARD virtual const char* name() const noexcept = 0;
 
@@ -98,7 +104,9 @@ public:
 protected:
     uintptr_t _Addr;
 
-    enum : uintptr_t { // imaginary addresses for Standard error_category objects
+    constexpr explicit error_category(const uintptr_t _Addr_) noexcept : _Addr(_Addr_) {}
+
+    enum : uintptr_t { // symbolic addresses for Standard error_category objects
         _Future_addr   = 1,
         _Generic_addr  = 3,
         _Iostream_addr = 5,
@@ -449,12 +457,9 @@ struct _System_error_message {
     }
 };
 
-// CLASS _Generic_error_category
 class _Generic_error_category : public error_category { // categorize a generic error
 public:
-    _Generic_error_category() noexcept {
-        _Addr = _Generic_addr;
-    }
+    constexpr _Generic_error_category() noexcept : error_category(_Generic_addr) {}
 
     _NODISCARD virtual const char* name() const noexcept override {
         return "generic";
@@ -465,12 +470,9 @@ public:
     }
 };
 
-// CLASS _Iostream_error_category
-class _Iostream_error_category : public _Generic_error_category { // categorize an iostream error
+class _Iostream_error_category2 : public error_category { // categorize an iostream error
 public:
-    _Iostream_error_category() noexcept {
-        _Addr = _Iostream_addr;
-    }
+    constexpr _Iostream_error_category2() noexcept : error_category(_Iostream_addr) {}
 
     _NODISCARD virtual const char* name() const noexcept override {
         return "iostream";
@@ -482,17 +484,14 @@ public:
             constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
             return string(_Iostream_error, _Iostream_error_length);
         } else {
-            return _Generic_error_category::message(_Errcode);
+            return _Syserror_map(_Errcode);
         }
     }
 };
 
-// CLASS _System_error_category
 class _System_error_category : public error_category { // categorize an operating system error
 public:
-    _System_error_category() noexcept {
-        _Addr = _System_addr;
-    }
+    constexpr _System_error_category() noexcept : error_category(_System_addr) {}
 
     _NODISCARD virtual const char* name() const noexcept override {
         return "system";
@@ -520,16 +519,81 @@ public:
     }
 };
 
+//
+// TRANSITION, VSO-1043450
+// _Immortalize_memcpy_image is used to provide a nonstandard guarantee.
+// Specifically, we want the error category objects returned from things like std::system_category() to always
+//   be available, even during DLL unload (otherwise, <system_error> would be a huge regression vs. legacy error codes).
+// Moreover, we need to be very conservative in the runtime support we request. Thus, we have these constraints:
+//
+// * can't use magic statics in standard modes, because that would inject a .TLS section into all binaries using
+//   <system_error> and would likely put borderline programs over the TLS slot count limit, and would destroy the
+//   variable during DLL unload
+// * can't declare the error_category as an ordinary constexpr variable for most compilers, because error_category
+//   has a virtual destructor (TRANSITION, __cpp_constexpr_dynamic_alloc)
+// * can't declare the error_category as an ordinary non-constexpr variable even with a constexpr constructor, because
+//   the compiler will emit code to destroy it which invalidates its use in these DLL shutdown scenarios
+//
+// As a result, we use a workaround: We create an atomic<uintptr_t> array to store the error_category instance, test
+//   if the first atomic is nonzero (acquire), and if so, we know we have formed the instance and can return a
+//   reinterpreted pointer to that storage. If the first atomic is zero, we write all except the first atomic (relaxed),
+//   then write the first one as a store-release. (The non-first values are transferred to other threads in the
+//   release sequence).
+//
+// Acknowledged undefined and implementation-defined behavior happening here:
+// * There is a data race when filling in the values other than the first atomic; this is OK on all hardware we target
+//   because the racing threads are all writing identical values that never change afterwards.
+// * We are reaching into the layout of atomic<uintptr_t>[N] and assuming we can reinterpret that as some other type.
+// * We are assuming that virtual functions are implemented with a vfptr located as the first member of an object.
+// (there are probably others)
+//
+// Inspecting the resulting assembly of any callers of _Immortalize_memcpy_image is recommended.
+//
+
+#if defined(_M_CEE_PURE)
+// /clr:pure doesn't ever do constant initialization, so rely on the CLR and magic statics
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
+    return _Static._Storage;
+}
+#elif defined(__cpp_constexpr_dynamic_alloc)
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    constexpr _Ty _Static;
+    return _Static._Storage;
+}
+#else // choose immortalize strategy
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    // return reference to a memcpy'd default-initialized _Ty
+    // pre: A default-initialized _Ty sets the first pointer-sized field to nonzero
+    constexpr size_t _Pointer_count = sizeof(_Ty) / sizeof(uintptr_t);
+    static atomic<uintptr_t> _Storage[_Pointer_count];
+    static_assert(sizeof(_Storage) == sizeof(_Ty), "Bad storage size");
+    static_assert(alignof(decltype(_Storage)) >= alignof(_Ty), "Bad alignment assumptions");
+    if (_Storage[0].load(memory_order_acquire) != 0) {
+        return reinterpret_cast<_Ty&>(_Storage);
+    }
+
+    const _Ty _Target;
+    const auto _Target_iter = reinterpret_cast<const uintptr_t*>(_STD addressof(_Target));
+    _CSTD memcpy(_Storage + 1, _Target_iter + 1, sizeof(_Ty) - sizeof(uintptr_t));
+    _Storage[0].store(_Target_iter[0], memory_order_release);
+    return reinterpret_cast<_Ty&>(_Storage);
+}
+#endif // choose immortalize strategy
+
 _NODISCARD inline const error_category& generic_category() noexcept {
-    return _Immortalize<_Generic_error_category>();
+    return _Immortalize_memcpy_image<_Generic_error_category>();
 }
 
 _NODISCARD inline const error_category& iostream_category() noexcept {
-    return _Immortalize<_Iostream_error_category>();
+    return _Immortalize_memcpy_image<_Iostream_error_category2>();
 }
 
 _NODISCARD inline const error_category& system_category() noexcept {
-    return _Immortalize<_System_error_category>();
+    return _Immortalize_memcpy_image<_System_error_category>();
 }
 _STD_END
 #pragma pop_macro("new")
