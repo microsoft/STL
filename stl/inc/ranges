@@ -27,7 +27,8 @@ namespace ranges {
     // clang-format off
     // CONCEPT ranges::viewable_range
     template <class _Rng>
-    concept viewable_range = range<_Rng> && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
+    concept viewable_range = range<_Rng>
+        && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
 } // namespace ranges
 
 _STD_END

@@ -422,7 +422,8 @@ concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
 };
 
 template <class _It>
-concept _Cpp17_input_iterator = _Cpp17_iterator<_It> && equality_comparable<_It>
+concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
+    && equality_comparable<_It>
     && _Has_member_difference_type<incrementable_traits<_It>>
     && _Has_member_value_type<indirectly_readable_traits<_It>>
     && requires(_It __i) {
@@ -623,8 +624,9 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty>
-            && requires(_Ty&& __t) { iter_move(static_cast<_Ty&&>(__t)); };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty&& __t) {
+            iter_move(static_cast<_Ty&&>(__t));
+        };
 
         template <class _Ty>
         concept _Can_deref = requires(_Ty&& __t) {
@@ -804,7 +806,8 @@ using _Iter_concept = typename _Iter_concept_impl<_It>::type;
 // CONCEPT input_iterator
 template <class _It>
 concept input_iterator = input_or_output_iterator<_It> && indirectly_readable<_It>
-    && requires { typename _Iter_concept<_It>; } && derived_from<_Iter_concept<_It>, input_iterator_tag>;
+    && requires { typename _Iter_concept<_It>; }
+    && derived_from<_Iter_concept<_It>, input_iterator_tag>;
 
 // CONCEPT output_iterator
 template <class _It, class _Ty>
@@ -851,27 +854,39 @@ concept contiguous_iterator = random_access_iterator<_It>
 
 // CONCEPT indirectly_unary_invocable
 template <class _Fn, class _It>
-concept indirectly_unary_invocable = indirectly_readable<_It> && copy_constructible<_Fn>
-    && invocable<_Fn&, iter_value_t<_It>&> && invocable<_Fn&, iter_reference_t<_It>>
+concept indirectly_unary_invocable = indirectly_readable<_It>
+    && copy_constructible<_Fn>
+    && invocable<_Fn&, iter_value_t<_It>&>
+    && invocable<_Fn&, iter_reference_t<_It>>
     && invocable<_Fn&, iter_common_reference_t<_It>>
-    && common_reference_with<invoke_result_t<_Fn&, iter_value_t<_It>&>, invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+    && common_reference_with<
+        invoke_result_t<_Fn&, iter_value_t<_It>&>,
+        invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
 // CONCEPT indirectly_regular_unary_invocable
 template <class _Fn, class _It>
-concept indirectly_regular_unary_invocable = indirectly_readable<_It> && copy_constructible<_Fn>
-    && regular_invocable<_Fn&, iter_value_t<_It>&> && regular_invocable<_Fn&, iter_reference_t<_It>>
+concept indirectly_regular_unary_invocable = indirectly_readable<_It>
+    && copy_constructible<_Fn>
+    && regular_invocable<_Fn&, iter_value_t<_It>&>
+    && regular_invocable<_Fn&, iter_reference_t<_It>>
     && regular_invocable<_Fn&, iter_common_reference_t<_It>>
-    && common_reference_with<invoke_result_t<_Fn&, iter_value_t<_It>&>, invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+    && common_reference_with<
+        invoke_result_t<_Fn&, iter_value_t<_It>&>,
+        invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
 // CONCEPT indirect_unary_predicate
 template <class _Fn, class _It>
-concept indirect_unary_predicate = indirectly_readable<_It> && copy_constructible<_Fn>
-    && predicate<_Fn&, iter_value_t<_It>&> && predicate<_Fn&, iter_reference_t<_It>>
+concept indirect_unary_predicate = indirectly_readable<_It>
+    && copy_constructible<_Fn>
+    && predicate<_Fn&, iter_value_t<_It>&>
+    && predicate<_Fn&, iter_reference_t<_It>>
     && predicate<_Fn&, iter_common_reference_t<_It>>;
 
 // CONCEPT indirect_binary_predicate
 template <class _Fn, class _It1, class _It2>
-concept indirect_binary_predicate = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+concept indirect_binary_predicate = indirectly_readable<_It1>
+    && indirectly_readable<_It2>
+    && copy_constructible<_Fn>
     && predicate<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
     && predicate<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
     && predicate<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
@@ -880,7 +895,8 @@ concept indirect_binary_predicate = indirectly_readable<_It1> && indirectly_read
 
 // CONCEPT indirect_equivalence_relation
 template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_equivalence_relation = indirectly_readable<_It1> && indirectly_readable<_It2>
+concept indirect_equivalence_relation = indirectly_readable<_It1>
+    && indirectly_readable<_It2>
     && copy_constructible<_Fn>
     && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
     && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
@@ -890,7 +906,9 @@ concept indirect_equivalence_relation = indirectly_readable<_It1> && indirectly_
 
 // CONCEPT indirect_strict_weak_order
 template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_strict_weak_order = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+concept indirect_strict_weak_order = indirectly_readable<_It1>
+    && indirectly_readable<_It2>
+    && copy_constructible<_Fn>
     && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
     && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
     && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
@@ -899,7 +917,8 @@ concept indirect_strict_weak_order = indirectly_readable<_It1> && indirectly_rea
 
 // ALIAS TEMPLATE indirect_result_t
 template <class _Fn, class... _Its>
-    requires (indirectly_readable<_Its> && ...) && invocable<_Fn, iter_reference_t<_Its>...>
+    requires (indirectly_readable<_Its> && ...)
+        && invocable<_Fn, iter_reference_t<_Its>...>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 // clang-format on
 
@@ -910,11 +929,13 @@ using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundefined-internal" // function '%s' has internal linkage but is not defined
 #endif // __clang__
+
 template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
 struct projected {
     using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
     indirect_result_t<_Proj&, _It> operator*() const;
 };
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
@@ -932,8 +953,10 @@ concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Ou
 
 // CONCEPT indirectly_movable_storable
 template <class _In, class _Out>
-concept indirectly_movable_storable = indirectly_movable<_In, _Out> && indirectly_writable<_Out, iter_value_t<_In>>
-    && movable<iter_value_t<_In>> && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
+concept indirectly_movable_storable = indirectly_movable<_In, _Out>
+    && indirectly_writable<_Out, iter_value_t<_In>>
+    && movable<iter_value_t<_In>>
+    && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
     && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
 
 // CONCEPT indirectly_copyable
@@ -1040,25 +1063,33 @@ concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<
 
 // CONCEPT indirectly_comparable
 template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
-concept indirectly_comparable = indirect_binary_predicate<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
+concept indirectly_comparable =
+    indirect_binary_predicate<_Rel,
+        projected<_It1, _Proj1>,
+        projected<_It2, _Proj2>>;
 
 // CONCEPT permutable
 template <class _It>
-concept permutable =
-    forward_iterator<_It> && indirectly_movable_storable<_It, _It> && indirectly_swappable<_It, _It>;
+concept permutable = forward_iterator<_It>
+    && indirectly_movable_storable<_It, _It>
+    && indirectly_swappable<_It, _It>;
 
 // CONCEPT mergeable
 namespace ranges { struct less; }
 
 template <class _It1, class _It2, class _Out, class _Rel = ranges::less, class _Proj1 = identity,
     class _Proj2 = identity>
-concept mergeable = input_iterator<_It1> && input_iterator<_It2> && weakly_incrementable<_Out>
-    && indirectly_copyable<_It1, _Out> && indirectly_copyable<_It2, _Out>
+concept mergeable = input_iterator<_It1>
+    && input_iterator<_It2>
+    && weakly_incrementable<_Out>
+    && indirectly_copyable<_It1, _Out>
+    && indirectly_copyable<_It2, _Out>
     && indirect_strict_weak_order<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
 
 // CONCEPT sortable
 template <class _It, class _Rel = ranges::less, class _Proj = identity>
-concept sortable = permutable<_It> && indirect_strict_weak_order<_Rel, projected<_It, _Proj>>;
+concept sortable = permutable<_It>
+    && indirect_strict_weak_order<_Rel, projected<_It, _Proj>>;
 // clang-format on
 
 // ALIAS TEMPLATE _Iter_ref_t
@@ -3091,7 +3122,8 @@ namespace ranges {
     // CONCEPT ranges::common_range
     // clang-format off
     template <class _Rng>
-    concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+    concept common_range = range<_Rng>
+        && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
     // clang-format on
 
     // STRUCT ranges::dangling

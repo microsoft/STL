@@ -179,8 +179,7 @@ concept swappable = requires(_Ty& __x, _Ty& __y) {
 
 // CONCEPT swappable_with
 template <class _Ty1, class _Ty2>
-concept swappable_with =
-    common_reference_with<_Ty1, _Ty2>
+concept swappable_with = common_reference_with<_Ty1, _Ty2>
     && requires(_Ty1&& __t, _Ty2&& __u) {
         _RANGES swap(static_cast<_Ty1&&>(__t), static_cast<_Ty1&&>(__t));
         _RANGES swap(static_cast<_Ty2&&>(__u), static_cast<_Ty2&&>(__u));
@@ -200,9 +199,10 @@ template <class _Ty>
 concept _Boolean_testable_impl = convertible_to<_Ty, bool>;
 
 template <class _Ty>
-concept _Boolean_testable = _Boolean_testable_impl<_Ty> && requires (_Ty&& __t) {
-    { !static_cast<_Ty&&>(__t) } -> _Boolean_testable_impl;
-};
+concept _Boolean_testable = _Boolean_testable_impl<_Ty>
+    && requires (_Ty&& __t) {
+        { !static_cast<_Ty&&>(__t) } -> _Boolean_testable_impl;
+    };
 
 // CONCEPT _Weakly_equality_comparable_with
 template <class _Ty1, class _Ty2>
@@ -253,12 +253,18 @@ concept totally_ordered_with = totally_ordered<_Ty1> && totally_ordered<_Ty2>
 
 // CONCEPT movable
 template <class _Ty>
-concept movable = is_object_v<_Ty> && move_constructible<_Ty> && assignable_from<_Ty&, _Ty> && swappable<_Ty>;
+concept movable = is_object_v<_Ty>
+    && move_constructible<_Ty>
+    && assignable_from<_Ty&, _Ty>
+    && swappable<_Ty>;
 
 // CONCEPT copyable
 template <class _Ty>
-concept copyable = copy_constructible<_Ty> && movable<_Ty> && assignable_from<_Ty&, _Ty&>
-    && assignable_from<_Ty&, const _Ty&> && assignable_from<_Ty&, const _Ty>;
+concept copyable = copy_constructible<_Ty>
+    && movable<_Ty>
+    && assignable_from<_Ty&, _Ty&>
+    && assignable_from<_Ty&, const _Ty&>
+    && assignable_from<_Ty&, const _Ty>;
 
 // CONCEPT semiregular
 template <class _Ty>
@@ -280,11 +286,15 @@ concept regular_invocable = invocable<_FTy, _ArgTys...>;
 
 // CONCEPT predicate
 template <class _FTy, class... _ArgTys>
-concept predicate = regular_invocable<_FTy, _ArgTys...> && _Boolean_testable<invoke_result_t<_FTy, _ArgTys...>>;
+concept predicate = regular_invocable<_FTy, _ArgTys...> &&
+    _Boolean_testable<invoke_result_t<_FTy, _ArgTys...>>;
 
 // CONCEPT relation
 template <class _FTy, class _Ty1, class _Ty2>
-concept relation = predicate<_FTy, _Ty1, _Ty1> && predicate<_FTy, _Ty2, _Ty2> && predicate<_FTy, _Ty1, _Ty2>
+concept relation =
+       predicate<_FTy, _Ty1, _Ty1>
+    && predicate<_FTy, _Ty2, _Ty2>
+    && predicate<_FTy, _Ty1, _Ty2>
     && predicate<_FTy, _Ty2, _Ty1>;
 
 // CONCEPT equivalence_relation
