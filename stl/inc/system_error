@@ -543,7 +543,7 @@ public:
 // Acknowledged undefined and implementation-defined behavior happening here:
 // * There is a data race when filling in the values other than the first atomic; this is OK on all hardware we target
 //   because the racing threads are all writing identical values that never change afterwards.
-// * We are reaching into the memory layout atomic<uintptr_t>[N] and assuming we can interpret that as some other type.
+// * We are reaching into the layout of atomic<uintptr_t>[N] and assuming we can reinterpret that as some other type.
 // * We are assuming that virtual functions are implemented with a vfptr located as the first member of an object.
 // (there are probably others)
 //
@@ -563,7 +563,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     constexpr _Ty _Static;
     return _Static._Storage;
 }
-#else
+#else // choose immortalize strategy
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty
