@@ -90,8 +90,8 @@ public:
     }
 
     void deallocate(T* const p, size_t) const {
-        unsigned char* const x        = static_cast<unsigned char*>(static_cast<void*>(p)) - 128;
-        static const auto equal_to_cc = [](const unsigned char c) { return c == 0xCC; };
+        unsigned char* const x = static_cast<unsigned char*>(static_cast<void*>(p)) - 128;
+        const auto equal_to_cc = [](const unsigned char c) { return c == 0xCC; };
         assert(all_of(x, x + 128, equal_to_cc));
         const auto afterT = x + 128 + sizeof(T);
         assert(all_of(afterT, afterT + 128, equal_to_cc));
