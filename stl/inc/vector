@@ -2865,13 +2865,13 @@ struct hash<vector<bool, _Alloc>> {
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>
-void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
+typename vector<_Ty>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Ty, class _Alloc, class _Pr>
-void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+typename vector<_Ty>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
