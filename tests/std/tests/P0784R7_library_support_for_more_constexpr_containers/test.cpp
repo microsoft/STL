@@ -3,107 +3,129 @@
 
 #include <assert.h>
 #include <memory>
+#include <stddef.h>
 #include <string.h>
 #include <string>
 #include <type_traits>
 #include <utility>
 
-struct X {};
+using namespace std;
 
-template <class _Void, class Ty, class... Types>
-inline constexpr bool can_construct_at = false;
+template <class Void, class Ty, class... Types>
+inline constexpr bool can_construct_at_impl = false;
 
 template <class Ty, class... Types>
-inline constexpr bool can_construct_at<
-    std::void_t<decltype(std::construct_at(std::declval<Ty*>(), std::declval<Types>()...))>, Ty, Types...> = true;
+inline constexpr bool
+    can_construct_at_impl<void_t<decltype(construct_at(declval<Ty*>(), declval<Types>()...))>, Ty, Types...> = true;
 
-static_assert(can_construct_at<void, int>);
-static_assert(can_construct_at<void, const int>);
-static_assert(can_construct_at<void, volatile int>);
-static_assert(can_construct_at<void, const volatile int>);
-static_assert(can_construct_at<void, int, int>);
-static_assert(can_construct_at<void, const int, int>);
-static_assert(can_construct_at<void, volatile int, int>);
-static_assert(can_construct_at<void, const volatile int, int>);
-static_assert(can_construct_at<void, int, int&>);
-static_assert(can_construct_at<void, const int, int&>);
-static_assert(can_construct_at<void, volatile int, int&>);
-static_assert(can_construct_at<void, const volatile int, int&>);
+template<class Ty, class... Types>
+inline constexpr bool can_construct_at = can_construct_at_impl<void, Ty, Types...>;
 
-static_assert(!can_construct_at<void, int, X>);
-static_assert(!can_construct_at<void, X, int>);
+static_assert(can_construct_at<int>);
+static_assert(can_construct_at<const int>);
+static_assert(can_construct_at<volatile int>);
+static_assert(can_construct_at<const volatile int>);
+static_assert(can_construct_at<int, int>);
+static_assert(can_construct_at<const int, int>);
+static_assert(can_construct_at<volatile int, int>);
+static_assert(can_construct_at<const volatile int, int>);
+static_assert(can_construct_at<int, int&>);
+static_assert(can_construct_at<const int, int&>);
+static_assert(can_construct_at<volatile int, int&>);
+static_assert(can_construct_at<const volatile int, int&>);
 
-static_assert(!can_construct_at<void, int&>); // note that references can be constructed by not new'd
-static_assert(!can_construct_at<void, const int&>);
-static_assert(!can_construct_at<void, volatile int&>);
-static_assert(!can_construct_at<void, const volatile int&>);
-static_assert(!can_construct_at<void, int&, int>);
-static_assert(!can_construct_at<void, const int&, int>);
-static_assert(!can_construct_at<void, volatile int&, int>);
-static_assert(!can_construct_at<void, const volatile int&, int>);
-static_assert(!can_construct_at<void, int&, int&>);
-static_assert(!can_construct_at<void, const int&, const int&>);
-static_assert(!can_construct_at<void, volatile int&, volatile int&>);
-static_assert(!can_construct_at<void, const volatile int&, const volatile int&>);
+struct X {};
 
-static_assert(can_construct_at<void, X>);
-static_assert(can_construct_at<void, X, X>);
-static_assert(can_construct_at<void, X, const X&>);
-static_assert(can_construct_at<void, X, X&>);
-static_assert(can_construct_at<void, X, X&&>);
+#ifndef __EDG__ // TRANSITION, VSO-1075296
+static_assert(!can_construct_at<int, X>);
+static_assert(!can_construct_at<X, int>);
+#endif // __EDG__
 
-static_assert(can_construct_at<void, std::string>);
-static_assert(can_construct_at<void, std::string, std::size_t, char>);
-static_assert(!can_construct_at<void, std::string, std::size_t, char, char>);
-static_assert(!can_construct_at<void, std::string, X>);
+// note that indestructible isn't constructible but is construct_at-ible:
+struct indestructible {
+    void destroy() {
+        this->~indestructible();
+    };
 
-static_assert(noexcept(std::construct_at(std::declval<int*>(), 42)));
-static_assert(!noexcept(std::construct_at(std::declval<std::string*>(), "hello")));
-static_assert(noexcept(std::construct_at(std::declval<const int*>(), 42)));
-static_assert(!noexcept(std::construct_at(std::declval<const std::string*>(), "hello")));
-static_assert(noexcept(std::construct_at(std::declval<volatile int*>(), 42)));
-static_assert(!noexcept(std::construct_at(std::declval<volatile std::string*>(), "hello")));
-static_assert(noexcept(std::construct_at(std::declval<const volatile int*>(), 42)));
-static_assert(!noexcept(std::construct_at(std::declval<const volatile std::string*>(), "hello")));
+private:
+    ~indestructible() = default;
+};
 
-static_assert(noexcept(std::destroy_at(std::declval<int*>())));
-static_assert(noexcept(std::destroy_at(std::declval<std::string*>())));
-static_assert(noexcept(std::destroy_at(std::declval<const int*>())));
-static_assert(noexcept(std::destroy_at(std::declval<const std::string*>())));
-static_assert(noexcept(std::destroy_at(std::declval<volatile int*>())));
-static_assert(noexcept(std::destroy_at(std::declval<volatile std::string*>())));
-static_assert(noexcept(std::destroy_at(std::declval<const volatile int*>())));
-static_assert(noexcept(std::destroy_at(std::declval<const volatile std::string*>())));
+static_assert(can_construct_at<indestructible>);
+static_assert(can_construct_at<const indestructible>);
+static_assert(can_construct_at<volatile indestructible>);
+static_assert(can_construct_at<const volatile indestructible>);
+
+static_assert(can_construct_at<X>);
+static_assert(can_construct_at<X, X>);
+static_assert(can_construct_at<X, const X>);
+static_assert(can_construct_at<X, const X&>);
+static_assert(can_construct_at<X, X&>);
+
+static_assert(can_construct_at<string>);
+static_assert(can_construct_at<string, size_t, char>);
+static_assert(!can_construct_at<string, size_t, char, char>);
+static_assert(!can_construct_at<string, X>);
+
+// The following static_asserts test our strengthening of noexcept
+
+#ifndef __EDG__ // TRANSITION, VSO-1075296
+static_assert(noexcept(construct_at(declval<int*>(), 42)));
+static_assert(noexcept(construct_at(declval<const int*>(), 42)));
+static_assert(noexcept(construct_at(declval<volatile int*>(), 42)));
+static_assert(noexcept(construct_at(declval<const volatile int*>(), 42)));
+#endif // __EDG__
+
+static_assert(!noexcept(construct_at(declval<string*>(), "hello")));
+static_assert(!noexcept(construct_at(declval<const string*>(), "hello")));
+static_assert(!noexcept(construct_at(declval<volatile string*>(), "hello")));
+static_assert(!noexcept(construct_at(declval<const volatile string*>(), "hello")));
+
+static_assert(noexcept(destroy_at(declval<int*>())));
+static_assert(noexcept(destroy_at(declval<string*>())));
+static_assert(noexcept(destroy_at(declval<const int*>())));
+static_assert(noexcept(destroy_at(declval<const string*>())));
+static_assert(noexcept(destroy_at(declval<volatile int*>())));
+static_assert(noexcept(destroy_at(declval<volatile string*>())));
+static_assert(noexcept(destroy_at(declval<const volatile int*>())));
+static_assert(noexcept(destroy_at(declval<const volatile string*>())));
 
 struct throwing_dtor {
     ~throwing_dtor() noexcept(false) {}
 };
 
-static_assert(noexcept(std::destroy_at(std::declval<throwing_dtor*>())));
+static_assert(noexcept(destroy_at(declval<throwing_dtor*>())));
 
 template <class Ty>
 void test_runtime(const Ty& val) {
     alignas(Ty) unsigned char storage[sizeof(Ty)];
     memset(storage, 42, sizeof(Ty));
     const auto asPtrTy = reinterpret_cast<Ty*>(&storage);
-    assert(asPtrTy == std::construct_at(asPtrTy, val));
+    assert(asPtrTy == construct_at(asPtrTy, val));
     assert(*asPtrTy == val);
-    std::destroy_at(asPtrTy);
+    destroy_at(asPtrTy);
 
     // test ranges:
-    assert(asPtrTy == std::ranges::construct_at(asPtrTy, val));
+    assert(asPtrTy == ranges::construct_at(asPtrTy, val));
     assert(*asPtrTy == val);
-    std::destroy_at(asPtrTy);
+    destroy_at(asPtrTy);
 
     // test voidify:
     const auto asCv = static_cast<const volatile Ty*>(asPtrTy);
-    assert(asPtrTy == std::construct_at(asCv, val));
+    assert(asPtrTy == construct_at(asCv, val));
     assert(const_cast<const Ty&>(*asCv) == val);
-    std::destroy_at(asCv);
+    destroy_at(asCv);
 }
 
 int main() {
     test_runtime(1234);
-    test_runtime(std::string("hello world"));
-    test_runtime(std::string("hello to some really long world that certainly doesn't fit in SSO"));
+    test_runtime(string("hello world"));
+    test_runtime(string("hello to some really long world that certainly doesn't fit in SSO"));
+
+    {
+        alignas(indestructible) unsigned char storage[sizeof(indestructible)];
+        const auto ptr = reinterpret_cast<indestructible*>(storage);
+        construct_at(ptr);
+        ptr->destroy();
+    }
 }
