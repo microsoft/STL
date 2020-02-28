@@ -8,6 +8,5 @@
 /stl/inc/** linguist-language=C++
 /stl/src/** linguist-language=C++
 
-# Ensure Github detects out Perl legacy test harness code as Perl code instead of Raku
-/tests/std/tests/Dev09_056375_locale_cleanup/custombuild.pl linguist-language=Perl
-/tests/std/tests/VSO_0000000_any_calling_conventions/custombuild.pl linguist-language=Perl
+# Ensure Github detects our Perl legacy test harness code as Perl code instead of Raku
+*.pl linguist-language=Perl
