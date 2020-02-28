@@ -2489,21 +2489,19 @@ namespace filesystem {
         _NODISCARD static __std_win_error _Advance_and_reset_if_no_more_files(shared_ptr<_Dir_enum_impl>& _Ptr) {
             auto& _Impl = *_Ptr;
             __std_fs_find_data _Data;
-            auto _Error = __std_fs_directory_iterator_advance(_Impl._Dir._Handle, &_Data);
-            if (_Error == __std_win_error::_No_more_files) {
-                _Ptr.reset();
-                return __std_win_error::_Success;
-            } else {
-                _Error = _Skip_dots(_Impl._Dir._Handle, _Data);
-                if (_Error == __std_win_error::_Success) {
-                    _Impl._Refresh(_Data); // can throw
-                } else if (_Error == __std_win_error::_No_more_files) {
+            do {
+                auto _Error = __std_fs_directory_iterator_advance(_Impl._Dir._Handle, &_Data);
+                if (_Error == __std_win_error::_No_more_files) {
                     _Ptr.reset();
                     return __std_win_error::_Success;
                 }
-            }
 
-            return _Error;
+                if (_Error != __std_win_error::_Success) {
+                    return _Error;
+                }
+            } while (_Is_dot_or_dotdot(_Data));
+            _Impl._Refresh(_Data); // can throw
+            return __std_win_error::_Success;
         }
 
         _NODISCARD static __std_win_error _Skip_dots(
