@@ -4697,10 +4697,10 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
             const int _Ans   = _CSTD memcmp(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
-            if (const auto _CmpResult = _Ans <=> 0; _CmpResult != 0) {
-                return _CmpResult;
-            } else {
+            if (_Ans == 0) {
                 return _Num1 <=> _Num2;
+            } else {
+                return _Ans <=> 0;
             }
         }
     }
