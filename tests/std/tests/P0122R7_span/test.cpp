@@ -107,8 +107,8 @@ static_assert(_Range_verifiable_v<span<const int, 3>::const_iterator, span<const
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 #endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
-static_assert(ranges::enable_safe_range<span<int>>);
-static_assert(ranges::enable_safe_range<span<int, 3>>);
+static_assert(ranges::enable_borrowed_range<span<int>>);
+static_assert(ranges::enable_borrowed_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
 
 static_assert(is_base_of_v<integral_constant<size_t, 3>, tuple_size<span<int, 3>>>);
@@ -178,13 +178,13 @@ struct BasicRange {
 #ifdef __cpp_lib_concepts
 namespace std::ranges {
     template <typename T, bool Safe>
-    inline constexpr bool enable_safe_range<BasicRange<T, Safe>> = Safe;
+    inline constexpr bool enable_borrowed_range<BasicRange<T, Safe>> = Safe;
 }
 #endif // __cpp_lib_concepts
 
 using ContiguousSizedRange = BasicRange<int>;
 
-// Not truly a model of safe_range; this is a convenient fiction for testing purposes.
+// Not truly a model of borrowed_range; this is a convenient fiction for testing purposes.
 using SafeContiguousSizedRange = BasicRange<int, true>;
 
 template <typename T, size_t Extent = dynamic_extent>

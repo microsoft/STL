@@ -276,7 +276,7 @@ class span;
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _Ty, size_t _Extent>
-    inline constexpr bool enable_safe_range<span<_Ty, _Extent>> = true;
+    inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
 } // namespace ranges
 
 // VARIABLE TEMPLATE _Is_span_v
@@ -309,7 +309,7 @@ concept _Is_span_compatible_range =
  && !_Is_std_array_v<remove_cvref_t<_Rng>>
  && _RANGES contiguous_range<_Rng>
  && _RANGES sized_range<_Rng>
- && (_RANGES safe_range<_Rng> || is_const_v<_Ty>)
+ && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
  && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>>(*)[], _Ty(*)[]>;
 // clang-format on
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv

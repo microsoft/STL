@@ -156,6 +156,16 @@ _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
         return _STD to_address(_Val.operator->()); // plain pointer overload must come first
     }
 }
+
+// STRUCT identity
+struct identity {
+    template <class _Ty>
+    _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
+        return _STD forward<_Ty>(_Left);
+    }
+
+    using is_transparent = int;
+};
 #endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE _Pass_fn
@@ -313,10 +323,10 @@ template <class>
 struct iterator_traits;
 
 template <class _Ty>
-using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<_Ty>>, incrementable_traits<_Ty>,
-    iterator_traits<_Ty>>::difference_type;
+using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+    incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
 
-// STRUCT TEMPLATE readable_traits
+// STRUCT TEMPLATE indirectly_readable_traits
 template <class>
 struct _Cond_value_type {};
 
@@ -329,32 +339,32 @@ struct _Cond_value_type<_Ty> {
 // clang-format on
 
 template <class>
-struct readable_traits {};
+struct indirectly_readable_traits {};
 
 template <class _Ty>
-struct readable_traits<_Ty*> : _Cond_value_type<_Ty> {};
+struct indirectly_readable_traits<_Ty*> : _Cond_value_type<_Ty> {};
 
 // clang-format off
 template <class _Ty>
     requires is_array_v<_Ty>
-struct readable_traits<_Ty> {
+struct indirectly_readable_traits<_Ty> {
     using value_type = remove_cv_t<remove_extent_t<_Ty>>;
 };
 // clang-format on
 
 template <class _Ty>
-struct readable_traits<const _Ty> : readable_traits<_Ty> {};
+struct indirectly_readable_traits<const _Ty> : indirectly_readable_traits<_Ty> {};
 
 template <_Has_member_value_type _Ty>
-struct readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
+struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
 
 template <_Has_member_element_type _Ty>
-struct readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
+struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
 // ALIAS TEMPLATE iter_value_t
 template <class _Ty>
-using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<_Ty>>, readable_traits<_Ty>,
-    iterator_traits<_Ty>>::value_type;
+using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+    indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
 
 // ALIAS TEMPLATE iter_reference_t
 template <_Dereferenceable _Ty>
@@ -413,10 +423,11 @@ concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
 
 template <class _It>
 concept _Cpp17_input_iterator = _Cpp17_iterator<_It> && equality_comparable<_It>
-    && _Has_member_difference_type<incrementable_traits<_It>> && _Has_member_value_type<readable_traits<_It>>
+    && _Has_member_difference_type<incrementable_traits<_It>>
+    && _Has_member_value_type<indirectly_readable_traits<_It>>
     && requires(_It __i) {
-        typename common_reference_t<iter_reference_t<_It>&&, typename readable_traits<_It>::value_type&>;
-        typename common_reference_t<decltype(*__i++)&&, typename readable_traits<_It>::value_type&>;
+        typename common_reference_t<iter_reference_t<_It>&&, typename indirectly_readable_traits<_It>::value_type&>;
+        typename common_reference_t<decltype(*__i++)&&, typename indirectly_readable_traits<_It>::value_type&>;
         requires signed_integral<typename incrementable_traits<_It>::difference_type>;
     };
 
@@ -545,7 +556,7 @@ struct _Iter_traits_category2<false> {
 // clang-format off
 template <class _It>
 concept _Cpp17_forward_delta = constructible_from<_It> && is_lvalue_reference_v<iter_reference_t<_It>>
-    && same_as<remove_cvref_t<iter_reference_t<_It>>, typename readable_traits<_It>::value_type>
+    && same_as<remove_cvref_t<iter_reference_t<_It>>, typename indirectly_readable_traits<_It>::value_type>
     && requires(_It __i) {
         { __i++ } -> convertible_to<const _It&>;
         requires same_as<decltype(*__i++), iter_reference_t<_It>>;
@@ -570,7 +581,7 @@ template <class _It>
 struct _Iterator_traits_base<_It> {
     using iterator_category = typename _Iter_traits_category<_Has_member_iterator_category<_It>>::template _Apply<_It>;
     using difference_type   = typename incrementable_traits<_It>::difference_type;
-    using value_type        = typename readable_traits<_It>::value_type;
+    using value_type        = typename indirectly_readable_traits<_It>::value_type;
     using pointer           = typename _Iter_traits_pointer<(
         _Has_member_pointer<_It> ? _Itraits_pointer_strategy::_Use_member
                                  : _Has_op_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
@@ -608,11 +619,11 @@ namespace ranges {
     };
 
     namespace _Iter_move {
-        void iter_move(); // Block unqualified lookup per LWG-3247
+        void iter_move(); // Block unqualified name lookup
 
         // clang-format off
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> // Per LWG-3299
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty>
             && requires(_Ty&& __t) { iter_move(static_cast<_Ty&&>(__t)); };
 
         template <class _Ty>
@@ -674,24 +685,29 @@ template <class _Ty>
     }
 using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
 
-// CONCEPT readable
+// CONCEPT indirectly_readable
 template <class _It>
-concept readable = requires {
+concept _Indirectly_readable_impl = requires(const _It __i) {
     typename iter_value_t<_It>;
     typename iter_reference_t<_It>;
     typename iter_rvalue_reference_t<_It>;
+    { *__i } -> same_as<iter_reference_t<_It>>;
+    { _RANGES iter_move(__i) } -> same_as<iter_rvalue_reference_t<_It>>;
 } && common_reference_with<iter_reference_t<_It>&&, iter_value_t<_It>&>
   && common_reference_with<iter_reference_t<_It>&&, iter_rvalue_reference_t<_It>&&>
   && common_reference_with<iter_rvalue_reference_t<_It>&&, const iter_value_t<_It>&>;
+
+template <class _It>
+concept indirectly_readable = _Indirectly_readable_impl<remove_cvref_t<_It>>;
 // clang-format on
 
 // ALIAS TEMPLATE iter_common_reference_t
-template <readable _Ty>
+template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, iter_value_t<_Ty>&>;
 
-// CONCEPT writable
+// CONCEPT indirectly_writable
 template <class _It, class _Ty>
-concept writable = requires(_It&& __i, _Ty&& __t) {
+concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
     *__i                                                                = static_cast<_Ty&&>(__t);
     *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
     const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
@@ -707,6 +723,10 @@ concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && req
     { ++__i } -> same_as<_Ty&>;
     __i++;
 };
+
+// ALIAS TEMPLATE _Make_unsigned_like_t
+template <class _Ty>
+using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
 // CONCEPT incrementable
 template <class _Ty>
@@ -783,14 +803,15 @@ using _Iter_concept = typename _Iter_concept_impl<_It>::type;
 // clang-format off
 // CONCEPT input_iterator
 template <class _It>
-concept input_iterator = input_or_output_iterator<_It> && readable<_It> && requires { typename _Iter_concept<_It>; }
-    && derived_from<_Iter_concept<_It>, input_iterator_tag>;
+concept input_iterator = input_or_output_iterator<_It> && indirectly_readable<_It>
+    && requires { typename _Iter_concept<_It>; } && derived_from<_Iter_concept<_It>, input_iterator_tag>;
 
 // CONCEPT output_iterator
 template <class _It, class _Ty>
-concept output_iterator = input_or_output_iterator<_It> && writable<_It, _Ty> && requires(_It __i, _Ty&& __t) {
-    *__i++ = static_cast<_Ty&&>(__t);
-};
+concept output_iterator = input_or_output_iterator<_It> && indirectly_writable<_It, _Ty>
+    && requires(_It __i, _Ty&& __t) {
+        *__i++ = static_cast<_Ty&&>(__t);
+    };
 
 // CONCEPT forward_iterator
 template <class _It>
@@ -828,15 +849,107 @@ concept contiguous_iterator = random_access_iterator<_It>
         { _STD to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_It>>>;
     };
 
+// CONCEPT indirectly_unary_invocable
+template <class _Fn, class _It>
+concept indirectly_unary_invocable = indirectly_readable<_It> && copy_constructible<_Fn>
+    && invocable<_Fn&, iter_value_t<_It>&> && invocable<_Fn&, iter_reference_t<_It>>
+    && invocable<_Fn&, iter_common_reference_t<_It>>
+    && common_reference_with<invoke_result_t<_Fn&, iter_value_t<_It>&>, invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+
+// CONCEPT indirectly_regular_unary_invocable
+template <class _Fn, class _It>
+concept indirectly_regular_unary_invocable = indirectly_readable<_It> && copy_constructible<_Fn>
+    && regular_invocable<_Fn&, iter_value_t<_It>&> && regular_invocable<_Fn&, iter_reference_t<_It>>
+    && regular_invocable<_Fn&, iter_common_reference_t<_It>>
+    && common_reference_with<invoke_result_t<_Fn&, iter_value_t<_It>&>, invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+
+// CONCEPT indirect_unary_predicate
+template <class _Fn, class _It>
+concept indirect_unary_predicate = indirectly_readable<_It> && copy_constructible<_Fn>
+    && predicate<_Fn&, iter_value_t<_It>&> && predicate<_Fn&, iter_reference_t<_It>>
+    && predicate<_Fn&, iter_common_reference_t<_It>>;
+
+// CONCEPT indirect_binary_predicate
+template <class _Fn, class _It1, class _It2>
+concept indirect_binary_predicate = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+    && predicate<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
+    && predicate<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
+    && predicate<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+    && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+    && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+
+// CONCEPT indirect_equivalence_relation
+template <class _Fn, class _It1, class _It2 = _It1>
+concept indirect_equivalence_relation = indirectly_readable<_It1> && indirectly_readable<_It2>
+    && copy_constructible<_Fn>
+    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
+    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
+    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+    && equivalence_relation<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+
+// CONCEPT indirect_strict_weak_order
+template <class _Fn, class _It1, class _It2 = _It1>
+concept indirect_strict_weak_order = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
+    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
+    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+    && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+
+// ALIAS TEMPLATE indirect_result_t
+template <class _Fn, class... _Its>
+    requires (indirectly_readable<_Its> && ...) && invocable<_Fn, iter_reference_t<_Its>...>
+using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
+// clang-format on
+
+// STRUCT TEMPLATE projected
+#pragma warning(push)
+#pragma warning(disable : 5046) // '%s': Symbol involving type with internal linkage not defined
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-internal" // function '%s' has internal linkage but is not defined
+#endif // __clang__
+template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
+struct projected {
+    using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
+    indirect_result_t<_Proj&, _It> operator*() const;
+};
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+#pragma warning(pop)
+
+template <weakly_incrementable _It, class _Proj>
+struct incrementable_traits<projected<_It, _Proj>> {
+    using difference_type = iter_difference_t<_It>;
+};
+
+// clang-format off
 // CONCEPT indirectly_movable
 template <class _In, class _Out>
-concept indirectly_movable = readable<_In> && writable<_Out, iter_rvalue_reference_t<_In>>;
+concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Out, iter_rvalue_reference_t<_In>>;
 
 // CONCEPT indirectly_movable_storable
 template <class _In, class _Out>
-concept indirectly_movable_storable = indirectly_movable<_In, _Out> && writable<_Out, iter_value_t<_In>>
+concept indirectly_movable_storable = indirectly_movable<_In, _Out> && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>> && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
     && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
+
+// CONCEPT indirectly_copyable
+template <class _In, class _Out>
+concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
+
+// CONCEPT indirectly_copyable_storable
+template <class _In, class _Out>
+concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
+    && indirectly_writable<_Out, iter_value_t<_In>&>
+    && indirectly_writable<_Out, const iter_value_t<_In>&>
+    && indirectly_writable<_Out, iter_value_t<_In>&&>
+    && indirectly_writable<_Out, const iter_value_t<_In>&&>
+    && copyable<iter_value_t<_In>>
+    && constructible_from<iter_value_t<_In>, iter_reference_t<_In>>
+    && assignable_from<iter_value_t<_In>&, iter_reference_t<_In>>;
 // clang-format on
 
 // CUSTOMIZATION POINT OBJECT iter_swap
@@ -847,13 +960,14 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty1, class _Ty2>
-        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) // Per LWG-3299
+        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>)
             && requires(_Ty1&& __t1, _Ty2&& __t2) {
                 iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
             };
 
         template <class _Ty1, class _Ty2>
-        concept _Can_swap_references = readable<remove_reference_t<_Ty1>> && readable<remove_reference_t<_Ty2>>
+        concept _Can_swap_references = indirectly_readable<remove_reference_t<_Ty1>>
+            && indirectly_readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
         // clang-format on
 
@@ -912,6 +1026,40 @@ namespace ranges {
         inline constexpr _Iter_swap::_Cpo iter_swap;
     }
 } // namespace ranges
+
+// clang-format off
+// CONCEPT indirectly_swappable
+template <class _It1, class _It2 = _It1>
+concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<_It2>
+    && requires(const _It1 __i1, const _It2 __i2) {
+        _RANGES iter_swap(__i1, __i1);
+        _RANGES iter_swap(__i2, __i2);
+        _RANGES iter_swap(__i1, __i2);
+        _RANGES iter_swap(__i2, __i1);
+    };
+
+// CONCEPT indirectly_comparable
+template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
+concept indirectly_comparable = indirect_binary_predicate<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
+
+// CONCEPT permutable
+template <class _It>
+concept permutable =
+    forward_iterator<_It> && indirectly_movable_storable<_It, _It> && indirectly_swappable<_It, _It>;
+
+// CONCEPT mergeable
+namespace ranges { struct less; }
+
+template <class _It1, class _It2, class _Out, class _Rel = ranges::less, class _Proj1 = identity,
+    class _Proj2 = identity>
+concept mergeable = input_iterator<_It1> && input_iterator<_It2> && weakly_incrementable<_Out>
+    && indirectly_copyable<_It1, _Out> && indirectly_copyable<_It2, _Out>
+    && indirect_strict_weak_order<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
+
+// CONCEPT sortable
+template <class _It, class _Rel = ranges::less, class _Proj = identity>
+concept sortable = permutable<_It> && indirect_strict_weak_order<_Rel, projected<_It, _Proj>>;
+// clang-format on
 
 // ALIAS TEMPLATE _Iter_ref_t
 template <class _Iter>
@@ -2017,14 +2165,14 @@ namespace ranges {
     inline constexpr bool _Has_complete_elements<_Ty> = true;
     // clang-format on
 
-    // VARIABLE TEMPLATE ranges::enable_safe_range
+    // VARIABLE TEMPLATE ranges::enable_borrowed_range
     template <class>
-    inline constexpr bool enable_safe_range = false;
+    inline constexpr bool enable_borrowed_range = false;
 
     template <class _Rng>
-    concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_safe_range<remove_cvref_t<_Rng>>;
+    concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
 
-    // CUSTOMIZATION POINT OBJECT ranges::begin (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::begin
     namespace _Begin {
         template <class _Ty>
         void begin(_Ty&) = delete;
@@ -2053,8 +2201,8 @@ namespace ranges {
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     static_assert(_Has_complete_elements<_Ty>,
                         "The range access customization point objects "
-                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays with incomplete element types.");
+                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, std::ranges::rend, "
+                        "and std::ranges::data do not accept arrays with incomplete element types.");
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
@@ -2091,11 +2239,11 @@ namespace ranges {
         inline constexpr _Begin::_Cpo begin;
     }
 
-    // ALIAS TEMPLATE ranges::iterator_t (Implements D2091R0)
+    // ALIAS TEMPLATE ranges::iterator_t
     template <class _Ty>
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
-    // CUSTOMIZATION POINT OBJECT ranges::end (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
         template <class _Ty>
         void end(_Ty&) = delete;
@@ -2126,8 +2274,8 @@ namespace ranges {
                 if constexpr (is_array_v<_UnRef>) {
                     static_assert(_Has_complete_elements<_UnRef>,
                         "The range access customization point objects "
-                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays with incomplete element types.");
+                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, std::ranges::rend, "
+                        "and std::ranges::data do not accept arrays with incomplete element types.");
                     if constexpr (extent_v<_UnRef> != 0) {
                         return {_St::_Array, true};
                     } else {
@@ -2176,10 +2324,10 @@ namespace ranges {
         _RANGES end(__r);
     };
 
-    // CONCEPT ranges::safe_range
+    // CONCEPT ranges::borrowed_range
     // clang-format off
     template <class _Rng>
-    concept safe_range = range<_Rng> && _Should_range_access<_Rng>;
+    concept borrowed_range = range<_Rng> && _Should_range_access<_Rng>;
     // clang-format on
 
     // ALIAS TEMPLATE ranges::sentinel_t
@@ -2234,7 +2382,7 @@ namespace ranges {
         inline constexpr _Cend_fn cend;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::rbegin (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
         template <class _Ty>
         void rbegin(_Ty&) = delete;
@@ -2303,7 +2451,7 @@ namespace ranges {
         inline constexpr _Rbegin::_Cpo rbegin;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::rend (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
         template <class _Ty>
         void rend(_Ty&) = delete;
@@ -2409,7 +2557,7 @@ namespace ranges {
     template <class>
     inline constexpr bool disable_sized_range = false;
 
-    // CUSTOMIZATION POINT OBJECT ranges::size (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::size
     namespace _Size {
         template <class _Ty>
         void size(_Ty&) = delete;
@@ -2478,7 +2626,7 @@ namespace ranges {
                     return size(_Val);
                 } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Subtract) {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
-                    return static_cast<make_unsigned_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
+                    return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2491,7 +2639,7 @@ namespace ranges {
         inline constexpr _Size::_Cpo size;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::empty (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::empty
     namespace _Empty {
         // clang-format off
         template <class _Ty>
@@ -2513,13 +2661,13 @@ namespace ranges {
 
         class _Cpo {
         private:
-            enum class _St { _None, _Array, _Member, _Size, _Compare };
+            enum class _St { _None, _Member, _Size, _Compare };
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
-                if constexpr (is_array_v<remove_reference_t<_Ty>>) {
-                    return {_St::_Array, true};
+                if constexpr (is_unbounded_array_v<remove_reference_t<_Ty>>) {
+                    return {_St::_None};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(static_cast<bool>(_STD declval<_Ty>().empty()))};
                 } else if constexpr (_Has_size<_Ty>) {
@@ -2541,9 +2689,7 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
-                    return false;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
                     return static_cast<bool>(_Val.empty());
                 } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Size) {
                     return _RANGES size(_Val) == 0;
@@ -2561,7 +2707,7 @@ namespace ranges {
         inline constexpr _Empty::_Cpo empty;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::data (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::data
     namespace _Data {
         // clang-format off
         template <class _Ty>
@@ -2641,6 +2787,10 @@ namespace ranges {
         _RANGES size(__r);
     };
     // clang-format on
+
+    // ALIAS TEMPLATE ranges::range_size_t
+    template <sized_range _Rng>
+    using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
 
     // STRUCT ranges::view_base
     struct view_base {};
@@ -2933,6 +3083,27 @@ namespace ranges {
 
         using is_transparent = int;
     };
+
+    // CONCEPT _Not_same_as
+    template <class _Ty1, class _Ty2>
+    concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
+
+    // CONCEPT ranges::common_range
+    // clang-format off
+    template <class _Rng>
+    concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+    // clang-format on
+
+    // STRUCT ranges::dangling
+    struct dangling {
+        constexpr dangling() noexcept = default;
+        template <class... _Args>
+        constexpr dangling(_Args&&...) noexcept {}
+    };
+
+    // ALIAS TEMPLATE ranges::borrowed_iterator_t
+    template <range _Rng>
+    using borrowed_iterator_t = conditional_t<borrowed_range<_Rng>, iterator_t<_Rng>, dangling>;
 } // namespace ranges
 #endif // __cpp_lib_concepts
 

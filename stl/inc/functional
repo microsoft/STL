@@ -658,18 +658,6 @@ _NODISCARD _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
     return _Mem_fn<_Rx _Ty::*>(_Pm);
 }
 
-#if _HAS_CXX20
-// STRUCT identity
-struct identity {
-    template <class _Ty>
-    _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
-        return _STD forward<_Ty>(_Left);
-    }
-
-    using is_transparent = int;
-};
-#endif // _HAS_CXX20
-
 #if _HAS_CXX17
 // FUNCTION TEMPLATE not_fn
 struct _Not_fn_tag {};

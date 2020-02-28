@@ -48,11 +48,9 @@ concept derived_from = __is_base_of(_Base, _Derived)
 // CONCEPT convertible_to
 template <class _From, class _To>
 concept convertible_to = __is_convertible_to(_From, _To)
-#if 1 // Implement the PR of LWG-3151
-    && requires { static_cast<_To>(_STD declval<_From>()); };
-#else // ^^^ LWG-3151 / N4810 vvv
-    && requires(_From (&_Fn)()) { static_cast<_To>(_Fn()); };
-#endif // select LWG-3151 vs. N4810
+    && requires(add_rvalue_reference_t<_From> (&_Fn)()) {
+        static_cast<_To>(_Fn());
+    };
 
 // CONCEPT common_reference_with
 template <class _Ty1, class _Ty2>
@@ -182,11 +180,7 @@ concept swappable = requires(_Ty& __x, _Ty& __y) {
 // CONCEPT swappable_with
 template <class _Ty1, class _Ty2>
 concept swappable_with =
-#if 1 // Implement the PR of LWG-3175
     common_reference_with<_Ty1, _Ty2>
-#else // ^^^ LWG-3175 / N4810 vvv
-    common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
-#endif // select LWG-3175 vs. N4810
     && requires(_Ty1&& __t, _Ty2&& __u) {
         _RANGES swap(static_cast<_Ty1&&>(__t), static_cast<_Ty1&&>(__t));
         _RANGES swap(static_cast<_Ty2&&>(__u), static_cast<_Ty2&&>(__u));
@@ -201,41 +195,21 @@ concept copy_constructible = move_constructible<_Ty>
     && constructible_from<_Ty, const _Ty&> && convertible_to<const _Ty&, _Ty>
     && constructible_from<_Ty, const _Ty> && convertible_to<const _Ty, _Ty>;
 
-// CONCEPT movable
+// CONCEPT _Boolean_testable
 template <class _Ty>
-concept movable = is_object_v<_Ty> && move_constructible<_Ty> && assignable_from<_Ty&, _Ty> && swappable<_Ty>;
+concept _Boolean_testable_impl = convertible_to<_Ty, bool>;
 
-// CONCEPT boolean
-#if _HAS_STD_BOOLEAN
-#define _STL_BOOLEAN_CONCEPT boolean
-#else
-#define _STL_BOOLEAN_CONCEPT _Boolean
-#endif
 template <class _Ty>
-concept _STL_BOOLEAN_CONCEPT = movable<remove_cvref_t<_Ty>>
-    && requires(const remove_reference_t<_Ty>& __x, const remove_reference_t<_Ty>& __y, const bool __b) {
-        { __x } -> convertible_to<bool>;
-        { !__x } -> convertible_to<bool>;
-        { __x && __y } -> same_as<bool>;
-        { __x && __b } -> same_as<bool>;
-        { __b && __y } -> same_as<bool>;
-        { __x || __y } -> same_as<bool>;
-        { __x || __b } -> same_as<bool>;
-        { __b || __y } -> same_as<bool>;
-        { __x == __y } -> convertible_to<bool>;
-        { __x == __b } -> convertible_to<bool>;
-        { __b == __y } -> convertible_to<bool>;
-        { __x != __y } -> convertible_to<bool>;
-        { __x != __b } -> convertible_to<bool>;
-        { __b != __y } -> convertible_to<bool>;
-    };
+concept _Boolean_testable = _Boolean_testable_impl<_Ty> && requires (_Ty&& __t) {
+    { !static_cast<_Ty&&>(__t) } -> _Boolean_testable_impl;
+};
 
 // CONCEPT _Weakly_equality_comparable_with
 template <class _Ty1, class _Ty2>
 concept _Half_equality_comparable =
     requires(const remove_reference_t<_Ty1>& __x, const remove_reference_t<_Ty2>& __y) {
-        { __x == __y } -> _STL_BOOLEAN_CONCEPT;
-        { __x != __y } -> _STL_BOOLEAN_CONCEPT;
+        { __x == __y } -> _Boolean_testable;
+        { __x != __y } -> _Boolean_testable;
     };
 
 template <class _Ty1, class _Ty2>
@@ -257,10 +231,10 @@ concept equality_comparable_with = equality_comparable<_Ty1> && equality_compara
 // CONCEPT _Partially_ordered_with
 template <class _Ty1, class _Ty2>
 concept _Half_ordered = requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {
-    { __t <  __u } -> _STL_BOOLEAN_CONCEPT;
-    { __t >  __u } -> _STL_BOOLEAN_CONCEPT;
-    { __t <= __u } -> _STL_BOOLEAN_CONCEPT;
-    { __t >= __u } -> _STL_BOOLEAN_CONCEPT;
+    { __t <  __u } -> _Boolean_testable;
+    { __t >  __u } -> _Boolean_testable;
+    { __t <= __u } -> _Boolean_testable;
+    { __t >= __u } -> _Boolean_testable;
 };
 
 template <class _Ty1, class _Ty2>
@@ -277,9 +251,14 @@ concept totally_ordered_with = totally_ordered<_Ty1> && totally_ordered<_Ty2>
     && totally_ordered<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>>
     && equality_comparable_with<_Ty1, _Ty2> && _Partially_ordered_with<_Ty1, _Ty2>;
 
+// CONCEPT movable
+template <class _Ty>
+concept movable = is_object_v<_Ty> && move_constructible<_Ty> && assignable_from<_Ty&, _Ty> && swappable<_Ty>;
+
 // CONCEPT copyable
 template <class _Ty>
-concept copyable = copy_constructible<_Ty> && movable<_Ty> && assignable_from<_Ty&, const _Ty&>;
+concept copyable = copy_constructible<_Ty> && movable<_Ty> && assignable_from<_Ty&, _Ty&>
+    && assignable_from<_Ty&, const _Ty&> && assignable_from<_Ty&, const _Ty>;
 
 // CONCEPT semiregular
 template <class _Ty>
@@ -301,12 +280,16 @@ concept regular_invocable = invocable<_FTy, _ArgTys...>;
 
 // CONCEPT predicate
 template <class _FTy, class... _ArgTys>
-concept predicate = regular_invocable<_FTy, _ArgTys...> && _STL_BOOLEAN_CONCEPT<invoke_result_t<_FTy, _ArgTys...>>;
+concept predicate = regular_invocable<_FTy, _ArgTys...> && _Boolean_testable<invoke_result_t<_FTy, _ArgTys...>>;
 
 // CONCEPT relation
 template <class _FTy, class _Ty1, class _Ty2>
 concept relation = predicate<_FTy, _Ty1, _Ty1> && predicate<_FTy, _Ty2, _Ty2> && predicate<_FTy, _Ty1, _Ty2>
     && predicate<_FTy, _Ty2, _Ty1>;
+
+// CONCEPT equivalence_relation
+template <class _FTy, class _Ty1, class _Ty2>
+concept equivalence_relation = relation<_FTy, _Ty1, _Ty2>;
 
 // CONCEPT strict_weak_order
 template <class _FTy, class _Ty1, class _Ty2>

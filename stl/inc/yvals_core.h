@@ -168,21 +168,31 @@
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
+// P1207R4 Movability of Single-Pass Iterators
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
+// P1243R4 Rangify New Algorithms
+//     (partially implemented)
+// P1248R1 Fixing Relations
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1394R4 Range Constructor For span
 // P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
+// P1474R1 Helpful Pointers For contiguous_iterator
 // P1612R1 Relocating endian To <bit>
 // P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
+// P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
 // P1870R1 safe_range
 // P1872R0 span Should Have size_type, Not index_type
+// P1878R1 Constraining Readable Types
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1964R2 Replacing boolean with boolean-testable
+// P2091R0 Fixing Issues With Range Access CPOs
+// P2102R0 Make "implicit expression variations" More Explicit
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -1071,11 +1081,6 @@
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
 #define __cpp_lib_concepts 201907L
-
-// P0898R3 (as modified by P1754R1) std::boolean
-#ifndef _HAS_STD_BOOLEAN
-#define _HAS_STD_BOOLEAN 1
-#endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
 #define __cpp_lib_constexpr_algorithms     201806L
