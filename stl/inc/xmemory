@@ -2084,23 +2084,23 @@ _NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr 
 // FUNCTION TEMPLATE _Erase_remove
 template <class _Container, class _Uty>
 typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
-    const auto _Removed = _Idl_distance<decltype(_First)>(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     _Cont.erase(_First, _Last);
-    return _Removed;
+    return _Old_size - _Cont.size();
 }
 
 // FUNCTION TEMPLATE _Erase_remove_if
 template <class _Container, class _Pr>
 typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
-    const auto _Removed = _Idl_distance<decltype(_First)>(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     _Cont.erase(_First, _Last);
-    return _Removed;
+    return _Old_size - _Cont.size();
 }
 
 // FUNCTION TEMPLATE _Erase_nodes_if
