@@ -4680,13 +4680,15 @@ inline namespace literals {
 
 #if _HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc, class _Uty>
-void erase(basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
+typename basic_string<_Elem, _Traits, _Alloc>::size_type erase(
+    basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Elem, class _Traits, class _Alloc, class _Pr>
-void erase_if(basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
+    basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
