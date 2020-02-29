@@ -582,6 +582,7 @@ int main() {
         std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
         const auto v_removed = std::erase_if(v, is_odd{});
         assert((v == std::vector<int>{2, 4, 6, 6, 4, 2}));
+        assert(v_removed == 7);
         const auto v_removed2 = std::erase(v, 4);
         assert((v == std::vector<int>{2, 6, 6, 2}));
         assert(v_removed2 == 2);
