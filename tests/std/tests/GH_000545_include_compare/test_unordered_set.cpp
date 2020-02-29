@@ -7,4 +7,4 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-void test_unordered_set() { }
+void test_unordered_set() {}

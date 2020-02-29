@@ -12,4 +12,4 @@ static_assert(std::is_eq(std::partial_ordering::equivalent));
 
 #endif // TRANSITION, P0912R5 Library Support For Coroutines
 
-void test_coroutine() { }
+void test_coroutine() {}

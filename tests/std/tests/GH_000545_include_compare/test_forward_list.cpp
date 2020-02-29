@@ -7,4 +7,4 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-void test_forward_list() { }
+void test_forward_list() {}

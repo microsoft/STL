@@ -7,4 +7,4 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-void test_chrono() { }
+void test_chrono() {}
