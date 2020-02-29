@@ -203,5 +203,5 @@ Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\E
 InstallZip 'Azure DevOps Agent' $VstsAgentUrl 'C:\agent'
 Add-MpPreference -ExclusionPath C:\agent
 & 'C:\agent\config.cmd' --unattended --url $AzureDevOpsUrl --auth pat --token $PersonalAccessToken `
-    --pool $AzureDevOpsPool --runAsService --work D:\
+    --pool $AzureDevOpsPool --replace --runAsService --work D:\
 shutdown /r /t 10
