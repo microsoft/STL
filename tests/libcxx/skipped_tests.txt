@@ -627,11 +627,6 @@ localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_s
 # STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
 localization\locales\locale.convenience\conversions\conversions.buffer\seekoff.pass.cpp
 
-# STL Bug: We aren't properly SFINAEing chrono operators
-# https://github.com/llvm/llvm-project/commit/efa6d803c624f9251d0ab7881122501bb9d27368
-utilities\time\time.duration\time.duration.nonmember\op_divide_rep.pass.cpp
-utilities\time\time.duration\time.duration.nonmember\op_mod_rep.pass.cpp
-
 # STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
 diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 
