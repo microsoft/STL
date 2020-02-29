@@ -663,6 +663,9 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 language.support\support.limits\support.limits.general\string.version.pass.cpp
 
+# Test needs to be updated for LWG-3320 removing span::const_iterator.
+containers\views\types.pass.cpp
+
 # Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
 utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
 
