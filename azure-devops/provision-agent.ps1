@@ -10,9 +10,9 @@ if (Test-Path 'C:\agent') {
     exit 0
 }
 
-Write-Output 'Agent doesn''t look installed yet'
+Write-Output 'Agent does not appear to be installed.'
 
-$AzureDevOpsURL = 'https://dev.azure.com/vclibs/'
+$AzureDevOpsUrl = 'https://dev.azure.com/vclibs/'
 $AzureDevOpsPool = 'STL'
 [string]$PersonalAccessToken = $args[0]
 
@@ -24,81 +24,79 @@ $WorkLoads =  '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
-$VSBootstrapperURL = 'https://aka.ms/vs/16/pre/vs_buildtools.exe'
-$CMakeURL = 'https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-win64-x64.msi'
-$LlvmURL = 'https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe'
-$NinjaURL = 'https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip'
-$PythonURL = 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-amd64.exe'
-$VstsAgentURL = 'https://vstsagentpackage.azureedge.net/agent/2.165.0/vsts-agent-win-x64-2.165.0.zip'
+$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_buildtools.exe'
+$CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-win64-x64.msi'
+$LlvmUrl = 'https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe'
+$NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip'
+$PythonUrl = 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-amd64.exe'
+$VstsAgentUrl = 'https://vstsagentpackage.azureedge.net/agent/2.165.0/vsts-agent-win-x64-2.165.0.zip'
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-Function InstallVS
+Function PrintMsiExitCodeMessage
 {
-  Param(
-    [String]$WorkLoads,
-    [String]$Sku,
-    [String]$VSBootstrapperURL)
-  try
-  {
-    Write-Output 'Downloading VS bootstrapper ...'
-    [string]$bootstrapperExe = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName() + '.exe')
-    curl.exe -L -o $bootstrapperExe $VSBootstrapperURL
+    Param(
+        $ExitCode
+    )
 
-    $Arguments = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache')
-
-    Write-Output "Starting Install: $Arguments"
-    $proc = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru
-    $exitCode = $proc.ExitCode
-
-    if ($exitCode -eq 0 -or $exitCode -eq 3010)
+    if ($ExitCode -eq 0 -or $ExitCode -eq 3010)
     {
-        Write-Output "Installation successful! $exitCode"
+        Write-Output "Installation successful! Exited with $ExitCode."
     }
     else
     {
-        Write-Output "Nonzero exit code returned by the installation process : $exitCode."
-        exit $exitCode
+        Write-Output "Installation failed! Exited with $ExitCode."
+        exit $ExitCode
     }
-  }
-  catch
-  {
-    Write-Output 'Failed to install Visual Studio!'
-    Write-Output $_.Exception.Message
-    exit 1
-  }
+}
+
+Function InstallVisualStudio
+{
+    Param(
+        [String]$WorkLoads,
+        [String]$Sku,
+        [String]$BootstrapperUrl
+    )
+
+    try
+    {
+        Write-Output 'Downloading Visual Studio...'
+        [string]$bootstrapperExe = Join-Path ([System.IO.Path]::GetTempPath()) `
+            ([System.IO.Path]::GetRandomFileName() + '.exe')
+        curl.exe -L -o $bootstrapperExe $BootstrapperUrl
+
+        Write-Output "Installing Visual Studio..."
+        $args = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache')
+        $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
+        PrintMsiExitCodeMessage $proc.ExitCode
+    }
+    catch
+    {
+        Write-Output 'Failed to install Visual Studio!'
+        Write-Output $_.Exception.Message
+        exit 1
+    }
 }
 
 Function InstallMSI
 {
     Param(
         [String]$Name,
-        [String]$Uri
+        [String]$Url
     )
 
     try
     {
         Write-Output "Downloading $Name..."
-        [string]$tempRoot = [System.IO.Path]::GetTempPath();
-        [string]$randomRoot = Join-Path $tempRoot ([System.IO.Path]::GetRandomFileName())
+        [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
         [string]$msiPath = $randomRoot + '.msi'
-        [string]$msiExecPath = 'msiexec.exe'
-        $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
+        curl.exe -L -o $msiPath $Url
 
-        curl.exe -L -o $msiPath $Uri
         Write-Output "Installing $Name..."
-        $proc = Start-Process -FilePath $msiExecPath -ArgumentList $args -Wait -PassThru
-        $exitCode = $proc.ExitCode
-        if ($exitCode -eq 0 -or $exitCode -eq 3010)
-        {
-            Write-Output 'Installation successful!'
-        }
-        else
-        {
-            Write-Output "Nonzero exit code returned by the installation process : $exitCode."
-            exit $exitCode
-        }
+        $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
+        $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList $args -Wait -PassThru
+        PrintMsiExitCodeMessage $proc.ExitCode
     }
     catch
     {
@@ -112,7 +110,7 @@ Function InstallZip
 {
     Param(
         [String]$Name,
-        [String]$Uri,
+        [String]$Url,
         [String]$Dir
     )
 
@@ -121,7 +119,8 @@ Function InstallZip
         Write-Output "Downloading $Name..."
         [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
         [string]$zipPath = $randomRoot + '.zip'
-        curl.exe -L -o $zipPath $Uri
+        curl.exe -L -o $zipPath $Url
+
         Write-Output "Installing $Name..."
         Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
     }
@@ -136,69 +135,73 @@ Function InstallZip
 Function InstallLLVM
 {
     Param(
-        [String]$Uri
+        [String]$Url
     )
 
-    Write-Output 'Downloading LLVM...'
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$installerPath = $randomRoot + '.exe'
-
-    curl.exe -L -o $installerPath $Uri
-    Write-Output 'Installing LLVM...'
-    $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
-    $exitCode = $proc.ExitCode
-
-    if ($exitCode -eq 0 -or $exitCode -eq 3010)
+    try
     {
-        Write-Output 'Installation successful!'
+        Write-Output 'Downloading LLVM...'
+        [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+        [string]$installerPath = $randomRoot + '.exe'
+        curl.exe -L -o $installerPath $Url
+
+        Write-Output 'Installing LLVM...'
+        $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
+        PrintMsiExitCodeMessage $proc.ExitCode
     }
-    else
+    catch
     {
-        Write-Output "Nonzero exit code returned by the installation process : $exitCode."
-        exit $exitCode
+        Write-Output "Failed to install LLVM!"
+        Write-Output $_.Exception.Message
+        exit -1
     }
 }
 
 Function InstallPython
 {
     Param(
-        [String]$Uri
+        [String]$Url
     )
 
     Write-Output 'Downloading Python...'
     [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
     [string]$installerPath = $randomRoot + '.exe'
+    curl.exe -L -o $installerPath $Url
 
-    curl.exe -L -o $installerPath $Uri
     Write-Output 'Installing Python...'
-    $proc = Start-Process -FilePath $installerPath -ArgumentList @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
+    $proc = Start-Process -FilePath $installerPath -ArgumentList `
+        @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
     $exitCode = $proc.ExitCode
-
     if ($exitCode -eq 0)
     {
         Write-Output 'Installation successful!'
     }
     else
     {
-        Write-Output "Nonzero exit code returned by the installation process : $exitCode."
+        Write-Output "Installatio failed! Exited with $exitCode."
         exit $exitCode
     }
 }
 
-if ([string]::IsNullOrEmpty($PersonalAccessToken) -or ($PersonalAccessToken -eq 'CHANGE THIS')) {
+if ([string]::IsNullOrEmpty($PersonalAccessToken) `
+    -or ($PersonalAccessToken -eq 'CHANGE THIS') `
+    -or ($PersonalAccessToken -eq 'PERSONAL_ACCESS_TOKEN')) {
     Write-Output 'You forgot to fill in your personal access token.'
     exit 1
 }
 
-InstallMSI 'CMake' $CMakeURL
-InstallZip 'Ninja' $NinjaURL 'C:\Program Files\CMake\bin'
-InstallLLVM $LlvmURL
-InstallPython $PythonURL
-InstallVS -WorkLoads $WorkLoads -Sku $Sku -VSBootstrapperURL $VSBootstrapperURL
-Write-Output 'Updating PATH ...'
+InstallMSI 'CMake' $CMakeUrl
+InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
+InstallLLVM $LlvmUrl
+InstallPython $PythonUrl
+InstallVisualStudio -WorkLoads $WorkLoads -Sku $Sku -BootstrapperUrl $VisualStudioBootstrapperUrl
+Write-Output 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
-InstallZip 'Azure DevOps Agent' $VstsAgentURL 'C:\agent'
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
+    -Name Path `
+    -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
+InstallZip 'Azure DevOps Agent' $VstsAgentUrl 'C:\agent'
 Add-MpPreference -ExclusionPath C:\agent
-& 'C:\agent\config.cmd' --unattended --url $AzureDevOpsURL --auth pat --token $PersonalAccessToken --pool $AzureDevOpsPool --runAsService
+& 'C:\agent\config.cmd' --unattended --url $AzureDevOpsUrl --auth pat --token $PersonalAccessToken `
+    --pool $AzureDevOpsPool --runAsService
 shutdown /r /t 10
