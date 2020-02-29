@@ -20,25 +20,29 @@ constexpr void smoke_test() {
 
     std::array<P, 3> const data = {{{0, 42}, {2, 42}, {4, 42}}};
 
-    // Validate range overload
     for (auto [value, _] : data) {
-        auto result = find(move_only_range{data}, value, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
-        assert((*result).first == value);
+        {
+            // Validate range overload [found case]
+            auto result = find(move_only_range{data}, value, get_first);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
+            assert((*result).first == value);
+        }
+        {
+            // Validate iterator+sentinel overload [found case]
+            move_only_range x{data};
+            auto result = find(x.begin(), x.end(), value, get_first);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
+            assert((*result).first == value);
+        }
     }
     {
+        // Validate range overload [not found case]
         auto result = find(move_only_range{data}, 42, get_first);
         STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
         assert(result == move_only_range{data}.end());
     }
-    // Validate iterator+sentinel overload
-    for (auto [value, _] : data) {
-        move_only_range x{data};
-        auto result = find(x.begin(), x.end(), value, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
-        assert((*result).first == value);
-    }
     {
+        // Validate iterator+sentinel overload [not found case]
         move_only_range x{data};
         auto result = find(x.begin(), x.end(), 42, get_first);
         STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);

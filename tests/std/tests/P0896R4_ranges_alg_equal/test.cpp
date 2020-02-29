@@ -15,39 +15,41 @@ constexpr void smoke_test() {
     using std::abort, std::array, std::pair, std::same_as;
 
     array<pair<int, int>, 3> const x   = {{{0, 42}, {2, 42}, {4, 42}}};
-    array<pair<long, long>, 3> const y = {{{13, 0}, {13, 2}, {13, 4}}};
+    array<pair<long, long>, 3> const y = {{{13, -1}, {13, 1}, {13, 3}}};
+
+    constexpr auto cmp = [](auto&& x, auto&& y) { return x == y + 1; };
 
     {
         // Validate sized ranges
-        auto result = equal(x, y, equal_to{}, get_first, get_second);
+        auto result = equal(x, y, cmp, get_first, get_second);
         STATIC_ASSERT(same_as<decltype(result), bool>);
         assert(result);
-        assert(!equal(x, y, equal_to{}, get_first, get_first));
+        assert(!equal(x, y, cmp, get_first, get_first));
     }
     {
         // Validate non-sized ranges
-        auto result = equal(move_only_range{x}, move_only_range{y}, equal_to{}, get_first, get_second);
+        auto result = equal(move_only_range{x}, move_only_range{y}, cmp, get_first, get_second);
         STATIC_ASSERT(same_as<decltype(result), bool>);
         assert(result);
-        assert(!equal(move_only_range{x}, move_only_range{y}, equal_to{}, get_first, get_first));
+        assert(!equal(move_only_range{x}, move_only_range{y}, cmp, get_first, get_first));
     }
     {
         // Validate sized iterator+sentinel pairs
-        auto result = equal(x.begin(), x.end(), y.begin(), y.end(), equal_to{}, get_first, get_second);
+        auto result = equal(x.begin(), x.end(), y.begin(), y.end(), cmp, get_first, get_second);
         STATIC_ASSERT(same_as<decltype(result), bool>);
         assert(result);
-        assert(!equal(x.begin(), x.end(), y.begin(), y.end(), equal_to{}, get_first, get_first));
+        assert(!equal(x.begin(), x.end(), y.begin(), y.end(), cmp, get_first, get_first));
     }
     {
         // Validate non-sized iterator+sentinel pairs
         move_only_range xx{x};
         move_only_range yy{y};
-        auto result = equal(xx.begin(), xx.end(), yy.begin(), yy.end(), equal_to{}, get_first, get_second);
+        auto result = equal(xx.begin(), xx.end(), yy.begin(), yy.end(), cmp, get_first, get_second);
         STATIC_ASSERT(same_as<decltype(result), bool>);
         assert(result);
         xx = move_only_range{x};
         yy = move_only_range{y};
-        assert(!equal(xx.begin(), xx.end(), yy.begin(), yy.end(), equal_to{}, get_first, get_first));
+        assert(!equal(xx.begin(), xx.end(), yy.begin(), yy.end(), cmp, get_first, get_first));
     }
     {
         // calls with sized ranges of differing size perform no comparisons nor projections

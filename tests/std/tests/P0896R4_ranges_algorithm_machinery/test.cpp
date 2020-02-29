@@ -210,9 +210,6 @@ namespace indirect_binary_predicate_test {
         std::true_type>);
 } // namespace indirect_binary_predicate_test
 
-// TODO: test indirect_equivalence_relation
-// TODO: test indirect_strict_weak_order
-
 namespace projected_test {
     template <class Iter, class Proj, class Value, class Reference>
     constexpr bool test() {
@@ -256,7 +253,6 @@ namespace indirectly_copyable_test {
     STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<1>, out_archetype<0>>);
     STATIC_ASSERT(indirectly_copyable<simple_iter_archetype<1>, out_archetype<1>>);
 } // namespace indirectly_copyable_test
-// TODO: test indirectly_copyable_storable
 
 namespace indirectly_swappable_test {
     using std::indirectly_readable, std::indirectly_swappable;
@@ -349,10 +345,6 @@ namespace indirectly_comparable_test {
     using Projected = std::projected<simple_iter_archetype<1>, Proj>;
     STATIC_ASSERT(std::same_as<std::indirect_result_t<Fn<2>, Projected, Projected>, void*>);
 } // namespace indirectly_comparable_test
-
-// TODO: test permutable
-// TODO: test mergeable
-// TODO: test sortable
 
 namespace dangling_test {
     // Also test borrowed_iterator_t and borrowed_subrange_t

@@ -893,28 +893,6 @@ concept indirect_binary_predicate = indirectly_readable<_It1>
     && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
-// CONCEPT indirect_equivalence_relation
-template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_equivalence_relation = indirectly_readable<_It1>
-    && indirectly_readable<_It2>
-    && copy_constructible<_Fn>
-    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
-    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
-    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
-    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
-    && equivalence_relation<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
-
-// CONCEPT indirect_strict_weak_order
-template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_strict_weak_order = indirectly_readable<_It1>
-    && indirectly_readable<_It2>
-    && copy_constructible<_Fn>
-    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
-    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
-    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
-    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
-    && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
-
 // ALIAS TEMPLATE indirect_result_t
 template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...)
@@ -962,17 +940,6 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out>
 // CONCEPT indirectly_copyable
 template <class _In, class _Out>
 concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
-
-// CONCEPT indirectly_copyable_storable
-template <class _In, class _Out>
-concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
-    && indirectly_writable<_Out, iter_value_t<_In>&>
-    && indirectly_writable<_Out, const iter_value_t<_In>&>
-    && indirectly_writable<_Out, iter_value_t<_In>&&>
-    && indirectly_writable<_Out, const iter_value_t<_In>&&>
-    && copyable<iter_value_t<_In>>
-    && constructible_from<iter_value_t<_In>, iter_reference_t<_In>>
-    && assignable_from<iter_value_t<_In>&, iter_reference_t<_In>>;
 // clang-format on
 
 // CUSTOMIZATION POINT OBJECT iter_swap
@@ -1067,29 +1034,6 @@ concept indirectly_comparable =
     indirect_binary_predicate<_Rel,
         projected<_It1, _Proj1>,
         projected<_It2, _Proj2>>;
-
-// CONCEPT permutable
-template <class _It>
-concept permutable = forward_iterator<_It>
-    && indirectly_movable_storable<_It, _It>
-    && indirectly_swappable<_It, _It>;
-
-// CONCEPT mergeable
-namespace ranges { struct less; }
-
-template <class _It1, class _It2, class _Out, class _Rel = ranges::less, class _Proj1 = identity,
-    class _Proj2 = identity>
-concept mergeable = input_iterator<_It1>
-    && input_iterator<_It2>
-    && weakly_incrementable<_Out>
-    && indirectly_copyable<_It1, _Out>
-    && indirectly_copyable<_It2, _Out>
-    && indirect_strict_weak_order<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
-
-// CONCEPT sortable
-template <class _It, class _Rel = ranges::less, class _Proj = identity>
-concept sortable = permutable<_It>
-    && indirect_strict_weak_order<_Rel, projected<_It, _Proj>>;
 // clang-format on
 
 // ALIAS TEMPLATE _Iter_ref_t
