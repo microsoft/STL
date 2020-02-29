@@ -18,7 +18,7 @@ template <class Ty, class... Types>
 inline constexpr bool
     can_construct_at_impl<void_t<decltype(construct_at(declval<Ty*>(), declval<Types>()...))>, Ty, Types...> = true;
 
-template<class Ty, class... Types>
+template <class Ty, class... Types>
 inline constexpr bool can_construct_at = can_construct_at_impl<void, Ty, Types...>;
 
 static_assert(can_construct_at<int>);
