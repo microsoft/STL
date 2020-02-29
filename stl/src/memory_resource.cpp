@@ -8,7 +8,7 @@
 _STD_BEGIN
 namespace pmr {
 
-    static memory_resource* _Default_resource = nullptr;
+    static memory_resource* _Default_resource{nullptr};
 
     extern "C" _CRT_SATELLITE_1 _Aligned_new_delete_resource_impl* __cdecl _Aligned_new_delete_resource() noexcept {
         return &const_cast<_Aligned_new_delete_resource_impl&>(

@@ -704,7 +704,7 @@ template <class _Resource, class _Dx>
 class _Ref_count_resource : public _Ref_count_base { // handle reference counting for object with deleter
 public:
     _Ref_count_resource(_Resource _Px, _Dx _Dt)
-        : _Ref_count_base(), _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _Px) {}
+        : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -737,7 +737,7 @@ class _Ref_count_resource_alloc : public _Ref_count_base {
 public:
     _Ref_count_resource_alloc(_Resource _Px, _Dx _Dt, const _Alloc& _Ax)
         : _Ref_count_base(),
-          _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _One_then_variadic_args_t(), _Ax, _Px) {}
+          _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
 
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -1815,10 +1815,10 @@ public:
     using deleter_type = _Dx;
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     unique_ptr& operator=(nullptr_t) noexcept {
         reset();
@@ -1826,14 +1826,14 @@ public:
     }
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Ptr) {}
+    explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0>
-    unique_ptr(pointer _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _Dt, _Ptr) {}
+    unique_ptr(pointer _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Dx2                                                                            = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0>
-    unique_ptr(pointer _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _Ptr) {}
+    unique_ptr(pointer _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Dx2                                                                                      = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
@@ -1843,7 +1843,7 @@ public:
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
 #endif // _M_CEE
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
     }
 
     template <class _Ty2, class _Dx2,
@@ -1852,12 +1852,12 @@ public:
                 conditional_t<is_reference_v<_Dx>, is_same<_Dx2, _Dx>, is_convertible<_Dx2, _Dx>>>,
             int> = 0>
     unique_ptr(unique_ptr<_Ty2, _Dx2>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx2>(_Right.get_deleter()), _Right.release()) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx2>(_Right.get_deleter()), _Right.release()) {}
 
 #if _HAS_AUTO_PTR_ETC
     template <class _Ty2,
         enable_if_t<conjunction_v<is_convertible<_Ty2*, _Ty*>, is_same<_Dx, default_delete<_Ty>>>, int> = 0>
-    unique_ptr(auto_ptr<_Ty2>&& _Right) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Right.release()) {}
+    unique_ptr(auto_ptr<_Ty2>&& _Right) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Right.release()) {}
 #endif // _HAS_AUTO_PTR_ETC
 
     template <class _Ty2, class _Dx2,
@@ -1946,7 +1946,7 @@ public:
     using deleter_type = _Dx;
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
     using _Enable_ctor_reset =
@@ -1957,16 +1957,16 @@ public:
                         && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>)>; // TRANSITION, GH-248
 
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
-    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Ptr) {}
+    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _Dt, _Ptr) {}
+    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _Ptr) {}
+    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
@@ -1976,7 +1976,7 @@ public:
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
 #endif // _M_CEE
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
     }
 
 #ifndef _M_CEE // TRANSITION, VSO-1006185
@@ -2001,7 +2001,7 @@ public:
         class = _Enable_conversion<_Uty, _Ex,
             conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>>>
     unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Uty, class _Ex, class = _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>>>
     unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
@@ -2011,7 +2011,7 @@ public:
     }
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     unique_ptr& operator=(nullptr_t) noexcept {
         reset();
