@@ -62,17 +62,17 @@ namespace stdext {
                     const auto _Ptr   = reinterpret_cast<const unsigned char*>(_Mid1);
                     unsigned long _Ch = 0;
 
-                    if (*_Pstate == _Little_first) {
+                    if (*_Pstate == _STD _Little_first) {
                         for (_Count = _Bytes_per_word; 0 < _Count;) {
                             _Ch = _Ch << 8 | _Ptr[--_Count];
                         }
-                    } else if (*_Pstate == _Big_first) {
+                    } else if (*_Pstate == _STD _Big_first) {
                         for (_Count = 0; _Count < _Bytes_per_word; ++_Count) {
                             _Ch = _Ch << 8 | _Ptr[_Count];
                         }
                     } else { // no header seen yet, try preferred mode
-                        constexpr unsigned char _Default_endian =
-                            (_Mode & _STD little_endian) != 0 ? _Little_first : _Big_first;
+                        constexpr unsigned char _Default_endian = static_cast<unsigned char>(
+                            (_Mode & _STD little_endian) != 0 ? _STD _Little_first : _STD _Big_first);
 
                         if
                             _CONSTEXPR_IF((_Mode & _STD little_endian) != 0) {
@@ -129,10 +129,10 @@ namespace stdext {
 
                     if
                         _CONSTEXPR_IF((_Mode & _STD little_endian) != 0) {
-                            *_Pstate = _Little_first;
+                            *_Pstate = _STD _Little_first;
                         }
                     else {
-                        *_Pstate = _Big_first;
+                        *_Pstate = _STD _Big_first;
                     }
 
                     if
@@ -141,7 +141,7 @@ namespace stdext {
                         }
                     else if (_Last2 - _Mid2 < 2 * _Bytes_per_word) {
                         return _Mybase::partial; // not enough room for both
-                    } else if (*_Pstate == _Little_first) {
+                    } else if (*_Pstate == _STD _Little_first) {
                         for (_Count = 0; _Count < _Bytes_per_word; ++_Count) { // put LS byte first
                             *_Mid2++ = static_cast<_Byte>(static_cast<unsigned char>(_Header));
                             _Header >>= 8;
@@ -162,7 +162,7 @@ namespace stdext {
                         return _Mybase::error;
                     }
 
-                    if (*_Pstate == _Little_first) {
+                    if (*_Pstate == _STD _Little_first) {
                         for (_Count = 0; _Count < _Bytes_per_word; ++_Count) { // put LS byte first
                             *_Mid2++ = static_cast<_Byte>(static_cast<unsigned char>(_Ch));
                             _Ch >>= 8;
