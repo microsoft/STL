@@ -183,7 +183,7 @@
 // P1870R1 safe_range
 // P1872R0 span Should Have size_type, Not index_type
 // P1959R0 Removing weak_equality And strong_equality
-// P1976R2 Fixed-size span Construction From Dynamic Range
+// P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:

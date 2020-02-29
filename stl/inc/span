@@ -294,17 +294,17 @@ template <class _Ty, size_t _Size>
 inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 // clang-format off
-// concept _Span_compatible_iterator
+// CONCEPT _Span_compatible_iterator
 template <class _It, class _Ty>
 concept _Span_compatible_iterator = contiguous_iterator<_It>
                                  && is_convertible_v<remove_reference_t<iter_reference_t<_It>>(*)[], _Ty(*)[]>;
 
-// concept _Span_compatible_sentinel
+// CONCEPT _Span_compatible_sentinel
 template <class _Sentinel, class _It>
 concept _Span_compatible_sentinel = sized_sentinel_for<_Sentinel, _It>
                                  && !is_convertible_v<_Sentinel, size_t>;
 
-// concept _Span_compatible_range
+// CONCEPT _Span_compatible_range
 template <class _Rng, class _Ty>
 concept _Span_compatible_range =
     !is_array_v<remove_cvref_t<_Rng>>
@@ -389,7 +389,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent,
-                "Cannot construct span with static extent from range (first, count) as count != extent");
+                "Cannot construct span with static extent from range [first, first + count) as count != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -402,7 +402,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Last - _First == _Extent,
-                "Cannot construct span with static extent from range (first, last) as last - first != extent");
+                "Cannot construct span with static extent from range [first, last) as last - first != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -439,7 +439,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Other.size() == _Extent,
-                "Cannot construct span with static extent from other span s as s.size() != extent");
+                "Cannot construct span with static extent from other span as other.size() != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
@@ -455,7 +455,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent,
-                "Cannot construct span with static extent from range (ptr, count) as count != extent");
+                "Cannot construct span with static extent from range [ptr, ptr + count) as count != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -466,7 +466,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Last - _First == _Extent,
-                "Cannot construct span with static extent from range (first, last) as last - first != extent");
+                "Cannot construct span with static extent from range [first, last) as last - first != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -516,7 +516,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Other.size() == _Extent,
-                "Cannot construct span with static extent from other span s as s.size() != extent");
+                "Cannot construct span with static extent from other span as other.size() != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }

@@ -787,10 +787,13 @@ constexpr bool test() {
 
         FunctionTakingSpan<int>(orig_dyn);
         FunctionTakingSpan<int>(orig_three);
+        FunctionTakingSpan<int, 3>(orig_three);
         FunctionTakingSpan<const int>(orig_dyn);
         FunctionTakingSpan<const int>(orig_three);
         FunctionTakingSpan<const int>(orig_const_dyn);
         FunctionTakingSpan<const int>(orig_const_three);
+        FunctionTakingSpan<const int, 3>(orig_three);
+        FunctionTakingSpan<const int, 3>(orig_const_three);
 
         static_assert(is_same_v<decltype(span{orig_dyn}), span<int>>);
         static_assert(is_same_v<decltype(span{orig_three}), span<int, 3>>);

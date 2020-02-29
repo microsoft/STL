@@ -176,13 +176,14 @@ void test_case_algorithm_incompatible_transposed() {
 
 void test_case_constructor_first_count_incompatible_extent() {
     span<int, 3> sp(begin(globalArray),
-        size(globalArray)); // Cannot construct span with static extent from range (first, count) as count != extent
+        size(globalArray)); // Cannot construct span with static extent from range [first, first + count) as count !=
+                            // extent
     (void) sp;
 }
 
 void test_case_constructor_first_last_incompatible_extent() {
     span<int, 3> sp(begin(globalArray), end(globalArray)); // Cannot construct span with static extent from range
-                                                           // (first, last) as last - first != extent
+                                                           // [first, last) as last - first != extent
     (void) sp;
 }
 
@@ -190,12 +191,6 @@ void test_case_constructor_range_incompatible_extent() {
     vector<int> v(begin(globalArray), end(globalArray));
     span<int, 3> sp(v); // Cannot construct span with static extent from range r as std::ranges::size(r) != extent
     (void) sp;
-}
-
-void test_case_constructor_span_incompatible_extent() {
-    span<int, 5> sp(begin(globalArray), end(globalArray));
-    span<int, 3> sp2(sp); // Cannot construct span with static extent from other span s as s.size() != extent
-    (void) sp2;
 }
 
 void test_case_first_excessive_compiletime_count() {
