@@ -261,7 +261,8 @@ namespace stdext {
 
                     while (_Status != _Eof) { // get using codecvt facet
                         char* _Buf = &_Str[0];
-                        _Elem _Ch, *_Dest;
+                        _Elem _Ch;
+                        _Elem* _Dest;
                         const char* _Src;
                         int _Meta;
 
