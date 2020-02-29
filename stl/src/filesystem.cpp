@@ -780,7 +780,11 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 
         DWORD _Buf_count = MAX_PATH;
         for (;;) {
-            _Buf           = _malloc_crt_t(wchar_t, _Buf_count);
+            _Buf = _malloc_crt_t(wchar_t, _Buf_count);
+            if (!_Buf) {
+                return __std_win_error::_Not_enough_memory;
+            }
+
             _Actual_length = __vcrt_GetFinalPathNameByHandleW(
                 _Handle._Get(), _Buf.get() + 14, _Buf_count - 14, FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
             if (_Actual_length == 0) {
