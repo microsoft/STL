@@ -760,7 +760,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
         return __std_win_error::_Success;
     }
 
-    auto _Last_error         = __std_win_error{GetLastError()};
+    __std_win_error _Last_error{GetLastError()};
     _Available_c->QuadPart   = ~0ull;
     _Total_bytes_c->QuadPart = ~0ull;
     _Free_bytes_c->QuadPart  = ~0ull;
@@ -768,7 +768,11 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
         return _Last_error;
     }
 
-    // input could have been a file; canonicalize and remove the last component
+    // Input could have been a file; canonicalize and remove the last component.
+    // We use VOLUME_NAME_NT because it always has a mapping available and we don't care about the canonical path
+    // being "ugly" due to needing the _Dos_to_nt_prefix.
+    constexpr wchar_t _Dos_to_nt_prefix[]    = LR"(\\?\GLOBALROOT)";
+    constexpr size_t _Dos_to_nt_prefix_count = sizeof(_Dos_to_nt_prefix) / sizeof(wchar_t) - 1;
     __crt_unique_heap_ptr<wchar_t> _Buf;
     DWORD _Actual_length;
     {
@@ -785,13 +789,13 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
                 return __std_win_error::_Not_enough_memory;
             }
 
-            _Actual_length = __vcrt_GetFinalPathNameByHandleW(
-                _Handle._Get(), _Buf.get() + 14, _Buf_count - 14, FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
+            _Actual_length = __vcrt_GetFinalPathNameByHandleW(_Handle._Get(), _Buf.get() + _Dos_to_nt_prefix_count,
+                _Buf_count - _Dos_to_nt_prefix_count, FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
             if (_Actual_length == 0) {
                 return __std_win_error{GetLastError()};
             }
 
-            _Actual_length += 14;
+            _Actual_length += _Dos_to_nt_prefix_count;
             if (_Actual_length <= _Buf_count) {
                 break;
             }
@@ -802,13 +806,12 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 
     const auto _Ptr = _Buf.get();
 
-    // we resolved the NT name, so add the DOS-to-NT prefix
-    memcpy(_Ptr, LR"(\\?\GLOBALROOT)", 14 * sizeof(wchar_t));
+    memcpy(_Ptr, _Dos_to_nt_prefix, _Dos_to_nt_prefix_count * sizeof(wchar_t));
 
     // insert null terminator at the last slash
     auto _Cursor = _Ptr + _Actual_length;
     do {
-        --_Cursor; // cannot run off start because DOS-to-NT prefix contains a backslash
+        --_Cursor; // cannot run off start because _Dos_to_nt_prefix contains a backslash
     } while (*_Cursor != L'\\');
 
     *_Cursor = L'\0';
