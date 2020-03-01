@@ -1633,12 +1633,12 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<mutable_unsized_range const, false, CI, S>());
     STATIC_ASSERT(test<mutable_unsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_only_no_size_range, true, I, S>());
+    STATIC_ASSERT(test<mutable_only_no_size_range, false, I, S>());
     STATIC_ASSERT(test<mutable_only_no_size_range&, false, I, S>());
     STATIC_ASSERT(test<mutable_only_no_size_range const>());
     STATIC_ASSERT(test<mutable_only_no_size_range const&>());
 
-    STATIC_ASSERT(test<immutable_unsized_range, true, CI, S>());
+    STATIC_ASSERT(test<immutable_unsized_range, false, CI, S>());
     STATIC_ASSERT(test<immutable_unsized_range&, false, CI, S>());
     STATIC_ASSERT(test<immutable_unsized_range const, false, CI, S>());
     STATIC_ASSERT(test<immutable_unsized_range const&, false, CI, S>());
@@ -1648,12 +1648,12 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<mutable_sized_range const, false, CI, UC>());
     STATIC_ASSERT(test<mutable_sized_range const&, false, CI, UC>());
 
-    STATIC_ASSERT(test<mutable_only_sized_range, true, I, UC>());
+    STATIC_ASSERT(test<mutable_only_sized_range, false, I, UC>());
     STATIC_ASSERT(test<mutable_only_sized_range&, false, I, UC>());
     STATIC_ASSERT(test<mutable_only_sized_range const>());
     STATIC_ASSERT(test<mutable_only_sized_range const&>());
 
-    STATIC_ASSERT(test<immutable_sized_range, true, CI, UC>());
+    STATIC_ASSERT(test<immutable_sized_range, false, CI, UC>());
     STATIC_ASSERT(test<immutable_sized_range&, false, CI, UC>());
     STATIC_ASSERT(test<immutable_sized_range const, false, CI, UC>());
     STATIC_ASSERT(test<immutable_sized_range const&, false, CI, UC>());
@@ -1663,12 +1663,12 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<mutable_badsized_range const, false, CI, S>());
     STATIC_ASSERT(test<mutable_badsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_only_badsized_range, true, I, S>());
+    STATIC_ASSERT(test<mutable_only_badsized_range, false, I, S>());
     STATIC_ASSERT(test<mutable_only_badsized_range&, false, I, S>());
     STATIC_ASSERT(test<mutable_only_badsized_range const>());
     STATIC_ASSERT(test<mutable_only_badsized_range const&>());
 
-    STATIC_ASSERT(test<immutable_badsized_range, true, CI, S>());
+    STATIC_ASSERT(test<immutable_badsized_range, false, CI, S>());
     STATIC_ASSERT(test<immutable_badsized_range&, false, CI, S>());
     STATIC_ASSERT(test<immutable_badsized_range const, false, CI, S>());
     STATIC_ASSERT(test<immutable_badsized_range const&, false, CI, S>());
@@ -1719,7 +1719,7 @@ constexpr ranges::iterator_t<R> complicated_algorithm(R&& r) {
 }
 
 template <class T>
-struct array_view {
+struct array_view : ranges::view_base {
     T* first_;
     std::size_t n_;
 
