@@ -478,8 +478,6 @@ constexpr bool test() {
 
         FunctionTakingSpan<int>({stl.begin(), stl.end()});
         FunctionTakingSpan<int>({stl.begin(), stl.cend()});
-        FunctionTakingSpan<int, 3>({stl.begin(), stl.end()});
-        FunctionTakingSpan<int, 3>({stl.begin(), stl.cend()});
         FunctionTakingSpan<const int>({stl.begin(), stl.end()});
         FunctionTakingSpan<const int>({stl.begin(), stl.cend()});
         FunctionTakingSpan<const int>({stl.cbegin(), stl.end()});
@@ -692,7 +690,7 @@ constexpr bool test() {
         static_assert(!is_constructible_v<span<int>, const span<const int, 500>&>);
         static_assert(!is_constructible_v<span<int>, const span<double, 3>&>);
 
-        static_assert(!is_constructible_v<span<int, 3>, const span<int>&>);
+        static_assert(is_constructible_v<span<int, 3>, const span<int>&>);
         static_assert(is_nothrow_constructible_v<span<int, 3>, const span<int, 3>&>);
         static_assert(!is_constructible_v<span<int, 3>, const span<int, 500>&>);
         static_assert(!is_constructible_v<span<int, 3>, const span<const int>&>);
@@ -708,10 +706,10 @@ constexpr bool test() {
         static_assert(is_nothrow_constructible_v<span<const int>, const span<const int, 500>&>);
         static_assert(!is_constructible_v<span<const int>, const span<double, 3>&>);
 
-        static_assert(!is_constructible_v<span<const int, 3>, const span<int>&>);
+        static_assert(is_constructible_v<span<const int, 3>, const span<int>&>);
         static_assert(is_nothrow_constructible_v<span<const int, 3>, const span<int, 3>&>);
         static_assert(!is_constructible_v<span<const int, 3>, const span<int, 500>&>);
-        static_assert(!is_constructible_v<span<const int, 3>, const span<const int>&>);
+        static_assert(is_constructible_v<span<const int, 3>, const span<const int>&>);
         static_assert(is_nothrow_constructible_v<span<const int, 3>, const span<const int, 3>&>);
         static_assert(!is_constructible_v<span<const int, 3>, const span<const int, 500>&>);
         static_assert(!is_constructible_v<span<const int, 3>, const span<double, 3>&>);
