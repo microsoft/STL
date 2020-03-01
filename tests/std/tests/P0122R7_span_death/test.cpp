@@ -193,6 +193,12 @@ void test_case_constructor_range_incompatible_extent() {
     (void) sp;
 }
 
+void test_case_constructor_span_incompatible_extent() {
+    span<int> sp(begin(globalArray), end(globalArray));
+    span<int, 3> sp2(sp); // Cannot construct span with static extent from other span s as s.size() != extent
+    (void) sp2;
+}
+
 void test_case_first_excessive_compiletime_count() {
     span<int> sp(globalArray);
     (void) sp.first<6>(); // Count out of range in span::first()
