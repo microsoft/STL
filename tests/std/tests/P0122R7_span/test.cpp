@@ -601,11 +601,11 @@ constexpr bool test() {
         static_assert(!is_constructible_v<span<double, 3>, ContiguousSizedRange&>);
 
         static_assert(is_convertible_v<ContiguousSizedRange&, span<int>>);
-        static_assert(is_convertible_v<ContiguousSizedRange&, span<int, 3>>);
+        static_assert(!is_convertible_v<ContiguousSizedRange&, span<int, 3>>);
         static_assert(is_convertible_v<ContiguousSizedRange&, span<const int>>);
-        static_assert(is_convertible_v<ContiguousSizedRange&, span<const int, 3>>);
+        static_assert(!is_convertible_v<ContiguousSizedRange&, span<const int, 3>>);
         static_assert(is_convertible_v<const ContiguousSizedRange&, span<const int>>);
-        static_assert(is_convertible_v<const ContiguousSizedRange&, span<const int, 3>>);
+        static_assert(!is_convertible_v<const ContiguousSizedRange&, span<const int, 3>>);
 
         static_assert(is_constructible_v<span<Base>, BasicRange<Base>&>);
         static_assert(is_constructible_v<span<Base, 3>, BasicRange<Base>&>);
@@ -649,9 +649,9 @@ constexpr bool test() {
         static_assert(is_constructible_v<span<const int, 3>, ContiguousSizedRange>);
 
         static_assert(is_convertible_v<SafeContiguousSizedRange, span<int>>);
-        static_assert(is_convertible_v<SafeContiguousSizedRange, span<int, 3>>);
+        static_assert(!is_convertible_v<SafeContiguousSizedRange, span<int, 3>>);
         static_assert(is_convertible_v<ContiguousSizedRange, span<const int>>);
-        static_assert(is_convertible_v<ContiguousSizedRange, span<const int, 3>>);
+        static_assert(!is_convertible_v<ContiguousSizedRange, span<const int, 3>>);
 
         SafeContiguousSizedRange safe_user_range;
 
