@@ -51,7 +51,7 @@ STATIC_ASSERT(il.size() == 0);
 STATIC_ASSERT(il.begin() == il.end());
 STATIC_ASSERT(begin(il) == end(il));
 
-// TRANSITION:
+// TRANSITION,
 // constexpr error_category() noexcept;
 
 constexpr int i = 1729;
@@ -816,7 +816,7 @@ constexpr adopt_lock_t adopt_lock2   = adopt_lock;
 
 constexpr once_flag once{};
 
-// TRANSITION:
+// TRANSITION,
 // constexpr mutex() noexcept;
 
 #endif // _M_CEE

@@ -357,6 +357,7 @@ struct _Vec_iter_types {
 
 // STRUCT _Value_init_tag
 struct _Value_init_tag { // tag to request value-initialization
+    explicit _Value_init_tag() = default;
 };
 
 // CLASS TEMPLATE _Vector_val
@@ -441,11 +442,11 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    vector() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t()) {
+    vector() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
     }
 
-    explicit vector(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t(), _Al) {
+    explicit vector(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
     }
 
@@ -467,12 +468,12 @@ private:
 
 public:
     explicit vector(_CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n_copies_of_ty(_Count, _Value_init_tag{});
     }
 
     vector(_CRT_GUARDOVERFLOW const size_type _Count, const _Ty& _Val, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n_copies_of_ty(_Count, _Val);
     }
 
@@ -501,7 +502,7 @@ private:
 
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Adl_verify_range(_First, _Last);
@@ -509,7 +510,7 @@ public:
         _Proxy._Release();
     }
 
-    vector(initializer_list<_Ty> _Ilist, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    vector(initializer_list<_Ty> _Ilist, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Range_construct_or_tidy(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
@@ -517,7 +518,7 @@ public:
     }
 
     vector(const vector& _Right)
-        : _Mypair(_One_then_variadic_args_t(), _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
         auto&& _Alproxy           = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         auto& _My_data            = _Mypair._Myval2;
         const auto& _Right_data   = _Right._Mypair._Myval2;
@@ -534,7 +535,7 @@ public:
         _Proxy._Release();
     }
 
-    vector(const vector& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    vector(const vector& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy           = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         auto& _My_data            = _Mypair._Myval2;
         const auto& _Right_data   = _Right._Mypair._Myval2;
@@ -578,13 +579,13 @@ private:
     }
 
 public:
-    vector(vector&& _Right) noexcept : _Mypair(_One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+    vector(vector&& _Right) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Move_construct(_Right, true_type{});
     }
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(_Alty_traits::is_always_equal::value) // strengthened
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Move_construct(_Right, typename _Alty_traits::is_always_equal::type{});
@@ -2865,13 +2866,13 @@ struct hash<vector<bool, _Alloc>> {
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>
-void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
+typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Ty, class _Alloc, class _Pr>
-void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

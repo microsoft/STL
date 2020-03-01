@@ -1268,8 +1268,9 @@ using _Iterator_base = _Iterator_base12;
 
 
 // ALIAS TEMPLATE _Container_proxy_ptr AND SUPPORTING MACHINERY
-struct _Leave_proxy_unbound {}; // tag to indicate that a proxy is being allocated before it is safe to bind to a
-                                // _Container_base12
+struct _Leave_proxy_unbound {
+    explicit _Leave_proxy_unbound() = default;
+}; // tag to indicate that a proxy is being allocated before it is safe to bind to a _Container_base12
 
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
@@ -1337,9 +1338,12 @@ using _Container_proxy_ptr = _Container_proxy_ptr12<_Rebind_alloc_t<_Alloc, _Con
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
 // CLASS TEMPLATE _Compressed_pair
-struct _Zero_then_variadic_args_t {}; // tag type for value-initializing first, constructing second from remaining args
+struct _Zero_then_variadic_args_t {
+    explicit _Zero_then_variadic_args_t() = default;
+}; // tag type for value-initializing first, constructing second from remaining args
 
 struct _One_then_variadic_args_t {
+    explicit _One_then_variadic_args_t() = default;
 }; // tag type for constructing first from one arg, constructing second from remaining args
 
 template <class _Ty1, class _Ty2, bool = is_empty_v<_Ty1> && !is_final_v<_Ty1>>
@@ -1393,7 +1397,9 @@ public:
     }
 };
 
-struct _Move_allocator_tag {};
+struct _Move_allocator_tag {
+    explicit _Move_allocator_tag() = default;
+};
 
 // FUNCTION TEMPLATE _Get_temporary_buffer
 template <class _Ty>
@@ -2083,27 +2089,32 @@ _NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr 
 
 // FUNCTION TEMPLATE _Erase_remove
 template <class _Container, class _Uty>
-void _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
+    return _Old_size - _Cont.size();
 }
 
 // FUNCTION TEMPLATE _Erase_remove_if
 template <class _Container, class _Pr>
-void _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
+    return _Old_size - _Cont.size();
 }
 
 // FUNCTION TEMPLATE _Erase_nodes_if
 template <class _Container, class _Pr>
-void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     while (_First != _Last) {
         if (_Pred(*_First)) {
             _First = _Cont.erase(_First);
@@ -2111,6 +2122,7 @@ void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satis
             ++_First;
         }
     }
+    return _Old_size - _Cont.size();
 }
 _STD_END
 

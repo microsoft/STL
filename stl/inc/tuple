@@ -182,13 +182,21 @@ struct _Tuple_val { // stores each value in a tuple
 };
 
 // CLASS TEMPLATE tuple
-struct _Exact_args_t {}; // tag type to disambiguate construction (from one arg per element)
+struct _Exact_args_t {
+    explicit _Exact_args_t() = default;
+}; // tag type to disambiguate construction (from one arg per element)
 
-struct _Unpack_tuple_t {}; // tag type to disambiguate construction (from unpacking a tuple/pair)
+struct _Unpack_tuple_t {
+    explicit _Unpack_tuple_t() = default;
+}; // tag type to disambiguate construction (from unpacking a tuple/pair)
 
-struct _Alloc_exact_args_t {}; // tag type to disambiguate construction (from an allocator and one arg per element)
+struct _Alloc_exact_args_t {
+    explicit _Alloc_exact_args_t() = default;
+}; // tag type to disambiguate construction (from an allocator and one arg per element)
 
-struct _Alloc_unpack_tuple_t {}; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
+struct _Alloc_unpack_tuple_t {
+    explicit _Alloc_unpack_tuple_t() = default;
+}; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
 template <class... _Types>
 class tuple;
