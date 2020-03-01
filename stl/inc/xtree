@@ -874,34 +874,39 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    struct _Copy_tag {};
-    struct _Move_tag {};
+    struct _Copy_tag {
+        explicit _Copy_tag() = default;
+    };
 
-    _Tree(const key_compare& _Parg) : _Mypair(_One_then_variadic_args_t(), _Parg, _Zero_then_variadic_args_t()) {
+    struct _Move_tag {
+        explicit _Move_tag() = default;
+    };
+
+    _Tree(const key_compare& _Parg) : _Mypair(_One_then_variadic_args_t{}, _Parg, _Zero_then_variadic_args_t{}) {
         _Alloc_sentinel_and_proxy();
     }
 
     _Tree(const key_compare& _Parg, const allocator_type& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Parg, _One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Parg, _One_then_variadic_args_t{}, _Al) {
         _Alloc_sentinel_and_proxy();
     }
 
     template <class _Any_alloc>
     _Tree(const _Tree& _Right, _Any_alloc&& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Right.key_comp(), _One_then_variadic_args_t(),
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{},
             _STD forward<_Any_alloc>(_Al)) {
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy(_Right, _Copy_tag());
+        _Copy(_Right, _Copy_tag{});
         _Sentinel._Release();
         _Proxy._Release();
     }
 
     _Tree(_Tree&& _Right)
         : _Mypair(
-            _One_then_variadic_args_t(), _Right.key_comp(), _One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+            _One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
     }
@@ -913,14 +918,14 @@ private:
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy(_Right, _Move_tag());
+        _Copy(_Right, _Move_tag{});
         _Sentinel._Release();
         _Proxy._Release();
     }
 
 public:
     _Tree(_Tree&& _Right, const allocator_type& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Right.key_comp(), _One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _Al) {
         if
             _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
                 if (_Getal() != _Right._Getal()) {
@@ -969,7 +974,7 @@ private:
         } else {
             clear();
             _Getcomp() = _Right._Getcomp();
-            _Copy(_Right, _Move_tag());
+            _Copy(_Right, _Move_tag{});
         }
     }
 
@@ -1198,7 +1203,7 @@ private:
         clear();
         _Getcomp() = _Right._Getcomp();
         _Pocca(_Getal(), _Right._Getal());
-        _Copy(_Right, _Copy_tag());
+        _Copy(_Right, _Copy_tag{});
     }
 
     void _Copy_assign(const _Tree& _Right, true_type) {
@@ -1220,7 +1225,7 @@ private:
             _Scary->_Myhead = _Newhead;
             _Proxy._Bind(_Alproxy, _Scary);
             _Getcomp() = _Right._Getcomp();
-            _Copy(_Right, _Copy_tag());
+            _Copy(_Right, _Copy_tag{});
         }
     }
 

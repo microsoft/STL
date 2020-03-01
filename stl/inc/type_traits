@@ -1621,7 +1621,9 @@ _IMPLEMENT_INVOKE(_C_, constexpr)
 template <class _Rx, bool = is_void_v<_Rx>>
 struct _Invoker_ret {}; // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
 
-struct _Unforced {}; // tag to distinguish bind() from bind<R>()
+struct _Unforced {
+    explicit _Unforced() = default;
+}; // tag to distinguish bind() from bind<R>()
 
 template <class _Cv_void>
 struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void

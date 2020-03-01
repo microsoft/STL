@@ -43,14 +43,6 @@ struct _Span_iterator {
     using pointer           = _Ty*;
     using reference         = _Ty&;
 
-    _NODISCARD constexpr operator _Span_iterator<const _Ty>() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_Myptr, _Mybegin, _Myend};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
-        return {_Myptr};
-#endif // _ITERATOR_DEBUG_LEVEL
-    }
-
     _NODISCARD constexpr reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Mybegin, "cannot dereference value-initialized span iterator");
@@ -141,21 +133,13 @@ struct _Span_iterator {
         return _Tmp;
     }
 
-    // clang-format off
-#ifdef __cpp_lib_concepts
-    template <class _Ty2>
-    requires same_as<remove_cv_t<_Ty2>, value_type>
-#else // ^^^ use concepts / no concepts vvv
-    template <class _Ty2, enable_if_t<is_same_v<remove_cv_t<_Ty2>, value_type>, int> = 0>
-#endif // __cpp_lib_concepts
-    _NODISCARD constexpr difference_type operator-(const _Span_iterator<_Ty2>& _Right) const noexcept {
+    _NODISCARD constexpr difference_type operator-(const _Span_iterator& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(
             _Mybegin == _Right._Mybegin && _Myend == _Right._Myend, "cannot subtract incompatible span iterators");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
         return _Myptr - _Right._Myptr;
     }
-    // clang-format on
 
     _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
@@ -359,18 +343,16 @@ struct _Is_span_compatible_range : bool_constant<conjunction_v<
 template <class _Ty, size_t _Extent = dynamic_extent>
 class span : public _Span_extent_type<_Extent> {
 public:
-    using element_type           = _Ty;
-    using value_type             = remove_cv_t<_Ty>;
-    using size_type              = size_t;
-    using difference_type        = ptrdiff_t;
-    using pointer                = _Ty*;
-    using const_pointer          = const _Ty*;
-    using reference              = _Ty&;
-    using const_reference        = const _Ty&;
-    using iterator               = _Span_iterator<_Ty>;
-    using const_iterator         = _Span_iterator<const _Ty>;
-    using reverse_iterator       = _STD reverse_iterator<iterator>;
-    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+    using element_type     = _Ty;
+    using value_type       = remove_cv_t<_Ty>;
+    using size_type        = size_t;
+    using difference_type  = ptrdiff_t;
+    using pointer          = _Ty*;
+    using const_pointer    = const _Ty*;
+    using reference        = _Ty&;
+    using const_reference  = const _Ty&;
+    using iterator         = _Span_iterator<_Ty>;
+    using reverse_iterator = _STD reverse_iterator<iterator>;
 
     static constexpr size_type extent = _Extent;
 
@@ -612,37 +594,12 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
-    _NODISCARD constexpr const_iterator cbegin() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_Mydata, _Mydata, _Mydata + this->size()};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
-        return {_Mydata};
-#endif // _ITERATOR_DEBUG_LEVEL
-    }
-
-    _NODISCARD constexpr const_iterator cend() const noexcept {
-        const auto _End = _Mydata + this->size();
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_End, _Mydata, _End};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
-        return {_End};
-#endif // _ITERATOR_DEBUG_LEVEL
-    }
-
     _NODISCARD constexpr reverse_iterator rbegin() const noexcept {
         return reverse_iterator{end()};
     }
 
     _NODISCARD constexpr reverse_iterator rend() const noexcept {
         return reverse_iterator{begin()};
-    }
-
-    _NODISCARD constexpr const_reverse_iterator crbegin() const noexcept {
-        return const_reverse_iterator{cend()};
-    }
-
-    _NODISCARD constexpr const_reverse_iterator crend() const noexcept {
-        return const_reverse_iterator{cbegin()};
     }
 
     _NODISCARD constexpr pointer _Unchecked_begin() const noexcept {

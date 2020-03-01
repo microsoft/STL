@@ -147,7 +147,6 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
     return _Val;
 }
 
-// constexpr per pending LWG issue, submitted 2020-01-14
 template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     if constexpr (_Has_to_address_v<_Ptr>) {
@@ -1594,10 +1593,12 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <size_t _Value>
 struct _Priority_tag : _Priority_tag<_Value - 1> { // priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <>
 struct _Priority_tag<0> { // base case priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <class _InIt, class _Pr>
@@ -2826,7 +2827,9 @@ namespace ranges {
         // objects from this type to remove some typical object-ish behaviors which helps users avoid depending on their
         // non-specified object-ness.
 
-        struct _Construct_tag {};
+        struct _Construct_tag {
+            explicit _Construct_tag() = default;
+        };
 
         _Not_quite_object() = delete;
 
@@ -3656,7 +3659,7 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, cons
 // FUNCTION TEMPLATE make_move_iterator
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
-    return move_iterator<_Iter>(_It);
+    return move_iterator<_Iter>(_STD move(_It));
 }
 
 #ifdef __cpp_lib_concepts
@@ -4720,7 +4723,9 @@ struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
 #endif // _HAS_STD_BYTE
 
 template <class _Memcmp_pr>
-struct _Lex_compare_optimize {}; // optimization tag for lexicographical_compare
+struct _Lex_compare_optimize {
+    explicit _Lex_compare_optimize() = default;
+}; // optimization tag for lexicographical_compare
 
 template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
 using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
@@ -4728,23 +4733,21 @@ using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
     void>>; // checks the lex_compare element types for memcmp safety
 
 template <class _InIt1, class _InIt2, class _Pr>
-constexpr _Lex_compare_optimize<void> _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
+constexpr auto _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
     // return lex_compare optimization category for arbitrary iterators
-    return {};
+    return _Lex_compare_optimize<void>{};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-constexpr _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
-    _Obj1* const&, _Obj2* const&, const less<_FTy>&) {
+constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const less<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and less<_FTy>
-    return {};
+    return _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy>{};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-constexpr _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
-    _Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
+constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and greater<_FTy>
-    return {};
+    return _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy>{};
 }
 
 template <class _InIt1, class _InIt2, class _Pr>

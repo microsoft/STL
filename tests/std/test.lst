@@ -221,6 +221,7 @@ tests\P0674R1_make_shared_for_arrays
 tests\P0758R1_is_nothrow_convertible
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
+tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0811R3_midpoint_lerp
 tests\P0896R4_P1614R2_comparisons
 tests\P0896R4_ranges_algorithm_machinery
