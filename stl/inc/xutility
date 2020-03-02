@@ -3063,8 +3063,477 @@ namespace ranges {
     template <class _Rng>
     concept common_range = range<_Rng>
         && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+
+    // CLASS TEMPLATE ranges::view_interface
+    template <class _Ty>
+    concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
+
+    template <class _Derived>
+        requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class view_interface : public view_base {
+    private:
+        _NODISCARD constexpr _Derived& _Cast() noexcept {
+            static_assert(derived_from<_Derived, view_interface>,
+                "view_interface's template argument T must derive from view_interface<T> (N4849 [view.interface]/2).");
+            static_assert(view<_Derived>,
+                "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+            return static_cast<_Derived&>(*this);
+        }
+        _NODISCARD constexpr const _Derived& _Cast() const noexcept {
+            static_assert(derived_from<_Derived, view_interface>,
+                "view_interface's template argument T must derive from view_interface<T> (N4849 [view.interface]/2).");
+            static_assert(view<_Derived>,
+                "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+            return static_cast<const _Derived&>(*this);
+        }
+
+    public:
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr bool empty() requires forward_range<_Dx>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr bool empty() requires forward_range<_Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+            return _RANGES begin(_Self) == _RANGES end(_Self);
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr bool empty() const requires forward_range<const _Dx>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr bool empty() const requires forward_range<const _Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+            return _RANGES begin(_Self) == _RANGES end(_Self);
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        constexpr explicit operator bool() requires _Can_empty<_Dx>
+#else // ^^^ workaround / no workaround vvv
+        constexpr explicit operator bool() requires _Can_empty<_Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            return !_RANGES empty(_Cast());
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        constexpr explicit operator bool() const requires _Can_empty<const _Dx>
+#else // ^^^ workaround / no workaround vvv
+        constexpr explicit operator bool() const requires _Can_empty<const _Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            return !_RANGES empty(_Cast());
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto data() requires contiguous_iterator<iterator_t<_Dx>>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto data() requires contiguous_iterator<iterator_t<_Derived>>
+#endif // TRANSITION, LLVM-44833
+        {
+            return _STD to_address(_RANGES begin(_Cast()));
+        }
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto data() const
+            requires range<const _Dx> && contiguous_iterator<iterator_t<const _Dx>>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto data() const
+            requires range<const _Derived> && contiguous_iterator<iterator_t<const _Derived>>
+#endif // TRANSITION, LLVM-44833
+        {
+            return _STD to_address(_RANGES begin(_Cast()));
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto size()
+            requires forward_range<_Dx> && sized_sentinel_for<sentinel_t<_Dx>, iterator_t<_Dx>>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto size()
+            requires forward_range<_Derived> && sized_sentinel_for<sentinel_t<_Derived>, iterator_t<_Derived>>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+            return _RANGES end(_Self) - _RANGES begin(_Self);
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr auto size() const requires forward_range<const _Dx>
+            && sized_sentinel_for<sentinel_t<const _Dx>, iterator_t<const _Dx>>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr auto size() const requires forward_range<const _Derived>
+            && sized_sentinel_for<sentinel_t<const _Derived>, iterator_t<const _Derived>>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+            return _RANGES end(_Self) - _RANGES begin(_Self);
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr decltype(auto) front() requires forward_range<_Dx>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr decltype(auto) front() requires forward_range<_Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return *_RANGES begin(_Self);
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr decltype(auto) front() const requires forward_range<const _Dx>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr decltype(auto) front() const requires forward_range<const _Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return *_RANGES begin(_Self);
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr decltype(auto) back() requires bidirectional_range<_Dx> && common_range<_Dx>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr decltype(auto) back() requires bidirectional_range<_Derived> && common_range<_Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            auto _Last = _RANGES end(_Self);
+            return *--_Last;
+        }
+
+#ifdef __clang__ // TRANSITION, LLVM-44833
+        template <class _Dx = _Derived>
+        _NODISCARD constexpr decltype(auto) back() const
+            requires bidirectional_range<const _Dx> && common_range<const _Dx>
+#else // ^^^ workaround / no workaround vvv
+        _NODISCARD constexpr decltype(auto) back() const
+            requires bidirectional_range<const _Derived> && common_range<const _Derived>
+#endif // TRANSITION, LLVM-44833
+        {
+            auto& _Self = _Cast();
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            auto _Last = _RANGES end(_Self);
+            return *--_Last;
+        }
+
+        template <random_access_range _Rng = _Derived>
+        _NODISCARD constexpr decltype(auto) operator[](const range_difference_t<_Rng> _Idx) {
+            auto& _Self = _Cast();
+#if _CONTAINER_DEBUG_LEVEL > 0
+            if constexpr (sized_range<_Derived>) {
+                _STL_VERIFY(_Idx < _RANGES size(_Self), "index out of range for view_interface");
+            }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return _RANGES begin(_Self)[_Idx];
+        }
+        template <random_access_range _Rng = const _Derived>
+        _NODISCARD constexpr decltype(auto) operator[](const range_difference_t<_Rng> _Idx) const {
+            auto& _Self = _Cast();
+#if _CONTAINER_DEBUG_LEVEL > 0
+            if constexpr (sized_range<_Derived>) {
+                _STL_VERIFY(_Idx < _RANGES size(_Self), "index out of range for view_interface");
+            }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return _RANGES begin(_Self)[_Idx];
+        }
+    };
     // clang-format on
 
+    // ENUM ranges::subrange_kind
+    enum class subrange_kind : bool { unsized, sized };
+
+    // CLASS TEMPLATE ranges::subrange
+    // clang-format off
+    template <class _From, class _To>
+    concept _Convertible_to_non_slicing = convertible_to<_From, _To>
+        && !(is_pointer_v<decay_t<_From>>
+            && is_pointer_v<decay_t<_To>>
+            && _Not_same_as<remove_pointer_t<decay_t<_From>>, remove_pointer_t<decay_t<_To>>>);
+
+    template <class _Ty>
+    concept _Pair_like =
+        !is_reference_v<_Ty> && requires(_Ty __t) {
+        typename tuple_size<_Ty>::type;
+        requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
+        typename tuple_element_t<0, remove_const_t<_Ty>>;
+        typename tuple_element_t<1, remove_const_t<_Ty>>;
+        { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
+        { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
+    };
+
+    template <class _Ty, class _First, class _Second>
+    concept _Pair_like_convertible_from = !range<_Ty> && _Pair_like<_Ty>
+        && constructible_from<_Ty, _First, _Second>
+        && _Convertible_to_non_slicing<_First, tuple_element_t<0, _Ty>>
+        && convertible_to<_Second, tuple_element_t<1, _Ty>>;
+
+    template <input_or_output_iterator _It, sentinel_for<_It> _Se = _It,
+        subrange_kind _Ki = sized_sentinel_for<_Se, _It> ? subrange_kind::sized : subrange_kind::unsized>
+        requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
+    class subrange;
+    // clang-format on
+
+    template <class _It, class _Se, subrange_kind _Ki,
+        bool _Store = _Ki == subrange_kind::sized && !sized_sentinel_for<_Se, _It>>
+    class _Subrange_base : public view_interface<subrange<_It, _Se, _Ki>> { // TRANSITION, [[no_unique_address]]
+    protected:
+        using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
+
+        static constexpr bool _Store_size = true;
+        _Size_type _Size                  = 0;
+
+    public:
+        _Subrange_base() = default;
+        constexpr _Subrange_base(const _Size_type& _Size_) noexcept : _Size(_Size_) {}
+    };
+
+    template <class _It, class _Se, subrange_kind _Ki>
+    class _Subrange_base<_It, _Se, _Ki, false> : public view_interface<subrange<_It, _Se, _Ki>> {
+    protected:
+        using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
+
+        static constexpr bool _Store_size = false;
+
+    public:
+        _Subrange_base() = default;
+        constexpr _Subrange_base(const _Size_type&) noexcept {}
+    };
+
+    // clang-format off
+    template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
+        requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
+    class subrange : public _Subrange_base<_It, _Se, _Ki> {
+    private:
+        using _Mybase = _Subrange_base<_It, _Se, _Ki>;
+        using typename _Mybase::_Size_type;
+        using _Mybase::_Store_size;
+
+        // TRANSITION, [[no_unique_address]]:
+        /* [[no_unique_address]] */ _It _First{};
+        /* [[no_unique_address]] */ _Se _Last{};
+        // [[no_unique_address]] conditional_t<_Store_size, _Size_type, _Nil> _Size{};
+
+        template <class _Rng>
+        constexpr subrange(true_type, _Rng&& _Val) : subrange{_STD forward<_Rng>(_Val), _RANGES size(_Val)} {
+            // delegation target for subrange(_Rng&&) when _Rng models sized_range
+        }
+        template <class _Rng>
+        constexpr subrange(false_type, _Rng&& _Val) : subrange{_RANGES begin(_Val), _RANGES end(_Val)} {
+            // delegation target for subrange(_Rng&&) when _Rng does not model sized_range
+        }
+
+    public:
+        subrange() = default;
+
+        template <_Convertible_to_non_slicing<_It> _It2>
+        constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)
+            : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {}
+
+        template <_Convertible_to_non_slicing<_It> _It2>
+        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_) requires (_Ki == subrange_kind::sized)
+            : _Mybase(_Size_), _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
+            if constexpr(sized_sentinel_for<_Se, _It>) {
+                _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
+                    "This constructor's third argument should equal the distance "
+                    "between the first and second arguments (N4849 [range.subrange.ctor]/3).");
+            }
+        }
+
+        template <_Not_same_as<subrange> _Rng>
+            requires borrowed_range<_Rng>
+                && _Convertible_to_non_slicing<iterator_t<_Rng>, _It>
+                && convertible_to<sentinel_t<_Rng>, _Se>
+        constexpr subrange(_Rng&& _Val) requires (!_Store_size || sized_range<_Rng>)
+            : subrange{bool_constant<_Store_size>{}, _STD forward<_Rng>(_Val)} {}
+
+        template <borrowed_range _Rng>
+            requires _Convertible_to_non_slicing<iterator_t<_Rng>, _It> && convertible_to<sentinel_t<_Rng>, _Se>
+        constexpr subrange(_Rng&& _Val, const _Size_type n) requires (_Ki == subrange_kind::sized)
+            : subrange{_RANGES begin(_Val), _RANGES end(_Val), n} {}
+
+        template <_Not_same_as<subrange> _Pair_like>
+            requires _Pair_like_convertible_from<_Pair_like, const _It&, const _Se&>
+        constexpr operator _Pair_like() const {
+            return _Pair_like(_First, _Last);
+        }
+
+        _NODISCARD constexpr _It begin() const requires copyable<_It> {
+            return _First;
+        }
+        _NODISCARD constexpr _It begin() requires (!copyable<_It>) {
+            return _STD move(_First);
+        }
+
+        _NODISCARD constexpr _Se end() const {
+            return _Last;
+        }
+
+        _NODISCARD constexpr bool empty() const {
+            return _First == _Last;
+        }
+
+        _NODISCARD constexpr _Size_type size() const requires (_Ki == subrange_kind::sized) {
+            if constexpr (_Store_size) {
+                return this->_Size;
+            } else {
+                return static_cast<_Size_type>(_Last - _First);
+            }
+        }
+
+        _NODISCARD constexpr subrange next() const & requires forward_iterator<_It> {
+            auto _Tmp = *this;
+            if (_Tmp._First != _Tmp._Last) {
+                ++_Tmp._First;
+                if constexpr (_Store_size) {
+                    --_Tmp._Size;
+                }
+            }
+            return _Tmp;
+        }
+        _NODISCARD constexpr subrange next(const iter_difference_t<_It> _Count) const & requires forward_iterator<_It> {
+            auto _Tmp = *this;
+            _Tmp.advance(_Count);
+            return _Tmp;
+        }
+
+        _NODISCARD constexpr subrange next() && {
+            if (_First != _Last) {
+                ++_First;
+                if constexpr (_Store_size) {
+                    --this->_Size;
+                }
+            }
+            return _STD move(*this);
+        }
+        _NODISCARD constexpr subrange next(const iter_difference_t<_It> _Count) && {
+            advance(_Count);
+            return _STD move(*this);
+        }
+
+        _NODISCARD constexpr subrange prev() const requires bidirectional_iterator<_It> {
+            auto _Tmp = *this;
+            --_Tmp._First;
+            if constexpr (_Store_size) {
+                ++_Tmp._Size;
+            }
+            return _Tmp;
+        }
+        _NODISCARD constexpr subrange prev(const iter_difference_t<_It> _Count) const
+            requires bidirectional_iterator<_It> {
+            auto _Tmp = *this;
+            _Tmp.advance(-_Count);
+            return _Tmp;
+        }
+
+        constexpr subrange& advance(const iter_difference_t<_It> _Count) {
+            // Per as-yet-unnumbered LWG issue, this actually has defined behavior when _Count < 0.
+            if constexpr (bidirectional_iterator<_It>) {
+                if (_Count < 0) {
+                    _RANGES advance(_First, _Count);
+                    if constexpr (_Store_size) {
+                        this->_Size += static_cast<_Size_type>(-_Count);
+                    }
+                    return *this;
+                }
+            }
+
+            const auto _Remainder = _RANGES advance(_First, _Count, _Last);
+            if constexpr (_Store_size) {
+                this->_Size -= static_cast<_Size_type>(_Count - _Remainder);
+            }
+            return *this;
+        }
+    };
+    // clang-format on
+
+    template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+    subrange(_It, _Se) -> subrange<_It, _Se>;
+
+    template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+    subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
+
+    template <borrowed_range _Rng>
+    subrange(_Rng &&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+        (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
+                                                                                      : subrange_kind::unsized>;
+
+    template <borrowed_range _Rng>
+    subrange(_Rng&&, _Make_unsigned_like_t<range_difference_t<_Rng>>)
+        -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>, subrange_kind::sized>;
+
+    template <class _It, class _Se, subrange_kind _Ki>
+    inline constexpr bool enable_borrowed_range<subrange<_It, _Se, _Ki>> = true;
+
+    // clang-format off
+    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+        requires (_Idx < 2)
+    constexpr auto get(const subrange<_It, _Se, _Ki>& _Val) {
+        if constexpr (_Idx == 0) {
+            return _Val.begin();
+        } else {
+            return _Val.end();
+        }
+    }
+
+    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+        requires (_Idx < 2)
+    constexpr auto get(subrange<_It, _Se, _Ki>&& _Val) {
+        if constexpr (_Idx == 0) {
+            return _Val.begin();
+        } else {
+            return _Val.end();
+        }
+    }
+    // clang-format on
+} // namespace ranges
+
+using ranges::get;
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<0, ranges::subrange<_It, _Se, _Ki>> {
+    using type = _It;
+};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<1, ranges::subrange<_It, _Se, _Ki>> {
+    using type = _Se;
+};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<0, const ranges::subrange<_It, _Se, _Ki>> {
+    using type = _It;
+};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<1, const ranges::subrange<_It, _Se, _Ki>> {
+    using type = _Se;
+};
+
+namespace ranges {
     // STRUCT ranges::dangling
     struct dangling {
         constexpr dangling() noexcept = default;
@@ -3075,6 +3544,10 @@ namespace ranges {
     // ALIAS TEMPLATE ranges::borrowed_iterator_t
     template <range _Rng>
     using borrowed_iterator_t = conditional_t<borrowed_range<_Rng>, iterator_t<_Rng>, dangling>;
+
+    // ALIAS TEMPLATE ranges::borrowed_subrange_t
+    template <range _Rng>
+    using borrowed_subrange_t = conditional_t<borrowed_range<_Rng>, subrange<iterator_t<_Rng>>, dangling>;
 } // namespace ranges
 #endif // __cpp_lib_concepts
 

@@ -222,9 +222,6 @@ struct test_iterator {
         STATIC_ASSERT(always_false<Category>);
     }
 
-    friend void iter_move(test_iterator const&) {
-        STATIC_ASSERT(always_false<Category>);
-    }
     friend void iter_swap(test_iterator const&, test_iterator const&) {
         STATIC_ASSERT(always_false<Category>);
     }

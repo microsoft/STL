@@ -245,6 +245,7 @@ tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_iterator_machinery
 tests\P0896R4_ranges_range_machinery
+tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_to_address
 tests\P0898R3_concepts
 tests\P0898R3_identity
