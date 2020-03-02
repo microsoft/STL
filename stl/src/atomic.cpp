@@ -8,7 +8,8 @@
 #include <intrin.h>
 #pragma warning(disable : 4793)
 
-#include <Windows.h>
+#include "awint.h"
+#include <Winnt.h>
 
 _EXTERN_C
 
@@ -36,7 +37,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
 }
 
 
-void __cdecl __crtAtomicSpin(long& _Spin_context) {
+void __cdecl _AtomicSpin(long& _Spin_context) {
     switch (_Spin_context & 0xF000'0000) {
     case 0:
         if (_Spin_context < 10000) {
@@ -71,12 +72,24 @@ void __cdecl __crtAtomicSpin(long& _Spin_context) {
     }
 }
 
-void __cdecl __crtAtomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept {
-    (void) _Storage;
-    __crtAtomicSpin(_Spin_context);
+void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) {
+    return __crtAtomic_wait_direct(_Storage, _Comparand, _Size, _Spin_context);
 }
 
-void __cdecl __crtAtomic_notify_indirect(void* _Storage) noexcept {
+void __cdecl _Atomic_notify_one_direct(void* _Storage) {
+    return __crtAtomic_notify_one_direct(_Storage);
+}
+
+void __cdecl _Atomic_notify_all_direct(void* _Storage) {
+    return __crtAtomic_notify_all_direct(_Storage);
+}
+
+void __cdecl _Atomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept {
+    (void) _Storage;
+    _AtomicSpin(_Spin_context);
+}
+
+void __cdecl _Atomic_notify_indirect(void* _Storage) noexcept {
     (void) _Storage;
 }
 

@@ -20,12 +20,6 @@ void __cdecl __crtTerminateProcess(_In_ UINT uExitCode);
 _CRTIMP2 BOOL __cdecl __crtIsPackagedApp(void);
 #endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
 
-void __cdecl __crtAtomic_wait_direct(
-    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept;
-
-void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept;
-void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept;
-
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WS03
 
 #define __crtFlsAlloc(lpCallback) FlsAlloc(lpCallback)
@@ -226,9 +220,23 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 #define __crtGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime) \
     GetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime)
 
+
+#define __crtAtomic_wait_direct(_Storage, _Comparand, _Size, _Spin_context) \
+    WaitOnAddress((voatile void*) _Storage, _Comparand, _Size)
+
+#define _cdecl __crtAtomic_notify_one_direct(void* _Storage) WakeByAddressSingle(_Storage)
+#define _cdecl __crtAtomic_notify_all_direct(void* _Storage) WakeByAddressAll(_Storage)
+
+
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
+
+void __cdecl __crtAtomic_wait_direct(
+    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept;
+
+void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept;
+void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept;
 
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
@@ -344,8 +352,8 @@ typedef int(WINAPI* PFNCOMPARESTRINGEX)(LPCWSTR, DWORD, LPCWSTR, int, LPCWSTR, i
 typedef int(WINAPI* PFNGETLOCALEINFOEX)(LPCWSTR, LCTYPE, LPWSTR, int);
 typedef int(WINAPI* PFNLCMAPSTRINGEX)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, int, LPNLSVERSIONINFO, LPVOID, LPARAM);
 typedef BOOL(WINAPI* PFNWAITONADDRESS)(volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
-typedef BOOL(WINAPI* PFNWAKEBYADDRESSSINGLE)(volatile VOID* Address);
-typedef BOOL(WINAPI* PFNWAKEBYADDRESSALL)(volatile VOID* Address);
+typedef BOOL(WINAPI* PFNWAKEBYADDRESSSINGLE)(PVOID Address);
+typedef BOOL(WINAPI* PFNWAKEBYADDRESSALL)(PVOID Address);
 
 // Use this macro for caching a function pointer from a DLL
 #define STOREFUNCTIONPOINTER(instance, functionname) \

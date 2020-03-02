@@ -533,42 +533,7 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
     GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 }
 
-
-void __cdecl __crtAtomicSpin(long& _Spin_context) {
-    switch (_Spin_context & 0xF000'0000) { 
-    case 0:
-        if (_Spin_context < 10000) {
-            _Spin_context += 1;
-            YieldProcessor();
-            return;
-        }
-        _Spin_context = 0x1000'0000;
-        __fallthrough;
-
-    case 0x1000'0000:
-        if (_Spin_context < 0x1000'0004) {
-            _Spin_context += 1;
-            SwitchToThread();
-            return;
-        }
-        _Spin_context = 0x2000'0000;
-        __fallthrough;
-
-    case 0x2000'0000:
-        if (_Spin_context < 0x2000'0010) {
-            _Spin_context += 1;
-            Sleep(0);
-            return;
-        }
-        _Spin_context = 0x3000'0000;
-        __fallthrough;
-
-    case 0x3000'0000:
-        Sleep(10);
-        return;
-    }
-        
-}
+extern "C" void __cdecl _AtomicSpin(long& _Spin_context);
 
 void __cdecl __crtAtomic_wait_direct(
     const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept {
@@ -576,19 +541,19 @@ void __cdecl __crtAtomic_wait_direct(
         pfWaitOnAddress((volatile void*)_Storage, _Comparand, _Size, INFINITE);
         return;
     }
-    __crtAtomicSpin(_Spin_context);
+    _AtomicSpin(_Spin_context);
 }
 
 void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept {
     IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle) {
-        pfWakeByAddressSingle((volatile void*) _Storage);
+        pfWakeByAddressSingle(_Storage);
         return;
     }
 }
 
 void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept {
-    IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle) {
-        pfWakeByAddressSingle((volatile void*) _Storage);
+    IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressAll, pfWakeByAddressAll) {
+        pfWakeByAddressAll(_Storage);
         return;
     }
 }
@@ -608,6 +573,7 @@ extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {0};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
+    HINSTANCE hKernelBase = GetModuleHandleW(L"KernelBase.dll");
 
     STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
     STOREFUNCTIONPOINTER(hKernel32, FlsFree);
@@ -661,9 +627,9 @@ static int __cdecl initialize_pointers() {
     STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
     STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
 #endif
-    STOREFUNCTIONPOINTER(hKernel32, WaitOnAddress);
-    STOREFUNCTIONPOINTER(hKernel32, WakeByAddressSingle);
-    STOREFUNCTIONPOINTER(hKernel32, WakeByAddressAll);
+    STOREFUNCTIONPOINTER(hKernelBase, WaitOnAddress);
+    STOREFUNCTIONPOINTER(hKernelBase, WakeByAddressSingle);
+    STOREFUNCTIONPOINTER(hKernelBase, WakeByAddressAll);
     return 0;
 }
 
