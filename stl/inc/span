@@ -644,7 +644,7 @@ span(const _Rng&)->span<const typename _Rng::value_type>;
 
 #endif // !__cpp_lib_concepts
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
 // FUNCTION TEMPLATE as_bytes
 template <class _Ty, size_t _Extent>
@@ -659,7 +659,7 @@ _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept
     -> span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent> {
     return {reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
 }
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 // [span.tuple] Tuple interface
 #ifdef __cpp_lib_concepts

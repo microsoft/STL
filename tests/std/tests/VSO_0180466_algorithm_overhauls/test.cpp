@@ -78,9 +78,9 @@ void test_all_numeric_types() {
     test_all_numeric_types_impl<Test, float>();
     test_all_numeric_types_impl<Test, double>();
     test_all_numeric_types_impl<Test, long double>();
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
     Test<byte, byte>{}();
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 }
 
 namespace test_std_equal {
