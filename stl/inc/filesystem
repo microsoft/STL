@@ -2490,7 +2490,7 @@ namespace filesystem {
             auto& _Impl = *_Ptr;
             __std_fs_find_data _Data;
             do {
-                auto _Error = __std_fs_directory_iterator_advance(_Impl._Dir._Handle, &_Data);
+                const auto _Error = __std_fs_directory_iterator_advance(_Impl._Dir._Handle, &_Data);
                 if (_Error == __std_win_error::_No_more_files) {
                     _Ptr.reset();
                     return __std_win_error::_Success;
