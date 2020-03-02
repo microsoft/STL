@@ -20,6 +20,12 @@ void __cdecl __crtTerminateProcess(_In_ UINT uExitCode);
 _CRTIMP2 BOOL __cdecl __crtIsPackagedApp(void);
 #endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
 
+void __cdecl __crtAtomic_wait_direct(
+    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept;
+
+void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept;
+void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept;
+
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WS03
 
 #define __crtFlsAlloc(lpCallback) FlsAlloc(lpCallback)
@@ -224,6 +230,7 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 
 _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
 
+
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
@@ -289,6 +296,9 @@ enum wrapKERNEL32Functions {
     eGetLocaleInfoEx,
     eLCMapStringEx,
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+    eWaitOnAddress,
+    eWakeByAddressSingle,
+    eWakeByAddressAll,
     eMaxKernel32Function
 };
 
@@ -333,6 +343,9 @@ typedef VOID(WINAPI* PFNCLOSETHREADPOOLWORK)(PTP_WORK);
 typedef int(WINAPI* PFNCOMPARESTRINGEX)(LPCWSTR, DWORD, LPCWSTR, int, LPCWSTR, int, LPNLSVERSIONINFO, LPVOID, LPARAM);
 typedef int(WINAPI* PFNGETLOCALEINFOEX)(LPCWSTR, LCTYPE, LPWSTR, int);
 typedef int(WINAPI* PFNLCMAPSTRINGEX)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, int, LPNLSVERSIONINFO, LPVOID, LPARAM);
+typedef BOOL(WINAPI* PFNWAITONADDRESS)(volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
+typedef BOOL(WINAPI* PFNWAKEBYADDRESSSINGLE)(volatile VOID* Address);
+typedef BOOL(WINAPI* PFNWAKEBYADDRESSALL)(volatile VOID* Address);
 
 // Use this macro for caching a function pointer from a DLL
 #define STOREFUNCTIONPOINTER(instance, functionname) \

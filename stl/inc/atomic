@@ -131,6 +131,21 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_LLONG_LOCK_FREE    2
 #define ATOMIC_POINTER_LOCK_FREE  2
 
+extern "C" {
+
+void __cdecl __crtAtomicSpin(long& _Spin_context);
+
+void __cdecl __crtAtomic_wait_direct(
+    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept;
+
+void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept;
+void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept;
+
+void __cdecl __crtAtomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept;
+void __cdecl __crtAtomic_notify_indirect(void* _Storage) noexcept;
+}
+
+
 _STD_BEGIN
 
 // FUNCTION TEMPLATE kill_dependency
@@ -351,6 +366,24 @@ struct _Atomic_storage {
         return _Result;
     }
 
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        long _Spin_context = 0;
+        for (;;) {
+            _Ty _Observed = load(_Order);
+            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0)
+                return;
+            __crtAtomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
+        }
+    }
+
+    void notify_one() noexcept {
+        __crtAtomic_notify_indirect(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __crtAtomic_notify_indirect(_STD addressof(_Storage));
+    }
+
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
         while (_InterlockedExchange(&_Spinlock, 1)) {
@@ -472,6 +505,26 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         return false;
     }
 
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        long _Spin_context = 0;
+        for (;;) {
+            const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
+            const char _Observed_bytes = load(_Order);
+            if (_Expected_bytes != _Observed_bytes) {
+                return;
+            }
+            __crtAtomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 1, _Spin_context);
+        }
+    }
+
+    void notify_one() noexcept {
+        __crtAtomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __crtAtomic_notify_all_direct(_STD addressof(_Storage));
+    }
+
     _Atomic_padded<_Ty> _Storage;
 };
 
@@ -551,6 +604,26 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         return false;
     }
 
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        long _Spin_context = 0;
+        for (;;) {
+            const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
+            const short _Observed_bytes  = load(_Order);
+            if (_Expected_bytes != _Observed_bytes) {
+                return;
+            }
+            __crtAtomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 2, _Spin_context);
+        }
+    }
+
+    void notify_one() noexcept {
+        __crtAtomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __crtAtomic_notify_all_direct(_STD addressof(_Storage));
+    }
+
     _Atomic_padded<_Ty> _Storage;
 };
 
@@ -626,6 +699,26 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
+    }
+
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        long _Spin_context = 0;
+        for (;;) {
+            const long _Expected_bytes  = _Atomic_reinterpret_as<long>(_Expected);
+            const long _Observed_bytes = load(_Order);
+            if (_Expected_bytes != _Observed_bytes) {
+                return;
+            }
+            __crtAtomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 4, _Spin_context);
+        }
+    }
+
+    void notify_one() noexcept {
+        __crtAtomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __crtAtomic_notify_all_direct(_STD addressof(_Storage));
     }
 
     _Atomic_padded<_Ty> _Storage;
@@ -744,6 +837,26 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return false;
     }
 
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        long _Spin_context = 0;
+        for (;;) {
+            const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
+            const long long _Observed_bytes = load(_Order);
+            if (_Expected_bytes != _Observed_bytes) {
+                return true;
+            }
+            __crtAtomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 8, _Spin_context);
+        }
+    }
+
+    void notify_one() noexcept {
+        __crtAtomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __crtAtomic_notify_all_direct(_STD addressof(_Storage));
+    }
+
     _Atomic_padded<_Ty> _Storage;
 };
 
@@ -838,6 +951,24 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         }
 
         return _Result != 0;
+    }
+
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        long _Spin_context = 0;
+        for (;;) {
+            _Ty _Observed = load(_Order);
+            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0)
+                return;
+            __crtAtomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
+        }
+    }
+
+    void notify_one() noexcept {
+        __crtAtomic_notify_indirect(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __crtAtomic_notify_indirect(_STD addressof(_Storage));
     }
 
     struct _Int128 {
@@ -1577,6 +1708,21 @@ public:
     bool compare_exchange_weak(
         _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
+    }
+
+    using _Base::wait;
+    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
+        const_cast<atomic*>(this)->_Base::wait(_Expected, _Order);
+    }
+
+    using _Base::notify_one;
+    void notify_one() volatile noexcept {
+        const_cast<atomic*>(this)->_Base::notify_one();
+    }
+
+    using _Base::notify_all;
+    void notify_all() volatile noexcept {
+        const_cast<atomic*>(this)->_Base::notify_all();
     }
 
     operator _Ty() const volatile noexcept {

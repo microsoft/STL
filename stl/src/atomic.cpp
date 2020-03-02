@@ -8,6 +8,8 @@
 #include <intrin.h>
 #pragma warning(disable : 4793)
 
+#include <Windows.h>
+
 _EXTERN_C
 
 // SPIN LOCK FOR shared_ptr ATOMIC OPERATIONS
@@ -32,5 +34,51 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
     _interlockedbittestandreset(&_Shared_ptr_flag, 0); // reset bit 0
 #endif // _M_ARM
 }
+
+
+void __cdecl __crtAtomicSpin(long& _Spin_context) {
+    switch (_Spin_context & 0xF000'0000) {
+    case 0:
+        if (_Spin_context < 10000) {
+            _Spin_context += 1;
+            YieldProcessor();
+            return;
+        }
+        _Spin_context = 0x1000'0000;
+        [[fallthrough]];
+
+    case 0x1000'0000:
+        if (_Spin_context < 0x1000'0004) {
+            _Spin_context += 1;
+            SwitchToThread();
+            return;
+        }
+        _Spin_context = 0x2000'0000;
+        [[fallthrough]];
+
+    case 0x2000'0000:
+        if (_Spin_context < 0x2000'0010) {
+            _Spin_context += 1;
+            Sleep(0);
+            return;
+        }
+        _Spin_context = 0x3000'0000;
+        [[fallthrough]];
+
+    case 0x3000'0000:
+        Sleep(10);
+        return;
+    }
+}
+
+void __cdecl __crtAtomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept {
+    (void) _Storage;
+    __crtAtomicSpin(_Spin_context);
+}
+
+void __cdecl __crtAtomic_notify_indirect(void* _Storage) noexcept {
+    (void) _Storage;
+}
+
 
 _END_EXTERN_C

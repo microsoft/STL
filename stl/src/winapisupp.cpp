@@ -533,6 +533,66 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
     GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 }
 
+
+void __cdecl __crtAtomicSpin(long& _Spin_context) {
+    switch (_Spin_context & 0xF000'0000) { 
+    case 0:
+        if (_Spin_context < 10000) {
+            _Spin_context += 1;
+            YieldProcessor();
+            return;
+        }
+        _Spin_context = 0x1000'0000;
+        __fallthrough;
+
+    case 0x1000'0000:
+        if (_Spin_context < 0x1000'0004) {
+            _Spin_context += 1;
+            SwitchToThread();
+            return;
+        }
+        _Spin_context = 0x2000'0000;
+        __fallthrough;
+
+    case 0x2000'0000:
+        if (_Spin_context < 0x2000'0010) {
+            _Spin_context += 1;
+            Sleep(0);
+            return;
+        }
+        _Spin_context = 0x3000'0000;
+        __fallthrough;
+
+    case 0x3000'0000:
+        Sleep(10);
+        return;
+    }
+        
+}
+
+void __cdecl __crtAtomic_wait_direct(
+    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept {
+    IFDYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress) {
+        pfWaitOnAddress((volatile void*)_Storage, _Comparand, _Size, INFINITE);
+        return;
+    }
+    __crtAtomicSpin(_Spin_context);
+}
+
+void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept {
+    IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle) {
+        pfWakeByAddressSingle((volatile void*) _Storage);
+        return;
+    }
+}
+
+void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept {
+    IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle) {
+        pfWakeByAddressSingle((volatile void*) _Storage);
+        return;
+    }
+}
+
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
 
@@ -601,7 +661,9 @@ static int __cdecl initialize_pointers() {
     STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
     STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
 #endif
-
+    STOREFUNCTIONPOINTER(hKernel32, WaitOnAddress);
+    STOREFUNCTIONPOINTER(hKernel32, WakeByAddressSingle);
+    STOREFUNCTIONPOINTER(hKernel32, WakeByAddressAll);
     return 0;
 }
 
