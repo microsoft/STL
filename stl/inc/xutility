@@ -4126,10 +4126,10 @@ struct _Is_character<char8_t> : true_type {}; // UTF-8 code units are sort-of ch
 template <class _Ty>
 struct _Is_character_or_byte : _Is_character<_Ty>::type {};
 
-#if _HAS_STD_BYTE
+#if __cpp_lib_byte
 template <>
 struct _Is_character_or_byte<byte> : true_type {};
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
@@ -4295,10 +4295,10 @@ template <class _Elem1, class _Elem2>
 struct _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>>
     : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type {}; // allow memcmping pointers-to-cv-T with equal_to<>
 
-#if _HAS_STD_BYTE
+#if __cpp_lib_byte
 template <>
 struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type {}; // allow memcmping std::byte
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 template <class _Elem>
 struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>>
@@ -4563,7 +4563,7 @@ struct _Lex_compare_check_element_types_helper<_Elem1, _Elem2, void>
     // checks the lex_compare element types for memcmp safety for transparent functors (e.g. less<>)
 };
 
-#if _HAS_STD_BYTE
+#if __cpp_lib_byte
 template <>
 struct _Lex_compare_check_element_types_helper<byte, byte, byte> : true_type {
     // std::byte with builtin functors (e.g. less<byte>) is memcmp safe
@@ -4573,7 +4573,7 @@ template <>
 struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
     // std::byte with transparent functors (e.g. less<>) is memcmp safe
 };
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 template <class _Memcmp_pr>
 struct _Lex_compare_optimize {
