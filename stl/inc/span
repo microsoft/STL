@@ -681,7 +681,7 @@ struct tuple_size<span<_Ty, dynamic_extent>>;
 #endif // !__cpp_lib_concepts
 
 template <size_t _Index, class _Ty, size_t _Extent>
-struct tuple_element<_Index, span<_Ty, _Extent>> {
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, span<_Ty, _Extent>> {
     static_assert(dynamic_extent != _Extent, "std::span<T, dynamic_extent> is not tuple-like");
     static_assert(_Index < _Extent, "Index out of bounds for a std::span of this extent");
     using type = _Ty;

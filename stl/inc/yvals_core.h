@@ -306,6 +306,16 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+// Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
+// that certain type trait specializations have the standard-mandated semantics
+#ifndef __has_cpp_attribute
+#define _MSVC_KNOWN_SEMANTICS
+#elif __has_cpp_attribute(msvc::known_semantics)
+#define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
+#else
+#define _MSVC_KNOWN_SEMANTICS
+#endif
+
 // Controls whether the STL uses "if constexpr" internally
 #ifndef _HAS_IF_CONSTEXPR
 #ifdef __CUDACC__
