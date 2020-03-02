@@ -120,7 +120,7 @@ static _Contention_table_entry _Contention_table[TABLE_SIZE];
 
 _Contention_table_entry& _Atomic_contention_table(const void* _Storage) {
     auto index = reinterpret_cast<std::uintptr_t>(_Storage);
-    index >>= TABLE_SIZE_POWER * TABLE_SIZE_POWER;
+    index >>= TABLE_SIZE_POWER * 2;
     index >>= TABLE_SIZE_POWER;
     return _Contention_table[index & ((1 << TABLE_SIZE_POWER) - 1)];
 }
