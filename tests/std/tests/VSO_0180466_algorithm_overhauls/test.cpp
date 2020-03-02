@@ -78,7 +78,7 @@ void test_all_numeric_types() {
     test_all_numeric_types_impl<Test, float>();
     test_all_numeric_types_impl<Test, double>();
     test_all_numeric_types_impl<Test, long double>();
-#if __cpp_lib_byte
+#ifdef __cpp_lib_byte
     Test<byte, byte>{}();
 #endif // __cpp_lib_byte
 }

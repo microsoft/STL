@@ -123,7 +123,7 @@ int main() {
 
     test_fill<bool, bool>();
 
-#if __cpp_lib_byte
+#ifdef __cpp_lib_byte
     test_fill<byte, byte>();
 #endif // __cpp_lib_byte
 
