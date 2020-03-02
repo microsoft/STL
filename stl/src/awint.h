@@ -232,8 +232,7 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 
 _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
 
-void __cdecl __crtAtomic_wait_direct(
-    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept;
+void __cdecl __crtAtomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size) noexcept;
 
 void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept;
 void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept;

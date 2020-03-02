@@ -533,29 +533,20 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
     GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 }
 
-extern "C" void __cdecl _AtomicSpin(long& _Spin_context);
-
 void __cdecl __crtAtomic_wait_direct(
-    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept {
-    IFDYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress) {
-        pfWaitOnAddress((volatile void*)_Storage, _Comparand, _Size, INFINITE);
-        return;
-    }
-    _AtomicSpin(_Spin_context);
+    const void* _Storage, void* _Comparand, size_t _Size) noexcept {
+    DYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress);
+    pfWaitOnAddress((volatile void*)_Storage, _Comparand, _Size, INFINITE);
 }
 
 void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept {
-    IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle) {
-        pfWakeByAddressSingle(_Storage);
-        return;
-    }
+    DYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle);
+    pfWakeByAddressSingle(_Storage);
 }
 
 void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept {
-    IFDYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressAll, pfWakeByAddressAll) {
-        pfWakeByAddressAll(_Storage);
-        return;
-    }
+    DYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressAll, pfWakeByAddressAll);
+    pfWakeByAddressAll(_Storage);
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
