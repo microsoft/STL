@@ -644,7 +644,7 @@ span(const _Rng&)->span<const typename _Rng::value_type>;
 
 #endif // !__cpp_lib_concepts
 
-#if __cpp_lib_byte
+#ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
 // FUNCTION TEMPLATE as_bytes
 template <class _Ty, size_t _Extent>
