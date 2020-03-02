@@ -123,9 +123,9 @@ int main() {
 
     test_fill<bool, bool>();
 
-#if _HAS_STD_BYTE
+#if __cpp_lib_byte
     test_fill<byte, byte>();
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
     test_fill<int, int>();
     test_fill<int, char>();
