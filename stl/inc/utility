@@ -446,20 +446,19 @@ template <size_t _Index, class _Tuple>
 struct tuple_element;
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> { // tuple_element for const
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_const_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> { // tuple_element for volatile
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_volatile_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, const volatile _Tuple>
-    : tuple_element<_Index, _Tuple> { // tuple_element for const volatile
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const volatile _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };
@@ -477,7 +476,7 @@ struct tuple_size<array<_Ty, _Size>>
 };
 
 template <size_t _Idx, class _Ty, size_t _Size>
-struct tuple_element<_Idx, array<_Ty, _Size>> { // struct to determine type of element _Idx in array
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
     static_assert(_Idx < _Size, "array index out of bounds");
 
     using type = _Ty;
@@ -490,18 +489,19 @@ struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types
 };
 
 template <size_t _Index>
-struct tuple_element<_Index, tuple<>> { // enforce bounds checking
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<>> { // enforce bounds checking
     static_assert(_Always_false<integral_constant<size_t, _Index>>, "tuple index out of bounds");
 };
 
 template <class _This, class... _Rest>
-struct tuple_element<0, tuple<_This, _Rest...>> { // select first element
+struct _MSVC_KNOWN_SEMANTICS tuple_element<0, tuple<_This, _Rest...>> { // select first element
     using type   = _This;
+    // MSVC assumes the meaning of _Ttype; remove or rename, but do not change semantics
     using _Ttype = tuple<_This, _Rest...>;
 };
 
 template <size_t _Index, class _This, class... _Rest>
-struct tuple_element<_Index, tuple<_This, _Rest...>>
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
     : tuple_element<_Index - 1, tuple<_Rest...>> { // recursive tuple_element definition
 };
 
@@ -511,7 +511,7 @@ struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> { // size of 
 };
 
 template <size_t _Idx, class _Ty1, class _Ty2>
-struct tuple_element<_Idx, pair<_Ty1, _Ty2>> { // struct to determine type of element _Idx in pair
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, pair<_Ty1, _Ty2>> {
     static_assert(_Idx < 2, "pair index out of bounds");
 
     using type = conditional_t<_Idx == 0, _Ty1, _Ty2>;
