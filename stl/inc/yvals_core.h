@@ -168,6 +168,7 @@
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
+// P1115R3 erase()/erase_if() Return size_type
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1357R1 is_bounded_array, is_unbounded_array
@@ -1082,7 +1083,7 @@
 #define __cpp_lib_constexpr_memory         201811L
 #define __cpp_lib_constexpr_numeric        201911L
 #define __cpp_lib_endian                   201907L
-#define __cpp_lib_erase_if                 201811L
+#define __cpp_lib_erase_if                 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_int_pow2                 202002L
 #define __cpp_lib_is_constant_evaluated    201811L

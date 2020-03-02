@@ -1600,10 +1600,10 @@ STATIC_ASSERT(__cpp_lib_endian == 201907L);
 #if CXX20_MODE
 #ifndef __cpp_lib_erase_if
 #error BOOM
-#elif __cpp_lib_erase_if != 201811L
+#elif __cpp_lib_erase_if != 202002L
 #error BOOM
 #else
-STATIC_ASSERT(__cpp_lib_erase_if == 201811L);
+STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 #endif
 #else
 #ifdef __cpp_lib_erase_if
