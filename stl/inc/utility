@@ -495,7 +495,7 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<>> { // enforce bounds 
 
 template <class _This, class... _Rest>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<0, tuple<_This, _Rest...>> { // select first element
-    using type   = _This;
+    using type = _This;
     // MSVC assumes the meaning of _Ttype; remove or rename, but do not change semantics
     using _Ttype = tuple<_This, _Rest...>;
 };
