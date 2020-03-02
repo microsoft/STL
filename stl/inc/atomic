@@ -1443,11 +1443,7 @@ public:
 
     using _Base::_Base;
 
-#ifdef __clang__ // TRANSITION, VSO-406237
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
-#else // ^^^ no workaround / workaround vvv
-    atomic()                                  = default;
-#endif // TRANSITION, VSO-406237
 
     atomic(const atomic&) = delete;
     atomic& operator=(const atomic&) = delete;
@@ -1609,7 +1605,8 @@ _NODISCARD bool atomic_is_lock_free(const atomic<_Ty>* _Mem) noexcept {
 }
 
 template <class _Ty>
-void atomic_init(atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
+    atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
 #if 1 // TRANSITION, ABI
     _CSTD memcpy(_STD addressof(_Mem->_Storage), _STD addressof(_Value), sizeof(_Ty));
 #else // ^^^ don't break ABI / break ABI vvv
@@ -1619,7 +1616,8 @@ void atomic_init(atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type
 }
 
 template <class _Ty>
-void atomic_init(volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
+    volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     // NB: respecting volatility here appears unimplementable
     _STD atomic_init(const_cast<atomic<_Ty>*>(_Mem), _Value);
 }
@@ -1947,11 +1945,7 @@ struct atomic_flag { // flag with test-and-set semantics
         _Storage.store(false, _Order);
     }
 
-#ifdef __clang__ // TRANSITION, VSO-406237
     constexpr atomic_flag() noexcept = default;
-#else // ^^^ no workaround / workaround vvv
-    atomic_flag() noexcept = default;
-#endif // TRANSITION, VSO-406237
 
 #if 1 // TRANSITION, ABI
     atomic<long> _Storage;

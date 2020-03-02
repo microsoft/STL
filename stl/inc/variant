@@ -1730,8 +1730,8 @@ struct hash<variant<_Types...>> : _Conditionally_enabled_hash<variant<_Types...>
 
 template <>
 struct hash<monostate> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef monostate argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef monostate _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(monostate) const noexcept {
         return 1729; // Arbitrary value

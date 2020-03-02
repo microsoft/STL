@@ -1,0 +1,18 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+RUNALL_INCLUDE .\prefix.lst
+RUNALL_CROSSLIST
+PM_CL="/w14640 /Zc:threadSafeInit- /EHa"
+RUNALL_CROSSLIST
+PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14"
+PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14 /D_HAS_IF_CONSTEXPR=0"
+PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++17"
+PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /Zc:char8_t-"
+PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /Zc:wchar_t-"
+PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++14 /fp:except"
+PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++14 /D_HAS_IF_CONSTEXPR=0"
+PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++17 /permissive-"
+PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /await"
+PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /fp:strict"
+PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /await"

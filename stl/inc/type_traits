@@ -78,13 +78,13 @@ struct _Arg_types {}; // provide argument_type, etc. (sometimes)
 
 template <class _Ty1>
 struct _Arg_types<_Ty1> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _ARGUMENT_TYPE_NAME;
 };
 
 template <class _Ty1, class _Ty2>
 struct _Arg_types<_Ty1, _Ty2> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 second_argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 _SECOND_ARGUMENT_TYPE_NAME;
 };
 
 // STRUCT TEMPLATE is_function
@@ -97,7 +97,7 @@ struct _Is_function { // determine whether _Ty is a function
     template <class _Ret, class... _Types>                                                              \
     struct _Is_function<_Ret CALL_OPT(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> : _Arg_types<_Types...> { \
         using _Bool_type = true_type;                                                                   \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                     \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                               \
     };
 
 _NON_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_FUNCTION)
@@ -107,7 +107,7 @@ _NON_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_FUNCTION)
     template <class _Ret, class... _Types>                                                                    \
     struct _Is_function<_Ret(_Types..., ...) CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
         using _Bool_type = true_type;                                                                         \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                           \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                                     \
     };
 
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_FUNCTION_ELLIPSIS)
@@ -130,7 +130,7 @@ struct _Is_memfunptr { // base class for member function pointer predicates
     struct _Is_memfunptr<_Ret (CALL_OPT _Arg0::*)(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> \
         : _Arg_types<CV_OPT _Arg0*, _Types...> {                                          \
         using _Bool_type = true_type;                                                     \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                       \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                 \
         using _Class_type = _Arg0;                                                        \
         using _Guide_type = enable_if<!is_same_v<int REF_OPT, int&&>, _Ret(_Types...)>;   \
     };
@@ -143,7 +143,7 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
     struct _Is_memfunptr<_Ret (_Arg0::*)(_Types..., ...)                     \
             CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
         using _Bool_type = true_type;                                        \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;          \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;    \
         using _Class_type = _Arg0;                                           \
         using _Guide_type = enable_if<false>;                                \
     };
@@ -563,6 +563,7 @@ struct is_standard_layout : bool_constant<__is_standard_layout(_Ty)> {}; // dete
 template <class _Ty>
 _INLINE_VAR constexpr bool is_standard_layout_v = __is_standard_layout(_Ty);
 
+#if _HAS_DEPRECATED_IS_LITERAL_TYPE
 // STRUCT TEMPLATE is_literal_type
 template <class _Ty>
 struct _CXX17_DEPRECATE_IS_LITERAL_TYPE is_literal_type : bool_constant<__is_literal_type(_Ty)> {
@@ -571,6 +572,7 @@ struct _CXX17_DEPRECATE_IS_LITERAL_TYPE is_literal_type : bool_constant<__is_lit
 
 template <class _Ty>
 _CXX17_DEPRECATE_IS_LITERAL_TYPE _INLINE_VAR constexpr bool is_literal_type_v = __is_literal_type(_Ty);
+#endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
 
 // STRUCT TEMPLATE is_trivial
 #if 1 // TRANSITION, VSO-119526 and LLVM-41915
@@ -1619,7 +1621,9 @@ _IMPLEMENT_INVOKE(_C_, constexpr)
 template <class _Rx, bool = is_void_v<_Rx>>
 struct _Invoker_ret {}; // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
 
-struct _Unforced {}; // tag to distinguish bind() from bind<R>()
+struct _Unforced {
+    explicit _Unforced() = default;
+}; // tag to distinguish bind() from bind<R>()
 
 template <class _Cv_void>
 struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
@@ -1700,6 +1704,7 @@ struct _Invoke_traits<void_t<decltype(_STD invoke(_STD declval<_Types>()...))>,
         conjunction_v<_Is_nothrow_invocable, disjunction<is_void<_Rx>, _Is_nothrow_convertible<type, _Rx>>>>;
 };
 
+#if _HAS_DEPRECATED_RESULT_OF
 // STRUCT TEMPLATE result_of
 template <class _Fty>
 struct _CXX17_DEPRECATE_RESULT_OF result_of { // explain usage
@@ -1720,6 +1725,7 @@ _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 using result_of_t _CXX17_DEPRECATE_RESULT_OF = typename result_of<_Ty>::type;
 _STL_RESTORE_DEPRECATED_WARNING
+#endif // _HAS_DEPRECATED_RESULT_OF
 
 template <class _Callable, class... _Args>
 using _Invoke_result_t = typename _Invoke_traits<void, _Callable, _Args...>::type;
@@ -1781,12 +1787,10 @@ inline constexpr bool is_nothrow_invocable_r_v =
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, VS 2019 16.5 Preview 2
 // FUNCTION is_constant_evaluated
 _NODISCARD constexpr bool is_constant_evaluated() noexcept {
     return __builtin_is_constant_evaluated();
 }
-#endif // __cpp_lib_is_constant_evaluated
 #endif // _HAS_CXX20
 
 // STRUCT TEMPLATE _Weak_types
@@ -1796,7 +1800,7 @@ struct _Weak_result_type {}; // default definition
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 struct _Weak_result_type<_Ty, void_t<typename _Ty::result_type>> { // defined if _Ty::result_type exists
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::result_type result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::result_type _RESULT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -1807,7 +1811,7 @@ _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 struct _Weak_argument_type<_Ty, void_t<typename _Ty::argument_type>>
     : _Weak_result_type<_Ty> { // defined if _Ty::argument_type exists
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::argument_type argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::argument_type _ARGUMENT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -1819,8 +1823,8 @@ template <class _Ty>
 struct _Weak_binary_args<_Ty, void_t<typename _Ty::first_argument_type,
                                   typename _Ty::second_argument_type>>
     : _Weak_argument_type<_Ty> { // defined if both types exist
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::first_argument_type first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::second_argument_type second_argument_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::first_argument_type _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::second_argument_type _SECOND_ARGUMENT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
@@ -1845,7 +1849,11 @@ template <class _Ty, class _Uty>
 struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))>> : true_type {};
 
 template <class _Ty>
-class reference_wrapper : public _Weak_types<_Ty>::type { // stand-in for an assignable reference
+class reference_wrapper
+#if !_HAS_CXX20
+    : public _Weak_types<_Ty>::type
+#endif // !_HAS_CXX20
+{
 public:
     static_assert(is_object_v<_Ty> || is_function_v<_Ty>,
         "reference_wrapper<T> requires T to be an object type or a function type.");
@@ -1945,10 +1953,10 @@ template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assigna
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
 #endif // _HAS_CXX17
-void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
+_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
 
 template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
-void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
+_CONSTEXPR20 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
 
 // STRUCT TEMPLATE _Swappable_with_helper
 template <class _Ty1, class _Ty2, class = void>
@@ -2155,8 +2163,8 @@ struct hash;
 
 template <class _Kty, bool _Enabled>
 struct _Conditionally_enabled_hash { // conditionally enabled hash base
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Kty argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Kty _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const _Kty& _Keyval) const
         noexcept(noexcept(hash<_Kty>::_Do_hash(_Keyval))) /* strengthened */ {
@@ -2186,8 +2194,8 @@ struct hash
 
 template <>
 struct hash<float> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef float argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef float _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(const float _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0F ? 0.0F : _Keyval); // map -0 to 0
     }
@@ -2195,8 +2203,8 @@ struct hash<float> {
 
 template <>
 struct hash<double> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef double argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef double _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(const double _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0 ? 0.0 : _Keyval); // map -0 to 0
     }
@@ -2204,8 +2212,8 @@ struct hash<double> {
 
 template <>
 struct hash<long double> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef long double argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef long double _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(const long double _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0L ? 0.0L : _Keyval); // map -0 to 0
     }
@@ -2213,8 +2221,8 @@ struct hash<long double> {
 
 template <>
 struct hash<nullptr_t> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef nullptr_t argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef nullptr_t _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
     _NODISCARD size_t operator()(nullptr_t) const noexcept {
         void* _Null{};
         return _Hash_representation(_Null);
@@ -2288,7 +2296,9 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD cref;
     using _STD ref;
     using _STD reference_wrapper;
+#if _HAS_DEPRECATED_RESULT_OF
     using _STD result_of;
+#endif // _HAS_DEPRECATED_RESULT_OF
     using _STD hash;
 } // namespace tr1
 _STL_RESTORE_DEPRECATED_WARNING

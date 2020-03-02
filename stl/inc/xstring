@@ -513,7 +513,7 @@ template <class _Traits>
 constexpr int _Traits_compare(_In_reads_(_Left_size) const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size,
     _In_reads_(_Right_size) const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept {
     // compare [_Left, _Left + _Left_size) to [_Right, _Right + _Right_size) using _Traits
-    const int _Ans = _Traits::compare(_Left, _Right, _Min_value(_Left_size, _Right_size));
+    const int _Ans = _Traits::compare(_Left, _Right, (_STD min)(_Left_size, _Right_size));
 
     if (_Ans != 0) {
         return _Ans;
@@ -584,11 +584,11 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
     const size_t _Needle_size) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for [_Needle, _Needle + _Needle_size) beginning before _Start_at
     if (_Needle_size == 0) {
-        return _Min_value(_Start_at, _Hay_size); // empty string always matches
+        return (_STD min)(_Start_at, _Hay_size); // empty string always matches
     }
 
     if (_Needle_size <= _Hay_size) { // room for match, look for it
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - _Needle_size);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - _Needle_size);; --_Match_try) {
             if (_Traits::eq(*_Match_try, *_Needle) && _Traits::compare(_Match_try, _Needle, _Needle_size) == 0) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -607,7 +607,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
     const size_t _Start_at, const _Traits_ch_t<_Traits> _Ch) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for _Ch before _Start_at
     if (_Hay_size != 0) { // room for match, look for it
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (_Traits::eq(*_Match_try, _Ch)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -721,7 +721,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     // in [_Haystack, _Haystack + _Hay_size), look for last of [_Needle, _Needle + _Needle_size), before _Start_at
     // general algorithm
     if (_Needle_size != 0 && _Hay_size != 0) { // worth searching, do it
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -748,7 +748,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
             return _Traits_find_last_of<_Traits>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size, false_type{});
         }
 
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (_Matches._Match(*_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -828,7 +828,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
     // in [_Haystack, _Haystack + _Hay_size), look for none of [_Needle, _Needle + _Needle_size), before _Start_at
     // general algorithm
     if (_Hay_size != 0) { // worth searching, do it
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -856,7 +856,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
                 _Haystack, _Hay_size, _Start_at, _Needle, _Needle_size, false_type{});
         }
 
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (!_Matches._Match(*_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -875,7 +875,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
     const size_t _Hay_size, const size_t _Start_at, const _Traits_ch_t<_Traits> _Ch) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for any value other than _Ch before _Start_at
     if (_Hay_size != 0) { // room for match, look for it
-        for (auto _Match_try = _Haystack + _Min_value(_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (!_Traits::eq(*_Match_try, _Ch)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -1204,17 +1204,6 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
-#ifdef __cpp_lib_concepts
-    _NODISCARD friend constexpr const_iterator begin(basic_string_view _Right) noexcept {
-        // non-member overload to model the exposition-only forwarding-range concept
-        return _Right.begin();
-    }
-    _NODISCARD friend constexpr const_iterator end(basic_string_view _Right) noexcept {
-        // Ditto modeling forwarding-range
-        return _Right.end();
-    }
-#endif // __cpp_lib_concepts
-
     _NODISCARD constexpr const_iterator cbegin() const noexcept {
         return begin();
     }
@@ -1266,7 +1255,7 @@ public:
     _NODISCARD constexpr size_type max_size() const noexcept {
         // bound to PTRDIFF_MAX to make end() - begin() well defined (also makes room for npos)
         // bound to static_cast<size_t>(-1) / sizeof(_Elem) by address space limits
-        return _Min_value(static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
+        return (_STD min)(static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
     }
 
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
@@ -1573,7 +1562,7 @@ private:
 
     constexpr size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return _Min_value(_Size, _Mysize - _Off);
+        return (_STD min)(_Size, _Mysize - _Off);
     }
 
     [[noreturn]] static void _Xran() {
@@ -1584,6 +1573,12 @@ private:
     size_type _Mysize;
 };
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <class _Elem, class _Traits>
+    inline constexpr bool enable_safe_range<basic_string_view<_Elem, _Traits>> = true;
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATES operator== FOR basic_string_view
 template <class _Elem, class _Traits>
@@ -1718,8 +1713,8 @@ using wstring_view   = basic_string_view<wchar_t>;
 // STRUCT TEMPLATE SPECIALIZATION hash FOR basic_string_view
 template <class _Elem, class _Traits>
 struct hash<basic_string_view<_Elem, _Traits>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string_view<_Elem, _Traits> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string_view<_Elem, _Traits> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const basic_string_view<_Elem, _Traits> _Keyval) const noexcept {
         return _Hash_array_representation(_Keyval.data(), _Keyval.size());
@@ -2139,7 +2134,7 @@ public:
             ? 15
             : sizeof(value_type) <= 2 ? 7 : sizeof(value_type) <= 4 ? 3 : sizeof(value_type) <= 8 ? 1 : 0;
 
-    value_type* _Myptr() {
+    value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
         if (_Large_string_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
@@ -2148,7 +2143,7 @@ public:
         return _Result;
     }
 
-    const value_type* _Myptr() const {
+    const value_type* _Myptr() const noexcept {
         const value_type* _Result = _Bx._Buf;
         if (_Large_string_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
@@ -2157,7 +2152,7 @@ public:
         return _Result;
     }
 
-    bool _Large_string_engaged() const {
+    bool _Large_string_engaged() const noexcept {
         return _BUF_SIZE <= _Myres;
     }
 
@@ -2179,7 +2174,7 @@ public:
 
     size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return _Min_value(_Size, _Mysize - _Off);
+        return (_STD min)(_Size, _Mysize - _Off);
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
@@ -2199,6 +2194,15 @@ public:
 // CLASS TEMPLATE basic_string
 template <class _Ty>
 constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get _Ty's size after being EBCO'd
+
+struct _String_constructor_concat_tag {
+    // tag to select constructors used by basic_string's concatenation operators (operator+)
+    explicit _String_constructor_concat_tag() = default;
+};
+
+[[noreturn]] inline void _Xlen_string() {
+    _Xlength_error("string too long");
+}
 
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
@@ -2269,32 +2273,32 @@ private:
 
 public:
     basic_string(const basic_string& _Right)
-        : _Mypair(_One_then_variadic_args_t(), _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Construct_lv_contents(_Right);
         _Proxy._Release();
     }
 
-    basic_string(const basic_string& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    basic_string(const basic_string& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Construct_lv_contents(_Right);
         _Proxy._Release();
     }
 
-    basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t()) {
+    basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
 
-    explicit basic_string(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t(), _Al) {
+    explicit basic_string(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
 
     basic_string(const basic_string& _Right, const size_type _Roff, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct from _Right [_Roff, <end>)
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, <end>)
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2304,7 +2308,7 @@ public:
 
     basic_string(
         const basic_string& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct from _Right [_Roff, _Roff + _Count)
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count)
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2313,7 +2317,7 @@ public:
     }
 
     basic_string(_In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count)
-        : _Mypair(_Zero_then_variadic_args_t()) {
+        : _Mypair(_Zero_then_variadic_args_t{}) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2323,7 +2327,7 @@ public:
 
     basic_string(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2331,7 +2335,7 @@ public:
         _Proxy._Release();
     }
 
-    basic_string(_In_z_ const _Elem* const _Ptr) : _Mypair(_Zero_then_variadic_args_t()) {
+    basic_string(_In_z_ const _Elem* const _Ptr) : _Mypair(_Zero_then_variadic_args_t{}) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2342,7 +2346,7 @@ public:
 #if _HAS_CXX17
     template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
 #endif // _HAS_CXX17
-    basic_string(_In_z_ const _Elem* const _Ptr, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    basic_string(_In_z_ const _Elem* const _Ptr, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2350,7 +2354,7 @@ public:
         _Proxy._Release();
     }
 
-    basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) : _Mypair(_Zero_then_variadic_args_t()) {
+    basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) : _Mypair(_Zero_then_variadic_args_t{}) {
         // construct from _Count * _Ch
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -2363,7 +2367,7 @@ public:
     template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
 #endif // _HAS_CXX17
     basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct from _Count * _Ch with allocator
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Count * _Ch with allocator
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2372,7 +2376,7 @@ public:
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    basic_string(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    basic_string(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2397,7 +2401,7 @@ public:
         // initialize from [_First, _Last), forward iterators
         const size_type _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
         reserve(_Count);
-        _Construct(_First, _Last, input_iterator_tag());
+        _Construct(_First, _Last, input_iterator_tag{});
     }
 
     void _Construct(_Elem* const _First, _Elem* const _Last, random_access_iterator_tag) {
@@ -2414,14 +2418,14 @@ public:
         }
     }
 
-    basic_string(basic_string&& _Right) noexcept : _Mypair(_One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+    basic_string(basic_string&& _Right) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
     }
 
     basic_string(basic_string&& _Right, const _Alloc& _Al) noexcept(
         _Alty_traits::is_always_equal::value) // strengthened
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         if
@@ -2437,10 +2441,104 @@ public:
         _Proxy._Release();
     }
 
+    basic_string(_String_constructor_concat_tag, const basic_string& _Source_of_al, const _Elem* const _Left_ptr,
+        const size_type _Left_size, const _Elem* const _Right_ptr, const size_type _Right_size)
+        : _Mypair(
+            _One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Source_of_al._Getal())) {
+        _STL_INTERNAL_CHECK(_Left_size <= max_size());
+        _STL_INTERNAL_CHECK(_Right_size <= max_size());
+        _STL_INTERNAL_CHECK(_Right_size <= max_size() - _Left_size);
+        const auto _New_size    = static_cast<size_type>(_Left_size + _Right_size);
+        size_type _New_capacity = _BUF_SIZE - 1;
+        auto& _My_data          = _Mypair._Myval2;
+        _Elem* _Ptr             = _My_data._Bx._Buf;
+        auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
+        if (_New_capacity < _New_size) {
+            _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
+            const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
+            _Ptr                    = _Unfancy(_Fancyptr);
+            _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
+        }
+
+        _My_data._Mysize = _New_size;
+        _My_data._Myres  = _New_capacity;
+        _Traits::copy(_Ptr, _Left_ptr, _Left_size);
+        _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, _Right_size);
+        _Traits::assign(_Ptr[_New_size], _Elem());
+        _Proxy._Release();
+    }
+
+    basic_string(_String_constructor_concat_tag, basic_string& _Left, basic_string& _Right)
+        : _Mypair(_One_then_variadic_args_t{}, _Left._Getal()) {
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Left_data  = _Left._Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
+        _Left_data._Orphan_all();
+        _Right_data._Orphan_all();
+        const auto _Left_size  = _Left_data._Mysize;
+        const auto _Right_size = _Right_data._Mysize;
+
+        const auto _Left_capacity  = _Left_data._Myres;
+        const auto _Right_capacity = _Right_data._Myres;
+        // overflow is OK due to max_size() checks:
+        const auto _New_size     = static_cast<size_type>(_Left_size + _Right_size);
+        const bool _Fits_in_left = _Right_size <= _Left_capacity - _Left_size;
+        if (_Fits_in_left && _Right_capacity <= _Left_capacity) {
+            // take _Left's buffer, max_size() is OK because _Fits_in_left
+            _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
+            _Take_contents(_Left, bool_constant<_Can_memcpy_val>{});
+            const auto _Ptr = _My_data._Myptr();
+            _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
+            _My_data._Mysize = _New_size;
+            return;
+        }
+
+        const bool _Fits_in_right = _Left_size <= _Right_capacity - _Right_size;
+        if (_Allocators_equal(_Getal(), _Right._Getal()) && _Fits_in_right) {
+            // take _Right's buffer, max_size() is OK because _Fits_in_right
+            // At this point, we have tested:
+            // !(_Fits_in_left && _Right_capacity <= _Left_capacity) && _Fits_in_right
+            // therefore: (by De Morgan's Laws)
+            // (!_Fits_in_left || _Right_capacity > _Left_capacity) && _Fits_in_right
+            // therefore: (by the distributive property)
+            // (!_Fits_in_left && _Fits_in_right)  // implying _Right has more capacity
+            //     || (_Right_capacity > _Left_capacity && _Fits_in_right)  // tests that _Right has more capacity
+            // therefore: _Right must have more than the minimum capacity, so it must be _Large_string_engaged()
+            _STL_INTERNAL_CHECK(_Right_data._Large_string_engaged());
+            _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
+            _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
+            const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
+            _Traits::move(_Ptr + _Left_size, _Ptr, _Right_size + 1);
+            _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
+            _My_data._Mysize = _New_size;
+            return;
+        }
+
+        // can't use either buffer, reallocate
+        const auto _Max = max_size();
+        if (_Max - _Left_size < _Right_size) { // check if max_size() is OK
+            _Xlen_string();
+        }
+
+        const auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max);
+        auto&& _Alproxy          = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
+        const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
+        // nothrow hereafter
+        _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
+        _My_data._Mysize = _New_size;
+        _My_data._Myres  = _New_capacity;
+        const auto _Ptr  = _Unfancy(_Fancyptr);
+        _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
+        _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
+        _Proxy._Release();
+    }
+
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     explicit basic_string(const _StringViewIsh& _Right, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2451,7 +2549,7 @@ public:
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     basic_string(
         const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2570,7 +2668,7 @@ private:
         }
 
         auto& _Al                     = _Getal();
-        const size_type _New_capacity = _Min_value(_Right_size | _ALLOC_MASK, max_size());
+        const size_type _New_capacity = (_STD min)(_Right_size | _ALLOC_MASK, max_size());
         const pointer _New_array      = _Al.allocate(_New_capacity + 1); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_array);
         _Traits::copy(_Unfancy(_New_array), _Right_ptr, _Right_size + 1);
@@ -2580,7 +2678,7 @@ private:
 
 public:
     basic_string(initializer_list<_Elem> _Ilist, const _Alloc& _Al = allocator_type())
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -3469,7 +3567,7 @@ public:
             return;
         }
 
-        const size_type _Target_capacity = _Min_value(_My_data._Mysize | _ALLOC_MASK, max_size());
+        const size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
@@ -3597,8 +3695,8 @@ public:
     _NODISCARD size_type max_size() const noexcept {
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
-            _Max_value(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return _Min_value(static_cast<size_type>((numeric_limits<difference_type>::max)()),
+            (_STD max)(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
+        return (_STD min)(static_cast<size_type>((numeric_limits<difference_type>::max)()),
             _Storage_max - 1 // -1 is for null terminator and/or npos
         );
     }
@@ -4115,7 +4213,7 @@ private:
             return _Max;
         }
 
-        return _Max_value(_Masked, _Old + _Old / 2);
+        return (_STD max)(_Masked, _Old + _Old / 2);
     }
 
     _NODISCARD size_type _Calculate_growth(const size_type _Requested) const noexcept {
@@ -4127,7 +4225,7 @@ private:
         // reallocate to store exactly _New_size elements, new buffer prepared by
         // _Fn(_New_ptr, _New_size, _Args...)
         if (_New_size > max_size()) {
-            _Xlen(); // result too long
+            _Xlen_string(); // result too long
         }
 
         const size_type _Old_capacity = _Mypair._Myval2._Myres;
@@ -4155,7 +4253,7 @@ private:
         auto& _My_data            = _Mypair._Myval2;
         const size_type _Old_size = _My_data._Mysize;
         if (max_size() - _Old_size < _Size_increase) {
-            _Xlen(); // result too long
+            _Xlen_string(); // result too long
         }
 
         const size_type _New_size     = _Old_size + _Size_increase;
@@ -4221,10 +4319,6 @@ private:
         _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
     }
 
-    [[noreturn]] static void _Xlen() {
-        _Xlength_error("string too long");
-    }
-
 public:
     void _Orphan_all() noexcept { // used by filesystem::path
         _Mypair._Myval2._Orphan_all();
@@ -4273,56 +4367,61 @@ void swap(basic_string<_Elem, _Traits, _Alloc>& _Left,
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    // return string + string
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
-    _Ans.reserve(_Left.size() + _Right.size());
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    const auto _Left_size  = _Left.size();
+    const auto _Right_size = _Right.size();
+    if (_Left.max_size() - _Left_size < _Right_size) {
+        _Xlen_string();
+    }
+
+    return {_String_constructor_concat_tag{}, _Left, _Left.c_str(), _Left_size, _Right.c_str(), _Right_size};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     _In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    using _String_type = basic_string<_Elem, _Traits, _Alloc>;
-    using _Size_type   = typename _String_type::size_type;
-    _String_type _Ans;
-    _Ans.reserve(_Convert_size<_Size_type>(_Traits::length(_Left) + _Right.size()));
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    using _Size_type       = typename basic_string<_Elem, _Traits, _Alloc>::size_type;
+    const auto _Left_size  = _Convert_size<_Size_type>(_Traits::length(_Left));
+    const auto _Right_size = _Right.size();
+    if (_Right.max_size() - _Right_size < _Left_size) {
+        _Xlen_string();
+    }
+
+    return {_String_constructor_concat_tag{}, _Right, _Left, _Left_size, _Right.c_str(), _Right_size};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const _Elem _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
-    _Ans.reserve(1 + _Right.size());
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    const auto _Right_size = _Right.size();
+    if (_Right_size == _Right.max_size()) {
+        _Xlen_string();
+    }
+
+    return {_String_constructor_concat_tag{}, _Right, _STD addressof(_Left), 1, _Right.c_str(), _Right_size};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
-    using _String_type = basic_string<_Elem, _Traits, _Alloc>;
-    using _Size_type   = typename _String_type::size_type;
-    _String_type _Ans;
-    _Ans.reserve(_Convert_size<_Size_type>(_Left.size() + _Traits::length(_Right)));
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    using _Size_type       = typename basic_string<_Elem, _Traits, _Alloc>::size_type;
+    const auto _Left_size  = _Left.size();
+    const auto _Right_size = _Convert_size<_Size_type>(_Traits::length(_Right));
+    if (_Left.max_size() - _Left_size < _Right_size) {
+        _Xlen_string();
+    }
+
+    return {_String_constructor_concat_tag{}, _Left, _Left.c_str(), _Left_size, _Right, _Right_size};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem _Right) {
-    basic_string<_Elem, _Traits, _Alloc> _Ans;
-    _Ans.reserve(_Left.size() + 1);
-    _Ans += _Left;
-    _Ans += _Right;
-    return _Ans;
+    const auto _Left_size = _Left.size();
+    if (_Left_size == _Left.max_size()) {
+        _Xlen_string();
+    }
+
+    return {_String_constructor_concat_tag{}, _Left, _Left.c_str(), _Left_size, _STD addressof(_Right), 1};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -4340,11 +4439,14 @@ _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
-    if (_Right.size() <= _Left.capacity() - _Left.size() || _Right.capacity() - _Right.size() < _Left.size()) {
-        return _STD move(_Left.append(_Right));
-    } else {
-        return _STD move(_Right.insert(0, _Left));
-    }
+#if _ITERATOR_DEBUG_LEVEL == 2
+    _STL_VERIFY(_STD addressof(_Left) != _STD addressof(_Right),
+        "You cannot concatenate the same moved string to itself. See "
+        "N4849 [res.on.arguments]/1.3: If a function argument binds to an rvalue reference "
+        "parameter, the implementation may assume that this parameter is a unique reference "
+        "to this argument");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+    return {_String_constructor_concat_tag{}, _Left, _Right};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -4479,8 +4581,8 @@ using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Elem, class _Traits, class _Alloc>
 struct hash<basic_string<_Elem, _Traits, _Alloc>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string<_Elem, _Traits, _Alloc> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string<_Elem, _Traits, _Alloc> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const basic_string<_Elem, _Traits, _Alloc>& _Keyval) const noexcept {
         return _Hash_array_representation(_Keyval.c_str(), _Keyval.size());
@@ -4578,13 +4680,15 @@ inline namespace literals {
 
 #if _HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc, class _Uty>
-void erase(basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
+typename basic_string<_Elem, _Traits, _Alloc>::size_type erase(
+    basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Elem, class _Traits, class _Alloc, class _Pr>
-void erase_if(basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
+    basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

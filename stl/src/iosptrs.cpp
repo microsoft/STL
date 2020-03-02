@@ -30,11 +30,11 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog = 0;
 _STD_END
 
 // FINALIZATION CODE
-#define NATS 10 // fclose, xgetloc, locks, facet free, etc.
+constexpr int _Nats = 10; // fclose, xgetloc, locks, facet free, etc.
 
 // static data
-__PURE_APPDOMAIN_GLOBAL static void(__cdecl* atfuns_cdecl[NATS])() = {0};
-__PURE_APPDOMAIN_GLOBAL static size_t atcount_cdecl                = {NATS};
+__PURE_APPDOMAIN_GLOBAL static void(__cdecl* atfuns_cdecl[_Nats])() = {0};
+__PURE_APPDOMAIN_GLOBAL static size_t atcount_cdecl                 = {_Nats};
 _MRTIMP2 void __cdecl _Atexit(void(__cdecl* pf)()) { // add to wrapup list
     if (atcount_cdecl == 0) {
         abort(); // stack full, give up
@@ -45,7 +45,7 @@ _MRTIMP2 void __cdecl _Atexit(void(__cdecl* pf)()) { // add to wrapup list
 
 struct _Init_atexit { // controller for atexit processing
     __CLR_OR_THIS_CALL ~_Init_atexit() noexcept { // process wrapup functions
-        while (atcount_cdecl < NATS) {
+        while (atcount_cdecl < _Nats) {
             void(__cdecl * pf)() = (void(__cdecl*)()) DecodePointer(atfuns_cdecl[atcount_cdecl++]);
             if (pf) {
                 (*pf)();

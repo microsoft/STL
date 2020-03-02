@@ -8,6 +8,7 @@
 #define _XLOCMON_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <iterator>
 #include <xlocnum>
 
 #pragma pack(push, _CRT_PACKING)

@@ -17,6 +17,9 @@
 #include <memory>
 #include <unordered_map>
 #endif // _HAS_CXX17
+#ifdef __cpp_lib_concepts
+#include <compare>
+#endif // __cpp_lib_concepts
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -38,9 +41,9 @@ _STD_BEGIN
 // STRUCT TEMPLATE divides
 template <class _Ty = void>
 struct divides {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left / _Right;
@@ -50,9 +53,9 @@ struct divides {
 // STRUCT TEMPLATE modulus
 template <class _Ty = void>
 struct modulus {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left % _Right;
@@ -62,8 +65,8 @@ struct modulus {
 // STRUCT TEMPLATE negate
 template <class _Ty = void>
 struct negate {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left) const {
         return -_Left;
@@ -91,9 +94,9 @@ struct negate {
 // STRUCT TEMPLATE logical_and
 template <class _Ty = void>
 struct logical_and {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left && _Right;
@@ -103,9 +106,9 @@ struct logical_and {
 // STRUCT TEMPLATE logical_or
 template <class _Ty = void>
 struct logical_or {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left || _Right;
@@ -115,8 +118,8 @@ struct logical_or {
 // STRUCT TEMPLATE logical_not
 template <class _Ty = void>
 struct logical_not {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     constexpr bool operator()(const _Ty& _Left) const {
         return !_Left;
@@ -126,9 +129,9 @@ struct logical_not {
 // STRUCT TEMPLATE bit_and
 template <class _Ty = void>
 struct bit_and {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left & _Right;
@@ -138,9 +141,9 @@ struct bit_and {
 // STRUCT TEMPLATE bit_or
 template <class _Ty = void>
 struct bit_or {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left | _Right;
@@ -150,9 +153,9 @@ struct bit_or {
 // STRUCT TEMPLATE bit_xor
 template <class _Ty = void>
 struct bit_xor {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left ^ _Right;
@@ -162,8 +165,8 @@ struct bit_xor {
 // STRUCT TEMPLATE bit_not
 template <class _Ty = void>
 struct bit_not {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
     constexpr _Ty operator()(const _Ty& _Left) const {
         return ~_Left;
@@ -182,36 +185,36 @@ struct bit_not {
 // STRUCT TEMPLATE SPECIALIZATION divides
 template <>
 struct divides<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION modulus
 template <>
 struct modulus<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION negate
 template <>
 struct negate<void> {
-    using is_transparent = int;
-
     template <class _Ty>
     constexpr auto operator()(_Ty&& _Left) const -> decltype(-_STD forward<_Ty>(_Left)) {
         return -_STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION equal_to
@@ -235,85 +238,86 @@ struct negate<void> {
 // STRUCT TEMPLATE SPECIALIZATION logical_and
 template <>
 struct logical_and<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION logical_or
 template <>
 struct logical_or<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION logical_not
 template <>
 struct logical_not<void> {
-    using is_transparent = int;
-
     template <class _Ty>
     constexpr auto operator()(_Ty&& _Left) const -> decltype(!_STD forward<_Ty>(_Left)) {
         return !_STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_and
 template <>
 struct bit_and<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_or
 template <>
 struct bit_or<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_xor
 template <>
 struct bit_xor<void> {
-    using is_transparent = int;
-
     template <class _Ty1, class _Ty2>
     constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION bit_not
 template <>
 struct bit_not<void> {
-    using is_transparent = int;
-
     template <class _Ty>
     constexpr auto operator()(_Ty&& _Left) const -> decltype(~_STD forward<_Ty>(_Left)) {
         return ~_STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 
+#if _HAS_DEPRECATED_NEGATORS
 _STL_DISABLE_DEPRECATED_WARNING
 // CLASS TEMPLATE unary_negate
 template <class _Fn>
@@ -334,7 +338,7 @@ private:
 
 // FUNCTION TEMPLATE not1
 template <class _Fn>
-_NODISCARD _CXX17_DEPRECATE_NEGATORS constexpr unary_negate<_Fn> not1(const _Fn& _Func) {
+_CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr unary_negate<_Fn> not1(const _Fn& _Func) {
     return unary_negate<_Fn>(_Func);
 }
 
@@ -358,10 +362,11 @@ private:
 
 // FUNCTION TEMPLATE not2
 template <class _Fn>
-_NODISCARD _CXX17_DEPRECATE_NEGATORS constexpr binary_negate<_Fn> not2(const _Fn& _Func) {
+_CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr binary_negate<_Fn> not2(const _Fn& _Func) {
     return binary_negate<_Fn>(_Func);
 }
 _STL_RESTORE_DEPRECATED_WARNING
+#endif // _HAS_DEPRECATED_NEGATORS
 
 #if _HAS_AUTO_PTR_ETC
 _STL_DISABLE_DEPRECATED_WARNING
@@ -656,18 +661,20 @@ _NODISCARD _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
 #if _HAS_CXX20
 // STRUCT identity
 struct identity {
-    using is_transparent = int;
-
     template <class _Ty>
     _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
         return _STD forward<_Ty>(_Left);
     }
+
+    using is_transparent = int;
 };
 #endif // _HAS_CXX20
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE not_fn
-struct _Not_fn_tag {};
+struct _Not_fn_tag {
+    explicit _Not_fn_tag() = default;
+};
 
 template <class _Decayed>
 class _Not_fn : private _Ebco_base<_Decayed> {
@@ -772,8 +779,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#pragma warning(push)
-#pragma warning(disable : 4265) // class has virtual functions, but destructor is not virtual (/Wall)
 // CLASS TEMPLATE _Func_base
 template <class _Rx, class... _Types>
 class __declspec(novtable) _Func_base { // abstract base for implementation types
@@ -798,16 +803,12 @@ public:
 private:
     virtual const void* _Get() const noexcept = 0;
 };
-#pragma warning(pop)
 
 // ALIAS TEMPLATE _Is_large
 constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
 _INLINE_VAR constexpr bool _Is_large = (_Space_size < sizeof(_Impl)) || !_Impl::_Nothrow_move::value;
-
-#pragma warning(push)
-#pragma warning(disable : 4265) // class has virtual functions, but destructor is not virtual (/Wall)
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // CLASS TEMPLATE _Func_impl
@@ -822,7 +823,7 @@ public:
 
     template <class _Other1, class _Other2>
     _Func_impl(_Other1&& _Val, _Other2&& _Ax)
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Other2>(_Ax), _STD forward<_Other1>(_Val)) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Other2>(_Ax), _STD forward<_Other1>(_Val)) {}
 
     // dtor non-virtual due to _Delete_this()
 
@@ -947,14 +948,12 @@ private:
 
     _Callable _Callee;
 };
-#pragma warning(pop)
 
-// TRANSITION, Visual Studio 2019 16.5 + CUDA
-#if (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+#ifdef __CUDACC__ // TRANSITION, CUDA
 #define _USE_FUNCTION_INT_0_SFINAE 0
 #else
 #define _USE_FUNCTION_INT_0_SFINAE 1
-#endif // (defined(_MSC_VER) && _MSC_VER < 1925) || defined(__CUDACC__)
+#endif // __CUDACC__
 
 // CLASS TEMPLATE _Func_class
 template <class _Ret, class... _Types>
@@ -1436,7 +1435,7 @@ auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_
 // CLASS TEMPLATE _Binder
 template <class _Ret>
 struct _Forced_result_type { // used by bind<R>()
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;
 };
 
 template <class _Ret, class _Fx>
@@ -1460,7 +1459,7 @@ private:
 
 public:
     explicit _Binder(_Fx&& _Func, _Types&&... _Args)
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                           \
     template <class... _Unbound>                                                                              \
@@ -1824,13 +1823,13 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* _Shifts, const _R
     for (_Diff _Idx = _Pat_size; _Idx > 0; --_Idx, (void) --_Suffix) {
         _Suffix_fn[static_cast<size_t>(_Idx - 1)] = _Suffix;
         while (_Suffix < _Pat_size && !_Eq(_Pat_first[_Idx - 1], _Pat_first[_Suffix])) {
-            _Shifts[_Suffix] = _Min_value(_Shifts[_Suffix], _Pat_size - _Idx);
+            _Shifts[_Suffix] = (_STD min)(_Shifts[_Suffix], _Pat_size - _Idx);
             _Suffix          = _Suffix_fn[static_cast<size_t>(_Suffix)];
         }
     }
 
     for (_Diff _Idx = 0; _Idx <= _Suffix; ++_Idx) {
-        _Shifts[_Idx] = _Min_value(_Shifts[_Idx], _Pat_size + _Suffix - _Idx);
+        _Shifts[_Idx] = (_STD min)(_Shifts[_Idx], _Pat_size + _Suffix - _Idx);
     }
 }
 
@@ -1868,7 +1867,7 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
                 --_Idx;
                 --_UFirst;
             } while (_Eq(*_UFirst, _UPat_first[_Idx]));
-            _Shift = _Max_value(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
+            _Shift = (_STD max)(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
         }
     }
 
@@ -2203,6 +2202,66 @@ private:
     void* _Data;
 };
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // STRUCT ranges::not_equal_to
+    struct not_equal_to {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires equality_comparable_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+            return !static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
+    // STRUCT ranges::greater
+    struct greater {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+            return static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
+    // STRUCT ranges::greater_equal
+    struct greater_equal {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+            return !static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
+    // STRUCT ranges::less_equal
+    struct less_equal {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+            return !static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
