@@ -771,8 +771,8 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     // Input could have been a file; canonicalize and remove the last component.
     // We use VOLUME_NAME_NT because it always has a mapping available and we don't care about the canonical path
     // being "ugly" due to needing the _Dos_to_nt_prefix.
-    constexpr wchar_t _Dos_to_nt_prefix[]    = LR"(\\?\GLOBALROOT)";
-    constexpr size_t _Dos_to_nt_prefix_count = sizeof(_Dos_to_nt_prefix) / sizeof(wchar_t) - 1;
+    static constexpr wchar_t _Dos_to_nt_prefix[] = LR"(\\?\GLOBALROOT)";
+    constexpr size_t _Dos_to_nt_prefix_count     = sizeof(_Dos_to_nt_prefix) / sizeof(wchar_t) - 1;
     __crt_unique_heap_ptr<wchar_t> _Buf;
     DWORD _Actual_length;
     {
