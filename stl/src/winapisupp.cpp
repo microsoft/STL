@@ -564,7 +564,7 @@ extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {0};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
-    HINSTANCE hKernelBase = GetModuleHandleW(L"KernelBase.dll");
+    HINSTANCE hSynch = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
 
     STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
     STOREFUNCTIONPOINTER(hKernel32, FlsFree);
@@ -618,9 +618,9 @@ static int __cdecl initialize_pointers() {
     STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
     STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
 #endif
-    STOREFUNCTIONPOINTER(hKernelBase, WaitOnAddress);
-    STOREFUNCTIONPOINTER(hKernelBase, WakeByAddressSingle);
-    STOREFUNCTIONPOINTER(hKernelBase, WakeByAddressAll);
+    STOREFUNCTIONPOINTER(hSynch, WaitOnAddress);
+    STOREFUNCTIONPOINTER(hSynch, WakeByAddressSingle);
+    STOREFUNCTIONPOINTER(hSynch, WakeByAddressAll);
     return 0;
 }
 

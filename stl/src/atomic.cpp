@@ -54,7 +54,7 @@ void __cdecl _AtomicSpin(long& _Spin_context) {
     case 0x1000'0000:
         if (_Spin_context < 0x1000'0004) {
             _Spin_context += 1;
-            SwitchToThread();
+            ::SwitchToThread();
             return;
         }
         _Spin_context = 0x2000'0000;
@@ -63,14 +63,14 @@ void __cdecl _AtomicSpin(long& _Spin_context) {
     case 0x2000'0000:
         if (_Spin_context < 0x2000'0010) {
             _Spin_context += 1;
-            Sleep(0);
+            ::Sleep(0);
             return;
         }
         _Spin_context = 0x3000'0000;
         [[fallthrough]];
 
     case 0x3000'0000:
-        Sleep(10);
+        ::Sleep(10);
         return;
     }
 }
@@ -105,13 +105,16 @@ void __cdecl _Atomic_notify_all_direct(void* _Storage) {
 
 constexpr size_t TABLE_SIZE_POWER = 8;
 constexpr size_t TABLE_SIZE       = 1 << TABLE_SIZE_POWER;
+constexpr size_t TABLE_MASK       = TABLE_SIZE-1;
 
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
 struct alignas(64) _Contention_table_entry {
-    std::atomic<std::uint64_t> _Counter;
+    // Arbitraty variable to wait/notify on if target wariable is not proper atomic for that
+    // Size is largest of lock-free to make aliasing problem into hypothetical
+    std::atomic<std::uint64_t> _Counter; 
 };
 
 #pragma warning(pop)
@@ -120,9 +123,9 @@ static _Contention_table_entry _Contention_table[TABLE_SIZE];
 
 _Contention_table_entry& _Atomic_contention_table(const void* _Storage) {
     auto index = reinterpret_cast<std::uintptr_t>(_Storage);
-    index >>= TABLE_SIZE_POWER * 2;
-    index >>= TABLE_SIZE_POWER;
-    return _Contention_table[index & ((1 << TABLE_SIZE_POWER) - 1)];
+    index ^= index >> (TABLE_SIZE_POWER * 2);
+    index ^= index >> TABLE_SIZE_POWER;
+    return _Contention_table[index & TABLE_MASK];
 }
 
 void __cdecl _Atomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept {
