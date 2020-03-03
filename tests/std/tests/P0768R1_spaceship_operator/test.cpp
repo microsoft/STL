@@ -136,43 +136,11 @@ constexpr auto compare(const Left& left, const Right& right) {
 }
 
 template <class Ty1, class Ty2 = Ty1>
-constexpr void test_algorithm_compiletime() {
-    constexpr std::array<Ty1, 4> original{0, 1, 2, 3};
-    constexpr std::array<Ty2, 4> same{0, 1, 2, 3}, lesser{0, 1, 1, 3}, greater{0, 1, 3, 3};
-    constexpr std::array<Ty2, 3> smaller{0, 1, 2}, smallerAndGreater{0, 2, 3};
-    constexpr std::array<Ty2, 5> bigger{0, 1, 2, 3, 4}, biggerAndLesser{0, 1, 2, 2, 4};
-
-    static_assert(compare(original, original) == 0);
-    static_assert(compare(same, original) == 0);
-    static_assert(compare(original, same) == 0);
-
-    static_assert(compare(original, lesser) > 0);
-    static_assert(compare(lesser, original) < 0);
-
-    static_assert(compare(original, greater) < 0);
-    static_assert(compare(greater, original) > 0);
-
-    static_assert(compare(original, greater) < 0);
-    static_assert(compare(greater, original) > 0);
-
-    static_assert(compare(original, smaller) > 0);
-    static_assert(compare(smaller, original) < 0);
-
-    static_assert(compare(original, bigger) < 0);
-    static_assert(compare(bigger, original) > 0);
-
-    static_assert(compare(original, biggerAndLesser) > 0);
-    static_assert(compare(biggerAndLesser, original) < 0);
-
-    static_assert(compare(original, smallerAndGreater) < 0);
-    static_assert(compare(smallerAndGreater, original) > 0);
-}
-
-template <class Ty1, class Ty2 = Ty1>
-void test_algorithm_runtime() {
-    std::vector<Ty1> original{0, 1, 2, 3};
-    std::vector<Ty2> same{0, 1, 2, 3}, lesser{0, 1, 1, 3}, greater{0, 1, 3, 3}, smaller{0, 1, 2},
-        smallerAndGreater{0, 2, 3}, bigger{0, 1, 2, 3, 4}, biggerAndLesser{0, 1, 2, 2, 4};
+constexpr bool test_algorithm2() {
+    std::array<Ty1, 4> original{0, 1, 2, 3};
+    std::array<Ty2, 4> same{0, 1, 2, 3}, lesser{0, 1, 1, 3}, greater{0, 1, 3, 3};
+    std::array<Ty2, 3> smaller{0, 1, 2}, smallerAndGreater{0, 2, 3};
+    std::array<Ty2, 5> bigger{0, 1, 2, 3, 4}, biggerAndLesser{0, 1, 2, 2, 4};
 
     assert(compare(original, original) == 0);
     assert(compare(same, original) == 0);
@@ -198,20 +166,22 @@ void test_algorithm_runtime() {
 
     assert(compare(original, smallerAndGreater) < 0);
     assert(compare(smallerAndGreater, original) > 0);
+
+    return true;
 }
 
 template <class Ty1>
 void test_algorithm() {
-    test_algorithm_runtime<Ty1, Ty1>();
-    test_algorithm_compiletime<Ty1, Ty1>();
+    static_assert(test_algorithm2<Ty1>());
+    assert(test_algorithm2<Ty1>());
 }
 
 template <class Ty1, class Ty2>
 void test_algorithm() {
-    test_algorithm_runtime<Ty1, Ty2>();
-    test_algorithm_runtime<Ty2, Ty1>();
-    test_algorithm_compiletime<Ty1, Ty2>();
-    test_algorithm_compiletime<Ty2, Ty1>();
+    static_assert(test_algorithm2<Ty1, Ty2>());
+    static_assert(test_algorithm2<Ty2, Ty1>());
+    assert(test_algorithm2<Ty1, Ty2>());
+    assert(test_algorithm2<Ty2, Ty1>());
 }
 #endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
