@@ -1,11 +1,221 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 using namespace std;
+
+int allocationCount = 0;
+int canCreate       = 10; // Counter to force an exception when constructing a
+                    // sufficiently large ReportAddress array
+
+struct ReportAddress;
+vector<ReportAddress*> ascendingAddressBuffer;
+vector<ReportAddress*> descendingAddressBuffer;
+
+// According to N4849, the default behaviour of new[](size) is to return
+// new(size), so only the latter needs to be redefined.
+void* operator new(size_t size) {
+    void* const p = ::operator new(size, nothrow);
+
+    if (p) {
+        return p;
+    } else {
+        throw bad_alloc();
+    }
+}
+
+void* operator new(size_t size, const nothrow_t&) noexcept {
+    void* const result = malloc(size == 0 ? 1 : size);
+    ++allocationCount;
+
+    return result;
+}
+
+struct InitialValue {
+    int value = 106;
+
+    InitialValue() {}
+
+    InitialValue(int a, int b) {
+        value = a + b;
+    }
+};
+
+struct ThreeIntWrap {
+    int v1;
+    int v2;
+    int v3;
+};
+
+struct ReportAddress {
+    ReportAddress() {
+        if (canCreate) {
+            ascendingAddressBuffer.push_back(this);
+            --canCreate;
+        } else {
+            throw runtime_error("Can't create more ReportAddress objects.");
+        }
+    }
+
+    ~ReportAddress() {
+        ++canCreate;
+        descendingAddressBuffer.push_back(this);
+    }
+};
+
+void assert_ascending_init() {
+    for (unsigned i = 1; i < ascendingAddressBuffer.size(); ++i)
+        assert(ascendingAddressBuffer[i - 1] < ascendingAddressBuffer[i]);
+
+    ascendingAddressBuffer.clear();
+}
+
+void assert_descending_destruct() {
+    for (unsigned i = 1; i < descendingAddressBuffer.size(); ++i)
+        assert(descendingAddressBuffer[i - 1] > descendingAddressBuffer[i]);
+
+    descendingAddressBuffer.clear();
+}
+
+template <class T>
+void assert_shared_use_get(shared_ptr<T>& sp) {
+    assert(sp.use_count() == 1);
+    assert(sp.get() != nullptr);
+}
+
+template <class T, class... Args>
+shared_ptr<T> make_shared_assert(Args&&... vals) {
+    int count        = allocationCount;
+    shared_ptr<T> sp = make_shared<T>(forward<Args>(vals)...);
+    assert_shared_use_get<T>(sp);
+    assert(count + 1 == allocationCount);
+    return sp;
+}
+
+template <class T, enable_if_t<extent_v<T> != 0, int> = 0>
+shared_ptr<T> make_shared_init_assert(const remove_extent_t<T>& val) {
+    return make_shared_assert<T>(val);
+}
+
+template <class T, enable_if_t<is_array_v<T> && extent_v<T> == 0, int> = 0>
+shared_ptr<T> make_shared_init_assert(size_t size, const remove_extent_t<T>& val) {
+    return make_shared_assert<T>(size, val);
+}
+
+template <class T, class... Args>
+void test_make_init_destruct_order(Args&&... vals) {
+    {
+        try {
+            shared_ptr<T> sp = make_shared<T>(forward<Args>(vals)...);
+            assert_shared_use_get(sp);
+        } catch (const runtime_error& exc) {
+            string err = "Can't create more ReportAddress objects.";
+            assert(err.compare(exc.what()) == 0);
+        }
+    }
+    assert_ascending_init();
+    assert_descending_destruct();
+}
+
+void test_make_shared_not_array() {
+    shared_ptr<vector<int>> p0 = make_shared<vector<int>>();
+    assert(p0->empty());
+
+    shared_ptr<InitialValue> p1 = make_shared_assert<InitialValue>();
+    assert(p1->value == 106);
+
+    shared_ptr<string> p2 = make_shared<string>("Meow!", 2, 3);
+    assert(p2->compare("ow!") == 0);
+
+    shared_ptr<InitialValue> p3 = make_shared_assert<InitialValue>(40, 2);
+    assert(p3->value == 42);
+}
+
+void test_make_shared_array_known_bounds() {
+    shared_ptr<string[100]> p0 = make_shared<string[100]>();
+    for (int i = 0; i < 100; ++i)
+        assert(p0[i].empty());
+
+    shared_ptr<InitialValue[2][8][9]> p1 = make_shared_assert<InitialValue[2][8][9]>();
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 8; ++j)
+            for (int k = 0; k < 9; ++k)
+                assert(p1[i][j][k].value == 106);
+
+    shared_ptr<string[10][2]> p2 = make_shared<string[10][2]>({"Meow!", "Purr"});
+    for (int i = 0; i < 10; ++i) {
+        assert(p2[i][0].compare("Meow!") == 0);
+        assert(p2[i][1].compare("Purr") == 0);
+    }
+
+    shared_ptr<vector<int>[3]> p3 = make_shared<vector<int>[3]>({9, 9, 9});
+    for (int i = 0; i < 3; ++i)
+        for (int& val : p3[i])
+            assert(val == 9);
+
+    shared_ptr<ThreeIntWrap[5]> p4 = make_shared_init_assert<ThreeIntWrap[5]>({2, 8, 9});
+    for (int i = 0; i < 5; ++i)
+        assert(p4[i].v1 == 2 && p4[i].v2 == 8 && p4[i].v3 == 9);
+
+    test_make_init_destruct_order<ReportAddress[5]>(); // success one dimensional
+
+    test_make_init_destruct_order<ReportAddress[20]>(); // failure one dimensional
+
+    test_make_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
+
+    test_make_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+}
+
+void test_make_shared_array_unknown_bounds() {
+    shared_ptr<string[]> p0 = make_shared<string[]>(100);
+    for (int i = 0; i < 100; ++i)
+        assert(p0[i].empty());
+
+    shared_ptr<InitialValue[][8][9]> p1 = make_shared_assert<InitialValue[][8][9]>(2);
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 8; ++j)
+            for (int k = 0; k < 9; ++k)
+                assert(p1[i][j][k].value == 106);
+
+    shared_ptr<string[][2]> p2 = make_shared<string[][2]>(10, {"Meow!", "Purr"});
+    for (int i = 0; i < 10; ++i) {
+        assert(p2[i][0].compare("Meow!") == 0);
+        assert(p2[i][1].compare("Purr") == 0);
+    }
+
+    shared_ptr<vector<int>[]> p3 = make_shared<vector<int>[]>(3, {9, 9, 9});
+    for (int i = 0; i < 3; ++i)
+        for (int& val : p3[i])
+            assert(val == 9);
+
+    shared_ptr<ThreeIntWrap[]> p4 = make_shared_init_assert<ThreeIntWrap[]>(5, {2, 8, 9});
+    for (int i = 0; i < 5; ++i)
+        assert(p4[i].v1 == 2 && p4[i].v2 == 8 && p4[i].v3 == 9);
+
+    shared_ptr<int[]> p5 = make_shared_assert<int[]>(0); // p5 cannot be dereferenced
+
+    test_make_init_destruct_order<ReportAddress[]>(5); // success one dimensional
+
+    test_make_init_destruct_order<ReportAddress[]>(20); // failure one dimensional
+
+    test_make_init_destruct_order<ReportAddress[][2][2]>(2); // success multidimensional
+
+    test_make_init_destruct_order<ReportAddress[][3][3]>(3); // failure multidimensional
+}
+
+int constructCount = 0;
+int destroyCount   = 0;
+
+inline void assert_construct_destruct_equal() {
+    assert(constructCount == destroyCount);
+}
 
 template <class T, class ConstructAssert>
 struct ConstructConstrainingAllocator {
@@ -30,6 +240,7 @@ struct ConstructConstrainingAllocator {
         allocator<Other> a;
         static_assert(is_same_v<Other, value_type> && is_same_v<ConstructAssert, Other>, "incorrect construct call");
         allocator_traits<allocator<Other>>::construct(a, p, forward<Args>(vals)...);
+        constructCount++;
     }
 
     template <class Other>
@@ -37,11 +248,201 @@ struct ConstructConstrainingAllocator {
         allocator<Other> a;
         static_assert(is_same_v<Other, value_type> && is_same_v<ConstructAssert, Other>, "incorrect destroy call");
         allocator_traits<allocator<Other>>::destroy(a, p);
+        destroyCount++;
     }
 };
 
+template <typename T>
+using CustomAlloc = ConstructConstrainingAllocator<void, T>;
+
+template <class T, class... Args>
+shared_ptr<T> allocate_shared_assert(int elemCount, Args&&... vals) {
+    int aCount       = allocationCount;
+    int cCount       = constructCount;
+    shared_ptr<T> sp = allocate_shared<T>(forward<Args>(vals)...);
+    assert_shared_use_get(sp);
+    assert(aCount + 1 == allocationCount);
+    assert(cCount + elemCount == constructCount);
+    return sp;
+}
+
+template <class T, class A, enable_if_t<extent_v<T> != 0, int> = 0>
+shared_ptr<T> allocate_shared_init_assert(int elemCount, const A& a, const remove_extent_t<T>& val) {
+    return allocate_shared_assert<T>(elemCount, a, val);
+}
+
+template <class T, class A, enable_if_t<is_array_v<T> && extent_v<T> == 0, int> = 0>
+shared_ptr<T> allocate_shared_init_assert(int elemCount, const A& a, size_t size, const remove_extent_t<T>& val) {
+    return allocate_shared_assert<T>(elemCount, a, size, val);
+}
+
+template <class T, class... Args>
+void test_allocate_init_destruct_order(Args&&... vals) {
+    CustomAlloc<remove_all_extents_t<T>> a{};
+    {
+        try {
+            shared_ptr<T> sp = allocate_shared<T>(a, forward<Args>(vals)...);
+            assert_shared_use_get(sp);
+        } catch (const runtime_error& exc) {
+            string err = "Can't create more ReportAddress objects.";
+            assert(err.compare(exc.what()) == 0);
+        }
+    }
+    assert_construct_destruct_equal();
+    assert_ascending_init();
+    assert_descending_destruct();
+}
+
+void test_allocate_shared_not_array() {
+    CustomAlloc<vector<int>> a0{};
+    {
+        shared_ptr<vector<int>> p0 = allocate_shared<vector<int>>(a0);
+        assert_shared_use_get<vector<int>>(p0);
+        assert(p0->empty());
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<InitialValue> a1{};
+    {
+        shared_ptr<InitialValue> p1 = allocate_shared_assert<InitialValue>(1, a1);
+        assert(p1->value == 106);
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<string> a2{};
+    {
+        shared_ptr<string> p2 = allocate_shared<string>(a2, "Meow!", 2, 3);
+        assert(p2->compare("ow!") == 0);
+    }
+    assert_construct_destruct_equal();
+
+    {
+        shared_ptr<InitialValue> p3 = allocate_shared_assert<InitialValue>(1, a1, 40, 2);
+        assert(p3->value == 42);
+    }
+    assert_construct_destruct_equal();
+}
+
+void test_allocate_shared_array_known_bounds() {
+    CustomAlloc<string> a0{};
+    {
+        shared_ptr<string[100]> p0 = allocate_shared<string[100]>(a0);
+        for (int i = 0; i < 100; ++i)
+            assert(p0[i].empty());
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<InitialValue> a1{};
+    {
+        shared_ptr<InitialValue[2][8][9]> p1 = allocate_shared_assert<InitialValue[2][8][9]>(144, a1);
+        for (int i = 0; i < 2; ++i)
+            for (int j = 0; j < 8; ++j)
+                for (int k = 0; k < 9; ++k)
+                    assert(p1[i][j][k].value == 106);
+    }
+    assert_construct_destruct_equal();
+
+    {
+        shared_ptr<string[10][2]> p2 = allocate_shared<string[10][2]>(a0, {"Meow!", "Purr"});
+        for (int i = 0; i < 10; ++i) {
+            assert(p2[i][0].compare("Meow!") == 0);
+            assert(p2[i][1].compare("Purr") == 0);
+        }
+    }
+    assert_construct_destruct_equal();
+
+
+    CustomAlloc<vector<int>> a3{};
+    {
+        shared_ptr<vector<int>[3]> p3 = allocate_shared<vector<int>[3]>(a3, {9, 9, 9});
+        for (int i = 0; i < 3; ++i)
+            for (int& val : p3[i])
+                assert(val == 9);
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<ThreeIntWrap> a4{};
+    {
+        shared_ptr<ThreeIntWrap[5]> p4 = allocate_shared_init_assert<ThreeIntWrap[5]>(5, a4, {2, 8, 9});
+        for (int i = 0; i < 5; ++i)
+            assert(p4[i].v1 == 2 && p4[i].v2 == 8 && p4[i].v3 == 9);
+    }
+    assert_construct_destruct_equal();
+
+    test_allocate_init_destruct_order<ReportAddress[5]>(); // success one dimensional
+
+    test_allocate_init_destruct_order<ReportAddress[20]>(); // failure one dimensional
+
+    test_allocate_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
+
+    test_allocate_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+}
+
+void test_allocate_shared_array_unknown_bounds() {
+    CustomAlloc<string> a0{};
+    {
+        shared_ptr<string[]> p0 = allocate_shared<string[]>(a0, 100);
+        for (int i = 0; i < 100; ++i)
+            assert(p0[i].empty());
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<InitialValue> a1{};
+    {
+        shared_ptr<InitialValue[][8][9]> p1 = allocate_shared_assert<InitialValue[][8][9]>(144, a1, 2);
+        for (int i = 0; i < 2; ++i)
+            for (int j = 0; j < 8; ++j)
+                for (int k = 0; k < 9; ++k)
+                    assert(p1[i][j][k].value == 106);
+    }
+    assert_construct_destruct_equal();
+
+    {
+        shared_ptr<string[][2]> p2 = allocate_shared<string[][2]>(a0, 10, {"Meow!", "Purr"});
+        for (int i = 0; i < 10; ++i) {
+            assert(p2[i][0].compare("Meow!") == 0);
+            assert(p2[i][1].compare("Purr") == 0);
+        }
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<vector<int>> a3{};
+    {
+        shared_ptr<vector<int>[]> p3 = allocate_shared<vector<int>[]>(a3, 3, {9, 9, 9});
+        for (int i = 0; i < 3; ++i)
+            for (int& val : p3[i])
+                assert(val == 9);
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<ThreeIntWrap> a4{};
+    {
+        shared_ptr<ThreeIntWrap[]> p4 = allocate_shared_init_assert<ThreeIntWrap[]>(5, a4, 5, {2, 8, 9});
+        for (int i = 0; i < 5; ++i)
+            assert(p4[i].v1 == 2 && p4[i].v2 == 8 && p4[i].v3 == 9);
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<int> a5{};
+    { shared_ptr<int[]> p5 = make_shared_assert<int[]>(0); } // p5 cannot be dereferenced
+    assert_construct_destruct_equal();
+
+    test_allocate_init_destruct_order<ReportAddress[]>(5); // success one dimensional
+
+    test_allocate_init_destruct_order<ReportAddress[]>(20); // failure one dimensional
+
+    test_allocate_init_destruct_order<ReportAddress[][2][2]>(2); // success multidimensional
+
+    test_allocate_init_destruct_order<ReportAddress[][3][3]>(3); // failure multidimensional
+}
+
 int main() {
-    ConstructConstrainingAllocator<void, int> a{};
-    (void) allocate_shared<int>(a, 42);
-    (void) allocate_shared<const int>(a, 42);
+    test_make_shared_not_array();
+    test_make_shared_array_known_bounds();
+    test_make_shared_array_unknown_bounds();
+
+
+    test_allocate_shared_not_array();
+    test_allocate_shared_array_known_bounds();
+    test_allocate_shared_array_unknown_bounds();
 }
