@@ -140,6 +140,7 @@
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
+// P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
@@ -1066,6 +1067,10 @@
 #if _HAS_CXX20
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_bind_front   201907L
+
+#ifndef __EDG__ // TRANSITION, VSO-1041044
+#define __cpp_lib_bit_cast 201806L
+#endif // __EDG__
 
 #if defined(__clang__) || defined(__EDG__)
 #define __cpp_lib_bitops 201907L
