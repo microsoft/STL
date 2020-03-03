@@ -2069,6 +2069,11 @@ using atomic_ptrdiff_t = atomic<ptrdiff_t>;
 using atomic_intmax_t  = atomic<intmax_t>;
 using atomic_uintmax_t = atomic<uintmax_t>;
 
+// Though there are CMPXCHG8B and CMPXCHG16B,
+// Largest atomics with full set of efficient operations are pointer-sized
+using atomic_signed_lock_free = atomic_intptr_t;
+using atomic_unsigned_lock_free = atomic_uintptr_t;
+
 
 // STRUCT atomic_flag
 #define ATOMIC_FLAG_INIT \
