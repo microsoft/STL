@@ -24,7 +24,7 @@ using _CSTD ptrdiff_t;
 using _CSTD size_t;
 using max_align_t = double; // most aligned type
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
                             // ENUM CLASS byte
 enum class byte : unsigned char {};
 
@@ -88,7 +88,7 @@ template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
 _NODISCARD constexpr _IntType to_integer(const byte _Arg) noexcept { // convert byte to integer
     return static_cast<_IntType>(_Arg);
 }
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 _STD_END
 

@@ -16,8 +16,8 @@ jobs:
       displayName: Cache vcpkg
       timeoutInMinutes: 10
       inputs:
-        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD'
-        path: '$(vcpkgLocation)'
+        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
+        path: '$(vcpkgLocation)/installed'
         cacheHitVar: CACHE_RESTORED
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
