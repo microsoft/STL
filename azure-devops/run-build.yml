@@ -12,14 +12,6 @@ jobs:
     - checkout: self
       clean: true
       submodules: recursive
-    - task: PowerShell@2
-      displayName: 'Install MSVC Preview'
-      timeoutInMinutes: 30
-      # on "Hosted" agents only:
-      condition: or(contains(variables['Agent.Name'], 'Azure Pipelines'), contains(variables['Agent.Name'], 'Hosted Agent'))
-      inputs:
-        targetType: filePath
-        filePath: $(Build.SourcesDirectory)/azure-devops/install_msvc_preview.ps1
     - task: Cache@2
       displayName: Cache vcpkg
       timeoutInMinutes: 10
