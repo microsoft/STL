@@ -47,7 +47,8 @@ libraries.)
 includes C++20 features, [LWG issues][], conformance bugs, performance improvements, and other todos. There are
 approximately 200 active bugs in the STL's Microsoft-internal database; we need to manually replicate all of them to
 GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
-issue. The [bug tag][] and [enhancement tag][] are being populated.
+issue. The [bug tag][] and [enhancement tag][] are being populated.  
+*Note: Issues that link to a paper with `wg21.link/` may not work as that means they aren't publicly available at the time. Once they become public the links will then work.*
 
 * Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
 
