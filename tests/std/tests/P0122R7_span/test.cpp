@@ -599,7 +599,7 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(span{stl}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(stl)}), span<const int, 3>>);
         static_assert(is_same_v<decltype(span{stl_nullptr}), span<int*, 3>>);
-        static_assert(is_same_v<decltype(span{as_const(stl_nullptr)}), span<const int*, 3>>);
+        static_assert(is_same_v<decltype(span{as_const(stl_nullptr)}), span<int* const, 3>>);
     }
 
     {
