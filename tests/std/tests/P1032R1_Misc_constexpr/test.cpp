@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <array>
 #include <assert.h>
 #include <string>
 #include <tuple>
@@ -78,6 +79,24 @@ constexpr bool run_tests() {
 
         swap(tuple_alloc, tuple_alloc_copy);
         tuple_alloc.swap(tuple_alloc_copy);
+    }
+
+    // test array::swap
+    {
+        array<int, 2> array1{1, 2};
+        array<int, 2> array2{3, 4};
+
+        swap(array1, array2);
+        assert(array1[0] == 3 && array1[1] == 4 && array2[0] == 1 && array2[1] == 2);
+
+        array1.swap(array2);
+        assert(array1[0] == 1 && array1[1] == 2 && array2[0] == 3 && array2[1] == 4);
+
+        array<int, 0> array_empty1 = {};
+        array<int, 0> array_empty2 = {};
+
+        swap(array_empty1, array_empty2);
+        array_empty1.swap(array_empty2);
     }
 
     return true;
