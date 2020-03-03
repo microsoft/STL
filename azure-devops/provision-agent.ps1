@@ -3,6 +3,8 @@
 
 # Sets up VM for use as a build machine
 
+# $args[0] Azure Pipelines Personal Access Token
+
 Write-Output 'Starting...'
 
 if (Test-Path 'C:\agent') {
@@ -178,13 +180,12 @@ Function InstallPython
     }
     else
     {
-        Write-Output "Installatio failed! Exited with $exitCode."
+        Write-Output "Installation failed! Exited with $exitCode."
         exit $exitCode
     }
 }
 
 if ([string]::IsNullOrEmpty($PersonalAccessToken) `
-    -or ($PersonalAccessToken -eq 'CHANGE THIS') `
     -or ($PersonalAccessToken -eq 'PERSONAL_ACCESS_TOKEN')) {
     Write-Output 'You forgot to fill in your personal access token.'
     exit 1
