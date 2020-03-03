@@ -86,7 +86,7 @@ public:
         _Mystr _Result(_Al);
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable, make string from write buffer
             const auto _Base = _Mysb::pbase();
-            _Result.assign(_Base, static_cast<_Mysize_type>(_Max_value(_Mysb::pptr(), _Seekhigh) - _Base));
+            _Result.assign(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
         } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable, make string from read buffer
             const auto _Base = _Mysb::eback();
             _Result.assign(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
@@ -191,7 +191,7 @@ protected:
             return _Traits::eof();
         }
 
-        const auto _Local_highwater = _Max_value(_Seekhigh, _Pptr);
+        const auto _Local_highwater = (_STD max)(_Seekhigh, _Pptr);
         if (_Local_highwater <= _Gptr) { // nothing in the put area to take
             return _Traits::eof();
         }

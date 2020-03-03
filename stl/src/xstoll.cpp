@@ -16,7 +16,8 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(const char*, c
 _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     const char* s, char** endptr, int base, int* perr) { // convert string to long long, with checking
     const char* sc;
-    char *se, sign;
+    char* se;
+    char sign;
     unsigned long long x;
 
     if (endptr == 0) {

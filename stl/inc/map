@@ -371,8 +371,8 @@ void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Righ
 
 #if _HAS_CXX20
 template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename map<_Kty, _Ty, _Keylt, _Alloc>::size_type erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -525,8 +525,9 @@ void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _All
 
 #if _HAS_CXX20
 template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename multimap<_Kty, _Ty, _Keylt, _Alloc>::size_type erase_if(
+    multimap<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

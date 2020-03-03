@@ -21,7 +21,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#else
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#endif
+
+#if _USE_STD_VECTOR_ALGORITHMS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -34,8 +40,10 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept;
+__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
+    void* _First1, void* _Last1, void* _First2) noexcept;
 _END_EXTERN_C
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
 
@@ -139,7 +147,6 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
     return _Val;
 }
 
-// constexpr per pending LWG issue, submitted 2020-01-14
 template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     if constexpr (_Has_to_address_v<_Ptr>) {
@@ -1463,10 +1470,12 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <size_t _Value>
 struct _Priority_tag : _Priority_tag<_Value - 1> { // priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <>
 struct _Priority_tag<0> { // base case priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <class _InIt, class _Pr>
@@ -2629,11 +2638,9 @@ namespace ranges {
     // clang-format off
     // CONCEPT ranges::sized_range
     template <class _Rng>
-    concept sized_range = range<_Rng>
-#if 0 // TRANSITION, LWG-3264
-        && !disable_sized_range<remove_cvref_t<_Rng>>
-#endif // TRANSITION, LWG-3264
-        && requires(_Rng& __r) { _RANGES size(__r); };
+    concept sized_range = range<_Rng> && requires(_Rng& __r) {
+        _RANGES size(__r);
+    };
     // clang-format on
 
     // STRUCT ranges::view_base
@@ -2695,7 +2702,9 @@ namespace ranges {
         // objects from this type to remove some typical object-ish behaviors which helps users avoid depending on their
         // non-specified object-ness.
 
-        struct _Construct_tag {};
+        struct _Construct_tag {
+            explicit _Construct_tag() = default;
+        };
 
         _Not_quite_object() = delete;
 
@@ -3503,7 +3512,7 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, cons
 // FUNCTION TEMPLATE make_move_iterator
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
-    return move_iterator<_Iter>(_It);
+    return move_iterator<_Iter>(_STD move(_It));
 }
 
 #ifdef __cpp_lib_concepts
@@ -4117,10 +4126,10 @@ struct _Is_character<char8_t> : true_type {}; // UTF-8 code units are sort-of ch
 template <class _Ty>
 struct _Is_character_or_byte : _Is_character<_Ty>::type {};
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 template <>
 struct _Is_character_or_byte<byte> : true_type {};
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
@@ -4286,10 +4295,10 @@ template <class _Elem1, class _Elem2>
 struct _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>>
     : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type {}; // allow memcmping pointers-to-cv-T with equal_to<>
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 template <>
 struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type {}; // allow memcmping std::byte
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 template <class _Elem>
 struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>>
@@ -4554,7 +4563,7 @@ struct _Lex_compare_check_element_types_helper<_Elem1, _Elem2, void>
     // checks the lex_compare element types for memcmp safety for transparent functors (e.g. less<>)
 };
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 template <>
 struct _Lex_compare_check_element_types_helper<byte, byte, byte> : true_type {
     // std::byte with builtin functors (e.g. less<byte>) is memcmp safe
@@ -4564,10 +4573,12 @@ template <>
 struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
     // std::byte with transparent functors (e.g. less<>) is memcmp safe
 };
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 template <class _Memcmp_pr>
-struct _Lex_compare_optimize {}; // optimization tag for lexicographical_compare
+struct _Lex_compare_optimize {
+    explicit _Lex_compare_optimize() = default;
+}; // optimization tag for lexicographical_compare
 
 template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
 using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
@@ -4575,23 +4586,21 @@ using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
     void>>; // checks the lex_compare element types for memcmp safety
 
 template <class _InIt1, class _InIt2, class _Pr>
-constexpr _Lex_compare_optimize<void> _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
+constexpr auto _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
     // return lex_compare optimization category for arbitrary iterators
-    return {};
+    return _Lex_compare_optimize<void>{};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-constexpr _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
-    _Obj1* const&, _Obj2* const&, const less<_FTy>&) {
+constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const less<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and less<_FTy>
-    return {};
+    return _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy>{};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-constexpr _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
-    _Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
+constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and greater<_FTy>
-    return {};
+    return _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy>{};
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
@@ -5061,7 +5070,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<decltype(_UFirst)>;
     constexpr bool _Allow_vectorization =
         conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
@@ -5099,7 +5108,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
             return;
         }
     }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
         _STD iter_swap(_UFirst, _ULast);
@@ -5114,7 +5123,7 @@ void _Reverse_unchecked1(_BidIt _First, _BidIt _Last, integral_constant<size_t, 
     }
 }
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
 template <class _BidIt>
 void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 1>) {
     // reverse elements in [_First, _Last), pointers to trivially swappable of size 1
@@ -5138,12 +5147,12 @@ void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_const
     // reverse elements in [_First, _Last), pointers to trivially swappable of size 8
     __std_reverse_trivially_swappable_8(_First, _Last);
 }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 template <class _BidIt>
 void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
     // reverse elements in [_First, _Last), choose optimization
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<_BidIt>;
     constexpr size_t _Opt =
         is_pointer_v<_BidIt> //
@@ -5154,7 +5163,7 @@ void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
             : 0;
 #else // ^^^ vectorize / no vectorize vvv
     constexpr size_t _Opt = 0;
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
     _Reverse_unchecked1(_First, _Last, integral_constant<size_t, _Opt>{});
 }
 
@@ -5364,6 +5373,37 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
     return _STD lower_bound(_First, _Last, _Val, less<>());
 }
 
+// FUNCTION TEMPLATE _Swap_ranges_unchecked
+template <class _FwdIt1, class _FwdIt2>
+_CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+    // swap [_First1, _Last1) with [_First2, ...), no special optimization
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+        _STD iter_swap(_First1, _First2);
+    }
+
+    return _First2;
+}
+
+#if _USE_STD_VECTOR_ALGORITHMS
+template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
+_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
+    // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
+        return _First2 + (_Last1 - _First1);
+    }
+
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+        _STD iter_swap(_First1, _First2);
+    }
+
+    return _First2;
+}
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 // CLASS TEMPLATE _Rng_from_urng
 template <class _Diff, class _Urng>
 class _Rng_from_urng { // wrap a URNG as an RNG
@@ -5431,137 +5471,6 @@ private:
     _Udiff _Bmask; // 2^_Bits - 1
 };
 
-// CLASS TEMPLATE _Yarn
-template <class _Elem>
-class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
-public:
-    __CLR_OR_THIS_CALL _Yarn() noexcept : _Myptr(nullptr), _Nul(0) {}
-
-    __CLR_OR_THIS_CALL _Yarn(const _Yarn& _Right) noexcept : _Myptr(nullptr), _Nul(0) {
-        *this = _Right;
-    }
-
-    __CLR_OR_THIS_CALL _Yarn(const _Elem* _Right) noexcept : _Myptr(nullptr), _Nul(0) {
-        *this = _Right;
-    }
-
-    _Yarn& __CLR_OR_THIS_CALL operator=(const _Yarn& _Right) noexcept {
-        return *this = _Right._Myptr;
-    }
-
-    _Yarn& __CLR_OR_THIS_CALL operator=(const _Elem* _Right) noexcept {
-        if (_Myptr != _Right) { // new value, discard old and copy new
-            _Tidy();
-
-            if (_Right) { // new is not empty, copy it
-                const _Elem* _Ptr = _Right;
-                while (*_Ptr != _Elem{}) {
-                    ++_Ptr;
-                }
-
-                const auto _Count = (++_Ptr - _Right) * sizeof(_Elem);
-
-#ifdef _DEBUG
-                _Myptr = static_cast<_Elem*>(_malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
-#else // _DEBUG
-                _Myptr = static_cast<_Elem*>(_CSTD malloc(_Count));
-#endif // _DEBUG
-
-                if (_Myptr) {
-                    _CSTD memcpy(_Myptr, _Right, _Count);
-                }
-            }
-        }
-
-        return *this;
-    }
-
-    __CLR_OR_THIS_CALL ~_Yarn() noexcept {
-        _Tidy();
-    }
-
-    _NODISCARD bool __CLR_OR_THIS_CALL empty() const noexcept {
-        return _Myptr == nullptr;
-    }
-
-    _Ret_z_ const _Elem* __CLR_OR_THIS_CALL c_str() const noexcept {
-        return _Myptr ? _Myptr : &_Nul;
-    }
-
-    _NODISCARD bool __CLR_OR_THIS_CALL _Empty() const noexcept {
-        return _Myptr == nullptr;
-    }
-
-    _Ret_z_ const _Elem* __CLR_OR_THIS_CALL _C_str() const noexcept {
-        return _Myptr ? _Myptr : &_Nul;
-    }
-
-private:
-    void __CLR_OR_THIS_CALL _Tidy() noexcept {
-        if (_Myptr) {
-#ifdef _DEBUG
-            _free_dbg(_Myptr, _CRT_BLOCK);
-#else // _DEBUG
-            _CSTD free(_Myptr);
-#endif // _DEBUG
-        }
-
-        _Myptr = nullptr;
-    }
-
-    _Elem* _Myptr; // pointer to allocated string
-    _Elem _Nul; // nul terminator for unallocated string
-};
-
-
-// CLASS TEMPLATE back_insert_iterator
-template <class _Container>
-class back_insert_iterator { // wrap pushes to back of container as output iterator
-public:
-    using iterator_category = output_iterator_tag;
-    using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
-
-    using container_type = _Container;
-
-    explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */ : container(_STD addressof(_Cont)) {}
-
-    back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
-        container->push_back(_Val);
-        return *this;
-    }
-
-    back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
-        container->push_back(_STD move(_Val));
-        return *this;
-    }
-
-    _NODISCARD back_insert_iterator& operator*() noexcept /* strengthened */ {
-        return *this;
-    }
-
-    back_insert_iterator& operator++() noexcept /* strengthened */ {
-        return *this;
-    }
-
-    back_insert_iterator operator++(int) noexcept /* strengthened */ {
-        return *this;
-    }
-
-protected:
-    _Container* container; // pointer to container
-};
-
-// FUNCTION TEMPLATE back_inserter
-template <class _Container>
-_NODISCARD back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
-    // return a back_insert_iterator
-    return back_insert_iterator<_Container>(_Cont);
-}
-
-
 // STRUCT TEMPLATE _Has_allocator_type
 template <class _Ty, class _Alloc, class = void>
 struct _Has_allocator_type : false_type { // tests for suitable _Ty::allocator_type
@@ -5604,33 +5513,6 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using pointer           = _Pointer;
     using reference         = _Reference;
 };
-
-// STRUCT TEMPLATE _Tidy_guard
-template <class _Ty>
-struct _Tidy_guard { // class with destructor that calls _Tidy
-    _Ty* _Target;
-    ~_Tidy_guard() {
-        if (_Target) {
-            _Target->_Tidy();
-        }
-    }
-};
-
-// STRUCT TEMPLATE _Tidy_deallocate_guard
-template <class _Ty>
-struct _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
-    _Ty* _Target;
-    ~_Tidy_deallocate_guard() {
-        if (_Target) {
-            _Target->_Tidy_deallocate();
-        }
-    }
-};
-
-// VARIABLE TEMPLATE _Nothrow_compare
-template <class _Keycmp, class _Lhs, class _Rhs>
-_INLINE_VAR constexpr bool _Nothrow_compare = noexcept(
-    static_cast<bool>(_STD declval<const _Keycmp&>()(_STD declval<const _Lhs&>(), _STD declval<const _Rhs&>())));
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
