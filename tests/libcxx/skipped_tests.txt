@@ -627,11 +627,6 @@ localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_s
 # STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
 localization\locales\locale.convenience\conversions\conversions.buffer\seekoff.pass.cpp
 
-# STL Bug: We aren't properly SFINAEing chrono operators
-# https://github.com/llvm/llvm-project/commit/efa6d803c624f9251d0ab7881122501bb9d27368
-utilities\time\time.duration\time.duration.nonmember\op_divide_rep.pass.cpp
-utilities\time\time.duration\time.duration.nonmember\op_mod_rep.pass.cpp
-
 # STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
 diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 
@@ -654,6 +649,34 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
 
+# Tests need to be updated for P1115R3 "erase()/erase_if() Return size_type".
+containers\associative\map\map.erasure\erase_if.pass.cpp
+containers\associative\multimap\multimap.erasure\erase_if.pass.cpp
+containers\associative\multiset\multiset.erasure\erase_if.pass.cpp
+containers\associative\set\set.erasure\erase_if.pass.cpp
+containers\sequences\deque\deque.erasure\erase_if.pass.cpp
+containers\sequences\deque\deque.erasure\erase.pass.cpp
+containers\sequences\forwardlist\forwardlist.erasure\erase_if.pass.cpp
+containers\sequences\forwardlist\forwardlist.erasure\erase.pass.cpp
+containers\sequences\list\list.erasure\erase_if.pass.cpp
+containers\sequences\list\list.erasure\erase.pass.cpp
+containers\sequences\vector\vector.erasure\erase_if.pass.cpp
+containers\sequences\vector\vector.erasure\erase.pass.cpp
+containers\unord\unord.map\erase_if.pass.cpp
+containers\unord\unord.multimap\erase_if.pass.cpp
+containers\unord\unord.multiset\erase_if.pass.cpp
+containers\unord\unord.set\erase_if.pass.cpp
+language.support\support.limits\support.limits.general\deque.version.pass.cpp
+language.support\support.limits\support.limits.general\forward_list.version.pass.cpp
+language.support\support.limits\support.limits.general\list.version.pass.cpp
+language.support\support.limits\support.limits.general\map.version.pass.cpp
+language.support\support.limits\support.limits.general\set.version.pass.cpp
+language.support\support.limits\support.limits.general\unordered_map.version.pass.cpp
+language.support\support.limits\support.limits.general\unordered_set.version.pass.cpp
+language.support\support.limits\support.limits.general\vector.version.pass.cpp
+strings\strings.erasure\erase_if.pass.cpp
+strings\strings.erasure\erase.pass.cpp
+
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
@@ -662,6 +685,9 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
 
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 language.support\support.limits\support.limits.general\string.version.pass.cpp
+
+# Test needs to be updated for LWG-3320 removing span::const_iterator.
+containers\views\types.pass.cpp
 
 # Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
 utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp

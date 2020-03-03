@@ -619,7 +619,9 @@ struct _Circ_buf { // holds historical values for generators
     bool _Equals(const _Circ_buf& _Right) const {
         const _Ty* _Last1 = _Ax + _Idx;
         const _Ty* _Last2 = _Right._Ax + _Right._Idx;
-        const _Ty *_First, *_Last, *_Other;
+        const _Ty* _First;
+        const _Ty* _Last;
+        const _Ty* _Other;
         bool _Use2 = _Base() < _Right._Base();
 
         if (_Use2) { // _Right's range is higher up in the array

@@ -1823,13 +1823,13 @@ public:
     basic_regex() : _Rep(nullptr) {} // construct empty object
 
     explicit basic_regex(_In_z_ const _Elem* _Ptr, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
-        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags, random_access_iterator_tag());
+        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags, random_access_iterator_tag{});
     }
 
     basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript)
         : _Rep(nullptr) {
         if (_Ptr) {
-            _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag());
+            _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag{});
             return;
         }
 
@@ -1840,7 +1840,7 @@ public:
     explicit basic_regex(
         const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript)
         : _Rep(nullptr) {
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag());
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag{});
     }
 
     template <class _InIt>
@@ -1866,7 +1866,7 @@ public:
     }
 
     basic_regex(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
-        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag());
+        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag{});
     }
 
     basic_regex& operator=(initializer_list<_Elem> _Ilist) { // replace with regular expression in initializer_list
@@ -1875,7 +1875,7 @@ public:
 
     basic_regex& assign(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) {
         // replace with regular expression in initializer_list
-        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag());
+        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag{});
         return *this;
     }
 
@@ -1915,14 +1915,14 @@ public:
     }
 
     basic_regex& operator=(_In_z_ const _Elem* _Ptr) {
-        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), ECMAScript, random_access_iterator_tag());
+        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), ECMAScript, random_access_iterator_tag{});
         return *this;
     }
 
     template <class _STtraits, class _STalloc>
     basic_regex& operator=(const basic_string<_Elem, _STtraits, _STalloc>& _Str) {
         _Reset(
-            _Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), ECMAScript, random_access_iterator_tag());
+            _Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), ECMAScript, random_access_iterator_tag{});
         return *this;
     }
 
@@ -1949,14 +1949,14 @@ public:
 
     basic_regex& assign(
         _In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
-        _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag());
+        _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag{});
         return *this;
     }
 
     template <class _STtraits, class _STalloc>
     basic_regex& assign(
         const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript) {
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag());
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag{});
         return *this;
     }
 
@@ -2021,7 +2021,7 @@ private:
         // build regular expression from input iterators
         basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
 
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, forward_iterator_tag());
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, forward_iterator_tag{});
     }
 
     template <class _FwdIt>

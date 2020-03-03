@@ -284,18 +284,17 @@ namespace chrono {
     struct _Duration_div_mod1<_CR, _Period1, _Rep2, false> { // no return type
     };
 
-    template <class _Rep1, class _Period1, class _Rep2, bool = _Is_duration_v<_Rep2>>
+    template <class _CR, class _Period1, class _Rep2, bool = _Is_duration_v<_Rep2>>
     struct _Duration_div_mod { // no return type
     };
 
-    template <class _Rep1, class _Period1, class _Rep2>
-    struct _Duration_div_mod<_Rep1, _Period1, _Rep2, false>
-        : _Duration_div_mod1<common_type_t<_Rep1, _Rep2>, _Period1, _Rep2> {
+    template <class _CR, class _Period1, class _Rep2>
+    struct _Duration_div_mod<_CR, _Period1, _Rep2, false> : _Duration_div_mod1<_CR, _Period1, _Rep2> {
         // return type for duration / rep and duration % rep
     };
 
     template <class _Rep1, class _Period1, class _Rep2>
-    _NODISCARD constexpr typename _Duration_div_mod<_Rep1, _Period1, _Rep2>::type operator/(
+    _NODISCARD constexpr typename _Duration_div_mod<common_type_t<_Rep1, _Rep2>, _Period1, _Rep2>::type operator/(
         const duration<_Rep1, _Period1>& _Left,
         const _Rep2& _Right) noexcept(is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         using _CR = common_type_t<_Rep1, _Rep2>;
@@ -312,7 +311,7 @@ namespace chrono {
     }
 
     template <class _Rep1, class _Period1, class _Rep2>
-    _NODISCARD constexpr typename _Duration_div_mod<_Rep1, _Period1, _Rep2>::type operator%(
+    _NODISCARD constexpr typename _Duration_div_mod<common_type_t<_Rep1, _Rep2>, _Period1, _Rep2>::type operator%(
         const duration<_Rep1, _Period1>& _Left,
         const _Rep2& _Right) noexcept(is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         using _CR = common_type_t<_Rep1, _Rep2>;

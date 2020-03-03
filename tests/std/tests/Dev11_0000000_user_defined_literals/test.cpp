@@ -556,12 +556,14 @@ int main() {
         };
 
         std::string str1{"cute fluffy kittens"};
-        std::erase_if(str1, is_vowel{});
+        const auto str1_removed = std::erase_if(str1, is_vowel{});
         assert(str1 == "ct flffy kttns");
+        assert(str1_removed == 5);
 
         std::string str2{"visual studio"};
-        std::erase(str2, 'u');
+        const auto str2_removed = std::erase(str2, 'u');
         assert(str2 == "visal stdio");
+        assert(str2_removed == 2);
 
         struct is_odd : no_copy {
             bool operator()(const int i) const {
@@ -570,28 +572,36 @@ int main() {
         };
 
         std::deque<int> d{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::erase_if(d, is_odd{});
+        const auto d_removed = std::erase_if(d, is_odd{});
         assert((d == std::deque<int>{2, 4, 6, 6, 4, 2}));
-        std::erase(d, 4);
+        assert(d_removed == 7);
+        const auto d_removed2 = std::erase(d, 4);
         assert((d == std::deque<int>{2, 6, 6, 2}));
+        assert(d_removed2 == 2);
 
         std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::erase_if(v, is_odd{});
+        const auto v_removed = std::erase_if(v, is_odd{});
         assert((v == std::vector<int>{2, 4, 6, 6, 4, 2}));
-        std::erase(v, 4);
+        assert(v_removed == 7);
+        const auto v_removed2 = std::erase(v, 4);
         assert((v == std::vector<int>{2, 6, 6, 2}));
+        assert(v_removed2 == 2);
 
         std::forward_list<int> fl{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::erase_if(fl, is_odd{});
+        const auto fl_removed = std::erase_if(fl, is_odd{});
         assert((fl == std::forward_list<int>{2, 4, 6, 6, 4, 2}));
-        std::erase(fl, 4);
+        assert(fl_removed == 7);
+        const auto fl_removed2 = std::erase(fl, 4);
         assert((fl == std::forward_list<int>{2, 6, 6, 2}));
+        assert(fl_removed2 == 2);
 
         std::list<int> l{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::erase_if(l, is_odd{});
+        const auto l_removed = std::erase_if(l, is_odd{});
         assert((l == std::list<int>{2, 4, 6, 6, 4, 2}));
-        std::erase(l, 4);
+        assert(l_removed == 7);
+        const auto l_removed2 = std::erase(l, 4);
         assert((l == std::list<int>{2, 6, 6, 2}));
+        assert(l_removed2 == 2);
 
         struct is_first_odd : no_copy {
             bool operator()(const std::pair<const int, int>& p) const {
@@ -600,38 +610,46 @@ int main() {
         };
 
         std::map<int, int> m{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::erase_if(m, is_first_odd{});
+        const auto m_removed = std::erase_if(m, is_first_odd{});
         assert((m == std::map<int, int>{{2, 20}, {4, 40}, {6, 60}}));
+        assert(m_removed == 4);
 
         std::multimap<int, int> mm{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::erase_if(mm, is_first_odd{});
+        const auto mm_removed = std::erase_if(mm, is_first_odd{});
         assert((mm == std::multimap<int, int>{{2, 20}, {4, 40}, {6, 60}}));
+        assert(mm_removed == 4);
 
         std::set<int> s{1, 2, 3, 4, 5, 6, 7};
-        std::erase_if(s, is_odd{});
+        const auto s_removed = std::erase_if(s, is_odd{});
         assert((s == std::set<int>{2, 4, 6}));
+        assert(s_removed == 4);
 
         std::multiset<int> ms{1, 2, 3, 4, 5, 6, 7};
-        std::erase_if(ms, is_odd{});
+        const auto ms_removed = std::erase_if(ms, is_odd{});
         assert((ms == std::multiset<int>{2, 4, 6}));
+        assert(ms_removed == 4);
 
         // Note that unordered equality considers permutations.
 
         std::unordered_map<int, int> um{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::erase_if(um, is_first_odd{});
+        const auto um_removed = std::erase_if(um, is_first_odd{});
         assert((um == std::unordered_map<int, int>{{2, 20}, {4, 40}, {6, 60}}));
+        assert(um_removed == 4);
 
         std::unordered_multimap<int, int> umm{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::erase_if(umm, is_first_odd{});
+        const auto umm_removed = std::erase_if(umm, is_first_odd{});
         assert((umm == std::unordered_multimap<int, int>{{2, 20}, {4, 40}, {6, 60}}));
+        assert(umm_removed == 4);
 
         std::unordered_set<int> us{1, 2, 3, 4, 5, 6, 7};
-        std::erase_if(us, is_odd{});
+        const auto us_removed = std::erase_if(us, is_odd{});
         assert((us == std::unordered_set<int>{2, 4, 6}));
+        assert(us_removed == 4);
 
         std::unordered_multiset<int> ums{1, 2, 3, 4, 5, 6, 7};
-        std::erase_if(ums, is_odd{});
+        const auto ums_removed = std::erase_if(ums, is_odd{});
         assert((ums == std::unordered_multiset<int>{2, 4, 6}));
+        assert(ums_removed == 4);
     }
 #endif // _HAS_CXX20
 
