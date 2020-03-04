@@ -79,15 +79,6 @@ static_assert(ranges::enable_safe_range<span<int>>);
 static_assert(ranges::enable_safe_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
 
-static_assert(is_base_of_v<integral_constant<size_t, 3>, tuple_size<span<int, 3>>>);
-static_assert(is_base_of_v<integral_constant<size_t, 3>, tuple_size<const span<int, 3>>>);
-
-// LWG-3378: <span> isn't guaranteed to provide tuple_element_t; our implementation does.
-static_assert(is_same_v<tuple_element_t<2, span<int, 3>>, int>);
-static_assert(is_same_v<tuple_element_t<2, const span<int, 3>>, const int>);
-static_assert(is_same_v<tuple_element_t<2, span<const int, 3>>, const int>);
-static_assert(is_same_v<tuple_element_t<2, const span<const int, 3>>, const int>);
-
 // For performance, our implementation provides an additional guarantee beyond the Standard
 // that span and its iterator types are trivially copyable.
 static_assert(is_trivially_copyable_v<span<int>>);
@@ -966,10 +957,6 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(sp_nine.rbegin()), span<int, 9>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_dyn.rend()), span<int>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_nine.rend()), span<int, 9>::reverse_iterator>);
-
-        static_assert(noexcept(get<5>(sp_nine)));
-        assert(get<5>(sp_nine) == 60);
-        assert(&get<5>(sp_nine) == begin(sequence) + 5);
     }
 
     {

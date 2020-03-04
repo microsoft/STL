@@ -184,6 +184,7 @@
 // P1872R0 span Should Have size_type, Not index_type
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
