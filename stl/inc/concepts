@@ -286,8 +286,8 @@ concept regular_invocable = invocable<_FTy, _ArgTys...>;
 
 // CONCEPT predicate
 template <class _FTy, class... _ArgTys>
-concept predicate = regular_invocable<_FTy, _ArgTys...> &&
-    _Boolean_testable<invoke_result_t<_FTy, _ArgTys...>>;
+concept predicate = regular_invocable<_FTy, _ArgTys...>
+    && _Boolean_testable<invoke_result_t<_FTy, _ArgTys...>>;
 
 // CONCEPT relation
 template <class _FTy, class _Ty1, class _Ty2>

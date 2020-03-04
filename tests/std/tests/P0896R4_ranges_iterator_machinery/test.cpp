@@ -552,7 +552,7 @@ namespace indirectly_readable_traits_test {
     STATIC_ASSERT(test_value<with_element_type<int const>, int>());
 
     STATIC_ASSERT(test_value<my_iterator, char>());
-} // namespace indirectlyreadable_traits_test
+} // namespace indirectly_readable_traits_test
 
 namespace iterator_traits_test {
     using std::incrementable_traits, std::indirectly_readable_traits, std::iterator_traits, std::iter_value_t,

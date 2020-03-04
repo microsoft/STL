@@ -19,11 +19,10 @@ struct not_pair {
     auto operator<=>(const not_pair&) const = default;
 };
 
-using P = not_pair<int, int>;
-
 constexpr void smoke_test() {
     using ranges::copy_if, ranges::copy_if_result, ranges::iterator_t;
     using std::same_as;
+    using P = not_pair<int, int>;
 
     constexpr auto is_odd = [](int x) { return x % 2 != 0; };
 
@@ -48,12 +47,13 @@ constexpr void smoke_test() {
         assert(result.out == move_only_range{output}.end());
         assert(ranges::equal(output, expected));
     }
-    { // Validate iterator+sentinel overload
+    { // Validate iterator + sentinel overload
         std::array<P, 2> output = {};
-        move_only_range x{input};
-        auto result = copy_if(x.begin(), x.end(), move_only_range{output}.begin(), is_odd, get_first);
+        move_only_range wrapped_input{input};
+        auto result =
+            copy_if(wrapped_input.begin(), wrapped_input.end(), move_only_range{output}.begin(), is_odd, get_first);
         STATIC_ASSERT(same_as<decltype(result), copy_if_result<I, O>>);
-        assert(result.in == x.end());
+        assert(result.in == wrapped_input.end());
         assert(result.out == move_only_range{output}.end());
         assert(ranges::equal(output, expected));
     }

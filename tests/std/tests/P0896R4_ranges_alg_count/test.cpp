@@ -23,9 +23,9 @@ constexpr void smoke_test() {
         assert(result == 3);
     }
     {
-        // Validate iterator+sentinel overload
-        move_only_range xx{x};
-        auto result = count(xx.begin(), xx.end(), 47, get_second);
+        // Validate iterator + sentinel overload
+        move_only_range wrapped_x{x};
+        auto result = count(wrapped_x.begin(), wrapped_x.end(), 47, get_second);
         STATIC_ASSERT(std::same_as<decltype(result), D>);
         assert(result == 2);
     }

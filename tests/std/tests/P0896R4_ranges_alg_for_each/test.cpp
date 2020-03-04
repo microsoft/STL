@@ -5,11 +5,8 @@
 #include <array>
 #include <cassert>
 #include <concepts>
-#include <cstdlib>
 #include <functional>
 #include <ranges>
-#include <span>
-#include <type_traits>
 #include <utility>
 //
 #include <range_algorithm_support.hpp>
@@ -32,27 +29,27 @@ constexpr void smoke_test() {
     auto incr      = [](auto& y) { ++y; };
 
     {
-        auto data   = values;
-        auto result = for_each(move_only_range{data}, incr, get_first);
+        auto pairs  = values;
+        auto result = for_each(move_only_range{pairs}, incr, get_first);
         STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<move_only_range<P>>, decltype(incr)>>);
-        assert(result.in == move_only_range{data}.end());
+        assert(result.in == move_only_range{pairs}.end());
         int some_value = 1729;
         result.fun(some_value);
         assert(some_value == 1730);
         R const expected = {{{1, 42}, {3, 42}, {5, 42}}};
-        assert(ranges::equal(data, expected));
+        assert(ranges::equal(pairs, expected));
     }
     {
-        auto data = values;
-        move_only_range elements{data};
-        auto result = for_each(elements.begin(), elements.end(), incr, get_second);
+        auto pairs = values;
+        move_only_range wrapped_pairs{pairs};
+        auto result = for_each(wrapped_pairs.begin(), wrapped_pairs.end(), incr, get_second);
         STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<move_only_range<P>>, decltype(incr)>>);
-        assert(result.in == elements.end());
+        assert(result.in == wrapped_pairs.end());
         int some_value = 1729;
         result.fun(some_value);
         assert(some_value == 1730);
         R const expected = {{{0, 43}, {2, 43}, {4, 43}}};
-        assert(ranges::equal(data, expected));
+        assert(ranges::equal(pairs, expected));
     }
 }
 

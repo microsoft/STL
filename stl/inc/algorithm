@@ -304,7 +304,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                _STD _C_invoke(_Func, _STD _C_invoke(_Proj, *_UFirst));
+                _C_invoke(_Func, _C_invoke(_Proj, *_UFirst));
             }
 
             _Seek_wrapped(_First, _STD move(_UFirst));
@@ -331,12 +331,12 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <input_iterator _It, class _Pj = identity, indirectly_unary_invocable<projected<_It, _Pj>> _Fn>
-        constexpr for_each_result<_It, _Fn> operator()(
+        constexpr for_each_n_result<_It, _Fn> operator()(
             _It _First, iter_difference_t<_It> _Count, _Fn _Func, _Pj _Proj = {}) const {
             if (0 < _Count) {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
                 do {
-                    _STD _C_invoke(_Func, _STD _C_invoke(_Proj, *_UFirst));
+                    _C_invoke(_Func, _C_invoke(_Proj, *_UFirst));
                     --_Count;
                     ++_UFirst;
                 } while (0 < _Count);
@@ -364,7 +364,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Proj, *_UFirst) == _Val) {
+                if (_C_invoke(_Proj, *_UFirst) == _Val) {
                     break;
                 }
             }
@@ -375,7 +375,8 @@ namespace ranges {
 
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Val, _Pass_fn(_Proj));
         }
         // clang-format on
@@ -406,7 +407,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     break;
                 }
             }
@@ -464,7 +465,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (!_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     break;
                 }
             }
@@ -531,7 +532,8 @@ namespace ranges {
         // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD constexpr iter_difference_t<_It> operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
 
             auto _UFirst                  = _Get_unwrapped(_STD move(_First));
@@ -539,7 +541,7 @@ namespace ranges {
             iter_difference_t<_It> _Count = 0;
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Proj, *_UFirst) == _Val) {
+                if (_C_invoke(_Proj, *_UFirst) == _Val) {
                     ++_Count;
                 }
             }
@@ -598,7 +600,7 @@ namespace ranges {
             const auto _ULast             = _Get_unwrapped(_STD move(_Last));
             iter_difference_t<_It> _Count = 0;
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     ++_Count;
                 }
             }
@@ -796,8 +798,8 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE mismatch_result
-    template <class _In, class _Out>
-    using mismatch_result = in_in_result<_In, _Out>;
+    template <class _In1, class _In2>
+    using mismatch_result = in_in_result<_In1, _In2>;
 
     // VARIABLE ranges::mismatch
     class _Mismatch_fn : private _Not_quite_object {
@@ -809,7 +811,7 @@ namespace ranges {
             auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
 
             for (; _Count != 0; ++_UFirst1, (void) ++_UFirst2, --_Count) {
-                if (!_STD _C_invoke(_Pred, _STD _C_invoke(_Proj1, *_UFirst1), _STD _C_invoke(_Proj2, *_UFirst2))) {
+                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_UFirst1), _C_invoke(_Proj2, *_UFirst2))) {
                     break;
                 }
             }
@@ -828,7 +830,7 @@ namespace ranges {
             const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
 
             for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
-                if (!_STD _C_invoke(_Pred, _STD _C_invoke(_Proj1, *_UFirst1), _STD _C_invoke(_Proj2, *_UFirst2))) {
+                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_UFirst1), _C_invoke(_Proj2, *_UFirst2))) {
                     break;
                 }
             }
@@ -897,7 +899,7 @@ namespace ranges {
         _NODISCARD static constexpr bool _Equal_count(
             _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
-                if (!_STD _C_invoke(_Pred, _STD _C_invoke(_Proj1, *_First1), _STD _C_invoke(_Proj2, *_First2))) {
+                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_First1), _C_invoke(_Proj2, *_First2))) {
                     return false;
                 }
             }
@@ -915,7 +917,7 @@ namespace ranges {
                     return false;
                 }
 
-                if (!_STD _C_invoke(_Pred, _STD _C_invoke(_Proj1, *_First1), _STD _C_invoke(_Proj2, *_First2))) {
+                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_First1), _C_invoke(_Proj2, *_First2))) {
                     return false;
                 }
 
@@ -935,10 +937,10 @@ namespace ranges {
             _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
-            const auto _ULast1 = _Get_unwrapped(_STD move(_Last1));
-            auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
-            const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
+            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
 
             if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
                 const auto _Count = _ULast1 - _UFirst1;
@@ -949,7 +951,7 @@ namespace ranges {
                 return _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2), _Count,
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                return _Equal_4(_STD move(_UFirst1), _ULast1, _STD move(_UFirst2), _ULast2,
+                return _Equal_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
@@ -1015,7 +1017,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (!_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     return false;
                 }
             }
@@ -1069,7 +1071,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     return true;
                 }
             }
@@ -1123,7 +1125,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     return false;
                 }
             }
@@ -1278,7 +1280,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD _C_invoke(_Pred, _STD _C_invoke(_Proj, *_UFirst))) {
+                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
                     *_Result = *_UFirst;
                     ++_Result;
                 }

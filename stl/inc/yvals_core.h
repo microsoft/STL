@@ -169,7 +169,7 @@
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
-// P1207R4 Movability of Single-Pass Iterators
+// P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
@@ -192,9 +192,9 @@
 // P1878R1 Constraining Readable Types
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
-// P1964R2 Replacing boolean with boolean-testable
+// P1964R2 Replacing boolean With boolean-testable
 // P2091R0 Fixing Issues With Range Access CPOs
-// P2102R0 Make "implicit expression variations" More Explicit
+// P2102R0 Making "Implicit Expression Variations" More Explicit
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:

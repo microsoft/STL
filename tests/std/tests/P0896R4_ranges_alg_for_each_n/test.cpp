@@ -5,11 +5,7 @@
 #include <array>
 #include <cassert>
 #include <concepts>
-#include <cstdlib>
-#include <functional>
 #include <ranges>
-#include <span>
-#include <type_traits>
 #include <utility>
 //
 #include <range_algorithm_support.hpp>
@@ -23,18 +19,18 @@ constexpr void smoke_test() {
     // Validate that for_each_n_result aliases in_fun_result
     STATIC_ASSERT(same_as<for_each_n_result<int, double>, in_fun_result<int, double>>);
 
-    R data    = {{{0, 42}, {2, 42}, {4, 42}}};
+    R pairs   = {{{0, 42}, {2, 42}, {4, 42}}};
     auto incr = [](auto& y) { ++y; };
 
-    move_only_range elements{data};
-    auto result = for_each_n(elements.begin(), ranges::distance(data), incr, get_first);
+    move_only_range wrapped_pairs{pairs};
+    auto result = for_each_n(wrapped_pairs.begin(), ranges::distance(pairs), incr, get_first);
     STATIC_ASSERT(same_as<decltype(result), for_each_n_result<iterator_t<move_only_range<P>>, decltype(incr)>>);
-    assert(result.in == elements.end());
+    assert(result.in == wrapped_pairs.end());
     int some_value = 1729;
     result.fun(some_value);
     assert(some_value == 1730);
     R const expected = {{{1, 42}, {3, 42}, {5, 42}}};
-    assert(ranges::equal(data, expected));
+    assert(ranges::equal(pairs, expected));
 }
 
 int main() {

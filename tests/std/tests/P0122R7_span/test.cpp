@@ -106,7 +106,7 @@ static_assert(!is_convertible_v<Derived (*)[], Base (*)[]>);
 
 struct NonRange {};
 
-template <typename T, bool Safe = false>
+template <typename T, bool Borrowed = false>
 struct BasicRange {
     T elements[3]{};
 
@@ -141,15 +141,15 @@ struct BasicRange {
 
 #ifdef __cpp_lib_concepts
 namespace std::ranges {
-    template <typename T, bool Safe>
-    inline constexpr bool enable_borrowed_range<BasicRange<T, Safe>> = Safe;
+    template <typename T, bool Borrowed>
+    inline constexpr bool enable_borrowed_range<BasicRange<T, Borrowed>> = Borrowed;
 }
 #endif // __cpp_lib_concepts
 
 using ContiguousSizedRange = BasicRange<int>;
 
 // Not truly a model of borrowed_range; this is a convenient fiction for testing purposes.
-using SafeContiguousSizedRange = BasicRange<int, true>;
+using BorrowedContiguousSizedRange = BasicRange<int, true>;
 
 template <typename T, size_t Extent = dynamic_extent>
 constexpr void FunctionTakingSpan(type_identity_t<span<T, Extent>>) {}
@@ -591,24 +591,24 @@ constexpr bool test() {
 
 #ifdef __cpp_lib_concepts
         static_assert(!is_constructible_v<span<int>, ContiguousSizedRange>);
-        static_assert(is_constructible_v<span<int>, SafeContiguousSizedRange>);
+        static_assert(is_constructible_v<span<int>, BorrowedContiguousSizedRange>);
         static_assert(is_constructible_v<span<const int>, ContiguousSizedRange>);
 
-        static_assert(is_convertible_v<SafeContiguousSizedRange, span<int>>);
+        static_assert(is_convertible_v<BorrowedContiguousSizedRange, span<int>>);
         static_assert(is_convertible_v<ContiguousSizedRange, span<const int>>);
 
-        SafeContiguousSizedRange safe_user_range;
+        BorrowedContiguousSizedRange borrowed_user_range;
 
-        span<int> sp_4(move(safe_user_range));
+        span<int> sp_4(move(borrowed_user_range));
         span<const int> sp_5(move(user_range));
 
-        assert(sp_4.data() == safe_user_range.data());
+        assert(sp_4.data() == borrowed_user_range.data());
         assert(sp_5.data() == user_range.data());
 
         assert(sp_4.size() == 3);
         assert(sp_5.size() == 3);
 
-        FunctionTakingSpan<int>(move(safe_user_range));
+        FunctionTakingSpan<int>(move(borrowed_user_range));
         FunctionTakingSpan<const int>(move(user_range));
 
         static_assert(is_same_v<decltype(span{user_range}), span<int>>);

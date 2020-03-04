@@ -5,11 +5,7 @@
 #include <array>
 #include <cassert>
 #include <concepts>
-#include <cstdlib>
-#include <functional>
 #include <ranges>
-#include <span>
-#include <type_traits>
 #include <utility>
 //
 #include <range_algorithm_support.hpp>
@@ -23,7 +19,7 @@ constexpr void smoke_test() {
     R const x                                    = {{{0, 42}, {2, 42}, {4, 42}}};
     std::array<std::pair<long, long>, 3> const y = {{{13, 0}, {13, 2}, {13, 5}}};
 
-    // Validate that mismatch_result aliases in_out_result
+    // Validate that mismatch_result aliases in_in_result
     STATIC_ASSERT(same_as<mismatch_result<int, double>, ranges::in_in_result<int, double>>);
 
     // Validate dangling story
@@ -52,7 +48,7 @@ constexpr void smoke_test() {
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
     {
-        // Validate sized iterator+sentinel pairs
+        // Validate sized iterator + sentinel pairs
         auto result = mismatch(x.begin(), x.end(), y.begin(), y.end(), equal_to{}, get_first, get_second);
         using I     = iterator_t<R const>;
         using O     = std::array<std::pair<long, long>, 3>::const_iterator;
@@ -61,12 +57,13 @@ constexpr void smoke_test() {
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
     {
-        // Validate non-sized iterator+sentinel pairs
-        move_only_range xx{x};
-        move_only_range yy{y};
-        auto result = mismatch(xx.begin(), xx.end(), yy.begin(), yy.end(), equal_to{}, get_first, get_second);
-        using I     = iterator_t<decltype(xx)>;
-        using O     = iterator_t<decltype(yy)>;
+        // Validate non-sized iterator + sentinel pairs
+        move_only_range wrapped_x{x};
+        move_only_range wrapped_y{y};
+        auto result = mismatch(
+            wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), equal_to{}, get_first, get_second);
+        using I = iterator_t<decltype(wrapped_x)>;
+        using O = iterator_t<decltype(wrapped_y)>;
         STATIC_ASSERT(same_as<decltype(result), mismatch_result<I, O>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));

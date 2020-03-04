@@ -267,7 +267,7 @@ struct test_iterator {
     }
     test_iterator operator--(int) & requires at_least<std::bidirectional_iterator_tag> {}
 
-    // random access iterator operations:
+    // random-access iterator operations:
     boolish operator<(test_iterator const&) const requires at_least<std::random_access_iterator_tag> {
         return {};
     }
@@ -328,7 +328,7 @@ struct std::pointer_traits<::test_iterator<std::contiguous_iterator_tag, ValueTy
     using element_type    = ValueType;
     using difference_type = ptrdiff_t;
 
-    [[nodiscard]] static constexpr element_type* to_address(const pointer) noexcept {
+    [[nodiscard]] static constexpr element_type* to_address(pointer) noexcept {
         return nullptr;
     }
 };

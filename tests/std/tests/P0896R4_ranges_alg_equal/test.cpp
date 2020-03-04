@@ -34,22 +34,24 @@ constexpr void smoke_test() {
         assert(!equal(move_only_range{x}, move_only_range{y}, cmp, get_first, get_first));
     }
     {
-        // Validate sized iterator+sentinel pairs
+        // Validate sized iterator + sentinel pairs
         auto result = equal(x.begin(), x.end(), y.begin(), y.end(), cmp, get_first, get_second);
         STATIC_ASSERT(same_as<decltype(result), bool>);
         assert(result);
         assert(!equal(x.begin(), x.end(), y.begin(), y.end(), cmp, get_first, get_first));
     }
     {
-        // Validate non-sized iterator+sentinel pairs
-        move_only_range xx{x};
-        move_only_range yy{y};
-        auto result = equal(xx.begin(), xx.end(), yy.begin(), yy.end(), cmp, get_first, get_second);
+        // Validate non-sized iterator + sentinel pairs
+        move_only_range wrapped_x{x};
+        move_only_range wrapped_y{y};
+        auto result =
+            equal(wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), cmp, get_first, get_second);
         STATIC_ASSERT(same_as<decltype(result), bool>);
         assert(result);
-        xx = move_only_range{x};
-        yy = move_only_range{y};
-        assert(!equal(xx.begin(), xx.end(), yy.begin(), yy.end(), cmp, get_first, get_first));
+        wrapped_x = move_only_range{x};
+        wrapped_y = move_only_range{y};
+        assert(
+            !equal(wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), cmp, get_first, get_first));
     }
     {
         // calls with sized ranges of differing size perform no comparisons nor projections

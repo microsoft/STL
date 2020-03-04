@@ -18,35 +18,35 @@ constexpr void smoke_test() {
     STATIC_ASSERT(same_as<decltype(find(borrowed<false>{}, 42)), ranges::dangling>);
     STATIC_ASSERT(same_as<decltype(find(borrowed<true>{}, 42)), int*>);
 
-    std::array<P, 3> const data = {{{0, 42}, {2, 42}, {4, 42}}};
+    std::array<P, 3> const pairs = {{{0, 42}, {2, 42}, {4, 42}}};
 
-    for (auto [value, _] : data) {
+    for (auto [value, _] : pairs) {
         {
             // Validate range overload [found case]
-            auto result = find(move_only_range{data}, value, get_first);
+            auto result = find(move_only_range{pairs}, value, get_first);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
             assert((*result).first == value);
         }
         {
-            // Validate iterator+sentinel overload [found case]
-            move_only_range x{data};
-            auto result = find(x.begin(), x.end(), value, get_first);
+            // Validate iterator + sentinel overload [found case]
+            move_only_range wrapped_pairs{pairs};
+            auto result = find(wrapped_pairs.begin(), wrapped_pairs.end(), value, get_first);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
             assert((*result).first == value);
         }
     }
     {
         // Validate range overload [not found case]
-        auto result = find(move_only_range{data}, 42, get_first);
+        auto result = find(move_only_range{pairs}, 42, get_first);
         STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
-        assert(result == move_only_range{data}.end());
+        assert(result == move_only_range{pairs}.end());
     }
     {
-        // Validate iterator+sentinel overload [not found case]
-        move_only_range x{data};
-        auto result = find(x.begin(), x.end(), 42, get_first);
+        // Validate iterator + sentinel overload [not found case]
+        move_only_range wrapped_pairs{pairs};
+        auto result = find(wrapped_pairs.begin(), wrapped_pairs.end(), 42, get_first);
         STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
-        assert(result == x.end());
+        assert(result == wrapped_pairs.end());
     }
 }
 

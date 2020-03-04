@@ -5,11 +5,7 @@
 #include <array>
 #include <cassert>
 #include <concepts>
-#include <cstdlib>
-#include <functional>
 #include <ranges>
-#include <span>
-#include <type_traits>
 #include <utility>
 //
 #include <range_algorithm_support.hpp>
@@ -30,9 +26,9 @@ constexpr void smoke_test() {
         assert(result == 3);
     }
     {
-        // Validate iterator+sentinel overload
-        move_only_range xx{x};
-        auto result = count_if(xx.begin(), xx.end(), is_odd, get_first);
+        // Validate iterator + sentinel overload
+        move_only_range wrapped_x{x};
+        auto result = count_if(wrapped_x.begin(), wrapped_x.end(), is_odd, get_first);
         STATIC_ASSERT(std::same_as<decltype(result), D>);
         assert(result == 2);
     }

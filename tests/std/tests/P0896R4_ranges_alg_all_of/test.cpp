@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <concepts>
+#include <ranges>
+#include <utility>
 //
 #include <range_algorithm_support.hpp>
 
@@ -15,27 +16,27 @@ using R = std::array<std::pair<int, int>, 3>;
 
 constexpr void smoke_test() {
     using ranges::all_of;
-    constexpr R data = {{{0, 13}, {2, 13}, {4, 13}}};
+    constexpr R pairs = {{{0, 13}, {2, 13}, {4, 13}}};
 
-    assert(all_of(move_only_range{data}, is_even, get_first));
-    assert(!all_of(move_only_range{data}, is_even, get_second));
-    assert(!all_of(move_only_range{data}, is_odd, get_first));
-    assert(all_of(move_only_range{data}, is_odd, get_second));
+    assert(all_of(move_only_range{pairs}, is_even, get_first));
+    assert(!all_of(move_only_range{pairs}, is_even, get_second));
+    assert(!all_of(move_only_range{pairs}, is_odd, get_first));
+    assert(all_of(move_only_range{pairs}, is_odd, get_second));
     {
-        move_only_range elements{data};
-        assert(all_of(elements.begin(), elements.end(), is_even, get_first));
+        move_only_range wrapped_pairs{pairs};
+        assert(all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_even, get_first));
     }
     {
-        move_only_range elements{data};
-        assert(!all_of(elements.begin(), elements.end(), is_even, get_second));
+        move_only_range wrapped_pairs{pairs};
+        assert(!all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_even, get_second));
     }
     {
-        move_only_range elements{data};
-        assert(!all_of(elements.begin(), elements.end(), is_odd, get_first));
+        move_only_range wrapped_pairs{pairs};
+        assert(!all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_odd, get_first));
     }
     {
-        move_only_range elements{data};
-        assert(all_of(elements.begin(), elements.end(), is_odd, get_second));
+        move_only_range wrapped_pairs{pairs};
+        assert(all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_odd, get_second));
     }
 }
 

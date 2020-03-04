@@ -2358,7 +2358,7 @@ namespace test_object_concepts {
 } // namespace test_object_concepts
 
 namespace test_boolean_testable {
-    // Note: other than knowing the secret internal concept name, this is a portable/blackboc test.
+    // Note: other than knowing the secret internal concept name, this is a portable test.
     using std::_Boolean_testable;
 
     // Better have these four, since we use them as examples in the Standard.

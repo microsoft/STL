@@ -31,13 +31,13 @@ constexpr void smoke_test() {
         assert(result.out == move_only_range{output}.end());
         assert(ranges::equal(output, input));
     }
-    { // Validate iterator+sentinel overload
+    { // Validate iterator + sentinel overload
         int output[] = {-1, -1, -1};
-        move_only_range x{input};
-        auto result = copy(x.begin(), x.end(), move_only_range{output}.begin());
+        move_only_range wrapped_input{input};
+        auto result = copy(wrapped_input.begin(), wrapped_input.end(), move_only_range{output}.begin());
         STATIC_ASSERT(same_as<decltype(result),
             copy_result<iterator_t<move_only_range<int const>>, iterator_t<move_only_range<int>>>>);
-        assert(result.in == x.end());
+        assert(result.in == wrapped_input.end());
         assert(result.out == move_only_range{output}.end());
         assert(ranges::equal(output, input));
     }
