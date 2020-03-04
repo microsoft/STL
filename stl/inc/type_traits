@@ -1485,7 +1485,7 @@ class reference_wrapper;
 
 // FUNCTION TEMPLATE invoke
 #pragma warning(push) // TRANSITION, DevCom-936696
-#pragma warning(disable: 28278) // Function '%s' appears with no prototype in scope
+#pragma warning(disable : 28278) // Function '%s' appears with no prototype in scope
 enum class _Invoker_strategy {
     _Functor,
     _Pmf_object,
@@ -1496,7 +1496,7 @@ enum class _Invoker_strategy {
     _Pmd_pointer
 };
 
-struct _Invoker_functor { // INVOKE a function object
+struct _Invoker_functor {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Functor;
 
     template <class _Callable, class... _Types>
@@ -1507,7 +1507,7 @@ struct _Invoker_functor { // INVOKE a function object
     }
 };
 
-struct _Invoker_pmf_object { // INVOKE a pointer to member function on an object
+struct _Invoker_pmf_object {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_object;
 
     template <class _Decayed, class _Ty1, class... _Types2>
@@ -1591,7 +1591,7 @@ struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, true>
               _Invoker_pmd_pointer>> {}; // pointer to member data
 
 template <class _Callable, class _Ty1, class _Removed_cvref>
-struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {}; // function object
+struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 template <class _Callable>
 _CONSTEXPR20 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
