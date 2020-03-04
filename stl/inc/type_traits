@@ -1484,7 +1484,30 @@ class reference_wrapper;
 // implementations. TRANSITION, P1065R2
 
 // FUNCTION TEMPLATE invoke
+enum class _Invoker_strategy {
+    _Functor,
+    _Pmf_object,
+    _Pmf_refwrap,
+    _Pmf_pointer,
+    _Pmd_object,
+    _Pmd_refwrap,
+    _Pmd_pointer
+};
+
+struct _Invoker_functor { // INVOKE a function object
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Functor;
+
+    template <class _Callable, class... _Types>
+    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
+        noexcept(_STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...)))
+        -> decltype(_STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...)) {
+        return _STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...);
+    }
+};
+
 struct _Invoker_pmf_object { // INVOKE a pointer to member function on an object
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_object;
+
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
         noexcept((_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...)))
@@ -1493,7 +1516,9 @@ struct _Invoker_pmf_object { // INVOKE a pointer to member function on an object
     }
 };
 
-struct _Invoker_pmf_refwrap { // INVOKE a pointer to member function on a reference_wrapper
+struct _Invoker_pmf_refwrap {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_refwrap;
+
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
         noexcept((_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...)))
@@ -1502,7 +1527,9 @@ struct _Invoker_pmf_refwrap { // INVOKE a pointer to member function on a refere
     }
 };
 
-struct _Invoker_pmf_pointer { // INVOKE a pointer to member function on a [smart] pointer
+struct _Invoker_pmf_pointer {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_pointer;
+
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
         noexcept(((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...)))
@@ -1511,7 +1538,9 @@ struct _Invoker_pmf_pointer { // INVOKE a pointer to member function on a [smart
     }
 };
 
-struct _Invoker_pmd_object { // INVOKE a pointer to member data on an object
+struct _Invoker_pmd_object {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_object;
+
     template <class _Decayed, class _Ty1>
     static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(_STD forward<_Ty1>(_Arg1).*_Pmd))
         -> decltype(_STD forward<_Ty1>(_Arg1).*_Pmd) {
@@ -1519,7 +1548,9 @@ struct _Invoker_pmd_object { // INVOKE a pointer to member data on an object
     }
 };
 
-struct _Invoker_pmd_refwrap { // INVOKE a pointer to member data on a reference_wrapper
+struct _Invoker_pmd_refwrap {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_refwrap;
+
     template <class _Decayed, class _Ty1>
     static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(_STD forward<_Ty1>(_Arg1).get().*_Pmd))
         -> decltype(_STD forward<_Ty1>(_Arg1).get().*_Pmd) {
@@ -1527,19 +1558,13 @@ struct _Invoker_pmd_refwrap { // INVOKE a pointer to member data on a reference_
     }
 };
 
-struct _Invoker_pmd_pointer { // INVOKE a pointer to member data on a [smart] pointer
+struct _Invoker_pmd_pointer {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
+
     template <class _Decayed, class _Ty1>
     static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*_STD forward<_Ty1>(_Arg1)).*_Pmd))
         -> decltype((*_STD forward<_Ty1>(_Arg1)).*_Pmd) {
         return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;
-    }
-};
-
-struct _Invoker_functor { // INVOKE a function object
-    template <class _Callable, class... _Types>
-    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
-        noexcept(_STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...))) {
-        return _STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...);
     }
 };
 
@@ -1575,20 +1600,85 @@ struct _Invoker<_Callable> : _Invoker_functor {}; // zero arguments
 template <class _Callable, class _Ty1, class... _Types2>
 struct _Invoker<_Callable, _Ty1, _Types2...> : _Invoker1<_Callable, _Ty1> {}; // one or more arguments
 
-template <class _Callable, class... _Types>
-constexpr auto invoke(_Callable&& _Obj, _Types&&... _Args) noexcept(
-    noexcept(_Invoker<_Callable, _Types...>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...)))
-    -> decltype(_Invoker<_Callable, _Types...>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...)) {
-    return _Invoker<_Callable, _Types...>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...);
+template <class _Callable>
+_CONSTEXPR20 auto invoke(_Callable&& _Obj) noexcept(noexcept(_STD forward<_Callable>(_Obj)()))
+    -> decltype(_STD forward<_Callable>(_Obj)()) {
+    return _STD forward<_Callable>(_Obj)();
+}
+
+template <class _Callable, class _Ty1, class... _Types2>
+_CONSTEXPR20 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+    noexcept(_Invoker<_Callable, _Ty1, _Types2...>::_Call(
+        _STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...)))
+    -> decltype(_Invoker<_Callable, _Ty1, _Types2...>::_Call(
+        _STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...)) {
+#if _HAS_IF_CONSTEXPR
+    if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Functor) {
+        return _STD forward<_Callable>(_Obj)(_STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmf_object) {
+        auto _Pmf = _Obj;
+        return (_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
+        auto _Pmf = _Obj;
+        return (_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
+        auto _Pmf = _Obj;
+        return ((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmd_object) {
+        auto _Pmd = _Obj;
+        return _STD forward<_Ty1>(_Arg1).*_Pmd;
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+        auto _Pmd = _Obj;
+        return _STD forward<_Ty1>(_Arg1).get().*_Pmd;
+    } else {
+        static_assert(
+            _Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in invoke");
+        auto _Pmd = _Obj;
+        return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;
+    }
+#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
+    return _Invoker<_Callable, _Ty1, _Types2...>::_Call(
+        _STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+#endif // _HAS_IF_CONSTEXPR
 }
 
 #if _HAS_CXX17
 // constexpr IMPLEMENTATION OF invoke
-template <class _Callable, class... _Types>
-constexpr auto _C_invoke(_Callable&& _Obj, _Types&&... _Args) noexcept(
-    noexcept(_Invoker<_Callable, _Types...>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...)))
-    -> decltype(_Invoker<_Callable, _Types...>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...)) {
-    return _Invoker<_Callable, _Types...>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...);
+template <class _Callable>
+constexpr auto _C_invoke(_Callable&& _Obj) noexcept(noexcept(_STD forward<_Callable>(_Obj)()))
+    -> decltype(_STD forward<_Callable>(_Obj)()) {
+    return _STD forward<_Callable>(_Obj)();
+}
+
+template <class _Callable, class _Ty1, class... _Types2>
+constexpr auto _C_invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+    noexcept(_Invoker<_Callable, _Ty1, _Types2...>::_Call(
+        _STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...)))
+    -> decltype(_Invoker<_Callable, _Ty1, _Types2...>::_Call(
+        _STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...)) {
+    if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Functor) {
+        return _STD forward<_Callable>(_Obj)(_STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmf_object) {
+        auto _Pmf = _Obj;
+        return (_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
+        auto _Pmf = _Obj;
+        return (_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
+        auto _Pmf = _Obj;
+        return ((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmd_object) {
+        auto _Pmd = _Obj;
+        return _STD forward<_Ty1>(_Arg1).*_Pmd;
+    } else if constexpr (_Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+        auto _Pmd = _Obj;
+        return _STD forward<_Ty1>(_Arg1).get().*_Pmd;
+    } else {
+        static_assert(
+            _Invoker<_Callable, _Ty1, _Types2...>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in _C_invoke");
+        auto _Pmd = _Obj;
+        return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;
+    }
 }
 #endif // _HAS_CXX17
 
