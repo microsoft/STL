@@ -1484,6 +1484,8 @@ class reference_wrapper;
 // implementations. TRANSITION, P1065R2
 
 // FUNCTION TEMPLATE invoke
+#pragma warning(push) // TRANSITION, DevCom-936696
+#pragma warning(disable: 28278) // Function '%s' appears with no prototype in scope
 enum class _Invoker_strategy {
     _Functor,
     _Pmf_object,
@@ -1670,6 +1672,8 @@ constexpr auto _C_invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
     }
 }
 #endif // _HAS_CXX17
+
+#pragma warning(pop) // TRANSITION, DevCom-936696
 
 template <class _Rx, bool = is_void_v<_Rx>>
 struct _Invoker_ret {}; // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
