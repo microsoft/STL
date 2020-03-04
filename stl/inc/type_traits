@@ -1499,9 +1499,9 @@ struct _Invoker_functor { // INVOKE a function object
 
     template <class _Callable, class... _Types>
     static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
-        noexcept(_STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...)))
-        -> decltype(_STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...)) {
-        return _STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...);
+        noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)))
+        -> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
+        return static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...);
     }
 };
 
@@ -1510,9 +1510,9 @@ struct _Invoker_pmf_object { // INVOKE a pointer to member function on an object
 
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept((_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...)))
-        -> decltype((_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...)) {
-        return (_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
 
@@ -1521,9 +1521,9 @@ struct _Invoker_pmf_refwrap {
 
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept((_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...)))
-        -> decltype((_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...)) {
-        return (_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        noexcept((static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype((static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return (static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
 
@@ -1532,9 +1532,9 @@ struct _Invoker_pmf_pointer {
 
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept(((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...)))
-        -> decltype(((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...)) {
-        return ((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
 
@@ -1542,9 +1542,9 @@ struct _Invoker_pmd_object {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_object;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(_STD forward<_Ty1>(_Arg1).*_Pmd))
-        -> decltype(_STD forward<_Ty1>(_Arg1).*_Pmd) {
-        return _STD forward<_Ty1>(_Arg1).*_Pmd;
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(static_cast<_Ty1&&>(_Arg1).*_Pmd))
+        -> decltype(static_cast<_Ty1&&>(_Arg1).*_Pmd) {
+        return static_cast<_Ty1&&>(_Arg1).*_Pmd;
     }
 };
 
@@ -1552,9 +1552,9 @@ struct _Invoker_pmd_refwrap {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_refwrap;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(_STD forward<_Ty1>(_Arg1).get().*_Pmd))
-        -> decltype(_STD forward<_Ty1>(_Arg1).get().*_Pmd) {
-        return _STD forward<_Ty1>(_Arg1).get().*_Pmd;
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(static_cast<_Ty1&&>(_Arg1).get().*_Pmd))
+        -> decltype(static_cast<_Ty1&&>(_Arg1).get().*_Pmd) {
+        return static_cast<_Ty1&&>(_Arg1).get().*_Pmd;
     }
 };
 
@@ -1562,9 +1562,9 @@ struct _Invoker_pmd_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*_STD forward<_Ty1>(_Arg1)).*_Pmd))
-        -> decltype((*_STD forward<_Ty1>(_Arg1)).*_Pmd) {
-        return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd))
+        -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
+        return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 };
 
@@ -1592,79 +1592,81 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {}; // function object
 
 template <class _Callable>
-_CONSTEXPR20 auto invoke(_Callable&& _Obj) noexcept(noexcept(_STD forward<_Callable>(_Obj)()))
-    -> decltype(_STD forward<_Callable>(_Obj)()) {
-    return _STD forward<_Callable>(_Obj)();
+_CONSTEXPR20 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+    -> decltype(static_cast<_Callable&&>(_Obj)()) {
+    return static_cast<_Callable&&>(_Obj)();
 }
 
 template <class _Callable, class _Ty1, class... _Types2>
 _CONSTEXPR20 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-    noexcept(_Invoker1<_Callable, _Ty1>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1),
-        _STD forward<_Types2>(_Args2)...))) -> decltype(_Invoker1<_Callable, _Ty1>::_Call(_STD forward<_Callable>(_Obj),
-    _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...)) {
+    noexcept(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
+    -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
 #if _HAS_IF_CONSTEXPR
     if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
-        return _STD forward<_Callable>(_Obj)(_STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+        return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
         auto _Pmf = _Obj;
-        return (_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
         auto _Pmf = _Obj;
-        return (_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        return (static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
         auto _Pmf = _Obj;
-        return ((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
         auto _Pmd = _Obj;
-        return _STD forward<_Ty1>(_Arg1).*_Pmd;
+        return static_cast<_Ty1&&>(_Arg1).*_Pmd;
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
         auto _Pmd = _Obj;
-        return _STD forward<_Ty1>(_Arg1).get().*_Pmd;
+        return static_cast<_Ty1&&>(_Arg1).get().*_Pmd;
     } else {
         static_assert(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in invoke");
         auto _Pmd = _Obj;
-        return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;
+        return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
     return _Invoker1<_Callable, _Ty1>::_Call(
-        _STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
 #endif // _HAS_IF_CONSTEXPR
 }
 
 #if _HAS_CXX17
 // constexpr IMPLEMENTATION OF invoke
 template <class _Callable>
-constexpr auto _C_invoke(_Callable&& _Obj) noexcept(noexcept(_STD forward<_Callable>(_Obj)()))
-    -> decltype(_STD forward<_Callable>(_Obj)()) {
-    return _STD forward<_Callable>(_Obj)();
+constexpr auto _C_invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+    -> decltype(static_cast<_Callable&&>(_Obj)()) {
+    return static_cast<_Callable&&>(_Obj)();
 }
 
 template <class _Callable, class _Ty1, class... _Types2>
 constexpr auto _C_invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-    noexcept(_Invoker1<_Callable, _Ty1>::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1),
-        _STD forward<_Types2>(_Args2)...))) -> decltype(_Invoker1<_Callable, _Ty1>::_Call(_STD forward<_Callable>(_Obj),
-    _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...)) {
+    noexcept(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
+    -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
     if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
-        return _STD forward<_Callable>(_Obj)(_STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+        return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
         auto _Pmf = _Obj;
-        return (_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
         auto _Pmf = _Obj;
-        return (_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        return (static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
         auto _Pmf = _Obj;
-        return ((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...);
+        return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
         auto _Pmd = _Obj;
-        return _STD forward<_Ty1>(_Arg1).*_Pmd;
+        return static_cast<_Ty1&&>(_Arg1).*_Pmd;
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
         auto _Pmd = _Obj;
-        return _STD forward<_Ty1>(_Arg1).get().*_Pmd;
+        return static_cast<_Ty1&&>(_Arg1).get().*_Pmd;
     } else {
         static_assert(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in _C_invoke");
         auto _Pmd = _Obj;
-        return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;
+        return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 }
 #endif // _HAS_CXX17
@@ -1928,8 +1930,8 @@ public:
     }
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) const -> decltype(_STD invoke(get(), _STD forward<_Types>(_Args)...)) {
-        return _STD invoke(get(), _STD forward<_Types>(_Args)...);
+    auto operator()(_Types&&... _Args) const -> decltype(_STD invoke(get(), static_cast<_Types&&>(_Args)...)) {
+        return _STD invoke(get(), static_cast<_Types&&>(_Args)...);
     }
 
 private:
