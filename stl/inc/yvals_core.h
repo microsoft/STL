@@ -187,7 +187,7 @@
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
-// P1870R1 safe_range
+// P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
 // P1872R0 span Should Have size_type, Not index_type
 // P1878R1 Constraining Readable Types
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
