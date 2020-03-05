@@ -722,6 +722,25 @@ STATIC_ASSERT(__cpp_lib_chrono == 201510L);
 #endif
 
 
+// Always defined to varying values (C++14 versus C++20-and-newer mode).
+
+#ifndef __cpp_lib_shared_ptr_arrays
+#error BOOM
+#elif CXX20_MODE
+#if __cpp_lib_shared_ptr_arrays != 201707L
+#error BOOM
+#else
+STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201707L);
+#endif
+#else
+#if __cpp_lib_shared_ptr_arrays != 201611L
+#error BOOM
+#else
+STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
+#endif
+#endif
+
+
 // Always defined to specific values.
 
 #ifndef __cpp_lib_addressof_constexpr
@@ -946,14 +965,6 @@ STATIC_ASSERT(__cpp_lib_robust_nonmodifying_seq_ops == 201304L);
 #error BOOM
 #else
 STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
-#endif
-
-#ifndef __cpp_lib_shared_ptr_arrays
-#error BOOM
-#elif __cpp_lib_shared_ptr_arrays != 201611L
-#error BOOM
-#else
-STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
 #endif
 
 #ifdef _M_CEE
