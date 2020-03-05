@@ -2643,6 +2643,10 @@ namespace ranges {
     };
     // clang-format on
 
+    // ALIAS TEMPLATE ranges::range_size_t
+    template <sized_range _Rng>
+    using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
+
     // STRUCT ranges::view_base
     struct view_base {};
 
