@@ -2772,19 +2772,8 @@ namespace ranges {
     struct view_base {};
 
     // VARIABLE TEMPLATE ranges::enable_view
-    // clang-format off
     template <class _Ty>
-    concept _Enable_view_impl = derived_from<_Ty, view_base> || !range<_Ty> || !range<const _Ty>
-        || same_as<range_reference_t<_Ty>, range_reference_t<const _Ty>>;
-    // clang-format on
-
-    template <class _Ty>
-    inline constexpr bool enable_view = _Enable_view_impl<_Ty>;
-
-    template <class _Ty>
-    inline constexpr bool enable_view<initializer_list<_Ty>> = false;
-
-    // enable_view specializations for (unordered_)?(multi)?set and match_results are in the corresponding headers.
+    inline constexpr bool enable_view = derived_from<_Ty, view_base>;
 
     // clang-format off
     // CONCEPT ranges::view

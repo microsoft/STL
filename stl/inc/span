@@ -260,6 +260,8 @@ class span;
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _Ty, size_t _Extent>
+    inline constexpr bool enable_view<span<_Ty, _Extent>> = _Extent == 0 || _Extent == dynamic_extent;
+    template <class _Ty, size_t _Extent>
     inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
 } // namespace ranges
 

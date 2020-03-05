@@ -938,13 +938,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 template <class _BidIt, class _Allocator = allocator<sub_match<_BidIt>>>
 class match_results;
 
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _BidIt, class _Allocator>
-    inline constexpr bool enable_view<match_results<_BidIt, _Allocator>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type _Flags = regex_constants::format_default);
