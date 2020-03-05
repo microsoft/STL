@@ -441,7 +441,6 @@ int main() {
     test_make_shared_array_known_bounds();
     test_make_shared_array_unknown_bounds();
 
-
     test_allocate_shared_not_array();
     test_allocate_shared_array_known_bounds();
     test_allocate_shared_array_unknown_bounds();
