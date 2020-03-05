@@ -304,7 +304,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                _C_invoke(_Func, _C_invoke(_Proj, *_UFirst));
+                _STD invoke(_Func, _STD invoke(_Proj, *_UFirst));
             }
 
             _Seek_wrapped(_First, _STD move(_UFirst));
@@ -336,7 +336,7 @@ namespace ranges {
             if (0 < _Count) {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
                 do {
-                    _C_invoke(_Func, _C_invoke(_Proj, *_UFirst));
+                    _STD invoke(_Func, _STD invoke(_Proj, *_UFirst));
                     --_Count;
                     ++_UFirst;
                 } while (0 < _Count);
@@ -364,7 +364,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Proj, *_UFirst) == _Val) {
+                if (_STD invoke(_Proj, *_UFirst) == _Val) {
                     break;
                 }
             }
@@ -407,7 +407,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     break;
                 }
             }
@@ -465,7 +465,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     break;
                 }
             }
@@ -541,7 +541,7 @@ namespace ranges {
             iter_difference_t<_It> _Count = 0;
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Proj, *_UFirst) == _Val) {
+                if (_STD invoke(_Proj, *_UFirst) == _Val) {
                     ++_Count;
                 }
             }
@@ -600,7 +600,7 @@ namespace ranges {
             const auto _ULast             = _Get_unwrapped(_STD move(_Last));
             iter_difference_t<_It> _Count = 0;
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     ++_Count;
                 }
             }
@@ -811,7 +811,7 @@ namespace ranges {
             auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
 
             for (; _Count != 0; ++_UFirst1, (void) ++_UFirst2, --_Count) {
-                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_UFirst1), _C_invoke(_Proj2, *_UFirst2))) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
                     break;
                 }
             }
@@ -830,7 +830,7 @@ namespace ranges {
             const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
 
             for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
-                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_UFirst1), _C_invoke(_Proj2, *_UFirst2))) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
                     break;
                 }
             }
@@ -899,7 +899,7 @@ namespace ranges {
         _NODISCARD static constexpr bool _Equal_count(
             _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
-                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_First1), _C_invoke(_Proj2, *_First2))) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                     return false;
                 }
             }
@@ -917,7 +917,7 @@ namespace ranges {
                     return false;
                 }
 
-                if (!_C_invoke(_Pred, _C_invoke(_Proj1, *_First1), _C_invoke(_Proj2, *_First2))) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                     return false;
                 }
 
@@ -1017,7 +1017,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     return false;
                 }
             }
@@ -1071,7 +1071,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     return true;
                 }
             }
@@ -1125,7 +1125,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     return false;
                 }
             }
@@ -1280,7 +1280,7 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             for (; _UFirst != _ULast; ++_UFirst) {
-                if (_C_invoke(_Pred, _C_invoke(_Proj, *_UFirst))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
                     *_Result = *_UFirst;
                     ++_Result;
                 }
