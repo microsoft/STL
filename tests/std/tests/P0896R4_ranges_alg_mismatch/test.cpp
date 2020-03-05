@@ -32,27 +32,27 @@ constexpr void smoke_test() {
     {
         // Validate sized ranges
         auto result = mismatch(x, y, equal_to{}, get_first, get_second);
-        using I     = iterator_t<R const>;
-        using O     = std::array<std::pair<long, long>, 3>::const_iterator;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I, O>>);
+        using I1    = iterator_t<R const>;
+        using I2    = std::array<std::pair<long, long>, 3>::const_iterator;
+        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
     {
         // Validate non-sized ranges
         auto result = mismatch(move_only_range{x}, move_only_range{y}, equal_to{}, get_first, get_second);
-        using I     = iterator_t<move_only_range<P const>>;
-        using O     = iterator_t<move_only_range<std::pair<long, long> const>>;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I, O>>);
+        using I1    = iterator_t<move_only_range<P const>>;
+        using I2    = iterator_t<move_only_range<std::pair<long, long> const>>;
+        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
     {
         // Validate sized iterator + sentinel pairs
         auto result = mismatch(x.begin(), x.end(), y.begin(), y.end(), equal_to{}, get_first, get_second);
-        using I     = iterator_t<R const>;
-        using O     = std::array<std::pair<long, long>, 3>::const_iterator;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I, O>>);
+        using I1    = iterator_t<R const>;
+        using I2    = std::array<std::pair<long, long>, 3>::const_iterator;
+        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
@@ -62,9 +62,9 @@ constexpr void smoke_test() {
         move_only_range wrapped_y{y};
         auto result = mismatch(
             wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), equal_to{}, get_first, get_second);
-        using I = iterator_t<decltype(wrapped_x)>;
-        using O = iterator_t<decltype(wrapped_y)>;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I, O>>);
+        using I1 = iterator_t<decltype(wrapped_x)>;
+        using I2 = iterator_t<decltype(wrapped_y)>;
+        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
