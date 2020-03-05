@@ -342,6 +342,8 @@ void forward_list_test() {
         is_nothrow_default_constructible_v<forward_list<int>>, "strengthened noexcept on forward_list::forward_list()");
     static_assert(is_nothrow_move_constructible_v<forward_list<int>>,
         "strengthened noexcept on forward_list::forward_list(forward_list&&)");
+static_assert(is_nothrow_move_assignable_v<forward_list<int>>,
+    "strengthened noexcept on forward_list& forward_list::operator=(forward_list&&)");
 
     forward_list<int> value{};
     swap_test(value);
