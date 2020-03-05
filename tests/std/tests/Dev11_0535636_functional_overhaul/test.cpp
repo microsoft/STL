@@ -1062,7 +1062,7 @@ void test_reference_wrapper_invocation() {
 // Test C++17 invoke().
 #if _HAS_CXX17
 constexpr bool test_invoke_constexpr() {
-    // MSVC implements LWG-2894 as a DR back to C++17
+    // MSVC implements LWG-2894 in C++17 and later
     Thing thing;
     auto p = &thing;
 
