@@ -19,6 +19,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#define _CONCATX(x, y) x##y
+#define _CONCAT(x, y)  _CONCATX(x, y)
+
 // Interlocked intrinsic mapping for _nf/_acq/_rel
 #if defined(_M_CEE_PURE) || defined(_M_IX86) || defined(_M_X64)
 #define _INTRIN_RELAXED(x) x

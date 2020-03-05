@@ -1459,7 +1459,7 @@ _NODISCARD constexpr size_t _Variant_visit_index1(size_t _Acc, const _FirstTy& _
 
 template <class _Callable, class... _Types>
 using _Variant_visit_result_t =
-    decltype(_C_invoke(_STD declval<_Callable>(), _Variant_raw_get<0>(_STD declval<_Types>()._Storage())...));
+    decltype(_STD invoke(_STD declval<_Callable>(), _Variant_raw_get<0>(_STD declval<_Types>()._Storage())...));
 
 template <class>
 struct _Variant_dispatcher;
@@ -1475,12 +1475,12 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
         }
 #if _HAS_CXX20
         else if constexpr (is_void_v<_Ret>) {
-            static_cast<void>(_C_invoke(
+            static_cast<void>(_STD invoke(
                 static_cast<_Callable&&>(_Obj), _Variant_raw_get<_Is - 1>(static_cast<_Types&&>(_Args)._Storage())...));
         }
 #endif // _HAS_CXX20
         else {
-            return _C_invoke(
+            return _STD invoke(
                 static_cast<_Callable&&>(_Obj), _Variant_raw_get<_Is - 1>(static_cast<_Types&&>(_Args)._Storage())...);
         }
     }
@@ -1504,7 +1504,7 @@ template <class _Callable, size_t... _Idxs, class... _Variants>
 struct _Variant_single_visit_result<_Callable, index_sequence<_Idxs...>,
     _Variants...> { // result type/category from invoking _Callable with the elements of
                     // _Variants... at (_Idxs - 1)...
-    using type = decltype(_C_invoke(_STD declval<_Callable>(),
+    using type = decltype(_STD invoke(_STD declval<_Callable>(),
         _Variant_raw_get<_Idxs == 0 ? 0 : _Idxs - 1>(_STD declval<_Variants>()._Storage())...));
 };
 

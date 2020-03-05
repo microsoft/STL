@@ -949,7 +949,7 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&.
 template <class _Callable, class _Tuple, size_t... _Indices>
 constexpr decltype(auto) _Apply_impl(
     _Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) { // invoke _Obj with the elements of _Tpl
-    return _C_invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
+    return _STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 #pragma warning(pop)
 
