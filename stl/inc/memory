@@ -12,7 +12,6 @@
 #include <iosfwd>
 #include <type_traits>
 #include <typeinfo>
-#include <utility>
 #include <xmemory>
 
 #pragma pack(push, _CRT_PACKING)
