@@ -993,7 +993,7 @@ void test_reference_wrapper_invocation() {
     assert(i == 10);
 
 #ifndef __EDG__ // TRANSITION, DevCom-939485
-    const auto noexcept_lambda = []() noexcept {};
+    const auto noexcept_lambda     = []() noexcept {};
     const auto noexcept_lambda_ref = ref(noexcept_lambda);
     STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // Strengthened
 #endif // __EDG__

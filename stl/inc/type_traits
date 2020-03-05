@@ -1891,7 +1891,7 @@ public:
     template <class... _Types>
     auto operator()(_Types&&... _Args) const
         noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) // Strengthened
-            -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
+        -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
         return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
     }
 };
