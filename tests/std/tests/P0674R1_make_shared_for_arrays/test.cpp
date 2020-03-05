@@ -424,7 +424,7 @@ void test_allocate_shared_array_unknown_bounds() {
     assert_construct_destruct_equal();
 
     CustomAlloc<int> a5{};
-    { shared_ptr<int[]> p5 = make_shared_assert<int[]>(0); } // p5 cannot be dereferenced
+    { shared_ptr<int[]> p5 = allocate_shared_assert<int[]>(0, a5, 0); } // p5 cannot be dereferenced
     assert_construct_destruct_equal();
 
     test_allocate_init_destruct_order<ReportAddress[]>(5); // success one dimensional
