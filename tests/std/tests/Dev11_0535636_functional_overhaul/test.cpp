@@ -1070,9 +1070,11 @@ constexpr bool test_invoke_constexpr() {
     // assert(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x); TRANSITION, P1065R2
     assert(&invoke(&Thing::m_x, p) == &p->m_x);
 
+#ifndef _M_CEE // TRANSITION, DevCom-939490
     assert(invoke(&Thing::sum, *p, 3) == 1023);
     // assert(invoke(&Thing::sum, ref(*sp), 4) == 1024); TRANSITION, P1065R2
     assert(invoke(&Thing::sum, p, 5) == 1025);
+#endif // _M_CEE
 
     assert(invoke(square_constexpr, 6) == 36);
     assert(invoke(&cube_constexpr, 7) == 343);
@@ -1122,10 +1124,12 @@ void test_invoke() {
     assert(invoke(&cube, 7) == 343);
     STATIC_ASSERT(!noexcept(invoke(&cube, 7) == 343));
 
+#if _HAS_CXX17
     assert(invoke(square_noexcept, 6) == 36);
     STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36));
     assert(invoke(&cube_noexcept, 7) == 343);
     STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343));
+#endif // _HAS_CXX17
 }
 
 
