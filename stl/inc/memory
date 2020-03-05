@@ -2091,6 +2091,8 @@ _NODISCARD
 }
 
 #if _HAS_CXX20
+#pragma warning(push) // ***FIXME*** MUST INVESTIGATE BEFORE MERGING ***FIXME***
+#pragma warning(disable : 6386) // Buffer overrun while writing to '_Rx'
 template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count) { // make a shared_ptr to an unbounded array
@@ -2130,6 +2132,7 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
     return _Ret;
 }
+#pragma warning(pop) // ***FIXME*** MUST INVESTIGATE BEFORE MERGING ***FIXME***
 
 template <class _Ty>
 _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() { // make a shared_ptr to a bounded array
