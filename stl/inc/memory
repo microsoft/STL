@@ -1269,56 +1269,47 @@ private:
         _Owner._Call_deleter = false;
     }
 
-#ifdef __cpp_concepts
-    // clang-format off
+#if _HAS_CXX20
     template <class _Ty0, class... _Types>
-        requires (!is_array_v<_Ty0>)
-    friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
+    friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(_Types&&... _Args);
 
     template <class _Ty0>
-        requires is_unbounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> make_shared(const size_t _Count);
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const size_t _Count);
 
     template <class _Ty0>
-        requires is_unbounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> make_shared(const size_t _Count, const remove_extent_t<_Ty0>& _Val);
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(
+        const size_t _Count, const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0>
-        requires is_bounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> make_shared();
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
 
     template <class _Ty0>
-        requires is_bounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> make_shared(const remove_extent_t<_Ty0>& _Val);
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0, class _Alloc, class... _Types>
-        requires (!is_array_v<_Ty0>)
-    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+    friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
 
     template <class _Ty0, class _Alloc>
-        requires is_unbounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const size_t _Count);
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
+        const _Alloc& _Al_arg, const size_t _Count);
 
     template <class _Ty0, class _Alloc>
-        requires is_unbounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> allocate_shared(
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
         const _Alloc& _Al_arg, const size_t _Count, const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0, class _Alloc>
-        requires is_bounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg);
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
 
     template <class _Ty0, class _Alloc>
-        requires is_bounded_array_v<_Ty0>
-    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
-    // clang-format on
-#else // ^^^ __cpp_concepts / !__cpp_concepts vvv
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
+        const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Ty0, class... _Types>
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
 
     template <class _Ty0, class _Alloc, class... _Types>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
-#endif // !__cpp_concepts
+#endif // !_HAS_CXX20
 
     template <class _Ux>
     void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
@@ -1567,7 +1558,7 @@ private:
     }
 };
 
-#ifdef __cpp_concepts
+#if _HAS_CXX20
 template <class _Ty>
 constexpr _Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
     using _Signed   = make_signed_t<_Ty>;
@@ -1792,7 +1783,7 @@ private:
         delete this;
     }
 };
-#endif // __cpp_concepts
+#endif // _HAS_CXX20
 
 // CLASS TEMPLATE _Ebco_base
 template <class _Ty,
@@ -1868,7 +1859,7 @@ private:
     }
 };
 
-#ifdef __cpp_concepts
+#if _HAS_CXX20
 template <class _Alloc>
 class _Uninitialized_rev_destroying_backout_al { // struct to undo partially constructed ranges in
                                                  // _Uninitialized_xxx_al algorithms
@@ -2082,27 +2073,26 @@ private:
         _Deallocate_plain(_Al, this);
     }
 };
-#endif // __cpp_concepts
+#endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE make_shared
-// clang-format off
 template <class _Ty, class... _Types>
-#ifdef __cpp_concepts
-    requires (!is_array_v<_Ty>)
-#endif // __cpp_concepts
-_NODISCARD shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
+_NODISCARD
+#if _HAS_CXX20
+    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
+#else // _HAS_CXX20
+    shared_ptr<_Ty>
+#endif // _HAS_CXX20
+    make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
     return _Ret;
 }
-// clang-format on
 
-#ifdef __cpp_concepts
-// clang-format off
+#if _HAS_CXX20
 template <class _Ty>
-    requires is_unbounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> make_shared(
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count) { // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array<_Ty>;
     using _Storage =
@@ -2122,8 +2112,7 @@ _NODISCARD shared_ptr<_Ty> make_shared(
 }
 
 template <class _Ty>
-    requires is_unbounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> make_shared(
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count, const remove_extent_t<_Ty>& _Val) { // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array<_Ty>;
     using _Storage =
@@ -2143,8 +2132,7 @@ _NODISCARD shared_ptr<_Ty> make_shared(
 }
 
 template <class _Ty>
-    requires is_bounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> make_shared() { // make a shared_ptr to a bounded array
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() { // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>();
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
@@ -2152,25 +2140,24 @@ _NODISCARD shared_ptr<_Ty> make_shared() { // make a shared_ptr to a bounded arr
 }
 
 template <class _Ty>
-    requires is_bounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> make_shared(
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const _STD remove_extent_t<_Ty>& _Val) { // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
     return _Ret;
 }
-// clang-format on
-#endif // __cpp_concepts
+#endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE allocate_shared
-// clang-format off
 template <class _Ty, class _Alloc, class... _Types>
-#ifdef __cpp_concepts
-    requires (!is_array_v<_Ty>)
-#endif // __cpp_concepts
-_NODISCARD shared_ptr<_Ty> allocate_shared(
-        const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
+_NODISCARD
+#if _HAS_CXX20
+    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
+#else // _HAS_CXX20
+    shared_ptr<_Ty>
+#endif // _HAS_CXX20
+    allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
     using _Refoa   = _Ref_count_obj_alloc2<remove_cv_t<_Ty>, _Alloc>;
@@ -2184,13 +2171,10 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
     return _Ret;
 }
-// clang-format on
 
-#ifdef __cpp_concepts
-// clang-format off
+#if _HAS_CXX20
 template <class _Ty, class _Alloc>
-    requires is_unbounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> allocate_shared(
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count) { // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Storage =
@@ -2211,8 +2195,8 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(
 }
 
 template <class _Ty, class _Alloc>
-    requires is_unbounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, const size_t _Count,
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al,
+    const size_t _Count,
     const remove_extent_t<_Ty>& _Val) { // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Storage =
@@ -2233,8 +2217,7 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, const size_t _Coun
 }
 
 template <class _Ty, class _Alloc>
-    requires is_bounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> allocate_shared(
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al) { // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -2249,8 +2232,7 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(
 }
 
 template <class _Ty, class _Alloc>
-    requires is_bounded_array_v<_Ty>
-_NODISCARD shared_ptr<_Ty> allocate_shared(
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) { // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -2263,8 +2245,7 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
     return _Ret;
 }
-// clang-format on
-#endif // __cpp_concepts
+#endif // _HAS_CXX20
 
 // CLASS TEMPLATE weak_ptr
 template <class _Ty>
