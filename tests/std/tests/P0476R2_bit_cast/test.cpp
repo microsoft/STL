@@ -153,7 +153,6 @@ constexpr bool bit_cast_is_constexpr_union(int) {
     return true;
 }
 
-template <int = 0>
 constexpr bool bit_cast_is_constexpr_union(long) {
     return false;
 }
@@ -163,7 +162,6 @@ constexpr bool bit_cast_is_constexpr_pointer(int) {
     return true;
 }
 
-template <int = 0>
 constexpr bool bit_cast_is_constexpr_pointer(long) {
     return false;
 }
@@ -174,7 +172,6 @@ constexpr bool bit_cast_is_constexpr_member_fn_pointer(int) {
     return true;
 }
 
-template <int = 0>
 constexpr bool bit_cast_is_constexpr_member_fn_pointer(long) {
     return false;
 }
@@ -184,7 +181,6 @@ constexpr bool bit_cast_is_constexpr_pmf_datamember(int) {
     return true;
 }
 
-template <int = 0>
 constexpr bool bit_cast_is_constexpr_pmf_datamember(long) {
     return false;
 }
@@ -195,7 +191,6 @@ constexpr bool bit_cast_is_constexpr_large_member_fn_pointer(int) {
     return true;
 }
 
-template <int = 0>
 constexpr bool bit_cast_is_constexpr_large_member_fn_pointer(long) {
     return false;
 }
