@@ -6,7 +6,6 @@
 #include <cassert>
 #include <compare>
 #include <type_traits>
-#include <vector>
 
 enum class comp { equal, nonequal, less, greater, unordered };
 
