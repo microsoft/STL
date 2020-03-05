@@ -1478,10 +1478,9 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
 template <class _Ty>
 class reference_wrapper;
 
-// std::invoke isn't constexpr in C++17, and implementers are forbidden from "strengthening" constexpr (WG21-N4842
-// [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have invoke-like
-// behavior. We solve this by using a macro to stamp out both public non-constexpr and internal constexpr
-// implementations. TRANSITION, P1065R2
+// std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
+// (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
+// invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
 // FUNCTION TEMPLATE invoke
 #pragma warning(push) // TRANSITION, DevCom-936696
@@ -1521,11 +1520,11 @@ struct _Invoker_pmf_object {
 struct _Invoker_pmf_refwrap {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_refwrap;
 
-    template <class _Decayed, class _Ty1, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept((static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
-        -> decltype((static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
-        return (static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+    template <class _Decayed, class _Refwrap, class... _Types2>
+    static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2) noexcept(
+        noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return (_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
 
@@ -1544,8 +1543,7 @@ struct _Invoker_pmd_object {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_object;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(static_cast<_Ty1&&>(_Arg1).*_Pmd))
-        -> decltype(static_cast<_Ty1&&>(_Arg1).*_Pmd) {
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept -> decltype(static_cast<_Ty1&&>(_Arg1).*_Pmd) {
         return static_cast<_Ty1&&>(_Arg1).*_Pmd;
     }
 };
@@ -1553,10 +1551,9 @@ struct _Invoker_pmd_object {
 struct _Invoker_pmd_refwrap {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_refwrap;
 
-    template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(static_cast<_Ty1&&>(_Arg1).get().*_Pmd))
-        -> decltype(static_cast<_Ty1&&>(_Arg1).get().*_Pmd) {
-        return static_cast<_Ty1&&>(_Arg1).get().*_Pmd;
+    template <class _Decayed, class _Refwrap>
+    static constexpr auto _Call(_Decayed _Pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*_Pmd) {
+        return _Rw.get().*_Pmd;
     }
 };
 
@@ -1594,13 +1591,13 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 template <class _Callable>
-_CONSTEXPR20 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+_CONSTEXPR17 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
     -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
 template <class _Callable, class _Ty1, class... _Types2>
-_CONSTEXPR20 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+_CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
     noexcept(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
@@ -1609,70 +1606,24 @@ _CONSTEXPR20 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
     if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
-        auto _Pmf = _Obj;
-        return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+        return (static_cast<_Ty1&&>(_Arg1).*_Obj)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
-        auto _Pmf = _Obj;
-        return (static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+        return (_Arg1.get().*_Obj)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
-        auto _Pmf = _Obj;
-        return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+        return ((*static_cast<_Ty1&&>(_Arg1)).*_Obj)(static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
-        auto _Pmd = _Obj;
-        return static_cast<_Ty1&&>(_Arg1).*_Pmd;
+        return static_cast<_Ty1&&>(_Arg1).*_Obj;
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
-        auto _Pmd = _Obj;
-        return static_cast<_Ty1&&>(_Arg1).get().*_Pmd;
+        return _Arg1.get().*_Obj;
     } else {
         static_assert(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in invoke");
-        auto _Pmd = _Obj;
-        return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
+        return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
     return _Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
 #endif // _HAS_IF_CONSTEXPR
 }
-
-#if _HAS_CXX17
-// constexpr IMPLEMENTATION OF invoke
-template <class _Callable>
-constexpr auto _C_invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
-    -> decltype(static_cast<_Callable&&>(_Obj)()) {
-    return static_cast<_Callable&&>(_Obj)();
-}
-
-template <class _Callable, class _Ty1, class... _Types2>
-constexpr auto _C_invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-    noexcept(_Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
-    -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
-    if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
-        return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
-        auto _Pmf = _Obj;
-        return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
-        auto _Pmf = _Obj;
-        return (static_cast<_Ty1&&>(_Arg1).get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
-        auto _Pmf = _Obj;
-        return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
-        auto _Pmd = _Obj;
-        return static_cast<_Ty1&&>(_Arg1).*_Pmd;
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
-        auto _Pmd = _Obj;
-        return static_cast<_Ty1&&>(_Arg1).get().*_Pmd;
-    } else {
-        static_assert(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in _C_invoke");
-        auto _Pmd = _Obj;
-        return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
-    }
-}
-#endif // _HAS_CXX17
-
 #pragma warning(pop) // TRANSITION, DevCom-936696
 
 template <class _Rx, bool = is_void_v<_Rx>>
@@ -1686,7 +1637,7 @@ template <class _Cv_void>
 struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
     template <class... _Valtys>
     static void _Call(_Valtys&&... _Vals) { // INVOKE, "implicitly" converted to void
-        _STD invoke(_STD forward<_Valtys>(_Vals)...);
+        _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
@@ -1694,7 +1645,7 @@ template <class _Rx>
 struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
     template <class... _Valtys>
     static _Rx _Call(_Valtys&&... _Vals) { // INVOKE, implicitly converted to _Rx
-        return _STD invoke(_STD forward<_Valtys>(_Vals)...);
+        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
@@ -1702,8 +1653,8 @@ template <>
 struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     template <class... _Valtys>
     static auto _Call(_Valtys&&... _Vals)
-        -> decltype(_STD invoke(_STD forward<_Valtys>(_Vals)...)) { // INVOKE, unchanged
-        return _STD invoke(_STD forward<_Valtys>(_Vals)...);
+        -> decltype(_STD invoke(static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
@@ -1921,7 +1872,7 @@ public:
                                           _Refwrap_has_ctor_from<_Ty, _Uty>>,
                               int> = 0>
     reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) {
-        _Ty& _Ref = _STD forward<_Uty>(_Val);
+        _Ty& _Ref = static_cast<_Uty&&>(_Val);
         _Ptr      = _STD addressof(_Ref);
     }
 
@@ -1934,8 +1885,10 @@ public:
     }
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) const -> decltype(_STD invoke(get(), static_cast<_Types&&>(_Args)...)) {
-        return _STD invoke(get(), static_cast<_Types&&>(_Args)...);
+    auto operator()(_Types&&... _Args) const
+        noexcept(noexcept(_STD invoke(*this->_Ptr, static_cast<_Types&&>(_Args)...)))
+            -> decltype(_STD invoke(*this->_Ptr, static_cast<_Types&&>(_Args)...)) {
+        return _STD invoke(*this->_Ptr, static_cast<_Types&&>(_Args)...);
     }
 
 private:

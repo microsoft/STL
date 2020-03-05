@@ -109,6 +109,8 @@
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
+// P1065R2 constexpr INVOKE
+//   (the std::invoke function only; other components like bind and reference_wrapper will be C++20 only)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff

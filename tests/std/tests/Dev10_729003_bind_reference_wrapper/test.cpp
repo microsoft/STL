@@ -9,7 +9,7 @@ using namespace std;
 
 struct A {
     string meow(int i) {
-        return "A::meow(" + std::to_string(i + 9 * 9 * 9) + ")";
+        return "A::meow(" + to_string(i + 9 * 9 * 9) + ")";
     }
 };
 
