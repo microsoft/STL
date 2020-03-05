@@ -131,7 +131,7 @@ void test_make_shared_not_array() {
     shared_ptr<InitialValue> p1 = make_shared_assert<InitialValue>();
     assert(p1->value == 106);
 
-    shared_ptr<string> p2 = make_shared<string>("Meow!", 2, 3);
+    shared_ptr<string> p2 = make_shared<string>("Meow!", 2u, 3u);
     assert(p2->compare("ow!") == 0);
 
     shared_ptr<InitialValue> p3 = make_shared_assert<InitialValue>(40, 2);
@@ -178,7 +178,7 @@ void test_make_shared_array_unknown_bounds() {
     for (int i = 0; i < 100; ++i)
         assert(p0[i].empty());
 
-    shared_ptr<InitialValue[][8][9]> p1 = make_shared_assert<InitialValue[][8][9]>(2);
+    shared_ptr<InitialValue[][8][9]> p1 = make_shared_assert<InitialValue[][8][9]>(2u);
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 8; ++j)
             for (int k = 0; k < 9; ++k)
@@ -199,15 +199,15 @@ void test_make_shared_array_unknown_bounds() {
     for (int i = 0; i < 5; ++i)
         assert(p4[i].v1 == 2 && p4[i].v2 == 8 && p4[i].v3 == 9);
 
-    shared_ptr<int[]> p5 = make_shared_assert<int[]>(0); // p5 cannot be dereferenced
+    shared_ptr<int[]> p5 = make_shared_assert<int[]>(0u); // p5 cannot be dereferenced
 
-    test_make_init_destruct_order<ReportAddress[]>(5); // success one dimensional
+    test_make_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
 
-    test_make_init_destruct_order<ReportAddress[]>(20); // failure one dimensional
+    test_make_init_destruct_order<ReportAddress[]>(20u); // failure one dimensional
 
-    test_make_init_destruct_order<ReportAddress[][2][2]>(2); // success multidimensional
+    test_make_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
-    test_make_init_destruct_order<ReportAddress[][3][3]>(3); // failure multidimensional
+    test_make_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
 }
 
 int constructCount = 0;
@@ -311,7 +311,7 @@ void test_allocate_shared_not_array() {
 
     CustomAlloc<string> a2{};
     {
-        shared_ptr<string> p2 = allocate_shared<string>(a2, "Meow!", 2, 3);
+        shared_ptr<string> p2 = allocate_shared<string>(a2, "Meow!", 2u, 3u);
         assert(p2->compare("ow!") == 0);
     }
     assert_construct_destruct_equal();
@@ -389,7 +389,7 @@ void test_allocate_shared_array_unknown_bounds() {
 
     CustomAlloc<InitialValue> a1{};
     {
-        shared_ptr<InitialValue[][8][9]> p1 = allocate_shared_assert<InitialValue[][8][9]>(144, a1, 2);
+        shared_ptr<InitialValue[][8][9]> p1 = allocate_shared_assert<InitialValue[][8][9]>(144, a1, 2u);
         for (int i = 0; i < 2; ++i)
             for (int j = 0; j < 8; ++j)
                 for (int k = 0; k < 9; ++k)
@@ -424,16 +424,16 @@ void test_allocate_shared_array_unknown_bounds() {
     assert_construct_destruct_equal();
 
     CustomAlloc<int> a5{};
-    { shared_ptr<int[]> p5 = allocate_shared_assert<int[]>(0, a5, 0); } // p5 cannot be dereferenced
+    { shared_ptr<int[]> p5 = allocate_shared_assert<int[]>(0, a5, 0u); } // p5 cannot be dereferenced
     assert_construct_destruct_equal();
 
-    test_allocate_init_destruct_order<ReportAddress[]>(5); // success one dimensional
+    test_allocate_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
 
-    test_allocate_init_destruct_order<ReportAddress[]>(20); // failure one dimensional
+    test_allocate_init_destruct_order<ReportAddress[]>(20u); // failure one dimensional
 
-    test_allocate_init_destruct_order<ReportAddress[][2][2]>(2); // success multidimensional
+    test_allocate_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
-    test_allocate_init_destruct_order<ReportAddress[][3][3]>(3); // failure multidimensional
+    test_allocate_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
 }
 
 int main() {
