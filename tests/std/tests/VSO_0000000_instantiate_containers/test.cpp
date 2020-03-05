@@ -339,9 +339,9 @@ void deque_test() {
 
 void forward_list_test() {
     static_assert(
-        is_nothrow_default_constructible_v<forward_list<int>>, "Strengthened noexcept on forward_list::forward_list()");
+        is_nothrow_default_constructible_v<forward_list<int>>, "strengthened noexcept on forward_list::forward_list()");
     static_assert(is_nothrow_move_constructible_v<forward_list<int>>,
-        "Strengthened noexcept on forward_list::forward_list(forward_list&&)");
+        "strengthened noexcept on forward_list::forward_list(forward_list&&)");
 
     forward_list<int> value{};
     swap_test(value);

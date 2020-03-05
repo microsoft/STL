@@ -995,7 +995,7 @@ void test_reference_wrapper_invocation() {
 #ifndef __EDG__ // TRANSITION, DevCom-939485
     const auto noexcept_lambda     = []() noexcept {};
     const auto noexcept_lambda_ref = ref(noexcept_lambda);
-    STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // Strengthened
+    STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // strengthened
 #endif // __EDG__
 
     reference_wrapper<int(int)> rw_fxn(quadruple);
@@ -1062,7 +1062,7 @@ void test_reference_wrapper_invocation() {
 // Test C++17 invoke().
 #if _HAS_CXX17
 constexpr bool test_invoke_constexpr() {
-    // MSVC++ implements LWG-2894 as a DR back to C++17
+    // MSVC implements LWG-2894 as a DR back to C++17
     Thing thing;
     auto p = &thing;
 

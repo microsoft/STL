@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This file is intended as a test resource for tools that want to verify that they can parse all MSVC++ standard
+// This file is intended as a test resource for tools that want to verify that they can parse all MSVC standard
 // library headers without warnings. This file disables deprecations, so it should not be included in programs directly.
 //
 // This file may be changed, renamed, or removed at any time.
