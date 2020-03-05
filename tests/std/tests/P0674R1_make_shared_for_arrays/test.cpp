@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
+
 int allocationCount = 0;
 int canCreate       = 10; // Counter to force an exception when constructing a
                     // sufficiently large ReportAddress array
