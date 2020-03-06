@@ -2776,10 +2776,13 @@ namespace insert_iterators {
     template <class Container>
     constexpr bool test() {
         using std::back_insert_iterator, std::front_insert_iterator, std::insert_iterator;
-        using std::default_initializable, std::iter_difference_t, std::ptrdiff_t, std::same_as;
+        using std::default_initializable, std::is_nothrow_default_constructible_v, std::iter_difference_t,
+            std::ptrdiff_t, std::same_as;
 
         STATIC_ASSERT(default_initializable<back_insert_iterator<Container>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<back_insert_iterator<Container>>);
         STATIC_ASSERT(default_initializable<front_insert_iterator<Container>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<front_insert_iterator<Container>>);
         STATIC_ASSERT(default_initializable<insert_iterator<Container>>);
         STATIC_ASSERT(same_as<iter_difference_t<back_insert_iterator<Container>>, ptrdiff_t>);
         STATIC_ASSERT(same_as<iter_difference_t<front_insert_iterator<Container>>, ptrdiff_t>);

@@ -31,7 +31,8 @@ public:
     using container_type = _Container;
 
 #ifdef __cpp_lib_concepts
-    using difference_type                     = ptrdiff_t;
+    using difference_type = ptrdiff_t;
+
     constexpr back_insert_iterator() noexcept = default;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using difference_type = void;
@@ -84,7 +85,8 @@ public:
     using container_type = _Container;
 
 #ifdef __cpp_lib_concepts
-    using difference_type                      = ptrdiff_t;
+    using difference_type = ptrdiff_t;
+
     constexpr front_insert_iterator() noexcept = default;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using difference_type = void;
@@ -133,11 +135,13 @@ public:
     using value_type        = void;
     using pointer           = void;
     using reference         = void;
-    using container_type    = _Container;
+
+    using container_type = _Container;
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-    insert_iterator()     = default;
+
+    insert_iterator() = default;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using difference_type = void;
 #endif // __cpp_lib_concepts
@@ -172,7 +176,7 @@ public:
 
 protected:
     _Container* container              = nullptr;
-    typename _Container::iterator iter = typename _Container::iterator();
+    typename _Container::iterator iter = {};
 };
 
 // FUNCTION TEMPLATE inserter
