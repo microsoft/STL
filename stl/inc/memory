@@ -1560,7 +1560,7 @@ private:
 
 #if _HAS_CXX20
 template <class _Ty>
-constexpr _Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
+_Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
     using _Signed   = make_signed_t<_Ty>;
     const auto _Res = _STD div(static_cast<_Signed>(_Val1), static_cast<_Signed>(_Val2));
     return static_cast<_Ty>(_Res.rem == 0 ? _Res.quot : _Res.quot + 1);
