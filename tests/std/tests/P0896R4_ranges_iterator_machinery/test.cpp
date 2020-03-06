@@ -5,8 +5,10 @@
 #include <compare>
 #include <concepts>
 #include <iterator>
+#include <list>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -2769,6 +2771,26 @@ namespace iter_ops {
         test_distance();
     }
 } // namespace iter_ops
+
+namespace insert_iterators {
+    template <class Container>
+    constexpr bool test() {
+        using std::back_insert_iterator, std::front_insert_iterator, std::insert_iterator;
+        using std::default_initializable, std::iter_difference_t, std::ptrdiff_t, std::same_as;
+
+        STATIC_ASSERT(default_initializable<back_insert_iterator<Container>>);
+        STATIC_ASSERT(default_initializable<front_insert_iterator<Container>>);
+        STATIC_ASSERT(default_initializable<insert_iterator<Container>>);
+        STATIC_ASSERT(same_as<iter_difference_t<back_insert_iterator<Container>>, ptrdiff_t>);
+        STATIC_ASSERT(same_as<iter_difference_t<front_insert_iterator<Container>>, ptrdiff_t>);
+        STATIC_ASSERT(same_as<iter_difference_t<insert_iterator<Container>>, ptrdiff_t>);
+
+        return true;
+    }
+
+    STATIC_ASSERT(test<std::list<double>>());
+    STATIC_ASSERT(test<std::vector<int>>());
+} // namespace insert_iterators
 
 int main() {
     iterator_cust_swap_test::test();
