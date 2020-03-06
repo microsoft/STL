@@ -13,5 +13,6 @@
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "C_Cpp.autoAddFileAssociations": false
 }
