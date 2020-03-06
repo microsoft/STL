@@ -759,7 +759,7 @@ diagnostics\syserr\syserr.syserr\syserr.syserr.members\ctor_int_error_category_c
 diagnostics\syserr\syserr.syserr\syserr.syserr.members\ctor_int_error_category_string.pass.cpp
 diagnostics\syserr\syserr.syserr\syserr.syserr.members\ctor_int_error_category.pass.cpp
 
-# libc++ disagrees with libstdc++ and MSVC++ on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
+# libc++ disagrees with libstdc++ and MSVC on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
 input.output\iostream.format\input.streams\istream.unformatted\get_pointer_size_chart.pass.cpp
 input.output\iostream.format\input.streams\istream.unformatted\get_pointer_size.pass.cpp
 

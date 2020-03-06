@@ -1524,6 +1524,20 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #endif
 #endif
 
+#if CXX20_MODE && !defined(__EDG__) // TRANSITION, VSO-1041044
+#ifndef __cpp_lib_bit_cast
+#error BOOM
+#elif __cpp_lib_bit_cast != 201806L
+#error BOOM
+#else
+STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_bit_cast
+#error BOOM
+#endif
+#endif
+
 #if CXX20_MODE && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
 #ifndef __cpp_lib_bitops
 #error BOOM

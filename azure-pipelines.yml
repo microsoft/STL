@@ -4,18 +4,18 @@
 # Build STL targeting x86, x64, arm, arm64
 
 jobs:
-- template: azure-devops/run_build.yml
+- template: azure-devops/run-build.yml
   parameters:
     targetPlatform: x86
 
-- template: azure-devops/run_build.yml
+- template: azure-devops/run-build.yml
   parameters:
     targetPlatform: x64
 
-- template: azure-devops/run_build.yml
+- template: azure-devops/run-build.yml
   parameters:
     targetPlatform: arm
 
-- template: azure-devops/run_build.yml
+- template: azure-devops/run-build.yml
   parameters:
     targetPlatform: arm64

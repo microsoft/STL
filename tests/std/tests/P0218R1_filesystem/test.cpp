@@ -3354,7 +3354,20 @@ void test_space() {
     EXPECT(info.free == maxValue);
     EXPECT(info.capacity == maxValue);
 
+    const path nonexistent(dir / L"nonexistent"sv);
+    info = space(nonexistent, ec);
+    EXPECT(bad(ec));
+    EXPECT(info.available == maxValue);
+    EXPECT(info.free == maxValue);
+    EXPECT(info.capacity == maxValue);
+
     info = space(LR"(C:\Some\Path\That\Does\Not\Exist)", ec);
+    EXPECT(bad(ec));
+    EXPECT(info.available == maxValue);
+    EXPECT(info.free == maxValue);
+    EXPECT(info.capacity == maxValue);
+
+    info = space(LR"(??malformed??)", ec);
     EXPECT(bad(ec));
     EXPECT(info.available == maxValue);
     EXPECT(info.free == maxValue);
@@ -3367,9 +3380,43 @@ void test_space() {
     EXPECT(info.free != maxValue);
     EXPECT(info.capacity != maxValue);
 
-    remove(file, ec);
-    EXPECT(good(ec));
-    remove(dir, ec);
+    const path symDirPresent(dir / L"directory_symlink"sv);
+    const path symDirAbsent(dir / L"broken_directory_symlink"sv);
+    const path symFilePresent(dir / L"file_symlink"sv);
+    const path symFileAbsent(dir / L"broken_file_symlink"sv);
+
+    if ((create_directory_symlink(current_path() / dir, symDirPresent, ec), ec)
+        || (create_directory_symlink(nonexistent, symDirAbsent, ec), ec)
+        || (create_symlink(current_path() / file, symFilePresent, ec), ec)
+        || (create_symlink(nonexistent, symFileAbsent, ec), ec)) {
+        check_symlink_permissions(ec, L"space symlink edge cases");
+    } else {
+        info = space(symDirPresent, ec);
+        EXPECT(good(ec));
+        EXPECT(info.available != maxValue);
+        EXPECT(info.free != maxValue);
+        EXPECT(info.capacity != maxValue);
+
+        info = space(symFilePresent, ec);
+        EXPECT(good(ec));
+        EXPECT(info.available != maxValue);
+        EXPECT(info.free != maxValue);
+        EXPECT(info.capacity != maxValue);
+
+        info = space(symDirAbsent, ec);
+        EXPECT(bad(ec));
+        EXPECT(info.available == maxValue);
+        EXPECT(info.free == maxValue);
+        EXPECT(info.capacity == maxValue);
+
+        info = space(symFileAbsent, ec);
+        EXPECT(bad(ec));
+        EXPECT(info.available == maxValue);
+        EXPECT(info.free == maxValue);
+        EXPECT(info.capacity == maxValue);
+    }
+
+    remove_all(dir, ec);
     EXPECT(good(ec));
 }
 

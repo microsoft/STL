@@ -609,16 +609,6 @@ namespace pmr {
     using unordered_multiset = _STD unordered_multiset<_Kty, _Hasher, _Keyeq, polymorphic_allocator<_Kty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-    inline constexpr bool enable_view<unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>> = false;
-
-    template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-    inline constexpr bool enable_view<unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

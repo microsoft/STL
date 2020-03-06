@@ -309,8 +309,9 @@ public:
     template <class _Iter>
     char_class_type lookup_classname(_Iter _First, _Iter _Last, bool _Icase = false) const {
         // map [_First, _Last) to character class mask value
-#define _REGEX_CHAR_CLASS_NAME(n, c) {n, L##n, sizeof(n) / sizeof(n[0]) - 1, c}
-        _STATIC_UNLESS_PURE constexpr _Cl_names _Names[] = {
+#define _REGEX_CHAR_CLASS_NAME(n, c) \
+    { n, L##n, sizeof(n) / sizeof(n[0]) - 1, c }
+        static constexpr _Cl_names _Names[] = {
             // map class names to numeric constants
             _REGEX_CHAR_CLASS_NAME("alnum", _Ch_alnum),
             _REGEX_CHAR_CLASS_NAME("alpha", _Ch_alpha),
@@ -563,7 +564,7 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
 // FUNCTION TEMPLATE _Is_word
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
-    _STATIC_UNLESS_PURE constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
+    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
         //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -936,13 +937,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 // FORWARD DECLARATIONS
 template <class _BidIt, class _Allocator = allocator<sub_match<_BidIt>>>
 class match_results;
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _BidIt, class _Allocator>
-    inline constexpr bool enable_view<match_results<_BidIt, _Allocator>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
@@ -3828,10 +3822,9 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _En
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
-    _STATIC_UNLESS_PURE constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot,
-        _Meta_star, _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr,
-        _Meta_rbr, _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp,
-        0}; // array of meta chars
+    static constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot, _Meta_star,
+        _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr, _Meta_rbr,
+        _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp, 0}; // array of meta chars
 
     if (_Pat == _End) {
         _Mchar = _Meta_eos;
