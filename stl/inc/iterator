@@ -149,14 +149,15 @@ public:
     insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
         : container(_STD addressof(_Cont)), iter(_Where) {}
 
-    insert_iterator& operator=(const typename _Container::value_type& _Val) {
-        // insert into container and increment stored iterator
+    insert_iterator& operator=(
+        const typename _Container::value_type& _Val) { // insert into container and increment stored iterator
         iter = container->insert(iter, _Val);
         ++iter;
         return *this;
     }
 
     insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+
         iter = container->insert(iter, _STD move(_Val));
         ++iter;
         return *this;
