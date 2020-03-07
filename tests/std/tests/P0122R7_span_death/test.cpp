@@ -195,7 +195,7 @@ void test_case_constructor_range_incompatible_extent() {
 
 void test_case_constructor_span_incompatible_extent() {
     span<int> sp(begin(globalArray), end(globalArray));
-    span<int, 3> sp2(sp); // Cannot construct span with static extent from other span s as s.size() != extent
+    span<int, 3> sp2(sp); // Cannot construct span with static extent from other span as other.size() != extent
     (void) sp2;
 }
 
