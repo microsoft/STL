@@ -604,7 +604,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         long _Spin_context = 0;
         for (;;) {
             const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
-            const short _Observed_bytes  = load(_Order);
+            const short _Observed_bytes = load(_Order);
             if (_Expected_bytes != _Observed_bytes) {
                 return;
             }
@@ -700,7 +700,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
-            const long _Expected_bytes  = _Atomic_reinterpret_as<long>(_Expected);
+            const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
             const long _Observed_bytes = load(_Order);
             if (_Expected_bytes != _Observed_bytes) {
                 return;
@@ -2068,7 +2068,7 @@ using atomic_uintmax_t = atomic<uintmax_t>;
 
 // Though there are CMPXCHG8B and CMPXCHG16B,
 // Largest atomics with full set of efficient operations are pointer-sized
-using atomic_signed_lock_free = atomic_intptr_t;
+using atomic_signed_lock_free   = atomic_intptr_t;
 using atomic_unsigned_lock_free = atomic_uintptr_t;
 
 
