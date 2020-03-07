@@ -224,8 +224,8 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 #define __crtAtomic_wait_direct(_Storage, _Comparand, _Size, _Spin_context) \
     WaitOnAddress((voatile void*) _Storage, _Comparand, _Size)
 
-#define __crtAtomic_notify_one_direct(void* _Storage) WakeByAddressSingle(_Storage)
-#define __crtAtomic_notify_all_direct(void* _Storage) WakeByAddressAll(_Storage)
+#define __crtAtomic_notify_one_direct(_Storage) WakeByAddressSingle(_Storage)
+#define __crtAtomic_notify_all_direct(_Storage) WakeByAddressAll(_Storage)
 
 
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
@@ -350,7 +350,8 @@ typedef VOID(WINAPI* PFNCLOSETHREADPOOLWORK)(PTP_WORK);
 typedef int(WINAPI* PFNCOMPARESTRINGEX)(LPCWSTR, DWORD, LPCWSTR, int, LPCWSTR, int, LPNLSVERSIONINFO, LPVOID, LPARAM);
 typedef int(WINAPI* PFNGETLOCALEINFOEX)(LPCWSTR, LCTYPE, LPWSTR, int);
 typedef int(WINAPI* PFNLCMAPSTRINGEX)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, int, LPNLSVERSIONINFO, LPVOID, LPARAM);
-typedef BOOL(WINAPI* PFNWAITONADDRESS)(volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
+typedef BOOL(WINAPI* PFNWAITONADDRESS)(
+    volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
 typedef BOOL(WINAPI* PFNWAKEBYADDRESSSINGLE)(PVOID Address);
 typedef BOOL(WINAPI* PFNWAKEBYADDRESSALL)(PVOID Address);
 
