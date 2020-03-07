@@ -8,12 +8,11 @@
 #include <intrin.h>
 #pragma warning(disable : 4793)
 
-#include "awint.h"
-#include <Winnt.h>
-
 #include "atomic"
+#include "awint.h"
 #include "cstdint"
 #include "mutex"
+#include <Winnt.h>
 
 _EXTERN_C
 
@@ -127,7 +126,7 @@ inline bool is_win8_wait_on_address_available() {
 
 constexpr size_t TABLE_SIZE_POWER = 8;
 constexpr size_t TABLE_SIZE       = 1 << TABLE_SIZE_POWER;
-constexpr size_t TABLE_MASK       = TABLE_SIZE-1;
+constexpr size_t TABLE_MASK       = TABLE_SIZE - 1;
 
 
 #pragma warning(push)
@@ -153,7 +152,6 @@ struct alignas(64) _Contention_table_entry {
 
     HANDLE _Reference_event() {
         std::call_once(_Event_created, [this] {
-            
             std::call_once(_Events_dereference_registered, [] { atexit(_Dereference_all_events); });
 
             // Try create just once, if low resources, use fall back permanently
@@ -221,7 +219,6 @@ void __cdecl _Atomic_wait_fallback(const void* _Storage, long& _Spin_context) no
 }
 
 
-
 void __cdecl _Atomic_notify_fallback(void* _Storage) noexcept {
     auto& _Table = _Atomic_contention_table(_Storage);
     std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -238,7 +235,6 @@ void __cdecl _Atomic_notify_fallback(void* _Storage) noexcept {
 }
 
 
-
 void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) {
     if (is_win8_wait_on_address_available())
         __crtAtomic_wait_direct(_Storage, _Comparand, _Size);
@@ -247,16 +243,16 @@ void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t 
 }
 
 void __cdecl _Atomic_notify_one_direct(void* _Storage) {
-    if (is_win8_wait_on_address_available()) 
+    if (is_win8_wait_on_address_available())
         __crtAtomic_notify_one_direct(_Storage);
-    else 
+    else
         _Atomic_notify_fallback(_Storage);
 }
 
 void __cdecl _Atomic_notify_all_direct(void* _Storage) {
     if (is_win8_wait_on_address_available())
         __crtAtomic_notify_all_direct(_Storage);
-    else 
+    else
         _Atomic_notify_fallback(_Storage);
 }
 
