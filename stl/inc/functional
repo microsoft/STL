@@ -658,21 +658,11 @@ _NODISCARD _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
     return _Mem_fn<_Rx _Ty::*>(_Pm);
 }
 
-#if _HAS_CXX20
-// STRUCT identity
-struct identity {
-    template <class _Ty>
-    _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
-        return _STD forward<_Ty>(_Left);
-    }
-
-    using is_transparent = int;
-};
-#endif // _HAS_CXX20
-
 #if _HAS_CXX17
 // FUNCTION TEMPLATE not_fn
-struct _Not_fn_tag {};
+struct _Not_fn_tag {
+    explicit _Not_fn_tag() = default;
+};
 
 template <class _Decayed>
 class _Not_fn : private _Ebco_base<_Decayed> {
@@ -821,7 +811,7 @@ public:
 
     template <class _Other1, class _Other2>
     _Func_impl(_Other1&& _Val, _Other2&& _Ax)
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Other2>(_Ax), _STD forward<_Other1>(_Val)) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Other2>(_Ax), _STD forward<_Other1>(_Val)) {}
 
     // dtor non-virtual due to _Delete_this()
 
@@ -1457,7 +1447,7 @@ private:
 
 public:
     explicit _Binder(_Fx&& _Func, _Types&&... _Args)
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                           \
     template <class... _Unbound>                                                                              \

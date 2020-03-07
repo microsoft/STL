@@ -458,8 +458,9 @@ void swap(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+    unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -753,8 +754,9 @@ void swap(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+    unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

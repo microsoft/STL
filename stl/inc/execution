@@ -4352,7 +4352,9 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
 }
 
 // PARALLEL FUNCTION TEMPLATE exclusive_scan
-struct _No_init_tag {}; // tag to indicate that no initial value is to be used
+struct _No_init_tag {
+    explicit _No_init_tag() = default;
+}; // tag to indicate that no initial value is to be used
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
 _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val) {

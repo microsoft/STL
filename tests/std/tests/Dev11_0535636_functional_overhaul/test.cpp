@@ -683,19 +683,36 @@ using FuncRef = int (&)(float, double);
 STATIC_ASSERT(is_same_v<result_of_t<FuncRef(float, double)>, int>);
 
 
-int triple(int n) {
+constexpr int triple(int n) {
     return n * 3;
 }
 
-int quadruple(int n) {
+constexpr int quadruple(int n) {
     return n * 4;
 }
 
+// separate constexpr and non-constexpr functions are TRANSITION, CWG-1129
 int square(int n) {
     return n * n;
 }
 
+constexpr int square_constexpr(int n) {
+    return n * n;
+}
+
+int square_noexcept(int n) noexcept {
+    return n * n;
+}
+
 int cube(int n) {
+    return n * n * n;
+}
+
+constexpr int cube_constexpr(int n) {
+    return n * n * n;
+}
+
+int cube_noexcept(int n) noexcept {
     return n * n * n;
 }
 
@@ -907,11 +924,15 @@ struct Thing {
     int m_x = 1000;
     int m_y = 20;
 
-    int sum(int z) const {
+    constexpr int sum(int z) const {
         return m_x + m_y + z;
     }
 
-    int product(int z) const {
+    constexpr int sum_noexcept(int z) const noexcept {
+        return m_x + m_y + z;
+    }
+
+    constexpr int product(int z) const {
         return m_x * m_y * z;
     }
 };
@@ -922,18 +943,18 @@ public:
     // "reference_wrapper: Doesn't handle classes that derive from both unary_function and binary_function".
     // The typedefs are tested elsewhere here (see SameResults and DifferentResults).
 
-    UnaryBinary() : m_i(0) {}
+    constexpr UnaryBinary() : m_i(0) {}
 
-    int val() const {
+    constexpr int val() const {
         return m_i;
     }
 
-    int operator()(const int n) {
+    constexpr int operator()(const int n) {
         m_i += 7;
         return n * 10;
     }
 
-    int operator()(const int x, const int y) {
+    constexpr int operator()(const int x, const int y) {
         m_i += 40;
         return x + y;
     }
@@ -959,6 +980,8 @@ void test_reference_wrapper_invocation() {
 
     auto rw_lambda = ref(lambda);
 
+    STATIC_ASSERT(!noexcept(rw_lambda(x)));
+
     assert(rw_lambda(x) == 126 && x == 9);
     assert(rw_lambda(x) == 150 && x == 10);
     assert(rw_lambda(x) == 176 && x == 11);
@@ -969,6 +992,11 @@ void test_reference_wrapper_invocation() {
 
     assert(i == 10);
 
+#ifndef __EDG__ // TRANSITION, DevCom-939485
+    const auto noexcept_lambda     = []() noexcept {};
+    const auto noexcept_lambda_ref = ref(noexcept_lambda);
+    STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // strengthened
+#endif // __EDG__
 
     reference_wrapper<int(int)> rw_fxn(quadruple);
     assert(rw_fxn(9) == 36);
@@ -1032,21 +1060,76 @@ void test_reference_wrapper_invocation() {
 
 
 // Test C++17 invoke().
+#if _HAS_CXX17
+constexpr bool test_invoke_constexpr() {
+    // MSVC implements LWG-2894 in C++17 and later
+    Thing thing;
+    auto p = &thing;
+
+    assert(&invoke(&Thing::m_x, *p) == &p->m_x);
+    // assert(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x); TRANSITION, P1065R2
+    assert(&invoke(&Thing::m_x, p) == &p->m_x);
+
+#ifndef _M_CEE // TRANSITION, DevCom-939490
+    assert(invoke(&Thing::sum, *p, 3) == 1023);
+    // assert(invoke(&Thing::sum, ref(*sp), 4) == 1024); TRANSITION, P1065R2
+    assert(invoke(&Thing::sum, p, 5) == 1025);
+#endif // _M_CEE
+
+    assert(invoke(square_constexpr, 6) == 36);
+    assert(invoke(&cube_constexpr, 7) == 343);
+    return true;
+}
+#endif // _HAS_CXX17
+
 void test_invoke() {
+#if _HAS_CXX17
+    assert(test_invoke_constexpr());
+    STATIC_ASSERT(test_invoke_constexpr());
+#endif // _HAS_CXX17
+
     auto sp = make_shared<Thing>();
 
     assert(&invoke(&Thing::m_x, *sp) == &sp->m_x);
+    STATIC_ASSERT(noexcept(&invoke(&Thing::m_x, *sp) == &sp->m_x));
     assert(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x);
+    STATIC_ASSERT(noexcept(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x));
     assert(&invoke(&Thing::m_x, sp.get()) == &sp->m_x);
+    STATIC_ASSERT(noexcept(&invoke(&Thing::m_x, sp.get()) == &sp->m_x));
     assert(&invoke(&Thing::m_x, sp) == &sp->m_x);
+    STATIC_ASSERT(noexcept(&invoke(&Thing::m_x, sp) == &sp->m_x));
 
     assert(invoke(&Thing::sum, *sp, 3) == 1023);
+    STATIC_ASSERT(!noexcept(invoke(&Thing::sum, *sp, 3) == 1023));
     assert(invoke(&Thing::sum, ref(*sp), 4) == 1024);
+    STATIC_ASSERT(!noexcept(invoke(&Thing::sum, ref(*sp), 4) == 1024));
     assert(invoke(&Thing::sum, sp.get(), 5) == 1025);
+    STATIC_ASSERT(!noexcept(invoke(&Thing::sum, sp.get(), 5) == 1025));
     assert(invoke(&Thing::sum, sp, 6) == 1026);
+    STATIC_ASSERT(!noexcept(invoke(&Thing::sum, sp, 6) == 1026));
+
+#if _HAS_CXX17
+    assert(invoke(&Thing::sum_noexcept, *sp, 3) == 1023);
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023));
+    assert(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024);
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024));
+    assert(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025);
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025));
+    assert(invoke(&Thing::sum_noexcept, sp, 6) == 1026);
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026));
+#endif // _HAS_CXX17
 
     assert(invoke(square, 6) == 36);
+    STATIC_ASSERT(!noexcept(invoke(square, 6) == 36));
     assert(invoke(&cube, 7) == 343);
+    STATIC_ASSERT(!noexcept(invoke(&cube, 7) == 343));
+
+#if _HAS_CXX17
+    assert(invoke(square_noexcept, 6) == 36);
+    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36));
+    assert(invoke(&cube_noexcept, 7) == 343);
+    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343));
+#endif // _HAS_CXX17
 }
 
 
