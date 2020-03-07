@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 RUNALL_INCLUDE .\usual_matrix.lst
-PM_CL="/Gr /EHsc /MT /std:c++latest"
-PM_CL="/Gr /EHsc /MTd /std:c++latest"
-PM_CL="/Gv /EHsc /MT /std:c++latest"
-PM_CL="/Gv /EHsc /MTd /std:c++latest"
-PM_CL="/Gz /EHsc /MT /std:c++latest"
-PM_CL="/Gz /EHsc /MTd /std:c++latest"
+PM_CL="/Gr /EHsc /MT /std:c++latest /w14640 /Zc:threadSafeInit-"
+PM_CL="/Gr /EHsc /MTd /std:c++latest /w14640 /Zc:threadSafeInit-"
+PM_CL="/Gv /EHsc /MT /std:c++latest /w14640 /Zc:threadSafeInit-"
+PM_CL="/Gv /EHsc /MTd /std:c++latest /w14640 /Zc:threadSafeInit-"
+PM_CL="/Gz /EHsc /MT /std:c++latest /w14640 /Zc:threadSafeInit-"
+PM_CL="/Gz /EHsc /MTd /std:c++latest /w14640 /Zc:threadSafeInit-"

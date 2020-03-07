@@ -21,7 +21,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#else
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#endif
+
+#if _USE_STD_VECTOR_ALGORITHMS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -34,8 +40,10 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept;
+__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
+    void* _First1, void* _Last1, void* _First2) noexcept;
 _END_EXTERN_C
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
 
@@ -139,7 +147,6 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
     return _Val;
 }
 
-// constexpr per pending LWG issue, submitted 2020-01-14
 template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     if constexpr (_Has_to_address_v<_Ptr>) {
@@ -148,6 +155,16 @@ _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
         return _STD to_address(_Val.operator->()); // plain pointer overload must come first
     }
 }
+
+// STRUCT identity
+struct identity {
+    template <class _Ty>
+    _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
+        return _STD forward<_Ty>(_Left);
+    }
+
+    using is_transparent = int;
+};
 #endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE _Pass_fn
@@ -305,10 +322,10 @@ template <class>
 struct iterator_traits;
 
 template <class _Ty>
-using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<_Ty>>, incrementable_traits<_Ty>,
-    iterator_traits<_Ty>>::difference_type;
+using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+    incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
 
-// STRUCT TEMPLATE readable_traits
+// STRUCT TEMPLATE indirectly_readable_traits
 template <class>
 struct _Cond_value_type {};
 
@@ -321,32 +338,32 @@ struct _Cond_value_type<_Ty> {
 // clang-format on
 
 template <class>
-struct readable_traits {};
+struct indirectly_readable_traits {};
 
 template <class _Ty>
-struct readable_traits<_Ty*> : _Cond_value_type<_Ty> {};
+struct indirectly_readable_traits<_Ty*> : _Cond_value_type<_Ty> {};
 
 // clang-format off
 template <class _Ty>
     requires is_array_v<_Ty>
-struct readable_traits<_Ty> {
+struct indirectly_readable_traits<_Ty> {
     using value_type = remove_cv_t<remove_extent_t<_Ty>>;
 };
 // clang-format on
 
 template <class _Ty>
-struct readable_traits<const _Ty> : readable_traits<_Ty> {};
+struct indirectly_readable_traits<const _Ty> : indirectly_readable_traits<_Ty> {};
 
 template <_Has_member_value_type _Ty>
-struct readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
+struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
 
 template <_Has_member_element_type _Ty>
-struct readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
+struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
 // ALIAS TEMPLATE iter_value_t
 template <class _Ty>
-using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<_Ty>>, readable_traits<_Ty>,
-    iterator_traits<_Ty>>::value_type;
+using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+    indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
 
 // ALIAS TEMPLATE iter_reference_t
 template <_Dereferenceable _Ty>
@@ -404,11 +421,13 @@ concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
 };
 
 template <class _It>
-concept _Cpp17_input_iterator = _Cpp17_iterator<_It> && equality_comparable<_It>
-    && _Has_member_difference_type<incrementable_traits<_It>> && _Has_member_value_type<readable_traits<_It>>
+concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
+    && equality_comparable<_It>
+    && _Has_member_difference_type<incrementable_traits<_It>>
+    && _Has_member_value_type<indirectly_readable_traits<_It>>
     && requires(_It __i) {
-        typename common_reference_t<iter_reference_t<_It>&&, typename readable_traits<_It>::value_type&>;
-        typename common_reference_t<decltype(*__i++)&&, typename readable_traits<_It>::value_type&>;
+        typename common_reference_t<iter_reference_t<_It>&&, typename indirectly_readable_traits<_It>::value_type&>;
+        typename common_reference_t<decltype(*__i++)&&, typename indirectly_readable_traits<_It>::value_type&>;
         requires signed_integral<typename incrementable_traits<_It>::difference_type>;
     };
 
@@ -537,7 +556,7 @@ struct _Iter_traits_category2<false> {
 // clang-format off
 template <class _It>
 concept _Cpp17_forward_delta = constructible_from<_It> && is_lvalue_reference_v<iter_reference_t<_It>>
-    && same_as<remove_cvref_t<iter_reference_t<_It>>, typename readable_traits<_It>::value_type>
+    && same_as<remove_cvref_t<iter_reference_t<_It>>, typename indirectly_readable_traits<_It>::value_type>
     && requires(_It __i) {
         { __i++ } -> convertible_to<const _It&>;
         requires same_as<decltype(*__i++), iter_reference_t<_It>>;
@@ -562,7 +581,7 @@ template <class _It>
 struct _Iterator_traits_base<_It> {
     using iterator_category = typename _Iter_traits_category<_Has_member_iterator_category<_It>>::template _Apply<_It>;
     using difference_type   = typename incrementable_traits<_It>::difference_type;
-    using value_type        = typename readable_traits<_It>::value_type;
+    using value_type        = typename indirectly_readable_traits<_It>::value_type;
     using pointer           = typename _Iter_traits_pointer<(
         _Has_member_pointer<_It> ? _Itraits_pointer_strategy::_Use_member
                                  : _Has_op_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
@@ -600,12 +619,13 @@ namespace ranges {
     };
 
     namespace _Iter_move {
-        void iter_move(); // Block unqualified lookup per LWG-3247
+        void iter_move(); // Block unqualified name lookup
 
         // clang-format off
         template <class _Ty>
-        concept _Has_ADL = _Has_class_or_enum_type<_Ty> // Per LWG-3299
-            && requires(_Ty&& __t) { iter_move(static_cast<_Ty&&>(__t)); };
+        concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty&& __t) {
+            iter_move(static_cast<_Ty&&>(__t));
+        };
 
         template <class _Ty>
         concept _Can_deref = requires(_Ty&& __t) {
@@ -666,24 +686,29 @@ template <class _Ty>
     }
 using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
 
-// CONCEPT readable
+// CONCEPT indirectly_readable
 template <class _It>
-concept readable = requires {
+concept _Indirectly_readable_impl = requires(const _It __i) {
     typename iter_value_t<_It>;
     typename iter_reference_t<_It>;
     typename iter_rvalue_reference_t<_It>;
+    { *__i } -> same_as<iter_reference_t<_It>>;
+    { _RANGES iter_move(__i) } -> same_as<iter_rvalue_reference_t<_It>>;
 } && common_reference_with<iter_reference_t<_It>&&, iter_value_t<_It>&>
   && common_reference_with<iter_reference_t<_It>&&, iter_rvalue_reference_t<_It>&&>
   && common_reference_with<iter_rvalue_reference_t<_It>&&, const iter_value_t<_It>&>;
+
+template <class _It>
+concept indirectly_readable = _Indirectly_readable_impl<remove_cvref_t<_It>>;
 // clang-format on
 
 // ALIAS TEMPLATE iter_common_reference_t
-template <readable _Ty>
+template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, iter_value_t<_Ty>&>;
 
-// CONCEPT writable
+// CONCEPT indirectly_writable
 template <class _It, class _Ty>
-concept writable = requires(_It&& __i, _Ty&& __t) {
+concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
     *__i                                                                = static_cast<_Ty&&>(__t);
     *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
     const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
@@ -699,6 +724,10 @@ concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && req
     { ++__i } -> same_as<_Ty&>;
     __i++;
 };
+
+// ALIAS TEMPLATE _Make_unsigned_like_t
+template <class _Ty>
+using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
 // CONCEPT incrementable
 template <class _Ty>
@@ -775,14 +804,16 @@ using _Iter_concept = typename _Iter_concept_impl<_It>::type;
 // clang-format off
 // CONCEPT input_iterator
 template <class _It>
-concept input_iterator = input_or_output_iterator<_It> && readable<_It> && requires { typename _Iter_concept<_It>; }
+concept input_iterator = input_or_output_iterator<_It> && indirectly_readable<_It>
+    && requires { typename _Iter_concept<_It>; }
     && derived_from<_Iter_concept<_It>, input_iterator_tag>;
 
 // CONCEPT output_iterator
 template <class _It, class _Ty>
-concept output_iterator = input_or_output_iterator<_It> && writable<_It, _Ty> && requires(_It __i, _Ty&& __t) {
-    *__i++ = static_cast<_Ty&&>(__t);
-};
+concept output_iterator = input_or_output_iterator<_It> && indirectly_writable<_It, _Ty>
+    && requires(_It __i, _Ty&& __t) {
+        *__i++ = static_cast<_Ty&&>(__t);
+    };
 
 // CONCEPT forward_iterator
 template <class _It>
@@ -820,15 +851,94 @@ concept contiguous_iterator = random_access_iterator<_It>
         { _STD to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_It>>>;
     };
 
+// CONCEPT indirectly_unary_invocable
+template <class _Fn, class _It>
+concept indirectly_unary_invocable = indirectly_readable<_It>
+    && copy_constructible<_Fn>
+    && invocable<_Fn&, iter_value_t<_It>&>
+    && invocable<_Fn&, iter_reference_t<_It>>
+    && invocable<_Fn&, iter_common_reference_t<_It>>
+    && common_reference_with<
+        invoke_result_t<_Fn&, iter_value_t<_It>&>,
+        invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+
+// CONCEPT indirectly_regular_unary_invocable
+template <class _Fn, class _It>
+concept indirectly_regular_unary_invocable = indirectly_readable<_It>
+    && copy_constructible<_Fn>
+    && regular_invocable<_Fn&, iter_value_t<_It>&>
+    && regular_invocable<_Fn&, iter_reference_t<_It>>
+    && regular_invocable<_Fn&, iter_common_reference_t<_It>>
+    && common_reference_with<
+        invoke_result_t<_Fn&, iter_value_t<_It>&>,
+        invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+
+// CONCEPT indirect_unary_predicate
+template <class _Fn, class _It>
+concept indirect_unary_predicate = indirectly_readable<_It>
+    && copy_constructible<_Fn>
+    && predicate<_Fn&, iter_value_t<_It>&>
+    && predicate<_Fn&, iter_reference_t<_It>>
+    && predicate<_Fn&, iter_common_reference_t<_It>>;
+
+// CONCEPT indirect_binary_predicate
+template <class _Fn, class _It1, class _It2>
+concept indirect_binary_predicate = indirectly_readable<_It1>
+    && indirectly_readable<_It2>
+    && copy_constructible<_Fn>
+    && predicate<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
+    && predicate<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
+    && predicate<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+    && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+    && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+
+// ALIAS TEMPLATE indirect_result_t
+template <class _Fn, class... _Its>
+    requires (indirectly_readable<_Its> && ...)
+        && invocable<_Fn, iter_reference_t<_Its>...>
+using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
+// clang-format on
+
+// STRUCT TEMPLATE projected
+#pragma warning(push)
+#pragma warning(disable : 5046) // '%s': Symbol involving type with internal linkage not defined
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-internal" // function '%s' has internal linkage but is not defined
+#endif // __clang__
+
+template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
+struct projected {
+    using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
+    indirect_result_t<_Proj&, _It> operator*() const;
+};
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+#pragma warning(pop)
+
+template <weakly_incrementable _It, class _Proj>
+struct incrementable_traits<projected<_It, _Proj>> {
+    using difference_type = iter_difference_t<_It>;
+};
+
+// clang-format off
 // CONCEPT indirectly_movable
 template <class _In, class _Out>
-concept indirectly_movable = readable<_In> && writable<_Out, iter_rvalue_reference_t<_In>>;
+concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Out, iter_rvalue_reference_t<_In>>;
 
 // CONCEPT indirectly_movable_storable
 template <class _In, class _Out>
-concept indirectly_movable_storable = indirectly_movable<_In, _Out> && writable<_Out, iter_value_t<_In>>
-    && movable<iter_value_t<_In>> && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
+concept indirectly_movable_storable = indirectly_movable<_In, _Out>
+    && indirectly_writable<_Out, iter_value_t<_In>>
+    && movable<iter_value_t<_In>>
+    && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
     && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
+
+// CONCEPT indirectly_copyable
+template <class _In, class _Out>
+concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
 // clang-format on
 
 // CUSTOMIZATION POINT OBJECT iter_swap
@@ -839,13 +949,14 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty1, class _Ty2>
-        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) // Per LWG-3299
+        concept _Has_ADL = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>)
             && requires(_Ty1&& __t1, _Ty2&& __t2) {
                 iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2));
             };
 
         template <class _Ty1, class _Ty2>
-        concept _Can_swap_references = readable<remove_reference_t<_Ty1>> && readable<remove_reference_t<_Ty2>>
+        concept _Can_swap_references = indirectly_readable<remove_reference_t<_Ty1>>
+            && indirectly_readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
         // clang-format on
 
@@ -904,6 +1015,25 @@ namespace ranges {
         inline constexpr _Iter_swap::_Cpo iter_swap;
     }
 } // namespace ranges
+
+// clang-format off
+// CONCEPT indirectly_swappable
+template <class _It1, class _It2 = _It1>
+concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<_It2>
+    && requires(const _It1 __i1, const _It2 __i2) {
+        _RANGES iter_swap(__i1, __i1);
+        _RANGES iter_swap(__i2, __i2);
+        _RANGES iter_swap(__i1, __i2);
+        _RANGES iter_swap(__i2, __i1);
+    };
+
+// CONCEPT indirectly_comparable
+template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
+concept indirectly_comparable =
+    indirect_binary_predicate<_Rel,
+        projected<_It1, _Proj1>,
+        projected<_It2, _Proj2>>;
+// clang-format on
 
 // ALIAS TEMPLATE _Iter_ref_t
 template <class _Iter>
@@ -1463,10 +1593,12 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <size_t _Value>
 struct _Priority_tag : _Priority_tag<_Value - 1> { // priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <>
 struct _Priority_tag<0> { // base case priority tag for tag dispatch
+    explicit _Priority_tag() = default;
 };
 
 template <class _InIt, class _Pr>
@@ -2009,14 +2141,14 @@ namespace ranges {
     inline constexpr bool _Has_complete_elements<_Ty> = true;
     // clang-format on
 
-    // VARIABLE TEMPLATE ranges::enable_safe_range
+    // VARIABLE TEMPLATE ranges::enable_borrowed_range
     template <class>
-    inline constexpr bool enable_safe_range = false;
+    inline constexpr bool enable_borrowed_range = false;
 
     template <class _Rng>
-    concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_safe_range<remove_cvref_t<_Rng>>;
+    concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
 
-    // CUSTOMIZATION POINT OBJECT ranges::begin (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::begin
     namespace _Begin {
         template <class _Ty>
         void begin(_Ty&) = delete;
@@ -2045,8 +2177,8 @@ namespace ranges {
                 if constexpr (is_array_v<remove_reference_t<_Ty>>) {
                     static_assert(_Has_complete_elements<_Ty>,
                         "The range access customization point objects "
-                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays with incomplete element types.");
+                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, std::ranges::rend, "
+                        "and std::ranges::data do not accept arrays with incomplete element types.");
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
@@ -2083,11 +2215,11 @@ namespace ranges {
         inline constexpr _Begin::_Cpo begin;
     }
 
-    // ALIAS TEMPLATE ranges::iterator_t (Implements D2091R0)
+    // ALIAS TEMPLATE ranges::iterator_t
     template <class _Ty>
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
-    // CUSTOMIZATION POINT OBJECT ranges::end (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
         template <class _Ty>
         void end(_Ty&) = delete;
@@ -2118,8 +2250,8 @@ namespace ranges {
                 if constexpr (is_array_v<_UnRef>) {
                     static_assert(_Has_complete_elements<_UnRef>,
                         "The range access customization point objects "
-                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, and std::ranges::rend "
-                        "do not accept arrays with incomplete element types.");
+                        "std::ranges::begin, std::ranges::end, std::ranges::rbegin, std::ranges::rend, "
+                        "and std::ranges::data do not accept arrays with incomplete element types.");
                     if constexpr (extent_v<_UnRef> != 0) {
                         return {_St::_Array, true};
                     } else {
@@ -2168,10 +2300,10 @@ namespace ranges {
         _RANGES end(__r);
     };
 
-    // CONCEPT ranges::safe_range
+    // CONCEPT ranges::borrowed_range
     // clang-format off
     template <class _Rng>
-    concept safe_range = range<_Rng> && _Should_range_access<_Rng>;
+    concept borrowed_range = range<_Rng> && _Should_range_access<_Rng>;
     // clang-format on
 
     // ALIAS TEMPLATE ranges::sentinel_t
@@ -2226,7 +2358,7 @@ namespace ranges {
         inline constexpr _Cend_fn cend;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::rbegin (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
         template <class _Ty>
         void rbegin(_Ty&) = delete;
@@ -2295,7 +2427,7 @@ namespace ranges {
         inline constexpr _Rbegin::_Cpo rbegin;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::rend (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
         template <class _Ty>
         void rend(_Ty&) = delete;
@@ -2401,7 +2533,7 @@ namespace ranges {
     template <class>
     inline constexpr bool disable_sized_range = false;
 
-    // CUSTOMIZATION POINT OBJECT ranges::size (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::size
     namespace _Size {
         template <class _Ty>
         void size(_Ty&) = delete;
@@ -2470,7 +2602,7 @@ namespace ranges {
                     return size(_Val);
                 } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Subtract) {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
-                    return static_cast<make_unsigned_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
+                    return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
@@ -2483,7 +2615,7 @@ namespace ranges {
         inline constexpr _Size::_Cpo size;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::empty (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::empty
     namespace _Empty {
         // clang-format off
         template <class _Ty>
@@ -2505,13 +2637,13 @@ namespace ranges {
 
         class _Cpo {
         private:
-            enum class _St { _None, _Array, _Member, _Size, _Compare };
+            enum class _St { _None, _Member, _Size, _Compare };
 
             template <class _Ty>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
-                if constexpr (is_array_v<remove_reference_t<_Ty>>) {
-                    return {_St::_Array, true};
+                if constexpr (is_unbounded_array_v<remove_reference_t<_Ty>>) {
+                    return {_St::_None};
                 } else if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(static_cast<bool>(_STD declval<_Ty>().empty()))};
                 } else if constexpr (_Has_size<_Ty>) {
@@ -2533,9 +2665,7 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
-                    return false;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
                     return static_cast<bool>(_Val.empty());
                 } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Size) {
                     return _RANGES size(_Val) == 0;
@@ -2553,7 +2683,7 @@ namespace ranges {
         inline constexpr _Empty::_Cpo empty;
     }
 
-    // CUSTOMIZATION POINT OBJECT ranges::data (Implements D2091R0)
+    // CUSTOMIZATION POINT OBJECT ranges::data
     namespace _Data {
         // clang-format off
         template <class _Ty>
@@ -2629,30 +2759,21 @@ namespace ranges {
     // clang-format off
     // CONCEPT ranges::sized_range
     template <class _Rng>
-    concept sized_range = range<_Rng>
-#if 0 // TRANSITION, LWG-3264
-        && !disable_sized_range<remove_cvref_t<_Rng>>
-#endif // TRANSITION, LWG-3264
-        && requires(_Rng& __r) { _RANGES size(__r); };
+    concept sized_range = range<_Rng> && requires(_Rng& __r) {
+        _RANGES size(__r);
+    };
     // clang-format on
+
+    // ALIAS TEMPLATE ranges::range_size_t
+    template <sized_range _Rng>
+    using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
 
     // STRUCT ranges::view_base
     struct view_base {};
 
     // VARIABLE TEMPLATE ranges::enable_view
-    // clang-format off
     template <class _Ty>
-    concept _Enable_view_impl = derived_from<_Ty, view_base> || !range<_Ty> || !range<const _Ty>
-        || same_as<range_reference_t<_Ty>, range_reference_t<const _Ty>>;
-    // clang-format on
-
-    template <class _Ty>
-    inline constexpr bool enable_view = _Enable_view_impl<_Ty>;
-
-    template <class _Ty>
-    inline constexpr bool enable_view<initializer_list<_Ty>> = false;
-
-    // enable_view specializations for (unordered_)?(multi)?set and match_results are in the corresponding headers.
+    inline constexpr bool enable_view = derived_from<_Ty, view_base>;
 
     // clang-format off
     // CONCEPT ranges::view
@@ -2695,7 +2816,9 @@ namespace ranges {
         // objects from this type to remove some typical object-ish behaviors which helps users avoid depending on their
         // non-specified object-ness.
 
-        struct _Construct_tag {};
+        struct _Construct_tag {
+            explicit _Construct_tag() = default;
+        };
 
         _Not_quite_object() = delete;
 
@@ -2927,6 +3050,28 @@ namespace ranges {
 
         using is_transparent = int;
     };
+
+    // CONCEPT _Not_same_as
+    template <class _Ty1, class _Ty2>
+    concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
+
+    // CONCEPT ranges::common_range
+    // clang-format off
+    template <class _Rng>
+    concept common_range = range<_Rng>
+        && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+    // clang-format on
+
+    // STRUCT ranges::dangling
+    struct dangling {
+        constexpr dangling() noexcept = default;
+        template <class... _Args>
+        constexpr dangling(_Args&&...) noexcept {}
+    };
+
+    // ALIAS TEMPLATE ranges::borrowed_iterator_t
+    template <range _Rng>
+    using borrowed_iterator_t = conditional_t<borrowed_range<_Rng>, iterator_t<_Rng>, dangling>;
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -3503,7 +3648,7 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, cons
 // FUNCTION TEMPLATE make_move_iterator
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
-    return move_iterator<_Iter>(_It);
+    return move_iterator<_Iter>(_STD move(_It));
 }
 
 #ifdef __cpp_lib_concepts
@@ -4117,10 +4262,10 @@ struct _Is_character<char8_t> : true_type {}; // UTF-8 code units are sort-of ch
 template <class _Ty>
 struct _Is_character_or_byte : _Is_character<_Ty>::type {};
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 template <>
 struct _Is_character_or_byte<byte> : true_type {};
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
@@ -4286,10 +4431,10 @@ template <class _Elem1, class _Elem2>
 struct _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>>
     : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type {}; // allow memcmping pointers-to-cv-T with equal_to<>
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 template <>
 struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type {}; // allow memcmping std::byte
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 template <class _Elem>
 struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>>
@@ -4554,7 +4699,7 @@ struct _Lex_compare_check_element_types_helper<_Elem1, _Elem2, void>
     // checks the lex_compare element types for memcmp safety for transparent functors (e.g. less<>)
 };
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 template <>
 struct _Lex_compare_check_element_types_helper<byte, byte, byte> : true_type {
     // std::byte with builtin functors (e.g. less<byte>) is memcmp safe
@@ -4564,10 +4709,12 @@ template <>
 struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
     // std::byte with transparent functors (e.g. less<>) is memcmp safe
 };
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 template <class _Memcmp_pr>
-struct _Lex_compare_optimize {}; // optimization tag for lexicographical_compare
+struct _Lex_compare_optimize {
+    explicit _Lex_compare_optimize() = default;
+}; // optimization tag for lexicographical_compare
 
 template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
 using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
@@ -4575,23 +4722,21 @@ using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
     void>>; // checks the lex_compare element types for memcmp safety
 
 template <class _InIt1, class _InIt2, class _Pr>
-constexpr _Lex_compare_optimize<void> _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
+constexpr auto _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
     // return lex_compare optimization category for arbitrary iterators
-    return {};
+    return _Lex_compare_optimize<void>{};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-constexpr _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
-    _Obj1* const&, _Obj2* const&, const less<_FTy>&) {
+constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const less<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and less<_FTy>
-    return {};
+    return _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy>{};
 }
 
 template <class _Obj1, class _Obj2, class _FTy>
-constexpr _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy> _Lex_compare_memcmp_classify(
-    _Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
+constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
     // return lex_compare optimization category for pointer iterators and greater<_FTy>
-    return {};
+    return _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy>{};
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
@@ -4998,7 +5143,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<decltype(_UFirst)>;
     constexpr bool _Allow_vectorization =
         conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
@@ -5036,7 +5181,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
             return;
         }
     }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
         _STD iter_swap(_UFirst, _ULast);
@@ -5051,7 +5196,7 @@ void _Reverse_unchecked1(_BidIt _First, _BidIt _Last, integral_constant<size_t, 
     }
 }
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
 template <class _BidIt>
 void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 1>) {
     // reverse elements in [_First, _Last), pointers to trivially swappable of size 1
@@ -5075,12 +5220,12 @@ void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_const
     // reverse elements in [_First, _Last), pointers to trivially swappable of size 8
     __std_reverse_trivially_swappable_8(_First, _Last);
 }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 template <class _BidIt>
 void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
     // reverse elements in [_First, _Last), choose optimization
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<_BidIt>;
     constexpr size_t _Opt =
         is_pointer_v<_BidIt> //
@@ -5091,7 +5236,7 @@ void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
             : 0;
 #else // ^^^ vectorize / no vectorize vvv
     constexpr size_t _Opt = 0;
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#endif // _USE_STD_VECTOR_ALGORITHMS
     _Reverse_unchecked1(_First, _Last, integral_constant<size_t, _Opt>{});
 }
 
@@ -5301,6 +5446,37 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
     return _STD lower_bound(_First, _Last, _Val, less<>());
 }
 
+// FUNCTION TEMPLATE _Swap_ranges_unchecked
+template <class _FwdIt1, class _FwdIt2>
+_CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
+    // swap [_First1, _Last1) with [_First2, ...), no special optimization
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+        _STD iter_swap(_First1, _First2);
+    }
+
+    return _First2;
+}
+
+#if _USE_STD_VECTOR_ALGORITHMS
+template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
+_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
+    // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
+        return _First2 + (_Last1 - _First1);
+    }
+
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+        _STD iter_swap(_First1, _First2);
+    }
+
+    return _First2;
+}
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 // CLASS TEMPLATE _Rng_from_urng
 template <class _Diff, class _Urng>
 class _Rng_from_urng { // wrap a URNG as an RNG
@@ -5368,137 +5544,6 @@ private:
     _Udiff _Bmask; // 2^_Bits - 1
 };
 
-// CLASS TEMPLATE _Yarn
-template <class _Elem>
-class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
-public:
-    __CLR_OR_THIS_CALL _Yarn() noexcept : _Myptr(nullptr), _Nul(0) {}
-
-    __CLR_OR_THIS_CALL _Yarn(const _Yarn& _Right) noexcept : _Myptr(nullptr), _Nul(0) {
-        *this = _Right;
-    }
-
-    __CLR_OR_THIS_CALL _Yarn(const _Elem* _Right) noexcept : _Myptr(nullptr), _Nul(0) {
-        *this = _Right;
-    }
-
-    _Yarn& __CLR_OR_THIS_CALL operator=(const _Yarn& _Right) noexcept {
-        return *this = _Right._Myptr;
-    }
-
-    _Yarn& __CLR_OR_THIS_CALL operator=(const _Elem* _Right) noexcept {
-        if (_Myptr != _Right) { // new value, discard old and copy new
-            _Tidy();
-
-            if (_Right) { // new is not empty, copy it
-                const _Elem* _Ptr = _Right;
-                while (*_Ptr != _Elem{}) {
-                    ++_Ptr;
-                }
-
-                const auto _Count = (++_Ptr - _Right) * sizeof(_Elem);
-
-#ifdef _DEBUG
-                _Myptr = static_cast<_Elem*>(_malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
-#else // _DEBUG
-                _Myptr = static_cast<_Elem*>(_CSTD malloc(_Count));
-#endif // _DEBUG
-
-                if (_Myptr) {
-                    _CSTD memcpy(_Myptr, _Right, _Count);
-                }
-            }
-        }
-
-        return *this;
-    }
-
-    __CLR_OR_THIS_CALL ~_Yarn() noexcept {
-        _Tidy();
-    }
-
-    _NODISCARD bool __CLR_OR_THIS_CALL empty() const noexcept {
-        return _Myptr == nullptr;
-    }
-
-    _Ret_z_ const _Elem* __CLR_OR_THIS_CALL c_str() const noexcept {
-        return _Myptr ? _Myptr : &_Nul;
-    }
-
-    _NODISCARD bool __CLR_OR_THIS_CALL _Empty() const noexcept {
-        return _Myptr == nullptr;
-    }
-
-    _Ret_z_ const _Elem* __CLR_OR_THIS_CALL _C_str() const noexcept {
-        return _Myptr ? _Myptr : &_Nul;
-    }
-
-private:
-    void __CLR_OR_THIS_CALL _Tidy() noexcept {
-        if (_Myptr) {
-#ifdef _DEBUG
-            _free_dbg(_Myptr, _CRT_BLOCK);
-#else // _DEBUG
-            _CSTD free(_Myptr);
-#endif // _DEBUG
-        }
-
-        _Myptr = nullptr;
-    }
-
-    _Elem* _Myptr; // pointer to allocated string
-    _Elem _Nul; // nul terminator for unallocated string
-};
-
-
-// CLASS TEMPLATE back_insert_iterator
-template <class _Container>
-class back_insert_iterator { // wrap pushes to back of container as output iterator
-public:
-    using iterator_category = output_iterator_tag;
-    using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
-
-    using container_type = _Container;
-
-    explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */ : container(_STD addressof(_Cont)) {}
-
-    back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
-        container->push_back(_Val);
-        return *this;
-    }
-
-    back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
-        container->push_back(_STD move(_Val));
-        return *this;
-    }
-
-    _NODISCARD back_insert_iterator& operator*() noexcept /* strengthened */ {
-        return *this;
-    }
-
-    back_insert_iterator& operator++() noexcept /* strengthened */ {
-        return *this;
-    }
-
-    back_insert_iterator operator++(int) noexcept /* strengthened */ {
-        return *this;
-    }
-
-protected:
-    _Container* container; // pointer to container
-};
-
-// FUNCTION TEMPLATE back_inserter
-template <class _Container>
-_NODISCARD back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
-    // return a back_insert_iterator
-    return back_insert_iterator<_Container>(_Cont);
-}
-
-
 // STRUCT TEMPLATE _Has_allocator_type
 template <class _Ty, class _Alloc, class = void>
 struct _Has_allocator_type : false_type { // tests for suitable _Ty::allocator_type
@@ -5541,33 +5586,6 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using pointer           = _Pointer;
     using reference         = _Reference;
 };
-
-// STRUCT TEMPLATE _Tidy_guard
-template <class _Ty>
-struct _Tidy_guard { // class with destructor that calls _Tidy
-    _Ty* _Target;
-    ~_Tidy_guard() {
-        if (_Target) {
-            _Target->_Tidy();
-        }
-    }
-};
-
-// STRUCT TEMPLATE _Tidy_deallocate_guard
-template <class _Ty>
-struct _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
-    _Ty* _Target;
-    ~_Tidy_deallocate_guard() {
-        if (_Target) {
-            _Target->_Tidy_deallocate();
-        }
-    }
-};
-
-// VARIABLE TEMPLATE _Nothrow_compare
-template <class _Keycmp, class _Lhs, class _Rhs>
-_INLINE_VAR constexpr bool _Nothrow_compare = noexcept(
-    static_cast<bool>(_STD declval<const _Keycmp&>()(_STD declval<const _Lhs&>(), _STD declval<const _Rhs&>())));
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

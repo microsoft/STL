@@ -166,7 +166,6 @@ int main() {
 
 #if _HAS_CXX20
     test_iterator<span<int>::iterator>();
-    test_iterator<span<int>::const_iterator>();
 #endif // _HAS_CXX20
 
     test_iterator<sregex_iterator>();
