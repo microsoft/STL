@@ -109,6 +109,8 @@
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
+// P1065R2 constexpr INVOKE
+//   (the std::invoke function only; other components like bind and reference_wrapper will be C++20 only)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -140,6 +142,7 @@
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
+// P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
@@ -169,21 +172,32 @@
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1207R4 Movability Of Single-Pass Iterators
+//     (partially implemented)
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
+// P1243R4 Rangify New Algorithms
+//     (partially implemented)
+// P1248R1 Fixing Relations
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1394R4 Range Constructor For span
 // P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
+// P1474R1 Helpful Pointers For contiguous_iterator
 // P1612R1 Relocating endian To <bit>
 // P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
+// P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
-// P1870R1 safe_range
+// P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
 // P1872R0 span Should Have size_type, Not index_type
+// P1878R1 Constraining Readable Types
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1964R2 Replacing boolean With boolean-testable
+// P2091R0 Fixing Issues With Range Access CPOs
+// P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P????R? directory_entry::clear_cache()
 
@@ -1068,6 +1082,10 @@
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_bind_front   201907L
 
+#ifndef __EDG__ // TRANSITION, VSO-1041044
+#define __cpp_lib_bit_cast 201806L
+#endif // __EDG__
+
 #if defined(__clang__) || defined(__EDG__)
 #define __cpp_lib_bitops 201907L
 #else // ^^^ Clang and EDG / MSVC vvv
@@ -1083,11 +1101,6 @@
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
 #define __cpp_lib_concepts 201907L
-
-// P0898R3 (as modified by P1754R1) std::boolean
-#ifndef _HAS_STD_BOOLEAN
-#define _HAS_STD_BOOLEAN 1
-#endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
 #define __cpp_lib_constexpr_algorithms     201806L

@@ -50,6 +50,12 @@ namespace std_testing {
         // expensive, and even for relatively cheap to copy function objects we care (somewhat) about debug
         // mode perf.
 
+        struct Immobile {
+            Immobile()                = default;
+            Immobile(const Immobile&) = delete;
+            Immobile& operator=(const Immobile&) = delete;
+        };
+
         struct MoveOnly {
             MoveOnly()                = default;
             MoveOnly(const MoveOnly&) = delete;
@@ -98,14 +104,14 @@ namespace std_testing {
             void operator()(const T&) {}
         };
 
-        struct Rng : MoveOnly {
+        struct Rng : Immobile {
             template <typename Integral>
             Integral operator()(Integral) {
                 return 0;
             }
         };
 
-        struct Urng : MoveOnly {
+        struct Urng : Immobile {
             typedef unsigned int result_type;
             unsigned int operator()() {
                 return 4; // chosen by fair dice roll; guaranteed to be random

@@ -1576,7 +1576,9 @@ private:
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _Elem, class _Traits>
-    inline constexpr bool enable_safe_range<basic_string_view<_Elem, _Traits>> = true;
+    inline constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
+    template <class _Elem, class _Traits>
+    inline constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
 #endif // __cpp_lib_concepts
 

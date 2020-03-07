@@ -72,6 +72,160 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
     aligned_union_t<0, _Ty> _Stack_space[_Optimistic_count];
 };
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // CONCEPT _Convertible_from
+    template <class _To, class _From>
+    concept _Convertible_from = convertible_to<_From, _To>;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
+#endif // __clang__
+
+    // STRUCT TEMPLATE in_fun_result
+    template <class _In, class _Fn>
+    struct in_fun_result {
+        [[no_unique_address]] _In in;
+        [[no_unique_address]] _Fn fun;
+
+        // clang-format off
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fn&> _FFn>
+        constexpr operator in_fun_result<_IIn, _FFn>() const & {
+            return {in, fun};
+        }
+
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Fn> _FFn>
+        constexpr operator in_fun_result<_IIn, _FFn>() && {
+            return {_STD move(in), _STD move(fun)};
+        }
+        // clang-format on
+    };
+
+    // STRUCT TEMPLATE in_in_result
+    template <class _In1, class _In2>
+    struct in_in_result {
+        [[no_unique_address]] _In1 in1;
+        [[no_unique_address]] _In2 in2;
+
+        // clang-format off
+        template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2>
+        constexpr operator in_in_result<_IIn1, _IIn2>() const & {
+            return {in1, in2};
+        }
+
+        template <_Convertible_from<_In1> _IIn1, _Convertible_from<_In2> _IIn2>
+        constexpr operator in_in_result<_IIn1, _IIn2>() && {
+            return {_STD move(in1), _STD move(in2)};
+        }
+        // clang-format on
+    };
+
+    // STRUCT TEMPLATE in_out_result
+    template <class _In, class _Out>
+    struct in_out_result {
+        [[no_unique_address]] _In in;
+        [[no_unique_address]] _Out out;
+
+        // clang-format off
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
+        constexpr operator in_out_result<_IIn, _OOut>() const & {
+            return {in, out};
+        }
+
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out> _OOut>
+        constexpr operator in_out_result<_IIn, _OOut>() && {
+            return {_STD move(in), _STD move(out)};
+        }
+        // clang-format on
+    };
+
+    // STRUCT TEMPLATE in_in_out_result
+    template <class _In1, class _In2, class _Out>
+    struct in_in_out_result {
+        [[no_unique_address]] _In1 in1;
+        [[no_unique_address]] _In2 in2;
+        [[no_unique_address]] _Out out;
+
+        // clang-format off
+        template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2,
+            _Convertible_from<const _Out&> _OOut>
+        constexpr operator in_in_out_result<_IIn1, _IIn2, _OOut>() const & {
+            return {in1, in2, out};
+        }
+
+        template <_Convertible_from<_In1> _IIn1, _Convertible_from<_In2> _IIn2, _Convertible_from<_Out> _OOut>
+        constexpr operator in_in_out_result<_IIn1, _IIn2, _OOut>() && {
+            return {_STD move(in1), _STD move(in2), _STD move(out)};
+        }
+        // clang-format on
+    };
+
+    // STRUCT TEMPLATE in_out_out_result
+    template <class _In, class _Out1, class _Out2>
+    struct in_out_out_result {
+        [[no_unique_address]] _In in;
+        [[no_unique_address]] _Out1 out1;
+        [[no_unique_address]] _Out2 out2;
+
+        // clang-format off
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out1&> _OOut1,
+            _Convertible_from<const _Out2&> _OOut2>
+        constexpr operator in_out_out_result<_IIn, _OOut1, _OOut2>() const & {
+            return {in, out1, out2};
+        }
+
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out1> _OOut1, _Convertible_from<_Out2> _OOut2>
+        constexpr operator in_out_out_result<_IIn, _OOut1, _OOut2>() && {
+            return {_STD move(in), _STD move(out1), _STD move(out2)};
+        }
+        // clang-format on
+    };
+
+    // STRUCT TEMPLATE min_max_result
+    template <class _Ty>
+    struct min_max_result {
+        [[no_unique_address]] _Ty min;
+        [[no_unique_address]] _Ty max;
+
+        // clang-format off
+        template <_Convertible_from<const _Ty&> _Ty2>
+        constexpr operator min_max_result<_Ty2>() const & {
+            return {min, max};
+        }
+
+        template <_Convertible_from<_Ty> _Ty2>
+        constexpr operator min_max_result<_Ty2>() && {
+            return {_STD move(min), _STD move(max)};
+        }
+        // clang-format on
+    };
+
+    // STRUCT TEMPLATE in_found_result
+    template <class _In>
+    struct in_found_result {
+        [[no_unique_address]] _In in;
+        bool found;
+
+        // clang-format off
+        template <_Convertible_from<const _In&> _IIn>
+        constexpr operator in_found_result<_IIn>() const & {
+            return {in, found};
+        }
+
+        template <_Convertible_from<_In> _IIn>
+        constexpr operator in_found_result<_IIn>() && {
+            return {_STD move(in), found};
+        }
+        // clang-format on
+    };
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE for_each
 template <class _InIt, class _Fn>
 _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
@@ -132,11 +286,147 @@ _SourceTy* for_each_n(
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE for_each_result
+    template <class _It, class _Fn>
+    using for_each_result = in_fun_result<_It, _Fn>;
+
+    // VARIABLE ranges::for_each
+    class _For_each_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirectly_unary_invocable<projected<_It, _Pj>> _Fn>
+        constexpr for_each_result<_It, _Fn> operator()(_It _First, _Se _Last, _Fn _Func, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                _STD invoke(_Func, _STD invoke(_Proj, *_UFirst));
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return {_STD move(_First), _STD move(_Func)};
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirectly_unary_invocable<projected<iterator_t<_Rng>, _Pj>> _Fn>
+        constexpr for_each_result<borrowed_iterator_t<_Rng>, _Fn> operator()(
+            _Rng&& _Range, _Fn _Func, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Func), _Pass_fn(_Proj));
+        }
+    };
+
+    inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE for_each_n_result
+    template <class _It, class _Fn>
+    using for_each_n_result = in_fun_result<_It, _Fn>;
+
+    // VARIABLE ranges::for_each_n
+    class _For_each_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, class _Pj = identity, indirectly_unary_invocable<projected<_It, _Pj>> _Fn>
+        constexpr for_each_n_result<_It, _Fn> operator()(
+            _It _First, iter_difference_t<_It> _Count, _Fn _Func, _Pj _Proj = {}) const {
+            if (0 < _Count) {
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+                do {
+                    _STD invoke(_Func, _STD invoke(_Proj, *_UFirst));
+                    --_Count;
+                    ++_UFirst;
+                } while (0 < _Count);
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
+            }
+
+            return {_STD move(_First), _STD move(_Func)};
+        }
+    };
+
+    inline constexpr _For_each_n_fn for_each_n{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::find
+    class _Find_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            // Performance note: investigate using _Find_unchecked when same_as<_Pj, identity>
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Proj, *_UFirst) == _Val) {
+                    break;
+                }
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Val, _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_fn find{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 #if _HAS_CXX17
 // PARALLEL FUNCTION TEMPLATE find_if
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_if
+    class _Find_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    break;
+                }
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE find_if_not
 template <class _InIt, class _Pr>
@@ -159,6 +449,42 @@ _NODISCARD _CONSTEXPR20 _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_if_not
+    class _Find_if_not_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    break;
+                }
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE adjacent_find
 template <class _FwdIt, class _Pr>
@@ -196,6 +522,45 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::count
+    class _Count_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
+        _NODISCARD constexpr iter_difference_t<_It> operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+
+            auto _UFirst                  = _Get_unwrapped(_STD move(_First));
+            const auto _ULast             = _Get_unwrapped(_STD move(_Last));
+            iter_difference_t<_It> _Count = 0;
+
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Proj, *_UFirst) == _Val) {
+                    ++_Count;
+                }
+            }
+
+            return _Count;
+        }
+
+        template <input_range _Rng, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Val, _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Count_fn count{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE count_if
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) {
@@ -218,6 +583,42 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _Iter_diff_t<_FwdIt> count_if(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::count_if
+    class _Count_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst                  = _Get_unwrapped(_STD move(_First));
+            const auto _ULast             = _Get_unwrapped(_STD move(_Last));
+            iter_difference_t<_It> _Count = 0;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    ++_Count;
+                }
+            }
+
+            return _Count;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Count_if_fn count_if{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE mismatch
 template <class _InIt1, class _InIt2, class _Pr>
@@ -394,6 +795,194 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE mismatch_result
+    template <class _In1, class _In2>
+    using mismatch_result = in_in_result<_In1, _In2>;
+
+    // VARIABLE ranges::mismatch
+    class _Mismatch_fn : private _Not_quite_object {
+    private:
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr mismatch_result<_It1, _It2> _Mismatch_n(
+            _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+
+            for (; _Count != 0; ++_UFirst1, (void) ++_UFirst2, --_Count) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
+                    break;
+                }
+            }
+
+            _Seek_wrapped(_First1, _STD move(_UFirst1));
+            _Seek_wrapped(_First2, _STD move(_UFirst2));
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr mismatch_result<_It1, _It2> _Mismatch_4(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
+            const auto _ULast1 = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
+            const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
+
+            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
+                    break;
+                }
+            }
+
+            _Seek_wrapped(_First1, _STD move(_UFirst1));
+            _Seek_wrapped(_First2, _STD move(_UFirst2));
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1,
+            _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+
+            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                iter_difference_t<_It1> _Count1 = _Last1 - _First1;
+                const iter_difference_t<_It2> _Count2 = _Last2 - _First2;
+                if (_Count1 > _Count2) {
+                    _Count1 = static_cast<decltype(_Count1)>(_Count2);
+                }
+
+                return _Mismatch_n(_STD move(_First1), _STD move(_First2), _Count1,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Mismatch_4(_STD move(_First1), _STD move(_Last1), _STD move(_First2), _STD move(_Last2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+
+        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
+                range_difference_t<_Rng1> _Count1 = _RANGES distance(_Range1);
+                const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
+                if (_Count1 > _Count2) {
+                    _Count1 = static_cast<range_difference_t<_Rng1>>(_Count2);
+                }
+
+                return _Mismatch_n(_RANGES begin(_Range1), _RANGES begin(_Range2), _Count1,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Mismatch_4(_RANGES begin(_Range1), _RANGES end(_Range1),
+                    _RANGES begin(_Range2), _RANGES end(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Mismatch_fn mismatch{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::equal
+    class _Equal_fn : private _Not_quite_object {
+    private:
+        template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Equal_count(
+            _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Equal_4(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            for (;;) {
+                if (_First1 == _Last1) {
+                    return _First2 == _Last2;
+                } else if (_First2 == _Last2) {
+                    return false;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    return false;
+                }
+
+                ++_First1;
+                ++_First2;
+            }
+        }
+
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
+
+            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                const auto _Count = _ULast1 - _UFirst1;
+                if (_Count != _ULast2 - _UFirst2) {
+                    return false;
+                }
+
+                return _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2), _Count,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Equal_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+
+        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
+                using _Size1 = _Make_unsigned_like_t<range_size_t<_Rng1>>;
+                const auto _Count = static_cast<_Size1>(_RANGES size(_Range1));
+                using _Size2 = _Make_unsigned_like_t<range_size_t<_Rng2>>;
+                if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
+                    return false;
+                }
+                return _Equal_count(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES begin(_Range2)),
+                    _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Equal_4(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES end(_Range1)),
+                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Equal_fn equal{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE all_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
@@ -413,6 +1002,39 @@ _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // t
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::all_of
+    class _All_of_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+    };
+
+    inline constexpr _All_of_fn all_of{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE any_of
 template <class _InIt, class _Pr>
@@ -435,6 +1057,39 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::any_of
+    class _Any_of_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+    };
+
+    inline constexpr _Any_of_fn any_of{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE none_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
@@ -455,6 +1110,105 @@ _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr 
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::none_of
+    class _None_of_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+    };
+
+    inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE copy_result
+    template <class _In, class _Out>
+    using copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::copy
+    class _Copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+            requires indirectly_copyable<_It, _Out>
+        constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst, (void) ++_Result) {
+                *_Result = *_UFirst;
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Copy_fn copy{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE copy_n_result
+    template <class _In, class _Out>
+    using copy_n_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::copy_n
+    class _Copy_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, weakly_incrementable _Out>
+            requires indirectly_copyable<_It, _Out>
+        constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Result) const {
+            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            for (; _Count > 0; ++_UFirst, (void) ++_Result, --_Count) {
+                *_Result = *_UFirst;
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr copy_n_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Copy_n_fn copy_n{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE copy_if
 template <class _InIt, class _OutIt, class _Pr>
@@ -504,6 +1258,52 @@ _DestTy* copy_if(
 }
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE copy_if_result
+    template <class _In, class _Out>
+    using copy_if_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::copy_if
+    class _Copy_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+            requires indirectly_copyable<_It, _Out>
+        constexpr copy_if_result<_It, _Out> operator()(
+            _It _First, _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
+                    *_Result = *_UFirst;
+                    ++_Result;
+                }
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
+            return (*this)(
+                _RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
