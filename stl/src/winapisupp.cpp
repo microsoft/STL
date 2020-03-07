@@ -533,10 +533,9 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
     GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 }
 
-void __cdecl __crtAtomic_wait_direct(
-    const void* _Storage, void* _Comparand, size_t _Size) noexcept {
+void __cdecl __crtAtomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size) noexcept {
     DYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress);
-    pfWaitOnAddress((volatile void*)_Storage, _Comparand, _Size, INFINITE);
+    pfWaitOnAddress((volatile void*) _Storage, _Comparand, _Size, INFINITE);
 }
 
 void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept {
@@ -564,7 +563,7 @@ extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {0};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
-    HINSTANCE hSynch = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
+    HINSTANCE hSynch    = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
 
     STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
     STOREFUNCTIONPOINTER(hKernel32, FlsFree);
