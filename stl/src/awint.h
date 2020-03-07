@@ -224,8 +224,8 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 #define __crtAtomic_wait_direct(_Storage, _Comparand, _Size, _Spin_context) \
     WaitOnAddress((voatile void*) _Storage, _Comparand, _Size)
 
-#define _cdecl __crtAtomic_notify_one_direct(void* _Storage) WakeByAddressSingle(_Storage)
-#define _cdecl __crtAtomic_notify_all_direct(void* _Storage) WakeByAddressAll(_Storage)
+#define __crtAtomic_notify_one_direct(void* _Storage) WakeByAddressSingle(_Storage)
+#define __crtAtomic_notify_all_direct(void* _Storage) WakeByAddressAll(_Storage)
 
 
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
