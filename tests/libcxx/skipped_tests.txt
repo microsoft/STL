@@ -779,6 +779,11 @@ language.support\cmp\cmp.weakord\weakord.pass.cpp
 # error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
 containers\sequences\array\array.creation\to_array.pass.cpp
 
+# Tests that need to learn that insert iterators have non-void difference type in C++20
+iterators\predef.iterators\insert.iterators\back.insert.iterator\types.pass.cpp
+iterators\predef.iterators\insert.iterators\front.insert.iterator\types.pass.cpp
+iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
