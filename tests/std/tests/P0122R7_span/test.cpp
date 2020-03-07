@@ -959,16 +959,6 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(sp_nine.rend()), span<int, 9>::reverse_iterator>);
     }
 
-    {
-        span<int, 3> sp_three(arr);
-
-        auto& [x, y, z] = sp_three;
-
-        assert(&x == begin(arr));
-        assert(&y == begin(arr) + 1);
-        assert(&z == begin(arr) + 2);
-    }
-
     return true;
 }
 
