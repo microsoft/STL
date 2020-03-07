@@ -12,6 +12,11 @@
 #include <sstream>
 #include <ymath.h>
 
+#if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
+#include <bit>
+#include <cstdint>
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -85,9 +90,15 @@ public:
         return _CSTD _Dtest(&_Tmp) == _INFCODE;
     }
 
-    static bool _Isnan(_Ty _Left) {
+    static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
         double _Tmp = static_cast<double>(_Left);
-        return _CSTD _Dtest(&_Tmp) == _NANCODE;
+#if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
+        if (_STD is_constant_evaluated()) {
+            uint64_t _Uint = _STD bit_cast<uint64_t>(_Tmp);
+            return ((_Uint >> 32) & 0x7fffffffU) + (_Uint != 0U) > 0x7ff00000U;
+        } else
+#endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
+            return _CSTD _Dtest(&_Tmp) == _NANCODE;
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -199,8 +210,14 @@ public:
         return _CSTD _LDtest(&_Left) == _INFCODE;
     }
 
-    static bool _Isnan(_Ty _Left) {
-        return _CSTD _LDtest(&_Left) == _NANCODE;
+    static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
+#if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
+        if (_STD is_constant_evaluated()) {
+            uint64_t _Tmp = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
+            return ((_Tmp >> 32) & 0x7fffffffU) + (_Tmp != 0U) > 0x7ff00000U;
+        } else
+#endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
+            return _CSTD _LDtest(&_Left) == _NANCODE;
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -312,8 +329,14 @@ public:
         return _CSTD _Dtest(&_Left) == _INFCODE;
     }
 
-    static bool _Isnan(_Ty _Left) {
-        return _CSTD _Dtest(&_Left) == _NANCODE;
+    static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
+#if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
+        if (_STD is_constant_evaluated()) {
+            uint64_t _Tmp = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
+            return ((_Tmp >> 32) & 0x7fffffffU) + (_Tmp != 0U) > 0x7ff00000U;
+        } else
+#endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
+            return _CSTD _Dtest(&_Left) == _NANCODE;
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -432,8 +455,13 @@ public:
         return _CSTD _FDtest(&_Left) == _INFCODE;
     }
 
-    static bool _Isnan(_Ty _Left) {
-        return _CSTD _FDtest(&_Left) == _NANCODE;
+    static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
+#if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
+        if (_STD is_constant_evaluated()) {
+            return (_STD bit_cast<uint32_t>(_Left) & 0x7fffffffU) > 0x7f800000U;
+        } else
+#endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
+            return _CSTD _FDtest(&_Left) == _NANCODE;
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -571,7 +599,7 @@ protected:
     }
 
     template <class _Other>
-    void _Div(const complex<_Other>& _Right) {
+    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) {
         using _Myctraits = _Ctraits<_Ty>;
 
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
@@ -678,7 +706,7 @@ public:
         return *this;
     }
 
-    complex& operator/=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -709,7 +737,7 @@ public:
     }
 
     template <class _Other>
-    complex& operator/=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex<_Other>& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -777,7 +805,7 @@ public:
         return *this;
     }
 
-    complex& operator/=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -808,7 +836,7 @@ public:
     }
 
     template <class _Other>
-    complex& operator/=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex<_Other>& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -872,7 +900,7 @@ public:
         return *this;
     }
 
-    complex& operator/=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -903,7 +931,7 @@ public:
     }
 
     template <class _Other>
-    complex& operator/=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex<_Other>& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -990,7 +1018,7 @@ public:
         return *this;
     }
 
-    complex& operator/=(const complex& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -1014,7 +1042,7 @@ public:
     }
 
     template <class _Other>
-    complex& operator/=(const complex<_Other>& _Right) {
+    _CONSTEXPR20 complex& operator/=(const complex<_Other>& _Right) {
         this->_Div(_Right);
         return *this;
     }
@@ -1089,7 +1117,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const _Ty& _Left, const complex<_
 
 // FUNCTION TEMPLATE operator/
 template <class _Ty>
-_NODISCARD complex<_Ty> operator/(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
     _Tmp /= _Right;
     return _Tmp;
