@@ -133,9 +133,6 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 extern "C" {
 
-void __cdecl _AtomicSpin(long& _Spin_context);
-
-
 void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context);
 void __cdecl _Atomic_notify_one_direct(void* _Storage);
 void __cdecl _Atomic_notify_all_direct(void* _Storage);
