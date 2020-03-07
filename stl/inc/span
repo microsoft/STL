@@ -692,16 +692,14 @@ span(const _Rng&)->span<const typename _Rng::value_type>;
 // [span.objectrep] Views of object representation
 // FUNCTION TEMPLATE as_bytes
 template <class _Ty, size_t _Extent>
-_NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept
-    -> span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent> {
+_NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 
 // FUNCTION TEMPLATE as_writable_bytes
 template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
-_NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept
-    -> span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent> {
+_NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
 }
