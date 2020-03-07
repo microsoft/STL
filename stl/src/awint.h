@@ -222,7 +222,7 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 
 
 #define __crtAtomic_wait_direct(_Storage, _Comparand, _Size) \
-    WaitOnAddress((volatile void*) _Storage, _Comparand, _Size)
+    WaitOnAddress((volatile void*) _Storage, _Comparand, _Size, INFINITE)
 
 #define __crtAtomic_notify_one_direct(_Storage) WakeByAddressSingle(_Storage)
 #define __crtAtomic_notify_all_direct(_Storage) WakeByAddressAll(_Storage)
