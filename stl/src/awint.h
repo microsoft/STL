@@ -221,21 +221,21 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
     GetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime)
 
 
-#define __crtAtomic_wait_direct(_Storage, _Comparand, _Size) \
-    WaitOnAddress((volatile void*) _Storage, _Comparand, _Size, INFINITE)
+#define __crtWaitOnAddress(Address, CompareAddress, AddressSize, dwMilliseconds) \
+    WaitOnAddress(Address, CompareAddress, AddressSize, dwMilliseconds)
 
-#define __crtAtomic_notify_one_direct(_Storage) WakeByAddressSingle(_Storage)
-#define __crtAtomic_notify_all_direct(_Storage) WakeByAddressAll(_Storage)
+#define __crtWakeByAddressSingle(Address) WakeByAddressSingle(Address)
+#define __crtWakeByAddressAll(Address)    WakeByAddressAll(Address)
 
 
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
 
-void __cdecl __crtAtomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size) noexcept;
+void __cdecl __crtWaitOnAddress(volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
 
-void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept;
-void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept;
+void __cdecl __crtWakeByAddressSingle(PVOID Address);
+void __cdecl __crtWakeByAddressAll(PVOID Address);
 
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8

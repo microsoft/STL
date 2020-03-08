@@ -533,19 +533,20 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
     GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 }
 
-void __cdecl __crtAtomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size) noexcept {
+void __cdecl __crtWaitOnAddress(
+    volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
     DYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress);
-    pfWaitOnAddress((volatile void*) _Storage, _Comparand, _Size, INFINITE);
+    pfWaitOnAddress(Address, CompareAddress, AddressSize, dwMilliseconds);
 }
 
-void __cdecl __crtAtomic_notify_one_direct(void* _Storage) noexcept {
+void __cdecl __crtWakeByAddressSingle(PVOID Address) {
     DYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle);
-    pfWakeByAddressSingle(_Storage);
+    pfWakeByAddressSingle(Address);
 }
 
-void __cdecl __crtAtomic_notify_all_direct(void* _Storage) noexcept {
+void __cdecl __crtWakeByAddressAll(PVOID Address) {
     DYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressAll, pfWakeByAddressAll);
-    pfWakeByAddressAll(_Storage);
+    pfWakeByAddressAll(Address);
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8

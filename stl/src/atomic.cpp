@@ -237,21 +237,23 @@ void __cdecl _Atomic_notify_fallback(void* _Storage) noexcept {
 
 void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) {
     if (is_win8_wait_on_address_available())
-        __crtAtomic_wait_direct(_Storage, _Comparand, _Size);
+        __crtWaitOnAddress((volatile VOID*)_Storage, _Comparand, _Size, INFINITE);
     else
         _Atomic_wait_fallback(_Storage, _Spin_context);
 }
 
+
 void __cdecl _Atomic_notify_one_direct(void* _Storage) {
     if (is_win8_wait_on_address_available())
-        __crtAtomic_notify_one_direct(_Storage);
+        __crtWakeByAddressSingle(_Storage);
     else
         _Atomic_notify_fallback(_Storage);
 }
 
+
 void __cdecl _Atomic_notify_all_direct(void* _Storage) {
     if (is_win8_wait_on_address_available())
-        __crtAtomic_notify_all_direct(_Storage);
+        __crtWakeByAddressAll(_Storage);
     else
         _Atomic_notify_fallback(_Storage);
 }
@@ -262,7 +264,8 @@ void __cdecl _Atomic_wait_indirect(const void* _Storage, long& _Spin_context) no
         auto& _Table = _Atomic_contention_table(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
         auto _Counter = _Table._Counter.load(std::memory_order_relaxed);
-        __crtAtomic_wait_direct(&_Table._Counter._Storage._Value, &_Counter, sizeof(_Table._Counter._Storage._Value));
+        __crtWaitOnAddress((volatile VOID*) &_Table._Counter._Storage._Value, &_Counter,
+            sizeof(_Table._Counter._Storage._Value), INFINITE);
     } else {
         _Atomic_wait_fallback(_Storage, _Spin_context);
     }
@@ -274,7 +277,7 @@ void __cdecl _Atomic_notify_indirect(void* _Storage) noexcept {
         auto& _Table = _Atomic_contention_table(_Storage);
         _Table._Counter.fetch_add(1, std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);
-        __crtAtomic_notify_all_direct(&_Table._Counter._Storage._Value);
+        __crtWakeByAddressAll(&_Table._Counter._Storage._Value);
     } else {
         _Atomic_notify_fallback(_Storage);
     }
