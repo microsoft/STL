@@ -677,6 +677,9 @@ language.support\support.limits\support.limits.general\vector.version.pass.cpp
 strings\strings.erasure\erase_if.pass.cpp
 strings\strings.erasure\erase.pass.cpp
 
+# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
+containers\views\span.cons\assign.pass.cpp
+
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
