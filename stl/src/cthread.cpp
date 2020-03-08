@@ -99,9 +99,16 @@ _Thrd_id_t _Thrd_id() { // return unique id for current thread
 }
 
 unsigned int _Thrd_hardware_concurrency() { // return number of processors
-    SYSTEM_INFO info;
-    GetNativeSystemInfo(&info);
-    return info.dwNumberOfProcessors;
+    DWORD_PTR process_affinity;
+    DWORD_PTR system_affinity;
+    if (GetProcessAffinityMask(GetCurrentProcess(), &process_affinity, &system_affinity))
+#ifdef _WIN64
+        return __builtin_popcountll(process_affinity);
+#else
+        return __builtin_popcount(process_affinity);
+#endif // _WIN64
+    else
+        return 0;
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
