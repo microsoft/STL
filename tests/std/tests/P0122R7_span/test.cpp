@@ -234,11 +234,13 @@ constexpr bool test() {
         FunctionTakingSpan<const int>({as_const(arr), 3});
         FunctionTakingSpan<const int>({cbegin(arr), 3});
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{arr, 3}), span<int>>);
         static_assert(is_same_v<decltype(span{begin(arr), 3}), span<int>>);
 
         static_assert(is_same_v<decltype(span{as_const(arr), 3}), span<const int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), 3}), span<const int>>);
+#endif // TRANSITION, VSO-1079405
 
 #ifdef __cpp_lib_concepts
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>::iterator, size_t>); // strengthened
@@ -341,8 +343,10 @@ constexpr bool test() {
         FunctionTakingSpan<const int>({cbegin(arr), end(arr)});
         FunctionTakingSpan<const int>({cbegin(arr), cend(arr)});
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{begin(arr), end(arr)}), span<int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), cend(arr)}), span<const int>>);
+#endif // TRANSITION, VSO-1079405
 
 #ifdef __cpp_lib_concepts
         static_assert(is_nothrow_constructible_v<span<int>, int*, const int*>); // strengthened
@@ -540,10 +544,12 @@ constexpr bool test() {
         FunctionTakingSpan<const int>(stl);
         FunctionTakingSpan<const int>(as_const(stl));
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{arr}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(arr)}), span<const int, 3>>);
         static_assert(is_same_v<decltype(span{stl}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(stl)}), span<const int, 3>>);
+#endif // TRANSITION, VSO-1079405
     }
 
     {
@@ -757,10 +763,12 @@ constexpr bool test() {
         FunctionTakingSpan<const int, 3>(orig_three);
         FunctionTakingSpan<const int, 3>(orig_const_three);
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{orig_dyn}), span<int>>);
         static_assert(is_same_v<decltype(span{orig_three}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{orig_const_dyn}), span<const int>>);
         static_assert(is_same_v<decltype(span{orig_const_three}), span<const int, 3>>);
+#endif // TRANSITION, VSO-1079405
     }
 
     {
