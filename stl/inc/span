@@ -280,16 +280,19 @@ template <class _Ty, size_t _Size>
 inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 // clang-format off
+// CONCEPT _Span_compatible_iterator
 template <class _It, class _Ty>
-concept _Is_span_compatible_iterator = contiguous_iterator<_It>
-                                    && is_convertible_v<remove_reference_t<iter_reference_t<_It>>(*)[], _Ty(*)[]>;
+concept _Span_compatible_iterator = contiguous_iterator<_It>
+                                 && is_convertible_v<remove_reference_t<iter_reference_t<_It>>(*)[], _Ty(*)[]>;
 
+// CONCEPT _Span_compatible_sentinel
 template <class _Sentinel, class _It>
-concept _Is_span_compatible_sentinel = sized_sentinel_for<_Sentinel, _It>
-                                    && !is_convertible_v<_Sentinel, size_t>;
+concept _Span_compatible_sentinel = sized_sentinel_for<_Sentinel, _It>
+                                 && !is_convertible_v<_Sentinel, size_t>;
 
+// CONCEPT _Span_compatible_range
 template <class _Rng, class _Ty>
-concept _Is_span_compatible_range =
+concept _Span_compatible_range =
     !is_array_v<remove_cvref_t<_Rng>>
  && !_Is_span_v<remove_cvref_t<_Rng>>
  && !_Is_std_array_v<remove_cvref_t<_Rng>>
@@ -327,15 +330,15 @@ template <class _Rng>
 struct _Has_container_interface<_Rng,
     void_t<decltype(_STD data(_STD declval<_Rng&>())), decltype(_STD size(_STD declval<_Rng&>()))>> : true_type {};
 
-// STRUCT TEMPLATE _Is_span_compatible_range
+// VARIABLE TEMPLATE _Is_span_compatible_range
 // clang-format off
 template <class _Rng, class _Ty>
-struct _Is_span_compatible_range : bool_constant<conjunction_v<
+inline constexpr bool _Is_span_compatible_range = conjunction_v<
     negation<is_array<_Rng>>,
     negation<_Is_span<remove_const_t<_Rng>>>,
     negation<_Is_std_array<remove_const_t<_Rng>>>,
     _Has_container_interface<_Rng>,
-    _Is_span_convertible_range<_Rng, _Ty>>> {};
+    _Is_span_convertible_range<_Rng, _Ty>>;
 // clang-format on
 
 #endif // !__cpp_lib_concepts
@@ -364,23 +367,26 @@ public:
     // clang-format off
     constexpr span() noexcept requires (_Extent == 0 || _Extent == dynamic_extent) = default;
 
-    template <_Is_span_compatible_iterator<element_type> _It>
-    constexpr span(_It _First, size_type _Count) noexcept // strengthened
+    template <_Span_compatible_iterator<element_type> _It>
+    constexpr explicit(_Extent != dynamic_extent) span(_It _First, size_type _Count) noexcept // strengthened
         : _Mybase(_Count), _Mydata(_STD to_address(_Get_unwrapped_n(_First, _Count))) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
-            _STL_VERIFY(_Count == _Extent, "span construction from invalid range as count != extent");
+            _STL_VERIFY(_Count == _Extent,
+                "Cannot construct span with static extent from range [first, first + count) as count != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-    template <_Is_span_compatible_iterator<element_type> _It, _Is_span_compatible_sentinel<_It> _Sentinel>
-    constexpr span(_It _First, _Sentinel _Last) noexcept(noexcept(_Last - _First)) // strengthened
+    template <_Span_compatible_iterator<element_type> _It, _Span_compatible_sentinel<_It> _Sentinel>
+    constexpr explicit(_Extent != dynamic_extent) span(_It _First, _Sentinel _Last)
+        noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_STD to_address(_First)) {
         _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
-            _STL_VERIFY(_Last - _First == _Extent, "span construction from invalid range as last - first != extent");
+            _STL_VERIFY(_Last - _First == _Extent,
+                "Cannot construct span with static extent from range [first, last) as last - first != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -397,16 +403,30 @@ public:
         requires (_Extent == dynamic_extent || _Extent == _Size) && is_convertible_v<const value_type*, element_type*>
     constexpr span(const array<value_type, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
-    template <class _Rng>
-        requires (_Extent == dynamic_extent) && _Is_span_compatible_range<_Rng, element_type>
-    constexpr span(_Rng&& _Range)
-        : _Mybase(static_cast<size_type>(_RANGES size(_Range))), _Mydata(_RANGES data(_Range)) {}
+    template <_Span_compatible_range<element_type> _Rng>
+    constexpr explicit(_Extent != dynamic_extent) span(_Rng&& _Range)
+        : _Mybase(static_cast<size_type>(_RANGES size(_Range))), _Mydata(_RANGES data(_Range)) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (_Extent != dynamic_extent) {
+            _STL_VERIFY(_RANGES size(_Range) == _Extent,
+                "Cannot construct span with static extent from range r as std::ranges::size(r) != extent");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
 
     template <class _OtherTy, size_t _OtherExtent>
-        requires (_Extent == dynamic_extent || _Extent == _OtherExtent)
+        requires (_Extent == dynamic_extent || _OtherExtent == dynamic_extent || _Extent == _OtherExtent)
               && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
-    constexpr span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
-        : _Mybase(_Other.size()), _Mydata(_Other.data()) {}
+    constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
+    span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
+        : _Mybase(_Other.size()), _Mydata(_Other.data()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (_Extent != dynamic_extent) {
+            _STL_VERIFY(_Other.size() == _Extent,
+                "Cannot construct span with static extent from other span as other.size() != extent");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
     // clang-format on
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
@@ -414,21 +434,23 @@ public:
     template <size_t _Ext = _Extent, enable_if_t<_Ext == 0 || _Ext == dynamic_extent, int> = 0>
     constexpr span() noexcept {}
 
-    constexpr span(pointer _Ptr, size_type _Count) noexcept // strengthened
+    constexpr explicit(_Extent != dynamic_extent) span(pointer _Ptr, size_type _Count) noexcept // strengthened
         : _Mybase(_Count), _Mydata(_Ptr) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
-            _STL_VERIFY(_Count == _Extent, "span construction from invalid range as count != extent");
+            _STL_VERIFY(_Count == _Extent,
+                "Cannot construct span with static extent from range [ptr, ptr + count) as count != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-    constexpr span(pointer _First, pointer _Last) noexcept // strengthened
+    constexpr explicit(_Extent != dynamic_extent) span(pointer _First, pointer _Last) noexcept // strengthened
         : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_First) {
         _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
-            _STL_VERIFY(_Last - _First == _Extent, "span construction from invalid range as last - first != extent");
+            _STL_VERIFY(_Last - _First == _Extent,
+                "Cannot construct span with static extent from range [first, last) as last - first != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
@@ -445,29 +467,49 @@ public:
             int> = 0>
     constexpr span(const array<value_type, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
-    template <class _Rng, enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent>,
-                                          _Is_span_compatible_range<_Rng, element_type>>,
-                              int> = 0>
-    constexpr span(_Rng& _Range) : _Mybase(static_cast<size_type>(_STD size(_Range))), _Mydata(_STD data(_Range)) {}
+    template <class _Rng, enable_if_t<_Is_span_compatible_range<_Rng, element_type>, int> = 0>
+    constexpr explicit(_Extent != dynamic_extent) span(_Rng& _Range)
+        : _Mybase(static_cast<size_type>(_STD size(_Range))), _Mydata(_STD data(_Range)) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (_Extent != dynamic_extent) {
+            _STL_VERIFY(_STD size(_Range) == _Extent,
+                "Cannot construct span with static extent from range r as std::size(r) != extent");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+    }
 
-    template <class _Rng, enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent>,
-                                          _Is_span_compatible_range<const _Rng, element_type>>,
-                              int> = 0>
-    constexpr span(const _Rng& _Range)
-        : _Mybase(static_cast<size_type>(_STD size(_Range))), _Mydata(_STD data(_Range)) {}
+    template <class _Rng, enable_if_t<_Is_span_compatible_range<const _Rng, element_type>, int> = 0>
+    constexpr explicit(_Extent != dynamic_extent) span(const _Rng& _Range)
+        : _Mybase(static_cast<size_type>(_STD size(_Range))), _Mydata(_STD data(_Range)) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (_Extent != dynamic_extent) {
+            _STL_VERIFY(_STD size(_Range) == _Extent,
+                "Cannot construct span with static extent from range r as std::size(r) != extent");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+    }
 
     template <class _OtherTy, size_t _OtherExtent,
-        enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _OtherExtent>,
+        enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _OtherExtent == dynamic_extent
+                                                || _Extent == _OtherExtent>,
                         is_convertible<_OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
-    constexpr span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
-        : _Mybase(_Other.size()), _Mydata(_Other.data()) {}
+    constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
+        span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
+        : _Mybase(_Other.size()), _Mydata(_Other.data()) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        if constexpr (_Extent != dynamic_extent) {
+            _STL_VERIFY(_Other.size() == _Extent,
+                "Cannot construct span with static extent from other span as other.size() != extent");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+    }
 
 #endif // !__cpp_lib_concepts
 
     // [span.sub] Subviews
     template <size_t _Count>
-    _NODISCARD constexpr span<element_type, _Count> first() const noexcept /* strengthened */ {
+    _NODISCARD constexpr auto first() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Count <= _Extent, "Count out of range in span::first()");
         }
@@ -476,19 +518,19 @@ public:
             _STL_VERIFY(_Count <= this->size(), "Count out of range in span::first()");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return {_Mydata, _Count};
+        return span<element_type, _Count>{_Mydata, _Count};
     }
 
-    _NODISCARD constexpr span<element_type, dynamic_extent> first(const size_type _Count) const noexcept
+    _NODISCARD constexpr auto first(const size_type _Count) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= this->size(), "Count out of range in span::first(count)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return {_Mydata, _Count};
+        return span<element_type, dynamic_extent>{_Mydata, _Count};
     }
 
     template <size_t _Count>
-    _NODISCARD constexpr span<element_type, _Count> last() const noexcept /* strengthened */ {
+    _NODISCARD constexpr auto last() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Count <= _Extent, "Count out of range in span::last()");
         }
@@ -497,21 +539,18 @@ public:
             _STL_VERIFY(_Count <= this->size(), "Count out of range in span::last()");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return {_Mydata + (this->size() - _Count), _Count};
+        return span<element_type, _Count>{_Mydata + (this->size() - _Count), _Count};
     }
 
-    _NODISCARD constexpr span<element_type, dynamic_extent> last(const size_type _Count) const noexcept
-    /* strengthened */ {
+    _NODISCARD constexpr auto last(const size_type _Count) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= this->size(), "Count out of range in span::last(count)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return {_Mydata + (this->size() - _Count), _Count};
+        return span<element_type, dynamic_extent>{_Mydata + (this->size() - _Count), _Count};
     }
 
     template <size_t _Offset, size_t _Count = dynamic_extent>
-    _NODISCARD constexpr span<element_type,
-        _Count != dynamic_extent ? _Count : (_Extent != dynamic_extent ? _Extent - _Offset : dynamic_extent)>
-        subspan() const noexcept /* strengthened */ {
+    _NODISCARD constexpr auto subspan() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Offset <= _Extent, "Offset out of range in span::subspan()");
             static_assert(
@@ -526,17 +565,20 @@ public:
             }
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return {_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
+        using _ReturnType = span<element_type,
+            _Count != dynamic_extent ? _Count : (_Extent != dynamic_extent ? _Extent - _Offset : dynamic_extent)>;
+        return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
     }
 
-    _NODISCARD constexpr span<element_type, dynamic_extent> subspan(
-        const size_type _Offset, const size_type _Count = dynamic_extent) const noexcept /* strengthened */ {
+    _NODISCARD constexpr auto subspan(const size_type _Offset, const size_type _Count = dynamic_extent) const
+        noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Offset <= this->size(), "Offset out of range in span::subspan(offset, count)");
         _STL_VERIFY(_Count == dynamic_extent || _Count <= this->size() - _Offset,
             "Count out of range in span::subspan(offset, count)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return {_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
+        using _ReturnType = span<element_type, dynamic_extent>;
+        return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
     }
 
     // [span.obs] Observers
@@ -650,16 +692,16 @@ span(const _Rng&)->span<const typename _Rng::value_type>;
 // [span.objectrep] Views of object representation
 // FUNCTION TEMPLATE as_bytes
 template <class _Ty, size_t _Extent>
-_NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept
-    -> span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent> {
-    return {reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
+_NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept {
+    using _ReturnType = span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
+    return _ReturnType{reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 
 // FUNCTION TEMPLATE as_writable_bytes
 template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
-_NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept
-    -> span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent> {
-    return {reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
+_NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
+    using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
+    return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 #endif // __cpp_lib_byte
 
