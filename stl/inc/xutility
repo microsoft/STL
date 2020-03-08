@@ -4812,6 +4812,69 @@ _NODISCARD bool lexicographical_compare(
 }
 #endif // _HAS_CXX17
 
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+// FUNCTION TEMPLATE lexicographical_compare_three_way
+template <class _InIt1, class _InIt2, class _Cmp>
+_NODISCARD constexpr auto lexicographical_compare_three_way(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
+    _Adl_verify_range(_First1, _Last1);
+    _Adl_verify_range(_First2, _Last2);
+    auto _UFirst1      = _Get_unwrapped(_First1);
+    const auto _ULast1 = _Get_unwrapped(_Last1);
+    auto _UFirst2      = _Get_unwrapped(_First2);
+    const auto _ULast2 = _Get_unwrapped(_Last2);
+    using _UIt1        = decltype(_UFirst1);
+    using _UIt2        = decltype(_UFirst2);
+    using _Ty1         = remove_const_t<remove_pointer_t<_UIt1>>;
+    using _Ty2         = remove_const_t<remove_pointer_t<_UIt2>>;
+
+    if constexpr (conjunction_v<is_same<_Cmp, compare_three_way>, is_pointer<_UIt1>, is_pointer<_UIt2>,
+                      disjunction<
+#ifdef __cpp_lib_byte
+                          conjunction<is_same<_Ty1, byte>, is_same<_Ty2, byte>>,
+#endif // __cpp_lib_byte
+                          conjunction<_Is_character<_Ty1>, is_unsigned<_Ty1>, _Is_character<_Ty2>,
+                              is_unsigned<_Ty2>>>>) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
+            const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
+            const int _Ans   = _CSTD memcmp(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            if (_Ans == 0) {
+                return _Num1 <=> _Num2;
+            } else {
+                return _Ans <=> 0;
+            }
+        }
+    }
+
+    for (;;) {
+        if (_UFirst1 == _ULast1) {
+            return _UFirst2 == _ULast2 ? strong_ordering::equal : strong_ordering::less;
+        }
+
+        if (_UFirst2 == _ULast2) {
+            return strong_ordering::greater;
+        }
+
+        if (const auto _CmpResult = _Comp(*_UFirst1, *_UFirst2); _CmpResult != 0) {
+            return _CmpResult;
+        }
+
+        ++_UFirst1;
+        ++_UFirst2;
+    }
+}
+
+template <class _InIt1, class _InIt2>
+_NODISCARD constexpr auto lexicographical_compare_three_way(
+    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+    return _STD lexicographical_compare_three_way(_First1, _Last1, _First2, _Last2, compare_three_way{});
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+
 // FUNCTION TEMPLATE find
 template <class _Ty>
 _NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag) { // signed _Elem, signed _Ty
