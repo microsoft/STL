@@ -530,20 +530,26 @@ constexpr bool test() {
         span<const int> sp_const_x(as_const(arr));
         span<const int> sp_const_y(stl);
         span<const int> sp_const_z(as_const(stl));
+#ifndef __EDG__ // TRANSITION, VSO-1079410
         span<const int* const> sp_const_nullptr_1{stl_nullptr};
         span<const int* const> sp_const_nullptr_2{as_const(stl_nullptr)};
+#endif // TRANSITION, VSO-1079410
         assert(sp_const_w.data() == begin(arr));
         assert(sp_const_x.data() == begin(arr));
         assert(sp_const_y.data() == stl.data());
         assert(sp_const_z.data() == stl.data());
+#ifndef __EDG__ // TRANSITION, VSO-1079410
         assert(sp_const_nullptr_1.data() == stl_nullptr.data());
         assert(sp_const_nullptr_2.data() == stl_nullptr.data());
+#endif // TRANSITION, VSO-1079410
         assert(sp_const_w.size() == 3);
         assert(sp_const_x.size() == 3);
         assert(sp_const_y.size() == 3);
         assert(sp_const_z.size() == 3);
+#ifndef __EDG__ // TRANSITION, VSO-1079410
         assert(sp_const_nullptr_1.size() == 3);
         assert(sp_const_nullptr_2.size() == 3);
+#endif // TRANSITION, VSO-1079410
 
         FunctionTakingSpan<int>(arr);
         FunctionTakingSpan<int>(stl);
@@ -555,8 +561,10 @@ constexpr bool test() {
         FunctionTakingSpan<const int>(as_const(arr));
         FunctionTakingSpan<const int>(stl);
         FunctionTakingSpan<const int>(as_const(stl));
+#ifndef __EDG__ // TRANSITION, VSO-1079410
         FunctionTakingSpan<const int* const>(stl_nullptr);
         FunctionTakingSpan<const int* const>(as_const(stl_nullptr));
+#endif // TRANSITION, VSO-1079410
 
         static_assert(is_same_v<decltype(span{arr}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(arr)}), span<const int, 3>>);
