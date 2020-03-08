@@ -176,7 +176,7 @@ public:
     }
 
 protected:
-    _Container* container              = nullptr;
+    _Container* container = nullptr;
     typename _Container::iterator iter{};
 };
 
