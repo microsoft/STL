@@ -133,16 +133,16 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 extern "C" {
 
-void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context);
-void __cdecl _Atomic_notify_one_direct(void* _Storage);
-void __cdecl _Atomic_notify_all_direct(void* _Storage);
+void __cdecl __std_atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context);
+void __cdecl __std_atomic_notify_one_direct(void* _Storage);
+void __cdecl __std_atomic_notify_all_direct(void* _Storage);
 
-void __cdecl _Atomic_unwait_direct(const void* _Storage, long& _Spin_context);
+void __cdecl __std_atomic_unwait_direct(const void* _Storage, long& _Spin_context);
 
-void __cdecl _Atomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept;
-void __cdecl _Atomic_notify_indirect(void* _Storage) noexcept;
+void __cdecl __std_atomic_wait_indirect(const void* _Storage, long& _Spin_context) noexcept;
+void __cdecl __std_atomic_notify_indirect(void* _Storage) noexcept;
 
-void __cdecl _Atomic_unwait_indirect(const void* _Storage, long& _Spin_context);
+void __cdecl __std_atomic_unwait_indirect(const void* _Storage, long& _Spin_context);
 }
 
 
@@ -372,17 +372,17 @@ struct _Atomic_storage {
             _Ty _Observed = load(_Order);
             if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0)
                 break;
-            _Atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
+            __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
         }
-        _Atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
+        __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
     }
 
     void notify_one() noexcept {
-        _Atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        _Atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
 
 #if 1 // TRANSITION, ABI
@@ -514,17 +514,17 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            _Atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 1, _Spin_context);
+            __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 1, _Spin_context);
         }
-        _Atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
     }
 
     void notify_one() noexcept {
-        _Atomic_notify_one_direct(_STD addressof(_Storage));
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        _Atomic_notify_all_direct(_STD addressof(_Storage));
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
 
     _Atomic_padded<_Ty> _Storage;
@@ -614,17 +614,17 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            _Atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 2, _Spin_context);
+            __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 2, _Spin_context);
         }
-        _Atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
     }
 
     void notify_one() noexcept {
-        _Atomic_notify_one_direct(_STD addressof(_Storage));
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        _Atomic_notify_all_direct(_STD addressof(_Storage));
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
 
     _Atomic_padded<_Ty> _Storage;
@@ -712,17 +712,17 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            _Atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 4, _Spin_context);
+            __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 4, _Spin_context);
         }
-        _Atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
     }
 
     void notify_one() noexcept {
-        _Atomic_notify_one_direct(_STD addressof(_Storage));
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        _Atomic_notify_all_direct(_STD addressof(_Storage));
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
 
     _Atomic_padded<_Ty> _Storage;
@@ -849,17 +849,17 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            _Atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 8, _Spin_context);
+            __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 8, _Spin_context);
         }
-        _Atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
     }
 
     void notify_one() noexcept {
-        _Atomic_notify_one_direct(_STD addressof(_Storage));
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        _Atomic_notify_all_direct(_STD addressof(_Storage));
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
 
     _Atomic_padded<_Ty> _Storage;
@@ -964,17 +964,17 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             _Ty _Observed = load(_Order);
             if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0)
                 break;
-            _Atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
+            __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
         }
-        _Atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
+        __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
     }
 
     void notify_one() noexcept {
-        _Atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        _Atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
 
     struct _Int128 {
