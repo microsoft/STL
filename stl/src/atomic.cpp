@@ -126,9 +126,8 @@ inline bool is_win8_wait_on_address_available() {
     return true;
 #else
     // WaitOnAddress ONLY available on Windows 8+
-    // DYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress);
-    // return pfWaitOnAddress != nullptr;
-    return false;
+    DYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress);
+    return pfWaitOnAddress != nullptr;
 #endif
 }
 
