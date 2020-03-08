@@ -692,6 +692,14 @@ language.support\support.limits\support.limits.general\string.version.pass.cpp
 # Test needs to be updated for LWG-3320 removing span::const_iterator.
 containers\views\types.pass.cpp
 
+# Test needs to be updated for P2116R0 removing the tuple interface of span
+containers\views\span.tuple\get.fail.cpp
+containers\views\span.tuple\get.pass.cpp
+containers\views\span.tuple\tuple_element.fail.cpp
+containers\views\span.tuple\tuple_element.pass.cpp
+containers\views\span.tuple\tuple_size.fail.cpp
+containers\views\span.tuple\tuple_size.pass.cpp
+
 # Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
 utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
 
