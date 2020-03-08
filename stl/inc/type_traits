@@ -1478,156 +1478,166 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
 template <class _Ty>
 class reference_wrapper;
 
-// std::invoke isn't constexpr in C++17, and implementers are forbidden from "strengthening" constexpr (WG21-N4842
-// [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have invoke-like
-// behavior. We solve this by using a macro to stamp out both public non-constexpr and internal constexpr
-// implementations. TRANSITION, P1065R2
+// std::invoke isn't constexpr in C++17, and normally implementers are forbidden from "strengthening" constexpr
+// (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
+// invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
-#define _CONCATX(x, y) x##y
-#define _CONCAT(x, y)  _CONCATX(x, y)
+// FUNCTION TEMPLATE invoke
+#pragma warning(push) // TRANSITION, DevCom-936696
+#pragma warning(disable : 28278) // Function '%s' appears with no prototype in scope
+enum class _Invoker_strategy {
+    _Functor,
+    _Pmf_object,
+    _Pmf_refwrap,
+    _Pmf_pointer,
+    _Pmd_object,
+    _Pmd_refwrap,
+    _Pmd_pointer
+};
 
-#define _IMPLEMENT_INVOKE(NAME_PREFIX, CONSTEXPR)                                                                      \
-    /* FUNCTION TEMPLATE invoke */                                                                                     \
-    struct _CONCAT(NAME_PREFIX, _Invoker_pmf_object) { /* INVOKE a pointer to member function on an object */          \
-        template <class _Decayed, class _Ty1, class... _Types2>                                                        \
-        static CONSTEXPR auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(                        \
-            noexcept((_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...)))                             \
-            -> decltype((_STD forward<_Ty1>(_Arg1).*_Pmf)(                                                             \
-                _STD forward<_Types2>(_Args2)...)) { /* INVOKE a pointer to member function on an object */            \
-            return (_STD forward<_Ty1>(_Arg1).*_Pmf)(_STD forward<_Types2>(_Args2)...);                                \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    struct _CONCAT(                                                                                                    \
-        NAME_PREFIX, _Invoker_pmf_refwrap) { /* INVOKE a pointer to member function on a reference_wrapper */          \
-        template <class _Decayed, class _Ty1, class... _Types2>                                                        \
-        static CONSTEXPR auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(                        \
-            noexcept((_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...)))                       \
-            -> decltype((_STD forward<_Ty1>(_Arg1).get().*_Pmf)(                                                       \
-                _STD forward<_Types2>(_Args2)...)) { /* INVOKE a pointer to member function on a reference_wrapper */  \
-            return (_STD forward<_Ty1>(_Arg1).get().*_Pmf)(_STD forward<_Types2>(_Args2)...);                          \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker_pmf_pointer) { /* INVOKE a pointer to member function on a [smart] pointer */ \
-        template <class _Decayed, class _Ty1, class... _Types2>                                                        \
-        static CONSTEXPR auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(                        \
-            noexcept(((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...)))                          \
-            -> decltype(((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(                                                          \
-                _STD forward<_Types2>(_Args2)...)) { /* INVOKE a pointer to member function on a [smart] pointer */    \
-            return ((*_STD forward<_Ty1>(_Arg1)).*_Pmf)(_STD forward<_Types2>(_Args2)...);                             \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker_pmd_object) { /* INVOKE a pointer to member data on an object */              \
-        template <class _Decayed, class _Ty1>                                                                          \
-        static CONSTEXPR auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept(_STD forward<_Ty1>(_Arg1).*_Pmd))   \
-            -> decltype(_STD forward<_Ty1>(_Arg1).*_Pmd) { /* INVOKE a pointer to member data on an object */          \
-            return _STD forward<_Ty1>(_Arg1).*_Pmd;                                                                    \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker_pmd_refwrap) { /* INVOKE a pointer to member data on a reference_wrapper */   \
-        template <class _Decayed, class _Ty1>                                                                          \
-        static CONSTEXPR auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(                                             \
-            noexcept(_STD forward<_Ty1>(_Arg1).get().*_Pmd))                                                           \
-            -> decltype(                                                                                               \
-                _STD forward<_Ty1>(_Arg1).get().*_Pmd) { /* INVOKE a pointer to member data on a reference_wrapper */  \
-            return _STD forward<_Ty1>(_Arg1).get().*_Pmd;                                                              \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker_pmd_pointer) { /* INVOKE a pointer to member data on a [smart] pointer */     \
-        template <class _Decayed, class _Ty1>                                                                          \
-        static CONSTEXPR auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(                                             \
-            noexcept((*_STD forward<_Ty1>(_Arg1)).*_Pmd))                                                              \
-            -> decltype(                                                                                               \
-                (*_STD forward<_Ty1>(_Arg1)).*_Pmd) { /* INVOKE a pointer to member data on a [smart] pointer */       \
-            return (*_STD forward<_Ty1>(_Arg1)).*_Pmd;                                                                 \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker_functor) { /* INVOKE a function object */                                     \
-        template <class _Callable, class... _Types>                                                                    \
-        static CONSTEXPR auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(                                     \
-            noexcept(_STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...)))                                   \
-            -> decltype(                                                                                               \
-                _STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...)) { /* INVOKE a function object */        \
-            return _STD forward<_Callable>(_Obj)(_STD forward<_Types>(_Args)...);                                      \
-        }                                                                                                              \
-    };                                                                                                                 \
-                                                                                                                       \
-    template <class _Callable, class _Ty1, class _Removed_cvref = _Remove_cvref_t<_Callable>,                          \
-        bool _Is_pmf = is_member_function_pointer_v<_Removed_cvref>,                                                   \
-        bool _Is_pmd = is_member_object_pointer_v<_Removed_cvref>>                                                     \
-    struct _CONCAT(NAME_PREFIX, _Invoker1);                                                                            \
-                                                                                                                       \
-    template <class _Callable, class _Ty1, class _Removed_cvref>                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker1)<_Callable, _Ty1, _Removed_cvref, true, false>                               \
-        : conditional_t<is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,   \
-              _CONCAT(NAME_PREFIX, _Invoker_pmf_object),                                                               \
-              conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>,                            \
-                  _CONCAT(NAME_PREFIX, _Invoker_pmf_refwrap),                                                          \
-                  _CONCAT(NAME_PREFIX, _Invoker_pmf_pointer)>> { /* pointer to member function */                      \
-    };                                                                                                                 \
-                                                                                                                       \
-    template <class _Callable, class _Ty1, class _Removed_cvref>                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker1)<_Callable, _Ty1, _Removed_cvref, false, true>                               \
-        : conditional_t<                                                                                               \
-              is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>, \
-              _CONCAT(NAME_PREFIX, _Invoker_pmd_object),                                                               \
-              conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>,                            \
-                  _CONCAT(NAME_PREFIX, _Invoker_pmd_refwrap),                                                          \
-                  _CONCAT(NAME_PREFIX, _Invoker_pmd_pointer)>> { /* pointer to member data */                          \
-    };                                                                                                                 \
-                                                                                                                       \
-    template <class _Callable, class _Ty1, class _Removed_cvref>                                                       \
-    struct _CONCAT(NAME_PREFIX, _Invoker1)<_Callable, _Ty1, _Removed_cvref, false, false>                              \
-        : _CONCAT(NAME_PREFIX, _Invoker_functor) { /* function object */                                               \
-    };                                                                                                                 \
-                                                                                                                       \
-    template <class _Callable, class... _Types>                                                                        \
-    struct _CONCAT(NAME_PREFIX, _Invoker);                                                                             \
-                                                                                                                       \
-    template <class _Callable>                                                                                         \
-    struct _CONCAT(NAME_PREFIX, _Invoker)<_Callable> : _CONCAT(NAME_PREFIX, _Invoker_functor) { /* zero arguments */   \
-    };                                                                                                                 \
-                                                                                                                       \
-    template <class _Callable, class _Ty1, class... _Types2>                                                           \
-    struct _CONCAT(NAME_PREFIX, _Invoker)<_Callable, _Ty1, _Types2...>                                                 \
-        : _CONCAT(NAME_PREFIX, _Invoker1)<_Callable, _Ty1> { /* one or more arguments */                               \
-    };                                                                                                                 \
-                                                                                                                       \
-    template <class _Callable, class... _Types>                                                                        \
-    CONSTEXPR auto _CONCAT(NAME_PREFIX, invoke)(_Callable && _Obj, _Types && ... _Args) noexcept(                      \
-        noexcept(_CONCAT(NAME_PREFIX, _Invoker) < _Callable,                                                           \
-            _Types... > ::_Call(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...)))                       \
-        ->decltype(_CONCAT(NAME_PREFIX, _Invoker) < _Callable,                                                         \
-            _Types... > ::_Call(                                                                                       \
-                _STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...)) { /* INVOKE a callable object */       \
-        return _CONCAT(NAME_PREFIX, _Invoker)<_Callable, _Types...>::_Call(                                            \
-            _STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...);                                            \
+struct _Invoker_functor {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Functor;
+
+    template <class _Callable, class... _Types>
+    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
+        noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)))
+        -> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
+        return static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...);
     }
+};
 
-_IMPLEMENT_INVOKE(_EMPTY_ARGUMENT, inline)
+struct _Invoker_pmf_object {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_object;
 
-#if _HAS_CXX17
-// constexpr IMPLEMENTATION OF invoke
-_IMPLEMENT_INVOKE(_C_, constexpr)
-#endif // _HAS_CXX17
+    template <class _Decayed, class _Ty1, class... _Types2>
+    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+        noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+    }
+};
 
-#undef _IMPLEMENT_INVOKE
+struct _Invoker_pmf_refwrap {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_refwrap;
+
+    template <class _Decayed, class _Refwrap, class... _Types2>
+    static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2) noexcept(
+        noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return (_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+    }
+};
+
+struct _Invoker_pmf_pointer {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_pointer;
+
+    template <class _Decayed, class _Ty1, class... _Types2>
+    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+        noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+        -> decltype(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
+    }
+};
+
+struct _Invoker_pmd_object {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_object;
+
+    template <class _Decayed, class _Ty1>
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept -> decltype(static_cast<_Ty1&&>(_Arg1).*_Pmd) {
+        return static_cast<_Ty1&&>(_Arg1).*_Pmd;
+    }
+};
+
+struct _Invoker_pmd_refwrap {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_refwrap;
+
+    template <class _Decayed, class _Refwrap>
+    static constexpr auto _Call(_Decayed _Pmd, _Refwrap _Rw) noexcept -> decltype(_Rw.get().*_Pmd) {
+        return _Rw.get().*_Pmd;
+    }
+};
+
+struct _Invoker_pmd_pointer {
+    static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
+
+    template <class _Decayed, class _Ty1>
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd))
+        -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
+        return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
+    }
+};
+
+template <class _Callable, class _Ty1, class _Removed_cvref = _Remove_cvref_t<_Callable>,
+    bool _Is_pmf = is_member_function_pointer_v<_Removed_cvref>,
+    bool _Is_pmd = is_member_object_pointer_v<_Removed_cvref>>
+struct _Invoker1;
+
+template <class _Callable, class _Ty1, class _Removed_cvref>
+struct _Invoker1<_Callable, _Ty1, _Removed_cvref, true, false>
+    : conditional_t<is_base_of_v<typename _Is_memfunptr<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,
+          _Invoker_pmf_object,
+          conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>, _Invoker_pmf_refwrap,
+              _Invoker_pmf_pointer>> {}; // pointer to member function
+
+template <class _Callable, class _Ty1, class _Removed_cvref>
+struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, true>
+    : conditional_t<
+          is_base_of_v<typename _Is_member_object_pointer<_Removed_cvref>::_Class_type, remove_reference_t<_Ty1>>,
+          _Invoker_pmd_object,
+          conditional_t<_Is_specialization_v<_Remove_cvref_t<_Ty1>, reference_wrapper>, _Invoker_pmd_refwrap,
+              _Invoker_pmd_pointer>> {}; // pointer to member data
+
+template <class _Callable, class _Ty1, class _Removed_cvref>
+struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
+
+template <class _Callable>
+_CONSTEXPR17 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+    -> decltype(static_cast<_Callable&&>(_Obj)()) {
+    return static_cast<_Callable&&>(_Obj)();
+}
+
+template <class _Callable, class _Ty1, class... _Types2>
+_CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+    noexcept(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
+    -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
+#if _HAS_IF_CONSTEXPR
+    if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
+        return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
+    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
+        return (static_cast<_Ty1&&>(_Arg1).*_Obj)(static_cast<_Types2&&>(_Args2)...);
+    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
+        return (_Arg1.get().*_Obj)(static_cast<_Types2&&>(_Args2)...);
+    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
+        return ((*static_cast<_Ty1&&>(_Arg1)).*_Obj)(static_cast<_Types2&&>(_Args2)...);
+    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
+        return static_cast<_Ty1&&>(_Arg1).*_Obj;
+    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+        return _Arg1.get().*_Obj;
+    } else {
+        static_assert(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in invoke");
+        return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
+    }
+#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
+    return _Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
+#endif // _HAS_IF_CONSTEXPR
+}
+#pragma warning(pop) // TRANSITION, DevCom-936696
 
 template <class _Rx, bool = is_void_v<_Rx>>
 struct _Invoker_ret {}; // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
 
-struct _Unforced {}; // tag to distinguish bind() from bind<R>()
+struct _Unforced {
+    explicit _Unforced() = default;
+}; // tag to distinguish bind() from bind<R>()
 
 template <class _Cv_void>
 struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
     template <class... _Valtys>
     static void _Call(_Valtys&&... _Vals) { // INVOKE, "implicitly" converted to void
-        _STD invoke(_STD forward<_Valtys>(_Vals)...);
+        _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
@@ -1635,7 +1645,7 @@ template <class _Rx>
 struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
     template <class... _Valtys>
     static _Rx _Call(_Valtys&&... _Vals) { // INVOKE, implicitly converted to _Rx
-        return _STD invoke(_STD forward<_Valtys>(_Vals)...);
+        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
@@ -1643,8 +1653,8 @@ template <>
 struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     template <class... _Valtys>
     static auto _Call(_Valtys&&... _Vals)
-        -> decltype(_STD invoke(_STD forward<_Valtys>(_Vals)...)) { // INVOKE, unchanged
-        return _STD invoke(_STD forward<_Valtys>(_Vals)...);
+        -> decltype(_STD invoke(static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
@@ -1862,7 +1872,7 @@ public:
                                           _Refwrap_has_ctor_from<_Ty, _Uty>>,
                               int> = 0>
     reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) {
-        _Ty& _Ref = _STD forward<_Uty>(_Val);
+        _Ty& _Ref = static_cast<_Uty&&>(_Val);
         _Ptr      = _STD addressof(_Ref);
     }
 
@@ -1874,13 +1884,16 @@ public:
         return *_Ptr;
     }
 
-    template <class... _Types>
-    auto operator()(_Types&&... _Args) const -> decltype(_STD invoke(get(), _STD forward<_Types>(_Args)...)) {
-        return _STD invoke(get(), _STD forward<_Types>(_Args)...);
-    }
-
 private:
     _Ty* _Ptr;
+
+public:
+    template <class... _Types>
+    auto operator()(_Types&&... _Args) const
+        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) // strengthened
+        -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
+        return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
+    }
 };
 
 #if _HAS_CXX17

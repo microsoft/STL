@@ -3,18 +3,13 @@
 
 #include <assert.h>
 #include <functional>
-#include <sstream>
 #include <string>
 
 using namespace std;
 
 struct A {
     string meow(int i) {
-        ostringstream oss;
-
-        oss << "A::meow(" << i + 9 * 9 * 9 << ")";
-
-        return oss.str();
+        return "A::meow(" + to_string(i + 9 * 9 * 9) + ")";
     }
 };
 

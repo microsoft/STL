@@ -3,9 +3,11 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive-"
-PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /Zc:char8_t-"
-PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive-"
-PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest"
-PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /analyze:only"
-PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /analyze:only"
+PM_CL="/w14640 /Zc:threadSafeInit- /EHsc /std:c++latest"
+RUNALL_CROSSLIST
+PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /permissive-"
+PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /Zc:char8_t-"
+PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=0 /permissive-"
+PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2"
+PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /analyze:only"
+PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /analyze:only"

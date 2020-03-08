@@ -592,23 +592,23 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
     enum { _EEN_DS = _DEQUESIZ }; // helper for expression evaluator
 
-    deque() : _Mypair(_Zero_then_variadic_args_t()) {
+    deque() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
     }
 
-    explicit deque(const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    explicit deque(const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
     }
 
     explicit deque(_CRT_GUARDOVERFLOW size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         resize(_Count);
         _Proxy._Release();
     }
 
-    deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) : _Mypair(_Zero_then_variadic_args_t()) {
+    deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct_n(_Count, _Val);
@@ -616,7 +616,7 @@ public:
     }
 
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct_n(_Count, _Val);
@@ -624,14 +624,14 @@ public:
     }
 
     deque(const deque& _Right)
-        : _Mypair(_One_then_variadic_args_t(), _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
         _Proxy._Release();
     }
 
-    deque(const deque& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    deque(const deque& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
@@ -639,7 +639,7 @@ public:
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    deque(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t()) {
+    deque(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_First, _Last);
@@ -647,7 +647,7 @@ public:
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    deque(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    deque(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_First, _Last);
@@ -703,12 +703,12 @@ private:
 #define _PUSH_BACK_END ++_Mysize()
 
 public:
-    deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+    deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
     }
 
-    deque(deque&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    deque(deque&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         if
             _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
@@ -846,7 +846,7 @@ public:
     }
 
     deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
-        : _Mypair(_One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
         _Construct(_Ilist.begin(), _Ilist.end());
@@ -1610,13 +1610,13 @@ _NODISCARD bool operator>=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>
-void erase(deque<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    _Erase_remove(_Cont, _Val);
+typename deque<_Ty, _Alloc>::size_type erase(deque<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Ty, class _Alloc, class _Pr>
-void erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+typename deque<_Ty, _Alloc>::size_type erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

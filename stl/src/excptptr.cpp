@@ -37,6 +37,33 @@ extern "C" _CRTIMP2 void* __cdecl __AdjustPointer(void*, const PMD&); // defined
 using namespace std;
 
 namespace {
+#ifdef _M_CEE_PURE
+    template <class _Ty>
+    _Ty& _Immortalize() { // return a reference to an object that will live forever
+        /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
+        return reinterpret_cast<_Ty&>(_Static._Storage);
+    }
+#else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
+    template <class _Ty>
+    int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
+        // adapt True Placement New to _Execute_once
+        ::new (_Storage_ptr) _Ty();
+        return 1;
+    }
+
+    template <class _Ty>
+    _Ty& _Immortalize() { // return a reference to an object that will live forever
+        static once_flag _Flag;
+        alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
+        if (_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage) == 0) {
+            // _Execute_once should never fail if the callback never fails
+            _STD terminate();
+        }
+
+        return reinterpret_cast<_Ty&>(_Storage);
+    }
+#endif // _M_CEE_PURE
+
     void _PopulateCppExceptionRecord(
         _EXCEPTION_RECORD& _Record, const void* const _PExcept, ThrowInfo* _PThrow) noexcept {
         _Record.ExceptionCode           = EH_EXCEPTION_NUMBER;
