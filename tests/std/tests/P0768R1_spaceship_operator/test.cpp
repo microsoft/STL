@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
+#include <array>
 #include <cassert>
 #include <compare>
 #include <type_traits>
@@ -119,6 +121,74 @@ static_assert(test_common_type<std::strong_ordering, std::partial_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::weak_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::strong_ordering>());
 
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+constexpr auto my_cmp_three_way = [](const auto& left, const auto& right) { return left <=> right; };
+
+template <class Left, class Right>
+constexpr auto compare(const Left& left, const Right& right) {
+    using std::begin, std::end;
+    auto ret = std::lexicographical_compare_three_way(begin(left), end(left), begin(right), end(right));
+    auto ret2 =
+        std::lexicographical_compare_three_way(begin(left), end(left), begin(right), end(right), my_cmp_three_way);
+    assert(ret == ret2);
+    return ret;
+}
+
+template <class Ty1, class Ty2 = Ty1>
+constexpr bool test_algorithm2() {
+    std::array<Ty1, 4> original{{0, 1, 2, 3}};
+
+    std::array<Ty2, 4> same{{0, 1, 2, 3}};
+    std::array<Ty2, 4> sameSizeAndLesser{{0, 1, 1, 3}};
+    std::array<Ty2, 4> sameSizeAndGreater{{0, 1, 3, 3}};
+
+    std::array<Ty2, 3> shorter{{0, 1, 2}};
+    std::array<Ty2, 3> shorterAndGreater{{0, 2, 3}};
+
+    std::array<Ty2, 5> longer{{0, 1, 2, 3, 4}};
+    std::array<Ty2, 5> longerAndLesser{{0, 1, 2, 2, 4}};
+
+    assert(compare(original, original) == 0);
+
+    assert(compare(original, same) == 0);
+    assert(compare(same, original) == 0);
+
+    assert(compare(original, sameSizeAndLesser) > 0);
+    assert(compare(sameSizeAndLesser, original) < 0);
+
+    assert(compare(original, sameSizeAndGreater) < 0);
+    assert(compare(sameSizeAndGreater, original) > 0);
+
+    assert(compare(original, shorter) > 0);
+    assert(compare(shorter, original) < 0);
+
+    assert(compare(original, shorterAndGreater) < 0);
+    assert(compare(shorterAndGreater, original) > 0);
+
+    assert(compare(original, longer) < 0);
+    assert(compare(longer, original) > 0);
+
+    assert(compare(original, longerAndLesser) > 0);
+    assert(compare(longerAndLesser, original) < 0);
+
+    return true;
+}
+
+template <class Ty1>
+void test_algorithm() {
+    static_assert(test_algorithm2<Ty1>());
+    assert(test_algorithm2<Ty1>());
+}
+
+template <class Ty1, class Ty2>
+void test_algorithm() {
+    static_assert(test_algorithm2<Ty1, Ty2>());
+    static_assert(test_algorithm2<Ty2, Ty1>());
+    assert((test_algorithm2<Ty1, Ty2>()));
+    assert((test_algorithm2<Ty2, Ty1>()));
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+
 int main() {
     test_ord<comp::equal>(std::partial_ordering::equivalent);
     test_ord<comp::less>(std::partial_ordering::less);
@@ -133,4 +203,13 @@ int main() {
     test_ord<comp::equal>(std::strong_ordering::equivalent);
     test_ord<comp::less>(std::strong_ordering::less);
     test_ord<comp::greater>(std::strong_ordering::greater);
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+    test_algorithm<int>();
+    test_algorithm<char>();
+    test_algorithm<unsigned char>();
+    test_algorithm<int, char>();
+    test_algorithm<int, unsigned char>();
+    test_algorithm<char, unsigned char>();
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 }

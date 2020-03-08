@@ -1751,10 +1751,10 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #if CXX20_MODE
 #ifndef __cpp_lib_span
 #error BOOM
-#elif __cpp_lib_span != 201902L
+#elif __cpp_lib_span != 202002L
 #error BOOM
 #else
-STATIC_ASSERT(__cpp_lib_span == 201902L);
+STATIC_ASSERT(__cpp_lib_span == 202002L);
 #endif
 #else
 #ifdef __cpp_lib_span
