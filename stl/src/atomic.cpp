@@ -174,8 +174,9 @@ struct alignas(64) _Contention_table_entry {
         _Semaphore_use_count.fetch_add(1, std::memory_order_relaxed);
         intptr_t semaphore = _Semaphore.load(std::memory_order_acquire);
         if (semaphore == -1) {
-            std::call_once(_Flag_semaphore_initialized, &_Contention_table_entry::_Inititalize_semaphore, this, semaphore);
-        } 
+            std::call_once(
+                _Flag_semaphore_initialized, &_Contention_table_entry::_Inititalize_semaphore, this, semaphore);
+        }
         return reinterpret_cast<HANDLE>(semaphore);
     }
 
