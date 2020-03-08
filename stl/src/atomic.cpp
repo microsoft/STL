@@ -260,7 +260,7 @@ void __cdecl _Atomic_notify_fallback(void* _Storage) noexcept {
 
 void __cdecl _Atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) {
     if (is_win8_wait_on_address_available())
-        __crtWaitOnAddress((volatile VOID*)_Storage, _Comparand, _Size, INFINITE);
+        __crtWaitOnAddress((volatile VOID*) _Storage, _Comparand, _Size, INFINITE);
     else
         _Atomic_wait_fallback(_Storage, _Spin_context);
 }

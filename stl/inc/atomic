@@ -143,7 +143,6 @@ void __cdecl _Atomic_wait_indirect(const void* _Storage, long& _Spin_context) no
 void __cdecl _Atomic_notify_indirect(void* _Storage) noexcept;
 
 void __cdecl _Atomic_unwait_indirect(const void* _Storage, long& _Spin_context);
-
 }
 
 
