@@ -508,7 +508,8 @@ private:
     }
 
     _Iosarray& __CLR_OR_THIS_CALL _Findarr(int _Idx) { // locate or make a variable array element
-        _Iosarray *_Ptr1, *_Ptr2;
+        _Iosarray* _Ptr1;
+        _Iosarray* _Ptr2;
 
         for (_Ptr1 = _Arr, _Ptr2 = nullptr; _Ptr1; _Ptr1 = _Ptr1->_Next) {
             if (_Ptr1->_Index == _Idx) {
@@ -529,7 +530,8 @@ private:
 
     void __CLR_OR_THIS_CALL _Tidy() noexcept { // discard storage for an ios_base
         _Callfns(erase_event);
-        _Iosarray *_Ptr1, *_Ptr2;
+        _Iosarray* _Ptr1;
+        _Iosarray* _Ptr2;
 
         for (_Ptr1 = _Arr; _Ptr1; _Ptr1 = _Ptr2) { // delete array element
             _Ptr2 = _Ptr1->_Next;
@@ -537,7 +539,8 @@ private:
         }
         _Arr = nullptr;
 
-        _Fnarray *_Pfa1, *_Pfa2;
+        _Fnarray* _Pfa1;
+        _Fnarray* _Pfa2;
         for (_Pfa1 = _Calls; _Pfa1; _Pfa1 = _Pfa2) { // delete callback element
             _Pfa2 = _Pfa1->_Next;
             delete _Pfa1;

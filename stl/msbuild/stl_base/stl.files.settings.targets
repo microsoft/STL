@@ -168,7 +168,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
              (controlled by IncludeInLink and IncludeInImportLib). -->
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\filesystem.cpp;
-            $(CrtRoot)\github\stl\src\filesystem_space.cpp;
             $(CrtRoot)\github\stl\src\locale0_implib.cpp;
             $(CrtRoot)\github\stl\src\nothrow.cpp;
             $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;

@@ -7,3 +7,6 @@
 # Ensure GitHub detects our C++ code as C++ code.
 /stl/inc/** linguist-language=C++
 /stl/src/** linguist-language=C++
+
+# Ensure GitHub detects our Perl legacy test harness code as Perl code instead of Raku.
+*.pl linguist-language=Perl

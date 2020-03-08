@@ -32,51 +32,17 @@ using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept;
 
-#ifdef _M_CEE_PURE
 template <class _Ty>
-struct _Immortalizer { // constructs _Ty, never destroys
-    _Immortalizer() { // construct _Ty inside _Storage
-        ::new (static_cast<void*>(&_Storage)) _Ty();
+union _Immortalizer_impl { // constructs _Ty, never destroys
+    constexpr _Immortalizer_impl() noexcept : _Storage{} {}
+    _Immortalizer_impl(const _Immortalizer_impl&) = delete;
+    _Immortalizer_impl& operator=(const _Immortalizer_impl&) = delete;
+    ~_Immortalizer_impl() {
+        // do nothing
     }
 
-    _Immortalizer(const _Immortalizer&) = delete;
-    _Immortalizer& operator=(const _Immortalizer&) = delete;
-
-    aligned_union_t<1, _Ty> _Storage;
+    _Ty _Storage;
 };
-
-#pragma warning(push)
-#pragma warning(disable : 4640) // construction of local static object is not thread-safe (/Wall)
-template <class _Ty>
-_Ty& _Immortalize() { // return a reference to an object that will live forever
-    /* MAGIC */ static _Immortalizer<_Ty> _Static;
-    return reinterpret_cast<_Ty&>(_Static._Storage);
-}
-#pragma warning(pop)
-
-#else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
-template <class _Ty>
-int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
-    // adapt True Placement New to _Execute_once
-    ::new (_Storage_ptr) _Ty();
-    return 1;
-}
-
-template <class _Ty>
-_Ty& _Immortalize() { // return a reference to an object that will live forever
-    static_assert(sizeof(void*) == sizeof(once_flag), "TRANSITION, VSO-406237");
-    static_assert(alignof(void*) == alignof(once_flag), "TRANSITION, VSO-406237");
-    static void* _Flag = nullptr;
-    static aligned_union_t<1, _Ty> _Storage;
-    if (_Execute_once(reinterpret_cast<once_flag&>(_Flag), _Immortalize_impl<_Ty>, &_Storage) == 0) {
-        // _Execute_once should never fail if the callback never fails
-        _STD terminate();
-    }
-
-    return reinterpret_cast<_Ty&>(_Storage);
-}
-#endif // _M_CEE_PURE
-
 _STD_END
 
 #pragma pop_macro("new")

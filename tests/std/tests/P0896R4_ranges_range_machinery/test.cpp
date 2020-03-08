@@ -67,6 +67,9 @@ template <class R>
 concept CanSize = requires(R&& r) { ranges::size(std::forward<R>(r)); };
 
 template <class R>
+concept CanSizeType = requires { typename ranges::range_size_t<R>; };
+
+template <class R>
 concept CanData = requires(R&& r) { ranges::data(std::forward<R>(r)); };
 
 template <class R>
@@ -321,9 +324,11 @@ constexpr bool test_size() {
     STATIC_ASSERT(!is_valid<Size> || std::integral<Size>);
 
     STATIC_ASSERT(CanSize<Range> == is_valid<Size>);
+    STATIC_ASSERT(CanSizeType<Range> == is_valid<Size>);
     STATIC_ASSERT(ranges::sized_range<Range> == is_valid<Size>);
     if constexpr (is_valid<Size>) {
         STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
+        STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
 
         STATIC_ASSERT(CanEmpty<Range>);
     }
@@ -544,7 +549,7 @@ STATIC_ASSERT(test_rend<int[]>());
 STATIC_ASSERT(test_crbegin<int[]>());
 STATIC_ASSERT(test_crend<int[]>());
 STATIC_ASSERT(test_size<int[]>());
-STATIC_ASSERT(test_empty<int[], true>());
+STATIC_ASSERT(test_empty<int[], false>());
 STATIC_ASSERT(test_data<int[]>());
 STATIC_ASSERT(test_cdata<int[]>());
 STATIC_ASSERT(!ranges::range<int[]>);
@@ -559,7 +564,7 @@ STATIC_ASSERT(test_rend<int const[]>());
 STATIC_ASSERT(test_crbegin<int const[]>());
 STATIC_ASSERT(test_crend<int const[]>());
 STATIC_ASSERT(test_size<int const[]>());
-STATIC_ASSERT(test_empty<int const[], true>());
+STATIC_ASSERT(test_empty<int const[], false>());
 STATIC_ASSERT(test_data<int const[]>());
 STATIC_ASSERT(test_cdata<int const[]>());
 STATIC_ASSERT(!ranges::range<int const[]>);
@@ -574,7 +579,7 @@ STATIC_ASSERT(test_rend<int (&)[]>());
 STATIC_ASSERT(test_crbegin<int (&)[]>());
 STATIC_ASSERT(test_crend<int (&)[]>());
 STATIC_ASSERT(test_size<int (&)[]>());
-STATIC_ASSERT(test_empty<int (&)[], true>());
+STATIC_ASSERT(test_empty<int (&)[], false>());
 // Can't use test_data/_cdata here because they use range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<int (&)[]>())), int*>);
 STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int (&)[]>())), int const*>);
@@ -590,7 +595,7 @@ STATIC_ASSERT(test_rend<int const (&)[]>());
 STATIC_ASSERT(test_crbegin<int const (&)[]>());
 STATIC_ASSERT(test_crend<int const (&)[]>());
 STATIC_ASSERT(test_size<int const (&)[]>());
-STATIC_ASSERT(test_empty<int const (&)[], true>());
+STATIC_ASSERT(test_empty<int const (&)[], false>());
 // Can't use test_data/_cdata here because they use range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<int const (&)[]>())), int const*>);
 STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int const (&)[]>())), int const*>);
@@ -608,7 +613,7 @@ STATIC_ASSERT(!CanREnd<decltype((initially_unbounded))>);
 STATIC_ASSERT(!CanCRBegin<decltype((initially_unbounded))>);
 STATIC_ASSERT(!CanCREnd<decltype((initially_unbounded))>);
 STATIC_ASSERT(!CanSize<decltype((initially_unbounded))>);
-STATIC_ASSERT(!ranges::empty(initially_unbounded));
+STATIC_ASSERT(!CanEmpty<decltype((initially_unbounded))>);
 STATIC_ASSERT(ranges::data(initially_unbounded) == initially_unbounded);
 STATIC_ASSERT(ranges::cdata(initially_unbounded) == initially_unbounded);
 int initially_unbounded[42];
@@ -1409,8 +1414,8 @@ namespace nothrow_testing {
 } // namespace nothrow_testing
 
 namespace subsumption_testing {
-    // Validate that the "readable" range concepts properly subsume (doubly important given that we spell them
-    // differently than does the working draft)
+    // Validate that the "indirectly_readable" range concepts properly subsume (doubly important given that we spell
+    // them differently than does the working draft)
     enum range_type {
         exactly_range,
         exactly_input_range,
@@ -1460,51 +1465,53 @@ namespace subsumption_testing {
     STATIC_ASSERT(f<int (&)[42]>() == exactly_contiguous_range);
 } // namespace subsumption_testing
 
-namespace safe_range_testing {
+namespace borrowed_range_testing {
     template <class Rng, class Iterator, class Sentinel = Iterator, class RIterator = std::reverse_iterator<Iterator>,
         class RSentinel = RIterator>
-    constexpr bool test_safe_range() {
-        // Validate that rvalue/lvalue const/non-const Rng models safe_range
+    constexpr bool test_borrowed_range() {
+        // Validate that rvalue/lvalue const/non-const Rng models borrowed_range
         STATIC_ASSERT(Decayed<Rng>);
 
         STATIC_ASSERT(test_begin<Rng, Iterator>());
         STATIC_ASSERT(test_end<Rng, Sentinel>());
         STATIC_ASSERT(test_rbegin<Rng, RIterator>());
         STATIC_ASSERT(test_rend<Rng, RSentinel>());
-        STATIC_ASSERT(ranges::safe_range<Rng>);
+        STATIC_ASSERT(ranges::borrowed_range<Rng>);
 
         STATIC_ASSERT(test_begin<Rng&, Iterator>());
         STATIC_ASSERT(test_end<Rng&, Sentinel>());
         STATIC_ASSERT(test_rbegin<Rng&, RIterator>());
         STATIC_ASSERT(test_rend<Rng&, RSentinel>());
-        STATIC_ASSERT(ranges::safe_range<Rng&>);
+        STATIC_ASSERT(ranges::borrowed_range<Rng&>);
 
         STATIC_ASSERT(test_begin<Rng const, Iterator>());
         STATIC_ASSERT(test_end<Rng const, Sentinel>());
         STATIC_ASSERT(test_rbegin<Rng const, RIterator>());
         STATIC_ASSERT(test_rend<Rng const, RSentinel>());
-        STATIC_ASSERT(ranges::safe_range<Rng const>);
+        STATIC_ASSERT(ranges::borrowed_range<Rng const>);
 
         STATIC_ASSERT(test_begin<Rng const&, Iterator>());
         STATIC_ASSERT(test_end<Rng const&, Sentinel>());
         STATIC_ASSERT(test_rbegin<Rng const&, RIterator>());
         STATIC_ASSERT(test_rend<Rng const&, RSentinel>());
-        STATIC_ASSERT(ranges::safe_range<Rng const&>);
+        STATIC_ASSERT(ranges::borrowed_range<Rng const&>);
 
         return true;
     }
 
-    STATIC_ASSERT(test_safe_range<std::string_view, std::string_view::iterator>());
-    STATIC_ASSERT(test_safe_range<std::wstring_view, std::wstring_view::iterator>());
-    STATIC_ASSERT(test_safe_range<std::span<int>, std::span<int>::iterator>());
-    STATIC_ASSERT(test_safe_range<std::span<int, 42>, std::span<int, 42>::iterator>());
+    STATIC_ASSERT(test_borrowed_range<std::string_view, std::string_view::iterator>());
+    STATIC_ASSERT(test_borrowed_range<std::wstring_view, std::wstring_view::iterator>());
+    STATIC_ASSERT(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
+    STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
+#if 0 // TRANSITION, subrange
+    STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
+#endif // TRANSITION, subrange
 #if 0 // TRANSITION, future
-    STATIC_ASSERT(test_safe_range<ranges::subrange<int*, int*>, int*>());
-    STATIC_ASSERT(test_safe_range<ranges::ref_view<int[42]>, int*>());
-    STATIC_ASSERT(test_safe_range<ranges::iota_view<int, int>, ...>());
+    STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
+    STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ...>());
 #endif // TRANSITION, future
 
-    struct simple_safe_range {
+    struct simple_borrowed_range {
         int* begin() const {
             return nullptr;
         }
@@ -1513,25 +1520,25 @@ namespace safe_range_testing {
         }
     };
 
-    struct less_simple_safe_range {
-        friend int* begin(less_simple_safe_range) {
+    struct less_simple_borrowed_range {
+        friend int* begin(less_simple_borrowed_range) {
             return nullptr;
         }
-        friend int* end(less_simple_safe_range) {
+        friend int* end(less_simple_borrowed_range) {
             return nullptr;
         }
     };
-} // namespace safe_range_testing
+} // namespace borrowed_range_testing
 
 template <>
-inline constexpr bool std::ranges::enable_safe_range<safe_range_testing::simple_safe_range> = true;
+inline constexpr bool std::ranges::enable_borrowed_range<borrowed_range_testing::simple_borrowed_range> = true;
 template <>
-inline constexpr bool std::ranges::enable_safe_range<safe_range_testing::less_simple_safe_range> = true;
+inline constexpr bool std::ranges::enable_borrowed_range<borrowed_range_testing::less_simple_borrowed_range> = true;
 
-namespace safe_range_testing {
-    STATIC_ASSERT(test_safe_range<simple_safe_range, int*>());
-    STATIC_ASSERT(test_safe_range<less_simple_safe_range, int*>());
-} // namespace safe_range_testing
+namespace borrowed_range_testing {
+    STATIC_ASSERT(test_borrowed_range<simple_borrowed_range, int*>());
+    STATIC_ASSERT(test_borrowed_range<less_simple_borrowed_range, int*>());
+} // namespace borrowed_range_testing
 
 template <bool AllowNonConst, bool AllowConst, bool AllowSize>
 struct arbitrary_range {
@@ -1626,12 +1633,12 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<mutable_unsized_range const, false, CI, S>());
     STATIC_ASSERT(test<mutable_unsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_only_no_size_range, true, I, S>());
+    STATIC_ASSERT(test<mutable_only_no_size_range, false, I, S>());
     STATIC_ASSERT(test<mutable_only_no_size_range&, false, I, S>());
     STATIC_ASSERT(test<mutable_only_no_size_range const>());
     STATIC_ASSERT(test<mutable_only_no_size_range const&>());
 
-    STATIC_ASSERT(test<immutable_unsized_range, true, CI, S>());
+    STATIC_ASSERT(test<immutable_unsized_range, false, CI, S>());
     STATIC_ASSERT(test<immutable_unsized_range&, false, CI, S>());
     STATIC_ASSERT(test<immutable_unsized_range const, false, CI, S>());
     STATIC_ASSERT(test<immutable_unsized_range const&, false, CI, S>());
@@ -1641,12 +1648,12 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<mutable_sized_range const, false, CI, UC>());
     STATIC_ASSERT(test<mutable_sized_range const&, false, CI, UC>());
 
-    STATIC_ASSERT(test<mutable_only_sized_range, true, I, UC>());
+    STATIC_ASSERT(test<mutable_only_sized_range, false, I, UC>());
     STATIC_ASSERT(test<mutable_only_sized_range&, false, I, UC>());
     STATIC_ASSERT(test<mutable_only_sized_range const>());
     STATIC_ASSERT(test<mutable_only_sized_range const&>());
 
-    STATIC_ASSERT(test<immutable_sized_range, true, CI, UC>());
+    STATIC_ASSERT(test<immutable_sized_range, false, CI, UC>());
     STATIC_ASSERT(test<immutable_sized_range&, false, CI, UC>());
     STATIC_ASSERT(test<immutable_sized_range const, false, CI, UC>());
     STATIC_ASSERT(test<immutable_sized_range const&, false, CI, UC>());
@@ -1656,12 +1663,12 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<mutable_badsized_range const, false, CI, S>());
     STATIC_ASSERT(test<mutable_badsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_only_badsized_range, true, I, S>());
+    STATIC_ASSERT(test<mutable_only_badsized_range, false, I, S>());
     STATIC_ASSERT(test<mutable_only_badsized_range&, false, I, S>());
     STATIC_ASSERT(test<mutable_only_badsized_range const>());
     STATIC_ASSERT(test<mutable_only_badsized_range const&>());
 
-    STATIC_ASSERT(test<immutable_badsized_range, true, CI, S>());
+    STATIC_ASSERT(test<immutable_badsized_range, false, CI, S>());
     STATIC_ASSERT(test<immutable_badsized_range&, false, CI, S>());
     STATIC_ASSERT(test<immutable_badsized_range const, false, CI, S>());
     STATIC_ASSERT(test<immutable_badsized_range const&, false, CI, S>());
@@ -1712,7 +1719,7 @@ constexpr ranges::iterator_t<R> complicated_algorithm(R&& r) {
 }
 
 template <class T>
-struct array_view {
+struct array_view : ranges::view_base {
     T* first_;
     std::size_t n_;
 

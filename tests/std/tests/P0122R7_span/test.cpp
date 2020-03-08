@@ -61,54 +61,22 @@ static_assert(is_same_v<span<const int, 3>::const_pointer, const int*>);
 static_assert(is_same_v<span<const int, 3>::reference, const int&>);
 static_assert(is_same_v<span<const int, 3>::const_reference, const int&>);
 
-// The iterators are thoroughly tested by P0896R4_ranges_range_machinery...
+// The iterators are thoroughly tested by P0896R4_ranges_range_machinery
 static_assert(is_same_v<iterator_traits<span<int>::iterator>::pointer, int*>);
-static_assert(is_same_v<iterator_traits<span<int>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<int>::reverse_iterator, reverse_iterator<span<int>::iterator>>);
-static_assert(is_same_v<span<int>::const_reverse_iterator, reverse_iterator<span<int>::const_iterator>>);
 
 static_assert(is_same_v<iterator_traits<span<int, 3>::iterator>::pointer, int*>);
-static_assert(is_same_v<iterator_traits<span<int, 3>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<int, 3>::reverse_iterator, reverse_iterator<span<int, 3>::iterator>>);
-static_assert(is_same_v<span<int, 3>::const_reverse_iterator, reverse_iterator<span<int, 3>::const_iterator>>);
 
 static_assert(is_same_v<iterator_traits<span<const int>::iterator>::pointer, const int*>);
-static_assert(is_same_v<iterator_traits<span<const int>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<const int>::reverse_iterator, reverse_iterator<span<const int>::iterator>>);
-static_assert(is_same_v<span<const int>::const_reverse_iterator, reverse_iterator<span<const int>::const_iterator>>);
 
 static_assert(is_same_v<iterator_traits<span<const int, 3>::iterator>::pointer, const int*>);
-static_assert(is_same_v<iterator_traits<span<const int, 3>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<const int, 3>::reverse_iterator, reverse_iterator<span<const int, 3>::iterator>>);
-static_assert(
-    is_same_v<span<const int, 3>::const_reverse_iterator, reverse_iterator<span<const int, 3>::const_iterator>>);
 
 #ifdef __cpp_lib_concepts
-#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-// ... except for cross-type iterator operations.
-static_assert(totally_ordered_with<span<int>::iterator, span<int>::const_iterator>);
-static_assert(sized_sentinel_for<span<int>::iterator, span<int>::const_iterator>);
-static_assert(totally_ordered_with<span<const int>::iterator, span<const int>::const_iterator>);
-static_assert(sized_sentinel_for<span<const int>::iterator, span<const int>::const_iterator>);
-static_assert(totally_ordered_with<span<int, 3>::iterator, span<int, 3>::const_iterator>);
-static_assert(sized_sentinel_for<span<int, 3>::iterator, span<int, 3>::const_iterator>);
-static_assert(totally_ordered_with<span<const int, 3>::iterator, span<const int, 3>::const_iterator>);
-static_assert(sized_sentinel_for<span<const int, 3>::iterator, span<const int, 3>::const_iterator>);
-
-#if _ITERATOR_DEBUG_LEVEL >= 1
-static_assert(_Range_verifiable_v<span<int>::iterator, span<int>::const_iterator>);
-static_assert(_Range_verifiable_v<span<int>::const_iterator, span<int>::iterator>);
-static_assert(_Range_verifiable_v<span<const int>::iterator, span<const int>::const_iterator>);
-static_assert(_Range_verifiable_v<span<const int>::const_iterator, span<const int>::iterator>);
-static_assert(_Range_verifiable_v<span<int, 3>::iterator, span<int, 3>::const_iterator>);
-static_assert(_Range_verifiable_v<span<int, 3>::const_iterator, span<int, 3>::iterator>);
-static_assert(_Range_verifiable_v<span<const int, 3>::iterator, span<const int, 3>::const_iterator>);
-static_assert(_Range_verifiable_v<span<const int, 3>::const_iterator, span<const int, 3>::iterator>);
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
-#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-
-static_assert(ranges::enable_safe_range<span<int>>);
-static_assert(ranges::enable_safe_range<span<int, 3>>);
+static_assert(ranges::enable_borrowed_range<span<int>>);
+static_assert(ranges::enable_borrowed_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
 
 static_assert(is_base_of_v<integral_constant<size_t, 3>, tuple_size<span<int, 3>>>);
@@ -124,16 +92,12 @@ static_assert(is_same_v<tuple_element_t<2, const span<const int, 3>>, const int>
 // that span and its iterator types are trivially copyable.
 static_assert(is_trivially_copyable_v<span<int>>);
 static_assert(is_trivially_copyable_v<span<int>::iterator>);
-static_assert(is_trivially_copyable_v<span<int>::const_iterator>);
 static_assert(is_trivially_copyable_v<span<int, 3>>);
 static_assert(is_trivially_copyable_v<span<int, 3>::iterator>);
-static_assert(is_trivially_copyable_v<span<int, 3>::const_iterator>);
 static_assert(is_trivially_copyable_v<span<const int>>);
 static_assert(is_trivially_copyable_v<span<const int>::iterator>);
-static_assert(is_trivially_copyable_v<span<const int>::const_iterator>);
 static_assert(is_trivially_copyable_v<span<const int, 3>>);
 static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
-static_assert(is_trivially_copyable_v<span<const int, 3>::const_iterator>);
 
 struct Base {};
 struct Derived : Base {};
@@ -142,7 +106,7 @@ static_assert(!is_convertible_v<Derived (*)[], Base (*)[]>);
 
 struct NonRange {};
 
-template <typename T, bool Safe = false>
+template <typename T, bool Borrowed = false>
 struct BasicRange {
     T elements[3]{};
 
@@ -177,15 +141,15 @@ struct BasicRange {
 
 #ifdef __cpp_lib_concepts
 namespace std::ranges {
-    template <typename T, bool Safe>
-    inline constexpr bool enable_safe_range<BasicRange<T, Safe>> = Safe;
+    template <typename T, bool Borrowed>
+    inline constexpr bool enable_borrowed_range<BasicRange<T, Borrowed>> = Borrowed;
 }
 #endif // __cpp_lib_concepts
 
 using ContiguousSizedRange = BasicRange<int>;
 
-// Not truly a model of safe_range; this is a convenient fiction for testing purposes.
-using SafeContiguousSizedRange = BasicRange<int, true>;
+// Not truly a model of borrowed_range; this is a convenient fiction for testing purposes.
+using BorrowedContiguousSizedRange = BasicRange<int, true>;
 
 template <typename T, size_t Extent = dynamic_extent>
 constexpr void FunctionTakingSpan(type_identity_t<span<T, Extent>>) {}
@@ -640,24 +604,24 @@ constexpr bool test() {
 
 #ifdef __cpp_lib_concepts
         static_assert(!is_constructible_v<span<int>, ContiguousSizedRange>);
-        static_assert(is_constructible_v<span<int>, SafeContiguousSizedRange>);
+        static_assert(is_constructible_v<span<int>, BorrowedContiguousSizedRange>);
         static_assert(is_constructible_v<span<const int>, ContiguousSizedRange>);
 
-        static_assert(is_convertible_v<SafeContiguousSizedRange, span<int>>);
+        static_assert(is_convertible_v<BorrowedContiguousSizedRange, span<int>>);
         static_assert(is_convertible_v<ContiguousSizedRange, span<const int>>);
 
-        SafeContiguousSizedRange safe_user_range;
+        BorrowedContiguousSizedRange borrowed_user_range;
 
-        span<int> sp_4(move(safe_user_range));
+        span<int> sp_4(move(borrowed_user_range));
         span<const int> sp_5(move(user_range));
 
-        assert(sp_4.data() == safe_user_range.data());
+        assert(sp_4.data() == borrowed_user_range.data());
         assert(sp_5.data() == user_range.data());
 
         assert(sp_4.size() == 3);
         assert(sp_5.size() == 3);
 
-        FunctionTakingSpan<int>(move(safe_user_range));
+        FunctionTakingSpan<int>(move(borrowed_user_range));
         FunctionTakingSpan<const int>(move(user_range));
 
         static_assert(is_same_v<decltype(span{user_range}), span<int>>);
@@ -950,12 +914,8 @@ constexpr bool test() {
         static_assert(noexcept(sp_dyn.data()));
         static_assert(noexcept(sp_dyn.begin()));
         static_assert(noexcept(sp_dyn.end()));
-        static_assert(noexcept(sp_dyn.cbegin()));
-        static_assert(noexcept(sp_dyn.cend()));
         static_assert(noexcept(sp_dyn.rbegin()));
         static_assert(noexcept(sp_dyn.rend()));
-        static_assert(noexcept(sp_dyn.crbegin()));
-        static_assert(noexcept(sp_dyn.crend()));
 
         static_assert(noexcept(sp_nine.size()));
         static_assert(noexcept(sp_nine.size_bytes()));
@@ -966,12 +926,8 @@ constexpr bool test() {
         static_assert(noexcept(sp_nine.data()));
         static_assert(noexcept(sp_nine.begin()));
         static_assert(noexcept(sp_nine.end()));
-        static_assert(noexcept(sp_nine.cbegin()));
-        static_assert(noexcept(sp_nine.cend()));
         static_assert(noexcept(sp_nine.rbegin()));
         static_assert(noexcept(sp_nine.rend()));
-        static_assert(noexcept(sp_nine.crbegin()));
-        static_assert(noexcept(sp_nine.crend()));
 
         assert(sp_dyn.size() == 9);
         assert(sp_nine.size() == 9);
@@ -1009,40 +965,20 @@ constexpr bool test() {
         assert(sp_dyn.end()[-2] == 80);
         assert(sp_nine.end()[-2] == 80);
 
-        assert(*sp_dyn.cbegin() == 10);
-        assert(*sp_nine.cbegin() == 10);
-
-        assert(sp_dyn.cend()[-2] == 80);
-        assert(sp_nine.cend()[-2] == 80);
-
         assert(*sp_dyn.rbegin() == 90);
         assert(*sp_nine.rbegin() == 90);
 
         assert(sp_dyn.rend()[-2] == 20);
         assert(sp_nine.rend()[-2] == 20);
 
-        assert(*sp_dyn.crbegin() == 90);
-        assert(*sp_nine.crbegin() == 90);
-
-        assert(sp_dyn.crend()[-2] == 20);
-        assert(sp_nine.crend()[-2] == 20);
-
         static_assert(is_same_v<decltype(sp_dyn.begin()), span<int>::iterator>);
         static_assert(is_same_v<decltype(sp_nine.begin()), span<int, 9>::iterator>);
         static_assert(is_same_v<decltype(sp_dyn.end()), span<int>::iterator>);
         static_assert(is_same_v<decltype(sp_nine.end()), span<int, 9>::iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.cbegin()), span<int>::const_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.cbegin()), span<int, 9>::const_iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.cend()), span<int>::const_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.cend()), span<int, 9>::const_iterator>);
         static_assert(is_same_v<decltype(sp_dyn.rbegin()), span<int>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_nine.rbegin()), span<int, 9>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_dyn.rend()), span<int>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_nine.rend()), span<int, 9>::reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.crbegin()), span<int>::const_reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.crbegin()), span<int, 9>::const_reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.crend()), span<int>::const_reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.crend()), span<int, 9>::const_reverse_iterator>);
 
         static_assert(noexcept(get<5>(sp_nine)));
         assert(get<5>(sp_nine) == 60);

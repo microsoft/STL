@@ -43,14 +43,6 @@ struct _Span_iterator {
     using pointer           = _Ty*;
     using reference         = _Ty&;
 
-    _NODISCARD constexpr operator _Span_iterator<const _Ty>() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_Myptr, _Mybegin, _Myend};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
-        return {_Myptr};
-#endif // _ITERATOR_DEBUG_LEVEL
-    }
-
     _NODISCARD constexpr reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Mybegin, "cannot dereference value-initialized span iterator");
@@ -141,21 +133,13 @@ struct _Span_iterator {
         return _Tmp;
     }
 
-    // clang-format off
-#ifdef __cpp_lib_concepts
-    template <class _Ty2>
-    requires same_as<remove_cv_t<_Ty2>, value_type>
-#else // ^^^ use concepts / no concepts vvv
-    template <class _Ty2, enable_if_t<is_same_v<remove_cv_t<_Ty2>, value_type>, int> = 0>
-#endif // __cpp_lib_concepts
-    _NODISCARD constexpr difference_type operator-(const _Span_iterator<_Ty2>& _Right) const noexcept {
+    _NODISCARD constexpr difference_type operator-(const _Span_iterator& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(
             _Mybegin == _Right._Mybegin && _Myend == _Right._Myend, "cannot subtract incompatible span iterators");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
         return _Myptr - _Right._Myptr;
     }
-    // clang-format on
 
     _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
@@ -276,7 +260,9 @@ class span;
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _Ty, size_t _Extent>
-    inline constexpr bool enable_safe_range<span<_Ty, _Extent>> = true;
+    inline constexpr bool enable_view<span<_Ty, _Extent>> = _Extent == 0 || _Extent == dynamic_extent;
+    template <class _Ty, size_t _Extent>
+    inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
 } // namespace ranges
 
 // VARIABLE TEMPLATE _Is_span_v
@@ -309,7 +295,7 @@ concept _Is_span_compatible_range =
  && !_Is_std_array_v<remove_cvref_t<_Rng>>
  && _RANGES contiguous_range<_Rng>
  && _RANGES sized_range<_Rng>
- && (_RANGES safe_range<_Rng> || is_const_v<_Ty>)
+ && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
  && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>>(*)[], _Ty(*)[]>;
 // clang-format on
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
@@ -359,18 +345,16 @@ struct _Is_span_compatible_range : bool_constant<conjunction_v<
 template <class _Ty, size_t _Extent = dynamic_extent>
 class span : public _Span_extent_type<_Extent> {
 public:
-    using element_type           = _Ty;
-    using value_type             = remove_cv_t<_Ty>;
-    using size_type              = size_t;
-    using difference_type        = ptrdiff_t;
-    using pointer                = _Ty*;
-    using const_pointer          = const _Ty*;
-    using reference              = _Ty&;
-    using const_reference        = const _Ty&;
-    using iterator               = _Span_iterator<_Ty>;
-    using const_iterator         = _Span_iterator<const _Ty>;
-    using reverse_iterator       = _STD reverse_iterator<iterator>;
-    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+    using element_type     = _Ty;
+    using value_type       = remove_cv_t<_Ty>;
+    using size_type        = size_t;
+    using difference_type  = ptrdiff_t;
+    using pointer          = _Ty*;
+    using const_pointer    = const _Ty*;
+    using reference        = _Ty&;
+    using const_reference  = const _Ty&;
+    using iterator         = _Span_iterator<_Ty>;
+    using reverse_iterator = _STD reverse_iterator<iterator>;
 
     static constexpr size_type extent = _Extent;
 
@@ -617,37 +601,12 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
-    _NODISCARD constexpr const_iterator cbegin() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_Mydata, _Mydata, _Mydata + this->size()};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
-        return {_Mydata};
-#endif // _ITERATOR_DEBUG_LEVEL
-    }
-
-    _NODISCARD constexpr const_iterator cend() const noexcept {
-        const auto _End = _Mydata + this->size();
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_End, _Mydata, _End};
-#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
-        return {_End};
-#endif // _ITERATOR_DEBUG_LEVEL
-    }
-
     _NODISCARD constexpr reverse_iterator rbegin() const noexcept {
         return reverse_iterator{end()};
     }
 
     _NODISCARD constexpr reverse_iterator rend() const noexcept {
         return reverse_iterator{begin()};
-    }
-
-    _NODISCARD constexpr const_reverse_iterator crbegin() const noexcept {
-        return const_reverse_iterator{cend()};
-    }
-
-    _NODISCARD constexpr const_reverse_iterator crend() const noexcept {
-        return const_reverse_iterator{cbegin()};
     }
 
     _NODISCARD constexpr pointer _Unchecked_begin() const noexcept {
@@ -692,7 +651,7 @@ span(const _Rng&)->span<const typename _Rng::value_type>;
 
 #endif // !__cpp_lib_concepts
 
-#if _HAS_STD_BYTE
+#ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
 // FUNCTION TEMPLATE as_bytes
 template <class _Ty, size_t _Extent>
@@ -707,7 +666,7 @@ _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept
     -> span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent> {
     return {reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
 }
-#endif // _HAS_STD_BYTE
+#endif // __cpp_lib_byte
 
 // [span.tuple] Tuple interface
 #ifdef __cpp_lib_concepts
@@ -729,7 +688,7 @@ struct tuple_size<span<_Ty, dynamic_extent>>;
 #endif // !__cpp_lib_concepts
 
 template <size_t _Index, class _Ty, size_t _Extent>
-struct tuple_element<_Index, span<_Ty, _Extent>> {
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, span<_Ty, _Extent>> {
     static_assert(dynamic_extent != _Extent, "std::span<T, dynamic_extent> is not tuple-like");
     static_assert(_Index < _Extent, "Index out of bounds for a std::span of this extent");
     using type = _Ty;
