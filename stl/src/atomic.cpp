@@ -111,7 +111,7 @@ static void __cdecl __std_atomic_spin(long& _Spin_context) noexcept {
     }
 
     case _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD: {
-        if (_Spin_context < (_ATOMIC_SPIN_PHASE_INIT_SWITCH_THD + 4)) {
+        if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) < 4) {
             _Spin_context += 1;
             ::SwitchToThread();
             return;
@@ -121,17 +121,20 @@ static void __cdecl __std_atomic_spin(long& _Spin_context) noexcept {
     }
 
     case _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO: {
-        if (_Spin_context < (_ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO + 16)) {
+        if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) < 16) {
             _Spin_context += 1;
             ::Sleep(0);
             return;
         }
-        _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
+        _Spin_context = 10 | _ATOMIC_SPIN_PHASE_INIT_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
     }
 
     case _ATOMIC_SPIN_PHASE_INIT_SLEEP: {
-        ::Sleep(10);
+        long sleep_count = _Spin_context & _ATOMIC_SPIN_VALUE_MASK;
+        ::Sleep(sleep_count);
+        sleep_count   = std::min<long>(sleep_count * 2, 5000L);
+        _Spin_context = sleep_count | _ATOMIC_SPIN_PHASE_INIT_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         return;
     }
     }

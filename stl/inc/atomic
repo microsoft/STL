@@ -1794,7 +1794,6 @@ public:
     }
 
 #endif // _HAS_CXX20
-
 };
 
 #if _HAS_CXX17
