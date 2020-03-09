@@ -149,7 +149,7 @@ void __cdecl __std_atomic_notify_indirect(void* _Storage) noexcept;
 void __cdecl __std_atomic_unwait_indirect(const void* _Storage, long& _Spin_context) noexcept;
 }
 
-static constexpr long _ATOMIC_UNWAIT_NEEDED = 0x0100'0000;
+static constexpr long _ATOMIC_UNWAIT_NEEDED = 0x2000'0000;
 
 #endif // _HAS_CXX20
 
