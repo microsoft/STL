@@ -73,6 +73,8 @@ enum _Atomic_spin_phase {
     _ATOMIC_SPIN_MASK = _ATOMIC_SPIN_PHASE_MASK | _ATOMIC_SPIN_VALUE_MASK,
 };
 
+static_assert(_ATOMIC_WAIT_PHASE_WAIT_SET == _ATOMIC_UNWAIT_NEEDED);
+
 static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) noexcept {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
     case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
