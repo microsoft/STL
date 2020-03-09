@@ -65,10 +65,10 @@ enum _Atomic_spin_phase {
     _ATOMIC_WAIT_PHASE_WAIT_CLEAR        = 0x0200'0000,
     _ATOMIC_WAIT_PHASE_WAIT_NO_SEMAPHORE = 0x0300'0000,
     _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT   = 0x0000'0000,
-    _ATOMIC_SPIN_PHASE_INIT_SPIN         = 0x1000'0000,
-    _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD   = 0x2000'0000,
-    _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO   = 0x3000'0000,
-    _ATOMIC_SPIN_PHASE_INIT_SLEEP        = 0x4000'0000,
+    _ATOMIC_SPIN_PHASE_SPIN              = 0x1000'0000,
+    _ATOMIC_SPIN_PHASE_SWITCH_THD        = 0x2000'0000,
+    _ATOMIC_SPIN_PHASE_SLEEP_ZERO        = 0x3000'0000,
+    _ATOMIC_SPIN_PHASE_SLEEP             = 0x4000'0000,
 
     _ATOMIC_SPIN_MASK = _ATOMIC_SPIN_PHASE_MASK | _ATOMIC_SPIN_VALUE_MASK,
 };
@@ -78,11 +78,11 @@ static_assert(_ATOMIC_WAIT_PHASE_WAIT_SET == _ATOMIC_UNWAIT_NEEDED);
 static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) noexcept {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
     case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
-        _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SPIN + __std_atomic_spin_count_initialize();
+        _Spin_context = _ATOMIC_SPIN_PHASE_SPIN + __std_atomic_spin_count_initialize();
         [[fallthrough]];
     }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SPIN: {
+    case _ATOMIC_SPIN_PHASE_SPIN: {
         if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) > 0) {
             _Spin_context -= 1;
             YieldProcessor();
@@ -96,45 +96,45 @@ static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) noexcept 
 static void __cdecl __std_atomic_spin(long& _Spin_context) noexcept {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
     case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
-        _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SPIN + __std_atomic_spin_count_initialize();
+        _Spin_context = _ATOMIC_SPIN_PHASE_SPIN + __std_atomic_spin_count_initialize();
         [[fallthrough]];
     }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SPIN: {
+    case _ATOMIC_SPIN_PHASE_SPIN: {
         if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) > 0) {
             _Spin_context -= 1;
             YieldProcessor();
             return;
         }
-        _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
+        _Spin_context = _ATOMIC_SPIN_PHASE_SWITCH_THD | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
     }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD: {
+    case _ATOMIC_SPIN_PHASE_SWITCH_THD: {
         if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) < 4) {
             _Spin_context += 1;
             ::SwitchToThread();
             return;
         }
-        _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
+        _Spin_context = _ATOMIC_SPIN_PHASE_SLEEP_ZERO | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
     }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO: {
+    case _ATOMIC_SPIN_PHASE_SLEEP_ZERO: {
         if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) < 16) {
             _Spin_context += 1;
             ::Sleep(0);
             return;
         }
-        _Spin_context = 10 | _ATOMIC_SPIN_PHASE_INIT_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
+        _Spin_context = 10 | _ATOMIC_SPIN_PHASE_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
     }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SLEEP: {
+    case _ATOMIC_SPIN_PHASE_SLEEP: {
         long sleep_count = _Spin_context & _ATOMIC_SPIN_VALUE_MASK;
         ::Sleep(sleep_count);
-        sleep_count   = std::min<long>(sleep_count * 2, 5000L);
-        _Spin_context = sleep_count | _ATOMIC_SPIN_PHASE_INIT_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
+        sleep_count   = std::min<long>(sleep_count << 1, 5000L);
+        _Spin_context = sleep_count | _ATOMIC_SPIN_PHASE_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         return;
     }
     }
