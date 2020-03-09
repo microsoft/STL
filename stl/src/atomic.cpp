@@ -42,7 +42,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
 
 static std::atomic<long> _Atomic_spin_count = -1;
 
-static inline long __std_atomic_spin_count_initialize() {
+static inline long __std_atomic_spin_count_initialize() noexcept {
     long result = _Atomic_spin_count.load(std::memory_order_relaxed);
     if (result == -1) {
         result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000);
@@ -72,7 +72,7 @@ enum _Atomic_spin_phase {
     _ATOMIC_SPIN_MASK = _ATOMIC_SPIN_PHASE_MASK | _ATOMIC_SPIN_VALUE_MASK,
 };
 
-static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) {
+static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) noexcept {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
     case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SPIN + __std_atomic_spin_count_initialize();
@@ -90,7 +90,7 @@ static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) {
     return false;
 }
 
-static void __cdecl __std_atomic_spin(long& _Spin_context) {
+static void __cdecl __std_atomic_spin(long& _Spin_context) noexcept {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
     case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SPIN + __std_atomic_spin_count_initialize();
@@ -134,7 +134,7 @@ static void __cdecl __std_atomic_spin(long& _Spin_context) {
     }
 }
 
-static inline bool is_win8_wait_on_address_available() {
+static inline bool is_win8_wait_on_address_available() noexcept {
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
     return true;
 #else
@@ -168,9 +168,9 @@ struct alignas(64) _Contention_table_entry {
     // Flag to initialize semaphore
     std::once_flag _Flag_semaphore_initialized;
 
-    static void _Dereference_all_semaphores();
+    static void _Dereference_all_semaphores() noexcept;
 
-    void _Inititalize_semaphore(intptr_t& new_semaphore) {
+    void _Inititalize_semaphore(intptr_t& new_semaphore) noexcept {
         new_semaphore = reinterpret_cast<std::intptr_t>(::CreateSemaphore(nullptr, 0, MAXLONG, nullptr));
         _Semaphore.store(new_semaphore, std::memory_order_release);
         if (!_Semaphore_dereference_registered.test_and_set(std::memory_order_relaxed)){
@@ -178,7 +178,7 @@ struct alignas(64) _Contention_table_entry {
         }
     }
 
-    HANDLE _Reference_semaphore() {
+    HANDLE _Reference_semaphore() noexcept {
         _Semaphore_use_count.fetch_add(1, std::memory_order_relaxed);
         intptr_t semaphore = _Semaphore.load(std::memory_order_acquire);
         if (semaphore == -1) {
@@ -188,7 +188,7 @@ struct alignas(64) _Contention_table_entry {
         return reinterpret_cast<HANDLE>(semaphore);
     }
 
-    void _Dereference_semaphore() {
+    void _Dereference_semaphore() noexcept {
         if (_Semaphore_use_count.fetch_sub(1, std::memory_order_relaxed) == 1) {
             std::intptr_t semaphore = _Semaphore.exchange(0, std::memory_order_acq_rel);
             if (semaphore != 0) {
@@ -202,14 +202,14 @@ struct alignas(64) _Contention_table_entry {
 
 static _Contention_table_entry _Contention_table[TABLE_SIZE];
 
-_Contention_table_entry& _Atomic_contention_table(const void* _Storage) {
+_Contention_table_entry& _Atomic_contention_table(const void* _Storage) noexcept {
     auto index = reinterpret_cast<std::uintptr_t>(_Storage);
     index ^= index >> (TABLE_SIZE_POWER * 2);
     index ^= index >> TABLE_SIZE_POWER;
     return _Contention_table[index & TABLE_MASK];
 }
 
-void _Contention_table_entry::_Dereference_all_semaphores() {
+void _Contention_table_entry::_Dereference_all_semaphores() noexcept  {
     for (_Contention_table_entry& entry : _Contention_table) {
         entry._Dereference_semaphore();
     }
@@ -260,7 +260,7 @@ void __cdecl __std_atomic_wait_fallback(const void* _Storage, long& _Spin_contex
     }
 }
 
-void __cdecl __std_atomic_unwait_fallback(const void* _Storage, long& _Spin_context) {
+void __cdecl __std_atomic_unwait_fallback(const void* _Storage, long& _Spin_context) noexcept {
     if ((_Spin_context & _ATOMIC_WAIT_PHASE_MASK) == _ATOMIC_WAIT_PHASE_WAIT_SET) {
         auto& _Table = _Atomic_contention_table(_Storage);
         _Table._Semaphore_own_count.fetch_sub(1);
@@ -283,7 +283,7 @@ void __cdecl __std_atomic_notify_fallback(void* _Storage) noexcept {
 }
 
 
-void __cdecl __std_atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) {
+void __cdecl __std_atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept {
     if (is_win8_wait_on_address_available()) {
         __crtWaitOnAddress((volatile VOID*) _Storage, _Comparand, _Size, INFINITE);
     } else {
@@ -292,7 +292,7 @@ void __cdecl __std_atomic_wait_direct(const void* _Storage, void* _Comparand, si
 }
 
 
-void __cdecl __std_atomic_notify_one_direct(void* _Storage) {
+void __cdecl __std_atomic_notify_one_direct(void* _Storage) noexcept {
     if (is_win8_wait_on_address_available()) {
         __crtWakeByAddressSingle(_Storage);
     } else {
@@ -301,7 +301,7 @@ void __cdecl __std_atomic_notify_one_direct(void* _Storage) {
 }
 
 
-void __cdecl __std_atomic_notify_all_direct(void* _Storage) {
+void __cdecl __std_atomic_notify_all_direct(void* _Storage) noexcept {
     if (is_win8_wait_on_address_available()) {
         __crtWakeByAddressAll(_Storage);
     } else {
@@ -334,13 +334,13 @@ void __cdecl __std_atomic_notify_indirect(void* _Storage) noexcept {
     }
 }
 
-void __cdecl __std_atomic_unwait_direct(const void* _Storage, long& _Spin_context) {
+void __cdecl __std_atomic_unwait_direct(const void* _Storage, long& _Spin_context) noexcept {
     if (!is_win8_wait_on_address_available()) {
         __std_atomic_unwait_fallback(_Storage, _Spin_context);
     }
 }
 
-void __cdecl __std_atomic_unwait_indirect(const void* _Storage, long& _Spin_context) {
+void __cdecl __std_atomic_unwait_indirect(const void* _Storage, long& _Spin_context) noexcept {
     if (!is_win8_wait_on_address_available()) {
         __std_atomic_unwait_fallback(_Storage, _Spin_context);
     }
