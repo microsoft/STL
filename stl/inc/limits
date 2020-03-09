@@ -1011,6 +1011,27 @@ public:
     static constexpr int min_exponent   = LDBL_MIN_EXP;
     static constexpr int min_exponent10 = LDBL_MIN_10_EXP;
 };
+
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+template <class _Ty>
+inline constexpr bool _Is_standard_unsigned_integer =
+    _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr int _Countl_zero(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    if (_Val == 0) {
+        return _Digits;
+    }
+
+    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
+        return __builtin_clz(_Val) - (numeric_limits<unsigned int>::digits - _Digits);
+    } else {
+        return __builtin_clzll(_Val) - (numeric_limits<unsigned long long>::digits - _Digits);
+    }
+}
+#endif // __cpp_lib_bitops
+
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
