@@ -99,16 +99,17 @@ _Thrd_id_t _Thrd_id() { // return unique id for current thread
 }
 
 unsigned int _Thrd_hardware_concurrency() { // return number of processors
-    DWORD_PTR process_affinity;
-    DWORD_PTR system_affinity;
-    if (GetProcessAffinityMask(GetCurrentProcess(), &process_affinity, &system_affinity))
+    DWORD_PTR process_affinity_mask;
+    DWORD_PTR system_affinity_mask;
+    if (GetProcessAffinityMask(GetCurrentProcess(), &process_affinity_mask, &system_affinity_mask)) {
 #ifdef _WIN64
-        return __builtin_popcountll(process_affinity);
+        return __builtin_popcountll(process_affinity_mask);
 #else
-        return __builtin_popcount(process_affinity);
-#endif // _WIN64
-    else
+        return __builtin_popcount(process_affinity_mask);
+#endif
+    } else {
         return 0;
+    }
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
