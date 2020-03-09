@@ -384,10 +384,9 @@ struct _Atomic_storage {
             }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
         }
-        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED)
-            [[unlikely]] {
-                __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
-            }
+        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED) {
+            __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
+        }
     }
 
     void notify_one() noexcept {
@@ -533,10 +532,9 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 1, _Spin_context);
         }
-        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED)
-            [[unlikely]] {
-                __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
-            }
+        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED) {
+            __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        }
     }
 
     void notify_one() noexcept {
@@ -640,10 +638,9 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 2, _Spin_context);
         }
-        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED)
-            [[unlikely]] {
-                __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
-            }
+        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED) {
+            __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        }
     }
 
     void notify_one() noexcept {
@@ -745,10 +742,9 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 4, _Spin_context);
         }
-        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED)
-            [[unlikely]] {
-                __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
-            }
+        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED) {
+            __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        }
     }
 
     void notify_one() noexcept {
@@ -889,10 +885,9 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 8, _Spin_context);
         }
-        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED)
-            [[unlikely]] {
-                __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
-            }
+        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED) {
+            __std_atomic_unwait_direct(_STD addressof(_Storage), _Spin_context);
+        }
     }
 
     void notify_one() noexcept {
@@ -1013,10 +1008,9 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
         }
-        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED)
-            [[unlikely]] {
-                __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
-            }
+        if (_Spin_context & _ATOMIC_UNWAIT_NEEDED) {
+            __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
+        }
     }
 
     void notify_one() noexcept {
