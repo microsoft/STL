@@ -4,6 +4,7 @@
 // thread functions
 
 #include "awint.h"
+#include "bitset"
 #include <process.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -102,11 +103,9 @@ unsigned int _Thrd_hardware_concurrency() { // return number of processors
     DWORD_PTR process_affinity_mask;
     DWORD_PTR system_affinity_mask;
     if (GetProcessAffinityMask(GetCurrentProcess(), &process_affinity_mask, &system_affinity_mask)) {
-#ifdef _WIN64
-        return __builtin_popcountll(process_affinity_mask);
-#else
-        return __builtin_popcount(process_affinity_mask);
-#endif
+        std::bitset<sizeof(DWORD_PTR) * CHAR_BIT> process_affinity_mask_bits(
+            static_cast<unsigned long long>(process_affinity_mask));
+        return static_cast<unsigned int>(process_affinity_mask_bits.count());
     } else {
         return 0;
     }
