@@ -131,6 +131,8 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_LLONG_LOCK_FREE    2
 #define ATOMIC_POINTER_LOCK_FREE  2
 
+#if _HAS_CXX20
+
 extern "C" {
 
 void __cdecl __std_atomic_wait_direct(
@@ -149,6 +151,7 @@ void __cdecl __std_atomic_unwait_indirect(const void* _Storage, long& _Spin_cont
 
 static constexpr long _ATOMIC_UNWAIT_NEEDED = 0x0100'0000;
 
+#endif // _HAS_CXX20
 
 _STD_BEGIN
 
@@ -370,6 +373,8 @@ struct _Atomic_storage {
         return _Result;
     }
 
+#if _HAS_CXX20
+
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
@@ -391,6 +396,8 @@ struct _Atomic_storage {
     void notify_all() noexcept {
         __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
+
+#endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
@@ -513,6 +520,8 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
@@ -535,6 +544,8 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
+
+#endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
 };
@@ -615,6 +626,8 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
@@ -637,6 +650,8 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
+
+#endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
 };
@@ -715,6 +730,8 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
@@ -737,6 +754,8 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
+
+#endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
 };
@@ -854,6 +873,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
@@ -876,6 +897,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
+
+#endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
 };
@@ -973,12 +996,14 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         return _Result != 0;
     }
 
+#if _HAS_CXX20
+
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         long _Spin_context = 0;
         for (;;) {
-            const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
-            const long long _Observed_bytes = load(_Order);
-            if (_Expected_bytes != _Observed_bytes) {
+            const _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);
+            const _Int128 _Observed_bytes = load(_Order);
+            if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
@@ -995,6 +1020,8 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
+
+#endif // _HAS_CXX20
 
     struct _Int128 {
         alignas(16) long long _Low;
@@ -1735,6 +1762,8 @@ public:
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
+#if _HAS_CXX20
+
     using _Base::wait;
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
         const_cast<atomic*>(this)->_Base::wait(_Expected, _Order);
@@ -1757,6 +1786,9 @@ public:
     operator _Ty() const noexcept {
         return this->load();
     }
+
+#endif // _HAS_CXX20
+
 };
 
 #if _HAS_CXX17
@@ -2095,10 +2127,14 @@ using atomic_ptrdiff_t = atomic<ptrdiff_t>;
 using atomic_intmax_t  = atomic<intmax_t>;
 using atomic_uintmax_t = atomic<uintmax_t>;
 
+#if _HAS_CXX20
+
 // Though there are CMPXCHG8B and CMPXCHG16B,
 // Largest atomics with full set of efficient operations are pointer-sized
 using atomic_signed_lock_free   = atomic_intptr_t;
 using atomic_unsigned_lock_free = atomic_uintptr_t;
+
+#endif // _HAS_CXX20
 
 
 // STRUCT atomic_flag
