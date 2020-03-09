@@ -173,7 +173,7 @@ struct alignas(64) _Contention_table_entry {
     void _Inititalize_semaphore(intptr_t& new_semaphore) noexcept {
         new_semaphore = reinterpret_cast<std::intptr_t>(::CreateSemaphore(nullptr, 0, MAXLONG, nullptr));
         _Semaphore.store(new_semaphore, std::memory_order_release);
-        if (!_Semaphore_dereference_registered.test_and_set(std::memory_order_relaxed)){
+        if (!_Semaphore_dereference_registered.test_and_set(std::memory_order_relaxed)) {
             atexit(_Dereference_all_semaphores);
         }
     }
@@ -209,7 +209,7 @@ _Contention_table_entry& _Atomic_contention_table(const void* _Storage) noexcept
     return _Contention_table[index & TABLE_MASK];
 }
 
-void _Contention_table_entry::_Dereference_all_semaphores() noexcept  {
+void _Contention_table_entry::_Dereference_all_semaphores() noexcept {
     for (_Contention_table_entry& entry : _Contention_table) {
         entry._Dereference_semaphore();
     }
@@ -283,7 +283,8 @@ void __cdecl __std_atomic_notify_fallback(void* _Storage) noexcept {
 }
 
 
-void __cdecl __std_atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept {
+void __cdecl __std_atomic_wait_direct(
+    const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) noexcept {
     if (is_win8_wait_on_address_available()) {
         __crtWaitOnAddress((volatile VOID*) _Storage, _Comparand, _Size, INFINITE);
     } else {
