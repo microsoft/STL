@@ -370,8 +370,9 @@ struct _Atomic_storage {
         long _Spin_context = 0;
         for (;;) {
             _Ty _Observed = load(_Order);
-            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0)
+            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0) {
                 break;
+            }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
         }
         __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);
@@ -962,8 +963,9 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         long _Spin_context = 0;
         for (;;) {
             _Ty _Observed = load(_Order);
-            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0)
+            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0) {
                 break;
+            }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
         }
         __std_atomic_unwait_indirect(_STD addressof(_Storage), _Spin_context);

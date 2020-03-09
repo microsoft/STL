@@ -74,27 +74,30 @@ enum _Atomic_spin_phase {
 
 static bool __cdecl __std_atomic_spin_active_only(long& _Spin_context) {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
-    case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT:
+    case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SPIN + __std_atomic_spin_count_initialize();
         [[fallthrough]];
+    }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SPIN:
+    case _ATOMIC_SPIN_PHASE_INIT_SPIN: {
         if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) > 0) {
             _Spin_context -= 1;
             YieldProcessor();
             return true;
         }
     }
+    }
     return false;
 }
 
 static void __cdecl __std_atomic_spin(long& _Spin_context) {
     switch (_Spin_context & _ATOMIC_SPIN_PHASE_MASK) {
-    case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT:
+    case _ATOMIC_SPIN_PHASE_INIT_SPIN_COUNT: {
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SPIN + __std_atomic_spin_count_initialize();
         [[fallthrough]];
+    }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SPIN:
+    case _ATOMIC_SPIN_PHASE_INIT_SPIN: {
         if ((_Spin_context & _ATOMIC_SPIN_VALUE_MASK) > 0) {
             _Spin_context -= 1;
             YieldProcessor();
@@ -102,8 +105,9 @@ static void __cdecl __std_atomic_spin(long& _Spin_context) {
         }
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
+    }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD:
+    case _ATOMIC_SPIN_PHASE_INIT_SWITCH_THD: {
         if (_Spin_context < (_ATOMIC_SPIN_PHASE_INIT_SWITCH_THD + 4)) {
             _Spin_context += 1;
             ::SwitchToThread();
@@ -111,8 +115,9 @@ static void __cdecl __std_atomic_spin(long& _Spin_context) {
         }
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
+    }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO:
+    case _ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO: {
         if (_Spin_context < (_ATOMIC_SPIN_PHASE_INIT_SLEEP_ZERO + 16)) {
             _Spin_context += 1;
             ::Sleep(0);
@@ -120,10 +125,12 @@ static void __cdecl __std_atomic_spin(long& _Spin_context) {
         }
         _Spin_context = _ATOMIC_SPIN_PHASE_INIT_SLEEP | (_Spin_context & _ATOMIC_WAIT_PHASE_MASK);
         [[fallthrough]];
+    }
 
-    case _ATOMIC_SPIN_PHASE_INIT_SLEEP:
+    case _ATOMIC_SPIN_PHASE_INIT_SLEEP: {
         ::Sleep(10);
         return;
+    }
     }
 }
 
@@ -166,8 +173,9 @@ struct alignas(64) _Contention_table_entry {
     void _Inititalize_semaphore(intptr_t& new_semaphore) {
         new_semaphore = reinterpret_cast<std::intptr_t>(::CreateSemaphore(nullptr, 0, MAXLONG, nullptr));
         _Semaphore.store(new_semaphore, std::memory_order_release);
-        if (!_Semaphore_dereference_registered.test_and_set(std::memory_order_relaxed))
+        if (!_Semaphore_dereference_registered.test_and_set(std::memory_order_relaxed)){
             atexit(_Dereference_all_semaphores);
+        }
     }
 
     HANDLE _Reference_semaphore() {
@@ -183,8 +191,9 @@ struct alignas(64) _Contention_table_entry {
     void _Dereference_semaphore() {
         if (_Semaphore_use_count.fetch_sub(1, std::memory_order_relaxed) == 1) {
             std::intptr_t semaphore = _Semaphore.exchange(0, std::memory_order_acq_rel);
-            if (semaphore != 0)
+            if (semaphore != 0) {
                 ::CloseHandle(reinterpret_cast<HANDLE>(semaphore));
+            }
         }
     }
 };
@@ -201,17 +210,20 @@ _Contention_table_entry& _Atomic_contention_table(const void* _Storage) {
 }
 
 void _Contention_table_entry::_Dereference_all_semaphores() {
-    for (_Contention_table_entry& entry : _Contention_table)
+    for (_Contention_table_entry& entry : _Contention_table) {
         entry._Dereference_semaphore();
+    }
 }
 
 
 void __cdecl __std_atomic_wait_fallback(const void* _Storage, long& _Spin_context) noexcept {
     switch (_Spin_context & _ATOMIC_WAIT_PHASE_MASK) {
 
-    case _ATOMIC_WAIT_PHASE_SPIN:
-        if (__std_atomic_spin_active_only(_Spin_context))
+    case _ATOMIC_WAIT_PHASE_SPIN: {
+        if (__std_atomic_spin_active_only(_Spin_context)) {
             break;
+        }
+    }
 
         _Spin_context = _ATOMIC_WAIT_PHASE_WAIT_CLEAR | (_Spin_context & _ATOMIC_SPIN_MASK);
         [[fallthrough]];
@@ -227,8 +239,9 @@ void __cdecl __std_atomic_wait_fallback(const void* _Storage, long& _Spin_contex
     case _ATOMIC_WAIT_PHASE_WAIT_SET: {
         auto& _Table      = _Atomic_contention_table(_Storage);
         HANDLE _Semaphore = _Table._Reference_semaphore();
-        if (_Semaphore != nullptr)
+        if (_Semaphore != nullptr) {
             ::WaitForSingleObject(_Semaphore, INFINITE);
+        }
         _Table._Dereference_semaphore();
 
         if (_Semaphore != nullptr) {
@@ -240,9 +253,10 @@ void __cdecl __std_atomic_wait_fallback(const void* _Storage, long& _Spin_contex
         [[fallthrough]];
     }
 
-    case _ATOMIC_WAIT_PHASE_WAIT_NO_SEMAPHORE:
+    case _ATOMIC_WAIT_PHASE_WAIT_NO_SEMAPHORE: {
         __std_atomic_spin(_Spin_context);
         break;
+    }
     }
 }
 
@@ -257,37 +271,42 @@ void __cdecl __std_atomic_notify_fallback(void* _Storage) noexcept {
     auto& _Table = _Atomic_contention_table(_Storage);
     std::atomic_thread_fence(std::memory_order_seq_cst);
     LONG _Semaphore_own_count = _Table._Semaphore_own_count.load();
-    if (_Semaphore_own_count <= 0)
+    if (_Semaphore_own_count <= 0) {
         return;
+    }
     HANDLE _Semaphore = _Table._Reference_semaphore();
-    if (_Semaphore != nullptr)
+    if (_Semaphore != nullptr) {
         ::ReleaseSemaphore(_Semaphore, _Semaphore_own_count, nullptr);
+    }
     _Table._Dereference_semaphore();
     _Table._Semaphore_own_count.fetch_sub(_Semaphore_own_count);
 }
 
 
 void __cdecl __std_atomic_wait_direct(const void* _Storage, void* _Comparand, size_t _Size, long& _Spin_context) {
-    if (is_win8_wait_on_address_available())
+    if (is_win8_wait_on_address_available()) {
         __crtWaitOnAddress((volatile VOID*) _Storage, _Comparand, _Size, INFINITE);
-    else
+    } else {
         __std_atomic_wait_fallback(_Storage, _Spin_context);
+    }
 }
 
 
 void __cdecl __std_atomic_notify_one_direct(void* _Storage) {
-    if (is_win8_wait_on_address_available())
+    if (is_win8_wait_on_address_available()) {
         __crtWakeByAddressSingle(_Storage);
-    else
+    } else {
         __std_atomic_notify_fallback(_Storage);
+    }
 }
 
 
 void __cdecl __std_atomic_notify_all_direct(void* _Storage) {
-    if (is_win8_wait_on_address_available())
+    if (is_win8_wait_on_address_available()) {
         __crtWakeByAddressAll(_Storage);
-    else
+    } else {
         __std_atomic_notify_fallback(_Storage);
+    }
 }
 
 
@@ -316,13 +335,15 @@ void __cdecl __std_atomic_notify_indirect(void* _Storage) noexcept {
 }
 
 void __cdecl __std_atomic_unwait_direct(const void* _Storage, long& _Spin_context) {
-    if (!is_win8_wait_on_address_available())
+    if (!is_win8_wait_on_address_available()) {
         __std_atomic_unwait_fallback(_Storage, _Spin_context);
+    }
 }
 
 void __cdecl __std_atomic_unwait_indirect(const void* _Storage, long& _Spin_context) {
-    if (!is_win8_wait_on_address_available())
+    if (!is_win8_wait_on_address_available()) {
         __std_atomic_unwait_fallback(_Storage, _Spin_context);
+    }
 }
 
 _END_EXTERN_C
