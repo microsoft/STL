@@ -70,9 +70,6 @@ static constexpr size_t TABLE_SIZE_POWER = 8;
 static constexpr size_t TABLE_SIZE       = 1 << TABLE_SIZE_POWER;
 static constexpr size_t TABLE_MASK       = TABLE_SIZE - 1;
 
-// Flag for semaphore deletion
-static std::atomic_flag _Semaphore_dereference_registered;
-
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
