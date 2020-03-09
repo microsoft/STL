@@ -2164,6 +2164,42 @@ struct atomic_flag { // flag with test-and-set semantics
 
     constexpr atomic_flag() noexcept = default;
 
+#if _HAS_CXX20
+
+    bool test(std::memory_order _Order = std::memory_order::seq_cst) noexcept {
+        return _Storage.load(_Order) != 0;
+    }
+
+    bool test(std::memory_order _Order = std::memory_order::seq_cst) volatile noexcept {
+        return _Storage.load(_Order) != 0;
+    }
+
+    void wait(bool _Expected, std::memory_order _Order = std::memory_order::seq_cst) const noexcept {
+        _Storage.wait(static_cast<decltype(_Storage)::value_type>(_Expected), _Order);
+    }
+
+    void wait(bool _Expected, std::memory_order _Order = std::memory_order::seq_cst) const volatile noexcept {
+        _Storage.wait(static_cast<decltype(_Storage)::value_type>(_Expected), _Order);
+    }
+
+    void notify_one() noexcept {
+        _Storage.notify_one();
+    }
+
+    void notify_one() volatile noexcept {
+        _Storage.notify_one();
+    }
+
+    void notify_all() noexcept {
+        _Storage.notify_all();
+    }
+
+    void notify_all() volatile noexcept {
+        _Storage.notify_all();
+    }
+
+#endif // _HAS_CXX20
+
 #if 1 // TRANSITION, ABI
     atomic<long> _Storage;
 #else // ^^^ don't break ABI / break ABI vvv
