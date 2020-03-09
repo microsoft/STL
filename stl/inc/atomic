@@ -2051,6 +2051,47 @@ _Ty atomic_fetch_xor_explicit(
     return _Mem->fetch_xor(_Value, _Order);
 }
 
+template <class _Ty>
+void atomic_wait(const volatile atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected) {
+    _Mem->wait(_Expected);
+}
+
+template <class _Ty>
+void atomic_wait(const atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected) {
+    _Mem->wait(_Expected);
+}
+
+template <class _Ty>
+void atomic_wait_explicit(
+    const volatile atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected, memory_order _Order) {
+    _Mem->wait(_Expected, _Order);
+}
+
+template <class _Ty>
+void atomic_wait_explicit(const atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected, memory_order _Order) {
+    _Mem->wait(_Expected, _Order);
+}
+
+template <class _Ty>
+void atomic_notify_one(volatile atomic<_Ty>* _Mem) {
+    _Mem->notify_one();
+}
+
+template <class _Ty>
+void atomic_notify_one(atomic<_Ty>* _Mem) {
+    _Mem->notify_one();
+}
+
+template <class _Ty>
+void atomic_notify_all(volatile atomic<_Ty>* _Mem) {
+    _Mem->notify_all();
+}
+
+template <class _Ty>
+void atomic_notify_all(atomic<_Ty>* _Mem) {
+    _Mem->notify_all();
+}
+
 // FENCES
 extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
     if (_Order == memory_order_relaxed) {
@@ -2166,11 +2207,11 @@ struct atomic_flag { // flag with test-and-set semantics
 
 #if _HAS_CXX20
 
-    bool test(std::memory_order _Order = std::memory_order::seq_cst) noexcept {
+    bool test(std::memory_order _Order = std::memory_order::seq_cst) const noexcept {
         return _Storage.load(_Order) != 0;
     }
 
-    bool test(std::memory_order _Order = std::memory_order::seq_cst) volatile noexcept {
+    bool test(std::memory_order _Order = std::memory_order::seq_cst) const volatile noexcept {
         return _Storage.load(_Order) != 0;
     }
 
@@ -2240,6 +2281,58 @@ inline void atomic_flag_clear_explicit(atomic_flag* _Flag, memory_order _Order) 
 inline void atomic_flag_clear_explicit(volatile atomic_flag* _Flag, memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
+
+#if _HAS_CXX20
+
+inline bool atomic_flag_test(const volatile atomic_flag* _Flag) noexcept {
+    return _Flag->test();
+}
+
+inline bool atomic_flag_test(const atomic_flag* _Flag) noexcept {
+    return _Flag->test();
+}
+
+inline bool atomic_flag_test_explicit(const volatile atomic_flag* _Flag, memory_order _Order) noexcept {
+    return _Flag->test(_Order);
+}
+
+inline bool atomic_flag_test_explicit(const atomic_flag* _Flag, memory_order _Order) noexcept {
+    return _Flag->test(_Order);
+}
+
+inline void atomic_flag_wait(const volatile atomic_flag* _Flag, bool _Expected) noexcept {
+    return _Flag->wait(_Expected);
+}
+
+inline void atomic_flag_wait(const atomic_flag* _Flag, bool _Expected) noexcept {
+    return _Flag->wait(_Expected);
+}
+
+inline void atomic_flag_wait_explicit(const volatile atomic_flag* _Flag, bool _Expected, memory_order _Order) noexcept {
+    return _Flag->wait(_Expected, _Order);
+}
+
+inline void atomic_flag_wait_explicit(const atomic_flag* _Flag, bool _Expected, memory_order _Order) noexcept {
+    return _Flag->wait(_Expected, _Order);
+}
+
+inline void atomic_flag_notify_one(volatile atomic_flag* _Flag) noexcept {
+    return _Flag->notify_one();
+}
+
+inline void atomic_flag_notify_one(atomic_flag* _Flag) noexcept {
+    return _Flag->notify_one();
+}
+
+inline void atomic_flag_notify_all(volatile atomic_flag* _Flag) noexcept {
+    return _Flag->notify_all();
+}
+
+inline void atomic_flag_notify_all(atomic_flag* _Flag) noexcept {
+    return _Flag->notify_all();
+}
+
+#endif // _HAS_CXX20
 
 _STD_END
 
