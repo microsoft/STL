@@ -379,7 +379,7 @@ struct _Atomic_storage {
         long _Spin_context = 0;
         for (;;) {
             _Ty _Observed = load(_Order);
-            if (_CSTD memcmp(&_Observed, _STD addressof(_Expected), sizeof(_Ty)) != 0) {
+            if (_CSTD memcmp(_STD addressof(_Observed), _STD addressof(_Expected), sizeof(_Ty)) != 0) {
                 break;
             }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Spin_context);
