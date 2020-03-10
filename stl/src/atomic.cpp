@@ -8,8 +8,8 @@
 #include <intrin.h>
 #pragma warning(disable : 4793)
 
-#include <atomic>
 #include "awint.h"
+#include <atomic>
 #include <cstdint>
 #include <new>
 #include <thread>
