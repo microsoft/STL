@@ -169,6 +169,7 @@
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
@@ -1037,7 +1038,6 @@
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
 #define __cpp_lib_apply                      201603L
-#define __cpp_lib_array_constexpr            201803L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
 #if _HAS_STD_BYTE
@@ -1126,6 +1126,13 @@
 #define __cpp_lib_type_identity            201806L
 #define __cpp_lib_unwrap_ref               201811L
 #endif // _HAS_CXX20
+
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr          201811L // P1023R0 constexpr For std::array Comparisons
+// ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
+#define __cpp_lib_array_constexpr          201803L
+#endif // _HAS_CXX17
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
