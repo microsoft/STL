@@ -74,7 +74,7 @@ static constexpr size_t TABLE_MASK       = TABLE_SIZE - 1;
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
 struct alignas(std::hardware_destructive_interference_size) _Contention_table_entry {
-    // Arbitraty variable to wait/notify on if target wariable is not proper atomic for that
+    // Arbitrary variable to wait/notify on if target variable is not proper atomic for that
     // Size is largest of lock-free to make aliasing problem into hypothetical
     std::atomic<std::uint64_t> _Counter;
 
