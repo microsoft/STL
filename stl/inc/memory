@@ -1274,11 +1274,11 @@ private:
     friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(_Types&&... _Args);
 
     template <class _Ty0>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const size_t _Count);
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(size_t _Count);
 
     template <class _Ty0>
     friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(
-        const size_t _Count, const remove_extent_t<_Ty0>& _Val);
+        size_t _Count, const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
@@ -1291,11 +1291,11 @@ private:
 
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
-        const _Alloc& _Al_arg, const size_t _Count);
+        const _Alloc& _Al_arg, size_t _Count);
 
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
-        const _Alloc& _Al_arg, const size_t _Count, const remove_extent_t<_Ty0>& _Val);
+        const _Alloc& _Al_arg, size_t _Count, const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
