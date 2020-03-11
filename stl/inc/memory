@@ -1567,8 +1567,8 @@ _Ty _Div_ceil(_Ty _Val1, _Ty _Val2) noexcept {
 }
 
 template <class _NoThrowIt>
-struct _Uninitialized_rev_destroying_backout { // struct to undo partially constructed ranges in _Uninitialized_xxx
-                                               // algorithms
+struct _Uninitialized_rev_destroying_backout {
+    // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
     _NoThrowIt _First;
     _NoThrowIt _Last;
 
@@ -1602,8 +1602,7 @@ template <class _Ty>
 void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) {
     while (_Size > 0) {
         --_Size;
-        // TRANSITION, LLVM-42404
-        if constexpr ((rank_v<_Ty>) > 0) {
+        if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
             _Reverse_destroy_multidimensional_n(_Arr[_Size], extent_v<_Ty>);
         } else {
             _Destroy_in_place(_Arr[_Size]);
@@ -1613,8 +1612,7 @@ void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) {
 
 template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
-    // TRANSITION, LLVM-42404
-    if constexpr ((rank_v<_Ty>) > 0) {
+    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional(_In[_Idx], _Out[_Idx]);
@@ -1638,8 +1636,7 @@ void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_
 
 template <class _Ty>
 void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const size_t _Size) {
-    // TRANSITION, LLVM-42404
-    if constexpr ((rank_v<_Ty>) > 0) {
+    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_value_construct_multidimensional_n(_Out[_Idx], extent_v<_Ty>);
@@ -1663,8 +1660,7 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
 
 template <class _Ty>
 void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size, const _Ty& _Val) {
-    // TRANSITION, LLVM-42404
-    if constexpr ((rank_v<_Ty>) > 0) {
+    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional(_Val, _Out[_Idx]);
@@ -1688,8 +1684,8 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
 
 // CLASS TEMPLATE _Ref_count_unbounded_array
 template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
-class _Ref_count_unbounded_array : public _Ref_count_base { // handle reference counting for unbounded array with
-                                                            // non-trivial destruction in control block, no allocator
+class _Ref_count_unbounded_array : public _Ref_count_base {
+    // handle reference counting for unbounded array with non-trivial destruction in control block, no allocator
 public:
     explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base(), _Size(_Count) {
         _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Size);
@@ -1723,9 +1719,8 @@ private:
 };
 
 template <class _Ty>
-class _Ref_count_unbounded_array<_Ty, true> : public _Ref_count_base { // handle reference counting for unbounded array
-                                                                       // with trivial destruction in control block,
-                                                                       // no allocator
+class _Ref_count_unbounded_array<_Ty, true> : public _Ref_count_base {
+    // handle reference counting for unbounded array with trivial destruction in control block, no allocator
 public:
     explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base() {
         _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Count);
@@ -1757,8 +1752,8 @@ private:
 
 // CLASS TEMPLATE _Ref_count_bounded_array
 template <class _Ty>
-class _Ref_count_bounded_array : public _Ref_count_base { // handle reference counting for bounded array in control
-                                                          // block, no allocator
+class _Ref_count_bounded_array : public _Ref_count_base {
+    // handle reference counting for bounded array in control block, no allocator
 public:
     _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {}
 
@@ -1861,8 +1856,10 @@ private:
 
 #if _HAS_CXX20
 template <class _Alloc>
-class _Uninitialized_rev_destroying_backout_al { // struct to undo partially constructed ranges in
-                                                 // _Uninitialized_xxx_al algorithms
+class _Uninitialized_rev_destroying_backout_al {
+    // class to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
+
+private:
     using pointer = _Alloc_ptr_t<_Alloc>;
 
 public:
@@ -1899,8 +1896,7 @@ template <class _Ty, class _Alloc>
 void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Alloc& _Al) {
     while (_Size > 0) {
         --_Size;
-        // TRANSITION, LLVM-42404
-        if constexpr ((rank_v<_Ty>) > 0) {
+        if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
             _Reverse_destroy_multidimensional_n_al(_Arr[_Size], extent_v<_Ty>, _Al);
         } else {
             allocator_traits<_Alloc>::destroy(_Al, _Arr + _Size);
@@ -1910,8 +1906,7 @@ void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Allo
 
 template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
-    // TRANSITION, LLVM-42404
-    if constexpr ((rank_v<_Ty>) > 0) {
+    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional_al(_In[_Idx], _Out[_Idx], _Al);
@@ -1937,8 +1932,7 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
 
 template <class _Ty, class _Alloc>
 void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const size_t _Size, _Alloc& _Al) {
-    // TRANSITION, LLVM-42404
-    if constexpr ((rank_v<_Ty>) > 0) {
+    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_value_construct_multidimensional_n_al(_Out[_Idx], extent_v<_Ty>, _Al);
@@ -1963,8 +1957,7 @@ void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const
 
 template <class _Ty, class _Alloc>
 void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Size, const _Ty& _Val, _Alloc& _Al) {
-    // TRANSITION, LLVM-42404
-    if constexpr ((rank_v<_Ty>) > 0) {
+    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _TRY_BEGIN
             _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al);
@@ -2094,8 +2087,8 @@ _NODISCARD
 #pragma warning(push) // ***FIXME*** MUST INVESTIGATE BEFORE MERGING ***FIXME***
 #pragma warning(disable : 6386) // Buffer overrun while writing to '_Rx'
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
-    const size_t _Count) { // make a shared_ptr to an unbounded array
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+    // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array<_Ty>;
     using _Storage =
         aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
@@ -2115,7 +2108,8 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
 
 template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
-    const size_t _Count, const remove_extent_t<_Ty>& _Val) { // make a shared_ptr to an unbounded array
+    const size_t _Count, const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array<_Ty>;
     using _Storage =
         aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
@@ -2135,7 +2129,8 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
 #pragma warning(pop) // ***FIXME*** MUST INVESTIGATE BEFORE MERGING ***FIXME***
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() { // make a shared_ptr to a bounded array
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
+    // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>();
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
@@ -2143,8 +2138,8 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
-    const _STD remove_extent_t<_Ty>& _Val) { // make a shared_ptr to a bounded array
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const _STD remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
@@ -2178,7 +2173,8 @@ _NODISCARD
 #if _HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
-    const _Alloc& _Al, const size_t _Count) { // make a shared_ptr to an unbounded array
+    const _Alloc& _Al, const size_t _Count) {
+    // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Storage =
         aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
@@ -2198,9 +2194,9 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al,
-    const size_t _Count,
-    const remove_extent_t<_Ty>& _Val) { // make a shared_ptr to an unbounded array
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+    const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to an unbounded array
     using _Refc = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Storage =
         aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
@@ -2220,8 +2216,8 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
-    const _Alloc& _Al) { // make a shared_ptr to a bounded array
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
+    // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
     _Alblock _Rebound(_Al);
@@ -2236,7 +2232,8 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
-    const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) { // make a shared_ptr to a bounded array
+    const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
     _Alblock _Rebound(_Al);
