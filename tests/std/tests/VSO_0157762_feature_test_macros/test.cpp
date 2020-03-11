@@ -5,38 +5,11 @@
 
 int main() {} // COMPILE-ONLY
 
-// COMPILER FEATURE-TEST MACROS
-
-#ifdef _MSVC_LANG
-#if _MSVC_LANG > 201703L
-#define CXX17_MODE 1
-#define CXX20_MODE 1
-#elif _MSVC_LANG > 201402L
-#define CXX17_MODE 1
-#define CXX20_MODE 0
-#else
-#define CXX17_MODE 0
-#define CXX20_MODE 0
-#endif
-#else
-#if __cplusplus > 201703L
-#define CXX17_MODE 1
-#define CXX20_MODE 1
-#elif __cplusplus > 201402L
-#define CXX17_MODE 1
-#define CXX20_MODE 0
-#else
-#define CXX17_MODE 0
-#define CXX20_MODE 0
-#endif
-#endif
-
-
 // Always defined to varying values (C++14 versus C++17-and-newer mode).
 
 #ifndef __cpp_constexpr
 #error BOOM
-#elif CXX17_MODE
+#elif _HAS_CXX17
 #if __cpp_constexpr != 201603L
 #error BOOM
 #else
@@ -52,7 +25,7 @@ STATIC_ASSERT(__cpp_constexpr == 201304L);
 
 #ifndef __cpp_inheriting_constructors
 #error BOOM
-#elif (CXX17_MODE || defined(__clang__)) && !defined(__EDG__) // Clang implemented this C++17 feature unconditionally.
+#elif (_HAS_CXX17 || defined(__clang__)) && !defined(__EDG__) // Clang implemented this C++17 feature unconditionally.
                                                               // TRANSITION, VSO-610203
 #if __cpp_inheriting_constructors != 201511L
 #error BOOM
@@ -69,7 +42,7 @@ STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
 
 #ifndef __cpp_static_assert
 #error BOOM
-#elif CXX17_MODE
+#elif _HAS_CXX17
 #if __cpp_static_assert != 201411L
 #error BOOM
 #else
@@ -142,7 +115,7 @@ STATIC_ASSERT(__cpp_decltype_auto == 201304L);
 STATIC_ASSERT(__cpp_delegating_constructors == 200604L);
 #endif
 
-#if !defined(__clang__) || CXX17_MODE // C1XX implemented this C++17 feature unconditionally.
+#if !defined(__clang__) || _HAS_CXX17 // C1XX implemented this C++17 feature unconditionally.
 #ifndef __cpp_enumerator_attributes
 #error BOOM
 #elif __cpp_enumerator_attributes != 201411L
@@ -188,7 +161,7 @@ STATIC_ASSERT(__cpp_initializer_lists == 200806L);
 STATIC_ASSERT(__cpp_lambdas == 200907L);
 #endif
 
-#if !defined(__clang__) || CXX17_MODE // C1XX implemented this C++17 feature unconditionally.
+#if !defined(__clang__) || _HAS_CXX17 // C1XX implemented this C++17 feature unconditionally.
 #ifndef __cpp_namespace_attributes
 #error BOOM
 #elif __cpp_namespace_attributes != 201411L
@@ -212,7 +185,7 @@ STATIC_ASSERT(__cpp_nsdmi == 200809L);
 
 #ifndef __cpp_range_based_for
 #error BOOM
-#elif !defined(__clang__) || CXX17_MODE // C1XX implemented this C++17 feature unconditionally.
+#elif !defined(__clang__) || _HAS_CXX17 // C1XX implemented this C++17 feature unconditionally.
 #if __cpp_range_based_for != 201603L
 #error BOOM
 #else
@@ -301,7 +274,7 @@ STATIC_ASSERT(__cpp_variadic_templates == 200704L);
 
 // Defined in C++17-and-newer mode to specific values.
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_aggregate_bases
 #error BOOM
 #elif __cpp_aggregate_bases != 201603L
@@ -315,7 +288,7 @@ STATIC_ASSERT(__cpp_aggregate_bases == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_capture_star_this
 #error BOOM
 #elif __cpp_capture_star_this != 201603L
@@ -329,7 +302,7 @@ STATIC_ASSERT(__cpp_capture_star_this == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_deduction_guides
 #error BOOM
 #elif __cpp_deduction_guides != 201703L
@@ -343,7 +316,7 @@ STATIC_ASSERT(__cpp_deduction_guides == 201703L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_fold_expressions
 #error BOOM
 #elif __cpp_fold_expressions != 201603L
@@ -357,7 +330,7 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_guaranteed_copy_elision
 #error BOOM
 #elif __cpp_guaranteed_copy_elision != 201606L
@@ -371,7 +344,7 @@ STATIC_ASSERT(__cpp_guaranteed_copy_elision == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE || defined(__EDG__) // EDG unconditionally reports hex floats as being available.
+#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports hex floats as being available.
 #ifndef __cpp_hex_float
 #error BOOM
 #elif __cpp_hex_float != 201603L
@@ -385,7 +358,7 @@ STATIC_ASSERT(__cpp_hex_float == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE || defined(__EDG__) // EDG unconditionally reports "if constexpr" as being available.
+#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports "if constexpr" as being available.
 #ifndef __cpp_if_constexpr
 #error BOOM
 #elif __cpp_if_constexpr != 201606L
@@ -399,7 +372,7 @@ STATIC_ASSERT(__cpp_if_constexpr == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_inline_variables
 #error BOOM
 #elif __cpp_inline_variables != 201606L
@@ -413,7 +386,7 @@ STATIC_ASSERT(__cpp_inline_variables == 201606L);
 #endif
 #endif
 
-#if CXX20_MODE && !defined(__clang__) && !defined(__EDG__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
 #ifndef __cpp_nontype_template_args
 #error BOOM
 #elif __cpp_nontype_template_args != 201911L
@@ -421,7 +394,7 @@ STATIC_ASSERT(__cpp_inline_variables == 201606L);
 #else
 STATIC_ASSERT(__cpp_nontype_template_args == 201911L);
 #endif
-#elif CXX17_MODE
+#elif _HAS_CXX17
 #ifndef __cpp_nontype_template_args
 #error BOOM
 #elif __cpp_nontype_template_args != 201411L
@@ -435,7 +408,7 @@ STATIC_ASSERT(__cpp_nontype_template_args == 201411L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_nontype_template_parameter_auto
 #error BOOM
 #elif __cpp_nontype_template_parameter_auto != 201606L
@@ -449,7 +422,7 @@ STATIC_ASSERT(__cpp_nontype_template_parameter_auto == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_structured_bindings
 #error BOOM
 #elif __cpp_structured_bindings != 201606L
@@ -463,7 +436,7 @@ STATIC_ASSERT(__cpp_structured_bindings == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE && !defined(__clang__)
+#if _HAS_CXX17 && !defined(__clang__)
 // https://clang.llvm.org/cxx_status.html says P0522R0 is Partial, "Despite being
 // the resolution to a Defect Report, this feature is disabled by default in all
 // language versions, and can be enabled explicitly with the flag
@@ -484,7 +457,7 @@ STATIC_ASSERT(__cpp_template_template_args == 201611L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_variadic_using
 #error BOOM
 #elif __cpp_variadic_using != 201611L
@@ -500,7 +473,7 @@ STATIC_ASSERT(__cpp_variadic_using == 201611L);
 
 // Defined in C++20-and-newer mode to specific values.
 
-#if CXX20_MODE || defined(__EDG__)
+#if _HAS_CXX20 || defined(__EDG__)
 // EDG unconditionally reports "explicit(bool)" as being available.
 #ifndef __cpp_conditional_explicit
 #error BOOM
@@ -515,7 +488,7 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__)
 // Clang only has partial support for <=> but that does not include the feature test macro.
 #ifndef __cpp_impl_three_way_comparison
 #error BOOM
@@ -541,7 +514,7 @@ STATIC_ASSERT(__cpp_impl_three_way_comparison == 201907L);
 // Conditionally defined (various compiler options) to specific values.
 
 // C++17, /Zc:alignedNew[-]
-#if !CXX17_MODE || defined(TEST_DISABLED_ALIGNED_NEW)
+#if !_HAS_CXX17 || defined(TEST_DISABLED_ALIGNED_NEW)
 #ifdef __cpp_aligned_new
 #error BOOM
 #endif
@@ -571,7 +544,7 @@ STATIC_ASSERT(__cpp_exceptions == 199711L);
 #endif
 
 // C++17, /Zc:noexceptTypes[-]
-#if !CXX17_MODE || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
+#if !_HAS_CXX17 || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
 #ifdef __cpp_noexcept_function_type
 #error BOOM
 #endif
@@ -677,7 +650,7 @@ STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
 
 // Always defined to varying values (C++14 versus C++17-and-newer mode).
 
-#if CXX17_MODE || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
+#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
 #if __has_cpp_attribute(fallthrough) != 201603L
 #error BOOM
 #endif
@@ -687,7 +660,7 @@ STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
 #endif
 #endif
 
-#if CXX17_MODE || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
+#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
 #if __has_cpp_attribute(maybe_unused) != 201603L
 #error BOOM
 #endif
@@ -707,7 +680,7 @@ STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
 
 #ifndef __cpp_lib_chrono
 #error BOOM
-#elif CXX17_MODE
+#elif _HAS_CXX17
 #if __cpp_lib_chrono != 201611L
 #error BOOM
 #else
@@ -1045,7 +1018,7 @@ STATIC_ASSERT(__cpp_lib_void_t == 201411L);
 
 // Defined in C++17-and-newer mode to specific values.
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_any
 #error BOOM
 #elif __cpp_lib_any != 201606L
@@ -1059,7 +1032,7 @@ STATIC_ASSERT(__cpp_lib_any == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_apply
 #error BOOM
 #elif __cpp_lib_apply != 201603L
@@ -1073,7 +1046,7 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
 #error BOOM
 #elif __cpp_lib_array_constexpr != 201803L
@@ -1087,7 +1060,7 @@ STATIC_ASSERT(__cpp_lib_array_constexpr == 201803L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_atomic_is_always_lock_free
 #error BOOM
 #elif __cpp_lib_atomic_is_always_lock_free != 201603L
@@ -1101,7 +1074,7 @@ STATIC_ASSERT(__cpp_lib_atomic_is_always_lock_free == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_boyer_moore_searcher
 #error BOOM
 #elif __cpp_lib_boyer_moore_searcher != 201603L
@@ -1115,7 +1088,7 @@ STATIC_ASSERT(__cpp_lib_boyer_moore_searcher == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_clamp
 #error BOOM
 #elif __cpp_lib_clamp != 201603L
@@ -1129,7 +1102,7 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE && !defined(_M_CEE)
+#if _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_execution
 #error BOOM
 #elif __cpp_lib_execution != 201603L
@@ -1143,7 +1116,7 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_filesystem
 #error BOOM
 #elif __cpp_lib_filesystem != 201703L
@@ -1157,7 +1130,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_gcd_lcm
 #error BOOM
 #elif __cpp_lib_gcd_lcm != 201606L
@@ -1171,7 +1144,7 @@ STATIC_ASSERT(__cpp_lib_gcd_lcm == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_hardware_interference_size
 #error BOOM
 #elif __cpp_lib_hardware_interference_size != 201703L
@@ -1185,7 +1158,7 @@ STATIC_ASSERT(__cpp_lib_hardware_interference_size == 201703L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_has_unique_object_representations
 #error BOOM
 #elif __cpp_lib_has_unique_object_representations != 201606L
@@ -1199,7 +1172,7 @@ STATIC_ASSERT(__cpp_lib_has_unique_object_representations == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_hypot
 #error BOOM
 #elif __cpp_lib_hypot != 201603L
@@ -1213,7 +1186,7 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_is_aggregate
 #error BOOM
 #elif __cpp_lib_is_aggregate != 201703L
@@ -1227,7 +1200,7 @@ STATIC_ASSERT(__cpp_lib_is_aggregate == 201703L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_is_invocable
 #error BOOM
 #elif __cpp_lib_is_invocable != 201703L
@@ -1241,7 +1214,7 @@ STATIC_ASSERT(__cpp_lib_is_invocable == 201703L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_is_swappable
 #error BOOM
 #elif __cpp_lib_is_swappable != 201603L
@@ -1255,7 +1228,7 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_launder
 #error BOOM
 #elif __cpp_lib_launder != 201606L
@@ -1269,7 +1242,7 @@ STATIC_ASSERT(__cpp_lib_launder == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_make_from_tuple
 #error BOOM
 #elif __cpp_lib_make_from_tuple != 201606L
@@ -1283,7 +1256,7 @@ STATIC_ASSERT(__cpp_lib_make_from_tuple == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_math_special_functions
 #error BOOM
 #elif __cpp_lib_math_special_functions != 201603L
@@ -1297,7 +1270,7 @@ STATIC_ASSERT(__cpp_lib_math_special_functions == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_memory_resource
 #error BOOM
 #elif __cpp_lib_memory_resource != 201603L
@@ -1311,7 +1284,7 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_node_extract
 #error BOOM
 #elif __cpp_lib_node_extract != 201606L
@@ -1325,7 +1298,7 @@ STATIC_ASSERT(__cpp_lib_node_extract == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_not_fn
 #error BOOM
 #elif __cpp_lib_not_fn != 201603L
@@ -1339,7 +1312,7 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_optional
 #error BOOM
 #elif __cpp_lib_optional != 201606L
@@ -1353,7 +1326,7 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE && !defined(_M_CEE)
+#if _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_parallel_algorithm
 #error BOOM
 #elif __cpp_lib_parallel_algorithm != 201603L
@@ -1367,7 +1340,7 @@ STATIC_ASSERT(__cpp_lib_parallel_algorithm == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_raw_memory_algorithms
 #error BOOM
 #elif __cpp_lib_raw_memory_algorithms != 201606L
@@ -1381,7 +1354,7 @@ STATIC_ASSERT(__cpp_lib_raw_memory_algorithms == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_sample
 #error BOOM
 #elif __cpp_lib_sample != 201603L
@@ -1395,7 +1368,7 @@ STATIC_ASSERT(__cpp_lib_sample == 201603L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_scoped_lock
 #error BOOM
 #elif __cpp_lib_scoped_lock != 201703L
@@ -1409,7 +1382,7 @@ STATIC_ASSERT(__cpp_lib_scoped_lock == 201703L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_shared_ptr_weak_type
 #error BOOM
 #elif __cpp_lib_shared_ptr_weak_type != 201606L
@@ -1423,7 +1396,7 @@ STATIC_ASSERT(__cpp_lib_shared_ptr_weak_type == 201606L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_string_view
 #error BOOM
 #elif __cpp_lib_string_view != 201803L
@@ -1437,7 +1410,7 @@ STATIC_ASSERT(__cpp_lib_string_view == 201803L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_to_chars
 #error BOOM
 #elif __cpp_lib_to_chars != 201611L
@@ -1451,7 +1424,7 @@ STATIC_ASSERT(__cpp_lib_to_chars == 201611L);
 #endif
 #endif
 
-#if CXX17_MODE
+#if _HAS_CXX17
 #ifndef __cpp_lib_variant
 #error BOOM
 #elif __cpp_lib_variant != 201606L
@@ -1485,7 +1458,7 @@ STATIC_ASSERT(__cpp_lib_byte == 201603L);
 
 // Defined in C++20-and-newer mode to specific values.
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_float
 #error BOOM
 #elif __cpp_lib_atomic_float != 201711L
@@ -1499,7 +1472,7 @@ STATIC_ASSERT(__cpp_lib_atomic_float == 201711L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_bind_front
 #error BOOM
 #elif __cpp_lib_bind_front != 201907L
@@ -1513,7 +1486,7 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #endif
 #endif
 
-#if CXX20_MODE && !defined(__EDG__) // TRANSITION, VSO-1041044
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
 #ifndef __cpp_lib_bit_cast
 #error BOOM
 #elif __cpp_lib_bit_cast != 201806L
@@ -1527,7 +1500,7 @@ STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
+#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
 #ifndef __cpp_lib_bitops
 #error BOOM
 #elif __cpp_lib_bitops != 201907L
@@ -1541,7 +1514,7 @@ STATIC_ASSERT(__cpp_lib_bitops == 201907L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_bounded_array_traits
 #error BOOM
 #elif __cpp_lib_bounded_array_traits != 201902L
@@ -1555,7 +1528,7 @@ STATIC_ASSERT(__cpp_lib_bounded_array_traits == 201902L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_algorithms
 #error BOOM
 #elif __cpp_lib_constexpr_algorithms != 201806L
@@ -1569,7 +1542,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_algorithms == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error BOOM
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -1583,7 +1556,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_memory == 201811L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_numeric
 #error BOOM
 #elif __cpp_lib_constexpr_numeric != 201911L
@@ -1597,7 +1570,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_endian
 #error BOOM
 #elif __cpp_lib_endian != 201907L
@@ -1611,7 +1584,7 @@ STATIC_ASSERT(__cpp_lib_endian == 201907L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_erase_if
 #error BOOM
 #elif __cpp_lib_erase_if != 202002L
@@ -1625,7 +1598,7 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_generic_unordered_lookup
 #error BOOM
 #elif __cpp_lib_generic_unordered_lookup != 201811L
@@ -1639,7 +1612,7 @@ STATIC_ASSERT(__cpp_lib_generic_unordered_lookup == 201811L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_int_pow2
 #error BOOM
 #elif __cpp_lib_int_pow2 != 202002L
@@ -1653,7 +1626,7 @@ STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_is_constant_evaluated
 #error BOOM
 #elif __cpp_lib_is_constant_evaluated != 201811L
@@ -1667,7 +1640,7 @@ STATIC_ASSERT(__cpp_lib_is_constant_evaluated == 201811L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_is_nothrow_convertible
 #error BOOM
 #elif __cpp_lib_is_nothrow_convertible != 201806L
@@ -1681,7 +1654,7 @@ STATIC_ASSERT(__cpp_lib_is_nothrow_convertible == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_list_remove_return_type
 #error BOOM
 #elif __cpp_lib_list_remove_return_type != 201806L
@@ -1695,7 +1668,7 @@ STATIC_ASSERT(__cpp_lib_list_remove_return_type == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_math_constants
 #error BOOM
 #elif __cpp_lib_math_constants != 201907L
@@ -1709,7 +1682,7 @@ STATIC_ASSERT(__cpp_lib_math_constants == 201907L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_remove_cvref
 #error BOOM
 #elif __cpp_lib_remove_cvref != 201711L
@@ -1723,7 +1696,7 @@ STATIC_ASSERT(__cpp_lib_remove_cvref == 201711L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_shift
 #error BOOM
 #elif __cpp_lib_shift != 201806L
@@ -1737,7 +1710,7 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_span
 #error BOOM
 #elif __cpp_lib_span != 202002L
@@ -1751,7 +1724,7 @@ STATIC_ASSERT(__cpp_lib_span == 202002L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_ssize
 #error BOOM
 #elif __cpp_lib_ssize != 201902L
@@ -1765,7 +1738,7 @@ STATIC_ASSERT(__cpp_lib_ssize == 201902L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_starts_ends_with
 #error BOOM
 #elif __cpp_lib_starts_ends_with != 201711L
@@ -1779,7 +1752,7 @@ STATIC_ASSERT(__cpp_lib_starts_ends_with == 201711L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_to_address
 #error BOOM
 #elif __cpp_lib_to_address != 201711L
@@ -1793,7 +1766,7 @@ STATIC_ASSERT(__cpp_lib_to_address == 201711L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_to_array
 #error BOOM
 #elif __cpp_lib_to_array != 201907L
@@ -1807,7 +1780,7 @@ STATIC_ASSERT(__cpp_lib_to_array == 201907L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_type_identity
 #error BOOM
 #elif __cpp_lib_type_identity != 201806L
@@ -1821,7 +1794,7 @@ STATIC_ASSERT(__cpp_lib_type_identity == 201806L);
 #endif
 #endif
 
-#if CXX20_MODE
+#if _HAS_CXX20
 #ifndef __cpp_lib_unwrap_ref
 #error BOOM
 #elif __cpp_lib_unwrap_ref != 201811L
@@ -1838,7 +1811,7 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 
 // Conditionally defined in C++20-and-newer mode to specific values.
 
-#if CXX20_MODE && defined(__cpp_char8_t)
+#if _HAS_CXX20 && defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
 #error BOOM
 #elif __cpp_lib_char8_t != 201907L
@@ -1852,7 +1825,7 @@ STATIC_ASSERT(__cpp_lib_char8_t == 201907L);
 #endif
 #endif
 
-#if CXX20_MODE && defined(__cpp_concepts)
+#if _HAS_CXX20 && defined(__cpp_concepts)
 #ifndef __cpp_lib_concepts
 #error BOOM
 #elif __cpp_lib_concepts != 201907L
