@@ -14,6 +14,10 @@
 #include <typeinfo>
 #include <xmemory>
 
+#if _HAS_CXX20 && !defined(_M_CEE_PURE)
+#include <atomic>
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -846,9 +850,7 @@ protected:
     template <class _Ty2>
     void _Copy_construct_from(const shared_ptr<_Ty2>& _Other) noexcept {
         // implement shared_ptr's (converting) copy ctor
-        if (_Other._Rep) {
-            _Other._Rep->_Incref();
-        }
+        _Other._Incref();
 
         _Ptr = _Other._Ptr;
         _Rep = _Other._Rep;
@@ -857,9 +859,7 @@ protected:
     template <class _Ty2>
     void _Alias_construct_from(const shared_ptr<_Ty2>& _Other, element_type* _Px) noexcept {
         // implement shared_ptr's aliasing ctor
-        if (_Other._Rep) {
-            _Other._Rep->_Incref();
-        }
+        _Other._Incref();
 
         _Ptr = _Px;
         _Rep = _Other._Rep;
@@ -890,6 +890,12 @@ protected:
         return false;
     }
 
+    void _Incref() const noexcept { // increment reference count
+        if (_Rep) {
+            _Rep->_Incref();
+        }
+    }
+
     void _Decref() noexcept { // decrement reference count
         if (_Rep) {
             _Rep->_Decref();
@@ -912,6 +918,12 @@ protected:
         }
     }
 
+    void _Incwref() const noexcept { // increment weak reference count
+        if (_Rep) {
+            _Rep->_Incwref();
+        }
+    }
+
     void _Decwref() noexcept { // decrement weak reference count
         if (_Rep) {
             _Rep->_Decwref();
@@ -926,6 +938,9 @@ private:
     friend class _Ptr_base;
 
     friend shared_ptr<_Ty>;
+
+    template <class _Ty>
+    friend struct atomic;
 
     friend _Exception_ptr_access;
 
@@ -2356,13 +2371,14 @@ struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr ato
 };
 
 template <class _Ty>
-_NODISCARD bool atomic_is_lock_free(const shared_ptr<_Ty>*) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD bool atomic_is_lock_free(const shared_ptr<_Ty>*) {
     // return true if atomic operations on shared_ptr<_Ty> are lock-free
     return false;
 }
 
 template <class _Ty>
-_NODISCARD shared_ptr<_Ty> atomic_load_explicit(const shared_ptr<_Ty>* _Ptr, memory_order) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD shared_ptr<_Ty> atomic_load_explicit(
+    const shared_ptr<_Ty>* _Ptr, memory_order) {
     // load *_Ptr atomically
     _Shared_ptr_spin_lock _Lock;
     shared_ptr<_Ty> _Result = *_Ptr;
@@ -2370,24 +2386,28 @@ _NODISCARD shared_ptr<_Ty> atomic_load_explicit(const shared_ptr<_Ty>* _Ptr, mem
 }
 
 template <class _Ty>
-_NODISCARD shared_ptr<_Ty> atomic_load(const shared_ptr<_Ty>* _Ptr) { // load *_Ptr atomically
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD shared_ptr<_Ty> atomic_load(
+    const shared_ptr<_Ty>* _Ptr) { // load *_Ptr atomically
     return _STD atomic_load_explicit(_Ptr, memory_order_seq_cst);
 }
 
 template <class _Ty>
-void atomic_store_explicit(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other, memory_order) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT void atomic_store_explicit(
+    shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other, memory_order) {
     // store _Other to *_Ptr atomically
     _Shared_ptr_spin_lock _Lock;
     _Ptr->swap(_Other);
 }
 
 template <class _Ty>
-void atomic_store(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other) { // store _Other to *_Ptr atomically
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT void atomic_store(
+    shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other) { // store _Other to *_Ptr atomically
     _STD atomic_store_explicit(_Ptr, _STD move(_Other), memory_order_seq_cst);
 }
 
 template <class _Ty>
-shared_ptr<_Ty> atomic_exchange_explicit(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other, memory_order) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT shared_ptr<_Ty> atomic_exchange_explicit(
+    shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other, memory_order) {
     // copy _Other to *_Ptr and return previous value of *_Ptr atomically
     _Shared_ptr_spin_lock _Lock;
     _Ptr->swap(_Other);
@@ -2395,13 +2415,15 @@ shared_ptr<_Ty> atomic_exchange_explicit(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> 
 }
 
 template <class _Ty>
-shared_ptr<_Ty> atomic_exchange(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT shared_ptr<_Ty> atomic_exchange(
+    shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty> _Other) {
     // copy _Other to *_Ptr and return previous value of *_Ptr atomically
     return _STD atomic_exchange_explicit(_Ptr, _STD move(_Other), memory_order_seq_cst);
 }
 
 template <class _Ty>
-bool atomic_compare_exchange_weak_explicit(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value,
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_weak_explicit(shared_ptr<_Ty>* _Ptr,
+    shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value,
     memory_order, memory_order) { // atomically compare and exchange
     shared_ptr<_Ty> _Old_exp; // destroyed outside spin lock
     _Shared_ptr_spin_lock _Lock;
@@ -2416,25 +2438,252 @@ bool atomic_compare_exchange_weak_explicit(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty
 }
 
 template <class _Ty>
-bool atomic_compare_exchange_weak(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_weak(
+    shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value) {
     // atomically compare and exchange
     return _STD atomic_compare_exchange_weak_explicit(
         _Ptr, _Exp, _STD move(_Value), memory_order_seq_cst, memory_order_seq_cst);
 }
 
 template <class _Ty>
-bool atomic_compare_exchange_strong_explicit(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value,
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_strong_explicit(shared_ptr<_Ty>* _Ptr,
+    shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value,
     memory_order, memory_order) { // atomically compare and exchange
     return _STD atomic_compare_exchange_weak_explicit(
         _Ptr, _Exp, _STD move(_Value), memory_order_seq_cst, memory_order_seq_cst);
 }
 
 template <class _Ty>
-bool atomic_compare_exchange_strong(shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_strong(
+    shared_ptr<_Ty>* _Ptr, shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value) {
     // atomically compare and exchange
     return _STD atomic_compare_exchange_strong_explicit(
         _Ptr, _Exp, _STD move(_Value), memory_order_seq_cst, memory_order_seq_cst);
 }
+
+#if _HAS_CXX20 && !defined(_M_CEE_PURE)
+template <class _Ty>
+struct atomic<shared_ptr<_Ty>> : _Atomic_storage<shared_ptr<_Ty>> {
+private:
+    using _Base = _Atomic_storage<shared_ptr<_Ty>>;
+
+public:
+    using value_type = shared_ptr<_Ty>;
+
+    static constexpr bool is_always_lock_free =
+        sizeof(shared_ptr<_Ty>) <= 8 && (sizeof(shared_ptr<_Ty>) & sizeof(shared_ptr<_Ty>) - 1) == 0;
+
+    _NODISCARD bool is_lock_free() const noexcept {
+        return is_always_lock_free;
+    }
+
+    void store(shared_ptr<_Ty> _Value) noexcept {
+        shared_ptr<_Ty> _Old = exchange(_STD move(_Value));
+    }
+
+    void store(shared_ptr<_Ty> _Value, const memory_order _Order) noexcept {
+        shared_ptr<_Ty> _Old = exchange(_STD move(_Value), _Order);
+    }
+
+    _NODISCARD shared_ptr<_Ty> load() const noexcept {
+        shared_ptr<_Ty> _Result = _Base::load();
+        _Result._Incref();
+        return _Result;
+    }
+
+    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order) const noexcept {
+        shared_ptr<_Ty> _Result = _Base::load(_Order);
+        _Result._Incref();
+        return _Result;
+    }
+
+    operator shared_ptr<_Ty>() const noexcept {
+        return load();
+    }
+
+    _NODISCARD shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value) noexcept {
+        _Value._Incref();
+        return _Base::exchange(_STD move(_Value));
+    }
+
+    _NODISCARD shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order) noexcept {
+        _Value._Incref();
+        return _Base::exchange(_STD move(_Value), _Order);
+    }
+
+    bool compare_exchange_weak(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired, const memory_order _Success,
+        const memory_order _Failure) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
+    }
+
+    bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
+        const memory_order _Success, const memory_order _Failure) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
+    }
+
+    bool compare_exchange_weak(
+        shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired, const memory_order _Order) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
+    }
+
+    bool compare_exchange_strong(
+        shared_ptr<_Ty>& _Expected, const shared_ptr<_Ty> _Desired, const memory_order _Order) noexcept {
+        _Ref_count_base* _ExpectedRep = _Expected._Rep;
+        const bool _Result            = _Base::compare_exchange_strong(_Expected, _Desired, _Order);
+        if (_Result) {
+            _Desired._Incref();
+            _Expected._Decref();
+        } else {
+            _Expected._Incref();
+            if (_ExpectedRep) {
+                _ExpectedRep->_Decref();
+            }
+        }
+        return _Result;
+    }
+
+    bool compare_exchange_weak(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired));
+    }
+
+    bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, const shared_ptr<_Ty> _Desired) noexcept {
+        _Ref_count_base* _ExpectedRep = _Expected._Rep;
+        const bool _Result            = _Base::compare_exchange_strong(_Expected, _Desired);
+        if (_Result) {
+            _Desired._Incref();
+            _Expected._Decref();
+        } else {
+            _Expected._Incref();
+            if (_ExpectedRep) {
+                _ExpectedRep->_Decref();
+            }
+        }
+        return _Result;
+    }
+
+    constexpr atomic() noexcept : _Base() {}
+
+    atomic(shared_ptr<_Ty> _Value) noexcept : _Base(_STD move(_Value)) {}
+
+    atomic(const atomic&) = delete;
+    void operator=(const atomic&) = delete;
+
+    void operator=(shared_ptr<_Ty> _Value) noexcept {
+        store(_STD move(_Value));
+    }
+};
+
+template <class _Ty>
+struct atomic<weak_ptr<_Ty>> : _Atomic_storage<weak_ptr<_Ty>> {
+private:
+    using _Base = _Atomic_storage<weak_ptr<_Ty>>;
+
+public:
+    using value_type = weak_ptr<_Ty>;
+
+    static constexpr bool is_always_lock_free =
+        sizeof(weak_ptr<_Ty>) <= 8 && (sizeof(weak_ptr<_Ty>) & sizeof(weak_ptr<_Ty>) - 1) == 0;
+
+    _NODISCARD bool is_lock_free() const noexcept {
+        return is_always_lock_free;
+    }
+
+    void store(weak_ptr<_Ty> _Value) noexcept {
+        weak_ptr<_Ty> _Old = exchange(_STD move(_Value));
+    }
+
+    void store(weak_ptr<_Ty> _Value, const memory_order _Order) noexcept {
+        weak_ptr<_Ty> _Old = exchange(_STD move(_Value), _Order);
+    }
+
+    _NODISCARD weak_ptr<_Ty> load() const noexcept {
+        weak_ptr<_Ty> _Result = _Base::load();
+        _Result._Incwref();
+        return _Result;
+    }
+
+    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order) const noexcept {
+        weak_ptr<_Ty> _Result = _Base::load(_Order);
+        _Result._Incwref();
+        return _Result;
+    }
+
+    operator weak_ptr<_Ty>() const noexcept {
+        return load();
+    }
+
+    _NODISCARD weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value) noexcept {
+        _Value._Incwref();
+        return _Base::exchange(_STD move(_Value));
+    }
+
+    _NODISCARD weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order) noexcept {
+        _Value._Incwref();
+        return _Base::exchange(_STD move(_Value), _Order);
+    }
+
+    bool compare_exchange_weak(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Success,
+        const memory_order _Failure) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
+    }
+
+    bool compare_exchange_strong(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired,
+        const memory_order _Success, const memory_order _Failure) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
+    }
+
+    bool compare_exchange_weak(
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
+    }
+
+    bool compare_exchange_strong(
+        weak_ptr<_Ty>& _Expected, const weak_ptr<_Ty> _Desired, const memory_order _Order) noexcept {
+        _Ref_count_base* _ExpectedRep = _Expected._Rep;
+        const bool _Result            = _Base::compare_exchange_strong(_Expected, _Desired, _Order);
+        if (_Result) {
+            _Desired._Incwref();
+            _Expected._Decwref();
+        } else {
+            _Expected._Incwref();
+            if (_ExpectedRep) {
+                _ExpectedRep->_Decwref();
+            }
+        }
+        return _Result;
+    }
+
+    bool compare_exchange_weak(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired) noexcept {
+        return compare_exchange_strong(_Expected, _STD move(_Desired));
+    }
+
+    bool compare_exchange_strong(weak_ptr<_Ty>& _Expected, const weak_ptr<_Ty> _Desired) noexcept {
+        _Ref_count_base* _ExpectedRep = _Expected._Rep;
+        const bool _Result            = _Base::compare_exchange_strong(_Expected, _Desired);
+        if (_Result) {
+            _Desired._Incwref();
+            _Expected._Decwref();
+        } else {
+            _Expected._Incwref();
+            if (_ExpectedRep) {
+                _ExpectedRep->_Decwref();
+            }
+        }
+        return _Result;
+    }
+
+    constexpr atomic() noexcept : _Base() {}
+
+    atomic(weak_ptr<_Ty> _Value) noexcept : _Base(_STD move(_Value)) {}
+
+    atomic(const atomic&) = delete;
+    void operator=(const atomic&) = delete;
+
+    void operator=(weak_ptr<_Ty> _Value) noexcept {
+        store(_STD move(_Value));
+    }
+};
+#endif // _HAS_CXX20 && !defined(_M_CEE_PURE)
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
