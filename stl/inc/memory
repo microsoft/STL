@@ -2423,8 +2423,7 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT shared_ptr<_Ty> atomic_exchange(
 
 template <class _Ty>
 _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_weak_explicit(shared_ptr<_Ty>* _Ptr,
-    shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value,
-    memory_order, memory_order) { // atomically compare and exchange
+    shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value, memory_order, memory_order) { // atomically compare and exchange
     shared_ptr<_Ty> _Old_exp; // destroyed outside spin lock
     _Shared_ptr_spin_lock _Lock;
     bool _Success = _Ptr->get() == _Exp->get() && !_Ptr->owner_before(*_Exp) && !_Exp->owner_before(*_Ptr);
@@ -2447,8 +2446,7 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_weak
 
 template <class _Ty>
 _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_strong_explicit(shared_ptr<_Ty>* _Ptr,
-    shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value,
-    memory_order, memory_order) { // atomically compare and exchange
+    shared_ptr<_Ty>* _Exp, shared_ptr<_Ty> _Value, memory_order, memory_order) { // atomically compare and exchange
     return _STD atomic_compare_exchange_weak_explicit(
         _Ptr, _Exp, _STD move(_Value), memory_order_seq_cst, memory_order_seq_cst);
 }
@@ -2532,8 +2530,8 @@ public:
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
     }
 
-    bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Success, const memory_order _Failure) noexcept {
+    bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired, const memory_order _Success,
+        const memory_order _Failure) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
     }
 
@@ -2659,13 +2657,12 @@ public:
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
     }
 
-    bool compare_exchange_strong(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired,
-        const memory_order _Success, const memory_order _Failure) noexcept {
+    bool compare_exchange_strong(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Success,
+        const memory_order _Failure) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Combine_cas_memory_orders(_Success, _Failure));
     }
 
-    bool compare_exchange_weak(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order) noexcept {
+    bool compare_exchange_weak(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
