@@ -3,5 +3,6 @@
 
 .vs/
 .vscode/
+/build/
 /out/
 /tools/out/
