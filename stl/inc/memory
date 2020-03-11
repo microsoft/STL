@@ -1685,6 +1685,38 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
 // CLASS TEMPLATE _Ref_count_unbounded_array
 template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
 class _Ref_count_unbounded_array : public _Ref_count_base {
+    // handle reference counting for unbounded array with trivial destruction in control block, no allocator
+public:
+    explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base() {
+        _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Count);
+    }
+
+    explicit _Ref_count_unbounded_array(const size_t _Count, const remove_extent_t<_Ty>& _Val) : _Ref_count_base() {
+        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
+    }
+
+    ~_Ref_count_unbounded_array() = default; // nothing to do, _Ty is trivially destructible
+
+    auto _Get_ptr() {
+        return reinterpret_cast<remove_extent_t<_Ty>*>(
+            reinterpret_cast<char*>(this) + _Div_ceil(sizeof(*this), alignof(_Ty)) * alignof(_Ty));
+    }
+
+private:
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        // nothing to do, _Ty is trivially destructible
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        using _Storage = aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>)),
+            (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>))>;
+        this->~_Ref_count_unbounded_array();
+        delete[] reinterpret_cast<_Storage*>(this);
+    }
+};
+
+template <class _Ty>
+class _Ref_count_unbounded_array<_Ty, false> : public _Ref_count_base {
     // handle reference counting for unbounded array with non-trivial destruction in control block, no allocator
 public:
     explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base(), _Size(_Count) {
@@ -1708,38 +1740,6 @@ private:
 
     virtual void _Destroy() noexcept override { // destroy managed resource
         _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
-    }
-
-    virtual void _Delete_this() noexcept override { // destroy self
-        using _Storage = aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>)),
-            (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>))>;
-        this->~_Ref_count_unbounded_array();
-        delete[] reinterpret_cast<_Storage*>(this);
-    }
-};
-
-template <class _Ty>
-class _Ref_count_unbounded_array<_Ty, true> : public _Ref_count_base {
-    // handle reference counting for unbounded array with trivial destruction in control block, no allocator
-public:
-    explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base() {
-        _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Count);
-    }
-
-    explicit _Ref_count_unbounded_array(const size_t _Count, const remove_extent_t<_Ty>& _Val) : _Ref_count_base() {
-        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
-    }
-
-    ~_Ref_count_unbounded_array() = default; // nothing to do, _Ty is trivially destructible
-
-    auto _Get_ptr() {
-        return reinterpret_cast<remove_extent_t<_Ty>*>(
-            reinterpret_cast<char*>(this) + _Div_ceil(sizeof(*this), alignof(_Ty)) * alignof(_Ty));
-    }
-
-private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
-        // nothing to do, _Ty is trivially destructible
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
@@ -2138,7 +2138,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const _STD remove_extent_t<_Ty>& _Val) {
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
     shared_ptr<_Ty> _Ret;
