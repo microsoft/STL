@@ -4,7 +4,7 @@
 // thread functions
 
 #include "awint.h"
-#include "bitset"
+#include <bitset>
 #include <process.h>
 #include <stdint.h>
 #include <stdio.h>
