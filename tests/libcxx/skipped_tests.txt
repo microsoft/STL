@@ -677,6 +677,9 @@ language.support\support.limits\support.limits.general\vector.version.pass.cpp
 strings\strings.erasure\erase_if.pass.cpp
 strings\strings.erasure\erase.pass.cpp
 
+# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
+containers\views\span.cons\assign.pass.cpp
+
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
@@ -688,6 +691,14 @@ language.support\support.limits\support.limits.general\string.version.pass.cpp
 
 # Test needs to be updated for LWG-3320 removing span::const_iterator.
 containers\views\types.pass.cpp
+
+# Test needs to be updated for P2116R0 removing the tuple interface of span
+containers\views\span.tuple\get.fail.cpp
+containers\views\span.tuple\get.pass.cpp
+containers\views\span.tuple\tuple_element.fail.cpp
+containers\views\span.tuple\tuple_element.pass.cpp
+containers\views\span.tuple\tuple_size.fail.cpp
+containers\views\span.tuple\tuple_size.pass.cpp
 
 # Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
 utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
@@ -778,6 +789,11 @@ language.support\cmp\cmp.weakord\weakord.pass.cpp
 # Code: `(int[]){3, 4}`
 # error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
 containers\sequences\array\array.creation\to_array.pass.cpp
+
+# Tests that need to learn that insert iterators have non-void difference type in C++20
+iterators\predef.iterators\insert.iterators\back.insert.iterator\types.pass.cpp
+iterators\predef.iterators\insert.iterators\front.insert.iterator\types.pass.cpp
+iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
