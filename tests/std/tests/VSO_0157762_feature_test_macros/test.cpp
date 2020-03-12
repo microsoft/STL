@@ -5,7 +5,7 @@
 
 int main() {} // COMPILE-ONLY
 
-// ATTRIBUTES.
+// ATTRIBUTE FEATURE-TEST MACROS.
 
 #ifdef __has_cpp_attribute
 // Good.
@@ -24,8 +24,13 @@ int main() {} // COMPILE-ONLY
 #if __has_cpp_attribute(carries_dependency) != 200809L
 #error Expected has_cpp_attribute(carries_dependency) to equal 200809L.
 #endif
+
 #if __has_cpp_attribute(deprecated) != 201309L
 #error Expected has_cpp_attribute(deprecated) to equal 201309L.
+#endif
+
+#if __has_cpp_attribute(noreturn) != 200809L
+#error Expected has_cpp_attribute(noreturn) to equal 200809L.
 #endif
 
 #if defined(__clang__) || defined(__EDG__) // clang and EDG don't yet implement P1771R1
@@ -38,11 +43,32 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
+#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
+#if __has_cpp_attribute(fallthrough) != 201603L
+#error Expected has_cpp_attribute(fallthrough) to equal 201603L.
+#endif
+#else
+#if __has_cpp_attribute(fallthrough) != 0
+#error Expected has_cpp_attribute(fallthrough) to equal 0.
+#endif
+#endif
+
+#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
+#if __has_cpp_attribute(maybe_unused) != 201603L
+#error Expected has_cpp_attribute(maybe_unused) to equal 201603L.
+#endif
+#else
+#if __has_cpp_attribute(maybe_unused) != 0
+#error Expected has_cpp_attribute(maybe_unused) to equal 0.
+#endif
+#endif
+
 #if __has_cpp_attribute(noreturn) != 200809L
 #error Expected has_cpp_attribute(noreturn) to equal 200809L.
 #endif
 
-//// LANGUAGE FEATURE-TEST MACROS
+
+// COMPILER FEATURE-TEST MACROS
 
 #ifndef __cpp_aggregate_nsdmi
 #error Expected __cpp_aggregate_nsdmi to be defined.
@@ -277,96 +303,6 @@ STATIC_ASSERT(__cpp_variable_templates == 201304L);
 STATIC_ASSERT(__cpp_variadic_templates == 200704L);
 #endif
 
-// C++98, /GR[-]
-#ifdef TEST_DISABLED_RTTI
-#ifdef __cpp_rtti
-#error Expected __cpp_rtti to NOT be defined.
-#endif
-#else
-#ifndef __cpp_rtti
-#error Expected __cpp_rtti to be defined.
-#elif __cpp_rtti != 199711L
-#error Expected cpp_rtti to equal 199711L.
-#else
-STATIC_ASSERT(__cpp_rtti == 199711L);
-#endif
-#endif
-
-// C++11, /Zc:threadSafeInit[-]
-#if defined(_M_CEE_PURE) || defined(TEST_DISABLED_THREADSAFE_STATIC_INIT)
-#ifdef __cpp_threadsafe_static_init
-#error Expected __cpp_threadsafe_static_init to NOT be defined.
-#endif
-#else
-#ifndef __cpp_threadsafe_static_init
-#error Expected __cpp_threadsafe_static_init to be defined.
-#elif __cpp_threadsafe_static_init != 200806L
-#error Expected cpp_threadsafe_static_init to equal 200806L.
-#else
-STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
-#endif
-#endif
-
-// C++14, /Zc:sizedDealloc[-]
-#if defined(TEST_DISABLED_SIZED_DEALLOCATION) || defined(__clang__) // Clang disables sized deallocation by default.
-#ifdef __cpp_sized_deallocation
-#error Expected __cpp_sized_deallocation to NOT be defined.
-#endif
-#else
-#ifndef __cpp_sized_deallocation
-#error Expected __cpp_sized_deallocation to be defined.
-#elif __cpp_sized_deallocation != 201309L
-#error Expected cpp_sized_deallocation to equal 201309L.
-#else
-STATIC_ASSERT(__cpp_sized_deallocation == 201309L);
-#endif
-#endif
-
-// C++17, /Zc:alignedNew[-]
-#if !_HAS_CXX17 || defined(TEST_DISABLED_ALIGNED_NEW)
-#ifdef __cpp_aligned_new
-#error Expected __cpp_aligned_new to NOT be defined.
-#endif
-#else
-#ifndef __cpp_aligned_new
-#error Expected __cpp_aligned_new to be defined.
-#elif __cpp_aligned_new != 201606L
-#error Expected cpp_aligned_new to equal 201606L.
-#else
-STATIC_ASSERT(__cpp_aligned_new == 201606L);
-#endif
-#endif
-
-// C++17, /Zc:noexceptTypes[-]
-#if !_HAS_CXX17 || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
-#ifdef __cpp_noexcept_function_type
-#error Expected __cpp_noexcept_function_type to NOT be defined.
-#endif
-#else
-#ifndef __cpp_noexcept_function_type
-#error Expected __cpp_noexcept_function_type to be defined.
-#elif __cpp_noexcept_function_type != 201510L
-#error Expected cpp_noexcept_function_type to equal 201510L.
-#else
-STATIC_ASSERT(__cpp_noexcept_function_type == 201510L);
-#endif
-#endif
-
-// C++98, /EHs[-]
-#ifdef TEST_DISABLED_EXCEPTIONS
-#ifdef __cpp_exceptions
-#error Expected __cpp_exceptions to NOT be defined.
-#endif
-#else
-#ifndef __cpp_exceptions
-#error Expected __cpp_exceptions to be defined.
-#elif __cpp_exceptions != 199711L
-#error Expected cpp_exceptions to equal 199711L.
-#else
-STATIC_ASSERT(__cpp_exceptions == 199711L);
-#endif
-#endif
-
 #if _HAS_CXX17
 #ifndef __cpp_aggregate_bases
 #error Expected __cpp_aggregate_bases to be defined.
@@ -515,20 +451,6 @@ STATIC_ASSERT(__cpp_template_template_args == 201611L);
 #endif
 
 #if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
-#ifndef __cpp_namespace_attributes
-#error Expected __cpp_namespace_attributes to be defined.
-#elif __cpp_namespace_attributes != 201411L
-#error Expected cpp_namespace_attributes to equal 201411L.
-#else
-STATIC_ASSERT(__cpp_namespace_attributes == 201411L);
-#endif
-#else
-#ifdef __cpp_namespace_attributes
-#error Expected __cpp_namespace_attributes to NOT be defined.
-#endif
-#endif
-
-#if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
 #ifndef __cpp_enumerator_attributes
 #error Expected __cpp_enumerator_attributes to be defined.
 #elif __cpp_enumerator_attributes != 201411L
@@ -539,6 +461,20 @@ STATIC_ASSERT(__cpp_enumerator_attributes == 201411L);
 #else
 #ifdef __cpp_enumerator_attributes
 #error Expected __cpp_enumerator_attributes to NOT be defined.
+#endif
+#endif
+
+#if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
+#ifndef __cpp_namespace_attributes
+#error Expected __cpp_namespace_attributes to be defined.
+#elif __cpp_namespace_attributes != 201411L
+#error Expected cpp_namespace_attributes to equal 201411L.
+#else
+STATIC_ASSERT(__cpp_namespace_attributes == 201411L);
+#endif
+#else
+#ifdef __cpp_namespace_attributes
+#error Expected __cpp_namespace_attributes to NOT be defined.
 #endif
 #endif
 
@@ -629,6 +565,93 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 #error Expected __cpp_conditional_explicit to NOT be defined.
 #endif
 #endif
+
+// C++98, /EHs[-]
+#ifdef TEST_DISABLED_EXCEPTIONS
+#ifdef __cpp_exceptions
+#error Expected __cpp_exceptions to NOT be defined.
+#endif
+#else
+#ifndef __cpp_exceptions
+#error Expected __cpp_exceptions to be defined.
+#elif __cpp_exceptions != 199711L
+#error Expected cpp_exceptions to equal 199711L.
+#else
+STATIC_ASSERT(__cpp_exceptions == 199711L);
+#endif
+#endif
+
+// C++98, /GR[-]
+#ifdef TEST_DISABLED_RTTI
+#ifdef __cpp_rtti
+#error Expected __cpp_rtti to NOT be defined.
+#endif
+#else
+#ifdef __cpp_namespace_attributes
+#error Expected __cpp_namespace_attributes to NOT be defined.
+#endif
+#endif
+
+// C++11, /Zc:threadSafeInit[-]
+#if defined(_M_CEE_PURE) || defined(TEST_DISABLED_THREADSAFE_STATIC_INIT)
+#ifdef __cpp_threadsafe_static_init
+#error Expected __cpp_threadsafe_static_init to NOT be defined.
+#endif
+#else
+#ifndef __cpp_threadsafe_static_init
+#error Expected __cpp_threadsafe_static_init to be defined.
+#elif __cpp_threadsafe_static_init != 200806L
+#error Expected cpp_threadsafe_static_init to equal 200806L.
+#else
+STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
+#endif
+#endif
+
+// C++14, /Zc:sizedDealloc[-]
+#if defined(TEST_DISABLED_SIZED_DEALLOCATION) || defined(__clang__) // Clang disables sized deallocation by default.
+#ifdef __cpp_sized_deallocation
+#error Expected __cpp_sized_deallocation to NOT be defined.
+#endif
+#else
+#ifndef __cpp_sized_deallocation
+#error Expected __cpp_sized_deallocation to be defined.
+#elif __cpp_sized_deallocation != 201309L
+#error Expected cpp_sized_deallocation to equal 201309L.
+#else
+STATIC_ASSERT(__cpp_sized_deallocation == 201309L);
+#endif
+#endif
+
+// C++17, /Zc:alignedNew[-]
+#if !_HAS_CXX17 || defined(TEST_DISABLED_ALIGNED_NEW)
+#ifdef __cpp_aligned_new
+#error Expected __cpp_aligned_new to NOT be defined.
+#endif
+#else
+#ifndef __cpp_aligned_new
+#error Expected __cpp_aligned_new to be defined.
+#elif __cpp_aligned_new != 201606L
+#error Expected cpp_aligned_new to equal 201606L.
+#else
+STATIC_ASSERT(__cpp_aligned_new == 201606L);
+#endif
+#endif
+
+// C++17, /Zc:noexceptTypes[-]
+#if !_HAS_CXX17 || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
+#ifdef __cpp_noexcept_function_type
+#error Expected __cpp_noexcept_function_type to NOT be defined.
+#endif
+#else
+#ifndef __cpp_noexcept_function_type
+#error Expected __cpp_noexcept_function_type to be defined.
+#elif __cpp_noexcept_function_type != 201510L
+#error Expected cpp_noexcept_function_type to equal 201510L.
+#else
+STATIC_ASSERT(__cpp_noexcept_function_type == 201510L);
+#endif
+#endif
+
 
 // LIBRARY FEATURE-TEST MACROS
 #include <version>
