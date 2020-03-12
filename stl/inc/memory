@@ -890,7 +890,7 @@ protected:
         return false;
     }
 
-    void _Incref() const noexcept { // increment reference count
+    void _Incref() const noexcept {
         if (_Rep) {
             _Rep->_Incref();
         }
@@ -918,7 +918,7 @@ protected:
         }
     }
 
-    void _Incwref() const noexcept { // increment weak reference count
+    void _Incwref() const noexcept {
         if (_Rep) {
             _Rep->_Incwref();
         }
@@ -2468,28 +2468,13 @@ private:
 public:
     using value_type = shared_ptr<_Ty>;
 
-#if 1 // TRANSITION, ABI
+    // TRANSITION, ABI - is_always_lock_free and is_lock_free must updated according to ABI breaking changes in atomic
     static constexpr bool is_always_lock_free =
         sizeof(shared_ptr<_Ty>) <= 8 && (sizeof(shared_ptr<_Ty>) & sizeof(shared_ptr<_Ty>) - 1) == 0;
 
     _NODISCARD bool is_lock_free() const noexcept {
         return is_always_lock_free;
     }
-#else // ^^^ don't break ABI / break ABI vvv
-#if _ATOMIC_HAS_DCAS
-    static constexpr bool is_always_lock_free = sizeof(shared_ptr<_Ty>) <= 2 * sizeof(void*);
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-    static constexpr bool is_always_lock_free = sizeof(shared_ptr<_Ty>) <= sizeof(void*);
-#endif // _ATOMIC_HAS_DCAS
-
-    _NODISCARD bool is_lock_free() const noexcept {
-#if _ATOMIC_HAS_DCAS
-        return is_always_lock_free;
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        return is_always_lock_free || (sizeof(shared_ptr<_Ty>) <= 2 * sizeof(void*) && __std_atomic_has_cmpxchg16b());
-#endif // _ATOMIC_HAS_DCAS
-    }
-#endif // TRANSITION, ABI
 
     void store(shared_ptr<_Ty> _Value) noexcept {
         shared_ptr<_Ty> _Old = exchange(_STD move(_Value));
@@ -2595,28 +2580,13 @@ private:
 public:
     using value_type = weak_ptr<_Ty>;
 
-#if 1 // TRANSITION, ABI
+    // TRANSITION, ABI - is_always_lock_free and is_lock_free must updated according to ABI breaking changes in atomic
     static constexpr bool is_always_lock_free =
         sizeof(weak_ptr<_Ty>) <= 8 && (sizeof(weak_ptr<_Ty>) & sizeof(weak_ptr<_Ty>) - 1) == 0;
 
     _NODISCARD bool is_lock_free() const noexcept {
         return is_always_lock_free;
     }
-#else // ^^^ don't break ABI / break ABI vvv
-#if _ATOMIC_HAS_DCAS
-    static constexpr bool is_always_lock_free = sizeof(weak_ptr<_Ty>) <= 2 * sizeof(void*);
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-    static constexpr bool is_always_lock_free = sizeof(weak_ptr<_Ty>) <= sizeof(void*);
-#endif // _ATOMIC_HAS_DCAS
-
-    _NODISCARD bool is_lock_free() const noexcept {
-#if _ATOMIC_HAS_DCAS
-        return is_always_lock_free;
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        return is_always_lock_free || (sizeof(weak_ptr<_Ty>) <= 2 * sizeof(void*) && __std_atomic_has_cmpxchg16b());
-#endif // _ATOMIC_HAS_DCAS
-    }
-#endif // TRANSITION, ABI
 
     void store(weak_ptr<_Ty> _Value) noexcept {
         weak_ptr<_Ty> _Old = exchange(_STD move(_Value));
