@@ -5,59 +5,44 @@
 
 int main() {} // COMPILE-ONLY
 
-// Always defined to varying values (C++14 versus C++17-and-newer mode).
+// ATTRIBUTES.
 
-#ifndef __cpp_constexpr
-#error Expected __cpp_constexpr to be defined.
-#elif _HAS_CXX17
-#if __cpp_constexpr != 201603L
-#error Expected cpp_constexpr to equal 201603L.
+#ifdef __has_cpp_attribute
+// Good.
 #else
-STATIC_ASSERT(__cpp_constexpr == 201603L);
+#error Expected __has_cpp_attribute to be defined.
 #endif
+#if defined(__has_cpp_attribute)
+// Good.
 #else
-#if __cpp_constexpr != 201304L
-#error Expected cpp_constexpr to equal 201304L.
-#else
-STATIC_ASSERT(__cpp_constexpr == 201304L);
+#error Expected __has_cpp_attribute to be defined.
 #endif
+#ifndef __has_cpp_attribute
+#error Expected __has_cpp_attribute to be defined.
 #endif
 
-#ifndef __cpp_inheriting_constructors
-#error Expected __cpp_inheriting_constructors to be defined.
-#elif (_HAS_CXX17 || defined(__clang__)) && !defined(__EDG__) // Clang implemented this C++17 feature unconditionally.
-                                                              // TRANSITION, VSO-610203
-#if __cpp_inheriting_constructors != 201511L
-#error Expected cpp_inheriting_constructors to equal 201511L.
-#else
-STATIC_ASSERT(__cpp_inheriting_constructors == 201511L);
+#if __has_cpp_attribute(carries_dependency) != 200809L
+#error Expected has_cpp_attribute(carries_dependency) to equal 200809L.
+#endif
+#if __has_cpp_attribute(deprecated) != 201309L
+#error Expected has_cpp_attribute(deprecated) to equal 201309L.
+#endif
+
+#if defined(__clang__) || defined(__EDG__) // clang and EDG don't yet implement P1771R1
+#if __has_cpp_attribute(nodiscard) != 201603L
+#error Expected has_cpp_attribute(nodiscard) to equal 201603L.
 #endif
 #else
-#if __cpp_inheriting_constructors != 200802L
-#error Expected cpp_inheriting_constructors to equal 200802L.
-#else
-STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
+#if __has_cpp_attribute(nodiscard) != 201907L
+#error Expected has_cpp_attribute(nodiscard) to equal 201907L.
 #endif
 #endif
 
-#ifndef __cpp_static_assert
-#error Expected __cpp_static_assert to be defined.
-#elif _HAS_CXX17
-#if __cpp_static_assert != 201411L
-#error Expected cpp_static_assert to equal 201411L.
-#else
-STATIC_ASSERT(__cpp_static_assert == 201411L);
-#endif
-#else
-#if __cpp_static_assert != 200410L
-#error Expected cpp_static_assert to equal 200410L.
-#else
-STATIC_ASSERT(__cpp_static_assert == 200410L);
-#endif
+#if __has_cpp_attribute(noreturn) != 200809L
+#error Expected has_cpp_attribute(noreturn) to equal 200809L.
 #endif
 
-
-// Always defined to specific values.
+//// LANGUAGE FEATURE-TEST MACROS
 
 #ifndef __cpp_aggregate_nsdmi
 #error Expected __cpp_aggregate_nsdmi to be defined.
@@ -91,6 +76,22 @@ STATIC_ASSERT(__cpp_attributes == 200809L);
 STATIC_ASSERT(__cpp_binary_literals == 201304L);
 #endif
 
+#ifndef __cpp_constexpr
+#error Expected __cpp_constexpr to be defined.
+#elif _HAS_CXX17
+#if __cpp_constexpr != 201603L
+#error Expected cpp_constexpr to equal 201603L.
+#else
+STATIC_ASSERT(__cpp_constexpr == 201603L);
+#endif
+#else
+#if __cpp_constexpr != 201304L
+#error Expected cpp_constexpr to equal 201304L.
+#else
+STATIC_ASSERT(__cpp_constexpr == 201304L);
+#endif
+#endif
+
 #ifndef __cpp_decltype
 #error Expected __cpp_decltype to be defined.
 #elif __cpp_decltype != 200707L
@@ -115,26 +116,29 @@ STATIC_ASSERT(__cpp_decltype_auto == 201304L);
 STATIC_ASSERT(__cpp_delegating_constructors == 200604L);
 #endif
 
-#if !defined(__clang__) || _HAS_CXX17 // C1XX implemented this C++17 feature unconditionally.
-#ifndef __cpp_enumerator_attributes
-#error Expected __cpp_enumerator_attributes to be defined.
-#elif __cpp_enumerator_attributes != 201411L
-#error Expected cpp_enumerator_attributes to equal 201411L.
-#else
-STATIC_ASSERT(__cpp_enumerator_attributes == 201411L);
-#endif
-#else
-#ifdef __cpp_enumerator_attributes
-#error Expected __cpp_enumerator_attributes to NOT be defined.
-#endif
-#endif
-
 #ifndef __cpp_generic_lambdas
 #error Expected __cpp_generic_lambdas to be defined.
 #elif __cpp_generic_lambdas != 201304L
 #error Expected cpp_generic_lambdas to equal 201304L.
 #else
 STATIC_ASSERT(__cpp_generic_lambdas == 201304L);
+#endif
+
+#ifndef __cpp_inheriting_constructors
+#error Expected __cpp_inheriting_constructors to be defined.
+#elif (_HAS_CXX17 || defined(__clang__)) && !defined(__EDG__) // Clang implemented this C++17 feature unconditionally.
+                                                              // TRANSITION, VSO-610203
+#if __cpp_inheriting_constructors != 201511L
+#error Expected cpp_inheriting_constructors to equal 201511L.
+#else
+STATIC_ASSERT(__cpp_inheriting_constructors == 201511L);
+#endif
+#else
+#if __cpp_inheriting_constructors != 200802L
+#error Expected cpp_inheriting_constructors to equal 200802L.
+#else
+STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
+#endif
 #endif
 
 #ifndef __cpp_init_captures
@@ -159,20 +163,6 @@ STATIC_ASSERT(__cpp_initializer_lists == 200806L);
 #error Expected cpp_lambdas to equal 200907L.
 #else
 STATIC_ASSERT(__cpp_lambdas == 200907L);
-#endif
-
-#if !defined(__clang__) || _HAS_CXX17 // C1XX implemented this C++17 feature unconditionally.
-#ifndef __cpp_namespace_attributes
-#error Expected __cpp_namespace_attributes to be defined.
-#elif __cpp_namespace_attributes != 201411L
-#error Expected cpp_namespace_attributes to equal 201411L.
-#else
-STATIC_ASSERT(__cpp_namespace_attributes == 201411L);
-#endif
-#else
-#ifdef __cpp_namespace_attributes
-#error Expected __cpp_namespace_attributes to NOT be defined.
-#endif
 #endif
 
 #ifndef __cpp_nsdmi
@@ -231,6 +221,22 @@ STATIC_ASSERT(__cpp_return_type_deduction == 201304L);
 STATIC_ASSERT(__cpp_rvalue_references == 200610L);
 #endif
 
+#ifndef __cpp_static_assert
+#error Expected __cpp_static_assert to be defined.
+#elif _HAS_CXX17
+#if __cpp_static_assert != 201411L
+#error Expected cpp_static_assert to equal 201411L.
+#else
+STATIC_ASSERT(__cpp_static_assert == 201411L);
+#endif
+#else
+#if __cpp_static_assert != 200410L
+#error Expected cpp_static_assert to equal 200410L.
+#else
+STATIC_ASSERT(__cpp_static_assert == 200410L);
+#endif
+#endif
+
 #ifndef __cpp_unicode_characters
 #error Expected __cpp_unicode_characters to be defined.
 #elif __cpp_unicode_characters != 200704L
@@ -271,8 +277,95 @@ STATIC_ASSERT(__cpp_variable_templates == 201304L);
 STATIC_ASSERT(__cpp_variadic_templates == 200704L);
 #endif
 
+// C++98, /GR[-]
+#ifdef TEST_DISABLED_RTTI
+#ifdef __cpp_rtti
+#error Expected __cpp_rtti to NOT be defined.
+#endif
+#else
+#ifndef __cpp_rtti
+#error Expected __cpp_rtti to be defined.
+#elif __cpp_rtti != 199711L
+#error Expected cpp_rtti to equal 199711L.
+#else
+STATIC_ASSERT(__cpp_rtti == 199711L);
+#endif
+#endif
 
-// Defined in C++17-and-newer mode to specific values.
+// C++11, /Zc:threadSafeInit[-]
+#if defined(_M_CEE_PURE) || defined(TEST_DISABLED_THREADSAFE_STATIC_INIT)
+#ifdef __cpp_threadsafe_static_init
+#error Expected __cpp_threadsafe_static_init to NOT be defined.
+#endif
+#else
+#ifndef __cpp_threadsafe_static_init
+#error Expected __cpp_threadsafe_static_init to be defined.
+#elif __cpp_threadsafe_static_init != 200806L
+#error Expected cpp_threadsafe_static_init to equal 200806L.
+#else
+STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
+#endif
+#endif
+
+// C++14, /Zc:sizedDealloc[-]
+#if defined(TEST_DISABLED_SIZED_DEALLOCATION) || defined(__clang__) // Clang disables sized deallocation by default.
+#ifdef __cpp_sized_deallocation
+#error Expected __cpp_sized_deallocation to NOT be defined.
+#endif
+#else
+#ifndef __cpp_sized_deallocation
+#error Expected __cpp_sized_deallocation to be defined.
+#elif __cpp_sized_deallocation != 201309L
+#error Expected cpp_sized_deallocation to equal 201309L.
+#else
+STATIC_ASSERT(__cpp_sized_deallocation == 201309L);
+#endif
+#endif
+
+// C++17, /Zc:alignedNew[-]
+#if !_HAS_CXX17 || defined(TEST_DISABLED_ALIGNED_NEW)
+#ifdef __cpp_aligned_new
+#error Expected __cpp_aligned_new to NOT be defined.
+#endif
+#else
+#ifndef __cpp_aligned_new
+#error Expected __cpp_aligned_new to be defined.
+#elif __cpp_aligned_new != 201606L
+#error Expected cpp_aligned_new to equal 201606L.
+#else
+STATIC_ASSERT(__cpp_aligned_new == 201606L);
+#endif
+#endif
+
+// C++17, /Zc:noexceptTypes[-]
+#if !_HAS_CXX17 || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
+#ifdef __cpp_noexcept_function_type
+#error Expected __cpp_noexcept_function_type to NOT be defined.
+#endif
+#else
+#ifndef __cpp_noexcept_function_type
+#error Expected __cpp_noexcept_function_type to be defined.
+#elif __cpp_noexcept_function_type != 201510L
+#error Expected cpp_noexcept_function_type to equal 201510L.
+#else
+STATIC_ASSERT(__cpp_noexcept_function_type == 201510L);
+#endif
+#endif
+
+// C++98, /EHs[-]
+#ifdef TEST_DISABLED_EXCEPTIONS
+#ifdef __cpp_exceptions
+#error Expected __cpp_exceptions to NOT be defined.
+#endif
+#else
+#ifndef __cpp_exceptions
+#error Expected __cpp_exceptions to be defined.
+#elif __cpp_exceptions != 199711L
+#error Expected cpp_exceptions to equal 199711L.
+#else
+STATIC_ASSERT(__cpp_exceptions == 199711L);
+#endif
+#endif
 
 #if _HAS_CXX17
 #ifndef __cpp_aggregate_bases
@@ -344,34 +437,6 @@ STATIC_ASSERT(__cpp_guaranteed_copy_elision == 201606L);
 #endif
 #endif
 
-#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports hex floats as being available.
-#ifndef __cpp_hex_float
-#error Expected __cpp_hex_float to be defined.
-#elif __cpp_hex_float != 201603L
-#error Expected cpp_hex_float to equal 201603L.
-#else
-STATIC_ASSERT(__cpp_hex_float == 201603L);
-#endif
-#else
-#ifdef __cpp_hex_float
-#error Expected __cpp_hex_float to NOT be defined.
-#endif
-#endif
-
-#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports "if constexpr" as being available.
-#ifndef __cpp_if_constexpr
-#error Expected __cpp_if_constexpr to be defined.
-#elif __cpp_if_constexpr != 201606L
-#error Expected cpp_if_constexpr to equal 201606L.
-#else
-STATIC_ASSERT(__cpp_if_constexpr == 201606L);
-#endif
-#else
-#ifdef __cpp_if_constexpr
-#error Expected __cpp_if_constexpr to NOT be defined.
-#endif
-#endif
-
 #if _HAS_CXX17
 #ifndef __cpp_inline_variables
 #error Expected __cpp_inline_variables to be defined.
@@ -383,28 +448,6 @@ STATIC_ASSERT(__cpp_inline_variables == 201606L);
 #else
 #ifdef __cpp_inline_variables
 #error Expected __cpp_inline_variables to NOT be defined.
-#endif
-#endif
-
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
-#ifndef __cpp_nontype_template_args
-#error Expected __cpp_nontype_template_args to be defined.
-#elif __cpp_nontype_template_args != 201911L
-#error Expected cpp_nontype_template_args to equal 201911L.
-#else
-STATIC_ASSERT(__cpp_nontype_template_args == 201911L);
-#endif
-#elif _HAS_CXX17
-#ifndef __cpp_nontype_template_args
-#error Expected __cpp_nontype_template_args to be defined.
-#elif __cpp_nontype_template_args != 201411L
-#error Expected cpp_nontype_template_args to equal 201411L.
-#else
-STATIC_ASSERT(__cpp_nontype_template_args == 201411L);
-#endif
-#else
-#ifdef __cpp_nontype_template_args
-#error Expected __cpp_nontype_template_args to NOT be defined.
 #endif
 #endif
 
@@ -436,6 +479,20 @@ STATIC_ASSERT(__cpp_structured_bindings == 201606L);
 #endif
 #endif
 
+#if _HAS_CXX17
+#ifndef __cpp_variadic_using
+#error Expected __cpp_variadic_using to be defined.
+#elif __cpp_variadic_using != 201611L
+#error Expected cpp_variadic_using to equal 201611L.
+#else
+STATIC_ASSERT(__cpp_variadic_using == 201611L);
+#endif
+#else
+#ifdef __cpp_variadic_using
+#error Expected __cpp_variadic_using to NOT be defined.
+#endif
+#endif
+
 #if _HAS_CXX17 && !defined(__clang__)
 // https://clang.llvm.org/cxx_status.html says P0522R0 is Partial, "Despite being
 // the resolution to a Defect Report, this feature is disabled by default in all
@@ -457,34 +514,59 @@ STATIC_ASSERT(__cpp_template_template_args == 201611L);
 #endif
 #endif
 
-#if _HAS_CXX17
-#ifndef __cpp_variadic_using
-#error Expected __cpp_variadic_using to be defined.
-#elif __cpp_variadic_using != 201611L
-#error Expected cpp_variadic_using to equal 201611L.
+#if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
+#ifndef __cpp_namespace_attributes
+#error Expected __cpp_namespace_attributes to be defined.
+#elif __cpp_namespace_attributes != 201411L
+#error Expected cpp_namespace_attributes to equal 201411L.
 #else
-STATIC_ASSERT(__cpp_variadic_using == 201611L);
+STATIC_ASSERT(__cpp_namespace_attributes == 201411L);
 #endif
 #else
-#ifdef __cpp_variadic_using
-#error Expected __cpp_variadic_using to NOT be defined.
+#ifdef __cpp_namespace_attributes
+#error Expected __cpp_namespace_attributes to NOT be defined.
 #endif
 #endif
 
-// Defined in C++20-and-newer mode to specific values.
-
-#if _HAS_CXX20 || defined(__EDG__)
-// EDG unconditionally reports "explicit(bool)" as being available.
-#ifndef __cpp_conditional_explicit
-#error Expected __cpp_conditional_explicit to be defined.
-#elif __cpp_conditional_explicit != 201806L
-#error Expected cpp_conditional_explicit to equal 201806L.
+#if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
+#ifndef __cpp_enumerator_attributes
+#error Expected __cpp_enumerator_attributes to be defined.
+#elif __cpp_enumerator_attributes != 201411L
+#error Expected cpp_enumerator_attributes to equal 201411L.
 #else
-STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
+STATIC_ASSERT(__cpp_enumerator_attributes == 201411L);
 #endif
 #else
-#ifdef __cpp_conditional_explicit
-#error Expected __cpp_conditional_explicit to NOT be defined.
+#ifdef __cpp_enumerator_attributes
+#error Expected __cpp_enumerator_attributes to NOT be defined.
+#endif
+#endif
+
+#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports "if constexpr" as being available.
+#ifndef __cpp_if_constexpr
+#error Expected __cpp_if_constexpr to be defined.
+#elif __cpp_if_constexpr != 201606L
+#error Expected cpp_if_constexpr to equal 201606L.
+#else
+STATIC_ASSERT(__cpp_if_constexpr == 201606L);
+#endif
+#else
+#ifdef __cpp_if_constexpr
+#error Expected __cpp_if_constexpr to NOT be defined.
+#endif
+#endif
+
+#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports hex floats as being available.
+#ifndef __cpp_hex_float
+#error Expected __cpp_hex_float to be defined.
+#elif __cpp_hex_float != 201603L
+#error Expected cpp_hex_float to equal 201603L.
+#else
+STATIC_ASSERT(__cpp_hex_float == 201603L);
+#endif
+#else
+#ifdef __cpp_hex_float
+#error Expected __cpp_hex_float to NOT be defined.
 #endif
 #endif
 
@@ -511,191 +593,45 @@ STATIC_ASSERT(__cpp_impl_three_way_comparison == 201907L);
 #endif
 #endif
 
-// Conditionally defined (various compiler options) to specific values.
-
-// C++17, /Zc:alignedNew[-]
-#if !_HAS_CXX17 || defined(TEST_DISABLED_ALIGNED_NEW)
-#ifdef __cpp_aligned_new
-#error Expected __cpp_aligned_new to NOT be defined.
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
+#ifndef __cpp_nontype_template_args
+#error Expected __cpp_nontype_template_args to be defined.
+#elif __cpp_nontype_template_args != 201911L
+#error Expected cpp_nontype_template_args to equal 201911L.
+#else
+STATIC_ASSERT(__cpp_nontype_template_args == 201911L);
+#endif
+#elif _HAS_CXX17
+#ifndef __cpp_nontype_template_args
+#error Expected __cpp_nontype_template_args to be defined.
+#elif __cpp_nontype_template_args != 201411L
+#error Expected cpp_nontype_template_args to equal 201411L.
+#else
+STATIC_ASSERT(__cpp_nontype_template_args == 201411L);
 #endif
 #else
-#ifndef __cpp_aligned_new
-#error Expected __cpp_aligned_new to be defined.
-#elif __cpp_aligned_new != 201606L
-#error Expected cpp_aligned_new to equal 201606L.
-#else
-STATIC_ASSERT(__cpp_aligned_new == 201606L);
+#ifdef __cpp_nontype_template_args
+#error Expected __cpp_nontype_template_args to NOT be defined.
 #endif
 #endif
 
-// C++98, /EHs[-]
-#ifdef TEST_DISABLED_EXCEPTIONS
-#ifdef __cpp_exceptions
-#error Expected __cpp_exceptions to NOT be defined.
-#endif
+#if _HAS_CXX20 || defined(__EDG__)
+// EDG unconditionally reports "explicit(bool)" as being available.
+#ifndef __cpp_conditional_explicit
+#error Expected __cpp_conditional_explicit to be defined.
+#elif __cpp_conditional_explicit != 201806L
+#error Expected cpp_conditional_explicit to equal 201806L.
 #else
-#ifndef __cpp_exceptions
-#error Expected __cpp_exceptions to be defined.
-#elif __cpp_exceptions != 199711L
-#error Expected cpp_exceptions to equal 199711L.
-#else
-STATIC_ASSERT(__cpp_exceptions == 199711L);
-#endif
-#endif
-
-// C++17, /Zc:noexceptTypes[-]
-#if !_HAS_CXX17 || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
-#ifdef __cpp_noexcept_function_type
-#error Expected __cpp_noexcept_function_type to NOT be defined.
+STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 #endif
 #else
-#ifndef __cpp_noexcept_function_type
-#error Expected __cpp_noexcept_function_type to be defined.
-#elif __cpp_noexcept_function_type != 201510L
-#error Expected cpp_noexcept_function_type to equal 201510L.
-#else
-STATIC_ASSERT(__cpp_noexcept_function_type == 201510L);
+#ifdef __cpp_conditional_explicit
+#error Expected __cpp_conditional_explicit to NOT be defined.
 #endif
 #endif
-
-// C++98, /GR[-]
-#ifdef TEST_DISABLED_RTTI
-#ifdef __cpp_rtti
-#error Expected __cpp_rtti to NOT be defined.
-#endif
-#else
-#ifndef __cpp_rtti
-#error Expected __cpp_rtti to be defined.
-#elif __cpp_rtti != 199711L
-#error Expected cpp_rtti to equal 199711L.
-#else
-STATIC_ASSERT(__cpp_rtti == 199711L);
-#endif
-#endif
-
-// C++14, /Zc:sizedDealloc[-]
-#if defined(TEST_DISABLED_SIZED_DEALLOCATION) || defined(__clang__) // Clang disables sized deallocation by default.
-#ifdef __cpp_sized_deallocation
-#error Expected __cpp_sized_deallocation to NOT be defined.
-#endif
-#else
-#ifndef __cpp_sized_deallocation
-#error Expected __cpp_sized_deallocation to be defined.
-#elif __cpp_sized_deallocation != 201309L
-#error Expected cpp_sized_deallocation to equal 201309L.
-#else
-STATIC_ASSERT(__cpp_sized_deallocation == 201309L);
-#endif
-#endif
-
-// C++11, /Zc:threadSafeInit[-]
-#if defined(_M_CEE_PURE) || defined(TEST_DISABLED_THREADSAFE_STATIC_INIT)
-#ifdef __cpp_threadsafe_static_init
-#error Expected __cpp_threadsafe_static_init to NOT be defined.
-#endif
-#else
-#ifndef __cpp_threadsafe_static_init
-#error Expected __cpp_threadsafe_static_init to be defined.
-#elif __cpp_threadsafe_static_init != 200806L
-#error Expected cpp_threadsafe_static_init to equal 200806L.
-#else
-STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
-#endif
-#endif
-
-
-// Attributes.
-
-#ifdef __has_cpp_attribute
-// Good.
-#else
-#error Expected __has_cpp_attribute to be defined.
-#endif
-
-#if defined(__has_cpp_attribute)
-// Good.
-#else
-#error Expected __has_cpp_attribute to be defined.
-#endif
-
-#ifndef __has_cpp_attribute
-#error Expected __has_cpp_attribute to be defined.
-#endif
-
-
-// Always defined to specific values.
-
-#if __has_cpp_attribute(carries_dependency) != 200809L
-#error Expected has_cpp_attribute(carries_dependency) to equal 200809L.
-#endif
-
-#if __has_cpp_attribute(deprecated) != 201309L
-#error Expected has_cpp_attribute(deprecated) to equal 201309L.
-#endif
-
-#if defined(__clang__) || defined(__EDG__) // clang and EDG don't yet implement P1771R1
-#if __has_cpp_attribute(nodiscard) != 201603L
-#error Expected has_cpp_attribute(nodiscard) to equal 201603L.
-#endif
-#else
-#if __has_cpp_attribute(nodiscard) != 201907L
-#error Expected has_cpp_attribute(nodiscard) to equal 201907L.
-#endif
-#endif
-
-#if __has_cpp_attribute(noreturn) != 200809L
-#error Expected has_cpp_attribute(noreturn) to equal 200809L.
-#endif
-
-
-// Always defined to varying values (C++14 versus C++17-and-newer mode).
-
-#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
-#if __has_cpp_attribute(fallthrough) != 201603L
-#error Expected has_cpp_attribute(fallthrough) to equal 201603L.
-#endif
-#else
-#if __has_cpp_attribute(fallthrough) != 0
-#error Expected has_cpp_attribute(fallthrough) to equal 0.
-#endif
-#endif
-
-#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
-#if __has_cpp_attribute(maybe_unused) != 201603L
-#error Expected has_cpp_attribute(maybe_unused) to equal 201603L.
-#endif
-#else
-#if __has_cpp_attribute(maybe_unused) != 0
-#error Expected has_cpp_attribute(maybe_unused) to equal 0.
-#endif
-#endif
-
 
 // LIBRARY FEATURE-TEST MACROS
-
 #include <version>
-
-
-// Always defined to varying values (C++14 versus C++17-and-newer mode).
-
-#ifndef __cpp_lib_chrono
-#error Expected __cpp_lib_chrono to be defined.
-#elif _HAS_CXX17
-#if __cpp_lib_chrono != 201611L
-#error Expected cpp_lib_chrono to equal 201611L.
-#else
-STATIC_ASSERT(__cpp_lib_chrono == 201611L);
-#endif
-#else
-#if __cpp_lib_chrono != 201510L
-#error Expected cpp_lib_chrono to equal 201510L.
-#else
-STATIC_ASSERT(__cpp_lib_chrono == 201510L);
-#endif
-#endif
-
-
-// Always defined to specific values.
 
 #ifndef __cpp_lib_addressof_constexpr
 #error Expected __cpp_lib_addressof_constexpr to be defined.
@@ -735,6 +671,22 @@ STATIC_ASSERT(__cpp_lib_atomic_value_initialization == 201911L);
 #error Expected cpp_lib_bool_constant to equal 201505L.
 #else
 STATIC_ASSERT(__cpp_lib_bool_constant == 201505L);
+#endif
+
+#ifndef __cpp_lib_chrono
+#error Expected __cpp_lib_chrono to be defined.
+#elif _HAS_CXX17
+#if __cpp_lib_chrono != 201611L
+#error Expected cpp_lib_chrono to equal 201611L.
+#else
+STATIC_ASSERT(__cpp_lib_chrono == 201611L);
+#endif
+#else
+#if __cpp_lib_chrono != 201510L
+#error Expected cpp_lib_chrono to equal 201510L.
+#else
+STATIC_ASSERT(__cpp_lib_chrono == 201510L);
+#endif
 #endif
 
 #ifndef __cpp_lib_chrono_udls
@@ -929,20 +881,6 @@ STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
 #endif
 
-#ifdef _M_CEE
-#ifdef __cpp_lib_shared_timed_mutex
-#error Expected __cpp_lib_shared_timed_mutex to NOT be defined.
-#endif
-#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv
-#ifndef __cpp_lib_shared_timed_mutex
-#error Expected __cpp_lib_shared_timed_mutex to be defined.
-#elif __cpp_lib_shared_timed_mutex != 201402L
-#error Expected cpp_lib_shared_timed_mutex to equal 201402L.
-#else
-STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
-#endif
-#endif // _M_CEE
-
 #ifndef __cpp_lib_string_udls
 #error Expected __cpp_lib_string_udls to be defined.
 #elif __cpp_lib_string_udls != 201304L
@@ -1014,9 +952,6 @@ STATIC_ASSERT(__cpp_lib_unordered_map_try_emplace == 201411L);
 #else
 STATIC_ASSERT(__cpp_lib_void_t == 201411L);
 #endif
-
-
-// Defined in C++17-and-newer mode to specific values.
 
 #if _HAS_CXX17
 #ifndef __cpp_lib_any
@@ -1099,20 +1034,6 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #else
 #ifdef __cpp_lib_clamp
 #error Expected __cpp_lib_clamp to NOT be defined.
-#endif
-#endif
-
-#if _HAS_CXX17 && !defined(_M_CEE)
-#ifndef __cpp_lib_execution
-#error Expected __cpp_lib_execution to be defined.
-#elif __cpp_lib_execution != 201603L
-#error Expected cpp_lib_execution to equal 201603L.
-#else
-STATIC_ASSERT(__cpp_lib_execution == 201603L);
-#endif
-#else
-#ifdef __cpp_lib_execution
-#error Expected __cpp_lib_execution to NOT be defined.
 #endif
 #endif
 
@@ -1326,20 +1247,6 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #endif
 #endif
 
-#if _HAS_CXX17 && !defined(_M_CEE)
-#ifndef __cpp_lib_parallel_algorithm
-#error Expected __cpp_lib_parallel_algorithm to be defined.
-#elif __cpp_lib_parallel_algorithm != 201603L
-#error Expected cpp_lib_parallel_algorithm to equal 201603L.
-#else
-STATIC_ASSERT(__cpp_lib_parallel_algorithm == 201603L);
-#endif
-#else
-#ifdef __cpp_lib_parallel_algorithm
-#error Expected __cpp_lib_parallel_algorithm to NOT be defined.
-#endif
-#endif
-
 #if _HAS_CXX17
 #ifndef __cpp_lib_raw_memory_algorithms
 #error Expected __cpp_lib_raw_memory_algorithms to be defined.
@@ -1438,25 +1345,33 @@ STATIC_ASSERT(__cpp_lib_variant == 201606L);
 #endif
 #endif
 
-
-// Conditionally defined in C++17-and-newer mode to specific values.
-
-#if _HAS_STD_BYTE
-#ifndef __cpp_lib_byte
-#error Expected __cpp_lib_byte to be defined.
-#elif __cpp_lib_byte != 201603L
-#error Expected cpp_lib_byte to equal 201603L.
+#if _HAS_CXX17 && !defined(_M_CEE)
+#ifndef __cpp_lib_execution
+#error Expected __cpp_lib_execution to be defined.
+#elif __cpp_lib_execution != 201603L
+#error Expected cpp_lib_execution to equal 201603L.
 #else
-STATIC_ASSERT(__cpp_lib_byte == 201603L);
+STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #endif
 #else
-#ifdef __cpp_lib_byte
-#error Expected __cpp_lib_byte to NOT be defined.
+#ifdef __cpp_lib_execution
+#error Expected __cpp_lib_execution to NOT be defined.
 #endif
 #endif
 
-
-// Defined in C++20-and-newer mode to specific values.
+#if _HAS_CXX17 && !defined(_M_CEE)
+#ifndef __cpp_lib_parallel_algorithm
+#error Expected __cpp_lib_parallel_algorithm to be defined.
+#elif __cpp_lib_parallel_algorithm != 201603L
+#error Expected cpp_lib_parallel_algorithm to equal 201603L.
+#else
+STATIC_ASSERT(__cpp_lib_parallel_algorithm == 201603L);
+#endif
+#else
+#ifdef __cpp_lib_parallel_algorithm
+#error Expected __cpp_lib_parallel_algorithm to NOT be defined.
+#endif
+#endif
 
 #if _HAS_CXX20
 #ifndef __cpp_lib_atomic_float
@@ -1483,34 +1398,6 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #else
 #ifdef __cpp_lib_bind_front
 #error Expected __cpp_lib_bind_front to NOT be defined.
-#endif
-#endif
-
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
-#ifndef __cpp_lib_bit_cast
-#error Expected __cpp_lib_bit_cast to be defined.
-#elif __cpp_lib_bit_cast != 201806L
-#error Expected cpp_lib_bit_cast to equal 201806L.
-#else
-STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
-#endif
-#else
-#ifdef __cpp_lib_bit_cast
-#error Expected __cpp_lib_bit_cast to NOT be defined.
-#endif
-#endif
-
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
-#ifndef __cpp_lib_bitops
-#error Expected __cpp_lib_bitops to be defined.
-#elif __cpp_lib_bitops != 201907L
-#error Expected cpp_lib_bitops to equal 201907L.
-#else
-STATIC_ASSERT(__cpp_lib_bitops == 201907L);
-#endif
-#else
-#ifdef __cpp_lib_bitops
-#error Expected __cpp_lib_bitops to NOT be defined.
 #endif
 #endif
 
@@ -1808,8 +1695,33 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
+#ifndef __cpp_lib_bit_cast
+#error Expected __cpp_lib_bit_cast to be defined.
+#elif __cpp_lib_bit_cast != 201806L
+#error Expected cpp_lib_bit_cast to equal 201806L.
+#else
+STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_bit_cast
+#error Expected __cpp_lib_bit_cast to NOT be defined.
+#endif
+#endif
 
-// Conditionally defined in C++20-and-newer mode to specific values.
+#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
+#ifndef __cpp_lib_bitops
+#error Expected __cpp_lib_bitops to be defined.
+#elif __cpp_lib_bitops != 201907L
+#error Expected cpp_lib_bitops to equal 201907L.
+#else
+STATIC_ASSERT(__cpp_lib_bitops == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_bitops
+#error Expected __cpp_lib_bitops to NOT be defined.
+#endif
+#endif
 
 #if _HAS_CXX20 && defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
@@ -1838,3 +1750,31 @@ STATIC_ASSERT(__cpp_lib_concepts == 201907L);
 #error Expected __cpp_lib_concepts to NOT be defined.
 #endif
 #endif
+
+#if _HAS_STD_BYTE
+#ifndef __cpp_lib_byte
+#error Expected __cpp_lib_byte to be defined.
+#elif __cpp_lib_byte != 201603L
+#error Expected cpp_lib_byte to equal 201603L.
+#else
+STATIC_ASSERT(__cpp_lib_byte == 201603L);
+#endif
+#else
+#ifdef __cpp_lib_byte
+#error Expected __cpp_lib_byte to NOT be defined.
+#endif
+#endif
+
+#ifdef _M_CEE
+#ifdef __cpp_lib_shared_timed_mutex
+#error Expected __cpp_lib_shared_timed_mutex to NOT be defined.
+#endif
+#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv
+#ifndef __cpp_lib_shared_timed_mutex
+#error Expected __cpp_lib_shared_timed_mutex to be defined.
+#elif __cpp_lib_shared_timed_mutex != 201402L
+#error Expected cpp_lib_shared_timed_mutex to equal 201402L.
+#else
+STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
+#endif
+#endif // _M_CEE
