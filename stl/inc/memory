@@ -1572,8 +1572,6 @@ struct _Uninitialized_rev_destroying_backout {
 
     explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) : _First(_Dest), _Last(_Dest) {}
 
-    _Uninitialized_rev_destroying_backout(_NoThrowIt _First_, _NoThrowIt _Last_) : _First(_First_), _Last(_Last_) {}
-
     _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
 
@@ -1643,7 +1641,7 @@ void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_
     } else if constexpr (_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial) {
         _Copy_memmove(_In, _In + _Size, _Out);
     } else {
-        _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
+        _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back(_In[_Idx]);
         }
@@ -1662,7 +1660,7 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
     } else if constexpr (_Use_memset_value_construct_v<_Ty*>) {
         _Zero_range(_Out, _Out + _Size);
     } else {
-        _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
+        _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Count = 0; _Count < _Size; ++_Count) {
             _Backout._Emplace_back();
         }
@@ -1681,7 +1679,7 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
         _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
     } else {
-        _Uninitialized_rev_destroying_backout<_Ty*> _Backout{_Out};
+        _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Count = 0; _Count < _Size; ++_Count) {
             _Backout._Emplace_back(_Val);
         }
@@ -1950,7 +1948,7 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
         (void) _Al;
         _Copy_memmove(_In, _In + _Size, _Out);
     } else {
-        _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
+        _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back(_In[_Idx]);
         }
@@ -1970,7 +1968,7 @@ void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const
         (void) _Al;
         _Zero_range(_Out, _Out + _Size);
     } else {
-        _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
+        _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Count = 0; _Count < _Size; ++_Count) {
             _Backout._Emplace_back();
         }
@@ -1990,7 +1988,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         (void) _Al;
         _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
     } else {
-        _Uninitialized_rev_destroying_backout_al<_Alloc> _Backout{_Out, _Al};
+        _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Count = 0; _Count < _Size; ++_Count) {
             _Backout._Emplace_back(_Val);
         }
