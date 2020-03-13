@@ -1713,8 +1713,8 @@ private:
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
-        using _Storage = aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>)),
-            (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>))>;
+        constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array));
+        using _Storage          = aligned_storage_t<_Align, _Align>;
         this->~_Ref_count_unbounded_array();
         delete[] reinterpret_cast<_Storage*>(this);
     }
@@ -1748,8 +1748,8 @@ private:
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
-        using _Storage = aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>)),
-            (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array<_Ty>))>;
+        constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array));
+        using _Storage          = aligned_storage_t<_Align, _Align>;
         this->~_Ref_count_unbounded_array();
         delete[] reinterpret_cast<_Storage*>(this);
     }
@@ -2033,9 +2033,8 @@ private:
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
-        constexpr size_t _Max_alignment =
-            (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array_alloc<_Ty, _Alloc>));
-        using _Storage = aligned_storage_t<_Max_alignment, _Max_alignment>;
+        constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Ref_count_unbounded_array_alloc));
+        using _Storage          = aligned_storage_t<_Align, _Align>;
         _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
         this->~_Ref_count_unbounded_array_alloc();
         allocator_traits<_Rebind_alloc_t<_Alloc, _Storage>>::deallocate(_Al, reinterpret_cast<_Storage*>(this),
@@ -2105,9 +2104,9 @@ _NODISCARD
 template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
     // make a shared_ptr to an unbounded array
-    using _Refc = _Ref_count_unbounded_array<_Ty>;
-    using _Storage =
-        aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
+    using _Refc             = _Ref_count_unbounded_array<_Ty>;
+    constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Refc));
+    using _Storage          = aligned_storage_t<_Align, _Align>;
     const auto _Rx =
         reinterpret_cast<_Refc*>(new _Storage[_Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
                                               + _Div_ceil(sizeof(_Refc), sizeof(_Storage))]);
@@ -2126,9 +2125,9 @@ template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to an unbounded array
-    using _Refc = _Ref_count_unbounded_array<_Ty>;
-    using _Storage =
-        aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
+    using _Refc             = _Ref_count_unbounded_array<_Ty>;
+    constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Refc));
+    using _Storage          = aligned_storage_t<_Align, _Align>;
     const auto _Rx =
         reinterpret_cast<_Refc*>(new _Storage[_Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage))
                                               + _Div_ceil(sizeof(_Refc), sizeof(_Storage))]);
@@ -2191,9 +2190,9 @@ template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count) {
     // make a shared_ptr to an unbounded array
-    using _Refc = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
-    using _Storage =
-        aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
+    using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+    constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Refc));
+    using _Storage          = aligned_storage_t<_Align, _Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
     size_t _Size =
         _Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage)) + _Div_ceil(sizeof(_Refc), sizeof(_Storage));
@@ -2213,9 +2212,9 @@ template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to an unbounded array
-    using _Refc = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
-    using _Storage =
-        aligned_storage_t<(_STD max)(alignof(_Ty), alignof(_Refc)), (_STD max)(alignof(_Ty), alignof(_Refc))>;
+    using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+    constexpr size_t _Align = (_STD max)(alignof(_Ty), alignof(_Refc));
+    using _Storage          = aligned_storage_t<_Align, _Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
     size_t _Size =
         _Div_ceil(_Count * sizeof(remove_extent_t<_Ty>), sizeof(_Storage)) + _Div_ceil(sizeof(_Refc), sizeof(_Storage));
