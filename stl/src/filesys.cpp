@@ -314,7 +314,9 @@ _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) {
         _Devname.push_back(L'/');
     }
 
-    _ULARGE_INTEGER _Available, _Capacity, _Free;
+    _ULARGE_INTEGER _Available;
+    _ULARGE_INTEGER _Capacity;
+    _ULARGE_INTEGER _Free;
 
     if (GetDiskFreeSpaceExW(_Devname.c_str(), &_Available, &_Capacity, &_Free)) { // convert values
         _Ans.capacity  = _Capacity.QuadPart;

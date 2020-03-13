@@ -3,7 +3,7 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MTd /std:c++latest /analyze"
+PM_CL="/EHsc /MTd /std:c++latest /analyze /w14640 /Zc:threadSafeInit-"
 RUNALL_CROSSLIST
 PM_CL="/GR"
 PM_CL="/GR-"

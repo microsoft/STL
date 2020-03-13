@@ -6,19 +6,19 @@
 utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp FAIL
 
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
-utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp.0 FAIL
+utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp\0 FAIL
 
 # Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
-utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp.0 FAIL
+utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp\0 FAIL
 
-#Compiler bug: VSO-1049320 "conditional operator errors"
-containers/views/span.cons/ptr_len.pass.cpp.0 FAIL
-containers/views/span.cons/ptr_ptr.pass.cpp.0 FAIL
+# Compiler bug: VSO-1049320 "conditional operator errors"
+containers\views\span.cons\ptr_len.pass.cpp\0 FAIL
+containers\views\span.cons\ptr_ptr.pass.cpp\0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp.1 FAIL
+thread\macro.pass.cpp\1 FAIL
 
 
 # *** STL BUGS ***
@@ -30,7 +30,7 @@ input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp FAIL
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp FAIL
 
 # STL bug: Our tgmath.h just includes <ctgmath>
-depr\depr.c.headers\tgmath_h.pass.cpp.1 FAIL
+depr\depr.c.headers\tgmath_h.pass.cpp\1 FAIL
 
 # STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
 numerics\complex.number\complex.special\double_long_double_implicit.fail.cpp FAIL
@@ -107,13 +107,8 @@ localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_s
 # STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
 localization\locales\locale.convenience\conversions\conversions.buffer\seekoff.pass.cpp FAIL
 
-# STL Bug: We aren't properly SFINAEing chrono operators
-# https://github.com/llvm/llvm-project/commit/efa6d803c624f9251d0ab7881122501bb9d27368
-utilities\time\time.duration\time.duration.nonmember\op_divide_rep.pass.cpp FAIL
-utilities\time\time.duration\time.duration.nonmember\op_mod_rep.pass.cpp FAIL
-
 # STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
-diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp.1 FAIL
+diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp\1 FAIL
 
 # STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
 thread\futures\futures.promise\set_value_const.pass.cpp FAIL
@@ -287,7 +282,7 @@ numerics\rand\rand.eng\rand.eng.sub\io.pass.cpp FAIL
 thread\futures\futures.promise\set_rvalue.pass.cpp FAIL
 
 # Possible STL bugs in pair and tuple.
-utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp.0 FAIL
+utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp\0 FAIL
 utilities\tuple\tuple.tuple\tuple.cnstr\PR31384.pass.cpp FAIL
 
 # Likely STL bugs in mersenne_twister; also fails at runtime
@@ -324,9 +319,9 @@ utilities\tuple\tuple.tuple\tuple.helper\tuple_size_structured_bindings.pass.cpp
 containers\associative\map\map.cons\deduct_const.pass.cpp FAIL
 containers\associative\multimap\multimap.cons\deduct_const.pass.cpp FAIL
 containers\unord\unord.map\unord.map.cnstr\deduct_const.pass.cpp FAIL
-containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp.0 FAIL
+containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp\0 FAIL
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp FAIL
-utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp.0 FAIL
+utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp\0 FAIL
 
 # Not yet analyzed. Assertion failed: controller->check<Args&&...>()
 containers\associative\map\map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp FAIL
@@ -338,18 +333,18 @@ containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp FA
 localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\utf_sanity_check.pass.cpp FAIL
 
 # *** LIKELY BOGUS TESTS ***
-# Uses C99 compound literal extension
-# TRANSITION: Make a PR on libcxx to fix this
-containers/sequences/array/array.creation/to_array.pass.cpp.0 FAIL
+# Comment: "Test C99 compound literal."
+# Code: `(int[]){3, 4}`
+# error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
+containers\sequences\array\array.creation\to_array.pass.cpp\0 FAIL
 
 # Not yet implemented in libcxx and marked as XFAIL
-# TRANSITION: Make a PR on libcxx to fix this
-utilities/function.objects/func.search/func.search.bm/default.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bm/hash.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bm/hash.pred.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bm/pred.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bmh/default.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bmh/hash.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bmh/hash.pred.pass.cpp PASS
-utilities/function.objects/func.search/func.search.bmh/pred.pass.cpp PASS
-strings/c.strings/cuchar.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bm\default.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bm\hash.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bm\hash.pred.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bm\pred.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bmh\default.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bmh\hash.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bmh\hash.pred.pass.cpp PASS
+utilities\function.objects\func.search\func.search.bmh\pred.pass.cpp PASS
+strings\c.strings\cuchar.pass.cpp PASS

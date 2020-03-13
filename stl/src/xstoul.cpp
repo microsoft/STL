@@ -32,12 +32,15 @@ static const char ndigs[_Base_max + 1] = {0, 0, 33, 21, 17, 14, 13, 12, 11, 11, 
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     const char* s, char** endptr, int base, int* perr) { // convert string to unsigned long, with checking
-    const char *sc, *sd;
-    const char *s1, *s2;
+    const char* sc;
+    const char* sd;
+    const char* s1;
+    const char* s2;
     char dig = 0;
     char sign;
     ptrdiff_t n;
-    unsigned long x, y;
+    unsigned long x;
+    unsigned long y;
 
     if (perr != 0) {
         *perr = 0;

@@ -206,21 +206,6 @@ containers\unord\unord.set\max_size.pass.cpp
 utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 
 
-# *** CRT BUGS ***
-# We're permanently missing aligned_alloc().
-depr\depr.c.headers\stdlib_h.pass.cpp
-language.support\support.runtime\cstdlib.pass.cpp
-
-# OS-11107628 "_Exit allows cleanup in other DLLs"
-thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp
-thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
-
-
-# *** STL BUGS ***
-# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-strings\string.view\char.bad.fail.cpp
-
-
 # *** MISSING STL FEATURES ***
 # C++20 P0019R8 "atomic_ref"
 language.support\support.limits\support.limits.general\atomic.version.pass.cpp
@@ -501,11 +486,6 @@ language.support\support.dynamic\destroying_delete_t_declaration.pass.cpp
 language.support\support.dynamic\destroying_delete_t.pass.cpp
 
 
-# *** COMPILER BUGS ***
-# Compiler bug: VSO-361805 "C1xx erroneously assumes that 'default' is a constexpr"
-diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp.0
-
-
 # *** MISSING LWG ISSUE RESOLUTIONS ***
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
@@ -516,6 +496,13 @@ thread\futures\futures.promise\set_value_at_thread_exit_const.pass.cpp
 thread\futures\futures.promise\set_value_at_thread_exit_void.pass.cpp
 thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.cpp
 
+
+# *** C1XX COMPILER BUGS ***
+# Compiler bug: VSO-361805 "C1xx erroneously assumes that 'default' is a constexpr"
+diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp\0
+
+
+# *** CLANG COMPILER BUGS ***
 # <concepts> hasn't been enabled for Clang yet.
 iterators\iterator.primitives\iterator.traits\pointer.pass.cpp
 iterators\iterator.primitives\std.iterator.tags\contiguous_iterator_tag.pass.cpp
@@ -538,7 +525,80 @@ language.support\support.dynamic\new.delete\new.delete.single\sized_delete14.pas
 language.support\support.limits\limits\numeric.limits.members\traps.pass.cpp
 
 
+# *** STL BUGS ***
+# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
+strings\string.view\char.bad.fail.cpp
+
+
+# *** CRT BUGS ***
+# We're permanently missing aligned_alloc().
+depr\depr.c.headers\stdlib_h.pass.cpp
+language.support\support.runtime\cstdlib.pass.cpp
+
+# OS-11107628 "_Exit allows cleanup in other DLLs"
+thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp
+thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
+
+
 # *** LIKELY BOGUS TESTS ***
+# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
+depr\depr.c.headers\math_h.pass.cpp
+numerics\c.math\cmath.pass.cpp
+
+# Tests need to be updated for P1115R3 "erase()/erase_if() Return size_type".
+containers\associative\map\map.erasure\erase_if.pass.cpp
+containers\associative\multimap\multimap.erasure\erase_if.pass.cpp
+containers\associative\multiset\multiset.erasure\erase_if.pass.cpp
+containers\associative\set\set.erasure\erase_if.pass.cpp
+containers\sequences\deque\deque.erasure\erase_if.pass.cpp
+containers\sequences\deque\deque.erasure\erase.pass.cpp
+containers\sequences\forwardlist\forwardlist.erasure\erase_if.pass.cpp
+containers\sequences\forwardlist\forwardlist.erasure\erase.pass.cpp
+containers\sequences\list\list.erasure\erase_if.pass.cpp
+containers\sequences\list\list.erasure\erase.pass.cpp
+containers\sequences\vector\vector.erasure\erase_if.pass.cpp
+containers\sequences\vector\vector.erasure\erase.pass.cpp
+containers\unord\unord.map\erase_if.pass.cpp
+containers\unord\unord.multimap\erase_if.pass.cpp
+containers\unord\unord.multiset\erase_if.pass.cpp
+containers\unord\unord.set\erase_if.pass.cpp
+language.support\support.limits\support.limits.general\deque.version.pass.cpp
+language.support\support.limits\support.limits.general\forward_list.version.pass.cpp
+language.support\support.limits\support.limits.general\list.version.pass.cpp
+language.support\support.limits\support.limits.general\map.version.pass.cpp
+language.support\support.limits\support.limits.general\set.version.pass.cpp
+language.support\support.limits\support.limits.general\unordered_map.version.pass.cpp
+language.support\support.limits\support.limits.general\unordered_set.version.pass.cpp
+language.support\support.limits\support.limits.general\vector.version.pass.cpp
+strings\strings.erasure\erase_if.pass.cpp
+strings\strings.erasure\erase.pass.cpp
+
+# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
+containers\views\span.cons\assign.pass.cpp
+
+# Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.single.pass.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
+
+# Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
+language.support\support.limits\support.limits.general\string.version.pass.cpp
+
+# Test needs to be updated for LWG-3320 removing span::const_iterator.
+containers\views\types.pass.cpp
+
+# Test needs to be updated for P2116R0 removing the tuple interface of span
+containers\views\span.tuple\get.fail.cpp
+containers\views\span.tuple\get.pass.cpp
+containers\views\span.tuple\tuple_element.fail.cpp
+containers\views\span.tuple\tuple_element.pass.cpp
+containers\views\span.tuple\tuple_size.fail.cpp
+containers\views\span.tuple\tuple_size.pass.cpp
+
+# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
+utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
+
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\wait_for.pass.cpp
@@ -607,7 +667,7 @@ diagnostics\syserr\syserr.syserr\syserr.syserr.members\ctor_int_error_category_c
 diagnostics\syserr\syserr.syserr\syserr.syserr.members\ctor_int_error_category_string.pass.cpp
 diagnostics\syserr\syserr.syserr\syserr.syserr.members\ctor_int_error_category.pass.cpp
 
-# libc++ disagrees with libstdc++ and MSVC++ on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
+# libc++ disagrees with libstdc++ and MSVC on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
 input.output\iostream.format\input.streams\istream.unformatted\get_pointer_size_chart.pass.cpp
 input.output\iostream.format\input.streams\istream.unformatted\get_pointer_size.pass.cpp
 
@@ -622,18 +682,7 @@ language.support\cmp\cmp.strongord\strongord.pass.cpp
 language.support\cmp\cmp.weakeq\cmp.weakeq.pass.cpp
 language.support\cmp\cmp.weakord\weakord.pass.cpp
 
-# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
-depr\depr.c.headers\math_h.pass.cpp
-numerics\c.math\cmath.pass.cpp
-
-# Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.single.pass.cpp
-utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
-
-# Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
-language.support\support.limits\support.limits.general\string.version.pass.cpp
-
-# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
-utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
+# Tests that need to learn that insert iterators have non-void difference type in C++20
+iterators\predef.iterators\insert.iterators\back.insert.iterator\types.pass.cpp
+iterators\predef.iterators\insert.iterators\front.insert.iterator\types.pass.cpp
+iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp

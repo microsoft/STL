@@ -6,8 +6,10 @@
 #
 #===----------------------------------------------------------------------===##
 
-import os
+from itertools import chain
+from pathlib import Path
 from typing import List
+import os
 
 import stl.util
 
@@ -17,11 +19,12 @@ class CXXCompiler:
     CM_PreProcess = 1
     CM_Compile = 2
     CM_Link = 3
+    CM_Analyze = 4
 
     def __init__(self, path, flags=None, compile_flags=None,
                  link_flags=None, compile_env=None):
         self.path = path
-        if path:
+        if path is not None:
             self.name = os.path.basename(path).split('.')[0]
         else:
             self.name = None
@@ -30,74 +33,156 @@ class CXXCompiler:
         self.flags = flags or []
         self.link_flags = link_flags or []
 
-        if compile_env is not None:
-            self.compile_env = compile_env
-        else:
-            self.compile_env = None
+        self.compile_env = compile_env
 
+    # TRANSITION: Make this function report the list of output files
     def _basicCmd(self, source_files: List[str], out, mode=CM_Default,
-                  flags=[]):
+                  flags=[], compile_flags=[], link_flags=[],
+                  skip_mode_flags=False):
+        out_files = []
         cmd = []
-        cmd += [self.path]
+
+        if out is not None:
+            out_files.append(out)
+
+        cmd.append(self.path)
+
         if mode == self.CM_PreProcess:
             if out is not None:
-                cmd += ['/P', '/Fi' + out]
+                cmd.extend(('/P', '/Fi' + str(out)))
             else:
-                cmd += ['/EP']
+                cmd.append('/EP')
         elif mode == self.CM_Compile:
-            cmd += ['/c']
+            if not skip_mode_flags:
+                cmd.append('/c')
+            if out is not None and len(source_files) <= 1:
+                cmd.append('/Fo' + str(out))
+            else:
+                for source_file in source_files:
+                    out_files.append(
+                        source_file.name.rsplit('.', 1)[0] + '.obj')
+        elif mode == self.CM_Analyze:
+            if not skip_mode_flags:
+                cmd.append('/analyze:only')
             if out is not None:
-                cmd += ['/Fo' + out]
+                cmd.append('/analyze:log' + str(out))
+            else:
+                for source_file in source_files:
+                    out_files.append(
+                        source_file.name.rsplit('.', 1)[0] +
+                        '.nativecodeanalysis.xml')
         elif out is not None:
-            cmd += ['/Fe' + out]
+            cmd.append('/Fe' + str(out))
 
-        if mode != self.CM_Link:
-            cmd += self.compile_flags
-        cmd += self.flags
-        cmd += flags
-        cmd += source_files
+            if len(source_files) <= 1:
+                out_obj = str(out).rsplit('.', 1)[0] + '.obj'
+                cmd.append('/Fo' + out_obj)
+                out_files.append(out_obj)
+            else:
+                for source_file in source_files:
+                    out_files.append(
+                        source_file.name.rsplit('.', 1)[0] + '.obj')
 
-        if mode == self.CM_Default or mode == self.CM_Link:
-            cmd += ['/link']
-            cmd += self.link_flags
-        return cmd
+        if mode in (self.CM_Analyze, self.CM_Compile, self.CM_Default):
+            cmd.extend(self.compile_flags)
+            cmd.extend(compile_flags)
+
+        cmd.extend(self.flags)
+        cmd.extend(flags)
+        cmd.extend([str(file) for file in source_files])
+
+        if mode in (self.CM_Default, self.CM_Link):
+            cmd.append('/link')
+            cmd.extend(self.link_flags)
+            cmd.extend(link_flags)
+
+        return cmd, out_files
+
+    def executeBasedOnFlags(self, source_files, out_dir, cwd=None,
+                            out_base=None, flags=[], compile_flags=[],
+                            link_flags=[]):
+        mode = self.CM_Default
+        exec_file = None
+        output_file = None
+
+        if out_base is None:
+            out_base = source_files[0].name
+
+        add_analyze_output = False
+        for flag in chain(flags, self.flags):
+            flag = flag[1:]
+
+            if flag == 'c':
+                mode = self.CM_Compile
+                exec_file = None
+                output_file = out_dir / (out_base + '.obj')
+            elif flag.startswith('Fe'):
+                output_file = Path(flag[2:])
+                exec_file = output_file
+            elif flag == 'analyze:only':
+                mode = self.CM_Analyze
+                output_file = out_dir / (out_base + '.nativecodeanalysis.xml')
+                exec_file = None
+            elif flag.startswith('analyze') and flag[-1] != '-':
+                add_analyze_output = True
+
+        if add_analyze_output and mode != self.CM_Analyze:
+            if output_file:
+                flags.append('/analyze:log' +
+                             str(out_dir /
+                                 (output_file.name +
+                                  '.nativecodeanalysis.xml')))
+            else:
+                flags.append('/analyze:log' +
+                             str(out_dir / 'nativecodeanalysis.xml'))
+
+        if mode is self.CM_Default and output_file is None:
+            output_file = out_dir / (out_base + '.exe')
+            exec_file = output_file
+
+        cmd, out_files = self._basicCmd(source_files, output_file, mode, flags,
+                                        compile_flags, link_flags, True)
+        out, err, rc = stl.util.executeCommand(cmd, env=self.compile_env,
+                                               cwd=cwd)
+        return cmd, out, err, rc, out_files, exec_file
 
     def preprocessCmd(self, source_files, out=None, flags=[]):
-        return self._basicCmd(source_files, out, flags=flags,
-                              mode=self.CM_PreProcess)
+        return self._basicCmd(source_files, out, flags=flags, compile_flags=[],
+                              link_flags=[], mode=self.CM_PreProcess)
 
     def compileCmd(self, source_files, out=None, flags=[]):
-        return self._basicCmd(source_files, out, flags=flags,
-                              mode=self.CM_Compile)
+        return self._basicCmd(source_files, out, flags=flags, compile_flags=[],
+                              link_flags=[], mode=self.CM_Compile)
 
     def linkCmd(self, source_files, out=None, flags=[]):
-        return self._basicCmd(source_files, out, flags=flags,
-                              mode=self.CM_Link)
+        return self._basicCmd(source_files, out, flags=flags, compile_flags=[],
+                              link_flags=[], mode=self.CM_Link)
 
     def compileLinkCmd(self, source_files, out=None, flags=[]):
-        return self._basicCmd(source_files, out, flags=flags)
+        return self._basicCmd(source_files, out, flags=flags, compile_flags=[],
+                              link_flags=[])
 
     def preprocess(self, source_files, out=None, flags=[], cwd=None):
-        cmd = self.preprocessCmd(source_files, out, flags)
+        cmd, _ = self.preprocessCmd(source_files, out, flags)
         out, err, rc = stl.util.executeCommand(cmd, env=self.compile_env,
                                                cwd=cwd)
         return cmd, out, err, rc
 
     def compile(self, source_files, out=None, flags=[], cwd=None):
-        cmd = self.compileCmd(source_files, out, flags)
+        cmd, _ = self.compileCmd(source_files, out, flags)
         out, err, rc = stl.util.executeCommand(cmd, env=self.compile_env,
                                                cwd=cwd)
         return cmd, out, err, rc
 
     def link(self, source_files, exec_path=None, flags=[], cwd=None):
-        cmd = self.linkCmd(source_files, exec_path, flags)
+        cmd, _ = self.linkCmd(source_files, exec_path, flags)
         out, err, rc = stl.util.executeCommand(cmd, env=self.compile_env,
                                                cwd=cwd)
         return cmd, out, err, rc
 
     def compileLink(self, source_files, exec_path=None, flags=[],
                     cwd=None):
-        cmd = self.compileLinkCmd(source_files, exec_path, flags)
+        cmd, _ = self.compileLinkCmd(source_files, exec_path, flags)
         out, err, rc = stl.util.executeCommand(cmd, env=self.compile_env,
                                                cwd=cwd)
         return cmd, out, err, rc

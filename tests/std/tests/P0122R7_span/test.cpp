@@ -61,79 +61,34 @@ static_assert(is_same_v<span<const int, 3>::const_pointer, const int*>);
 static_assert(is_same_v<span<const int, 3>::reference, const int&>);
 static_assert(is_same_v<span<const int, 3>::const_reference, const int&>);
 
-// The iterators are thoroughly tested by P0896R4_ranges_range_machinery...
+// The iterators are thoroughly tested by P0896R4_ranges_range_machinery
 static_assert(is_same_v<iterator_traits<span<int>::iterator>::pointer, int*>);
-static_assert(is_same_v<iterator_traits<span<int>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<int>::reverse_iterator, reverse_iterator<span<int>::iterator>>);
-static_assert(is_same_v<span<int>::const_reverse_iterator, reverse_iterator<span<int>::const_iterator>>);
 
 static_assert(is_same_v<iterator_traits<span<int, 3>::iterator>::pointer, int*>);
-static_assert(is_same_v<iterator_traits<span<int, 3>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<int, 3>::reverse_iterator, reverse_iterator<span<int, 3>::iterator>>);
-static_assert(is_same_v<span<int, 3>::const_reverse_iterator, reverse_iterator<span<int, 3>::const_iterator>>);
 
 static_assert(is_same_v<iterator_traits<span<const int>::iterator>::pointer, const int*>);
-static_assert(is_same_v<iterator_traits<span<const int>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<const int>::reverse_iterator, reverse_iterator<span<const int>::iterator>>);
-static_assert(is_same_v<span<const int>::const_reverse_iterator, reverse_iterator<span<const int>::const_iterator>>);
 
 static_assert(is_same_v<iterator_traits<span<const int, 3>::iterator>::pointer, const int*>);
-static_assert(is_same_v<iterator_traits<span<const int, 3>::const_iterator>::pointer, const int*>);
 static_assert(is_same_v<span<const int, 3>::reverse_iterator, reverse_iterator<span<const int, 3>::iterator>>);
-static_assert(
-    is_same_v<span<const int, 3>::const_reverse_iterator, reverse_iterator<span<const int, 3>::const_iterator>>);
 
 #ifdef __cpp_lib_concepts
-#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-// ... except for cross-type iterator operations.
-static_assert(totally_ordered_with<span<int>::iterator, span<int>::const_iterator>);
-static_assert(sized_sentinel_for<span<int>::iterator, span<int>::const_iterator>);
-static_assert(totally_ordered_with<span<const int>::iterator, span<const int>::const_iterator>);
-static_assert(sized_sentinel_for<span<const int>::iterator, span<const int>::const_iterator>);
-static_assert(totally_ordered_with<span<int, 3>::iterator, span<int, 3>::const_iterator>);
-static_assert(sized_sentinel_for<span<int, 3>::iterator, span<int, 3>::const_iterator>);
-static_assert(totally_ordered_with<span<const int, 3>::iterator, span<const int, 3>::const_iterator>);
-static_assert(sized_sentinel_for<span<const int, 3>::iterator, span<const int, 3>::const_iterator>);
-
-#if _ITERATOR_DEBUG_LEVEL >= 1
-static_assert(_Range_verifiable_v<span<int>::iterator, span<int>::const_iterator>);
-static_assert(_Range_verifiable_v<span<int>::const_iterator, span<int>::iterator>);
-static_assert(_Range_verifiable_v<span<const int>::iterator, span<const int>::const_iterator>);
-static_assert(_Range_verifiable_v<span<const int>::const_iterator, span<const int>::iterator>);
-static_assert(_Range_verifiable_v<span<int, 3>::iterator, span<int, 3>::const_iterator>);
-static_assert(_Range_verifiable_v<span<int, 3>::const_iterator, span<int, 3>::iterator>);
-static_assert(_Range_verifiable_v<span<const int, 3>::iterator, span<const int, 3>::const_iterator>);
-static_assert(_Range_verifiable_v<span<const int, 3>::const_iterator, span<const int, 3>::iterator>);
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
-#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-
-static_assert(ranges::enable_safe_range<span<int>>);
-static_assert(ranges::enable_safe_range<span<int, 3>>);
+static_assert(ranges::enable_borrowed_range<span<int>>);
+static_assert(ranges::enable_borrowed_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
-
-static_assert(is_base_of_v<integral_constant<size_t, 3>, tuple_size<span<int, 3>>>);
-static_assert(is_base_of_v<integral_constant<size_t, 3>, tuple_size<const span<int, 3>>>);
-
-// LWG-3378: <span> isn't guaranteed to provide tuple_element_t; our implementation does.
-static_assert(is_same_v<tuple_element_t<2, span<int, 3>>, int>);
-static_assert(is_same_v<tuple_element_t<2, const span<int, 3>>, const int>);
-static_assert(is_same_v<tuple_element_t<2, span<const int, 3>>, const int>);
-static_assert(is_same_v<tuple_element_t<2, const span<const int, 3>>, const int>);
 
 // For performance, our implementation provides an additional guarantee beyond the Standard
 // that span and its iterator types are trivially copyable.
 static_assert(is_trivially_copyable_v<span<int>>);
 static_assert(is_trivially_copyable_v<span<int>::iterator>);
-static_assert(is_trivially_copyable_v<span<int>::const_iterator>);
 static_assert(is_trivially_copyable_v<span<int, 3>>);
 static_assert(is_trivially_copyable_v<span<int, 3>::iterator>);
-static_assert(is_trivially_copyable_v<span<int, 3>::const_iterator>);
 static_assert(is_trivially_copyable_v<span<const int>>);
 static_assert(is_trivially_copyable_v<span<const int>::iterator>);
-static_assert(is_trivially_copyable_v<span<const int>::const_iterator>);
 static_assert(is_trivially_copyable_v<span<const int, 3>>);
 static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
-static_assert(is_trivially_copyable_v<span<const int, 3>::const_iterator>);
 
 struct Base {};
 struct Derived : Base {};
@@ -142,7 +97,7 @@ static_assert(!is_convertible_v<Derived (*)[], Base (*)[]>);
 
 struct NonRange {};
 
-template <typename T, bool Safe = false>
+template <typename T, bool Borrowed = false>
 struct BasicRange {
     T elements[3]{};
 
@@ -177,15 +132,15 @@ struct BasicRange {
 
 #ifdef __cpp_lib_concepts
 namespace std::ranges {
-    template <typename T, bool Safe>
-    inline constexpr bool enable_safe_range<BasicRange<T, Safe>> = Safe;
+    template <typename T, bool Borrowed>
+    inline constexpr bool enable_borrowed_range<BasicRange<T, Borrowed>> = Borrowed;
 }
 #endif // __cpp_lib_concepts
 
 using ContiguousSizedRange = BasicRange<int>;
 
-// Not truly a model of safe_range; this is a convenient fiction for testing purposes.
-using SafeContiguousSizedRange = BasicRange<int, true>;
+// Not truly a model of borrowed_range; this is a convenient fiction for testing purposes.
+using BorrowedContiguousSizedRange = BasicRange<int, true>;
 
 template <typename T, size_t Extent = dynamic_extent>
 constexpr void FunctionTakingSpan(type_identity_t<span<T, Extent>>) {}
@@ -218,6 +173,7 @@ constexpr bool test() {
 
     int arr[3]{10, 20, 30};
     array<int, 3> stl{{100, 200, 300}};
+    array<int*, 3> stl_nullptr{{nullptr, nullptr, nullptr}};
 
     {
         static_assert(is_nothrow_constructible_v<span<int>, int*, size_t>); // strengthened
@@ -265,18 +221,18 @@ constexpr bool test() {
 
         FunctionTakingSpan<int>({arr, 3});
         FunctionTakingSpan<int>({begin(arr), 3});
-        FunctionTakingSpan<int, 3>({arr, 3});
-        FunctionTakingSpan<int, 3>({begin(arr), 3});
         FunctionTakingSpan<const int>({arr, 3});
         FunctionTakingSpan<const int>({begin(arr), 3});
         FunctionTakingSpan<const int>({as_const(arr), 3});
         FunctionTakingSpan<const int>({cbegin(arr), 3});
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{arr, 3}), span<int>>);
         static_assert(is_same_v<decltype(span{begin(arr), 3}), span<int>>);
 
         static_assert(is_same_v<decltype(span{as_const(arr), 3}), span<const int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), 3}), span<const int>>);
+#endif // TRANSITION, VSO-1079405
 
 #ifdef __cpp_lib_concepts
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>::iterator, size_t>); // strengthened
@@ -318,7 +274,6 @@ constexpr bool test() {
         assert(sp_const_y.size() == 3);
 
         FunctionTakingSpan<int>({stl.begin(), 3});
-        FunctionTakingSpan<int, 3>({stl.begin(), 3});
         FunctionTakingSpan<const int>({stl.begin(), 3});
         FunctionTakingSpan<const int>({stl.cbegin(), 3});
 
@@ -375,14 +330,15 @@ constexpr bool test() {
         assert(sp_const_d.size() == 3);
 
         FunctionTakingSpan<int>({begin(arr), end(arr)});
-        FunctionTakingSpan<int, 3>({begin(arr), end(arr)});
         FunctionTakingSpan<const int>({begin(arr), end(arr)});
         FunctionTakingSpan<const int>({begin(arr), cend(arr)});
         FunctionTakingSpan<const int>({cbegin(arr), end(arr)});
         FunctionTakingSpan<const int>({cbegin(arr), cend(arr)});
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{begin(arr), end(arr)}), span<int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), cend(arr)}), span<const int>>);
+#endif // TRANSITION, VSO-1079405
 
 #ifdef __cpp_lib_concepts
         static_assert(is_nothrow_constructible_v<span<int>, int*, const int*>); // strengthened
@@ -403,7 +359,6 @@ constexpr bool test() {
         assert(sp_three_b.size() == 3);
 
         FunctionTakingSpan<int>({begin(arr), cend(arr)});
-        FunctionTakingSpan<int, 3>({begin(arr), cend(arr)});
 
         static_assert(is_same_v<decltype(span{begin(arr), cend(arr)}), span<int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), end(arr)}), span<const int>>);
@@ -483,8 +438,6 @@ constexpr bool test() {
 
         FunctionTakingSpan<int>({stl.begin(), stl.end()});
         FunctionTakingSpan<int>({stl.begin(), stl.cend()});
-        FunctionTakingSpan<int, 3>({stl.begin(), stl.end()});
-        FunctionTakingSpan<int, 3>({stl.begin(), stl.cend()});
         FunctionTakingSpan<const int>({stl.begin(), stl.end()});
         FunctionTakingSpan<const int>({stl.begin(), stl.cend()});
         FunctionTakingSpan<const int>({stl.cbegin(), stl.end()});
@@ -565,47 +518,79 @@ constexpr bool test() {
         span<const int> sp_const_x(as_const(arr));
         span<const int> sp_const_y(stl);
         span<const int> sp_const_z(as_const(stl));
+#ifndef __EDG__ // TRANSITION, VSO-1079410
+        span<const int* const> sp_const_nullptr_1{stl_nullptr};
+        span<const int* const> sp_const_nullptr_2{as_const(stl_nullptr)};
+#endif // TRANSITION, VSO-1079410
         assert(sp_const_w.data() == begin(arr));
         assert(sp_const_x.data() == begin(arr));
         assert(sp_const_y.data() == stl.data());
         assert(sp_const_z.data() == stl.data());
+#ifndef __EDG__ // TRANSITION, VSO-1079410
+        assert(sp_const_nullptr_1.data() == stl_nullptr.data());
+        assert(sp_const_nullptr_2.data() == stl_nullptr.data());
+#endif // TRANSITION, VSO-1079410
         assert(sp_const_w.size() == 3);
         assert(sp_const_x.size() == 3);
         assert(sp_const_y.size() == 3);
         assert(sp_const_z.size() == 3);
+#ifndef __EDG__ // TRANSITION, VSO-1079410
+        assert(sp_const_nullptr_1.size() == 3);
+        assert(sp_const_nullptr_2.size() == 3);
+#endif // TRANSITION, VSO-1079410
 
         FunctionTakingSpan<int>(arr);
         FunctionTakingSpan<int>(stl);
+        FunctionTakingSpan<int*>(stl_nullptr);
         FunctionTakingSpan<int, 3>(arr);
         FunctionTakingSpan<int, 3>(stl);
+        FunctionTakingSpan<int*, 3>(stl_nullptr);
         FunctionTakingSpan<const int>(arr);
         FunctionTakingSpan<const int>(as_const(arr));
         FunctionTakingSpan<const int>(stl);
         FunctionTakingSpan<const int>(as_const(stl));
+#ifndef __EDG__ // TRANSITION, VSO-1079410
+        FunctionTakingSpan<const int* const>(stl_nullptr);
+        FunctionTakingSpan<const int* const>(as_const(stl_nullptr));
+#endif // TRANSITION, VSO-1079410
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{arr}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(arr)}), span<const int, 3>>);
         static_assert(is_same_v<decltype(span{stl}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{as_const(stl)}), span<const int, 3>>);
+        static_assert(is_same_v<decltype(span{stl_nullptr}), span<int*, 3>>);
+        static_assert(is_same_v<decltype(span{as_const(stl_nullptr)}), span<int* const, 3>>);
+#endif // TRANSITION, VSO-1079405
     }
 
     {
         static_assert(is_constructible_v<span<int>, ContiguousSizedRange&>);
-        static_assert(!is_constructible_v<span<int, 3>, ContiguousSizedRange&>);
+        static_assert(is_constructible_v<span<int, 3>, ContiguousSizedRange&>);
 
         static_assert(!is_constructible_v<span<int>, NonRange&>);
+        static_assert(!is_constructible_v<span<int, 3>, NonRange&>);
 
         static_assert(!is_constructible_v<span<int>, const ContiguousSizedRange&>);
+        static_assert(!is_constructible_v<span<int, 3>, const ContiguousSizedRange&>);
         static_assert(is_constructible_v<span<const int>, ContiguousSizedRange&>);
+        static_assert(is_constructible_v<span<const int, 3>, ContiguousSizedRange&>);
         static_assert(is_constructible_v<span<const int>, const ContiguousSizedRange&>);
+        static_assert(is_constructible_v<span<const int, 3>, const ContiguousSizedRange&>);
         static_assert(!is_constructible_v<span<double>, ContiguousSizedRange&>);
+        static_assert(!is_constructible_v<span<double, 3>, ContiguousSizedRange&>);
 
         static_assert(is_convertible_v<ContiguousSizedRange&, span<int>>);
+        static_assert(!is_convertible_v<ContiguousSizedRange&, span<int, 3>>);
         static_assert(is_convertible_v<ContiguousSizedRange&, span<const int>>);
+        static_assert(!is_convertible_v<ContiguousSizedRange&, span<const int, 3>>);
         static_assert(is_convertible_v<const ContiguousSizedRange&, span<const int>>);
+        static_assert(!is_convertible_v<const ContiguousSizedRange&, span<const int, 3>>);
 
         static_assert(is_constructible_v<span<Base>, BasicRange<Base>&>);
+        static_assert(is_constructible_v<span<Base, 3>, BasicRange<Base>&>);
         static_assert(!is_constructible_v<span<Base>, BasicRange<Derived>&>);
+        static_assert(!is_constructible_v<span<Base, 3>, BasicRange<Derived>&>);
 
         ContiguousSizedRange user_range;
 
@@ -613,13 +598,23 @@ constexpr bool test() {
         span<const int> sp_2(user_range);
         span<const int> sp_3(as_const(user_range));
 
+        span<int, 3> sp_4(user_range);
+        span<const int, 3> sp_5(user_range);
+        span<const int, 3> sp_6(as_const(user_range));
+
         assert(sp_1.data() == user_range.data());
         assert(sp_2.data() == user_range.data());
         assert(sp_3.data() == user_range.data());
+        assert(sp_4.data() == user_range.data());
+        assert(sp_5.data() == user_range.data());
+        assert(sp_6.data() == user_range.data());
 
         assert(sp_1.size() == 3);
         assert(sp_2.size() == 3);
         assert(sp_3.size() == 3);
+        assert(sp_4.size() == 3);
+        assert(sp_5.size() == 3);
+        assert(sp_6.size() == 3);
 
         FunctionTakingSpan<int>(user_range);
         FunctionTakingSpan<const int>(user_range);
@@ -627,24 +622,35 @@ constexpr bool test() {
 
 #ifdef __cpp_lib_concepts
         static_assert(!is_constructible_v<span<int>, ContiguousSizedRange>);
-        static_assert(is_constructible_v<span<int>, SafeContiguousSizedRange>);
+        static_assert(!is_constructible_v<span<int, 3>, ContiguousSizedRange>);
+        static_assert(is_constructible_v<span<int>, BorrowedContiguousSizedRange>);
+        static_assert(is_constructible_v<span<int, 3>, BorrowedContiguousSizedRange>);
         static_assert(is_constructible_v<span<const int>, ContiguousSizedRange>);
+        static_assert(is_constructible_v<span<const int, 3>, ContiguousSizedRange>);
 
-        static_assert(is_convertible_v<SafeContiguousSizedRange, span<int>>);
+        static_assert(is_convertible_v<BorrowedContiguousSizedRange, span<int>>);
+        static_assert(!is_convertible_v<BorrowedContiguousSizedRange, span<int, 3>>);
         static_assert(is_convertible_v<ContiguousSizedRange, span<const int>>);
+        static_assert(!is_convertible_v<ContiguousSizedRange, span<const int, 3>>);
 
-        SafeContiguousSizedRange safe_user_range;
+        BorrowedContiguousSizedRange borrowed_user_range;
 
-        span<int> sp_4(move(safe_user_range));
-        span<const int> sp_5(move(user_range));
+        span<int> sp_7(move(borrowed_user_range));
+        span<int, 3> sp_8(move(borrowed_user_range));
+        span<const int> sp_9(move(user_range));
+        span<const int, 3> sp_10(move(user_range));
 
-        assert(sp_4.data() == safe_user_range.data());
-        assert(sp_5.data() == user_range.data());
+        assert(sp_7.data() == borrowed_user_range.data());
+        assert(sp_8.data() == borrowed_user_range.data());
+        assert(sp_9.data() == user_range.data());
+        assert(sp_10.data() == user_range.data());
 
-        assert(sp_4.size() == 3);
-        assert(sp_5.size() == 3);
+        assert(sp_7.size() == 3);
+        assert(sp_8.size() == 3);
+        assert(sp_9.size() == 3);
+        assert(sp_10.size() == 3);
 
-        FunctionTakingSpan<int>(move(safe_user_range));
+        FunctionTakingSpan<int>(move(borrowed_user_range));
         FunctionTakingSpan<const int>(move(user_range));
 
         static_assert(is_same_v<decltype(span{user_range}), span<int>>);
@@ -666,7 +672,7 @@ constexpr bool test() {
         static_assert(!is_constructible_v<span<int>, const span<const int, 500>&>);
         static_assert(!is_constructible_v<span<int>, const span<double, 3>&>);
 
-        static_assert(!is_constructible_v<span<int, 3>, const span<int>&>);
+        static_assert(is_constructible_v<span<int, 3>, const span<int>&>);
         static_assert(is_nothrow_constructible_v<span<int, 3>, const span<int, 3>&>);
         static_assert(!is_constructible_v<span<int, 3>, const span<int, 500>&>);
         static_assert(!is_constructible_v<span<int, 3>, const span<const int>&>);
@@ -682,10 +688,10 @@ constexpr bool test() {
         static_assert(is_nothrow_constructible_v<span<const int>, const span<const int, 500>&>);
         static_assert(!is_constructible_v<span<const int>, const span<double, 3>&>);
 
-        static_assert(!is_constructible_v<span<const int, 3>, const span<int>&>);
+        static_assert(is_constructible_v<span<const int, 3>, const span<int>&>);
         static_assert(is_nothrow_constructible_v<span<const int, 3>, const span<int, 3>&>);
         static_assert(!is_constructible_v<span<const int, 3>, const span<int, 500>&>);
-        static_assert(!is_constructible_v<span<const int, 3>, const span<const int>&>);
+        static_assert(is_constructible_v<span<const int, 3>, const span<const int>&>);
         static_assert(is_nothrow_constructible_v<span<const int, 3>, const span<const int, 3>&>);
         static_assert(!is_constructible_v<span<const int, 3>, const span<const int, 500>&>);
         static_assert(!is_constructible_v<span<const int, 3>, const span<double, 3>&>);
@@ -769,10 +775,12 @@ constexpr bool test() {
         FunctionTakingSpan<const int, 3>(orig_three);
         FunctionTakingSpan<const int, 3>(orig_const_three);
 
+#ifndef __EDG__ // TRANSITION, VSO-1079405
         static_assert(is_same_v<decltype(span{orig_dyn}), span<int>>);
         static_assert(is_same_v<decltype(span{orig_three}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{orig_const_dyn}), span<const int>>);
         static_assert(is_same_v<decltype(span{orig_const_three}), span<const int, 3>>);
+#endif // TRANSITION, VSO-1079405
     }
 
     {
@@ -937,12 +945,8 @@ constexpr bool test() {
         static_assert(noexcept(sp_dyn.data()));
         static_assert(noexcept(sp_dyn.begin()));
         static_assert(noexcept(sp_dyn.end()));
-        static_assert(noexcept(sp_dyn.cbegin()));
-        static_assert(noexcept(sp_dyn.cend()));
         static_assert(noexcept(sp_dyn.rbegin()));
         static_assert(noexcept(sp_dyn.rend()));
-        static_assert(noexcept(sp_dyn.crbegin()));
-        static_assert(noexcept(sp_dyn.crend()));
 
         static_assert(noexcept(sp_nine.size()));
         static_assert(noexcept(sp_nine.size_bytes()));
@@ -953,12 +957,8 @@ constexpr bool test() {
         static_assert(noexcept(sp_nine.data()));
         static_assert(noexcept(sp_nine.begin()));
         static_assert(noexcept(sp_nine.end()));
-        static_assert(noexcept(sp_nine.cbegin()));
-        static_assert(noexcept(sp_nine.cend()));
         static_assert(noexcept(sp_nine.rbegin()));
         static_assert(noexcept(sp_nine.rend()));
-        static_assert(noexcept(sp_nine.crbegin()));
-        static_assert(noexcept(sp_nine.crend()));
 
         assert(sp_dyn.size() == 9);
         assert(sp_nine.size() == 9);
@@ -996,54 +996,20 @@ constexpr bool test() {
         assert(sp_dyn.end()[-2] == 80);
         assert(sp_nine.end()[-2] == 80);
 
-        assert(*sp_dyn.cbegin() == 10);
-        assert(*sp_nine.cbegin() == 10);
-
-        assert(sp_dyn.cend()[-2] == 80);
-        assert(sp_nine.cend()[-2] == 80);
-
         assert(*sp_dyn.rbegin() == 90);
         assert(*sp_nine.rbegin() == 90);
 
         assert(sp_dyn.rend()[-2] == 20);
         assert(sp_nine.rend()[-2] == 20);
 
-        assert(*sp_dyn.crbegin() == 90);
-        assert(*sp_nine.crbegin() == 90);
-
-        assert(sp_dyn.crend()[-2] == 20);
-        assert(sp_nine.crend()[-2] == 20);
-
         static_assert(is_same_v<decltype(sp_dyn.begin()), span<int>::iterator>);
         static_assert(is_same_v<decltype(sp_nine.begin()), span<int, 9>::iterator>);
         static_assert(is_same_v<decltype(sp_dyn.end()), span<int>::iterator>);
         static_assert(is_same_v<decltype(sp_nine.end()), span<int, 9>::iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.cbegin()), span<int>::const_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.cbegin()), span<int, 9>::const_iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.cend()), span<int>::const_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.cend()), span<int, 9>::const_iterator>);
         static_assert(is_same_v<decltype(sp_dyn.rbegin()), span<int>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_nine.rbegin()), span<int, 9>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_dyn.rend()), span<int>::reverse_iterator>);
         static_assert(is_same_v<decltype(sp_nine.rend()), span<int, 9>::reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.crbegin()), span<int>::const_reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.crbegin()), span<int, 9>::const_reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_dyn.crend()), span<int>::const_reverse_iterator>);
-        static_assert(is_same_v<decltype(sp_nine.crend()), span<int, 9>::const_reverse_iterator>);
-
-        static_assert(noexcept(get<5>(sp_nine)));
-        assert(get<5>(sp_nine) == 60);
-        assert(&get<5>(sp_nine) == begin(sequence) + 5);
-    }
-
-    {
-        span<int, 3> sp_three(arr);
-
-        auto& [x, y, z] = sp_three;
-
-        assert(&x == begin(arr));
-        assert(&y == begin(arr) + 1);
-        assert(&z == begin(arr) + 2);
     }
 
     return true;

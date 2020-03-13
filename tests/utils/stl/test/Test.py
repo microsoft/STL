@@ -1,25 +1,44 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from itertools import chain
+from pathlib import Path
+from xml.sax.saxutils import quoteattr
 import os
 import shutil
 
-from lit.Test import Test
+from lit.Test import FAIL, PASS, ResultCode, Test, UNSUPPORTED, XPASS, XFAIL
 
 from stl.compiler import CXXCompiler
 
 _compiler_path_cache = dict()
 
+SKIP = ResultCode('SKIP', False)
 
-class StlTest(Test):
+
+class STLTest(Test):
     def __init__(self, suite, path_in_suite, lit_config, test_config,
                  envlst_entry, env_num, default_cxx, file_path=None):
         self.env_num = env_num
         Test.__init__(self, suite, path_in_suite, test_config, file_path)
-        self._configure_cxx(lit_config, envlst_entry, default_cxx)
 
         source_path = self.getSourcePath()
-        test_name = suite.getSourcePath(path_in_suite) + '.' + str(env_num)
+        test_name = suite.getSourcePath(path_in_suite + (str(env_num),))
+
+        if source_path in lit_config.excludes or \
+                test_name in lit_config.excludes:
+            self.skipped = True
+            return
+        else:
+            self.skipped = False
+
+        self._configure_cxx(lit_config, envlst_entry, default_cxx)
+
+        for flag in chain(self.cxx.flags, self.cxx.compile_flags):
+            if flag.startswith('clr:pure', 1):
+                self.requires.append('clr_pure')
+            elif flag.startswith('BE', 1):
+                self.requires.append('edg')
 
         self.expected_result = None
         if test_name in test_config.expected_results:
@@ -34,11 +53,55 @@ class StlTest(Test):
         if self.expected_result is not None and self.expected_result.isFailure:
             self.xfails = ['*']
 
+    def getOutputDir(self):
+        return Path(os.path.join(
+            self.suite.getExecPath(self.path_in_suite[:-1]))) / \
+            str(self.env_num)
+
+    def getOutputBaseName(self):
+        return self.path_in_suite[-2]
+
+    def getExecDir(self):
+        return self.getOutputDir()
+
     def getExecPath(self):
-        return '.'.join((Test.getExecPath(self), str(self.env_num)))
+        return self.getExecDir() / (self.getOutputBaseName() + '.exe')
 
     def getFullName(self):
-        return '.'.join((Test.getFullName(self), str(self.env_num)))
+        return '/'.join((Test.getFullName(self), str(self.env_num)))
+
+    def getPassFailResultCodes(self):
+        should_fail = self.isExpectedToFail()
+        pass_var = XPASS if should_fail else PASS
+        fail_var = XFAIL if should_fail else FAIL
+
+        return pass_var, fail_var
+
+    def setup(self):
+        exec_dir = self.getExecDir()
+        source_dir = Path(self.getSourcePath()).parent
+
+        shutil.rmtree(exec_dir, ignore_errors=True)
+        exec_dir.mkdir(parents=True, exist_ok=True)
+
+        for path in source_dir.iterdir():
+            if path.is_file() and path.name.endswith('.dat'):
+                os.link(path, exec_dir / path.name)
+
+    def cleanup(self):
+        shutil.rmtree(self.getExecDir(), ignore_errors=True)
+
+    def getXMLOutputTestName(self):
+        return '/'.join((self.path_in_suite[-2], str(self.env_num)))
+
+    def getXMLOutputClassName(self):
+        safe_test_path = [x.replace(".", "_") for x in self.path_in_suite[:-1]]
+        safe_suite_name = self.suite.name.replace(".", "-")
+
+        if safe_test_path:
+            return safe_suite_name + "." + "/".join(safe_test_path)
+        else:
+            return safe_suite_name + "." + safe_suite_name
 
     def _configure_cxx(self, lit_config, envlst_entry, default_cxx):
         env_compiler = envlst_entry.getEnvVal('PM_COMPILER', 'cl')
@@ -65,10 +128,76 @@ class StlTest(Test):
         flags.extend(envlst_entry.getEnvVal('PM_CL', '').split())
         link_flags.extend(envlst_entry.getEnvVal('PM_LINK', '').split())
 
-        if ('clang'.casefold() in os.path.basename(cxx).casefold() and
-                self.config.target_arch.casefold() ==
-                'x64'.casefold()):
-            compile_flags.append('-m64')
+        if ('clang'.casefold() in os.path.basename(cxx).casefold()):
+            target_arch = self.config.target_arch.casefold()
+            if (target_arch == 'x64'.casefold()):
+                compile_flags.append('-m64')
+            elif (target_arch == 'x86'.casefold()):
+                compile_flags.append('-m32')
 
         self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags,
                                default_cxx.compile_env)
+
+    # This is mostly lifted from lit's test class. The changes here are to
+    # handle skipped tests, our env.lst format and different naming schemes.
+    def writeJUnitXML(self, fil):
+        """Write the test's report xml representation to a file handle."""
+        test_name = quoteattr(self.getXMLOutputTestName())
+        class_name = quoteattr(self.getXMLOutputClassName())
+
+        testcase_template = \
+            '<testcase classname={class_name} name={test_name} ' \
+            'time="{time:.2f}"'
+        elapsed_time = self.result.elapsed if self.result.elapsed else 0.0
+        testcase_xml = \
+            testcase_template.format(class_name=class_name,
+                                     test_name=test_name,
+                                     time=elapsed_time)
+        fil.write(testcase_xml)
+
+        if self.result.code.isFailure:
+            fil.write(">\n\t<failure ><![CDATA[")
+            if isinstance(self.result.output, str):
+                encoded_output = self.result.output
+            elif isinstance(self.result.output, bytes):
+                encoded_output = self.result.output.decode("utf-8", 'ignore')
+            # In the unlikely case that the output contains the CDATA
+            # terminator we wrap it by creating a new CDATA block
+            fil.write(encoded_output.replace("]]>", "]]]]><![CDATA[>"))
+            fil.write("]]></failure>\n</testcase>")
+        elif self.result.code == UNSUPPORTED:
+            unsupported_features = self.getMissingRequiredFeatures()
+            if unsupported_features:
+                skip_message = \
+                    "Skipping because of: " + ", ".join(unsupported_features)
+            else:
+                skip_message = "Skipping because of configuration."
+            skip_message = quoteattr(skip_message)
+
+            fil.write(
+                ">\n\t<skipped message={} />\n</testcase>\n".format(
+                    skip_message))
+        elif self.result.code == SKIP:
+            message = quoteattr('Test is explicitly marked as skipped')
+            fil.write(">\n\t<skipped message ={} />\n</testcase>\n".format(
+                message))
+        else:
+            fil.write("/>")
+
+
+class LibcxxTest(STLTest):
+    def getOutputDir(self):
+        return Path(
+            os.path.join(self.suite.getExecPath(self.path_in_suite))) / \
+            str(self.env_num)
+
+    def getOutputBaseName(self):
+        output_base = self.path_in_suite[-1]
+
+        if output_base.endswith('.cpp'):
+            return output_base[:-4]
+        else:
+            return output_base
+
+    def getXMLOutputTestName(self):
+        return '/'.join((self.path_in_suite[-1], str(self.env_num)))

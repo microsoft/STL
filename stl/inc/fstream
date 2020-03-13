@@ -562,7 +562,7 @@ protected:
                 const auto _Start_count = _Count;
                 const auto _Available   = static_cast<size_t>(_Mysb::_Gnavail());
                 if (0 < _Available) { // copy from get area
-                    const auto _Read_size = _Min_value(_Count_s, _Available);
+                    const auto _Read_size = (_STD min)(_Count_s, _Available);
                     _Traits::copy(_Ptr, _Mysb::gptr(), _Read_size);
                     _Ptr += _Read_size;
                     _Count_s -= _Read_size;

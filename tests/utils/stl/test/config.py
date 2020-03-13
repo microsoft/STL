@@ -36,6 +36,7 @@ class Configuration:
         self.executor = None
         self.expected_results_list_path = None
         self.expected_results_list_root = None
+        self.format_name = None
         self.lit_config = lit_config
         self.link_shared = True
         self.long_tests = None
@@ -43,13 +44,14 @@ class Configuration:
         self.skip_list_path = None
         self.skip_list_root = None
         self.stl_build_root = None
-        self.stl_compilation_env = None
         self.stl_inc_env_var = None
         self.stl_lib_env_var = None
         self.stl_path_env_var = None
         self.stl_src_root = None
+        self.stl_test_env = None
         self.target_arch = None
         self.target_info = stl.test.target_info.WindowsLocalTI(lit_config)
+        self.test_src_root = None
 
     def get_lit_conf(self, name, default=None):
         val = self.lit_config.params.get(name, None)
@@ -92,33 +94,55 @@ class Configuration:
         self.configure_executor()
         self.configure_expected_results()
         self.configure_test_dirs()
+        self.configure_test_format()
 
+    def configure_test_format(self):
+        format_name = self.get_lit_conf('format_name', None)
+
+        if format_name is None:
+            format_name = 'STLTestFormat'
+
+        self.format_name = format_name
+
+    # TRANSITION: Respect passed params
     def configure_test_dirs(self):
-        self.config.test_subdirs =\
-            list(map(os.path.abspath, getattr(self.config,
-                                              'test_subdirs', [])))
+        test_subdirs = list()
+
+        test_subdirs_file = self.get_lit_conf('test_subdirs_file', None)
+
+        if test_subdirs_file is not None:
+            test_subdirs_file = Path(test_subdirs_file)
+            test_subdirs += \
+                stl.test.file_parsing.parse_commented_file(test_subdirs_file)
+
+        test_subdirs += self.get_lit_conf('test_subdirs', [])
+
+        test_subdirs_root = Path(self.get_lit_conf('test_subdirs_root', ''))
+        self.lit_config.test_subdirs = \
+            list(map(lambda x: str((test_subdirs_root / x).resolve()),
+                     test_subdirs))
 
     # TRANSITION: Don't hard-code features.
     def configure_features(self):
         self.config.available_features.add('long_tests')
         self.config.available_features.add('c++2a')
         self.config.available_features.add('msvc')
-        self.config.available_features.update(
-                self.target_info.features)
+        self.config.available_features.update(self.target_info.features)
 
     def configure_test_src_root(self):
         test_src_root = self.get_lit_conf('test_source_root', None)
 
         if test_src_root is not None:
             self.test_src_root = Path(test_src_root)
-            return True
 
     def configure_src_root(self):
         stl_src_root = self.get_lit_conf('stl_src_root', None)
 
         if stl_src_root is None:
             if self.test_src_root is None:
-                if not self.configure_test_src_root():
+                self.configure_test_src_root()
+
+                if self.test_src_root is None:
                     self.lit_config.fatal(
                         "Could not infer stl_src_root from test_source_root. "
                         "test_source_root is None")
@@ -129,8 +153,8 @@ class Configuration:
                 stl_src_root = self.test_src_root.parents[1]
 
             self.lit_config.note(
-                    "stl_src_root was not specified. Defaulting to: %s." %
-                    str(stl_src_root))
+                "stl_src_root was not specified. Defaulting to: %s." %
+                str(stl_src_root))
 
         self.stl_src_root = Path(stl_src_root)
 
@@ -141,8 +165,8 @@ class Configuration:
             target_arch = platform.machine()
 
             self.lit_config.note(
-                    "target_arch was not specified. Defaulting to %s." %
-                    target_arch)
+                "target_arch was not specified. Defaulting to %s." %
+                target_arch)
 
         self.target_arch = target_arch
         self.config.target_arch = target_arch
@@ -164,12 +188,12 @@ class Configuration:
             elif self.target_arch.casefold() == 'X86'.casefold():
                 stl_build_root = stl_build_root / 'i386' / 'out'
             else:
-                stl_build_root =\
+                stl_build_root = \
                     stl_build_root / self.target_arch.upper() / 'out'
 
             self.lit_config.note(
-                    "stl_build_root was not specified. Defaulting to: %s." %
-                    str(stl_build_root))
+                "stl_build_root was not specified. Defaulting to: %s." %
+                str(stl_build_root))
 
         self.stl_build_root = Path(stl_build_root)
 
@@ -200,15 +224,15 @@ class Configuration:
                     str(cxx_runtime_root))
 
             if cxx_library_root is None:
-                cxx_library_root =\
+                cxx_library_root = \
                     self.stl_build_root / 'lib' / subfolder_name
 
                 self.lit_config.note(
                     "cxx_library_root was not specified. Defaulting to: %s."
                     % str(cxx_library_root))
 
-        self.cxx_runtime_root = cxx_runtime_root
-        self.cxx_library_root = cxx_library_root
+        self.cxx_runtime_root = Path(cxx_runtime_root)
+        self.cxx_library_root = Path(cxx_library_root)
 
     # We only do this because of a bug with force includes not respecting /I
     def configure_inc_env_var(self):
@@ -220,11 +244,15 @@ class Configuration:
             if self.cxx_headers is None:
                 self.configure_cxx_headers()
 
+            include_dirs = self.get_lit_conf('include_dirs', [])
+
             if stl_inc_env_var != '':
                 stl_inc_env_var = ';'.join((str(self.cxx_headers),
+                                            *include_dirs,
                                             stl_inc_env_var))
             else:
-                stl_inc_env_var = self.stl_inc_env_var
+                stl_inc_env_var = ';'.join((str(self.cxx_headers),
+                                            *include_dirs))
 
         self.stl_inc_env_var = stl_inc_env_var
 
@@ -239,7 +267,7 @@ class Configuration:
                 stl_lib_env_var = ';'.join((str(self.cxx_library_root),
                                             stl_lib_env_var))
             else:
-                stl_lib_env_var = self.cxx_library_root
+                stl_lib_env_var = str(self.cxx_library_root)
 
         self.stl_lib_env_var = stl_lib_env_var
 
@@ -247,24 +275,29 @@ class Configuration:
         stl_path_env_var = self.get_lit_conf('stl_path_env_var', None)
 
         if stl_path_env_var is None:
-            stl_path_env_var = self.config.environment.get('PATH', '')
+            path_list = list()
+
+            msvc_bin_dir = self.get_lit_conf('msvc_bin_dir', None)
+            if msvc_bin_dir is not None:
+                path_list.append(msvc_bin_dir)
 
             if self.cxx_runtime_root is None:
                 self.configure_library_roots()
+            path_list.append(str(self.cxx_runtime_root))
 
-            if stl_path_env_var != '':
-                stl_path_env_var = ';'.join((str(self.cxx_runtime_root),
-                                            stl_path_env_var))
-            else:
-                stl_path_env_var = self.cxx_runtime_root
+            config_env = self.config.environment.get('PATH', None)
+            if config_env is not None:
+                path_list.append(config_env)
+
+            stl_path_env_var = ';'.join(path_list)
 
         self.stl_path_env_var = stl_path_env_var
 
-    def configure_compilation_env(self):
-        stl_compilation_env = self.get_lit_conf('stl_compilation_env', None)
+    def configure_test_env(self):
+        stl_test_env = self.get_lit_conf('stl_test_env', None)
 
-        if stl_compilation_env is None:
-            stl_compilation_env = dict(self.config.environment)
+        if stl_test_env is None:
+            stl_test_env = self.config.environment
 
         if self.stl_lib_env_var is None:
             self.configure_inc_env_var()
@@ -275,11 +308,11 @@ class Configuration:
         if self.stl_path_env_var is None:
             self.configure_path_env_var()
 
-        stl_compilation_env['INCLUDE'] = self.stl_inc_env_var
-        stl_compilation_env['LIB'] = self.stl_lib_env_var
-        stl_compilation_env['PATH'] = self.stl_path_env_var
+        stl_test_env['INCLUDE'] = self.stl_inc_env_var
+        stl_test_env['LIB'] = self.stl_lib_env_var
+        stl_test_env['PATH'] = self.stl_path_env_var
 
-        self.stl_compilation_env = stl_compilation_env
+        self.config.environment = stl_test_env
 
     def configure_skip_list_location(self):
         skip_list_path = self.get_lit_conf('skip_list_path', None)
@@ -351,8 +384,8 @@ class Configuration:
                     self.expected_results_list_path).items()))
 
         self.lit_config.expected_results = expected_results
-        self.config.expected_results =\
-            getattr(self.config, 'expected_results', set())
+        self.config.expected_results = \
+            getattr(self.config, 'expected_results', dict())
 
     # TRANSITION: Have configuring the compiler have the same flow as
     # everything else.
@@ -360,11 +393,9 @@ class Configuration:
         self.default_compiler = CXXCompiler(None)
         self.configure_compile_flags()
         self.configure_link_flags()
+        self.configure_test_env()
 
-        if self.stl_compilation_env is None:
-            self.configure_compilation_env()
-
-        self.default_compiler.compile_env = self.stl_compilation_env
+        self.default_compiler.compile_env = self.config.environment
 
     # TRANSITION: Investigate using SSHExecutor for ARM
     def configure_executor(self):
@@ -377,27 +408,19 @@ class Configuration:
         self.default_compiler.compile_flags += shlex.split(compile_flags_str)
         additional_flags = self.get_lit_conf('test_compiler_flags')
         if additional_flags:
-            self.default_compiler.compile_flags +=\
-                    shlex.split(additional_flags)
+            self.default_compiler.compile_flags += \
+                shlex.split(additional_flags)
 
-    # This is redundant
     def configure_compile_flags_header_includes(self):
         if self.cxx_headers is None:
             self.configure_cxx_headers()
 
-        # self.default_compiler.compile_flags += ['/X']
         self.default_compiler.compile_flags += ['/I' + str(self.cxx_headers)]
 
-        if self.config.name == 'libc++':
-            if self.stl_src_root is None:
-                self.configure_src_root()
+        include_dirs = self.get_lit_conf('include_dirs', [])
 
-            libcxx_support_path =\
-                self.stl_src_root / 'llvm-project' / 'libcxx'\
-                                  / 'test' / 'support'
-
-            self.default_compiler.compile_flags.append(
-                '/I' + str(libcxx_support_path))
+        for directory in include_dirs:
+            self.default_compiler.compile_flags.append('/I' + directory)
 
     def configure_cxx_headers(self):
         cxx_headers = self.get_lit_conf('cxx_headers')
@@ -431,8 +454,8 @@ class Configuration:
 
         additional_flags = self.get_lit_conf('test_link_flags')
         if additional_flags:
-            self.default_compiler.link_flags +=\
-                    shlex.split(additional_flags)
+            self.default_compiler.link_flags += \
+                shlex.split(additional_flags)
 
     def configure_msvc_toolset_libs_root(self):
         msvc_toolset_libs_root = self.get_lit_conf('msvc_toolset_libs_root')
@@ -443,8 +466,9 @@ class Configuration:
         self.msvc_toolset_libs_root = Path(msvc_toolset_libs_root)
 
     def get_test_format(self):
-        from stl.test.format import StlTestFormat
-        return StlTestFormat(
+        import stl.test.format
+
+        return getattr(stl.test.format, self.format_name)(
             self.default_compiler,
             self.execute_external,
             self.executor)

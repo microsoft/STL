@@ -10,36 +10,30 @@ jobs:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - checkout: self
+      clean: true
       submodules: recursive
-    - task: PowerShell@2
-      displayName: 'Install MSVC Preview'
-      timeoutInMinutes: 30
-      # on "Hosted" agents only:
-      condition: or(contains(variables['Agent.Name'], 'Azure Pipelines'), contains(variables['Agent.Name'], 'Hosted Agent'))
-      inputs:
-        targetType: filePath
-        filePath: $(Build.SourcesDirectory)/azure-devops/install_msvc_preview.ps1
     - task: Cache@2
       displayName: Cache vcpkg
       timeoutInMinutes: 10
       inputs:
-        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD'
-        path: '$(vcpkgLocation)'
+        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
+        path: '$(vcpkgLocation)/installed'
         cacheHitVar: CACHE_RESTORED
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
       condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
       timeoutInMinutes: 10
       inputs:
-        vcpkgArguments: 'boost-build:x86-windows'
+        vcpkgArguments: 'boost-build'
         vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg'
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
-        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
+        vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
     - task: run-cmake@0
       displayName: 'Build Support Tools'
       timeoutInMinutes: 2
@@ -53,7 +47,6 @@ jobs:
       displayName: 'Enforce clang-format'
       timeoutInMinutes: 60
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      continueOnError: true
       inputs:
         filename: 'azure-devops/enforce-clang-format.cmd'
         failOnStandardError: true
@@ -62,7 +55,6 @@ jobs:
       displayName: 'Validate Files'
       timeoutInMinutes: 2
       condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      continueOnError: true
       inputs:
         filename: 'azure-devops/validate-files.cmd'
         failOnStandardError: true
@@ -71,22 +63,38 @@ jobs:
       displayName: 'Build the STL'
       timeoutInMinutes: 10
       inputs:
-        cmakeListsTxtPath: 'CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
+        cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
+        cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
-        cmakeAppendedArgs: '-DENBALE_XUNIT_OUTPUT=TRUE'
+        useVcpkgToolchainFile: true
+        cmakeAppendedArgs: '-G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_XUNIT_OUTPUT=TRUE'
     - task: PowerShell@2
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
-      timeoutInMinutes: 120
       displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        targetType: inline
         workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
-        script: 'ctest'
+        targetType: inline
+        script: |
+          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command ctest).source);%PATH%"
+          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command clang-cl).source);%PATH%"
+          $currentDir = "$((Get-Item -Path "./").FullName)"
+          Add-Content -Path ./run-tests.cmd -Value "cd $currentDir"
+          Add-Content -Path ./run-tests.cmd -Value "ctest -V"
+          $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
     - task: PublishTestResults@2
       displayName: 'Publish libcxx tests'
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        testResultsFormat: xUnit
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
         testResultsFiles: '**/libcxx.test.xml'
-        testRunTitle: 'libcxx'
+        testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish std tests'
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/std.test.xml'
+        testRunTitle: 'std-${{ parameters.targetPlatform }}'

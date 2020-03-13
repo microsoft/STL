@@ -5,8 +5,10 @@
 #include <compare>
 #include <concepts>
 #include <iterator>
+#include <list>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -240,7 +242,7 @@ struct output_iterator_archetype : iterator_archetype<I>,
     void operator*() requires(I == 12);
     output_iterator_archetype& operator*() requires(I != 12);
 
-    // writable requirements
+    // indirectly_writable requirements
     void operator=(int) requires(I != 13);
 };
 
@@ -275,8 +277,8 @@ struct input_iterator_archetype : iterator_archetype<I>,
     using increment_ops<I, input_iterator_archetype<I>, void>::operator++;
 
     // dereference ops from iterator_archetype
-    void operator*() requires(I == 12);
-    int& operator*() requires(I != 12);
+    void operator*() const requires(I == 12);
+    int& operator*() const requires(I != 12);
 };
 
 inline constexpr std::size_t input_iterator_archetype_max = 17;
@@ -500,22 +502,22 @@ namespace incrementable_traits_test {
     STATIC_ASSERT(!test_difference<non_integral_difference>());
 } // namespace incrementable_traits_test
 
-namespace readable_traits_test {
+namespace indirectly_readable_traits_test {
 #pragma warning(push)
 #pragma warning(disable : 4180) // qualifier applied to function type has no meaning; ignored
     template <class T, class V = no_such_type>
     constexpr bool test_value() noexcept {
-        using std::readable_traits, std::iter_value_t, std::same_as;
+        using std::indirectly_readable_traits, std::iter_value_t, std::same_as;
 
         if constexpr (same_as<V, no_such_type>) {
-            STATIC_ASSERT(!has_member_value_type<readable_traits<T>>);
-            STATIC_ASSERT(!has_member_value_type<readable_traits<T const>>);
-            STATIC_ASSERT(!has_iter_value<readable_traits<T>>);
-            STATIC_ASSERT(!has_iter_value<readable_traits<T const>>);
+            STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<T>>);
+            STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<T const>>);
+            STATIC_ASSERT(!has_iter_value<indirectly_readable_traits<T>>);
+            STATIC_ASSERT(!has_iter_value<indirectly_readable_traits<T const>>);
             return false;
         } else {
-            STATIC_ASSERT(same_as<typename readable_traits<T>::value_type, V>);
-            STATIC_ASSERT(same_as<typename readable_traits<T const>::value_type, V>);
+            STATIC_ASSERT(same_as<typename indirectly_readable_traits<T>::value_type, V>);
+            STATIC_ASSERT(same_as<typename indirectly_readable_traits<T const>::value_type, V>);
             STATIC_ASSERT(same_as<iter_value_t<T>, V>);
             STATIC_ASSERT(same_as<iter_value_t<T const>, V>);
             return true;
@@ -552,10 +554,10 @@ namespace readable_traits_test {
     STATIC_ASSERT(test_value<with_element_type<int const>, int>());
 
     STATIC_ASSERT(test_value<my_iterator, char>());
-} // namespace readable_traits_test
+} // namespace indirectly_readable_traits_test
 
 namespace iterator_traits_test {
-    using std::incrementable_traits, std::readable_traits, std::iterator_traits, std::iter_value_t,
+    using std::incrementable_traits, std::indirectly_readable_traits, std::iterator_traits, std::iter_value_t,
         std::iter_difference_t, std::same_as, std::output_iterator_tag, std::input_iterator_tag,
         std::forward_iterator_tag, std::bidirectional_iterator_tag, std::random_access_iterator_tag,
         std::contiguous_iterator_tag;
@@ -652,7 +654,7 @@ namespace iterator_traits_test {
         STATIC_ASSERT(same_as<typename iterator_traits<T>::value_type, Value>);
         if constexpr (!same_as<Value, void>) {
             STATIC_ASSERT(same_as<iter_value_t<T>, Value>);
-            STATIC_ASSERT(same_as<typename readable_traits<T>::value_type, Value>);
+            STATIC_ASSERT(same_as<typename indirectly_readable_traits<T>::value_type, Value>);
         }
         STATIC_ASSERT(same_as<typename iterator_traits<T>::difference_type, Difference>);
         if constexpr (!same_as<Difference, void>) {
@@ -804,7 +806,7 @@ namespace iterator_traits_test {
 } // namespace iterator_traits_test
 
 template <class Base>
-struct std::readable_traits<iterator_traits_test::simple_contiguous_iter<Base>> {
+struct std::indirectly_readable_traits<iterator_traits_test::simple_contiguous_iter<Base>> {
     using value_type = double;
 };
 
@@ -983,8 +985,8 @@ namespace iterator_cust_move_test {
 } // namespace iterator_cust_move_test
 
 namespace iterator_cust_swap_test {
-    using std::indirectly_movable_storable, std::iter_reference_t, std::readable, std::remove_reference_t, std::same_as,
-        std::swappable_with;
+    using std::indirectly_movable_storable, std::iter_reference_t, std::indirectly_readable, std::remove_reference_t,
+        std::same_as, std::swappable_with;
 
     template <class T, class U>
     concept can_iter_swap = requires(T&& t, U&& u) {
@@ -1027,12 +1029,12 @@ namespace iterator_cust_swap_test {
     STATIC_ASSERT(bullet1<E1>);
     STATIC_ASSERT((ranges::iter_swap(E1::x, E1::x), true));
 
-    // N4820 [iterator.cust.swap]/4.2: "Otherwise if the types of E1 and E2 each model readable, and if the reference
-    // types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
+    // N4849 [iterator.cust.swap]/4.2: "Otherwise if the types of E1 and E2 each model indirectly_readable, and if the
+    // reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
     // clang-format off
     template <class T, class U = T>
-    concept bullet2 = !bullet1<T, U> && readable<remove_reference_t<T>> && readable<remove_reference_t<U>>
-        && swappable_with<iter_reference_t<T>, iter_reference_t<U>>;
+    concept bullet2 = !bullet1<T, U> && indirectly_readable<remove_reference_t<T>>
+        && indirectly_readable<remove_reference_t<U>> && swappable_with<iter_reference_t<T>, iter_reference_t<U>>;
     // clang-format on
 
     constexpr bool test() {
@@ -1153,64 +1155,64 @@ namespace iterator_cust_swap_test {
 } // namespace iterator_cust_swap_test
 
 namespace iterator_concept_readable_test {
-    using std::readable;
+    using std::indirectly_readable;
 
-    STATIC_ASSERT(!readable<void>);
-    STATIC_ASSERT(!readable<void*>);
-    STATIC_ASSERT(readable<int*>);
-    STATIC_ASSERT(readable<int const*>);
-    STATIC_ASSERT(!readable<int const empty_type::*>);
+    STATIC_ASSERT(!indirectly_readable<void>);
+    STATIC_ASSERT(!indirectly_readable<void*>);
+    STATIC_ASSERT(indirectly_readable<int*>);
+    STATIC_ASSERT(indirectly_readable<int const*>);
+    STATIC_ASSERT(!indirectly_readable<int const empty_type::*>);
 
-    STATIC_ASSERT(!readable<dereferences_to<void>>);
-    STATIC_ASSERT(readable<dereferences_to<int>>);
-    STATIC_ASSERT(readable<dereferences_to<int&>>);
-    STATIC_ASSERT(readable<dereferences_to<int const&>>);
-    STATIC_ASSERT(readable<dereferences_to<move_only>>);
-    STATIC_ASSERT(readable<dereferences_to<int (&)[42]>>);
-    STATIC_ASSERT(!readable<dereferences_to<int (&)()>>);
-    STATIC_ASSERT(!readable<int (empty_type::*)()>);
+    STATIC_ASSERT(!indirectly_readable<dereferences_to<void>>);
+    STATIC_ASSERT(indirectly_readable<dereferences_to<int>>);
+    STATIC_ASSERT(indirectly_readable<dereferences_to<int&>>);
+    STATIC_ASSERT(indirectly_readable<dereferences_to<int const&>>);
+    STATIC_ASSERT(indirectly_readable<dereferences_to<move_only>>);
+    STATIC_ASSERT(indirectly_readable<dereferences_to<int (&)[42]>>);
+    STATIC_ASSERT(!indirectly_readable<dereferences_to<int (&)()>>);
+    STATIC_ASSERT(!indirectly_readable<int (empty_type::*)()>);
 
     struct no_value_type {
         int operator*() const;
     };
-    STATIC_ASSERT(!readable<no_value_type>);
+    STATIC_ASSERT(!indirectly_readable<no_value_type>);
 
     struct not_dereferenceable {
         using value_type = int;
     };
-    STATIC_ASSERT(!readable<no_value_type>);
+    STATIC_ASSERT(!indirectly_readable<no_value_type>);
 
     struct simple_abstract {
         virtual void f() = 0;
     };
-    STATIC_ASSERT(readable<dereferences_to<simple_abstract&>>);
+    STATIC_ASSERT(indirectly_readable<dereferences_to<simple_abstract&>>);
 } // namespace iterator_concept_readable_test
 
 namespace iterator_concept_writable_test {
-    using std::writable;
+    using std::indirectly_writable;
 
     template <class I, class T>
     constexpr bool test_writable() {
 #pragma warning(push)
 #pragma warning(disable : 4180) // qualifier applied to function type has no meaning; ignored
-        constexpr bool result = writable<I, T>;
-        STATIC_ASSERT(writable<I, T const> == result);
-        STATIC_ASSERT(writable<I, T volatile> == result);
-        STATIC_ASSERT(writable<I, T const volatile> == result);
+        constexpr bool result = indirectly_writable<I, T>;
+        STATIC_ASSERT(indirectly_writable<I, T const> == result);
+        STATIC_ASSERT(indirectly_writable<I, T volatile> == result);
+        STATIC_ASSERT(indirectly_writable<I, T const volatile> == result);
 
         if constexpr (can_reference<T>) {
-            STATIC_ASSERT(writable<I, T&> == result);
-            STATIC_ASSERT(writable<I, T const&> == result);
-            STATIC_ASSERT(writable<I, T volatile&> == result);
-            STATIC_ASSERT(writable<I, T const volatile&> == result);
+            STATIC_ASSERT(indirectly_writable<I, T&> == result);
+            STATIC_ASSERT(indirectly_writable<I, T const&> == result);
+            STATIC_ASSERT(indirectly_writable<I, T volatile&> == result);
+            STATIC_ASSERT(indirectly_writable<I, T const volatile&> == result);
         }
 #pragma warning(pop)
 
         return result;
     }
 
-    STATIC_ASSERT(!writable<void, int>);
-    STATIC_ASSERT(!writable<void*, void>);
+    STATIC_ASSERT(!indirectly_writable<void, int>);
+    STATIC_ASSERT(!indirectly_writable<void*, void>);
     STATIC_ASSERT(!test_writable<int*, void>());
 
     STATIC_ASSERT(test_writable<int*, int>());
@@ -1240,10 +1242,10 @@ namespace iterator_concept_writable_test {
     STATIC_ASSERT(!test_writable<int (*)(), int (*)()>());
     STATIC_ASSERT(test_writable<int (**)(), int (*)()>());
 
-    STATIC_ASSERT(writable<move_only*, move_only>);
+    STATIC_ASSERT(indirectly_writable<move_only*, move_only>);
     STATIC_ASSERT(!test_writable<move_only*, move_only&>());
 
-    // Verify the "writable through a constified reference" requirements
+    // Verify the "indirectly_writable through a constified reference" requirements
     struct std_string {}; // slightly simplified
     STATIC_ASSERT(!test_writable<dereferences_to<std_string>, std_string>());
 
@@ -2769,6 +2771,29 @@ namespace iter_ops {
         test_distance();
     }
 } // namespace iter_ops
+
+namespace insert_iterators {
+    template <class Container>
+    constexpr bool test() {
+        using std::back_insert_iterator, std::front_insert_iterator, std::insert_iterator;
+        using std::default_initializable, std::is_nothrow_default_constructible_v, std::iter_difference_t,
+            std::ptrdiff_t, std::same_as;
+
+        STATIC_ASSERT(default_initializable<back_insert_iterator<Container>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<back_insert_iterator<Container>>);
+        STATIC_ASSERT(default_initializable<front_insert_iterator<Container>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<front_insert_iterator<Container>>);
+        STATIC_ASSERT(default_initializable<insert_iterator<Container>>);
+        STATIC_ASSERT(same_as<iter_difference_t<back_insert_iterator<Container>>, ptrdiff_t>);
+        STATIC_ASSERT(same_as<iter_difference_t<front_insert_iterator<Container>>, ptrdiff_t>);
+        STATIC_ASSERT(same_as<iter_difference_t<insert_iterator<Container>>, ptrdiff_t>);
+
+        return true;
+    }
+
+    STATIC_ASSERT(test<std::list<double>>());
+    STATIC_ASSERT(test<std::vector<int>>());
+} // namespace insert_iterators
 
 int main() {
     iterator_cust_swap_test::test();

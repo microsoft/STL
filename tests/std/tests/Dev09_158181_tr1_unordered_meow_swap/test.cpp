@@ -104,7 +104,7 @@ void test_LWG_2156() {
     x.max_load_factor(5.0f);
     for (int i = 0; i < 100; ++i) {
         x.emplace(i);
-        assert_is_pow2(x.bucket_count()); // MSVC++ specific invariant
+        assert_is_pow2(x.bucket_count()); // MSVC-specific invariant
     }
 
     const auto afterEmplaceBuckets = x.bucket_count();

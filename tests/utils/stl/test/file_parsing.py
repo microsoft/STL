@@ -29,7 +29,7 @@ class EnvEntry:
         object.__setattr__(self, "_env_keys", tuple(tmp_env.env.keys()))
         object.__setattr__(self, "_env_vals", tuple(tmp_env.env.values()))
 
-    def getEnvVal(self, key: str, default: Optional[str] = None)\
+    def getEnvVal(self, key: str, default: Optional[str] = None) \
             -> Optional[str]:
         if key not in self._env_keys:
             return default
@@ -105,11 +105,9 @@ def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
             entry = _parse_env_line(line)
             if(entry is not None):
                 ctx.current.append(entry)
-    ctx.result.append(ctx.current)
-    return _do_crosslist(ctx)
 
 
-def parse_commented_file(filename: Union[str, bytes, os.PathLike])\
+def parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
         -> List[str]:
     if str(filename) in _preprocessed_file_cache:
         return _preprocessed_file_cache[str(filename)]
@@ -127,7 +125,7 @@ def parse_commented_file(filename: Union[str, bytes, os.PathLike])\
         return result
 
 
-def parse_result_file(filename: Union[str, bytes, os.PathLike])\
+def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
         -> Dict[str, lit.Test.ResultCode]:
     if str(filename) in _expected_result_entry_cache:
         return _expected_result_entry_cache[str(filename)]
@@ -143,14 +141,15 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike])\
     return res
 
 
-def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike])\
+def parse_env_lst_file(env_list: Union[str, bytes, os.PathLike]) \
         -> Tuple[EnvEntry, ...]:
     if str(env_list) in _envlst_cache:
         return _envlst_cache[str(env_list)]
 
     env_list_path = Path(env_list)
     ctx = _ParseCtx()
-    res = tuple(map(EnvEntry,
-                    _parse_env_lst(env_list_path, ctx)))
+    _parse_env_lst(env_list_path, ctx)
+    ctx.result.append(ctx.current)
+    res = tuple(map(EnvEntry, _do_crosslist(ctx)))
     _envlst_cache[env_list] = res
     return res

@@ -1433,11 +1433,9 @@ namespace test_constructible_from {
     };
     STATIC_ASSERT(!test<Multiparameter>());
     STATIC_ASSERT(test<Multiparameter, int>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-116925
-    STATIC_ASSERT(!test<Multiparameter, long>());
-#else // ^^^ no workaround / workaround vvv
-    STATIC_ASSERT(test<Multiparameter, long>());
-#endif // TRANSITION, VSO-116925
+#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1927 // TRANSITION, VS 2019 16.7 Preview 1
+    STATIC_ASSERT(!test<Multiparameter, long>() || is_permissive);
+#endif // TRANSITION, VS 2019 16.7 Preview 1
     STATIC_ASSERT(!test<Multiparameter, double>());
     STATIC_ASSERT(!test<Multiparameter, char>());
     STATIC_ASSERT(!test<Multiparameter, void>());
@@ -2359,117 +2357,51 @@ namespace test_object_concepts {
     STATIC_ASSERT(test_regular<RegularType>());
 } // namespace test_object_concepts
 
-namespace test_boolean {
-    using std::boolean;
+namespace test_boolean_testable {
+    // Note: other than knowing the secret internal concept name, this is a portable test.
+    using std::_Boolean_testable;
 
-    // Better have these three, since we use them as examples in the Standard.
-    STATIC_ASSERT(boolean<bool>);
-    STATIC_ASSERT(boolean<std::true_type>);
-    STATIC_ASSERT(boolean<std::bitset<42>::reference>);
+    // Better have these four, since we use them as examples in the Standard.
+    STATIC_ASSERT(_Boolean_testable<bool>);
+    STATIC_ASSERT(_Boolean_testable<std::true_type>);
+    STATIC_ASSERT(_Boolean_testable<int*>);
+    STATIC_ASSERT(_Boolean_testable<std::bitset<42>::reference>);
 
-    STATIC_ASSERT(boolean<std::false_type>);
+    STATIC_ASSERT(_Boolean_testable<std::false_type>);
 
-    STATIC_ASSERT(boolean<int>); // Over the restricted domain {0, 1}
-    STATIC_ASSERT(!boolean<void*>);
+    STATIC_ASSERT(_Boolean_testable<int>);
+    STATIC_ASSERT(_Boolean_testable<void*>);
 
     enum unscoped_boolish : bool { No, Yes };
-    STATIC_ASSERT(boolean<unscoped_boolish>);
+    STATIC_ASSERT(_Boolean_testable<unscoped_boolish>);
 
     enum class scoped_boolish : bool { No, Yes };
-    STATIC_ASSERT(!boolean<scoped_boolish>);
+    STATIC_ASSERT(!_Boolean_testable<scoped_boolish>);
 
-    STATIC_ASSERT(!boolean<EmptyClass>);
+    STATIC_ASSERT(!_Boolean_testable<EmptyClass>);
 
-    STATIC_ASSERT(boolean<ImplicitTo<bool>>);
-    STATIC_ASSERT(!boolean<ExplicitTo<bool>>);
+    STATIC_ASSERT(_Boolean_testable<ImplicitTo<bool>>);
+    STATIC_ASSERT(!_Boolean_testable<ExplicitTo<bool>>);
 
     struct MutatingBoolConversion {
         operator bool();
     };
-    STATIC_ASSERT(!boolean<MutatingBoolConversion>);
+    STATIC_ASSERT(_Boolean_testable<MutatingBoolConversion>);
 
-    static constexpr unsigned Archetype_max = 28;
     template <unsigned Select> // values in [0, Archetype_max) select a requirement to violate
     struct Archetype {
         // clang-format off
         operator bool() const requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
         explicit operator bool() const requires (Select < 2); // Archetype<1> is not explicitly convertible to bool (ambiguity)
-        void operator!() const requires (Select == 2); // !Archetype<2> is not ConvertibleTo<bool>
+        void operator!() const requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
         // clang-format on
     };
 
-    void operator&&(Archetype<3>, Archetype<3>) {} // Archetype<3> && Archetype<3> is not same_as<bool>
-    void operator&&(Archetype<4>, bool) {} // Archetype<3> && bool is not same_as<bool>
-    void operator&&(bool, Archetype<5>) {} // bool && Archetype<5> is not same_as<bool>
-    void operator||(Archetype<6>, Archetype<6>) {} // Archetype<6> || Archetype<6> is not same_as<bool>
-    void operator||(Archetype<7>, bool) {} // Archetype<7> || bool is not same_as<bool>
-    void operator||(bool, Archetype<8>) {} // bool || Archetype<8> is not same_as<bool>
-    void operator==(Archetype<9>, Archetype<9>) {} // Archetype<9> == Archetype<9> is not ConvertibleTo<bool>
-    void operator==(Archetype<10>, bool) {} // Archetype<10> == bool is not ConvertibleTo<bool>
-    void operator==(bool, Archetype<11>) {} // bool == Archetype<11> is not ConvertibleTo<bool>
-    void operator!=(Archetype<12>, Archetype<12>) {} // Archetype<12> != Archetype<12> is not ConvertibleTo<bool>
-    void operator!=(Archetype<13>, bool) {} // Archetype<13> != bool is not ConvertibleTo<bool>
-    void operator!=(bool, Archetype<14>) {} // bool != Archetype<14> is not ConvertibleTo<bool>
-    ImplicitTo<bool> operator&&(Archetype<15>, Archetype<15>) { // Archetype<15> && Archetype<15> is not same_as<bool>
-        return {};
-    }
-    ImplicitTo<bool> operator&&(Archetype<16>, bool) { // Archetype<16> && bool is not same_as<bool>
-        return {};
-    }
-    ImplicitTo<bool> operator&&(bool, Archetype<17>) { // bool && Archetype<17> is not same_as<bool>
-        return {};
-    }
-    ImplicitTo<bool> operator||(Archetype<18>, Archetype<18>) { // Archetype<18> || Archetype<18> is not same_as<bool>
-        return {};
-    }
-    ImplicitTo<bool> operator||(Archetype<19>, bool) { // Archetype<19> || bool is not same_as<bool>
-        return {};
-    }
-    ImplicitTo<bool> operator||(bool, Archetype<20>) { // bool || Archetype<20> is not same_as<bool>
-        return {};
-    }
-    ExplicitTo<bool> operator==(
-        Archetype<21>, Archetype<21>) { // Archetype<21> == Archetype<21> is only explicitly convertible to bool
-        return {};
-    }
-    ExplicitTo<bool> operator==(Archetype<22>, bool) { // Archetype<22> == bool is only explicitly convertible to bool
-        return {};
-    }
-    ExplicitTo<bool> operator==(bool, Archetype<23>) { // bool == Archetype<23> is only explicitly convertible to bool
-        return {};
-    }
-    ExplicitTo<bool> operator!=(
-        Archetype<24>, Archetype<24>) { // Archetype<24> != Archetype<24> is only explicitly convertible to bool
-        return {};
-    }
-    ExplicitTo<bool> operator!=(Archetype<25>, bool) { // Archetype<25> != bool is only explicitly convertible to bool
-        return {};
-    }
-    ExplicitTo<bool> operator!=(bool, Archetype<26>) { // bool != Archetype<26> is only explicitly convertible to bool
-        return {};
-    }
-
-    template <>
-    struct Archetype<27> { // Archetype<27> is not movable
-        Archetype()            = default;
-        Archetype(Archetype&&) = delete;
-        operator bool() const;
-    };
-
-    template <std::size_t I>
-    constexpr void test_one() {
-        STATIC_ASSERT(!boolean<Archetype<I>>);
-    }
-
-    template <std::size_t... Is>
-    constexpr bool test_Archetype(std::index_sequence<Is...>) {
-        STATIC_ASSERT(std::is_same_v<std::index_sequence<Is...>, std::make_index_sequence<Archetype_max>>);
-        (test_one<Is>(), ...);
-        STATIC_ASSERT(boolean<Archetype<sizeof...(Is)>>);
-        return true;
-    }
-    STATIC_ASSERT(test_Archetype(std::make_index_sequence<Archetype_max>{}));
-} // namespace test_boolean
+    STATIC_ASSERT(!_Boolean_testable<Archetype<0>>);
+    STATIC_ASSERT(!_Boolean_testable<Archetype<1>>);
+    STATIC_ASSERT(!_Boolean_testable<Archetype<2>>);
+    STATIC_ASSERT(_Boolean_testable<Archetype<3>>);
+} // namespace test_boolean_testable
 
 namespace test_equality_comparable {
     using std::equality_comparable;
@@ -2505,11 +2437,11 @@ namespace test_equality_comparable {
 
     template <unsigned Select>
     bool operator==(Archetype<Select> const&, Archetype<Select> const&);
-    void operator==(Archetype<0> const&, Archetype<0> const&); // Archetype<0> == Archetype<0> doesn't model boolean
+    void operator==(Archetype<0> const&, Archetype<0> const&); // Archetype<0> == Archetype<0> is not _Boolean_testable
 
     template <unsigned Select>
     bool operator!=(Archetype<Select> const&, Archetype<Select> const&);
-    void operator!=(Archetype<1> const&, Archetype<1> const&); // Archetype<1> != Archetype<1> doesn't model boolean
+    void operator!=(Archetype<1> const&, Archetype<1> const&); // Archetype<1> != Archetype<1> is not _Boolean_testable
 
     STATIC_ASSERT(!test<Archetype<0>>());
     STATIC_ASSERT(!test<Archetype<1>>());
@@ -3103,17 +3035,17 @@ namespace test_predicate {
     using RPF3 = bool const& (*&) (int, int, int);
     using RPF4 = bool (*&)(int, ...);
     STATIC_ASSERT(predicate<RF0>);
-    STATIC_ASSERT(!predicate<RF1, int>);
+    STATIC_ASSERT(predicate<RF1, int>);
     STATIC_ASSERT(predicate<RF2, int, long>);
     STATIC_ASSERT(predicate<RF3, int, long, int>);
     STATIC_ASSERT(predicate<RF4, int, float, void*>);
     STATIC_ASSERT(predicate<PF0>);
-    STATIC_ASSERT(!predicate<PF1, int>);
+    STATIC_ASSERT(predicate<PF1, int>);
     STATIC_ASSERT(predicate<PF2, int, long>);
     STATIC_ASSERT(predicate<PF3, int, long, int>);
     STATIC_ASSERT(predicate<PF4, int, float, void*>);
     STATIC_ASSERT(predicate<RPF0>);
-    STATIC_ASSERT(!predicate<RPF1, int>);
+    STATIC_ASSERT(predicate<RPF1, int>);
     STATIC_ASSERT(predicate<RPF2, int, long>);
     STATIC_ASSERT(predicate<RPF3, int, long, int>);
     STATIC_ASSERT(predicate<RPF4, int, float, void*>);
@@ -3353,14 +3285,16 @@ namespace test_predicate {
 } // namespace test_predicate
 
 namespace test_relation {
-    // Tests both relation and strict_weak_order (since they are syntactically identical)
+    // Tests relation, equivalence_relation, and strict_weak_order (since they are syntactically identical)
 
-    using std::relation, std::strict_weak_order;
+    using std::relation, std::equivalence_relation, std::strict_weak_order;
 
     template <class F, class T, class U = T>
     constexpr bool test() {
         constexpr bool result = relation<F, T, U>;
         STATIC_ASSERT(relation<F, U, T> == result);
+        STATIC_ASSERT(equivalence_relation<F, T, U> == result);
+        STATIC_ASSERT(equivalence_relation<F, U, T> == result);
         STATIC_ASSERT(strict_weak_order<F, T, U> == result);
         STATIC_ASSERT(strict_weak_order<F, U, T> == result);
         return result;
@@ -3396,7 +3330,7 @@ namespace test_relation {
 
     template <unsigned>
     struct B {};
-    void operator==(B<1>, B<1>); // B<1> == B<1> does not model boolean
+    void operator==(B<1>, B<1>); // B<1> == B<1> does not model _Boolean_testable
     template <unsigned U>
     bool operator==(B<U>, B<U>);
     STATIC_ASSERT(test<Equivalent, B<0>>());
