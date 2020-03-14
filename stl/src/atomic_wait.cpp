@@ -139,38 +139,38 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void __stdcall __std_atomic_wait_direct(
-    const void* _Storage, void* _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const std::size_t _Size,
+    unsigned long& _Wait_context) noexcept {
     auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address != nullptr) {
-        wait_on_address((volatile VOID*) _Storage, _Comparand, _Size, INFINITE);
+        wait_on_address(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
     } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
 }
 
 
-void __stdcall __std_atomic_notify_one_direct(void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
     auto wake_by_address_single = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
     if (wake_by_address_single != nullptr) {
-        ::WakeByAddressSingle(_Storage);
+        wake_by_address_single(const_cast<void*>(_Storage));
     } else {
         _Atomic_notify_fallback(_Storage);
     }
 }
 
 
-void __stdcall __std_atomic_notify_all_direct(void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
     const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
     if (wake_by_address_all != nullptr) {
-        ::WakeByAddressSingle(_Storage);
+        wake_by_address_all(const_cast<void*>(_Storage));
     } else {
         _Atomic_notify_fallback(_Storage);
     }
 }
 
 
-void __stdcall __std_atomic_wait_indirect(const void* _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
     const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address != nullptr) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
@@ -184,7 +184,7 @@ void __stdcall __std_atomic_wait_indirect(const void* _Storage, unsigned long& _
 }
 
 
-void __stdcall __std_atomic_notify_indirect(void* _Storage) noexcept {
+void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept {
     const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
     if (wake_by_address_all != nullptr) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
@@ -196,14 +196,14 @@ void __stdcall __std_atomic_notify_indirect(void* _Storage) noexcept {
     }
 }
 
-void __stdcall __std_atomic_unwait_direct(const void* _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept {
     const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address == nullptr) {
         _Atomic_unwait_fallback(_Storage, _Wait_context);
     }
 }
 
-void __stdcall __std_atomic_unwait_indirect(const void* _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
     const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address == nullptr) {
         _Atomic_unwait_fallback(_Storage, _Wait_context);
