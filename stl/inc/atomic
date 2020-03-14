@@ -134,25 +134,26 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #if _HAS_CXX20
 extern "C" {
 void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand,
-    const std::size_t _Size, unsigned long& _Wait_context) noexcept;
-
+    const std::size_t _Size, std::size_t& _Wait_context) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_direct(const void* const _Storage, std::size_t& _Wait_context) noexcept;
 
-void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
-void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept;
+void __stdcall __std_atomic_wait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept;
+void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept;
+void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept;
+
 #if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
-constexpr bool _Atomic_unwait_applicable = false;
+inline constexpr bool _Atomic_unwait_applicable = false;
 #else
-constexpr bool _Atomic_unwait_applicable = true;
+inline constexpr bool _Atomic_unwait_applicable = true;
 #endif
 }
 
-inline constexpr unsigned long _Atomic_unwait_needed = 0x8000'0000;
+inline constexpr std::size_t _Atomic_unwait_needed = 0x0000'0001;
 
 #endif // _HAS_CXX20
 
@@ -378,7 +379,7 @@ struct _Atomic_storage {
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        unsigned long _Wait_context = 0;
+        std::size_t _Wait_context = 0;
         for (;;) {
             _Ty _Observed = load(_Order);
             if (_CSTD memcmp(_STD addressof(_Observed), _STD addressof(_Expected), sizeof(_Ty)) != 0) {
@@ -394,11 +395,11 @@ struct _Atomic_storage {
     }
 
     void notify_one() noexcept {
-        __std_atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_one_indirect(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        __std_atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_all_indirect(_STD addressof(_Storage));
     }
 #endif // _HAS_CXX20
 
@@ -525,7 +526,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        unsigned long _Wait_context = 0;
+        std::size_t _Wait_context = 0;
         for (;;) {
             const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
             const char _Observed_bytes = _Atomic_reinterpret_as<char>(load(_Order));
@@ -631,7 +632,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        unsigned long _Wait_context = 0;
+        std::size_t _Wait_context = 0;
         for (;;) {
             const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
             const short _Observed_bytes = _Atomic_reinterpret_as<short>(load(_Order));
@@ -735,7 +736,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
 #if _HAS_CXX20
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        unsigned long _Wait_context = 0;
+        std::size_t _Wait_context = 0;
         for (;;) {
             const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
             const long _Observed_bytes = _Atomic_reinterpret_as<long>(load(_Order));
@@ -878,7 +879,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        unsigned long _Wait_context = 0;
+        std::size_t _Wait_context = 0;
         for (;;) {
             const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
             const long long _Observed_bytes = _Atomic_reinterpret_as<long long>(load(_Order));
@@ -1001,7 +1002,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        unsigned long _Wait_context = 0;
+        std::size_t _Wait_context = 0;
         for (;;) {
             const _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);
             const _Int128 _Observed_bytes = _Atomic_reinterpret_as<_Int128>(load(_Order));
@@ -1018,11 +1019,11 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     }
 
     void notify_one() noexcept {
-        __std_atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_one_indirect(_STD addressof(_Storage));
     }
 
     void notify_all() noexcept {
-        __std_atomic_notify_indirect(_STD addressof(_Storage));
+        __std_atomic_notify_all_indirect(_STD addressof(_Storage));
     }
 #endif // _HAS_CXX20
 

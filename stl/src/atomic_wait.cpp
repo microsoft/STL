@@ -51,17 +51,18 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    enum _Atomic_spin_phase : unsigned long {
-        _Atomic_wait_phase_mask            = 0xF000'0000,
-        _Atomic_spin_value_mask            = 0x0FFF'FFFF,
+    enum _Atomic_spin_phase : std::size_t {
+        _Atomic_wait_phase_mask            = 0x0000'000F,
+        _Atomic_spin_value_mask            = 0xFFFF'FFF0,
+        _Atomic_spin_value_step            = 0x0000'0010,
         _Atomic_wait_phase_init_spin_count = 0x0000'0000,
-        _Atomic_wait_phase_spin            = 0x4000'0000,
-        _Atomic_wait_phase_wait            = 0x8000'0000,
+        _Atomic_wait_phase_spin            = 0x0000'0002,
+        _Atomic_wait_phase_wait            = 0x0000'0001,
     };
 
     static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
 
-    void _Atomic_wait_fallback(const void* const _Storage, unsigned long& _Wait_context) noexcept {
+    void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_init_spin_count: {
             _Wait_context = _Atomic_wait_phase_spin | _Atomic_get_spin_count();
@@ -70,7 +71,7 @@ namespace {
 
         case _Atomic_wait_phase_spin: {
             if ((_Wait_context & _Atomic_spin_value_mask) > 0) {
-                _Wait_context -= 1;
+                _Wait_context -= _Atomic_spin_value_step;
                 YieldProcessor();
                 return;
             }
@@ -90,7 +91,7 @@ namespace {
         }
     }
 
-    void _Atomic_unwait_fallback(const void* const _Storage, const long& _Wait_context) noexcept {
+    void _Atomic_unwait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
         if ((_Wait_context & _Atomic_wait_phase_wait) != 0) {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::ReleaseSRWLockExclusive(&entry._Lock);
@@ -148,7 +149,7 @@ namespace {
     }
 
     bool _Have_wait_functions() {
-        return _Get_wait_functions()._Pfn_WaitOnAddress != nullptr;
+        return _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed) != nullptr;
     }
 
     inline BOOL __crtWaitOnAddress(
@@ -172,15 +173,14 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const std::size_t _Size,
-    unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_direct(
+    const void* _Storage, const void* const _Comparand, const std::size_t _Size, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
     } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
 }
-
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
@@ -190,7 +190,6 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
     }
 }
 
-
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressAll(const_cast<void*>(_Storage));
@@ -199,8 +198,7 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
     }
 }
 
-
-void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -212,8 +210,11 @@ void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned l
     }
 }
 
+void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
+    return __std_atomic_notify_all_indirect(_Storage);
+}
 
-void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         entry._Counter.fetch_add(1, std::memory_order_relaxed);
@@ -224,11 +225,11 @@ void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept
     }
 }
 
-void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_direct(const void* const _Storage, std::size_t& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
-void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 _END_EXTERN_C
