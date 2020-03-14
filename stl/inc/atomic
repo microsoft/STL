@@ -521,7 +521,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         unsigned long _Wait_context = 0;
         for (;;) {
             const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
-            const char _Observed_bytes = load(_Order);
+            const char _Observed_bytes = _Atomic_reinterpret_as<char>(load(_Order));
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
@@ -625,7 +625,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         unsigned long _Wait_context = 0;
         for (;;) {
             const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
-            const short _Observed_bytes = load(_Order);
+            const short _Observed_bytes = _Atomic_reinterpret_as<short>(load(_Order));
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
@@ -727,7 +727,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         unsigned long _Wait_context = 0;
         for (;;) {
             const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
-            const long _Observed_bytes = load(_Order);
+            const long _Observed_bytes = _Atomic_reinterpret_as<long>(load(_Order));
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
@@ -868,7 +868,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         unsigned long _Wait_context = 0;
         for (;;) {
             const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
-            const long long _Observed_bytes = load(_Order);
+            const long long _Observed_bytes = _Atomic_reinterpret_as<long long>(load(_Order));
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
@@ -989,7 +989,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         unsigned long _Wait_context = 0;
         for (;;) {
             const _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);
-            const _Int128 _Observed_bytes = load(_Order);
+            const _Int128 _Observed_bytes = _Atomic_reinterpret_as<_Int128>(load(_Order));
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
@@ -2030,43 +2030,45 @@ _Ty atomic_fetch_xor_explicit(
 }
 
 template <class _Ty>
-void atomic_wait(const volatile atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected) {
+void atomic_wait(
+    const volatile atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
     _Mem->wait(_Expected);
 }
 
 template <class _Ty>
-void atomic_wait(const atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected) {
+void atomic_wait(const atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
     _Mem->wait(_Expected);
 }
 
 template <class _Ty>
-void atomic_wait_explicit(
-    const volatile atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected, memory_order _Order) {
+void atomic_wait_explicit(const volatile atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected,
+    memory_order _Order) noexcept /* strengthened */ {
     _Mem->wait(_Expected, _Order);
 }
 
 template <class _Ty>
-void atomic_wait_explicit(const atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected, memory_order _Order) {
+void atomic_wait_explicit(const atomic<_Ty>* _Mem, typename atomic<_Ty>::value_type _Expected,
+    memory_order _Order) noexcept /* strengthened */ {
     _Mem->wait(_Expected, _Order);
 }
 
 template <class _Ty>
-void atomic_notify_one(volatile atomic<_Ty>* _Mem) {
+void atomic_notify_one(volatile atomic<_Ty>* _Mem) noexcept /* strengthened */ {
     _Mem->notify_one();
 }
 
 template <class _Ty>
-void atomic_notify_one(atomic<_Ty>* _Mem) {
+void atomic_notify_one(atomic<_Ty>* _Mem) noexcept /* strengthened */ {
     _Mem->notify_one();
 }
 
 template <class _Ty>
-void atomic_notify_all(volatile atomic<_Ty>* _Mem) {
+void atomic_notify_all(volatile atomic<_Ty>* _Mem) noexcept /* strengthened */ {
     _Mem->notify_all();
 }
 
 template <class _Ty>
-void atomic_notify_all(atomic<_Ty>* _Mem) {
+void atomic_notify_all(atomic<_Ty>* _Mem) noexcept /* strengthened */ {
     _Mem->notify_all();
 }
 
