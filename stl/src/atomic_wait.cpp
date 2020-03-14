@@ -12,10 +12,10 @@
 
 namespace {
 
-    inline long _Atomic_get_spin_count() noexcept {
+    inline unsigned long _Atomic_get_spin_count() noexcept {
         static unsigned long constexpr unilitialized_spin_count = (std::numeric_limits<unsigned long>::max)();
         std::atomic<unsigned long> atomic_spin_count            = unilitialized_spin_count;
-        long result                                             = atomic_spin_count.load(std::memory_order_relaxed);
+        unsigned long result                                    = atomic_spin_count.load(std::memory_order_relaxed);
         if (result == unilitialized_spin_count) {
             result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000);
             atomic_spin_count.store(result, std::memory_order_relaxed);
@@ -85,7 +85,7 @@ namespace {
         case _Atomic_wait_phase_wait: {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::SleepConditionVariableSRW(&entry._Condition, &entry._Lock, INFINITE, 0);
-            return; // Return to recheck
+            return;
         }
         }
     }
@@ -126,10 +126,10 @@ namespace {
     const _Wait_on_address_functions& _Get_wait_functions() {
         static _Wait_on_address_functions functions;
         if (!functions._Initialized.load(std::memory_order_relaxed)) {
-            HMODULE sync_api_module      = ::GetModuleHandle(TEXT("API-MS-WIN-CORE-SYNCH-L1-2-0.DLL"));
-            void* wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
-            void* wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
-            void* wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
+            HMODULE sync_api_module        = ::GetModuleHandle(TEXT("API-MS-WIN-CORE-SYNCH-L1-2-0.DLL"));
+            FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
+            FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
+            FARPROC wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
 
             if (wait_on_address != nullptr && wake_by_address_single != nullptr && wake_by_address_all != nullptr) {
                 functions._Pfn_WaitOnAddress.store(
