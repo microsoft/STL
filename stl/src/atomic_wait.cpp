@@ -48,7 +48,7 @@ namespace {
     static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
 
     inline std::size_t _Atomic_get_spin_count() noexcept {
-        static unsigned long constexpr unilitialized_spin_count = (std::numeric_limits<unsigned long>::max)();
+        static std::size_t constexpr unilitialized_spin_count   = (std::numeric_limits<std::size_t>::max)();
         std::atomic<std::size_t> atomic_spin_count              = unilitialized_spin_count;
         std::size_t result                                      = atomic_spin_count.load(std::memory_order_relaxed);
         if (result == unilitialized_spin_count) {
