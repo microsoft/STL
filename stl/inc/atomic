@@ -145,6 +145,11 @@ void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned l
 void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept;
 
 void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
+constexpr bool _Atomic_unwait_applicable = false;
+#else
+constexpr bool _Atomic_unwait_applicable = true;
+#endif
 }
 
 inline constexpr unsigned long _Atomic_unwait_needed = 0x8000'0000;
@@ -381,7 +386,7 @@ struct _Atomic_storage {
             }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Wait_context);
         }
-        if (_Wait_context & _Atomic_unwait_needed) {
+        if (_Atomic_unwait_applicable && ((_Wait_context & _Atomic_unwait_needed) != 0)) {
             __std_atomic_unwait_indirect(_STD addressof(_Storage), _Wait_context);
         }
     }
@@ -527,7 +532,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 1, _Wait_context);
         }
-        if (_Wait_context & _Atomic_unwait_needed) {
+        if (_Atomic_unwait_applicable && ((_Wait_context & _Atomic_unwait_needed) != 0)) {
             __std_atomic_unwait_direct(_STD addressof(_Storage), _Wait_context);
         }
     }
@@ -631,7 +636,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 2, _Wait_context);
         }
-        if (_Wait_context & _Atomic_unwait_needed) {
+        if (_Atomic_unwait_applicable && ((_Wait_context & _Atomic_unwait_needed) != 0)) {
             __std_atomic_unwait_direct(_STD addressof(_Storage), _Wait_context);
         }
     }
@@ -733,7 +738,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 4, _Wait_context);
         }
-        if (_Wait_context & _Atomic_unwait_needed) {
+        if (_Atomic_unwait_applicable && ((_Wait_context & _Atomic_unwait_needed) != 0)) {
             __std_atomic_unwait_direct(_STD addressof(_Storage), _Wait_context);
         }
     }
@@ -874,7 +879,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             }
             __std_atomic_wait_direct(_STD addressof(_Storage), _STD addressof(_Expected), 8, _Wait_context);
         }
-        if (_Wait_context & _Atomic_unwait_needed) {
+        if (_Atomic_unwait_applicable && ((_Wait_context & _Atomic_unwait_needed) != 0)) {
             __std_atomic_unwait_direct(_STD addressof(_Storage), _Wait_context);
         }
     }
@@ -995,7 +1000,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             }
             __std_atomic_wait_indirect(_STD addressof(_Storage), _Wait_context);
         }
-        if (_Wait_context & _Atomic_unwait_needed) {
+        if (_Atomic_unwait_applicable && ((_Wait_context & _Atomic_unwait_needed) != 0)) {
             __std_atomic_unwait_indirect(_STD addressof(_Storage), _Wait_context);
         }
     }
