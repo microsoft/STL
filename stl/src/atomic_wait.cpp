@@ -62,7 +62,6 @@ namespace {
     static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
 
     void _Atomic_wait_fallback(const void* const _Storage, unsigned long& _Wait_context) noexcept {
-
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_init_spin_count: {
             _Wait_context = _Atomic_wait_phase_spin | _Atomic_get_spin_count();
