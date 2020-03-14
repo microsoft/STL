@@ -1,8 +1,10 @@
-# Description
+Description
+===========
 
 
 
-# Checklist
+Checklist
+=========
 
 Be sure you've read README.md and understand the scope of this repo.
 

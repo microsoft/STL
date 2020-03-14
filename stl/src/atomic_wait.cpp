@@ -147,7 +147,7 @@ namespace {
 _EXTERN_C
 
 
-void __stdcall _Atomic_wait_direct(
+void __stdcall __std_atomic_wait_direct(
     const void* _Storage, void* _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept {
     auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address != nullptr) {

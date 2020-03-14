@@ -134,18 +134,18 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #if _HAS_CXX20
 
 extern "C" {
-void __cdecl __std_atomic_wait_direct(
+void __stdcall __std_atomic_wait_direct(
     const void* const _Storage, void* const _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept;
 
-void __cdecl __std_atomic_notify_one_direct(void* const _Storage) noexcept;
-void __cdecl __std_atomic_notify_all_direct(void* const _Storage) noexcept;
+void __stdcall  __std_atomic_notify_one_direct(void* const _Storage) noexcept;
+void __stdcall __std_atomic_notify_all_direct(void* const _Storage) noexcept;
 
-void __cdecl __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept;
 
-void __cdecl __std_atomic_wait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
-void __cdecl __std_atomic_notify_indirect(void* const _Storage) noexcept;
+void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
+void __stdcall __std_atomic_notify_indirect(void* const _Storage) noexcept;
 
-void __cdecl __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept;
 }
 
 inline constexpr unsigned long _Atomic_unwait_needed = 0x8000'0000;
