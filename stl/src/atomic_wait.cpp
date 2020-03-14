@@ -27,9 +27,9 @@ namespace {
         return result;
     }
 
-    constexpr size_t _Wait_table_size_power = 8;
-    constexpr size_t _Wait_table_size       = 1 << _Wait_table_size_power;
-    constexpr size_t _Wait_table_index_mask = _Wait_table_size - 1;
+    constexpr std::size_t _Wait_table_size_power = 8;
+    constexpr std::size_t _Wait_table_size       = 1 << _Wait_table_size_power;
+    constexpr std::size_t _Wait_table_index_mask = _Wait_table_size - 1;
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
