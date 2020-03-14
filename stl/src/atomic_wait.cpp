@@ -48,10 +48,10 @@ namespace {
     static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
 
     inline std::size_t _Atomic_get_spin_count() noexcept {
-        static std::size_t constexpr unilitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
-        std::atomic<std::size_t> atomic_spin_count            = unilitialized_spin_count;
+        static std::size_t constexpr uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
+        static std::atomic<std::size_t> atomic_spin_count     = uninitialized_spin_count;
         std::size_t result                                    = atomic_spin_count.load(std::memory_order_relaxed);
-        if (result == unilitialized_spin_count) {
+        if (result == uninitialized_spin_count) {
             result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
             atomic_spin_count.store(result, std::memory_order_relaxed);
 
