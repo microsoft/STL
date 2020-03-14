@@ -133,7 +133,7 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 #if _HAS_CXX20
 extern "C" {
-void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand, 
+void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand,
     const std::size_t _Size, unsigned long& _Wait_context) noexcept;
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
@@ -2030,7 +2030,7 @@ _Ty atomic_fetch_xor_explicit(
 }
 
 template <class _Ty>
-void atomic_wait(const volatile atomic<_Ty>* const _Mem, 
+void atomic_wait(const volatile atomic<_Ty>* const _Mem,
     const typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
     _Mem->wait(_Expected);
 }
