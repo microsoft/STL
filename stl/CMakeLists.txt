@@ -386,6 +386,10 @@ set(SOURCES_SATELLITE_2
     ${CMAKE_CURRENT_LIST_DIR}/src/special_math.cpp
 )
 
+set(SOURCES_SATELLITE_3
+    ${CMAKE_CURRENT_LIST_DIR}/src/atomic_wait.cpp
+)
+
 set(SOURCES_SATELLITE_CODECVT_IDS
     ${CMAKE_CURRENT_LIST_DIR}/src/ulocale.cpp
 )
@@ -394,6 +398,7 @@ set(SOURCES_SATELLITE_CODECVT_IDS
 set(STATIC_SOURCES
     ${SOURCES_SATELLITE_1}
     ${SOURCES_SATELLITE_2}
+    ${SOURCES_SATELLITE_3}
     ${SOURCES_SATELLITE_CODECVT_IDS}
 )
 
@@ -463,6 +468,12 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     set_target_properties(msvcp${D_SUFFIX}_codecvt_ids PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp${D_SUFFIX}_codecvt_ids PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_codecvt_ids${VCLIBS_SUFFIX}")
     target_link_options(msvcp${D_SUFFIX}_codecvt_ids PRIVATE "${THIS_CONFIG_LINK_OPTIONS}")
+
+    # msvcp140_3.dll (the atomic wait satellite)
+    add_library(msvcp_3${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_3})
+    target_compile_definitions(msvcp_3${D_SUFFIX}_objects PRIVATE "_BUILDING_SATELLITE_3;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_options(msvcp_3${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+
 
     # import library
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
