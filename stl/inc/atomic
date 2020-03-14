@@ -133,8 +133,8 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 #if _HAS_CXX20
 extern "C" {
-void __stdcall __std_atomic_wait_direct(
-    const void* const _Storage, const void* const _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept;
+void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand, 
+    const std::size_t _Size, unsigned long& _Wait_context) noexcept;
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
@@ -2030,13 +2030,14 @@ _Ty atomic_fetch_xor_explicit(
 }
 
 template <class _Ty>
-void atomic_wait(
-    const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
+void atomic_wait(const volatile atomic<_Ty>* const _Mem, 
+    const typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
     _Mem->wait(_Expected);
 }
 
 template <class _Ty>
-void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
+void atomic_wait(
+    const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept /* strengthened */ {
     _Mem->wait(_Expected);
 }
 
@@ -2283,11 +2284,13 @@ inline void atomic_flag_wait(const atomic_flag* const _Flag, const bool _Expecte
     return _Flag->wait(_Expected);
 }
 
-inline void atomic_flag_wait_explicit(const volatile atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
+inline void atomic_flag_wait_explicit(
+    const volatile atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
     return _Flag->wait(_Expected, _Order);
 }
 
-inline void atomic_flag_wait_explicit(const atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
+inline void atomic_flag_wait_explicit(
+    const atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
     return _Flag->wait(_Expected, _Order);
 }
 
