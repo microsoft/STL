@@ -161,7 +161,7 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
 
 
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
-    const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
+    const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(std::memory_order_relaxed);
     if (wake_by_address_all != nullptr) {
         wake_by_address_all(const_cast<void*>(_Storage));
     } else {
@@ -185,7 +185,7 @@ void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned l
 
 
 void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept {
-    const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
+    const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(std::memory_order_relaxed);
     if (wake_by_address_all != nullptr) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         entry._Counter.fetch_add(1, std::memory_order_relaxed);
