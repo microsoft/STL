@@ -225,14 +225,10 @@ void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept
 }
 
 void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept {
-    if (_Have_wait_functions()) {
-        _Atomic_unwait_fallback(_Storage, _Wait_context);
-    }
+    _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
 void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
-    if (_Have_wait_functions()) {
-        _Atomic_unwait_fallback(_Storage, _Wait_context);
-    }
+    _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 _END_EXTERN_C
