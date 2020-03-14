@@ -132,7 +132,6 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_POINTER_LOCK_FREE  2
 
 #if _HAS_CXX20
-
 extern "C" {
 void __stdcall __std_atomic_wait_direct(
     const void* const _Storage, void* const _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept;
@@ -373,7 +372,6 @@ struct _Atomic_storage {
     }
 
 #if _HAS_CXX20
-
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         unsigned long _Wait_context = 0;
         for (;;) {
@@ -395,7 +393,6 @@ struct _Atomic_storage {
     void notify_all() noexcept {
         __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
-
 #endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
@@ -520,7 +517,6 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     }
 
 #if _HAS_CXX20
-
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         unsigned long _Wait_context = 0;
         for (;;) {
@@ -543,7 +539,6 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
-
 #endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
@@ -626,7 +621,6 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
 #if _HAS_CXX20
-
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         unsigned long _Wait_context = 0;
         for (;;) {
@@ -649,7 +643,6 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
-
 #endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
@@ -730,7 +723,6 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
 #if _HAS_CXX20
-
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         unsigned long _Wait_context = 0;
         for (;;) {
@@ -753,7 +745,6 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
-
 #endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
@@ -873,7 +864,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
 #if _HAS_CXX20
-
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         unsigned long _Wait_context = 0;
         for (;;) {
@@ -896,7 +886,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_all_direct(_STD addressof(_Storage));
     }
-
 #endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
@@ -996,7 +985,6 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     }
 
 #if _HAS_CXX20
-
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         unsigned long _Wait_context = 0;
         for (;;) {
@@ -1019,7 +1007,6 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     void notify_all() noexcept {
         __std_atomic_notify_indirect(_STD addressof(_Storage));
     }
-
 #endif // _HAS_CXX20
 
     struct _Int128 {
@@ -1762,7 +1749,6 @@ public:
     }
 
 #if _HAS_CXX20
-
     using _Base::wait;
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
         const_cast<atomic*>(this)->_Base::wait(_Expected, _Order);
@@ -1785,7 +1771,6 @@ public:
     operator _Ty() const noexcept {
         return this->load();
     }
-
 #endif // _HAS_CXX20
 };
 
@@ -2167,12 +2152,10 @@ using atomic_intmax_t  = atomic<intmax_t>;
 using atomic_uintmax_t = atomic<uintmax_t>;
 
 #if _HAS_CXX20
-
 // Though there are CMPXCHG8B and CMPXCHG16B,
 // Largest atomics with full set of efficient operations are pointer-sized
 using atomic_signed_lock_free   = atomic_intptr_t;
 using atomic_unsigned_lock_free = atomic_uintptr_t;
-
 #endif // _HAS_CXX20
 
 
@@ -2199,7 +2182,6 @@ struct atomic_flag { // flag with test-and-set semantics
     constexpr atomic_flag() noexcept = default;
 
 #if _HAS_CXX20
-
     bool test(std::memory_order _Order = std::memory_order::seq_cst) const noexcept {
         return _Storage.load(_Order) != 0;
     }
@@ -2231,7 +2213,6 @@ struct atomic_flag { // flag with test-and-set semantics
     void notify_all() volatile noexcept {
         _Storage.notify_all();
     }
-
 #endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
@@ -2276,7 +2257,6 @@ inline void atomic_flag_clear_explicit(volatile atomic_flag* _Flag, memory_order
 }
 
 #if _HAS_CXX20
-
 inline bool atomic_flag_test(const volatile atomic_flag* _Flag) noexcept {
     return _Flag->test();
 }
@@ -2324,7 +2304,6 @@ inline void atomic_flag_notify_all(volatile atomic_flag* _Flag) noexcept {
 inline void atomic_flag_notify_all(atomic_flag* _Flag) noexcept {
     return _Flag->notify_all();
 }
-
 #endif // _HAS_CXX20
 
 _STD_END

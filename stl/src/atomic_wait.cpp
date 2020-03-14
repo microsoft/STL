@@ -12,7 +12,6 @@
 
 namespace {
 
-
     inline long _Atomic_get_spin_count() noexcept {
         static unsigned long constexpr unilitialized_spin_count = (std::numeric_limits<unsigned long>::max)();
         std::atomic<unsigned long> atomic_spin_count            = unilitialized_spin_count;
@@ -34,7 +33,6 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-
     struct alignas(std::hardware_destructive_interference_size) _Wait_table_entry {
         // Arbitraty variable to wait/notify on if target wariable is not proper atomic for that
         // Size is largest of lock-free to make aliasing problem into hypothetical
@@ -43,9 +41,7 @@ namespace {
         CONDITION_VARIABLE _Condition = CONDITION_VARIABLE_INIT;
         SRWLOCK _Lock                 = SRWLOCK_INIT;
     };
-
 #pragma warning(pop)
-
 
     _Wait_table_entry& _Atomic_wait_table_entry(const void* const _Storage) noexcept {
         static _Wait_table_entry wait_table[_Wait_table_size];
@@ -54,7 +50,6 @@ namespace {
         index ^= index >> _Wait_table_size_power;
         return wait_table[index & _Wait_table_index_mask];
     }
-
 
     enum _Atomic_spin_phase : unsigned long {
         _Atomic_wait_phase_mask            = 0xF000'0000,
@@ -145,8 +140,6 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-
-
 void __stdcall __std_atomic_wait_direct(
     const void* _Storage, void* _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept {
     auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
@@ -217,5 +210,4 @@ void __stdcall __std_atomic_unwait_indirect(const void* _Storage, unsigned long&
         _Atomic_unwait_fallback(_Storage, _Wait_context);
     }
 }
-
 _END_EXTERN_C
