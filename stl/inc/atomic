@@ -137,7 +137,7 @@ extern "C" {
 void __stdcall __std_atomic_wait_direct(
     const void* const _Storage, void* const _Comparand, const std::size_t _Size, unsigned long& _Wait_context) noexcept;
 
-void __stdcall  __std_atomic_notify_one_direct(void* const _Storage) noexcept;
+void __stdcall __std_atomic_notify_one_direct(void* const _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(void* const _Storage) noexcept;
 
 void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept;
