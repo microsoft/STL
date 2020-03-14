@@ -168,7 +168,7 @@ void __stdcall __std_atomic_notify_one_direct(void* const _Storage) noexcept {
 }
 
 
-void __cdecl __std_atomic_notify_all_direct(void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_all_direct(void* const _Storage) noexcept {
     const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
     if (wake_by_address_all != nullptr) {
         ::WakeByAddressSingle(_Storage);
@@ -178,7 +178,7 @@ void __cdecl __std_atomic_notify_all_direct(void* const _Storage) noexcept {
 }
 
 
-void __cdecl __std_atomic_wait_indirect(const void* _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_indirect(const void* _Storage, unsigned long& _Wait_context) noexcept {
     const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address != nullptr) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
@@ -192,7 +192,7 @@ void __cdecl __std_atomic_wait_indirect(const void* _Storage, unsigned long& _Wa
 }
 
 
-void __cdecl __std_atomic_notify_indirect(void* _Storage) noexcept {
+void __stdcall __std_atomic_notify_indirect(void* _Storage) noexcept {
     const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
     if (wake_by_address_all != nullptr) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
@@ -204,14 +204,14 @@ void __cdecl __std_atomic_notify_indirect(void* _Storage) noexcept {
     }
 }
 
-void __cdecl __std_atomic_unwait_direct(const void* _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_direct(const void* _Storage, unsigned long& _Wait_context) noexcept {
     const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address == nullptr) {
         _Atomic_unwait_fallback(_Storage, _Wait_context);
     }
 }
 
-void __cdecl __std_atomic_unwait_indirect(const void* _Storage, unsigned long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_indirect(const void* _Storage, unsigned long& _Wait_context) noexcept {
     const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
     if (wait_on_address == nullptr) {
         _Atomic_unwait_fallback(_Storage, _Wait_context);
