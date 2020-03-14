@@ -12,21 +12,6 @@
 
 namespace {
 
-    inline unsigned long _Atomic_get_spin_count() noexcept {
-        static unsigned long constexpr unilitialized_spin_count = (std::numeric_limits<unsigned long>::max)();
-        std::atomic<unsigned long> atomic_spin_count            = unilitialized_spin_count;
-        unsigned long result                                    = atomic_spin_count.load(std::memory_order_relaxed);
-        if (result == unilitialized_spin_count) {
-            result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000);
-            atomic_spin_count.store(result, std::memory_order_relaxed);
-
-            // Make sure other thread is likely to get this,
-            // as we've done kernel call for that.
-            std::atomic_thread_fence(std::memory_order_seq_cst);
-        }
-        return result;
-    }
-
     constexpr std::size_t _Wait_table_size_power = 8;
     constexpr std::size_t _Wait_table_size       = 1 << _Wait_table_size_power;
     constexpr std::size_t _Wait_table_index_mask = _Wait_table_size - 1;
@@ -61,6 +46,21 @@ namespace {
     };
 
     static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
+
+    inline std::size_t _Atomic_get_spin_count() noexcept {
+        static unsigned long constexpr unilitialized_spin_count = (std::numeric_limits<unsigned long>::max)();
+        std::atomic<std::size_t> atomic_spin_count              = unilitialized_spin_count;
+        std::size_t result                                      = atomic_spin_count.load(std::memory_order_relaxed);
+        if (result == unilitialized_spin_count) {
+            result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+            atomic_spin_count.store(result, std::memory_order_relaxed);
+
+            // Make sure other thread is likely to get this,
+            // as we've done kernel call for that.
+            std::atomic_thread_fence(std::memory_order_seq_cst);
+        }
+        return result;
+    }
 
     void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
