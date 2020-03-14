@@ -112,6 +112,17 @@ namespace {
         std::atomic<bool> _Initialized;
     };
 
+#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+    constexpr bool _Have_wait_functions() {
+        return true;
+    }
+#define __crtWaitOnAddress       WaitOnAddress
+#define __crtWakeByAddressSingle WakeByAddressSingle
+#define __crtWakeByAddressAll    WakeByAddressAll
+
+#pragma comment(lib, "Synchronization.lib")
+
+#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     const _Wait_on_address_functions& _Get_wait_functions() {
         static _Wait_on_address_functions functions;
         if (!functions._Initialized.load(std::memory_order_relaxed)) {
@@ -136,14 +147,35 @@ namespace {
         return functions;
     }
 
+    bool _Have_wait_functions() {
+        return _Get_wait_functions()._Pfn_WaitOnAddress != nullptr;
+    }
+
+    inline BOOL __crtWaitOnAddress(
+        volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
+        const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
+        return wait_on_address(Address, CompareAddress, AddressSize, dwMilliseconds);
+    }
+
+    inline VOID __crtWakeByAddressSingle(PVOID Address) {
+        const auto wake_by_address_single =
+            _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
+        wake_by_address_single(Address);
+    }
+
+    inline VOID __crtWakeByAddressAll(PVOID Address) {
+        const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(std::memory_order_relaxed);
+        wake_by_address_all(Address);
+    }
+#endif //  _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+
 } // unnamed namespace
 
 _EXTERN_C
 void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const std::size_t _Size,
     unsigned long& _Wait_context) noexcept {
-    auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
-    if (wait_on_address != nullptr) {
-        wait_on_address(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
+    if (_Have_wait_functions()) {
+        __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
     } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
@@ -151,9 +183,8 @@ void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
 
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
-    auto wake_by_address_single = _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
-    if (wake_by_address_single != nullptr) {
-        wake_by_address_single(const_cast<void*>(_Storage));
+    if (_Have_wait_functions()) {
+        __crtWakeByAddressSingle(const_cast<void*>(_Storage));
     } else {
         _Atomic_notify_fallback(_Storage);
     }
@@ -161,9 +192,8 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
 
 
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
-    const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(std::memory_order_relaxed);
-    if (wake_by_address_all != nullptr) {
-        wake_by_address_all(const_cast<void*>(_Storage));
+    if (_Have_wait_functions()) {
+        __crtWakeByAddressAll(const_cast<void*>(_Storage));
     } else {
         _Atomic_notify_fallback(_Storage);
     }
@@ -171,12 +201,11 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
 
 
 void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
-    const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
-    if (wait_on_address != nullptr) {
+    if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
         auto counter = entry._Counter.load(std::memory_order_relaxed);
-        wait_on_address((volatile VOID*) &entry._Counter._Storage._Value, &counter,
+        __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&entry._Counter._Storage._Value), &counter,
             sizeof(entry._Counter._Storage._Value), INFINITE);
     } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
@@ -185,27 +214,24 @@ void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned l
 
 
 void __stdcall __std_atomic_notify_indirect(const void* const _Storage) noexcept {
-    const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(std::memory_order_relaxed);
-    if (wake_by_address_all != nullptr) {
+    if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         entry._Counter.fetch_add(1, std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);
-        wake_by_address_all(&entry._Counter._Storage._Value);
+        __crtWakeByAddressAll(&entry._Counter._Storage._Value);
     } else {
         _Atomic_notify_fallback(_Storage);
     }
 }
 
 void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long& _Wait_context) noexcept {
-    const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
-    if (wait_on_address == nullptr) {
+    if (_Have_wait_functions()) {
         _Atomic_unwait_fallback(_Storage, _Wait_context);
     }
 }
 
 void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long& _Wait_context) noexcept {
-    const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
-    if (wait_on_address == nullptr) {
+    if (_Have_wait_functions()) {
         _Atomic_unwait_fallback(_Storage, _Wait_context);
     }
 }
