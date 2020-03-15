@@ -36,6 +36,29 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
+#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+    constexpr bool _Have_wait_functions() {
+        return true;
+    }
+#define __crtWaitOnAddress       WaitOnAddress
+#define __crtWakeByAddressSingle WakeByAddressSingle
+#define __crtWakeByAddressAll    WakeByAddressAll
+
+#pragma comment(lib, "Synchronization.lib")
+
+    void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+        std::terminate();
+    }
+
+    void _Atomic_notify_fallback(const void* const _Storage) noexcept {
+        std::terminate();
+    }
+
+    void _Atomic_unwait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+        std::terminate();
+    }
+
+#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     enum _Atomic_spin_phase : std::size_t {
         _Atomic_wait_phase_mask            = 0x0000'000F,
         _Atomic_spin_value_mask            = 0xFFFF'FFF0,
@@ -105,7 +128,6 @@ namespace {
         ::WakeAllConditionVariable(&entry._Condition);
     }
 
-
     struct _Wait_on_address_functions {
         std::atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress;
         std::atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle;
@@ -113,17 +135,6 @@ namespace {
         std::atomic<bool> _Initialized;
     };
 
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-    constexpr bool _Have_wait_functions() {
-        return true;
-    }
-#define __crtWaitOnAddress       WaitOnAddress
-#define __crtWakeByAddressSingle WakeByAddressSingle
-#define __crtWakeByAddressAll    WakeByAddressAll
-
-#pragma comment(lib, "Synchronization.lib")
-
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     const _Wait_on_address_functions& _Get_wait_functions() {
         static _Wait_on_address_functions functions;
         if (!functions._Initialized.load(std::memory_order_relaxed)) {
