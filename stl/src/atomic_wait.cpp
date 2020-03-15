@@ -42,11 +42,11 @@ namespace {
         _Atomic_spin_value_step            = 0x0000'0010,
         _Atomic_wait_phase_init_spin_count = 0x0000'0000,
         _Atomic_wait_phase_spin            = 0x0000'0002,
-        _Atomic_wait_phase_wait            = 0x0000'0001,
-        _Atomic_wait_phase_wait_indirect   = 0x0000'0004,
+        _Atomic_wait_phase_wait_locked     = 0x0000'0001,
+        _Atomic_wait_phase_wait_not_locked = 0x0000'0004,
     };
 
-    static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
+    static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait_locked);
 
     static constexpr std::size_t _Uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
     static std::atomic<std::size_t> _Atomic_spin_count     = _Uninitialized_spin_count;
@@ -81,7 +81,7 @@ namespace {
                 YieldProcessor();
                 return true;
             }
-            _Wait_context = _Atomic_wait_phase_wait_indirect;
+            _Wait_context = _Atomic_wait_phase_wait_not_locked;
             break;
         }
         }
@@ -119,20 +119,18 @@ namespace {
         }
 
         case _Atomic_wait_phase_spin: {
-            if ((_Wait_context & _Atomic_spin_value_mask) > 0) {
+            if (_Wait_context & _Atomic_spin_value_mask) {
                 _Wait_context -= _Atomic_spin_value_step;
                 YieldProcessor();
                 return;
             }
-
-            _Wait_context = _Atomic_wait_phase_wait;
-
+            _Wait_context = _Atomic_wait_phase_wait_locked;
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::AcquireSRWLockExclusive(&entry._Lock);
             [[fallthrough]];
         }
 
-        case _Atomic_wait_phase_wait: {
+        case _Atomic_wait_phase_wait_locked: {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::SleepConditionVariableSRW(&entry._Condition, &entry._Lock, INFINITE, 0);
             return;
@@ -141,7 +139,7 @@ namespace {
     }
 
     void _Atomic_unwait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
-        if ((_Wait_context & _Atomic_wait_phase_wait) != 0) {
+        if (_Wait_context & _Atomic_wait_phase_wait_locked) {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::ReleaseSRWLockExclusive(&entry._Lock);
         }
