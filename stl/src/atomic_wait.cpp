@@ -173,7 +173,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void __stdcall __std_atomic_wait_direct(
+void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(
     const void* _Storage, const void* const _Comparand, const std::size_t _Size, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
@@ -182,7 +182,7 @@ void __stdcall __std_atomic_wait_direct(
     }
 }
 
-void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressSingle(const_cast<void*>(_Storage));
     } else {
@@ -190,7 +190,7 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
     }
 }
 
-void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressAll(const_cast<void*>(_Storage));
     } else {
@@ -198,7 +198,8 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
     }
 }
 
-void __stdcall __std_atomic_wait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
+    const void* const _Storage, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -210,11 +211,11 @@ void __stdcall __std_atomic_wait_indirect(const void* const _Storage, std::size_
     }
 }
 
-void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
     return __std_atomic_notify_all_indirect(_Storage);
 }
 
-void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
         entry._Counter.fetch_add(1, std::memory_order_relaxed);
@@ -225,11 +226,13 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 }
 
-void __stdcall __std_atomic_unwait_direct(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_direct(
+    const void* const _Storage, std::size_t& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
-void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
+    const void* const _Storage, std::size_t& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 _END_EXTERN_C

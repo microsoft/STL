@@ -133,18 +133,21 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 #if _HAS_CXX20
 extern "C" {
-void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand,
+void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand,
     const std::size_t _Size, std::size_t& _Wait_context) noexcept;
-void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
-void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_direct(const void* const _Storage, std::size_t& _Wait_context) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_direct(
+    const void* const _Storage, std::size_t& _Wait_context) noexcept;
 
-void __stdcall __std_atomic_wait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept;
-void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept;
-void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
+    const void* const _Storage, std::size_t& _Wait_context) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, std::size_t& _Wait_context) noexcept;
+void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
+    const void* const _Storage, std::size_t& _Wait_context) noexcept;
 
 #if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
 inline constexpr bool _Atomic_unwait_applicable = false;
