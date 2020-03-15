@@ -76,7 +76,7 @@ namespace {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_not_locked: {
             _Wait_context = _Atomic_wait_phase_wait_locked;
-            auto& entry = _Atomic_wait_table_entry(_Storage);
+            auto& entry   = _Atomic_wait_table_entry(_Storage);
             ::AcquireSRWLockExclusive(&entry._Lock);
             [[fallthrough]];
         }
@@ -226,7 +226,7 @@ std::size_t _CRT_SATELLITE_1 __stdcall __std_atomic_get_spin_count(const bool _I
     if (_Is_direct && _Have_wait_functions()) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
-        return 0; 
+        return 0;
     }
     std::size_t result = _Atomic_spin_count.load(std::memory_order_relaxed);
     if (result == _Uninitialized_spin_count) {

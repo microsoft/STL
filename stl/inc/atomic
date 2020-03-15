@@ -159,11 +159,23 @@ enum _Atomic_spin_phase : std::size_t {
     _Atomic_wait_phase_spin            = 0x0000'0004,
     _Atomic_wait_phase_wait_locked     = 0x0000'0001,
     _Atomic_wait_phase_wait_not_locked = 0x0000'0002,
-    
-    _Atomic_unwait_needed = _Atomic_wait_phase_wait_locked,
+    _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
+inline constexpr bool _Atomic_wait_on_address_statically_avaliable = true;
+#else
+inline constexpr bool _Atomic_wait_on_address_statically_avaliable = false;
+#endif
+}
+
 inline bool __std_atomic_wait_spin(std::size_t& _Wait_context, const bool _Is_direct) noexcept {
+    if constexpr (_Atomic_wait_on_address_statically_avaliable) {
+        if (_Is_direct) {
+            _Wait_context = _Atomic_wait_phase_wait_not_locked;
+            return false;
+        }
+    }
     switch (_Wait_context & _Atomic_wait_phase_mask) {
     case _Atomic_wait_phase_init_spin_count: {
         _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
@@ -181,13 +193,6 @@ inline bool __std_atomic_wait_spin(std::size_t& _Wait_context, const bool _Is_di
     }
     }
     return false;
-}
-
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
-inline constexpr bool _Atomic_unwait_applicable = false;
-#else
-inline constexpr bool _Atomic_unwait_applicable = true;
-#endif
 }
 
 #endif // _HAS_CXX20
@@ -426,7 +431,7 @@ struct _Atomic_storage {
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
-        if constexpr (_Atomic_unwait_applicable) {
+        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
             if (_Wait_context & _Atomic_unwait_needed) {
                 __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
             }
@@ -578,7 +583,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 1, _Wait_context);
             }
         }
-        if constexpr (_Atomic_unwait_applicable) {
+        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
             if (_Wait_context & _Atomic_unwait_needed) {
                 __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
             }
@@ -688,7 +693,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 2, _Wait_context);
             }
         }
-        if constexpr (_Atomic_unwait_applicable) {
+        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
             if (_Wait_context & _Atomic_unwait_needed) {
                 __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
             }
@@ -796,7 +801,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 4, _Wait_context);
             }
         }
-        if constexpr (_Atomic_unwait_applicable) {
+        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
             if (_Wait_context & _Atomic_unwait_needed) {
                 __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
             }
@@ -943,7 +948,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 8, _Wait_context);
             }
         }
-        if constexpr (_Atomic_unwait_applicable) {
+        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
             if (_Wait_context & _Atomic_unwait_needed) {
                 __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
             }
@@ -1069,7 +1074,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
-        if constexpr (_Atomic_unwait_applicable) {
+        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
             if (_Wait_context & _Atomic_unwait_needed) {
                     __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
             }
