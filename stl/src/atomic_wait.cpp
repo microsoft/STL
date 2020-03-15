@@ -36,6 +36,54 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
+    enum _Atomic_spin_phase : std::size_t {
+        _Atomic_wait_phase_mask            = 0x0000'000F,
+        _Atomic_spin_value_mask            = 0xFFFF'FFF0,
+        _Atomic_spin_value_step            = 0x0000'0010,
+        _Atomic_wait_phase_init_spin_count = 0x0000'0000,
+        _Atomic_wait_phase_spin            = 0x0000'0002,
+        _Atomic_wait_phase_wait            = 0x0000'0001,
+        _Atomic_wait_phase_wait_indirect   = 0x0000'0004,
+    };
+
+    static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
+
+    inline std::size_t _Atomic_get_spin_count() noexcept {
+        static std::size_t constexpr uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
+        static std::atomic<std::size_t> atomic_spin_count     = uninitialized_spin_count;
+        std::size_t result                                    = atomic_spin_count.load(std::memory_order_relaxed);
+        if (result == uninitialized_spin_count) {
+            result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+            atomic_spin_count.store(result, std::memory_order_relaxed);
+
+            // Make sure other thread is likely to get this,
+            // as we've done kernel call for that.
+            std::atomic_thread_fence(std::memory_order_seq_cst);
+        }
+        return result;
+    }
+
+
+    inline bool _Atomic_wait_spin(std::size_t& _Wait_context) noexcept {
+        switch (_Wait_context & _Atomic_wait_phase_mask) {
+        case _Atomic_wait_phase_init_spin_count: {
+            _Wait_context = _Atomic_wait_phase_spin | _Atomic_get_spin_count();
+            [[fallthrough]];
+        }
+
+        case _Atomic_wait_phase_spin: {
+            if ((_Wait_context & _Atomic_spin_value_mask) > 0) {
+                _Wait_context -= _Atomic_spin_value_step;
+                YieldProcessor();
+                return true;
+            }
+            _Wait_context = _Atomic_wait_phase_wait_indirect;
+            break;
+        }
+        }
+        return false;
+    }
+
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
     constexpr bool _Have_wait_functions() {
         return true;
@@ -56,36 +104,9 @@ namespace {
     }
 
     void _Atomic_unwait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] std::size_t& _Wait_context) noexcept {
-    }
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] std::size_t& _Wait_context) noexcept {}
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
-    enum _Atomic_spin_phase : std::size_t {
-        _Atomic_wait_phase_mask            = 0x0000'000F,
-        _Atomic_spin_value_mask            = 0xFFFF'FFF0,
-        _Atomic_spin_value_step            = 0x0000'0010,
-        _Atomic_wait_phase_init_spin_count = 0x0000'0000,
-        _Atomic_wait_phase_spin            = 0x0000'0002,
-        _Atomic_wait_phase_wait            = 0x0000'0001,
-    };
-
-    static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
-
-    inline std::size_t _Atomic_get_spin_count() noexcept {
-        static std::size_t constexpr uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
-        static std::atomic<std::size_t> atomic_spin_count     = uninitialized_spin_count;
-        std::size_t result                                    = atomic_spin_count.load(std::memory_order_relaxed);
-        if (result == uninitialized_spin_count) {
-            result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-            atomic_spin_count.store(result, std::memory_order_relaxed);
-
-            // Make sure other thread is likely to get this,
-            // as we've done kernel call for that.
-            std::atomic_thread_fence(std::memory_order_seq_cst);
-        }
-        return result;
-    }
-
     void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_init_spin_count: {
@@ -213,6 +234,9 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     const void* const _Storage, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
+        if (_Atomic_wait_spin(_Wait_context))
+            return;
+
         auto& entry = _Atomic_wait_table_entry(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
         auto counter = entry._Counter.load(std::memory_order_relaxed);
