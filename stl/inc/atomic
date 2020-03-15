@@ -156,9 +156,9 @@ enum _Atomic_spin_phase : std::size_t {
     _Atomic_spin_value_mask            = 0xFFFF'FFF0,
     _Atomic_spin_value_step            = 0x0000'0010,
     _Atomic_wait_phase_init_spin_count = 0x0000'0000,
-    _Atomic_wait_phase_spin            = 0x0000'0002,
+    _Atomic_wait_phase_spin            = 0x0000'0004,
     _Atomic_wait_phase_wait_locked     = 0x0000'0001,
-    _Atomic_wait_phase_wait_not_locked = 0x0000'0004,
+    _Atomic_wait_phase_wait_not_locked = 0x0000'0002,
     
     _Atomic_unwait_needed = _Atomic_wait_phase_wait_locked,
 };
