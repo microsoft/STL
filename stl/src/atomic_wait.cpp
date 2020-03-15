@@ -48,21 +48,25 @@ namespace {
 
     static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait);
 
-    inline std::size_t _Atomic_get_spin_count() noexcept {
-        static std::size_t constexpr uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
-        static std::atomic<std::size_t> atomic_spin_count     = uninitialized_spin_count;
-        std::size_t result                                    = atomic_spin_count.load(std::memory_order_relaxed);
-        if (result == uninitialized_spin_count) {
-            result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-            atomic_spin_count.store(result, std::memory_order_relaxed);
+    static constexpr std::size_t _Uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
+    static std::atomic<std::size_t> _Atomic_spin_count     = _Uninitialized_spin_count;
 
-            // Make sure other thread is likely to get this,
-            // as we've done kernel call for that.
-            std::atomic_thread_fence(std::memory_order_seq_cst);
-        }
+    std::size_t _Atomic_init_spin_count() noexcept {
+        std::size_t result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+        _Atomic_spin_count.store(result, std::memory_order_relaxed);
+        // Make sure other thread is likely to get this,
+        // as we've done kernel call for that.
+        std::atomic_thread_fence(std::memory_order_seq_cst);
         return result;
     }
 
+    inline std::size_t _Atomic_get_spin_count() noexcept {
+        std::size_t result = _Atomic_spin_count.load(std::memory_order_relaxed);
+        if (result == _Uninitialized_spin_count) {
+            result = _Atomic_init_spin_count();
+        }
+        return result;
+    }
 
     inline bool _Atomic_wait_spin(std::size_t& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
