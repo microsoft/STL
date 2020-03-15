@@ -46,16 +46,17 @@ namespace {
 
 #pragma comment(lib, "Synchronization.lib")
 
-    void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+    void _Atomic_wait_fallback(
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] std::size_t& _Wait_context) noexcept {
         std::terminate();
     }
 
-    void _Atomic_notify_fallback(const void* const _Storage) noexcept {
+    void _Atomic_notify_fallback([[maybe_unused]] const void* const _Storage) noexcept {
         std::terminate();
     }
 
-    void _Atomic_unwait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
-        std::terminate();
+    void _Atomic_unwait_fallback(
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] std::size_t& _Wait_context) noexcept {
     }
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
