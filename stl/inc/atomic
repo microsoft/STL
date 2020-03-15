@@ -172,7 +172,6 @@ inline constexpr bool _Atomic_wait_on_address_statically_avaliable = false;
 inline bool __std_atomic_wait_spin(std::size_t& _Wait_context, const bool _Is_direct) noexcept {
     if constexpr (_Atomic_wait_on_address_statically_avaliable) {
         if (_Is_direct) {
-            _Wait_context = _Atomic_wait_phase_wait_not_locked;
             return false;
         }
     }
