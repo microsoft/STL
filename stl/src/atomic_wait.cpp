@@ -234,8 +234,10 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     const void* const _Storage, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
-        if (_Atomic_wait_spin(_Wait_context))
+        // Spin here, since spinning inside WaitOnAddress is not helpful in case of change without notification
+        if (_Atomic_wait_spin(_Wait_context)) {
             return;
+        }
 
         auto& entry = _Atomic_wait_table_entry(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
