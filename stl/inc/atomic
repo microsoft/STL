@@ -149,14 +149,46 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* con
 void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
     const void* const _Storage, std::size_t& _Wait_context) noexcept;
 
+std::size_t _CRT_SATELLITE_1 __stdcall __std_atomic_get_spin_count() noexcept;
+
+enum _Atomic_spin_phase : std::size_t {
+    _Atomic_wait_phase_mask            = 0x0000'000F,
+    _Atomic_spin_value_mask            = 0xFFFF'FFF0,
+    _Atomic_spin_value_step            = 0x0000'0010,
+    _Atomic_wait_phase_init_spin_count = 0x0000'0000,
+    _Atomic_wait_phase_spin            = 0x0000'0002,
+    _Atomic_wait_phase_wait_locked     = 0x0000'0001,
+    _Atomic_wait_phase_wait_not_locked = 0x0000'0004,
+    
+    _Atomic_unwait_needed = _Atomic_wait_phase_wait_locked,
+};
+
+inline bool __std_atomic_wait_spin(std::size_t& _Wait_context) noexcept {
+    switch (_Wait_context & _Atomic_wait_phase_mask) {
+    case _Atomic_wait_phase_init_spin_count: {
+        _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count();
+        [[fallthrough]];
+    }
+
+    case _Atomic_wait_phase_spin: {
+        if ((_Wait_context & _Atomic_spin_value_mask) > 0) {
+            _Wait_context -= _Atomic_spin_value_step;
+            _YIELD_PROCESSOR();
+            return true;
+        }
+        _Wait_context = _Atomic_wait_phase_wait_not_locked;
+        break;
+    }
+    }
+    return false;
+}
+
 #if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
 inline constexpr bool _Atomic_unwait_applicable = false;
 #else
 inline constexpr bool _Atomic_unwait_applicable = true;
 #endif
 }
-
-inline constexpr std::size_t _Atomic_unwait_needed = 0x0000'0001;
 
 #endif // _HAS_CXX20
 
@@ -390,7 +422,9 @@ struct _Atomic_storage {
             if (_CSTD memcmp(_STD addressof(_Observed), _Expected_ptr, sizeof(_Ty)) != 0) {
                 break;
             }
-            __std_atomic_wait_indirect(__Storage_ptr, _Wait_context);
+            if (!__std_atomic_wait_spin(_Wait_context)) {
+                __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
+            }
         }
         if constexpr (_Atomic_unwait_applicable) {
             if (_Wait_context & _Atomic_unwait_needed) {
@@ -540,7 +574,9 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 1, _Wait_context);
+            if (!__std_atomic_wait_spin(_Wait_context)) {
+                __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 1, _Wait_context);
+            }
         }
         if constexpr (_Atomic_unwait_applicable) {
             if (_Wait_context & _Atomic_unwait_needed) {
@@ -648,7 +684,9 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 2, _Wait_context);
+            if (!__std_atomic_wait_spin(_Wait_context)) {
+                __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 2, _Wait_context);
+            }
         }
         if constexpr (_Atomic_unwait_applicable) {
             if (_Wait_context & _Atomic_unwait_needed) {
@@ -754,7 +792,9 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 4, _Wait_context);
+            if (!__std_atomic_wait_spin(_Wait_context)) {
+                __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 4, _Wait_context);
+            }
         }
         if constexpr (_Atomic_unwait_applicable) {
             if (_Wait_context & _Atomic_unwait_needed) {
@@ -899,7 +939,9 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 8, _Wait_context);
+            if (!__std_atomic_wait_spin(_Wait_context)) {
+                __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 8, _Wait_context);
+            }
         }
         if constexpr (_Atomic_unwait_applicable) {
             if (_Wait_context & _Atomic_unwait_needed) {
@@ -1023,7 +1065,9 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
-            __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
+            if (!__std_atomic_wait_spin(_Wait_context)) {
+                __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
+            }
         }
         if constexpr (_Atomic_unwait_applicable) {
             if (_Wait_context & _Atomic_unwait_needed) {

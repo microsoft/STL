@@ -36,18 +36,6 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    enum _Atomic_spin_phase : std::size_t {
-        _Atomic_wait_phase_mask            = 0x0000'000F,
-        _Atomic_spin_value_mask            = 0xFFFF'FFF0,
-        _Atomic_spin_value_step            = 0x0000'0010,
-        _Atomic_wait_phase_init_spin_count = 0x0000'0000,
-        _Atomic_wait_phase_spin            = 0x0000'0002,
-        _Atomic_wait_phase_wait_locked     = 0x0000'0001,
-        _Atomic_wait_phase_wait_not_locked = 0x0000'0004,
-    };
-
-    static_assert(_Atomic_unwait_needed == _Atomic_wait_phase_wait_locked);
-
     static constexpr std::size_t _Uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
     static std::atomic<std::size_t> _Atomic_spin_count     = _Uninitialized_spin_count;
 
@@ -60,33 +48,6 @@ namespace {
         return result;
     }
 
-    inline std::size_t _Atomic_get_spin_count() noexcept {
-        std::size_t result = _Atomic_spin_count.load(std::memory_order_relaxed);
-        if (result == _Uninitialized_spin_count) {
-            result = _Atomic_init_spin_count();
-        }
-        return result;
-    }
-
-    inline bool _Atomic_wait_spin(std::size_t& _Wait_context) noexcept {
-        switch (_Wait_context & _Atomic_wait_phase_mask) {
-        case _Atomic_wait_phase_init_spin_count: {
-            _Wait_context = _Atomic_wait_phase_spin | _Atomic_get_spin_count();
-            [[fallthrough]];
-        }
-
-        case _Atomic_wait_phase_spin: {
-            if ((_Wait_context & _Atomic_spin_value_mask) > 0) {
-                _Wait_context -= _Atomic_spin_value_step;
-                YieldProcessor();
-                return true;
-            }
-            _Wait_context = _Atomic_wait_phase_wait_not_locked;
-            break;
-        }
-        }
-        return false;
-    }
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
     constexpr bool _Have_wait_functions() {
@@ -113,17 +74,7 @@ namespace {
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
-        case _Atomic_wait_phase_init_spin_count: {
-            _Wait_context = _Atomic_wait_phase_spin | _Atomic_get_spin_count();
-            [[fallthrough]];
-        }
-
-        case _Atomic_wait_phase_spin: {
-            if (_Wait_context & _Atomic_spin_value_mask) {
-                _Wait_context -= _Atomic_spin_value_step;
-                YieldProcessor();
-                return;
-            }
+        case _Atomic_wait_phase_wait_not_locked: {
             _Wait_context = _Atomic_wait_phase_wait_locked;
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::AcquireSRWLockExclusive(&entry._Lock);
@@ -236,11 +187,6 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     const void* const _Storage, std::size_t& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
-        // Spin here, since spinning inside WaitOnAddress is not helpful in case of change without notification
-        if (_Atomic_wait_spin(_Wait_context)) {
-            return;
-        }
-
         auto& entry = _Atomic_wait_table_entry(_Storage);
         std::atomic_thread_fence(std::memory_order_seq_cst);
         auto counter = entry._Counter.load(std::memory_order_relaxed);
@@ -274,5 +220,13 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_direct(
 void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
     const void* const _Storage, std::size_t& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
+}
+
+std::size_t _CRT_SATELLITE_1 __stdcall __std_atomic_get_spin_count() noexcept {
+    std::size_t result = _Atomic_spin_count.load(std::memory_order_relaxed);
+    if (result == _Uninitialized_spin_count) {
+        result = _Atomic_init_spin_count();
+    }
+    return result;
 }
 _END_EXTERN_C
