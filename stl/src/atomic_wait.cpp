@@ -59,12 +59,12 @@ namespace {
 
 #pragma comment(lib, "Synchronization.lib")
 
-    void _Atomic_wait_fallback(
+    [[noreturn]] void _Atomic_wait_fallback(
         [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {
         std::terminate();
     }
 
-    void _Atomic_notify_fallback([[maybe_unused]] const void* const _Storage) noexcept {
+    [[noreturn]] void _Atomic_notify_fallback([[maybe_unused]] const void* const _Storage) noexcept {
         std::terminate();
     }
 
@@ -76,32 +76,31 @@ namespace {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_none: {
             _Wait_context = _Atomic_wait_phase_wait_locked;
-            auto& entry   = _Atomic_wait_table_entry(_Storage);
-            ::AcquireSRWLockExclusive(&entry._Lock);
+            auto& _Entry  = _Atomic_wait_table_entry(_Storage);
+            ::AcquireSRWLockExclusive(&_Entry._Lock);
             [[fallthrough]];
         }
 
         case _Atomic_wait_phase_wait_locked: {
-            auto& entry = _Atomic_wait_table_entry(_Storage);
-            ::SleepConditionVariableSRW(&entry._Condition, &entry._Lock, INFINITE, 0);
+            auto& _Entry = _Atomic_wait_table_entry(_Storage);
+            ::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, INFINITE, 0);
             // re-check, and still in _Atomic_wait_phase_wait_locked
-            return;
         }
         }
     }
 
     void _Atomic_unwait_fallback(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
         if (_Wait_context & _Atomic_wait_phase_wait_locked) {
-            auto& entry = _Atomic_wait_table_entry(_Storage);
-            ::ReleaseSRWLockExclusive(&entry._Lock);
+            auto& _Entry = _Atomic_wait_table_entry(_Storage);
+            ::ReleaseSRWLockExclusive(&_Entry._Lock);
         }
     }
 
     void _Atomic_notify_fallback(const void* const _Storage) noexcept {
-        auto& entry = _Atomic_wait_table_entry(_Storage);
-        ::AcquireSRWLockExclusive(&entry._Lock);
-        ::ReleaseSRWLockExclusive(&entry._Lock);
-        ::WakeAllConditionVariable(&entry._Condition);
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
+        ::AcquireSRWLockExclusive(&_Entry._Lock);
+        ::ReleaseSRWLockExclusive(&_Entry._Lock);
+        ::WakeAllConditionVariable(&_Entry._Condition);
     }
 
     struct _Wait_on_address_functions {
@@ -188,19 +187,19 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     if (_Have_wait_functions()) {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_none: {
-            auto& entry = _Atomic_wait_table_entry(_Storage);
+            auto& _Entry = _Atomic_wait_table_entry(_Storage);
             std::atomic_thread_fence(std::memory_order_seq_cst);
-            unsigned long long counter = entry._Counter.load(std::memory_order_relaxed);
+            unsigned long long _Counter = _Entry._Counter.load(std::memory_order_relaxed);
             // Save counter in context and check again
-            _Wait_context = counter | _Atomic_wait_phase_wait_counter;
+            _Wait_context = _Counter | _Atomic_wait_phase_wait_counter;
             break;
         }
 
         case _Atomic_wait_phase_wait_counter: {
-            unsigned long long counter = _Wait_context & _Atomic_counter_value_mask;
-            auto& entry                = _Atomic_wait_table_entry(_Storage);
-            __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&entry._Counter._Storage._Value), &counter,
-                sizeof(entry._Counter._Storage._Value), INFINITE);
+            unsigned long long _Counter = _Wait_context & _Atomic_counter_value_mask;
+            auto& _Entry                = _Atomic_wait_table_entry(_Storage);
+            __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&_Entry._Counter._Storage._Value), &_Counter,
+                sizeof(_Entry._Counter._Storage._Value), INFINITE);
             // Lock on new counter value if coming back
             _Wait_context = _Atomic_wait_phase_wait_none;
             break;
@@ -217,10 +216,10 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_indirect(const void* con
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
-        auto& entry = _Atomic_wait_table_entry(_Storage);
-        entry._Counter.fetch_add(_Atomic_counter_value_step, std::memory_order_relaxed);
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
+        _Entry._Counter.fetch_add(_Atomic_counter_value_step, std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);
-        __crtWakeByAddressAll(&entry._Counter._Storage._Value);
+        __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
     } else {
         _Atomic_notify_fallback(_Storage);
     }
