@@ -165,19 +165,15 @@ enum _Atomic_spin_phase : unsigned long long {
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
-inline constexpr bool _Atomic_wait_on_address_statically_avaliable = true;
-#else
-inline constexpr bool _Atomic_wait_on_address_statically_avaliable = false;
-#endif
+
 }
 
 inline bool __std_atomic_wait_spin(unsigned long long& _Wait_context, const bool _Is_direct) noexcept {
-    if constexpr (_Atomic_wait_on_address_statically_avaliable) {
-        if (_Is_direct) {
-            return false;
-        }
+#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+    if (_Is_direct) {
+        return false;
     }
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     switch (_Wait_context & _Atomic_wait_phase_mask) {
     case _Atomic_wait_phase_init_spin_count: {
         _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
@@ -433,12 +429,12 @@ struct _Atomic_storage {
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
-        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
-            if (_Wait_context & _Atomic_unwait_needed) {
-                __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
-            }
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        if (_Wait_context & _Atomic_unwait_needed) {
+            __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
         }
-    }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+   }
 
     void notify_one() noexcept {
         __std_atomic_notify_one_indirect(_STD addressof(_Storage));
@@ -585,11 +581,11 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 1, _Wait_context);
             }
         }
-        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
-            if (_Wait_context & _Atomic_unwait_needed) {
-                __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
-            }
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        if (_Wait_context & _Atomic_unwait_needed) {
+            __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
         }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     void notify_one() noexcept {
@@ -695,11 +691,11 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 2, _Wait_context);
             }
         }
-        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
-            if (_Wait_context & _Atomic_unwait_needed) {
-                __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
-            }
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        if (_Wait_context & _Atomic_unwait_needed) {
+            __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
         }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     void notify_one() noexcept {
@@ -803,11 +799,11 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 4, _Wait_context);
             }
         }
-        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
-            if (_Wait_context & _Atomic_unwait_needed) {
-                __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
-            }
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        if (_Wait_context & _Atomic_unwait_needed) {
+            __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
         }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     void notify_one() noexcept {
@@ -950,11 +946,11 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 8, _Wait_context);
             }
         }
-        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
-            if (_Wait_context & _Atomic_unwait_needed) {
-                __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
-            }
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        if (_Wait_context & _Atomic_unwait_needed) {
+            __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
         }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     void notify_one() noexcept {
@@ -1076,11 +1072,11 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
-        if constexpr (!_Atomic_wait_on_address_statically_avaliable) {
-            if (_Wait_context & _Atomic_unwait_needed) {
-                    __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
-            }
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        if (_Wait_context & _Atomic_unwait_needed) {
+            __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
         }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     void notify_one() noexcept {
