@@ -37,7 +37,7 @@ short _FDscale(float* px, long lexp) { // scale *px by 2^xexp with checking
             unsigned short psx = 0;
 
             if (xexp <= -16) { // scale by words
-                psx          = ps->_Sh[_F1] | 0;
+                psx          = ps->_Sh[_F1];
                 ps->_Sh[_F1] = ps->_Sh[_F0];
                 ps->_Sh[_F0] = 0;
                 xexp += 16;
