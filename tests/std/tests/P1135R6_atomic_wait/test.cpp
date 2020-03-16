@@ -6,19 +6,19 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
-#include <iostream>
-#include <mutex>
 #include <thread>
 
 template <class UnderlyingType>
 void test_atomic_wait_func(
     UnderlyingType old_value, UnderlyingType new_value, std::chrono::steady_clock::duration waiting_duration) {
 
-    std::string seq;
-    std::mutex mx;
-    auto add_seq = [&](char ch) {
-        std::unique_lock lk{mx};
-        seq.push_back(ch);
+    constexpr std::size_t seq_max_size = 10;
+    char seq[seq_max_size + 1];
+    std::atomic<char*> base = seq;
+    auto add_seq            = [&](char ch) {
+        char* p = base.fetch_add(1, std::memory_order_relaxed);
+        assert(p - seq < seq_max_size);
+        *p = ch;
     };
 
     std::atomic<UnderlyingType> a{old_value};
@@ -49,7 +49,8 @@ void test_atomic_wait_func(
 
     thd.join();
 
-    assert(seq == "123456");
+    add_seq('\0');
+    assert(strcmp(seq, "123456") == 0);
 }
 
 int main() {
