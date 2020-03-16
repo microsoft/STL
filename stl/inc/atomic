@@ -134,27 +134,29 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #if _HAS_CXX20
 extern "C" {
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand,
-    const std::size_t _Size, std::size_t& _Wait_context) noexcept;
+    const std::size_t _Size, unsigned long long& _Wait_context) noexcept;
 void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
 void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_direct(
-    const void* const _Storage, std::size_t& _Wait_context) noexcept;
+    const void* const _Storage, unsigned long long& _Wait_context) noexcept;
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
-    const void* const _Storage, std::size_t& _Wait_context) noexcept;
+    const void* const _Storage, unsigned long long& _Wait_context) noexcept;
 void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept;
 void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept;
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
-    const void* const _Storage, std::size_t& _Wait_context) noexcept;
+    const void* const _Storage, unsigned long long& _Wait_context) noexcept;
 
 std::size_t _CRT_SATELLITE_1 __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept;
 
-enum _Atomic_spin_phase : std::size_t {
-    _Atomic_wait_phase_mask            = 0x0000'000F,
-    _Atomic_spin_value_mask            = 0xFFFF'FFF0,
-    _Atomic_spin_value_step            = 0x0000'0010,
+enum _Atomic_spin_phase : unsigned long long {
+    _Atomic_wait_phase_mask            = 0x0000'0007,
+    _Atomic_spin_value_mask            = 0xFFFF'FFF8,
+    _Atomic_spin_value_step            = _Atomic_wait_phase_mask + 1,
+    _Atomic_counter_value_mask         = ~_Atomic_wait_phase_mask,
+    _Atomic_counter_value_step         = _Atomic_wait_phase_mask + 1,
     _Atomic_wait_phase_init_spin_count = 0x0000'0000,
     _Atomic_wait_phase_spin            = 0x0000'0004,
     _Atomic_wait_phase_wait_locked     = 0x0000'0001,
@@ -418,9 +420,9 @@ struct _Atomic_storage {
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        std::size_t _Wait_context = 0;
-        const auto _Storage_ptr   = _STD addressof(_Storage);
-        const auto _Expected_ptr  = _STD addressof(_Expected);
+        unsigned long long _Wait_context = 0;
+        const auto _Storage_ptr          = _STD addressof(_Storage);
+        const auto _Expected_ptr         = _STD addressof(_Expected);
         for (;;) {
             _Ty _Observed = load(_Order);
             if (_CSTD memcmp(_STD addressof(_Observed), _Expected_ptr, sizeof(_Ty)) != 0) {
@@ -569,9 +571,9 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        std::size_t _Wait_context = 0;
-        const auto _Storage_ptr   = _STD addressof(_Storage);
-        const auto _Expected_ptr  = _STD addressof(_Expected);
+        unsigned long long _Wait_context = 0;
+        const auto _Storage_ptr          = _STD addressof(_Storage);
+        const auto _Expected_ptr         = _STD addressof(_Expected);
         for (;;) {
             const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
             const char _Observed_bytes = _Atomic_reinterpret_as<char>(load(_Order));
@@ -679,9 +681,9 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        std::size_t _Wait_context = 0;
-        const auto _Storage_ptr   = _STD addressof(_Storage);
-        const auto _Expected_ptr  = _STD addressof(_Expected);
+        unsigned long long _Wait_context = 0;
+        const auto _Storage_ptr          = _STD addressof(_Storage);
+        const auto _Expected_ptr         = _STD addressof(_Expected);
         for (;;) {
             const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
             const short _Observed_bytes = _Atomic_reinterpret_as<short>(load(_Order));
@@ -787,9 +789,9 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
 #if _HAS_CXX20
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        std::size_t _Wait_context = 0;
-        const auto _Storage_ptr   = _STD addressof(_Storage);
-        const auto _Expected_ptr  = _STD addressof(_Expected);
+        unsigned long long _Wait_context = 0;
+        const auto _Storage_ptr          = _STD addressof(_Storage);
+        const auto _Expected_ptr         = _STD addressof(_Expected);
         for (;;) {
             const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
             const long _Observed_bytes = _Atomic_reinterpret_as<long>(load(_Order));
@@ -934,9 +936,9 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        std::size_t _Wait_context = 0;
-        const auto _Storage_ptr   = _STD addressof(_Storage);
-        const auto _Expected_ptr  = _STD addressof(_Expected);
+        unsigned long long _Wait_context = 0;
+        const auto _Storage_ptr          = _STD addressof(_Storage);
+        const auto _Expected_ptr         = _STD addressof(_Expected);
         for (;;) {
             const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
             const long long _Observed_bytes = _Atomic_reinterpret_as<long long>(load(_Order));
@@ -1061,7 +1063,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        std::size_t _Wait_context = 0;
+        unsigned long long _Wait_context = 0;
         const auto _Storage_ptr   = _STD addressof(_Storage);
         for (;;) {
             const _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);

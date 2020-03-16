@@ -21,7 +21,7 @@ namespace {
     struct alignas(std::hardware_destructive_interference_size) _Wait_table_entry {
         // Arbitraty variable to wait/notify on if target wariable is not proper atomic for that
         // Size is largest of lock-free to make aliasing problem into hypothetical
-        std::atomic<std::uint64_t> _Counter;
+        std::atomic<unsigned long long> _Counter;
 
         CONDITION_VARIABLE _Condition = CONDITION_VARIABLE_INIT;
         SRWLOCK _Lock                 = SRWLOCK_INIT;
@@ -185,13 +185,30 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const
 }
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
-    const void* const _Storage, std::size_t& _Wait_context) noexcept {
+    const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
-        auto& entry = _Atomic_wait_table_entry(_Storage);
-        std::atomic_thread_fence(std::memory_order_seq_cst);
-        auto counter = entry._Counter.load(std::memory_order_relaxed);
-        __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&entry._Counter._Storage._Value), &counter,
-            sizeof(entry._Counter._Storage._Value), INFINITE);
+
+        switch (_Wait_context & _Atomic_wait_phase_mask) {
+        case _Atomic_wait_phase_wait_not_locked: {
+            auto& entry = _Atomic_wait_table_entry(_Storage);
+            std::atomic_thread_fence(std::memory_order_seq_cst);
+            unsigned long long counter = entry._Counter.load(std::memory_order_relaxed);
+            // Save counter in context and check again
+            _Wait_context = counter | _Atomic_wait_phase_wait_locked;
+            break;
+        }
+
+        case _Atomic_wait_phase_wait_locked: {
+            unsigned long long counter = _Wait_context & _Atomic_counter_value_mask;
+            auto& entry                = _Atomic_wait_table_entry(_Storage);
+            __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&entry._Counter._Storage._Value), &counter,
+                sizeof(entry._Counter._Storage._Value), INFINITE);
+            // Lock on new counter value if coming back
+            _Wait_context = _Atomic_wait_phase_wait_not_locked;
+            break;
+        }
+        }
+
     } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
@@ -204,7 +221,7 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_indirect(const void* con
 void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         auto& entry = _Atomic_wait_table_entry(_Storage);
-        entry._Counter.fetch_add(1, std::memory_order_relaxed);
+        entry._Counter.fetch_add(_Atomic_counter_value_step, std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);
         __crtWakeByAddressAll(&entry._Counter._Storage._Value);
     } else {
@@ -213,12 +230,12 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* con
 }
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_direct(
-    const void* const _Storage, std::size_t& _Wait_context) noexcept {
+    const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
 void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
-    const void* const _Storage, std::size_t& _Wait_context) noexcept {
+    const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
