@@ -152,15 +152,16 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
 std::size_t _CRT_SATELLITE_1 __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept;
 
 enum _Atomic_spin_phase : unsigned long long {
-    _Atomic_wait_phase_mask            = 0x0000'0007,
-    _Atomic_spin_value_mask            = 0xFFFF'FFF8,
+    _Atomic_wait_phase_mask            = 0x0000'000F,
+    _Atomic_spin_value_mask            = 0xFFFF'FFF0,
     _Atomic_spin_value_step            = _Atomic_wait_phase_mask + 1,
     _Atomic_counter_value_mask         = ~_Atomic_wait_phase_mask,
     _Atomic_counter_value_step         = _Atomic_wait_phase_mask + 1,
     _Atomic_wait_phase_init_spin_count = 0x0000'0000,
-    _Atomic_wait_phase_spin            = 0x0000'0004,
+    _Atomic_wait_phase_spin            = 0x0000'0008,
     _Atomic_wait_phase_wait_locked     = 0x0000'0001,
-    _Atomic_wait_phase_wait_not_locked = 0x0000'0002,
+    _Atomic_wait_phase_wait_none       = 0x0000'0002,
+    _Atomic_wait_phase_wait_counter    = 0x0000'0004,
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
@@ -189,7 +190,7 @@ inline bool __std_atomic_wait_spin(unsigned long long& _Wait_context, const bool
             _YIELD_PROCESSOR();
             return true;
         }
-        _Wait_context = _Atomic_wait_phase_wait_not_locked;
+        _Wait_context = _Atomic_wait_phase_wait_none;
         break;
     }
     }

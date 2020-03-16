@@ -74,7 +74,7 @@ namespace {
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     void _Atomic_wait_fallback(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
-        case _Atomic_wait_phase_wait_not_locked: {
+        case _Atomic_wait_phase_wait_none: {
             _Wait_context = _Atomic_wait_phase_wait_locked;
             auto& entry   = _Atomic_wait_table_entry(_Storage);
             ::AcquireSRWLockExclusive(&entry._Lock);
@@ -84,6 +84,7 @@ namespace {
         case _Atomic_wait_phase_wait_locked: {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::SleepConditionVariableSRW(&entry._Condition, &entry._Lock, INFINITE, 0);
+            // re-check, and still in _Atomic_wait_phase_wait_locked
             return;
         }
         }
@@ -159,8 +160,8 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* const _Comparand, const std::size_t _Size, unsigned long long& _Wait_context) noexcept {
+void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand,
+    const std::size_t _Size, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
     } else {
@@ -189,22 +190,22 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     if (_Have_wait_functions()) {
 
         switch (_Wait_context & _Atomic_wait_phase_mask) {
-        case _Atomic_wait_phase_wait_not_locked: {
+        case _Atomic_wait_phase_wait_none: {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             std::atomic_thread_fence(std::memory_order_seq_cst);
             unsigned long long counter = entry._Counter.load(std::memory_order_relaxed);
             // Save counter in context and check again
-            _Wait_context = counter | _Atomic_wait_phase_wait_locked;
+            _Wait_context = counter | _Atomic_wait_phase_wait_counter;
             break;
         }
 
-        case _Atomic_wait_phase_wait_locked: {
+        case _Atomic_wait_phase_wait_counter: {
             unsigned long long counter = _Wait_context & _Atomic_counter_value_mask;
             auto& entry                = _Atomic_wait_table_entry(_Storage);
             __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&entry._Counter._Storage._Value), &counter,
                 sizeof(entry._Counter._Storage._Value), INFINITE);
             // Lock on new counter value if coming back
-            _Wait_context = _Atomic_wait_phase_wait_not_locked;
+            _Wait_context = _Atomic_wait_phase_wait_none;
             break;
         }
         }
