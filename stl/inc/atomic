@@ -164,8 +164,6 @@ enum _Atomic_spin_phase : unsigned long long {
     _Atomic_wait_phase_wait_counter    = 0x0000'0004,
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
-
-
 }
 
 inline bool __std_atomic_wait_spin(unsigned long long& _Wait_context, const bool _Is_direct) noexcept {
@@ -181,7 +179,7 @@ inline bool __std_atomic_wait_spin(unsigned long long& _Wait_context, const bool
     }
 
     case _Atomic_wait_phase_spin: {
-        if ((_Wait_context & _Atomic_spin_value_mask) > 0) {
+        if ((_Wait_context & _Atomic_spin_value_mask) != 0) {
             _Wait_context -= _Atomic_spin_value_step;
             _YIELD_PROCESSOR();
             return true;
@@ -434,7 +432,7 @@ struct _Atomic_storage {
             __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
         }
 #endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-   }
+    }
 
     void notify_one() noexcept {
         __std_atomic_notify_one_indirect(_STD addressof(_Storage));
