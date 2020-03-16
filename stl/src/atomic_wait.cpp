@@ -60,7 +60,7 @@ namespace {
 #pragma comment(lib, "Synchronization.lib")
 
     void _Atomic_wait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] std::size_t& _Wait_context) noexcept {
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {
         std::terminate();
     }
 
@@ -69,10 +69,10 @@ namespace {
     }
 
     void _Atomic_unwait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] std::size_t& _Wait_context) noexcept {}
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {}
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
-    void _Atomic_wait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+    void _Atomic_wait_fallback(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_not_locked: {
             _Wait_context = _Atomic_wait_phase_wait_locked;
@@ -89,7 +89,7 @@ namespace {
         }
     }
 
-    void _Atomic_unwait_fallback(const void* const _Storage, std::size_t& _Wait_context) noexcept {
+    void _Atomic_unwait_fallback(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
         if (_Wait_context & _Atomic_wait_phase_wait_locked) {
             auto& entry = _Atomic_wait_table_entry(_Storage);
             ::ReleaseSRWLockExclusive(&entry._Lock);
@@ -160,7 +160,7 @@ namespace {
 
 _EXTERN_C
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* const _Comparand, const std::size_t _Size, std::size_t& _Wait_context) noexcept {
+    const void* _Storage, const void* const _Comparand, const std::size_t _Size, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
     } else {
