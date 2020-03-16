@@ -113,7 +113,7 @@ namespace {
 
     const _Wait_on_address_functions& _Get_wait_functions() {
         static _Wait_on_address_functions functions;
-        if (!functions._Initialized.load(std::memory_order_relaxed)) {
+        if (!functions._Initialized.load(std::memory_order_acquire)) {
             HMODULE sync_api_module        = ::GetModuleHandle(TEXT("API-MS-WIN-CORE-SYNCH-L1-2-0.DLL"));
             FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
             FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
@@ -128,9 +128,7 @@ namespace {
                 functions._Pfn_WakeByAddressAll.store(
                     reinterpret_cast<decltype(&::WakeByAddressAll)>(wake_by_address_all), std::memory_order_relaxed);
             }
-            std::atomic_thread_fence(std::memory_order_seq_cst);
-            functions._Initialized.store(true, std::memory_order_relaxed);
-            std::atomic_thread_fence(std::memory_order_seq_cst);
+            functions._Initialized.store(true, std::memory_order_release);
         }
         return functions;
     }
@@ -188,7 +186,6 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const
 void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
-
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_none: {
             auto& entry = _Atomic_wait_table_entry(_Storage);
@@ -209,7 +206,6 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
             break;
         }
         }
-
     } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
