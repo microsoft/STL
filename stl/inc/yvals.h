@@ -306,7 +306,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _LOCK_DEBUG          3
 #define _LOCK_AT_THREAD_EXIT 4
 
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0602) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64)
 #define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 #endif
 
