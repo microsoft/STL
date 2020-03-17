@@ -33,9 +33,9 @@ using namespace std::chrono;
 using namespace std::filesystem;
 
 constexpr wstring_view badPath = L"// ?? ?? ///// ?? ?? ? ////"sv;
-path nonexistentPaths[]        = {
+const path nonexistentPaths[]  = {
     L"C:/This/Path/Should/Not/Exist"sv,
-    L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15//docs"sv,
+    L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15/docs"sv,
 };
 constexpr wstring_view longSuffix =
     LR"(really\long\path\longer\than\max_path\goes\here\and it just goes)"
@@ -2875,6 +2875,7 @@ void test_status() {
         EXPECT(status(nonexistent).type() == file_type::not_found); // should not throw
         EXPECT(status(nonexistent, ec).type() == file_type::not_found);
         EXPECT(ec.category() == system_category());
+        // accept ERROR_FILE_NOT_FOUND (2), ERROR_PATH_NOT_FOUND (3), or ERROR_BAD_NETPATH (53)
         EXPECT(ec.value() == 2 || ec.value() == 3 || ec.value() == 53);
         EXPECT(ec == errc::no_such_file_or_directory);
     }
@@ -3297,8 +3298,8 @@ void test_remove() {
     EXPECT(!exists(dirname, ec));
     EXPECT(good(ec));
 
-    remove(badPath); // we ignore bogus invalid paths
-    remove(badPath, ec); // bogus invalid path
+    remove(badPath); // we ignore invalid paths
+    remove(badPath, ec);
     EXPECT(good(ec));
 }
 
@@ -3588,7 +3589,7 @@ void test_create_directory() {
         remove(p);
     }
 
-    // test bogus path
+    // test invalid path
     {
         error_code ec;
         for (auto&& nonexistent : nonexistentPaths) {
@@ -3656,7 +3657,7 @@ void test_create_dirs_and_remove_all() {
     create_directories(badPath, ec);
     EXPECT(bad(ec));
 
-    remove_all(badPath); // we ignore bogus invalid paths to remove
+    remove_all(badPath); // we ignore invalid paths as in remove
     remove_all(badPath, ec);
     EXPECT(good(ec));
 

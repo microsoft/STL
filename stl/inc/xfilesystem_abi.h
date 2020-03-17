@@ -52,8 +52,8 @@ _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noe
     switch (_Error) {
     case __std_win_error::_File_not_found:
     case __std_win_error::_Path_not_found:
-    case __std_win_error::_Invalid_name:
     case __std_win_error::_Error_bad_netpath:
+    case __std_win_error::_Invalid_name:
         return true;
     default:
         return false;
