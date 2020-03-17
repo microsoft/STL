@@ -5,15 +5,15 @@
 
 int main() {} // COMPILE-ONLY
 
-// ATTRIBUTE FEATURE-TEST MACROS.
+// ATTRIBUTE FEATURE-TEST MACROS
 
 #ifdef __has_cpp_attribute
-// Good.
+// Good
 #else
 #error Expected __has_cpp_attribute to be defined.
 #endif
 #if defined(__has_cpp_attribute)
-// Good.
+// Good
 #else
 #error Expected __has_cpp_attribute to be defined.
 #endif
@@ -68,7 +68,7 @@ int main() {} // COMPILE-ONLY
 #endif
 
 
-// COMPILER FEATURE-TEST MACROS
+// CORE LANGUAGE FEATURE-TEST MACROS
 
 #ifndef __cpp_aggregate_nsdmi
 #error Expected __cpp_aggregate_nsdmi to be defined.
