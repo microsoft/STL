@@ -471,7 +471,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # msvcp140_atomic_wait.dll (the atomic wait satellite)
     add_library(msvcp${D_SUFFIX}_atomic_wait_objects OBJECT ${SOURCES_SATELLITE_ATOMIC_WAIT})
-    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "_BUILDING_SATELLITE_1;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "_DLL;${THIS_CONFIG_DEFINITIONS}")
     target_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     add_library(msvcp${D_SUFFIX}_atomic_wait SHARED)
@@ -479,7 +479,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_wait${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
-    target_link_options(msvcp${D_SUFFIX}_atomic_wait PRIVATE "${THIS_CONFIG_LINK_OPTIONS}")
+    target_link_options(msvcp${D_SUFFIX}_atomic_wait PRIVATE "${THIS_CONFIG_LINK_OPTIONS}" "/DEF:${CMAKE_CURRENT_LIST_DIR}/src/msvcp_atomic_wait.def")
 
     # import library
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})

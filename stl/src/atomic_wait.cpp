@@ -159,7 +159,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand,
+void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand,
     const std::size_t _Size, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
@@ -168,7 +168,7 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_direct(const void* _Storage, c
     }
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressSingle(const_cast<void*>(_Storage));
     } else {
@@ -176,7 +176,7 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_direct(const void* const
     }
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressAll(const_cast<void*>(_Storage));
     } else {
@@ -184,7 +184,7 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_direct(const void* const
     }
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
+void __stdcall __std_atomic_wait_indirect(
     const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
@@ -212,11 +212,11 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_wait_indirect(
     }
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
     return __std_atomic_notify_all_indirect(_Storage);
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
+void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         auto& _Entry = _Atomic_wait_table_entry(_Storage);
         _Entry._Counter.fetch_add(_Atomic_counter_value_step, std::memory_order_relaxed);
@@ -227,17 +227,17 @@ void _CRT_SATELLITE_1 __stdcall __std_atomic_notify_all_indirect(const void* con
     }
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_direct(
+void __stdcall __std_atomic_unwait_direct(
     const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
-void _CRT_SATELLITE_1 __stdcall __std_atomic_unwait_indirect(
+void __stdcall __std_atomic_unwait_indirect(
     const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
-std::size_t _CRT_SATELLITE_1 __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
+std::size_t __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
     if (_Is_direct && _Have_wait_functions()) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
