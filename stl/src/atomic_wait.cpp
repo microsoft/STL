@@ -19,7 +19,7 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(std::hardware_destructive_interference_size) _Wait_table_entry {
-        // Arbitraty variable to wait/notify on if target wariable is not proper atomic for that
+        // Arbitrary variable to wait/notify on if target variable is not proper atomic for that
         // Size is largest of lock-free to make aliasing problem into hypothetical
         std::atomic<unsigned long long> _Counter;
 
