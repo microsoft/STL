@@ -228,7 +228,7 @@ std::iter_difference_t<iterator_archetype<J>> operator-(
 // clang-format on
 
 template <class I>
-inline constexpr bool std::disable_sized_sentinel<sized_sentinel_archetype<11>, I> = true;
+inline constexpr bool std::disable_sized_sentinel_for<sized_sentinel_archetype<11>, I> = true;
 
 inline constexpr std::size_t sized_sentinel_archetype_max = 12;
 
