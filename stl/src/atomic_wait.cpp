@@ -85,6 +85,7 @@ namespace {
             auto& _Entry = _Atomic_wait_table_entry(_Storage);
             ::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, INFINITE, 0);
             // re-check, and still in _Atomic_wait_phase_wait_locked
+            break;
         }
         }
     }
