@@ -32,8 +32,11 @@ using namespace std;
 using namespace std::chrono;
 using namespace std::filesystem;
 
-constexpr wstring_view badPath         = L"// ?? ?? ///// ?? ?? ? ////"sv;
-constexpr wstring_view nonexistentPath = L"C:/This/Path/Should/Not/Exist"sv;
+constexpr wstring_view badPath = L"// ?? ?? ///// ?? ?? ? ////"sv;
+path nonexistentPaths[]        = {
+    L"C:/This/Path/Should/Not/Exist"sv,
+    L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15//docs"sv,
+};
 constexpr wstring_view longSuffix =
     LR"(really\long\path\longer\than\max_path\goes\here\and it just goes)"
     LR"( on and on\and it just goes on and on\and it just goes on and on\and it just goes on and on)"
@@ -983,18 +986,20 @@ void test_directory_entry() {
     // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
     EXPECT(!default_entry.exists());
 
-    directory_entry nonexistentEntry(nonexistentPath);
-    EXPECT(nonexistentEntry.path() == nonexistentPath);
-    // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
-    EXPECT(!nonexistentEntry.exists());
+    for (auto&& nonexistent : nonexistentPaths) {
+        directory_entry nonexistentEntry(nonexistent);
+        EXPECT(nonexistentEntry.path() == nonexistent);
+        // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
+        EXPECT(!nonexistentEntry.exists());
 
-    directory_entry nonexistentEntryEc(nonexistentPath, ec);
-    EXPECT(nonexistentEntryEc.path() == nonexistentPath);
-    // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
-    EXPECT(!nonexistentEntryEc.exists());
-    EXPECT(good(ec));
+        directory_entry nonexistentEntryEc(nonexistent, ec);
+        EXPECT(nonexistentEntryEc.path() == nonexistent);
+        // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
+        EXPECT(!nonexistentEntryEc.exists());
+        EXPECT(good(ec));
 
-    EXPECT(throws_filesystem_error([&] { nonexistentEntryEc.refresh(); }, "directory_entry::refresh", nonexistentPath));
+        EXPECT(throws_filesystem_error([&] { nonexistentEntryEc.refresh(); }, "directory_entry::refresh", nonexistent));
+    }
 
     directory_entry goodEntry(filePath, ec);
     EXPECT(good(ec));
@@ -1207,12 +1212,14 @@ void test_directory_entry() {
 #endif // _HAS_CXX20
 
     // assert that mutating the path doesn't fail even though the target doesn't exist
-    cachingEntry.assign(nonexistentPath); // no fail
-    cachingEntry.assign(nonexistentPath, ec);
-    EXPECT(good(ec));
-    cachingEntry.replace_filename(L"Exist2"sv); // no fail
-    cachingEntry.replace_filename(L"Exist2"sv, ec);
-    EXPECT(good(ec));
+    for (auto&& nonexistent : nonexistentPaths) {
+        cachingEntry.assign(nonexistent); // no fail
+        cachingEntry.assign(nonexistent, ec);
+        EXPECT(good(ec));
+        cachingEntry.replace_filename(L"Exist2"sv); // no fail
+        cachingEntry.replace_filename(L"Exist2"sv, ec);
+        EXPECT(good(ec));
+    }
 
     remove(changingPath, ec);
     EXPECT(good(ec));
@@ -1256,18 +1263,20 @@ void test_directory_iterator_common_parts(const string_view typeName) {
     // bool operator==(const DirectoryIterator& _Rhs) const;
     {
         error_code ec;
-        DirectoryIterator bad_dir(nonexistentPath, ec);
-        EXPECT(bad(ec));
-        EXPECT(bad_dir == DirectoryIterator{});
-        EXPECT(bad_dir == bad_dir);
-        EXPECT(!(bad_dir != bad_dir));
+        for (auto&& nonexistent : nonexistentPaths) {
+            DirectoryIterator bad_dir(nonexistent, ec);
+            EXPECT(bad(ec));
+            EXPECT(bad_dir == DirectoryIterator{});
+            EXPECT(bad_dir == bad_dir);
+            EXPECT(!(bad_dir != bad_dir));
 
-        EXPECT(throws_filesystem_error([&] { DirectoryIterator bad_dir{nonexistentPath}; }, typeName, nonexistentPath));
-        EXPECT(throws_filesystem_error(
-            [&] {
-                DirectoryIterator bad_dir{nonexistentPath, directory_options::none};
-            },
-            typeName, nonexistentPath));
+            EXPECT(throws_filesystem_error([&] { DirectoryIterator bad_dir{nonexistent}; }, typeName, nonexistent));
+            EXPECT(throws_filesystem_error(
+                [&] {
+                    DirectoryIterator bad_dir{nonexistent, directory_options::none};
+                },
+                typeName, nonexistent));
+        }
 
         // Test VSO-844835 "directory_iterator constructed with empty path iterates over the current directory"
         DirectoryIterator empty_dir(path{}, ec);
@@ -1469,7 +1478,7 @@ void test_recursive_directory_iterator() {
         const path bbb = followSymlinkTests.directoryPath / L"bbb"sv;
         const path ccc = followSymlinkTests.directoryPath / L"ccc"sv;
         error_code ec;
-        create_directory_symlink(nonexistentPath, bbb, ec);
+        create_directory_symlink(nonexistentPaths[0], bbb, ec);
         if (ec) {
             check_symlink_permissions(ec, L"recursive_directory_iterator");
         } else {
@@ -1805,7 +1814,10 @@ void test_copy() {
 
     remove_all(basePath);
 
-    EXPECT(throws_filesystem_error([&] { copy(nonexistentPath, basePath); }, "copy"sv, nonexistentPath, basePath));
+    for (auto&& nonexistent : nonexistentPaths) {
+        EXPECT(throws_filesystem_error([&] { copy(nonexistent, basePath); }, "copy"sv, nonexistent, basePath));
+    }
+
     EXPECT(throws_filesystem_error([&] { copy(basePath, basePath); }, "copy"sv, basePath, basePath));
 }
 
@@ -2698,8 +2710,10 @@ void test_file_size() {
         EXPECT(bad_file_size == file_size(L""sv, ec));
         EXPECT(ec == errc::no_such_file_or_directory);
 
-        EXPECT(bad_file_size == file_size(nonexistentPath, ec));
-        EXPECT(ec == errc::no_such_file_or_directory);
+        for (auto&& nonexistent : nonexistentPaths) {
+            EXPECT(bad_file_size == file_size(nonexistent, ec));
+            EXPECT(ec == errc::no_such_file_or_directory);
+        }
 
         EXPECT(throws_filesystem_error([] { (void) file_size(L""sv); }, "file_size", L""sv));
     }
@@ -2778,8 +2792,10 @@ void test_last_write_time() {
         EXPECT(bad_file_time == last_write_time(L""sv, ec));
         EXPECT(ec == errc::no_such_file_or_directory);
 
-        EXPECT(bad_file_time == last_write_time(nonexistentPath, ec));
-        EXPECT(ec == errc::no_such_file_or_directory);
+        for (auto&& nonexistent : nonexistentPaths) {
+            EXPECT(bad_file_time == last_write_time(nonexistent, ec));
+            EXPECT(ec == errc::no_such_file_or_directory);
+        }
 
         EXPECT(throws_filesystem_error([] { (void) last_write_time(L""sv); }, "last_write_time", L""sv));
     }
@@ -2855,11 +2871,13 @@ void test_status() {
     error_code ec;
     create_file_containing(testFile, L"Hello");
 
-    EXPECT(status(nonexistentPath).type() == file_type::not_found); // should not throw
-    EXPECT(status(nonexistentPath, ec).type() == file_type::not_found);
-    EXPECT(ec.category() == system_category());
-    EXPECT(ec.value() == 2 || ec.value() == 3);
-    EXPECT(ec == errc::no_such_file_or_directory);
+    for (auto&& nonexistent : nonexistentPaths) {
+        EXPECT(status(nonexistent).type() == file_type::not_found); // should not throw
+        EXPECT(status(nonexistent, ec).type() == file_type::not_found);
+        EXPECT(ec.category() == system_category());
+        EXPECT(ec.value() == 2 || ec.value() == 3 || ec.value() == 53);
+        EXPECT(ec == errc::no_such_file_or_directory);
+    }
 
     EXPECT(!exists(file_status{}));
     EXPECT(!exists(file_status{file_type::not_found}));
@@ -2886,34 +2904,36 @@ void test_status() {
     EXPECT(!is_symlink(file_status{}));
     EXPECT(is_symlink(file_status{file_type::symlink}));
 
-    EXPECT(!exists(nonexistentPath));
-    EXPECT(!is_block_file(nonexistentPath));
-    EXPECT(!is_character_file(nonexistentPath));
-    EXPECT(!is_directory(nonexistentPath));
-    EXPECT(!is_fifo(nonexistentPath));
-    EXPECT(!is_other(nonexistentPath));
-    EXPECT(!is_regular_file(nonexistentPath));
-    EXPECT(!is_socket(nonexistentPath));
-    EXPECT(!is_symlink(nonexistentPath));
+    for (auto&& nonexistent : nonexistentPaths) {
+        EXPECT(!exists(nonexistent));
+        EXPECT(!is_block_file(nonexistent));
+        EXPECT(!is_character_file(nonexistent));
+        EXPECT(!is_directory(nonexistent));
+        EXPECT(!is_fifo(nonexistent));
+        EXPECT(!is_other(nonexistent));
+        EXPECT(!is_regular_file(nonexistent));
+        EXPECT(!is_socket(nonexistent));
+        EXPECT(!is_symlink(nonexistent));
 
-    EXPECT(!exists(nonexistentPath, ec));
-    EXPECT(good(ec));
-    EXPECT(!is_block_file(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_character_file(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_directory(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_fifo(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_other(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_regular_file(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_socket(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
-    EXPECT(!is_symlink(nonexistentPath, ec));
-    EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!exists(nonexistent, ec));
+        EXPECT(good(ec));
+        EXPECT(!is_block_file(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_character_file(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_directory(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_fifo(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_other(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_regular_file(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_socket(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+        EXPECT(!is_symlink(nonexistent, ec));
+        EXPECT(ec == errc::no_such_file_or_directory);
+    }
 
     EXPECT(exists(testDir));
     EXPECT(exists(testDir, ec));
@@ -3277,9 +3297,9 @@ void test_remove() {
     EXPECT(!exists(dirname, ec));
     EXPECT(good(ec));
 
-    EXPECT(throws_filesystem_error([] { remove(badPath); }, "remove", badPath));
+    remove(badPath); // we ignore bogus invalid paths
     remove(badPath, ec); // bogus invalid path
-    EXPECT(bad(ec));
+    EXPECT(good(ec));
 }
 
 void test_rename() {
@@ -3571,16 +3591,18 @@ void test_create_directory() {
     // test bogus path
     {
         error_code ec;
-        EXPECT(create_directory(nonexistentPath, ec) == false); // failed
-        EXPECT(bad(ec));
+        for (auto&& nonexistent : nonexistentPaths) {
+            EXPECT(create_directory(nonexistent, ec) == false); // failed
+            EXPECT(bad(ec));
 
-        EXPECT(throws_filesystem_error([] { create_directory(nonexistentPath); }, "create_directory", nonexistentPath));
+            EXPECT(throws_filesystem_error([&] { create_directory(nonexistent); }, "create_directory", nonexistent));
+        }
     }
 
     // test VSO-654638 where create_directory(p, existing_p) was doing copy_symlink behavior
     {
         error_code ec;
-        create_directory_symlink(nonexistentPath, p, ec);
+        create_directory_symlink(nonexistentPaths[0], p, ec);
         if (ec) {
             check_symlink_permissions(ec, L"test_create_directory/VSO-654638");
         } else {
@@ -3634,9 +3656,9 @@ void test_create_dirs_and_remove_all() {
     create_directories(badPath, ec);
     EXPECT(bad(ec));
 
-    EXPECT(throws_filesystem_error([] { remove_all(badPath); }, "remove_all", badPath));
+    remove_all(badPath); // we ignore bogus invalid paths to remove
     remove_all(badPath, ec);
-    EXPECT(bad(ec));
+    EXPECT(good(ec));
 
     // test that normalization isn't done first
     auto dots = r / L"a/../b/../c"sv;
@@ -3700,14 +3722,15 @@ void test_symlink_status() {
         EXPECT(ft.type() == ft2.type());
         EXPECT(ft.permissions() == ft2.permissions());
     }
-    {
+
+    for (auto&& nonexistent : nonexistentPaths) {
         error_code ec;
-        auto ft = symlink_status(nonexistentPath, ec);
+        auto ft = symlink_status(nonexistent, ec);
         EXPECT(bad(ec));
         EXPECT(ft.type() == file_type::not_found);
         EXPECT(ft.permissions() == perms::unknown);
 
-        auto ft2 = symlink_status(nonexistentPath);
+        auto ft2 = symlink_status(nonexistent);
         EXPECT(ft.type() == ft2.type());
         EXPECT(ft.permissions() == ft2.permissions());
     }

@@ -33,6 +33,7 @@ enum class __std_win_error : unsigned long {
     _No_more_files             = 18, // #define ERROR_NO_MORE_FILES              18L
     _Sharing_violation         = 32, // #define ERROR_SHARING_VIOLATION          32L
     _Not_supported             = 50, // #define ERROR_NOT_SUPPORTED              50L
+    _Error_bad_netpath         = 53, // #define ERROR_BAD_NETPATH                53L
     _File_exists               = 80, // #define ERROR_FILE_EXISTS                80L
     _Invalid_parameter         = 87, // #define ERROR_INVALID_PARAMETER          87L
     _Insufficient_buffer       = 122, // #define ERROR_INSUFFICIENT_BUFFER        122L
@@ -43,6 +44,22 @@ enum class __std_win_error : unsigned long {
     _Directory_name_is_invalid = 267, // #define ERROR_DIRECTORY                  267L
     _Max                       = ~0UL // sentinel not used by Win32
 };
+
+// FUNCTION __std_is_file_not_found
+#pragma warning(push)
+#pragma warning(disable: 4061) // enumerator not explicitly handled by switch label
+_NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noexcept {
+    switch (_Error) {
+    case __std_win_error::_File_not_found:
+    case __std_win_error::_Path_not_found:
+    case __std_win_error::_Invalid_name:
+    case __std_win_error::_Error_bad_netpath:
+        return true;
+    default:
+        return false;
+    }
+}
+#pragma warning(pop)
 
 enum class __std_fs_dir_handle : intptr_t { _Invalid = -1 };
 
