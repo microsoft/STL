@@ -2053,9 +2053,10 @@ private:
     ~_Ref_count_unbounded_array_alloc() = default; // nothing to do; _Storage._Value already destroyed by _Destroy()
 
     virtual void _Destroy() noexcept override { // destroy managed resource
+        using _Rebound = _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>;
         if constexpr (!conjunction_v<is_trivially_destructible<remove_extent_t<_Ty>>,
-                          _Uses_default_destroy<_Alloc, _Ty*>>) {
-            _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
+                          _Uses_default_destroy<_Rebound, remove_all_extents_t<_Ty>*>>) {
+            _Rebound _Alty(this->_Get_val());
             _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, _Alty);
         }
     }
@@ -2097,8 +2098,10 @@ private:
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        if constexpr (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
-            _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>> _Alty(this->_Get_val());
+        using _Rebound = _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>;
+        if constexpr (!conjunction_v<is_trivially_destructible<_Ty>,
+                          _Uses_default_destroy<_Rebound, remove_all_extents_t<_Ty>*>>) {
+            _Rebound _Alty(this->_Get_val());
             _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Alty);
         }
     }
