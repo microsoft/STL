@@ -47,7 +47,7 @@ enum class __std_win_error : unsigned long {
 
 // FUNCTION __std_is_file_not_found
 #pragma warning(push)
-#pragma warning(disable: 4061) // enumerator not explicitly handled by switch label
+#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
 _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noexcept {
     switch (_Error) {
     case __std_win_error::_File_not_found:
