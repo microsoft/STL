@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <version>
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 int main() {} // COMPILE-ONLY
@@ -49,7 +51,7 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
-#if defined(__clang__) || defined(__EDG__) // clang and EDG don't yet implement P1771R1
+#if defined(__clang__) || defined(__EDG__) // Clang and EDG don't yet implement P1771R1
 #if __has_cpp_attribute(nodiscard) != 201603L
 #error __has_cpp_attribute(nodiscard) is not 201603L
 #endif
@@ -58,7 +60,6 @@ int main() {} // COMPILE-ONLY
 #error __has_cpp_attribute(nodiscard) is not 201907L
 #endif
 #endif
-
 
 #if __has_cpp_attribute(noreturn) != 200809L
 #error __has_cpp_attribute(noreturn) is not 200809L
@@ -344,20 +345,20 @@ STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
 #endif
 #endif
 
-#ifndef __cpp_initializer_lists
-#error __cpp_initializer_lists is not defined
-#elif __cpp_initializer_lists != 200806L
-#error __cpp_initializer_lists is not 200806L
-#else
-STATIC_ASSERT(__cpp_initializer_lists == 200806L);
-#endif
-
 #ifndef __cpp_init_captures
 #error __cpp_init_captures is not defined
 #elif __cpp_init_captures != 201304L
 #error __cpp_init_captures is not 201304L
 #else
 STATIC_ASSERT(__cpp_init_captures == 201304L);
+#endif
+
+#ifndef __cpp_initializer_lists
+#error __cpp_initializer_lists is not defined
+#elif __cpp_initializer_lists != 200806L
+#error __cpp_initializer_lists is not 200806L
+#else
+STATIC_ASSERT(__cpp_initializer_lists == 200806L);
 #endif
 
 #if _HAS_CXX17
@@ -501,8 +502,12 @@ STATIC_ASSERT(__cpp_return_type_deduction == 201304L);
 #error __cpp_rtti is defined
 #endif
 #else
-#ifdef __cpp_namespace_attributes
-#error __cpp_namespace_attributes is defined
+#ifndef __cpp_rtti
+#error __cpp_rtti is not defined
+#elif __cpp_rtti != 199711L
+#error __cpp_rtti is not 199711L
+#else
+STATIC_ASSERT(__cpp_rtti == 199711L);
 #endif
 #endif
 
@@ -651,7 +656,6 @@ STATIC_ASSERT(__cpp_variadic_using == 201611L);
 
 
 // LIBRARY FEATURE-TEST MACROS
-#include <version>
 
 #ifndef __cpp_lib_addressof_constexpr
 #error __cpp_lib_addressof_constexpr is not defined
@@ -769,20 +773,6 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
-#ifndef __cpp_lib_bitops
-#error __cpp_lib_bitops is not defined
-#elif __cpp_lib_bitops != 201907L
-#error __cpp_lib_bitops is not 201907L
-#else
-STATIC_ASSERT(__cpp_lib_bitops == 201907L);
-#endif
-#else
-#ifdef __cpp_lib_bitops
-#error __cpp_lib_bitops is defined
-#endif
-#endif
-
 #if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
 #ifndef __cpp_lib_bit_cast
 #error __cpp_lib_bit_cast is not defined
@@ -794,6 +784,20 @@ STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
 #else
 #ifdef __cpp_lib_bit_cast
 #error __cpp_lib_bit_cast is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
+#ifndef __cpp_lib_bitops
+#error __cpp_lib_bitops is not defined
+#elif __cpp_lib_bitops != 201907L
+#error __cpp_lib_bitops is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_bitops == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_bitops
+#error __cpp_lib_bitops is defined
 #endif
 #endif
 
@@ -1137,6 +1141,20 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_int_pow2
+#error __cpp_lib_int_pow2 is not defined
+#elif __cpp_lib_int_pow2 != 202002L
+#error __cpp_lib_int_pow2 is not 202002L
+#else
+STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_int_pow2
+#error __cpp_lib_int_pow2 is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_integer_sequence
 #error __cpp_lib_integer_sequence is not defined
 #elif __cpp_lib_integer_sequence != 201304L
@@ -1151,20 +1169,6 @@ STATIC_ASSERT(__cpp_lib_integer_sequence == 201304L);
 #error __cpp_lib_integral_constant_callable is not 201304L
 #else
 STATIC_ASSERT(__cpp_lib_integral_constant_callable == 201304L);
-#endif
-
-#if _HAS_CXX20
-#ifndef __cpp_lib_int_pow2
-#error __cpp_lib_int_pow2 is not defined
-#elif __cpp_lib_int_pow2 != 202002L
-#error __cpp_lib_int_pow2 is not 202002L
-#else
-STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
-#endif
-#else
-#ifdef __cpp_lib_int_pow2
-#error __cpp_lib_int_pow2 is defined
-#endif
 #endif
 
 #ifndef __cpp_lib_invoke
@@ -1563,7 +1567,7 @@ STATIC_ASSERT(__cpp_lib_shared_ptr_weak_type == 201606L);
 #ifdef __cpp_lib_shared_timed_mutex
 #error __cpp_lib_shared_timed_mutex is defined
 #endif
-#else // ^^^ _M_CEE ^^^ // vvv !_M_CEE vvv
+#else
 #ifndef __cpp_lib_shared_timed_mutex
 #error __cpp_lib_shared_timed_mutex is not defined
 #elif __cpp_lib_shared_timed_mutex != 201402L
@@ -1571,7 +1575,7 @@ STATIC_ASSERT(__cpp_lib_shared_ptr_weak_type == 201606L);
 #else
 STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
 #endif
-#endif // _M_CEE
+#endif
 
 #if _HAS_CXX20
 #ifndef __cpp_lib_shift
@@ -1709,20 +1713,20 @@ STATIC_ASSERT(__cpp_lib_transformation_trait_aliases == 201304L);
 STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 #endif
 
-#ifndef __cpp_lib_tuples_by_type
-#error __cpp_lib_tuples_by_type is not defined
-#elif __cpp_lib_tuples_by_type != 201304L
-#error __cpp_lib_tuples_by_type is not 201304L
-#else
-STATIC_ASSERT(__cpp_lib_tuples_by_type == 201304L);
-#endif
-
 #ifndef __cpp_lib_tuple_element_t
 #error __cpp_lib_tuple_element_t is not defined
 #elif __cpp_lib_tuple_element_t != 201402L
 #error __cpp_lib_tuple_element_t is not 201402L
 #else
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
+#endif
+
+#ifndef __cpp_lib_tuples_by_type
+#error __cpp_lib_tuples_by_type is not defined
+#elif __cpp_lib_tuples_by_type != 201304L
+#error __cpp_lib_tuples_by_type is not 201304L
+#else
+STATIC_ASSERT(__cpp_lib_tuples_by_type == 201304L);
 #endif
 
 #if _HAS_CXX20
