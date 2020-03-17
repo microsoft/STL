@@ -170,25 +170,28 @@ inline bool __std_atomic_wait_spin(unsigned long long& _Wait_context, const bool
 #ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     if (_Is_direct) {
         return false;
-    }
+    } else {
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-    switch (_Wait_context & _Atomic_wait_phase_mask) {
-    case _Atomic_wait_phase_init_spin_count: {
-        _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
-        [[fallthrough]];
-    }
-
-    case _Atomic_wait_phase_spin: {
-        if ((_Wait_context & _Atomic_spin_value_mask) != 0) {
-            _Wait_context -= _Atomic_spin_value_step;
-            _YIELD_PROCESSOR();
-            return true;
+        switch (_Wait_context & _Atomic_wait_phase_mask) {
+        case _Atomic_wait_phase_init_spin_count: {
+            _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
+            [[fallthrough]];
         }
-        _Wait_context = _Atomic_wait_phase_wait_none;
-        break;
-    }
-    }
-    return false;
+
+        case _Atomic_wait_phase_spin: {
+            if ((_Wait_context & _Atomic_spin_value_mask) != 0) {
+                _Wait_context -= _Atomic_spin_value_step;
+                _YIELD_PROCESSOR();
+                return true;
+            }
+            _Wait_context = _Atomic_wait_phase_wait_none;
+            break;
+        }
+        }
+        return false;
+#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+    } // if (_Is_direct)
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
 
 #endif // _HAS_CXX20
