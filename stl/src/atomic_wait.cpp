@@ -78,7 +78,8 @@ namespace {
             _Wait_context = _Atomic_wait_phase_wait_locked;
             auto& _Entry  = _Atomic_wait_table_entry(_Storage);
             ::AcquireSRWLockExclusive(&_Entry._Lock);
-            [[fallthrough]];
+            // re-check, and still in _Atomic_wait_phase_wait_locked
+            break;
         }
 
         case _Atomic_wait_phase_wait_locked: {
