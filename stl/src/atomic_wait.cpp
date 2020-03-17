@@ -159,8 +159,8 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand,
-    const std::size_t _Size, unsigned long long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const std::size_t _Size,
+    unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
     } else {
@@ -184,8 +184,7 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
     }
 }
 
-void __stdcall __std_atomic_wait_indirect(
-    const void* const _Storage, unsigned long long& _Wait_context) noexcept {
+void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_none: {
@@ -227,13 +226,11 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 }
 
-void __stdcall __std_atomic_unwait_direct(
-    const void* const _Storage, unsigned long long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
-void __stdcall __std_atomic_unwait_indirect(
-    const void* const _Storage, unsigned long long& _Wait_context) noexcept {
+void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 

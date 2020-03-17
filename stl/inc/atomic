@@ -138,16 +138,13 @@ void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_direct(
-    const void* const _Storage, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long long& _Wait_context) noexcept;
 
-void __stdcall __std_atomic_wait_indirect(
-    const void* const _Storage, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept;
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_indirect(
-    const void* const _Storage, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept;
 
 std::size_t __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept;
 
