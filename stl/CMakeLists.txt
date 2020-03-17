@@ -3,6 +3,7 @@
 
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/algorithm
     ${CMAKE_CURRENT_LIST_DIR}/inc/any
     ${CMAKE_CURRENT_LIST_DIR}/inc/array
@@ -171,6 +172,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/scoped_allocator
     ${CMAKE_CURRENT_LIST_DIR}/inc/set
     ${CMAKE_CURRENT_LIST_DIR}/inc/shared_mutex
+    ${CMAKE_CURRENT_LIST_DIR}/inc/span
     ${CMAKE_CURRENT_LIST_DIR}/inc/sstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/stack
     ${CMAKE_CURRENT_LIST_DIR}/inc/stdexcept
@@ -236,11 +238,11 @@ endforeach()
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
 set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/filesystem.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/filesystem_space.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/parallel_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
 )
 

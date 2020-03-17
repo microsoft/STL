@@ -10,6 +10,10 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <typeinfo>
 
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -61,8 +65,8 @@ private:
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<type_index> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const type_index& _Keyval) const noexcept {
         return _Keyval.hash_code();

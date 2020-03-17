@@ -67,7 +67,8 @@ FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) { // get total value
 
 FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
     FTYPE x0 = x;
-    short errx, xexp;
+    short errx;
+    short xexp;
 
     if (n > 0) {
         if (n == 1 || (errx = FNAME(Dunscale)(&xexp, &x0)) == 0) {
@@ -102,7 +103,8 @@ FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
 
 FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
     FTYPE xscaled = x0;
-    short errx, xexp;
+    short errx;
+    short xexp;
 
     if (n != 0) {
         if (0 < (errx = FNAME(Dunscale)(&xexp, &xscaled))) {
@@ -209,7 +211,8 @@ FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
 
 FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precision value
     short errx;
-    int j, k;
+    int j;
+    int k;
     FTYPE buf[NBUF];
 
     if (0 < n) { // check for special values

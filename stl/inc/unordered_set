@@ -49,7 +49,7 @@ public:
 
     explicit _Uset_traits(const _Tr& _Traits) noexcept(is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
 
-    using value_compare = key_compare;
+    using value_compare = void; // TRANSITION, remove when _Standard becomes unconditionally true
 
     static const _Kty& _Kfn(const value_type& _Val) noexcept {
         return _Val;
@@ -311,8 +311,9 @@ void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+    unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -574,8 +575,9 @@ void swap(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+    unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -607,16 +609,6 @@ namespace pmr {
     using unordered_multiset = _STD unordered_multiset<_Kty, _Hasher, _Keyeq, polymorphic_allocator<_Kty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-    inline constexpr bool enable_view<unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>> = false;
-
-    template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-    inline constexpr bool enable_view<unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

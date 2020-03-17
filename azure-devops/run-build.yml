@@ -1,0 +1,68 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+jobs:
+- job: ${{ parameters.targetPlatform }}
+  pool:
+    name: STL
+
+  variables:
+    vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+  steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+    - task: Cache@2
+      displayName: Cache vcpkg
+      timeoutInMinutes: 10
+      inputs:
+        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
+        path: '$(vcpkgLocation)/installed'
+        cacheHitVar: CACHE_RESTORED
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg to Install boost-build'
+      condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
+      timeoutInMinutes: 10
+      inputs:
+        vcpkgArguments: 'boost-build:x86-windows'
+        vcpkgDirectory: '$(vcpkgLocation)'
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg'
+      timeoutInMinutes: 10
+      inputs:
+        vcpkgArguments: 'boost-math'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
+    - task: run-cmake@0
+      displayName: 'Build Support Tools'
+      timeoutInMinutes: 2
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        cmakeListsTxtPath: 'tools/CMakeSettings.json'
+        useVcpkgToolchainFile: true
+        configurationRegexFilter: '.*x64-Release.*'
+        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
+    - task: BatchScript@1
+      displayName: 'Enforce clang-format'
+      timeoutInMinutes: 60
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        filename: 'azure-devops/enforce-clang-format.cmd'
+        failOnStandardError: true
+        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+    - task: BatchScript@1
+      displayName: 'Validate Files'
+      timeoutInMinutes: 2
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        filename: 'azure-devops/validate-files.cmd'
+        failOnStandardError: true
+        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+    - task: run-cmake@0
+      displayName: 'Build the STL'
+      timeoutInMinutes: 10
+      inputs:
+        cmakeListsTxtPath: 'CMakeSettings.json'
+        useVcpkgToolchainFile: true
+        configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
+        buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}

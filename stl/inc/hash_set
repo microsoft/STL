@@ -383,16 +383,6 @@ namespace stdext {
 _STD_BEGIN
 using _STDEXT hash_multiset;
 using _STDEXT hash_set;
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _Kty, class _Tr, class _Alloc>
-    inline constexpr bool enable_view<_STDEXT hash_set<_Kty, _Tr, _Alloc>> = false;
-
-    template <class _Kty, class _Tr, class _Alloc>
-    inline constexpr bool enable_view<_STDEXT hash_multiset<_Kty, _Tr, _Alloc>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 _STD_END
 
 #pragma pop_macro("new")
