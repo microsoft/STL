@@ -29,20 +29,6 @@ int main() {} // COMPILE-ONLY
 #error __has_cpp_attribute(deprecated) is not 201309L
 #endif
 
-#if __has_cpp_attribute(noreturn) != 200809L
-#error __has_cpp_attribute(noreturn) is not 200809L
-#endif
-
-#if defined(__clang__) || defined(__EDG__) // clang and EDG don't yet implement P1771R1
-#if __has_cpp_attribute(nodiscard) != 201603L
-#error __has_cpp_attribute(nodiscard) is not 201603L
-#endif
-#else
-#if __has_cpp_attribute(nodiscard) != 201907L
-#error __has_cpp_attribute(nodiscard) is not 201907L
-#endif
-#endif
-
 #if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
 #if __has_cpp_attribute(fallthrough) != 201603L
 #error __has_cpp_attribute(fallthrough) is not 201603L
@@ -62,6 +48,17 @@ int main() {} // COMPILE-ONLY
 #error __has_cpp_attribute(maybe_unused) is not 0
 #endif
 #endif
+
+#if defined(__clang__) || defined(__EDG__) // clang and EDG don't yet implement P1771R1
+#if __has_cpp_attribute(nodiscard) != 201603L
+#error __has_cpp_attribute(nodiscard) is not 201603L
+#endif
+#else
+#if __has_cpp_attribute(nodiscard) != 201907L
+#error __has_cpp_attribute(nodiscard) is not 201907L
+#endif
+#endif
+
 
 #if __has_cpp_attribute(noreturn) != 200809L
 #error __has_cpp_attribute(noreturn) is not 200809L
