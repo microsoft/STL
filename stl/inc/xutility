@@ -744,17 +744,20 @@ concept input_or_output_iterator = requires(_It __i) {
 
 // CONCEPT sentinel_for
 template <class _Se, class _It>
-concept sentinel_for = semiregular<_Se> && input_or_output_iterator<_It> && _Weakly_equality_comparable_with<_Se, _It>;
+concept sentinel_for = semiregular<_Se>
+    && input_or_output_iterator<_It>
+    && _Weakly_equality_comparable_with<_Se, _It>;
 // clang-format on
 
-// VARIABLE TEMPLATE disable_sized_sentinel
+// VARIABLE TEMPLATE disable_sized_sentinel_for
 template <class _Se, class _It>
-inline constexpr bool disable_sized_sentinel = false;
+inline constexpr bool disable_sized_sentinel_for = false;
 
 // CONCEPT sized_sentinel_for
 // clang-format off
 template <class _Se, class _It>
-concept sized_sentinel_for = sentinel_for<_Se, _It> && !disable_sized_sentinel<remove_cv_t<_Se>, remove_cv_t<_It>>
+concept sized_sentinel_for = sentinel_for<_Se, _It>
+    && !disable_sized_sentinel_for<remove_cv_t<_Se>, remove_cv_t<_It>>
     && requires(const _It& __i, const _Se& __s) {
         { __s - __i } -> same_as<iter_difference_t<_It>>;
         { __i - __s } -> same_as<iter_difference_t<_It>>;
