@@ -943,11 +943,11 @@ namespace iterator_cust_move_test {
         return i + 1;
     }
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
-    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int(&)(int)>);
+    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int(&&)(int)>);
 #endif // TRANSITION, VSO-1008447
-    STATIC_ASSERT(ranges::iter_move(&f)(42) == 43);
+    STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));
 
     struct ref_is_lvalue {
@@ -1557,9 +1557,9 @@ namespace incomplete_test {
     using E = do_not_instantiate<void>;
 
     // Verify that the iterator trait aliases do not cause instantiation of pointee types
-    using V  = std::iter_value_t<E*>;
-    using D  = std::iter_difference_t<E*>;
-    using R  = std::iter_reference_t<E*>;
+    using V = std::iter_value_t<E*>;
+    using D = std::iter_difference_t<E*>;
+    using R = std::iter_reference_t<E*>;
 } // namespace incomplete_test
 
 namespace default_sentinel_test {
