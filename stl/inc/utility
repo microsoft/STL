@@ -17,6 +17,7 @@
 
 #if _HAS_CXX20
 #include <compare>
+#include <limits>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -643,6 +644,63 @@ struct in_place_index_t { // tag that selects the index of a type to construct i
 template <size_t _Idx>
 inline constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20
+// SAFE INTEGRAL COMPARISONS
+template <typename _Ty1, typename _Ty2>
+constexpr bool in_range(const _Ty2 _Value) noexcept {
+    if constexpr (is_signed_v<_Ty1> && is_unsigned_v<_Ty2>) {
+        return _Value <= numeric_limits<_Ty1>::max();
+    } else if constexpr (is_unsigned_v<_Ty1> && is_signed_v<_Ty2>) {
+        return _Value >= 0 && _Value <= numeric_limits<_Ty1>::max();
+    } else {
+        return numeric_limits<_Ty1>::min() <= _Value && _Value <= numeric_limits<_Ty1>::max();
+    }
+}
+
+template <typename _Ty1, typename _Ty2>
+constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    if constexpr (is_signed_v<_Ty1> && is_unsigned_v<_Ty2>) {
+        return _Left >= 0 || static_cast<make_unsigned_t<_Ty1>>(_Left) == _Right;
+    } else if constexpr (is_unsigned_v<_Ty1> && is_signed_v<_Ty2>) {
+        return _Right >= 0 && _Left == static_cast<make_unsigned_t<_Ty2>>(_Right);
+    } else {
+        return _Left == _Right;
+    }
+}
+
+template <typename _Ty1, typename _Ty2>
+constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !cmp_equal(_Left, _Right);
+}
+
+template <typename _Ty1, typename _Ty2>
+constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    if constexpr (is_signed_v<_Ty1> && is_unsigned_v<_Ty2>) {
+        return _Left < 0 || static_cast<make_unsigned_t<_Ty1>>(_Left) < _Right;
+    } else if constexpr (is_unsigned_v<_Ty1> && is_signed_v<_Ty2>) {
+        return _Right >= 0 && _Left < static_cast<make_unsigned_t<_Ty2>>(_Right);
+    } else {
+        return _Left < _Right;
+    }
+}
+
+template <typename _Ty1, typename _Ty2>
+constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return cmp_less(_Right, _Left);
+}
+
+template <typename _Ty1, typename _Ty2>
+constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !cmp_less(_Right, _Left);
+}
+
+template <typename _Ty1, typename _Ty2>
+constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !cmp_less(_Left, _Right);
+}
+
+#endif // _HAS_CXX20
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
