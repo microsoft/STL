@@ -1146,15 +1146,15 @@ static_assert(test_remove_cvref<const volatile int& (C::*) (int)>());
 
 // VSO-707437 "<type_traits>: [Feedback] Template parameter is ambiguous after VS update"
 template <typename T>
-void test_VSO_707437_c(T, add_const_t<T>) {}
+void test_VSO_707437_c(T, add_const_t<T>*) {}
 template <typename T>
-void test_VSO_707437_v(T, add_volatile_t<T>) {}
+void test_VSO_707437_v(T, add_volatile_t<T>*) {}
 template <typename T>
-void test_VSO_707437_cv(T, add_cv_t<T>) {}
+void test_VSO_707437_cv(T, add_cv_t<T>*) {}
 
 #if _HAS_CXX20
 template <typename T>
-void test_VSO_707437_i(T, type_identity_t<T>) {}
+void test_VSO_707437_i(T, type_identity_t<T>*) {}
 #endif // _HAS_CXX20
 
 // VSO-781535 "[RWC][Regression][prod/fe] WebKit failed with error C2938"
@@ -1232,12 +1232,12 @@ STATIC_ASSERT(!HasUnderlyingTypeAlias<ExampleEnum[]>::value);
 int main() {
     test_all_function_types();
 
-    test_VSO_707437_c(11L, 22);
-    test_VSO_707437_v(11L, 22);
-    test_VSO_707437_cv(11L, 22);
+    test_VSO_707437_c(11L, nullptr);
+    test_VSO_707437_v(11L, nullptr);
+    test_VSO_707437_cv(11L, nullptr);
 
 #if _HAS_CXX20
-    test_VSO_707437_i(11L, 22);
+    test_VSO_707437_i(11L, nullptr);
 #endif // _HAS_CXX20
 }
 

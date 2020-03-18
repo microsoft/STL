@@ -98,18 +98,18 @@ public:
         _Swap_adl(c, _Right.c);
     }
 
-    template <class _Ty, class _Container>
-    friend bool operator==(const stack<_Ty, _Container>&, const stack<_Ty, _Container>&);
-    template <class _Ty, class _Container>
-    friend bool operator!=(const stack<_Ty, _Container>&, const stack<_Ty, _Container>&);
-    template <class _Ty, class _Container>
-    friend bool operator<(const stack<_Ty, _Container>&, const stack<_Ty, _Container>&);
-    template <class _Ty, class _Container>
-    friend bool operator>(const stack<_Ty, _Container>&, const stack<_Ty, _Container>&);
-    template <class _Ty, class _Container>
-    friend bool operator<=(const stack<_Ty, _Container>&, const stack<_Ty, _Container>&);
-    template <class _Ty, class _Container>
-    friend bool operator>=(const stack<_Ty, _Container>&, const stack<_Ty, _Container>&);
+    template <class _Ty2, class _Container2>
+    friend bool operator==(const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
+    template <class _Ty2, class _Container2>
+    friend bool operator!=(const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
+    template <class _Ty2, class _Container2>
+    friend bool operator<(const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
+    template <class _Ty2, class _Container2>
+    friend bool operator>(const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
+    template <class _Ty2, class _Container2>
+    friend bool operator<=(const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
+    template <class _Ty2, class _Container2>
+    friend bool operator>=(const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
 
 protected:
     _Container c{};

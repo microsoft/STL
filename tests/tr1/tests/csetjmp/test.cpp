@@ -18,11 +18,11 @@ void test_cpp() { // test C++ header
 
     switch (setjmp(jbuf)) { // jump among cases
     case 0:
-        CHECK_INT(++ctr, 1);
+        CHECK_INT(((ctr = ctr + 1), ctr), 1);
         STDx longjmp(jbuf, 5);
 
     case 5:
-        CHECK_INT(++ctr, 2);
+        CHECK_INT(((ctr = ctr + 1), ctr), 2);
         break;
 
     default:
