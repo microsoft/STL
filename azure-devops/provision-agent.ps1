@@ -27,10 +27,10 @@ $WorkLoads =  '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_buildtools.exe'
-$CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-win64-x64.msi'
+$CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-win64-x64.msi'
 $LlvmUrl = 'https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe'
-$NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip'
-$PythonUrl = 'https://www.python.org/ftp/python/3.8.1/python-3.8.1-amd64.exe'
+$NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
+$PythonUrl = 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe'
 $VstsAgentUrl = 'https://vstsagentpackage.azureedge.net/agent/2.165.0/vsts-agent-win-x64-2.165.0.zip'
 
 $ErrorActionPreference = 'Stop'
