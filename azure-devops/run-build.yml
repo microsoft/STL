@@ -91,7 +91,7 @@ jobs:
         testResultsFiles: '**/libcxx.test.xml'
         testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
     - task: PublishTestResults@2
-      displayName: 'Publish std tests'
+      displayName: 'Publish std Tests'
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
