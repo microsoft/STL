@@ -1128,7 +1128,7 @@
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
-#define __cpp_lib_array_constexpr 201811L // P1023R0 constexpr For std::array Comparisons
+#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
 #endif // _HAS_CXX17
