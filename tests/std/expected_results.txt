@@ -1,0 +1,43 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# *** INSUFFICIENTLY NEW PUBLIC TOOLSET ***
+tests\P0768R1_spaceship_operator\test.cpp\0 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\1 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\2 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\3 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\4 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\5 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\6 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\7 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\8 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\9 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\10 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\11 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\12 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\13 FAIL
+tests\P0768R1_spaceship_operator\test.cpp\14 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\3 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\4 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\5 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\6 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\10 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\11 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\12 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\13 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\14 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\15 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\16 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\17 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\18 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\23 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\24 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\25 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\29 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\30 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\31 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\32 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\33 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\34 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\35 FAIL
+tests\VSO_0157762_feature_test_macros\test.cpp\36 FAIL
