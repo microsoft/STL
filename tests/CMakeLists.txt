@@ -17,7 +17,7 @@ set(LLVM_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/llvm" CACHE PATH
 set(LLVM_LIT_SOURCE_DIR "${LLVM_SOURCE_DIR}/utils/llvm-lit")
 set(LLVM_LIT_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/llvm-lit")
 
-# We need to defined this here as opposed to the libcxx CMakeLists.txt as
+# We need to define this here as opposed to the libcxx CMakeLists.txt as
 # the std testsuite also needs to know where libcxx lives
 set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx")
 
