@@ -150,8 +150,7 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept
-    /* strengthened */ {
+    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -200,7 +199,7 @@ struct _Enforce_same {
 };
 
 template <class _First, class... _Rest>
-array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
+array(_First, _Rest...)->array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
