@@ -131,12 +131,14 @@ public:
         _Swap_adl(c, _Right.c);
     }
 
-    friend bool operator==<>(const stack&, const stack&);
-    friend bool operator!=<>(const stack&, const stack&);
-    friend bool operator</**/<>(const stack&, const stack&);
-    friend bool operator><>(const stack&, const stack&);
-    friend bool operator<=<>(const stack&, const stack&);
-    friend bool operator>=<>(const stack&, const stack&);
+    // clang-format off
+    friend bool operator== <>(const stack&, const stack&);
+    friend bool operator!= <>(const stack&, const stack&);
+    friend bool operator<  <>(const stack&, const stack&);
+    friend bool operator>  <>(const stack&, const stack&);
+    friend bool operator<= <>(const stack&, const stack&);
+    friend bool operator>= <>(const stack&, const stack&);
+    // clang-format on
 
 protected:
     _Container c{};
