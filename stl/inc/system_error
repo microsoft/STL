@@ -560,8 +560,8 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
 #elif defined(__cpp_constexpr_dynamic_alloc)
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
-    constexpr _Ty _Static;
-    return _Static._Storage;
+    static constexpr _Ty _Static;
+    return _Static;
 }
 #else // choose immortalize strategy
 template <class _Ty>
