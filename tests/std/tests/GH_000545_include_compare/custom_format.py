@@ -33,7 +33,7 @@ class CustomTestFormat(STLTestFormat):
             report += stl.util.makeReport(compile_cmd, out, err, rc)
 
             if not test.isExpectedToFail():
-                report += "Compilation of failed unexpectedly!"
+                report += "Compilation failed unexpectedly!"
             lit_config.note(report)
             return lit.Test.Result(fail_var, report)
         elif exec_file is None:
