@@ -22,6 +22,39 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // CLASS TEMPLATE queue
 template <class _Ty, class _Container = deque<_Ty>>
+class queue;
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator==(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
+    return _Left.c == _Right.c;
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator!=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
+    return _Left.c != _Right.c;
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator<(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
+    return _Left.c < _Right.c;
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator>(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
+    return _Left.c > _Right.c;
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator<=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
+    return _Left.c <= _Right.c;
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator>=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
+    return _Left.c >= _Right.c;
+}
+
+template <class _Ty, class _Container>
 class queue {
 public:
     using value_type      = typename _Container::value_type;
@@ -108,18 +141,12 @@ public:
         _Swap_adl(c, _Right.c);
     }
 
-    template <class _Ty2, class _Container2>
-    friend bool operator==(const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
-    template <class _Ty2, class _Container2>
-    friend bool operator!=(const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
-    template <class _Ty2, class _Container2>
-    friend bool operator<(const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
-    template <class _Ty2, class _Container2>
-    friend bool operator>(const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
-    template <class _Ty2, class _Container2>
-    friend bool operator<=(const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
-    template <class _Ty2, class _Container2>
-    friend bool operator>=(const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
+    friend bool operator==<>(const queue&, const queue&);
+    friend bool operator!=<>(const queue&, const queue&);
+    friend bool operator</**/<>(const queue&, const queue&);
+    friend bool operator><>(const queue&, const queue&);
+    friend bool operator<=<>(const queue&, const queue&);
+    friend bool operator>=<>(const queue&, const queue&);
 
 protected:
     _Container c{};
@@ -135,36 +162,6 @@ template <class _Container, class _Alloc,
         int> = 0>
 queue(_Container, _Alloc)->queue<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator==(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
-    return _Left.c == _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator!=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
-    return _Left.c != _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator<(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
-    return _Left.c < _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator>(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
-    return _Left.c > _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator<=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
-    return _Left.c <= _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator>=(const queue<_Ty, _Container>& _Left, const queue<_Ty, _Container>& _Right) {
-    return _Left.c >= _Right.c;
-}
 
 template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
 void swap(queue<_Ty, _Container>& _Left, queue<_Ty, _Container>& _Right) noexcept(noexcept(_Left.swap(_Right))) {

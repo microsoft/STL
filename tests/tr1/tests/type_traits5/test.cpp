@@ -19,7 +19,7 @@
 #define DOUBLE_ALIGN  4
 #define LDOUBLE_ALIGN 4
 
-#define CHECK_TYPEX(...) static_assert(STD is_same_v<__VA_ARGS__>, "BOOM")
+#define CHECK_TYPEX(...) static_assert(STD is_same_v<__VA_ARGS__>, "!is_same_v<" #__VA_ARGS__ ">")
 
 // TESTS
 static void t_remove_const() { // test remove_const<T> for various types
