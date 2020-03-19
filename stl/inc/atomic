@@ -309,7 +309,7 @@ struct _Atomic_storage {
         // store with sequential consistency
         _Check_store_memory_order(_Order);
         _Lock();
-        _CSTD memcpy(_STD addressof(_Storage), _STD addressof(_Value), sizeof(_Ty));
+        _Storage = _Value;
         _Unlock();
     }
 
@@ -317,8 +317,7 @@ struct _Atomic_storage {
         // load with sequential consistency
         _Check_load_memory_order(_Order);
         _Lock();
-        _Ty _Local;
-        _CSTD memcpy(_STD addressof(_Local), _STD addressof(_Storage), sizeof(_Ty));
+        _Ty _Local(_Storage);
         _Unlock();
         return _Local;
     }
@@ -327,9 +326,8 @@ struct _Atomic_storage {
         // exchange _Value with _Storage with sequential consistency
         _Check_memory_order(_Order);
         _Lock();
-        _Ty _Result;
-        _CSTD memcpy(_STD addressof(_Result), _STD addressof(_Storage), sizeof(_Ty));
-        _CSTD memcpy(_STD addressof(_Storage), _STD addressof(_Value), sizeof(_Ty));
+        _Ty _Result(_Storage);
+        _Storage = _Value;
         _Unlock();
         return _Result;
     }
