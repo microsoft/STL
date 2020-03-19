@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # *** INSUFFICIENTLY NEW PUBLIC TOOLSET ***
+# TRANSITION, VS 2019 16.6p2
 tests\P0768R1_spaceship_operator\test.cpp\0 FAIL
 tests\P0768R1_spaceship_operator\test.cpp\1 FAIL
 tests\P0768R1_spaceship_operator\test.cpp\2 FAIL
@@ -17,6 +18,8 @@ tests\P0768R1_spaceship_operator\test.cpp\11 FAIL
 tests\P0768R1_spaceship_operator\test.cpp\12 FAIL
 tests\P0768R1_spaceship_operator\test.cpp\13 FAIL
 tests\P0768R1_spaceship_operator\test.cpp\14 FAIL
+
+# TRANSITION, VS 2019 16.6p2
 tests\VSO_0157762_feature_test_macros\test.cpp\3 FAIL
 tests\VSO_0157762_feature_test_macros\test.cpp\4 FAIL
 tests\VSO_0157762_feature_test_macros\test.cpp\5 FAIL
