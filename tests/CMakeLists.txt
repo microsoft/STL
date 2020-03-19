@@ -10,7 +10,7 @@ set(STL_TEST_OUTPUT_DIR "${PROJECT_BINARY_DIR}/test")
 set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
     "Location of the llvm-project source tree")
 # This being a cache variable serves the dual purpose of letting the user point
-# to different out of tree LLVM components and also to override the set() call
+# to different out-of-tree LLVM components and also override the set() call
 # in llvm-lit's CMakeLists.txt.
 set(LLVM_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/llvm" CACHE PATH
     "Location of the llvm source tree")
