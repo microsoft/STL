@@ -29,7 +29,7 @@ def guardedTempFilename(suffix='', prefix='', dir=None):
 
 @contextmanager
 def guardedFilename(name):
-    # yields a filename within a with statement. The file is removed upon scope
+    # Yields a filename within a with statement. The file is removed upon scope
     # exit.
     yield name
     Path(name).unlink(True)
@@ -37,7 +37,7 @@ def guardedFilename(name):
 
 @contextmanager
 def nullContext(value):
-    # yeilds a variable within a with statement. No action is taken upon scope
+    # Yields a variable within a with statement. No action is taken upon scope
     # exit.
     yield value
 

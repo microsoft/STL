@@ -83,7 +83,7 @@ jobs:
           Add-Content -Path ./run-tests.cmd -Value "ctest -V"
           $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
     - task: PublishTestResults@2
-      displayName: 'Publish libcxx tests'
+      displayName: 'Publish libcxx Tests'
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}

@@ -139,7 +139,7 @@ class STLTest(Test):
                                default_cxx.compile_env)
 
     # This is mostly lifted from lit's test class. The changes here are to
-    # handle skipped tests, our env.lst format and different naming schemes.
+    # handle skipped tests, our env.lst format, and different naming schemes.
     def writeJUnitXML(self, fil):
         """Write the test's report xml representation to a file handle."""
         test_name = quoteattr(self.getXMLOutputTestName())

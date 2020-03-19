@@ -216,7 +216,7 @@ class STLTestFormat:
 
 class LibcxxTestFormat(STLTestFormat):
     """
-    Custom test format handler tor run the libcxx tests for the MSVC STL.
+    Custom test format handler to run the libcxx tests for the MSVC STL.
     """
     def getTestsInDirectory(self, testSuite, path_in_suite,
                             litConfig, localConfig, test_class=LibcxxTest):

@@ -192,7 +192,7 @@ class CXXCompiler:
         if not isinstance(source_file, str):
             raise TypeError('This function only accepts a single input file')
         if object_file is None:
-            # Create, use and delete a temporary object file if none is given.
+            # Create, use, and delete a temporary object file if none is given.
             def with_fn(): return stl.util.guardedTempFilename(suffix='.obj')
         else:
             # Otherwise wrap the filename in a context manager function.
