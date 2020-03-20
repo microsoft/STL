@@ -1563,6 +1563,11 @@ private:
 };
 
 #if _HAS_CXX20
+template <size_t _Align>
+struct _Alignas_storage_unit {
+    alignas(_Align) char _Space[_Align];
+};
+
 enum class _Check_overflow : bool { _No, _Yes };
 
 template <class _Refc, _Check_overflow _Check>
@@ -1592,7 +1597,7 @@ _NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexc
     }
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-    using _Storage = aligned_storage_t<_Align, _Align>;
+    using _Storage = _Alignas_storage_unit<_Align>;
     _STL_INTERNAL_CHECK(_Bytes % sizeof(_Storage) == 0);
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
@@ -2040,7 +2045,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
     if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Reverse_destroy_multidimensional_n_al_guard _Guard{_Out, _Idx, _Al};
-            _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al);
+            _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al); // intentionally copy, not fill
             _Guard._Dismiss();
         }
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
@@ -2102,7 +2107,7 @@ private:
 
     virtual void _Delete_this() noexcept override { // destroy self
         constexpr size_t _Align = alignof(_Ref_count_unbounded_array_alloc);
-        using _Storage          = aligned_storage_t<_Align, _Align>;
+        using _Storage          = _Alignas_storage_unit<_Align>;
 
         _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
         const size_t _Bytes =
@@ -2175,17 +2180,24 @@ _NODISCARD
 }
 
 #if _HAS_CXX20
+struct _Global_delete_guard {
+    void* _Target;
+
+    ~_Global_delete_guard() {
+        if (_Target) {
+            ::operator delete(_Target);
+        }
+    }
+};
+
 template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
     // make a shared_ptr to an unbounded array
     using _Refc    = _Ref_count_unbounded_array<_Ty>;
     const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
-    _TRY_BEGIN
+    _Global_delete_guard _Guard{_Rx};
     ::new (static_cast<void*>(_Rx)) _Refc(_Count);
-    _CATCH_ALL
-    ::operator delete(static_cast<void*>(_Rx));
-    _RERAISE;
-    _CATCH_END
+    _Guard._Target = nullptr;
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
     return _Ret;
@@ -2197,12 +2209,9 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     // make a shared_ptr to an unbounded array
     using _Refc    = _Ref_count_unbounded_array<_Ty>;
     const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
-    _TRY_BEGIN
+    _Global_delete_guard _Guard{_Rx};
     ::new (static_cast<void*>(_Rx)) _Refc(_Count, _Val);
-    _CATCH_ALL
-    ::operator delete(static_cast<void*>(_Rx));
-    _RERAISE;
-    _CATCH_END
+    _Guard._Target = nullptr;
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
     return _Ret;
@@ -2251,23 +2260,38 @@ _NODISCARD
 }
 
 #if _HAS_CXX20
+template <class _Alloc>
+struct _Allocate_n_ptr {
+    _Alloc& _Al;
+    _Alloc_ptr_t<_Alloc> _Ptr;
+    size_t _Nx;
+
+    _Allocate_n_ptr(_Alloc& _Al_, const size_t _Nx_) : _Al(_Al_), _Ptr(_Al_.allocate(_Nx_)), _Nx(_Nx_) {}
+
+    ~_Allocate_n_ptr() {
+        if (_Ptr) {
+            _Al.deallocate(_Ptr, _Nx);
+        }
+    }
+
+    _Allocate_n_ptr(const _Allocate_n_ptr&) = delete;
+    _Allocate_n_ptr& operator=(const _Allocate_n_ptr&) = delete;
+};
+
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count) {
     // make a shared_ptr to an unbounded array
     using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     constexpr size_t _Align = alignof(_Refc);
-    using _Storage          = aligned_storage_t<_Align, _Align>;
+    using _Storage          = _Alignas_storage_unit<_Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
     const size_t _Bytes         = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
     const size_t _Storage_units = _Bytes / sizeof(_Storage);
-    const auto _Rx              = reinterpret_cast<_Refc*>(_Rebound.allocate(_Storage_units));
-    _TRY_BEGIN
+    _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
+    const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
     ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count);
-    _CATCH_ALL
-    _Rebound.deallocate(reinterpret_cast<_Storage*>(_Rx), _Storage_units);
-    _RERAISE;
-    _CATCH_END
+    _Guard._Ptr = nullptr;
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
     return _Ret;
@@ -2279,17 +2303,14 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
     // make a shared_ptr to an unbounded array
     using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     constexpr size_t _Align = alignof(_Refc);
-    using _Storage          = aligned_storage_t<_Align, _Align>;
+    using _Storage          = _Alignas_storage_unit<_Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
     const size_t _Bytes         = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
     const size_t _Storage_units = _Bytes / sizeof(_Storage);
-    const auto _Rx              = reinterpret_cast<_Refc*>(_Rebound.allocate(_Storage_units));
-    _TRY_BEGIN
+    _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
+    const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
     ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count, _Val);
-    _CATCH_ALL
-    _Rebound.deallocate(reinterpret_cast<_Storage*>(_Rx), _Storage_units);
-    _RERAISE;
-    _CATCH_END
+    _Guard._Ptr = nullptr;
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
     return _Ret;
@@ -2301,9 +2322,9 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
     _Alblock _Rebound(_Al);
-    _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
+    _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (static_cast<void*>(_Constructor._Ptr)) _Refc(_Al);
+    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
@@ -2317,9 +2338,9 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
     _Alblock _Rebound(_Al);
-    _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
+    _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (static_cast<void*>(_Constructor._Ptr)) _Refc(_Al, _Val);
+    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al, _Val);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
