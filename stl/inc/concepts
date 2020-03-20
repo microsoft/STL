@@ -12,11 +12,6 @@
 #ifndef __cpp_lib_concepts
 #pragma message("The contents of <concepts> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
-#if defined(__clang__) && !defined(_SILENCE_CLANG_CONCEPTS_MESSAGE)
-#error Despite the presence of some Clang-related bits, this header currently does not support Clang. \
-You can define _SILENCE_CLANG_CONCEPTS_MESSAGE to silence this message and acknowledge that this is unsupported.
-#endif // defined(__clang__) && !defined(_SILENCE_CLANG_CONCEPTS_MESSAGE)
-
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)

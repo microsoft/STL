@@ -3347,10 +3347,8 @@ namespace test_relation {
 
     STATIC_ASSERT(!test<Equivalent, A<0>, B<0>>());
     STATIC_ASSERT(!test<Equivalent, A<1>, B<1>>());
-#ifndef __clang__ // TRANSITION, LLVM-44627
     STATIC_ASSERT(test<Equivalent, A<2>, B<2>>());
     STATIC_ASSERT(test<Equivalent, A<3>, B<3>>());
-#endif // TRANSITION, LLVM-44627
     STATIC_ASSERT(test<Equivalent, A<4>, B<4>>());
 
     template <unsigned I>
