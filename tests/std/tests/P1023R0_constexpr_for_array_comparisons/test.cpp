@@ -48,7 +48,8 @@ constexpr bool test_operator_gt() {
 }
 
 
-constexpr bool test_operator_leq() {assert(a0 <= a0);
+constexpr bool test_operator_leq() {
+    assert(a0 <= a0);
     assert(a0 <= a0);
     assert(a1 <= a1);
     assert(a2 <= a0);
