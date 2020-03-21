@@ -19,15 +19,14 @@ class Executor:
     def __init__(self):
         self.target_info = None
 
-    def run(self, exe_path, cmd, local_cwd, file_deps=None, env=None):
+    def run(self, cmd, local_cwd, file_deps=None, env=None):
         """Execute a command.
             Be very careful not to change shared state in this function.
             Executor objects are shared between python processes in `lit -jN`.
         Args:
-            exe_path: str:    Local path to the executable to be run
             cmd: [str]:       subprocess.call style command
             local_cwd: str:   Local path to the working directory
-            file_deps: [str]: Files required by the test
+            file_deps: [str]: Files required by the cmd
             env: {str: str}:  Environment variables to execute under
         Returns:
             cmd, out, err, exitCode
@@ -54,9 +53,8 @@ class LocalExecutor(Executor):
         super(LocalExecutor, self).__init__()
         self.is_windows = platform.system() == 'Windows'
 
-    def run(self, exe_path, cmd=None, work_dir='.', file_deps=None, env=None):
-        cmd = cmd or [exe_path]
-        if work_dir == '.':
+    def run(self, cmd, work_dir='.', file_deps=None, env=None):
+        if str(work_dir) == '.':
             work_dir = os.getcwd()
 
         if env:

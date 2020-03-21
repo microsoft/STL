@@ -3,11 +3,8 @@
 
 from pathlib import Path
 
-import lit.Test
-
-from stl.test.format import STLTestFormat
-from stl.test.Test import STLTest
-import stl
+from stl.test.format import STLTestFormat, TestStep
+from stl.test.tests import STLTest
 
 
 class CustomTest(STLTest):
@@ -27,56 +24,29 @@ class CustomTestFormat(STLTestFormat):
         return super().getTestsInDirectory(testSuite, path_in_suite, litConfig,
                                            localConfig, test_class)
 
-    def _evaluate_pass_test(self, test, lit_config):
+    def getBuildSteps(self, test, lit_config, shared):
+        shared.exec_dir = test.getExecDir()
         exe_source = Path(test.getSourcePath())
         a_source = exe_source.parent / 'a.cpp'
-        exec_dir = test.getExecDir()
         output_base = test.getOutputBaseName()
         output_dir = test.getOutputDir()
-        pass_var, fail_var = test.getPassFailResultCodes()
 
-        a_compile_cmd, out, err, rc, out_files, exec_file = \
-            test.cxx.executeBasedOnFlags([a_source], output_dir, exec_dir, 'a',
-                                         [test.calling_convention_a, '/c'], [],
-                                         [])
+        a_compile_cmd, out_files, exec_file = \
+            test.cxx.executeBasedOnFlagsCmd([a_source], output_dir,
+                                            shared.exec_dir, 'a',
+                                            [test.calling_convention_a, '/c'],
+                                            [], [])
 
-        report = ""
-        if rc != 0:
-            report += stl.util.makeReport(a_compile_cmd, out, err, rc)
-
-            if not test.isExpectedToFail():
-                report += "Compilation of a.cpp failed unexpectedly!"
-            lit_config.note(report)
-            return lit.Test.Result(fail_var, report)
+        yield TestStep(a_compile_cmd, shared.exec_dir, [a_source],
+                       test.cxx.compile_env)
 
         a_output = output_dir / 'a.obj'
 
-        exe_compile_cmd, out, err, rc, out_files, exec_file = \
-            test.cxx.executeBasedOnFlags([exe_source], output_dir, exec_dir,
-                                         output_base,
-                                         [test.calling_convention_b,
-                                          str(a_output)], [], [])
+        exe_compile_cmd, out_files, shared.exec_file = \
+            test.cxx.executeBasedOnFlagsCmd([exe_source], output_dir,
+                                            shared.exec_dir, output_base,
+                                            [test.calling_convention_b,
+                                            str(a_output)], [], [])
 
-        if rc != 0:
-            report += stl.util.makeReport(exe_compile_cmd, out, err, rc)
-
-            if not test.isExpectedToFail():
-                report += "EXE creation failed unexpectedly!"
-            lit_config.note(report)
-            return lit.Test.Result(fail_var, report)
-        elif exec_file is None:
-            report = stl.util.makeReport(
-                a_compile_cmd + ['&&'] + exe_compile_cmd, out, err, rc)
-            return lit.Test.Result(pass_var, report)
-
-        cmd, out, err, rc = self.executor.run(str(exec_file), [str(exec_file)],
-                                              str(exec_dir), [],
-                                              test.config.environment)
-        report += stl.util.makeReport(cmd, out, err, rc)
-
-        if rc == 0:
-            return lit.Test.Result(pass_var, report)
-        else:
-            if not test.isExpectedToFail():
-                report += "Compiled test failed unexpectedly!"
-            return lit.Test.Result(fail_var, report)
+        yield TestStep(exe_compile_cmd, shared.exec_dir,
+                       [a_output, exe_source], test.cxx.compile_env)

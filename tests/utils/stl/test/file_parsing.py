@@ -11,6 +11,8 @@ import re
 
 import lit.Test
 
+import stl.test.tests
+
 _envlst_cache = dict()
 _preprocessed_file_cache = dict()
 _expected_result_entry_cache = dict()
@@ -135,7 +137,10 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
         m = _EXPECTED_RESULT_REGEX.match(line)
         prefix = m.group("prefix")
         result = m.group("result")
-        res[prefix] = getattr(lit.Test, result)
+        result_code = getattr(lit.Test, result, None)
+        if result_code is None:
+            result_code = getattr(stl.test.tests, result)
+        res[prefix] = result_code
 
     _expected_result_entry_cache[str(filename)] = res
     return res

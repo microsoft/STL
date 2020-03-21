@@ -6,19 +6,31 @@
 #
 #===----------------------------------------------------------------------===##
 
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Dict, List, Optional
 import copy
 import itertools
 import errno
 import os
+import shutil
 import time
 
 import lit.Test        # pylint: disable=import-error
 import lit.TestRunner  # pylint: disable=import-error
 
-from stl.test.Test import STLTest, LibcxxTest
+from stl.test.tests import STLTest, LibcxxTest
 import stl.test.file_parsing
 import stl.util
+
+
+@dataclass
+class TestStep:
+    cmd: List[str] = field(default_factory=list)
+    work_dir: os.PathLike = field(default=Path('.'))
+    file_deps: List[os.PathLike] = field(default_factory=list)
+    env: Dict[str, str] = field(default_factory=dict)
+    should_fail: bool = field(default=False)
 
 
 class STLTestFormat:
@@ -26,10 +38,12 @@ class STLTestFormat:
     Custom test format handler to run MSVC tests.
     """
 
-    def __init__(self, default_cxx, execute_external, executor):
+    def __init__(self, default_cxx, execute_external,
+                 build_executor, test_executor):
         self.cxx = default_cxx
         self.execute_external = execute_external
-        self.executor = executor
+        self.build_executor = build_executor
+        self.test_executor = test_executor
 
     def isLegalDirectory(self, source_path, litConfig):
         found = False
@@ -80,7 +94,6 @@ class STLTestFormat:
                     for env_entry, env_num \
                             in zip(stl.test.file_parsing.parse_env_lst_file(
                                    envlst_path), itertools.count()):
-                        # TRANSITION: Get rid of this copy
                         test_config = copy.deepcopy(localConfig)
                         test_path_in_suite = path_in_suite + (filename,)
 
@@ -90,30 +103,29 @@ class STLTestFormat:
                                          env_entry, env_num,
                                          self.cxx)
 
-    def execute(self, test, lit_config):
-        result = None
-        while True:
-            try:
-                result = self._execute(test, lit_config)
-                break
-            except OSError as oe:
-                if oe.errno != errno.ETXTBSY:
-                    raise
-                time.sleep(0.1)
+    def setup(self, test):
+        exec_dir = test.getExecDir()
+        source_dir = Path(test.getSourcePath()).parent
 
-        return result
+        shutil.rmtree(exec_dir, ignore_errors=True)
+        exec_dir.mkdir(parents=True, exist_ok=True)
 
-    def _execute(self, test, lit_config):
-        # TRANSITION: It is potentially wasteful that all the skipping and
-        # unsupported logic lives here when it is known at time of test
-        # discovery. Investigate.
+        # TRANSITION: This should be handled by a TestStep with a dependency
+        # on the .dat files the test requires.
+        for path in source_dir.iterdir():
+            if path.is_file() and path.name.endswith('.dat'):
+                os.link(path, exec_dir / path.name)
+
+    def cleanup(self, test):
+        shutil.rmtree(test.getExecDir(), ignore_errors=True)
+
+    def getIntegratedScriptResult(self, test, lit_config):
         if test.skipped:
             return (stl.test.Test.SKIP, "Test was marked as skipped")
 
         name = test.path_in_suite[-1]
         name_root, name_ext = os.path.splitext(name)
         is_sh_test = name_root.endswith('.sh')
-        is_fail_test = name.endswith('.fail.cpp')
         is_objcxx_test = name.endswith('.mm')
 
         if is_sh_test:
@@ -137,81 +149,122 @@ class STLTestFormat:
 
             if isinstance(script, lit.Test.Result):
                 return script
-            if lit_config.noExecute:
-                return lit.Test.Result(lit.Test.PASS)
+
+        return None
+
+    def execute(self, test, lit_config):
+        result = None
+        while True:
+            try:
+                result = self._execute(test, lit_config)
+                break
+            except OSError as oe:
+                if oe.errno != errno.ETXTBSY:
+                    raise
+                time.sleep(0.1)
+
+        return result
+
+    def _execute(self, test, lit_config):
+        # TRANSITION: It is potentially wasteful that all the skipping and
+        # unsupported logic lives here when it is known at time of test
+        # discovery. Investigate
+        script_result = self.getIntegratedScriptResult(test, lit_config)
+        if script_result is not None:
+            return script_result
 
         try:
-            test.setup()
+            self.setup(test)
+            pass_var, fail_var = test.getPassFailResultCodes()
+            buildSteps, testSteps = self.getSteps(test, lit_config)
 
-            if is_fail_test:
-                return self._evaluate_fail_test(test, lit_config)
-            else:
-                return self._evaluate_pass_test(test, lit_config)
+            report = ""
+            for step in buildSteps:
+                cmd, out, err, rc = \
+                    self.build_executor.run(step.cmd, step.work_dir,
+                                            step.file_deps, step.env)
+
+                if step.should_fail and rc == 0:
+                    report += "Build step succeeded unexpectedly.\n"
+                elif rc != 0:
+                    report += "Build step failed unexpectedly.\n"
+
+                report += stl.util.makeReport(cmd, out, err, rc)
+                if (step.should_fail and rc == 0) or \
+                        (not step.should_fail and rc != 0):
+                    lit_config.note(report)
+                    return lit.Test.Result(fail_var, report)
+
+            for step in testSteps:
+                cmd, out, err, rc = \
+                    self.test_executor.run(step.cmd, step.work_dir,
+                                           step.file_deps, step.env)
+
+                if step.should_fail and rc == 0:
+                    report += "Test step succeeded unexpectedly.\n"
+                elif rc != 0:
+                    report += "Test step failed unexpectedly.\n"
+
+                report += stl.util.makeReport(cmd, out, err, rc)
+                if (step.should_fail and rc == 0) or \
+                        (not step.should_fail and rc != 0):
+                    lit_config.note(report)
+                    return lit.Test.Result(fail_var, report)
+
+            return lit.Test.Result(pass_var, report)
+
         except Exception as e:
             lit_config.warning(e.strerror)
             raise e
         finally:
-            test.cleanup()
+            self.cleanup(test)
 
-    def _evaluate_pass_test(self, test, lit_config):
-        exec_dir = test.getExecDir()
-        output_base = test.getOutputBaseName()
-        output_dir = test.getOutputDir()
-        source_path = Path(test.getSourcePath())
-        pass_var, fail_var = test.getPassFailResultCodes()
+    def getSteps(self, test, lit_config):
+        @dataclass
+        class SharedState:
+            exec_file: Optional[os.PathLike] = field(default=None)
+            exec_dir: os.PathLike = field(default_factory=Path)
 
-        compile_cmd, out, err, rc, out_files, exec_file = \
-            test.cxx.executeBasedOnFlags([source_path], output_dir, exec_dir,
-                                         output_base, [], [], [])
+        shared = SharedState()
+        return self.getBuildSteps(test, lit_config, shared), \
+            self.getTestSteps(test, lit_config, shared)
 
-        if rc != 0:
-            report = stl.util.makeReport(compile_cmd, out, err, rc)
+    def getBuildSteps(self, test, lit_config, shared):
+        if not test.path_in_suite[-1].endswith('.fail.cpp'):
+            shared.exec_dir = test.getExecDir()
+            output_base = test.getOutputBaseName()
+            output_dir = test.getOutputDir()
+            source_path = Path(test.getSourcePath())
 
-            if not test.isExpectedToFail():
-                report += "Compilation failed unexpectedly!"
-            lit_config.note(report)
-            return lit.Test.Result(fail_var, report)
-        elif exec_file is None:
-            report = stl.util.makeReport(compile_cmd, out, err, rc)
-            return lit.Test.Result(pass_var, report)
+            cmd, out_files, shared.exec_file = \
+                test.cxx.executeBasedOnFlagsCmd([source_path], output_dir,
+                                                shared.exec_dir, output_base,
+                                                [], [], [])
 
-        cmd, out, err, rc = self.executor.run(str(exec_file), [str(exec_file)],
-                                              str(exec_dir), [],
-                                              test.config.environment)
+            yield TestStep(cmd, shared.exec_dir, [source_path],
+                           test.cxx.compile_env)
 
-        report = "Compiled With: '%s'\n" % ' '.join(compile_cmd)
-        report += stl.util.makeReport(cmd, out, err, rc)
+    def getTestSteps(self, test, lit_config, shared):
+        if shared.exec_file is not None:
+            yield TestStep([str(shared.exec_file)], shared.exec_dir,
+                           [shared.exec_file], test.cxx.compile_env)
+        elif test.path_in_suite[-1].endswith('.fail.cpp'):
+            exec_dir = test.getExecDir()
+            source_path = Path(test.getSourcePath())
 
-        if rc == 0:
-            return lit.Test.Result(pass_var, report)
-        else:
-            if not test.isExpectedToFail():
-                report += "Compiled test failed unexpectedly!"
-            return lit.Test.Result(fail_var, report)
+            flags = []
+            if test.cxx.name == 'cl' and \
+                    ('/analyze' in test.cxx.flags or
+                     '/analyze' in test.cxx.compile_flags):
+                output_base = test.getOutputBaseName()
+                output_dir = test.getOutputDir()
+                analyze_path = output_dir / (output_base +
+                                             '.nativecodeanalysis.xml')
+                flags.append('/analyze:log' + str(analyze_path))
 
-    def _evaluate_fail_test(self, test, lit_config):
-        output_base = test.getOutputBaseName()
-        output_dir = test.getOutputDir()
-        source_path = Path(test.getSourcePath())
-        pass_var, fail_var = test.getPassFailResultCodes()
-
-        flags = []
-        if test.cxx.name == 'cl' and \
-                ('/analyze' in test.cxx.flags or
-                 '/analyze' in test.cxx.compile_flags):
-            analyze_path = output_dir / (output_base +
-                                         '.nativecodeanalysis.xml')
-            flags.append('/analyze:log' + str(analyze_path))
-
-        cmd, out, err, rc = test.cxx.compile([source_path], os.devnull, flags)
-        report = stl.util.makeReport(cmd, out, err, rc)
-
-        if rc != 0:
-            return lit.Test.Result(pass_var, report)
-        else:
-            if test.isExpectedToFail():
-                report += 'Expected compilation to fail!\n'
-            return lit.Test.Result(fail_var, report)
+            cmd = test.cxx.compileCmd([source_path], os.devnull, flags)
+            yield TestStep(cmd, exec_dir, [source_path],
+                           test.cxx.compile_env, True)
 
 
 class LibcxxTestFormat(STLTestFormat):

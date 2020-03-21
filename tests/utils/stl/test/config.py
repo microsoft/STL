@@ -27,13 +27,13 @@ def intMacroValue(token):
 class Configuration:
     # pylint: disable=redefined-outer-name
     def __init__(self, lit_config, config):
+        self.build_executor = None
         self.config = config
         self.cxx_headers = None
         self.cxx_library_root = None
         self.cxx_runtime_root = None
         self.default_compiler = None
         self.execute_external = False
-        self.executor = None
         self.expected_results_list_path = None
         self.expected_results_list_root = None
         self.format_name = None
@@ -41,8 +41,6 @@ class Configuration:
         self.link_shared = True
         self.long_tests = None
         self.msvc_toolset_libs_root = None
-        self.skip_list_path = None
-        self.skip_list_root = None
         self.stl_build_root = None
         self.stl_inc_env_var = None
         self.stl_lib_env_var = None
@@ -51,6 +49,7 @@ class Configuration:
         self.stl_test_env = None
         self.target_arch = None
         self.target_info = stl.test.target_info.WindowsLocalTI(lit_config)
+        self.test_executor = None
         self.test_src_root = None
 
     def get_lit_conf(self, name, default=None):
@@ -90,8 +89,7 @@ class Configuration:
     def configure(self):
         self.configure_features()
         self.configure_default_compiler()
-        self.configure_excludes()
-        self.configure_executor()
+        self.configure_executors()
         self.configure_expected_results()
         self.configure_test_dirs()
         self.configure_test_format()
@@ -314,41 +312,6 @@ class Configuration:
 
         self.config.environment = stl_test_env
 
-    def configure_skip_list_location(self):
-        skip_list_path = self.get_lit_conf('skip_list_path', None)
-
-        if skip_list_path is not None:
-            self.skip_list_path = Path(skip_list_path)
-        else:
-            self.skip_list_path = Path(os.devnull)
-
-    def configure_skip_list_root(self):
-        skip_list_root = self.get_lit_conf('skip_list_root', None)
-
-        if skip_list_root is not None:
-            self.skip_list_root = Path(skip_list_root)
-        else:
-            self.skip_list_root = Path('')
-
-    def configure_excludes(self):
-        excludes = self.get_lit_conf('excludes', set())
-        additional_excludes = self.get_lit_conf('additional_excludes', '')
-
-        excludes.update(additional_excludes.split(','))
-
-        if self.skip_list_path is None:
-            self.configure_skip_list_location()
-
-        if self.skip_list_root is None:
-            self.configure_skip_list_root()
-
-        excludes.update(
-            map(lambda x: os.path.join(str(self.skip_list_root), Path(x)),
-                stl.test.file_parsing.parse_commented_file(
-                    self.skip_list_path)))
-
-        self.lit_config.excludes = excludes
-
     def configure_expected_results_list_location(self):
         expected_results_list_path = self.get_lit_conf(
             'expected_results_list_path', None)
@@ -387,8 +350,6 @@ class Configuration:
         self.config.expected_results = \
             getattr(self.config, 'expected_results', dict())
 
-    # TRANSITION: Have configuring the compiler have the same flow as
-    # everything else.
     def configure_default_compiler(self):
         self.default_compiler = CXXCompiler(None)
         self.configure_compile_flags()
@@ -398,8 +359,9 @@ class Configuration:
         self.default_compiler.compile_env = self.config.environment
 
     # TRANSITION: Investigate using SSHExecutor for ARM
-    def configure_executor(self):
-        self.executor = LocalExecutor()
+    def configure_executors(self):
+        self.build_executor = LocalExecutor()
+        self.test_executor = LocalExecutor()
 
     def configure_compile_flags(self):
         self.configure_compile_flags_header_includes()
@@ -471,7 +433,8 @@ class Configuration:
         return getattr(stl.test.format, self.format_name)(
             self.default_compiler,
             self.execute_external,
-            self.executor)
+            self.build_executor,
+            self.test_executor)
 
     # TRANSITION: Might be nice to actually print something
     def print_config_info(self):

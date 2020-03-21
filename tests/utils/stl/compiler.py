@@ -98,9 +98,9 @@ class CXXCompiler:
 
         return cmd, out_files
 
-    def executeBasedOnFlags(self, source_files, out_dir, cwd=None,
-                            out_base=None, flags=[], compile_flags=[],
-                            link_flags=[]):
+    def executeBasedOnFlagsCmd(self, source_files, out_dir, cwd=None,
+                               out_base=None, flags=[], compile_flags=[],
+                               link_flags=[]):
         mode = self.CM_Default
         exec_file = None
         output_file = None
@@ -142,6 +142,14 @@ class CXXCompiler:
 
         cmd, out_files = self._basicCmd(source_files, output_file, mode, flags,
                                         compile_flags, link_flags, True)
+        return cmd, out_files, exec_file
+
+    def executeBasedOnFlags(self, source_files, out_dir, cwd=None,
+                            out_base=None, flags=[], compile_flags=[],
+                            link_flags=[]):
+        cmd, out_files, exec_file = \
+            self.executeBasedOnFlagsCmd(source_files, out_dir, cwd, out_base,
+                                        flags, compile_flags, link_flags)
         out, err, rc = stl.util.executeCommand(cmd, env=self.compile_env,
                                                cwd=cwd)
         return cmd, out, err, rc, out_files, exec_file

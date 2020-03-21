@@ -3,61 +3,40 @@
 
 from pathlib import Path
 
-import lit.Test
-
-from stl.test.format import STLTestFormat
-import stl
+from stl.test.format import STLTestFormat, TestStep
 
 
 class CustomTestFormat(STLTestFormat):
-    def _evaluate_pass_test(self, test, lit_config):
+    def getBuildSteps(self, test, lit_config, shared):
         exe_source = Path(test.getSourcePath())
         dll_source = exe_source.parent / 'TestDll.cpp'
-        exec_dir = test.getExecDir()
+        shared.exec_dir = test.getExecDir()
         output_base = test.getOutputBaseName()
         output_dir = test.getOutputDir()
         pass_var, fail_var = test.getPassFailResultCodes()
         dll_output = output_dir / 'TestDll.DLL'
 
-        report = ""
+        dll_compile_cmd, out_files, exec_file = \
+            test.cxx.executeBasedOnFlagsCmd([dll_source], output_dir,
+                                            shared.exec_dir, 'TestDll',
+                                            ['/Fe' + str(dll_output)],
+                                            [], ['/DLL'])
 
-        dll_compile_cmd, out, err, rc, dll_out_files, exec_file = \
-            test.cxx.executeBasedOnFlags([dll_source], output_dir, exec_dir,
-                                         'TestDll', ['/Fe' + str(dll_output)],
-                                         [], ['/DLL'])
+        shared.dll_file = dll_output
 
-        if rc != 0:
-            report += stl.util.makeReport(dll_compile_cmd, out, err, rc)
+        yield TestStep(dll_compile_cmd, shared.exec_dir, [dll_source],
+                       test.cxx.compile_env)
 
-            if not test.isExpectedToFail():
-                report += "DLL creation failed unexpectedly!"
-            lit_config.note(report)
-            return lit.Test.Result(fail_var, report)
+        exe_compile_cmd, out_files, shared.exec_file = \
+            test.cxx.executeBasedOnFlagsCmd([exe_source], output_dir,
+                                            shared.exec_dir, output_base,
+                                            [], [], [])
 
-        exe_compile_cmd, out, err, rc, exe_out_files, exec_file = \
-            test.cxx.executeBasedOnFlags([exe_source], output_dir, exec_dir,
-                                         output_base, [], [], [])
+        yield TestStep(exe_compile_cmd, shared.exec_dir, [exe_source],
+                       test.cxx.compile_env)
 
-        if rc != 0:
-            report += stl.util.makeReport(exe_compile_cmd, out, err, rc)
-
-            if not test.isExpectedToFail():
-                report += "EXE creation failed unexpectedly!"
-            lit_config.note(report)
-            return lit.Test.Result(fail_var, report)
-        elif exec_file is None:
-            report = stl.util.makeReport(
-                dll_compile_cmd + ['&&'] + exe_compile_cmd, out, err, rc)
-            return lit.Test.Result(pass_var, report)
-
-        cmd, out, err, rc = self.executor.run(str(exec_file), [str(exec_file)],
-                                              str(exec_dir), [],
-                                              test.config.environment)
-        report += stl.util.makeReport(cmd, out, err, rc)
-
-        if rc == 0:
-            return lit.Test.Result(pass_var, report)
-        else:
-            if not test.isExpectedToFail():
-                report += "Compiled test failed unexpectedly!"
-            return lit.Test.Result(fail_var, report)
+    def getTestSteps(self, test, lit_config, shared):
+        if shared.exec_file is not None:
+            yield TestStep([str(shared.exec_file)], shared.exec_dir,
+                           [shared.exec_file, shared.dll_file],
+                           test.cxx.compile_env)
