@@ -230,11 +230,6 @@ struct fwdit { // forward iterator that wraps char *
         return !(*this == other);
     }
 
-    fwdit& operator=(const fwdit& other) { // copy
-        ptr = other.ptr;
-        return *this;
-    }
-
     CHR& operator*() const { // dereference
         return *ptr;
     }
@@ -273,11 +268,6 @@ struct bidit { // bidirectional iterator that wraps const char *
 
     bool operator!=(const bidit& other) const { // compare for inequality
         return !(*this == other);
-    }
-
-    bidit& operator=(const bidit& other) { // copy
-        ptr = other.ptr;
-        return *this;
     }
 
     const CHR& operator*() const { // dereference

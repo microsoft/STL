@@ -210,7 +210,6 @@ utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 # C++20 P0019R8 "atomic_ref"
 language.support\support.limits\support.limits.general\atomic.version.pass.cpp
 
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 utilities\time\days.pass.cpp
 utilities\time\months.pass.cpp
@@ -479,6 +478,28 @@ strings\char.traits\char.traits.specializations\char.traits.specializations.wcha
 strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\copy.pass.cpp
 strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\move.pass.cpp
 
+# C++20 P1135R6 "The C++20 Synchronization Library"
+atomics\types.pass.cpp
+atomics\atomics.types.operations\atomics.types.operations.wait\atomic_wait.pass.cpp
+thread\thread.barrier\arrive.pass.cpp
+thread\thread.barrier\arrive_and_drop.pass.cpp
+thread\thread.barrier\arrive_and_wait.pass.cpp
+thread\thread.barrier\completion.pass.cpp
+thread\thread.barrier\max.pass.cpp
+thread\thread.barrier\version.pass.cpp
+thread\thread.latch\arrive_and_wait.pass.cpp
+thread\thread.latch\count_down.pass.cpp
+thread\thread.latch\max.pass.cpp
+thread\thread.latch\try_wait.pass.cpp
+thread\thread.latch\version.pass.cpp
+thread\thread.semaphore\acquire.pass.cpp
+thread\thread.semaphore\binary.pass.cpp
+thread\thread.semaphore\max.pass.cpp
+thread\thread.semaphore\release.pass.cpp
+thread\thread.semaphore\timed.pass.cpp
+thread\thread.semaphore\try_acquire.pass.cpp
+thread\thread.semaphore\version.pass.cpp
+
 
 # *** MISSING COMPILER FEATURES ***
 # C++20 P0722R3 "Efficient sized delete for variable sized classes"
@@ -691,6 +712,10 @@ language.support\support.limits\support.limits.general\string.version.pass.cpp
 
 # Test needs to be updated for LWG-3320 removing span::const_iterator.
 containers\views\types.pass.cpp
+containers\views\span.iterators\begin.pass.cpp
+containers\views\span.iterators\rbegin.pass.cpp
+containers\views\span.iterators\end.pass.cpp
+containers\views\span.iterators\rend.pass.cpp
 
 # Test needs to be updated for P2116R0 removing the tuple interface of span
 containers\views\span.tuple\get.fail.cpp
