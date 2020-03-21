@@ -533,22 +533,6 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
     GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
 }
 
-void __cdecl __crtWaitOnAddress(
-    volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
-    DYNAMICGETCACHEDFUNCTION(PFNWAITONADDRESS, WaitOnAddress, pfWaitOnAddress);
-    pfWaitOnAddress(Address, CompareAddress, AddressSize, dwMilliseconds);
-}
-
-void __cdecl __crtWakeByAddressSingle(PVOID Address) {
-    DYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressSingle, pfWakeByAddressSingle);
-    pfWakeByAddressSingle(Address);
-}
-
-void __cdecl __crtWakeByAddressAll(PVOID Address) {
-    DYNAMICGETCACHEDFUNCTION(PFNWAKEBYADDRESSSINGLE, WakeByAddressAll, pfWakeByAddressAll);
-    pfWakeByAddressAll(Address);
-}
-
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
 
@@ -564,7 +548,6 @@ extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {0};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
-    HINSTANCE hSynch    = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
 
     STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
     STOREFUNCTIONPOINTER(hKernel32, FlsFree);
@@ -618,9 +601,7 @@ static int __cdecl initialize_pointers() {
     STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
     STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
 #endif
-    STOREFUNCTIONPOINTER(hSynch, WaitOnAddress);
-    STOREFUNCTIONPOINTER(hSynch, WakeByAddressSingle);
-    STOREFUNCTIONPOINTER(hSynch, WakeByAddressAll);
+
     return 0;
 }
 

@@ -306,6 +306,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _LOCK_DEBUG          3
 #define _LOCK_AT_THREAD_EXIT 4
 
+#if defined(_M_ARM) || defined(_M_ARM64)
+#define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif
+
+#ifndef _ALLOW_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE_MISMATCH
+#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#pragma detect_mismatch("_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE", "defined")
+#else
+#pragma detect_mismatch("_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE", "not defined")
+#endif
+#endif // !_ALLOW_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE_MISMATCH
+
 #ifdef __cplusplus
 _STD_BEGIN
 enum _Uninitialized { // tag for suppressing initialization

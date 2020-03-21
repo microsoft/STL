@@ -386,6 +386,10 @@ set(SOURCES_SATELLITE_2
     ${CMAKE_CURRENT_LIST_DIR}/src/special_math.cpp
 )
 
+set(SOURCES_SATELLITE_ATOMIC_WAIT
+    ${CMAKE_CURRENT_LIST_DIR}/src/atomic_wait.cpp
+)
+
 set(SOURCES_SATELLITE_CODECVT_IDS
     ${CMAKE_CURRENT_LIST_DIR}/src/ulocale.cpp
 )
@@ -394,6 +398,7 @@ set(SOURCES_SATELLITE_CODECVT_IDS
 set(STATIC_SOURCES
     ${SOURCES_SATELLITE_1}
     ${SOURCES_SATELLITE_2}
+    ${SOURCES_SATELLITE_ATOMIC_WAIT}
     ${SOURCES_SATELLITE_CODECVT_IDS}
 )
 
@@ -464,11 +469,23 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     set_target_properties(msvcp${D_SUFFIX}_codecvt_ids PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_codecvt_ids${VCLIBS_SUFFIX}")
     target_link_options(msvcp${D_SUFFIX}_codecvt_ids PRIVATE "${THIS_CONFIG_LINK_OPTIONS}")
 
+    # msvcp140_atomic_wait.dll (the atomic wait satellite)
+    add_library(msvcp${D_SUFFIX}_atomic_wait_objects OBJECT ${SOURCES_SATELLITE_ATOMIC_WAIT})
+    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+
+    add_library(msvcp${D_SUFFIX}_atomic_wait SHARED)
+    target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_wait${D_SUFFIX}${VCLIBS_SUFFIX}")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
+    target_link_options(msvcp${D_SUFFIX}_atomic_wait PRIVATE "${THIS_CONFIG_LINK_OPTIONS}" "/DEF:${CMAKE_CURRENT_LIST_DIR}/src/msvcp_atomic_wait.def")
+
     # import library
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
     target_link_libraries(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX}_implib_objects)
-    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_codecvt_ids)
-    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>")
+    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_codecvt_ids msvcp${D_SUFFIX}_atomic_wait)
+    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
 endfunction()
 
