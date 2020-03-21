@@ -134,13 +134,11 @@ namespace lwg_2905 {
             STATIC_ASSERT(!is_constructible_v<unique_ptr<T, D>, pointer, A>);
             STATIC_ASSERT(!is_constructible_v<unique_ptr<T[], D>, pointer, A>);
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
             // per LWG-2899
             STATIC_ASSERT(!is_move_constructible_v<unique_ptr<T, D>>);
             STATIC_ASSERT(!is_move_constructible_v<unique_ptr<T[], D>>);
             STATIC_ASSERT(!is_move_assignable_v<unique_ptr<T, D>>);
             STATIC_ASSERT(!is_move_assignable_v<unique_ptr<T[], D>>);
-#endif // _M_CEE
         }
         {
             using A = Immobile;
@@ -150,13 +148,11 @@ namespace lwg_2905 {
             STATIC_ASSERT(!is_constructible_v<unique_ptr<T, D>, pointer, A>);
             STATIC_ASSERT(!is_constructible_v<unique_ptr<T[], D>, pointer, A>);
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
             // per LWG-2899
             STATIC_ASSERT(is_nothrow_move_constructible_v<unique_ptr<T, D>>);
             STATIC_ASSERT(is_nothrow_move_constructible_v<unique_ptr<T[], D>>);
             STATIC_ASSERT(!is_move_assignable_v<unique_ptr<T, D>>);
             STATIC_ASSERT(!is_move_assignable_v<unique_ptr<T[], D>>);
-#endif // _M_CEE
         }
         {
             using A = Immobile;
@@ -166,13 +162,11 @@ namespace lwg_2905 {
             STATIC_ASSERT(!is_constructible_v<unique_ptr<T, D>, pointer, const A>);
             STATIC_ASSERT(!is_constructible_v<unique_ptr<T[], D>, pointer, const A>);
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
             // per LWG-2899
             STATIC_ASSERT(is_nothrow_move_constructible_v<unique_ptr<T, D>>);
             STATIC_ASSERT(is_nothrow_move_constructible_v<unique_ptr<T[], D>>);
             STATIC_ASSERT(!is_move_assignable_v<unique_ptr<T, D>>);
             STATIC_ASSERT(!is_move_assignable_v<unique_ptr<T[], D>>);
-#endif // _M_CEE
         }
     }
 

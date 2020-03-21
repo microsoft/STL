@@ -21,10 +21,16 @@ int cube(const int x) {
     }
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option" // TRANSITION, Clang 10
+#pragma clang diagnostic ignored "-Wconstant-evaluated"
+#else // ^^^ clang / other vvv
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'return': conversion from 'size_t' to 'int', signed/unsigned mismatch
 #pragma warning(disable : 5063) // 'std::is_constant_evaluated' always evaluates to true
                                 // in manifestly constant-evaluated expressions
+#endif // __clang__
 namespace example { // Test the N4842 [expr.const]/13 example.
     template <bool>
     struct X {};
@@ -43,7 +49,11 @@ namespace example { // Test the N4842 [expr.const]/13 example.
     int p = f(); // m is 13; initialized to 26
     int q = p + f(); // m is 17 for this call; initialized to 56
 } // namespace example
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ clang / other vvv
 #pragma warning(pop)
+#endif // __clang__
 
 int main() {
     static_assert(is_same_v<decltype(is_constant_evaluated()), bool>);

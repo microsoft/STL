@@ -1039,7 +1039,13 @@ struct _Atomic_integral; // not defined
 template <class _Ty>
 struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral operations using 1-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_integral() = default;
+    /* implicit */ constexpr _Atomic_integral(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
@@ -1096,7 +1102,13 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral operations using 2-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_integral() = default;
+    /* implicit */ constexpr _Atomic_integral(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
@@ -1152,7 +1164,13 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral operations using 4-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_integral() = default;
+    /* implicit */ constexpr _Atomic_integral(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
@@ -1208,7 +1226,13 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral operations using 8-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_integral() = default;
+    /* implicit */ constexpr _Atomic_integral(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
 #ifdef _M_IX86
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
@@ -1321,9 +1345,15 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
-    using _Base = _Atomic_integral<_Ty>;
-    using _Base::_Base;
+    using _Base           = _Atomic_integral<_Ty>;
     using difference_type = _Ty;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_integral_facade() = default;
+    /* implicit */ constexpr _Atomic_integral_facade(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
+    using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     // note: const_cast-ing away volatile is safe because all our intrinsics add volatile back on.
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
@@ -1447,9 +1477,15 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 template <class _Ty>
 struct _Atomic_floating : _Atomic_storage<_Ty> {
     // provides atomic floating-point operations
-    using _Base = _Atomic_storage<_Ty>;
-    using _Base::_Base;
+    using _Base           = _Atomic_storage<_Ty>;
     using difference_type = _Ty;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_floating() = default;
+    /* implicit */ constexpr _Atomic_floating(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
+    using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Ty _Temp{this->load(memory_order_relaxed)};
@@ -1499,8 +1535,15 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 // STRUCT TEMPLATE _Atomic_pointer
 template <class _Ty>
 struct _Atomic_pointer : _Atomic_storage<_Ty> {
-    using _Atomic_storage<_Ty>::_Atomic_storage;
+    using _Base           = _Atomic_storage<_Ty>;
     using difference_type = ptrdiff_t;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_pointer() = default;
+    /* implicit */ constexpr _Atomic_pointer(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
+    using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     _Ty fetch_add(const ptrdiff_t _Diff, const memory_order _Order = memory_order_seq_cst) noexcept {
         const ptrdiff_t _Shift_bytes =
@@ -1623,7 +1666,11 @@ public:
 
     using value_type = _Ty;
 
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    /* implicit */ constexpr atomic(const _Ty _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
+#endif // ^^^ no workaround ^^^
 
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
 
@@ -2129,8 +2176,7 @@ using atomic_char8_t = atomic<char8_t>;
 #endif // __cpp_lib_char8_t
 using atomic_char16_t = atomic<char16_t>;
 using atomic_char32_t = atomic<char32_t>;
-
-using atomic_wchar_t = atomic<wchar_t>;
+using atomic_wchar_t  = atomic<wchar_t>;
 
 using atomic_int8_t   = atomic<int8_t>;
 using atomic_uint8_t  = atomic<uint8_t>;

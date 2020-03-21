@@ -1643,6 +1643,7 @@ struct X
         if (throw_now)
             TEST_THROW(6);
     }
+    X& operator=(X const&) = default;
 };
 
 bool X::throw_now = false;
@@ -7020,7 +7021,7 @@ void test_swap_sfinae() {
         static_assert(!std::is_swappable_v<optional<T>>, "");
     }
     {
-        // Even thought CopyOnly has deleted move operations, those operations
+        // Even though CopyOnly has deleted move operations, those operations
         // cause optional<CopyOnly> to have implicitly deleted move operations
         // that decay into copies.
         using T = TestTypes::CopyOnly;
