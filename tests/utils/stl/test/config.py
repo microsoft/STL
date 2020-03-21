@@ -322,29 +322,15 @@ class Configuration:
         else:
             self.expected_results_list_path = Path(os.devnull)
 
-    def configure_expected_results_list_root(self):
-        expected_results_list_root = self.get_lit_conf(
-            'expected_results_list_root', None)
-
-        if expected_results_list_root is not None:
-            self.expected_results_list_root = Path(
-                expected_results_list_root)
-        else:
-            self.expected_results_list_root = Path('')
-
     def configure_expected_results(self):
-        expected_results = self.get_lit_conf('expected_results', dict())
+        expected_results = getattr(self.lit_config, 'expected_results', dict())
 
         if self.expected_results_list_path is None:
             self.configure_expected_results_list_location()
 
-        if self.expected_results_list_root is None:
-            self.configure_expected_results_list_root()
-
-        expected_results.update(
-            map(lambda x: (str(self.expected_results_list_root / x[0]), x[1]),
-                stl.test.file_parsing.parse_result_file(
-                    self.expected_results_list_path).items()))
+        expected_results[self.config.name] = \
+            stl.test.file_parsing.parse_result_file(
+                self.expected_results_list_path)
 
         self.lit_config.expected_results = expected_results
         self.config.expected_results = \

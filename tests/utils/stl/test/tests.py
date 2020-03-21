@@ -81,6 +81,14 @@ class STLTest(Test):
         test_name = self.getTestName()
         self.expected_result = None
 
+        for prefix, result in \
+                chain(test_config.expected_results.items(),
+                      lit_config.expected_results.get(test_config.name,
+                                                      dict()).items()):
+            if test_name.startswith(prefix):
+                self.expected_result = result
+                break
+
         if test_name in test_config.expected_results:
             self.expected_result = test_config.expected_results[test_name]
         elif test_name in lit_config.expected_results:
