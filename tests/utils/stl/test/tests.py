@@ -199,7 +199,7 @@ class LibcxxTest(STLTest):
     def getOutputDir(self):
         return Path(os.path.join(
             self.suite.getExecPath(self.path_in_suite[:-1]))) / \
-                    "out" / self.path_in_suite[-1] / self.env_num
+                "out" / self.path_in_suite[-1] / self.env_num
 
     def getXMLOutputTestName(self):
         return ':'.join((self.path_in_suite[-1], self.env_num))
