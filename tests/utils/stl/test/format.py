@@ -12,7 +12,6 @@ from typing import Dict, List, Optional
 import copy
 import itertools
 import errno
-import math
 import os
 import shutil
 import time
@@ -219,7 +218,7 @@ class STLTestFormat:
             return lit.Test.Result(pass_var, report)
 
         except Exception as e:
-            lit_config.warning(e.strerror)
+            lit_config.warning(str(e))
             raise e
         finally:
             self.cleanup(test)

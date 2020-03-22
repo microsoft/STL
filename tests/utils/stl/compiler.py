@@ -8,7 +8,7 @@
 
 from itertools import chain
 from pathlib import Path
-from typing import List, Union
+from typing import List
 import os
 
 import stl.util
@@ -35,13 +35,11 @@ class CXXCompiler:
 
         self.compile_env = compile_env
 
-    def _basicCmd(self, source_files: List[Union[os.PathLike, str]], out,
+    def _basicCmd(self, source_files: List[Path], out: Path,
                   mode=CM_Default, flags=[], compile_flags=[], link_flags=[],
                   skip_mode_flags=False):
         out_files = []
         cmd = []
-
-        source_files = list(map(lambda x: str(x), source_files))
 
         if out is not None:
             out_files.append(out)
@@ -61,7 +59,7 @@ class CXXCompiler:
             else:
                 for source_file in source_files:
                     out_files.append(
-                        source_file.name.rsplit('.', 1)[0] + '.obj')
+                        Path(source_file.name.rsplit('.', 1)[0] + '.obj'))
         elif mode == self.CM_Analyze:
             if not skip_mode_flags:
                 cmd.append('/analyze:only')
@@ -70,19 +68,19 @@ class CXXCompiler:
             else:
                 for source_file in source_files:
                     out_files.append(
-                        source_file.name.rsplit('.', 1)[0] +
-                        '.nativecodeanalysis.xml')
+                        Path(source_file.name.rsplit('.', 1)[0] +
+                             '.nativecodeanalysis.xml'))
         elif out is not None:
             cmd.append('/Fe' + str(out))
 
             if len(source_files) <= 1:
                 out_obj = str(out).rsplit('.', 1)[0] + '.obj'
                 cmd.append('/Fo' + out_obj)
-                out_files.append(out_obj)
+                out_files.append(Path(out_obj))
             else:
                 for source_file in source_files:
                     out_files.append(
-                        source_file.name.rsplit('.', 1)[0] + '.obj')
+                        Path(source_file.name.rsplit('.', 1)[0] + '.obj'))
 
         if mode in (self.CM_Analyze, self.CM_Compile, self.CM_Default):
             cmd.extend(self.compile_flags)

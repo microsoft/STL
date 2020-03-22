@@ -521,10 +521,10 @@ std/iterators/iterator.primitives/iterator.traits/pointer.pass.cpp:1 SKIP
 std/iterators/iterator.primitives/std.iterator.tags/contiguous_iterator_tag.pass.cpp:1 SKIP
 
 # Clang 9 doesn't support comparison rewriting; implemented in Clang 10.
-std/containers/views/span.iterators/begin.pass.cpp:1 SKIP
-std/containers/views/span.iterators/end.pass.cpp:1 SKIP
-std/containers/views/span.iterators/rbegin.pass.cpp:1 SKIP
-std/containers/views/span.iterators/rend.pass.cpp:1 SKIP
+std/containers/views/span.iterators/begin.pass.cpp SKIP
+std/containers/views/span.iterators/end.pass.cpp SKIP
+std/containers/views/span.iterators/rbegin.pass.cpp SKIP
+std/containers/views/span.iterators/rend.pass.cpp SKIP
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -636,8 +636,12 @@ std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
-std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
-std/language.support/support.runtime/cstdlib.pass.cpp FAIL
+std/depr/depr.c.headers/stdlib_h.pass.cpp SKIP
+std/language.support/support.runtime/cstdlib.pass.cpp SKIP
+
+# OS-11107628 "_Exit allows cleanup in other DLLs"
+std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIP
+std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIP
 
 
 # *** LIKELY BOGUS TESTS ***
