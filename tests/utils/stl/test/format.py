@@ -121,7 +121,7 @@ class STLTestFormat:
 
     def getIntegratedScriptResult(self, test, lit_config):
         if test.skipped:
-            return (stl.test.Test.SKIP, "Test was marked as skipped")
+            return (stl.test.tests.SKIP, "Test was marked as skipped")
 
         name = test.path_in_suite[-1]
         name_root, name_ext = os.path.splitext(name)
@@ -262,7 +262,7 @@ class STLTestFormat:
                                              '.nativecodeanalysis.xml')
                 flags.append('/analyze:log' + str(analyze_path))
 
-            cmd = test.cxx.compileCmd([source_path], os.devnull, flags)
+            cmd, _ = test.cxx.compileCmd([source_path], os.devnull, flags)
             yield TestStep(cmd, exec_dir, [source_path],
                            test.cxx.compile_env, True)
 

@@ -40,7 +40,7 @@ class STLTest(Test):
     def getOutputDir(self):
         return Path(os.path.join(
             self.suite.getExecPath(self.path_in_suite[:-1]))) / \
-            str(self.env_num)
+            "Output" / str(self.env_num)
 
     def getOutputBaseName(self):
         return self.path_in_suite[-2]
@@ -183,11 +183,6 @@ class STLTest(Test):
 
 
 class LibcxxTest(STLTest):
-    def getOutputDir(self):
-        return Path(
-            os.path.join(self.suite.getExecPath(self.path_in_suite))) / \
-            str(self.env_num)
-
     def getOutputBaseName(self):
         output_base = self.path_in_suite[-1]
 

@@ -8,7 +8,7 @@
 
 from itertools import chain
 from pathlib import Path
-from typing import List
+from typing import List, Union
 import os
 
 import stl.util
@@ -35,12 +35,13 @@ class CXXCompiler:
 
         self.compile_env = compile_env
 
-    # TRANSITION: Make this function report the list of output files
-    def _basicCmd(self, source_files: List[str], out, mode=CM_Default,
-                  flags=[], compile_flags=[], link_flags=[],
+    def _basicCmd(self, source_files: List[Union[os.PathLike, str]], out,
+                  mode=CM_Default, flags=[], compile_flags=[], link_flags=[],
                   skip_mode_flags=False):
         out_files = []
         cmd = []
+
+        source_files = list(map(lambda x: str(x), source_files))
 
         if out is not None:
             out_files.append(out)
@@ -126,6 +127,10 @@ class CXXCompiler:
             elif flag.startswith('analyze') and flag[-1] != '-':
                 add_analyze_output = True
 
+        if mode is self.CM_Default and output_file is None:
+            output_file = out_dir / (out_base + '.exe')
+            exec_file = output_file
+
         if add_analyze_output and mode != self.CM_Analyze:
             if output_file:
                 flags.append('/analyze:log' +
@@ -135,10 +140,6 @@ class CXXCompiler:
             else:
                 flags.append('/analyze:log' +
                              str(out_dir / 'nativecodeanalysis.xml'))
-
-        if mode is self.CM_Default and output_file is None:
-            output_file = out_dir / (out_base + '.exe')
-            exec_file = output_file
 
         cmd, out_files = self._basicCmd(source_files, output_file, mode, flags,
                                         compile_flags, link_flags, True)

@@ -547,7 +547,7 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 
 # STL bug: We don't have tgmath.h.
-std/depr/depr.c.headers/tgmath_h.pass.cpp FAIL
+std/depr/depr.c.headers/tgmath_h.pass.cpp SKIP
 
 # STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
 std/numerics/complex.number/complex.special/double_long_double_implicit.fail.cpp FAIL
@@ -628,7 +628,7 @@ std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousan
 std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
 
 # STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp FAIL
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp:1 FAIL
 
 # STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
@@ -638,10 +638,6 @@ std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
 # We're permanently missing aligned_alloc().
 std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
 std/language.support/support.runtime/cstdlib.pass.cpp FAIL
-
-# OS-11107628 "_Exit allows cleanup in other DLLs"
-std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
@@ -965,7 +961,7 @@ std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp FAIL
 std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
 
 # Possible STL bugs in pair and tuple.
-std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR31384.pass.cpp FAIL
 
 # Likely STL bugs in mersenne_twister; also fails at runtime
@@ -1002,9 +998,9 @@ std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass
 std/containers/associative/map/map.cons/deduct_const.pass.cpp FAIL
 std/containers/associative/multimap/multimap.cons/deduct_const.pass.cpp FAIL
 std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
-std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp FAIL
+std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
-std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
 
 # Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
