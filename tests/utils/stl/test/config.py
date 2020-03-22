@@ -50,7 +50,7 @@ class Configuration:
         self.target_arch = None
         self.target_info = stl.test.target_info.WindowsLocalTI(lit_config)
         self.test_executor = None
-        self.test_src_root = None
+        self.test_source_root = None
 
     def get_lit_conf(self, name, default=None):
         val = self.lit_config.params.get(name, None)
@@ -102,7 +102,6 @@ class Configuration:
 
         self.format_name = format_name
 
-    # TRANSITION: Respect passed params
     def configure_test_dirs(self):
         test_subdirs = list()
 
@@ -127,28 +126,28 @@ class Configuration:
         self.config.available_features.add('msvc')
         self.config.available_features.update(self.target_info.features)
 
-    def configure_test_src_root(self):
-        test_src_root = self.get_lit_conf('test_source_root', None)
+    def configure_test_source_root(self):
+        test_source_root = self.get_lit_conf('test_source_root', None)
 
-        if test_src_root is not None:
-            self.test_src_root = Path(test_src_root)
+        if test_source_root is not None:
+            self.test_source_root = Path(test_source_root)
 
     def configure_src_root(self):
         stl_src_root = self.get_lit_conf('stl_src_root', None)
 
         if stl_src_root is None:
-            if self.test_src_root is None:
-                self.configure_test_src_root()
+            if self.test_source_root is None:
+                self.configure_test_source_root()
 
-                if self.test_src_root is None:
+                if self.test_source_root is None:
                     self.lit_config.fatal(
                         "Could not infer stl_src_root from test_source_root. "
                         "test_source_root is None")
 
             if self.config.name == 'libc++':
-                stl_src_root = self.test_src_root.parents[2]
+                stl_src_root = self.test_source_root.parents[2]
             else:
-                stl_src_root = self.test_src_root.parents[1]
+                stl_src_root = self.test_source_root.parents[1]
 
             self.lit_config.note(
                 "stl_src_root was not specified. Defaulting to: %s." %
@@ -352,12 +351,12 @@ class Configuration:
     def configure_compile_flags(self):
         self.configure_compile_flags_header_includes()
         # Configure extra flags
-        compile_flags_str = self.get_lit_conf('compile_flags', '')
-        self.default_compiler.compile_flags += shlex.split(compile_flags_str)
-        additional_flags = self.get_lit_conf('test_compiler_flags')
-        if additional_flags:
+        self.default_compiler.compile_flags += \
+            self.get_lit_conf('compile_flags', [])
+        additional_flags_str = self.get_lit_conf('addtional_compiler_flags')
+        if additional_flags_str:
             self.default_compiler.compile_flags += \
-                shlex.split(additional_flags)
+                shlex.split(additional_flags_str)
 
     def configure_compile_flags_header_includes(self):
         if self.cxx_headers is None:
@@ -400,10 +399,10 @@ class Configuration:
         self.default_compiler.link_flags.append(
             '/LIBPATH:' + str(self.msvc_toolset_libs_root))
 
-        additional_flags = self.get_lit_conf('test_link_flags')
-        if additional_flags:
+        additional_flags_str = self.get_lit_conf('additional_link_flags')
+        if additional_flags_str:
             self.default_compiler.link_flags += \
-                shlex.split(additional_flags)
+                shlex.split(additional_flags_str)
 
     def configure_msvc_toolset_libs_root(self):
         msvc_toolset_libs_root = self.get_lit_conf('msvc_toolset_libs_root')
