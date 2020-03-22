@@ -12,6 +12,7 @@ from typing import Dict, List, Optional
 import copy
 import itertools
 import errno
+import math
 import os
 import shutil
 import time
@@ -91,16 +92,20 @@ class STLTestFormat:
                     if envlst_path is None:
                         litConfig.fatal("Could not find an env.lst file.")
 
+                    env_entries = \
+                        stl.test.file_parsing.parse_env_lst_file(envlst_path)
+                    format_string = "{:0" + str(len(str(len(env_entries)))) + \
+                                    "d}"
                     for env_entry, env_num \
-                            in zip(stl.test.file_parsing.parse_env_lst_file(
-                                   envlst_path), itertools.count()):
+                            in zip(env_entries, itertools.count()):
                         test_config = copy.deepcopy(localConfig)
                         test_path_in_suite = path_in_suite + (filename,)
 
                         yield test_class(testSuite,
                                          test_path_in_suite,
                                          litConfig, test_config,
-                                         env_entry, env_num,
+                                         env_entry,
+                                         format_string.format(env_num),
                                          self.cxx)
 
     def setup(self, test):

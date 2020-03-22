@@ -3,16 +3,16 @@
 
 # *** INSUFFICIENTLY NEW PUBLIC TOOLSET ***
 # TRANSITION, VS 2019 16.6p2
-tests/P0768R1_spaceship_operator:0 FAIL
-tests/P0768R1_spaceship_operator:1 FAIL
-tests/P0768R1_spaceship_operator:2 FAIL
-tests/P0768R1_spaceship_operator:3 FAIL
-tests/P0768R1_spaceship_operator:4 FAIL
-tests/P0768R1_spaceship_operator:5 FAIL
-tests/P0768R1_spaceship_operator:6 FAIL
-tests/P0768R1_spaceship_operator:7 FAIL
-tests/P0768R1_spaceship_operator:8 FAIL
-tests/P0768R1_spaceship_operator:9 FAIL
+tests/P0768R1_spaceship_operator:00 FAIL
+tests/P0768R1_spaceship_operator:01 FAIL
+tests/P0768R1_spaceship_operator:02 FAIL
+tests/P0768R1_spaceship_operator:03 FAIL
+tests/P0768R1_spaceship_operator:04 FAIL
+tests/P0768R1_spaceship_operator:05 FAIL
+tests/P0768R1_spaceship_operator:06 FAIL
+tests/P0768R1_spaceship_operator:07 FAIL
+tests/P0768R1_spaceship_operator:08 FAIL
+tests/P0768R1_spaceship_operator:09 FAIL
 tests/P0768R1_spaceship_operator:10 FAIL
 tests/P0768R1_spaceship_operator:11 FAIL
 tests/P0768R1_spaceship_operator:12 FAIL
@@ -20,10 +20,10 @@ tests/P0768R1_spaceship_operator:13 FAIL
 tests/P0768R1_spaceship_operator:14 FAIL
 
 # TRANSITION, VS 2019 16.6p2
-tests/VSO_0157762_feature_test_macros:3 FAIL
-tests/VSO_0157762_feature_test_macros:4 FAIL
-tests/VSO_0157762_feature_test_macros:5 FAIL
-tests/VSO_0157762_feature_test_macros:6 FAIL
+tests/VSO_0157762_feature_test_macros:03 FAIL
+tests/VSO_0157762_feature_test_macros:04 FAIL
+tests/VSO_0157762_feature_test_macros:05 FAIL
+tests/VSO_0157762_feature_test_macros:06 FAIL
 tests/VSO_0157762_feature_test_macros:10 FAIL
 tests/VSO_0157762_feature_test_macros:11 FAIL
 tests/VSO_0157762_feature_test_macros:12 FAIL

@@ -40,7 +40,7 @@ class STLTest(Test):
     def getOutputDir(self):
         return Path(os.path.join(
             self.suite.getExecPath(self.path_in_suite[:-1]))) / \
-            "Output" / str(self.env_num)
+            "Output" / self.env_num
 
     def getOutputBaseName(self):
         return self.path_in_suite[-2]
@@ -52,7 +52,7 @@ class STLTest(Test):
         return self.getExecDir() / (self.getOutputBaseName() + '.exe')
 
     def getTestName(self):
-        return '/'.join(self.path_in_suite[:-1]) + ":" + str(self.env_num)
+        return '/'.join(self.path_in_suite[:-1]) + ":" + self.env_num
 
     def getFullName(self):
         return self.suite.config.name + ' :: ' + self.getTestName()
@@ -65,7 +65,7 @@ class STLTest(Test):
         return pass_var, fail_var
 
     def getXMLOutputTestName(self):
-        return ':'.join((self.path_in_suite[-2], str(self.env_num)))
+        return ':'.join((self.path_in_suite[-2], self.env_num))
 
     def getXMLOutputClassName(self):
         safe_test_path = [x.replace(".", "_") for x in self.path_in_suite[:-1]]
@@ -81,13 +81,18 @@ class STLTest(Test):
         test_name = self.getTestName()
         self.expected_result = None
 
+        current_prefix = ""
         for prefix, result in \
                 chain(test_config.expected_results.items(),
                       lit_config.expected_results.get(test_config.name,
                                                       dict()).items()):
-            if test_name.startswith(prefix):
+            if test_name == prefix:
                 self.expected_result = result
                 break
+            elif test_name.startswith(prefix) and \
+                    len(prefix) > len(current_prefix):
+                current_prefix = prefix
+                self.expected_result = result
 
         if test_name in test_config.expected_results:
             self.expected_result = test_config.expected_results[test_name]
@@ -192,7 +197,7 @@ class LibcxxTest(STLTest):
             return output_base
 
     def getXMLOutputTestName(self):
-        return ':'.join((self.path_in_suite[-1], str(self.env_num)))
+        return ':'.join((self.path_in_suite[-1], self.env_num))
 
     def getTestName(self):
-        return '/'.join(self.path_in_suite) + ':' + str(self.env_num)
+        return '/'.join(self.path_in_suite) + ':' + self.env_num
