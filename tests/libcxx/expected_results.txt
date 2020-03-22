@@ -499,7 +499,7 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 
 # *** C1XX COMPILER BUGS ***
 # Compiler bug: VSO-120957 "alignas by-value parameters should be permitted"
-std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp:0 SKIP
+std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp SKIP
 
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
 std/utilities/tuple/tuple.tuple/tuple.cnstr/test_lazy_sfinae.pass.cpp:0 SKIP
@@ -578,7 +578,7 @@ std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/begin.pass.cpp FAIL
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-std/strings/string.view/char.bad.fail.cpp FAIL
+std/strings/string.view/char.bad.fail.cpp:0 FAIL
 
 # Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
 std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
