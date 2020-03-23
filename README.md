@@ -30,7 +30,7 @@ flavor of the STL (native desktop). We need to extend this to build all of the f
 because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
-* Tests: **Coming soon.** We rely on three test suites: devcrt, tr1, and [libcxx][]. We need to replace our current test
+* Tests: **Coming soon.** We rely on three test suites: std, tr1, and [libcxx][]. We need to replace our current test
 harness, which extensively uses Microsoft-internal machinery.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
