@@ -20,14 +20,12 @@ _expected_result_entry_cache = dict()
 
 @dataclass
 class _TmpEnvEntry:
-    tags: Set[str] = field(default_factory=set)
     env: Dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class EnvEntry:
     def __init__(self, tmp_env: _TmpEnvEntry):
-        object.__setattr__(self, "_tags", frozenset(tmp_env.tags))
         object.__setattr__(self, "_env_keys", tuple(tmp_env.env.keys()))
         object.__setattr__(self, "_env_vals", tuple(tmp_env.env.values()))
 
@@ -40,10 +38,6 @@ class EnvEntry:
         # Reconsider this at a future date.
         return self._env_vals[self._env_keys.index(key)]
 
-    def hasTag(self, tag: str) -> bool:
-        return tag in self._env_entry.tags
-
-    _tags: FrozenSet[str]
     _env_keys: Tuple[str]
     _env_vals: Tuple[str]
 
@@ -54,7 +48,6 @@ class _ParseCtx:
     result: List[List[_TmpEnvEntry]] = field(default_factory=list)
 
 
-_ENV_REGEX = re.compile(r'((?P<tags>(?:\w+,?)+)\t+)?(?P<env_vars_part>.+$)')
 _COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
 _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
@@ -63,25 +56,17 @@ _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
 
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
-    m = _ENV_REGEX.match(line)
-    if m is not None:
-        result = _TmpEnvEntry()
-        tags = m.group("tags")
-        if tags is not None:
-            result.tags = set(tags.split(','))
-        for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(
-                m.group("env_vars_part")):
-            name = env_match.group("name")
-            value = env_match.group("value")
-            result.env[env_match.group("name")] = env_match.group("value")
-        return result
-    return None
+    result = _TmpEnvEntry()
+    for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
+        name = env_match.group("name")
+        value = env_match.group("value")
+        result.env[env_match.group("name")] = env_match.group("value")
+    return result
 
 
 def _append_env_entries(*args) -> _TmpEnvEntry:
     result = _TmpEnvEntry()
     for entry in args:
-        result.tags.union(entry.tags)
         for k, v in entry.env.items():
             if k not in result.env:
                 result.env[k] = v
@@ -104,9 +89,7 @@ def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
             ctx.result.append(ctx.current)
             ctx.current = []
         else:
-            entry = _parse_env_line(line)
-            if(entry is not None):
-                ctx.current.append(entry)
+            ctx.current.append(_parse_env_line(line))
 
 
 def parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
@@ -118,7 +101,7 @@ def parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
     result = list()
     with filename_path.open() as f:
         for line in f.readlines():
-            if(line:=_COMMENT_REGEX.sub("", line)):
+            if (line:=_COMMENT_REGEX.sub("", line)):
                 line = line.strip()
                 if line:
                     result.append(line)
