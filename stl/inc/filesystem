@@ -1826,12 +1826,6 @@ namespace filesystem {
         _THROW(filesystem_error(_Op, _Path1, _Path2, _Error));
     }
 
-    // FUNCTION _Is_file_not_found
-    _NODISCARD inline bool _Is_file_not_found(const __std_win_error _Error) noexcept {
-        return _Error == __std_win_error::_File_not_found || _Error == __std_win_error::_Path_not_found
-               || _Error == __std_win_error::_Invalid_name;
-    }
-
     // ENUM CLASS file_type
     enum class file_type {
         none,
@@ -1975,7 +1969,7 @@ namespace filesystem {
             }
 
             this->permissions(perms::unknown);
-            this->type(_Is_file_not_found(_Error) ? file_type::not_found : file_type::none);
+            this->type(__std_is_file_not_found(_Error) ? file_type::not_found : file_type::none);
         }
 
     private:
@@ -2724,7 +2718,7 @@ namespace filesystem {
                         if (_Error == __std_win_error::_Success) {
                             _Should_recurse =
                                 _Bitmask_includes(_Target_stats._Attributes, __std_fs_file_attr::_Directory);
-                        } else if (_Is_file_not_found(_Error)
+                        } else if (__std_is_file_not_found(_Error)
                                    || (_Error == __std_win_error::_Access_denied
                                        && _Bitmask_includes(_Options, directory_options::skip_permission_denied))) {
                             // skip broken symlinks and permission denied (when configured)
@@ -3757,7 +3751,7 @@ namespace filesystem {
             _Error                    = _Create_result._Error;
             _Created_last             = _Create_result._Created;
             _Error                    = _Create_result._Error;
-            if (_Error != __std_win_error::_Success && !_Is_file_not_found(_Error)) {
+            if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
                 _Most_recent_not_file_not_found = _Error;
             }
 
@@ -3790,7 +3784,7 @@ namespace filesystem {
         for (directory_iterator _It(_Path, _Ec);; _It.increment(_Ec)) { // remove nonempty directory contents
             if (_Ec) {
                 if (_Ec.category() != _STD system_category()
-                    || !_Is_file_not_found(static_cast<__std_win_error>(_Ec.value()))) {
+                    || !__std_is_file_not_found(static_cast<__std_win_error>(_Ec.value()))) {
                     return;
                 }
 
@@ -4042,7 +4036,7 @@ namespace filesystem {
                 return _Temp;
             }
 
-            if (!_Is_file_not_found(_Err)) {
+            if (!__std_is_file_not_found(_Err)) {
                 _Ec = _Make_ec(_Err);
                 return path();
             }
@@ -4066,7 +4060,7 @@ namespace filesystem {
 
                 if (_Err == __std_win_error::_Success) {
                     _Result = _STD move(_Temp);
-                } else if (_Is_file_not_found(_Err)) {
+                } else if (__std_is_file_not_found(_Err)) {
                     _Call_canonical = false;
                 } else {
                     _Ec = _Make_ec(_Err);
