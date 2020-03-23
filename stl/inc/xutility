@@ -3113,9 +3113,9 @@ public:
     enum { _EEN_SIZE = _Size }; // helper for expression evaluator
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-    _CONSTEXPR17 _Array_const_iterator() : _Ptr() {}
+    _CONSTEXPR17 _Array_const_iterator() noexcept : _Ptr() {}
 
-    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) : _Ptr(_Parg + _Off) {}
+    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Ptr(_Parg + _Off) {}
 
     _NODISCARD _CONSTEXPR17 reference operator*() const noexcept /* strengthened */ {
         return *_Ptr;
@@ -3215,9 +3215,9 @@ private:
     pointer _Ptr; // beginning of array
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-    _CONSTEXPR17 _Array_const_iterator() : _Ptr(), _Idx(0) {}
+    _CONSTEXPR17 _Array_const_iterator() noexcept : _Ptr(), _Idx(0) {}
 
-    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) : _Ptr(_Parg), _Idx(_Off) {}
+    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Ptr(_Parg), _Idx(_Off) {}
 
     _NODISCARD _CONSTEXPR17 reference operator*() const noexcept /* strengthened */ {
         return *operator->();
@@ -3397,7 +3397,7 @@ public:
 
     _CONSTEXPR17 _Array_iterator() noexcept {}
 
-    _CONSTEXPR17 explicit _Array_iterator(pointer _Parg, size_t _Off = 0) : _Mybase(_Parg, _Off) {}
+    _CONSTEXPR17 explicit _Array_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Mybase(_Parg, _Off) {}
 
     _NODISCARD _CONSTEXPR17 reference operator*() const noexcept /* strengthened */ {
         return const_cast<reference>(_Mybase::operator*());
