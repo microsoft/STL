@@ -231,7 +231,6 @@ class Configuration:
         self.cxx_runtime_root = Path(cxx_runtime_root)
         self.cxx_library_root = Path(cxx_library_root)
 
-    # We only do this because of a bug with force includes not respecting /I
     def configure_inc_env_var(self):
         stl_inc_env_var = self.get_lit_conf('stl_inc_env_var', None)
 
