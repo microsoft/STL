@@ -1,7 +1,8 @@
 # Microsoft's C++ Standard Library
 
 This is the official repository for Microsoft's implementation of the C++ Standard Library (also known as the STL),
-which ships as part of the MSVC toolset and the Visual Studio IDE.
+which ships as part of the MSVC toolset and the Visual Studio IDE. Our [Changelog][] tracks which updates to this
+repository appear in each VS release.
 
 [![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=master)][Pipelines]
 
@@ -49,7 +50,7 @@ approximately 200 active bugs in the STL's Microsoft-internal database; we need 
 GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
 issue. The [bug tag][] and [enhancement tag][] are being populated.
 
-* Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
+* Plans: **In progress.** We're writing up our [Roadmap][].
 
 # Goals
 
@@ -248,12 +249,12 @@ Copyright (c) Microsoft Corporation.
 
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+[Changelog]: https://github.com/microsoft/STL/wiki/Changelog
 [clang-format]: https://clang.llvm.org/docs/ClangFormat.html
 [CMake]: https://cmake.org/download
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
-[Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
 [LICENSE.txt]: LICENSE.txt
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
