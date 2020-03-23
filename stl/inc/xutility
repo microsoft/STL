@@ -3361,7 +3361,7 @@ constexpr void _Verify_range(
 
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 _Array_const_iterator<_Ty, _Size> operator+(
-    ptrdiff_t _Off, _Array_const_iterator<_Ty, _Size> _Next) noexcept {
+    const ptrdiff_t _Off, _Array_const_iterator<_Ty, _Size> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -3464,7 +3464,7 @@ public:
 
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 _Array_iterator<_Ty, _Size> operator+(
-    ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) noexcept {
+    const ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) noexcept {
     return _Next += _Off;
 }
 
