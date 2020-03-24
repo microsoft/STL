@@ -3903,6 +3903,14 @@ void run_interactive_tests(int argc, wchar_t* argv[]) {
     }
 }
 
+// Also test DevCom-953628, which witnessed a failure of filesystem::path's "Source" constructor to SFINAE away when
+// given a non-iterator argument for which iter_value_t is valid when defining _Iter_value_t to iter_value_t in concepts
+// mode.
+void test_devcom_953628() { // COMPILE-ONLY
+    struct S : wstring {};
+    path{S{}};
+}
+
 int wmain(int argc, wchar_t* argv[]) {
     error_code ec;
 
