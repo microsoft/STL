@@ -14,5 +14,5 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
 $temp = $env:TEMP
 
 curl.exe -L -o "$temp\psexec.exe" https://live.sysinternals.com/PsExec64.exe
-curl.exe -L -o "$temp\provision-image.ps1" https://raw.githubusercontent.com/microsoft/STL/autoscale/azure-devops/provision-image.ps1
+curl.exe -L -o "$temp\provision-image.ps1" https://raw.githubusercontent.com/microsoft/STL/master/azure-devops/provision-image.ps1
 & "$temp\psexec.exe" -u AdminUser -p $AdminUserPassword -accepteula -h C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Unrestricted -File "$temp\provision-image.ps1"
