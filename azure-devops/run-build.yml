@@ -3,9 +3,6 @@
 
 jobs:
 - job: ${{ parameters.targetPlatform }}
-  pool:
-    name: STL
-
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
