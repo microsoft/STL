@@ -205,7 +205,7 @@ Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\provision-image-bootstrap.ps1" `
+  -ScriptPath "$PSScriptRoot\provision-image.ps1" `
   -Parameter @{AdminUserPassword = $AdminPW }
 
 ####################################################################################################
