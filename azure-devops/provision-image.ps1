@@ -1,22 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Sets up VM for use as a build machine
-
-# $args[0] Azure Pipelines Personal Access Token
-
-Write-Output 'Starting...'
-
-if (Test-Path 'C:\agent') {
-    Write-Output 'Agent already installed, terminating.'
-    exit 0
-}
-
-Write-Output 'Agent does not appear to be installed.'
-
-$AzureDevOpsUrl = 'https://dev.azure.com/vclibs/'
-$AzureDevOpsPool = 'STL'
-[string]$PersonalAccessToken = $args[0]
+# Sets up VM image for use as a build machine prototype
 
 $WorkLoads =  '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
               '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + `
@@ -31,7 +16,6 @@ $CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.
 $LlvmUrl = 'https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe'
 $NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
 $PythonUrl = 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe'
-$VstsAgentUrl = 'https://vstsagentpackage.azureedge.net/agent/2.165.0/vsts-agent-win-x64-2.165.0.zip'
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -185,12 +169,6 @@ Function InstallPython
     }
 }
 
-if ([string]::IsNullOrEmpty($PersonalAccessToken) `
-    -or ($PersonalAccessToken -eq 'PERSONAL_ACCESS_TOKEN')) {
-    Write-Output 'You forgot to fill in your personal access token.'
-    exit 1
-}
-
 InstallMSI 'CMake' $CMakeUrl
 InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
 InstallLLVM $LlvmUrl
@@ -201,8 +179,4 @@ $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
     -Name Path `
     -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
-InstallZip 'Azure DevOps Agent' $VstsAgentUrl 'C:\agent'
-Add-MpPreference -ExclusionPath C:\agent
-& 'C:\agent\config.cmd' --unattended --url $AzureDevOpsUrl --auth pat --token $PersonalAccessToken `
-    --pool $AzureDevOpsPool --replace --runAsService --work D:\
-shutdown /r /t 10
+C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /shutdown
