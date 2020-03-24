@@ -7,12 +7,13 @@
 #
 
 $Location = 'westus2'
-$Prefix = 'CppStlGithubBuild' + (Get-Date -Format 'yyyyMMdd')
+$Prefix = 'StlBuild' + (Get-Date -Format 'yyyy-MM-dd')
 $VMSize = 'Standard_D16s_v3'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
+$ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 7
 $CurrentProgress = 1
 
@@ -35,7 +36,7 @@ function Find-ResourceGroupName {
   while ($collision) {
     $collision = $false
     $suffix++
-    $result = "$prefix$suffix"
+    $result = "$prefix-$suffix"
     foreach ($resource in $resources) {
       if ($resource.ResourceGroupName -eq $result) {
         $collision = $true
@@ -72,7 +73,8 @@ function Write-Reminders {
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Creating resource group' `
+  -Activity $ProgressActivity `
+  -Status 'Creating resource group' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
@@ -176,7 +178,8 @@ New-AzVm `
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Running provisioning script in VM' `
+  -Activity $ProgressActivity `
+  -Status 'Running provisioning script in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
@@ -190,7 +193,8 @@ Invoke-AzVMRunCommand `
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Converting VM to Image' `
+  -Activity $ProgressActivity `
+  -Status 'Converting VM to Image' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 Stop-AzVM `
@@ -208,7 +212,8 @@ $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupN
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Deleting unused VM and disk' `
+  -Activity $ProgressActivity `
+  -Status 'Deleting unused VM and disk' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 Remove-AzVM -Id $VM.ID -Force
@@ -216,7 +221,8 @@ Remove-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $PrototypeOSDiskNa
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Creating scale set' `
+  -Activity $ProgressActivity `
+  -Status 'Creating scale set' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $VmssIpConfigName = $ResourceGroupName + 'VmssIpConfig'
@@ -261,5 +267,6 @@ New-AzVmss `
   -VirtualMachineScaleSet $Vmss
 
 ####################################################################################################
-Write-Progress -Completed
+Write-Progress -Activity $ProgressActivity -Status -Completed
 Write-Reminders $AdminPW
+Write-Output 'Finished! Terminate.'
