@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
-# This script assumes you have installed Azure tools into Powershell by following the instructions
+# This script assumes you have installed Azure tools into PowerShell by following the instructions
 # at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-3.6.1
-# or are running from Azure Cloud Shell
+# or are running from Azure Cloud Shell.
 #
 
 $Location = 'westus2'
@@ -17,47 +17,41 @@ $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 8
 $CurrentProgress = 1
 
-function Find-ResourceGroupName {
-  Param(
-    [string] $prefix
-  )
+function Find-ResourceGroupNameCollision {
+  Param([string]$Test, $Resources)
 
-  $result = $prefix
-  $resources = Get-AzResourceGroup
-  $collision = $false
-  foreach ($resource in $resources) {
-    if ($resource.ResourceGroupName -eq $result) {
-      $collision = $true
-      break
+  foreach ($resource in $Resources) {
+    if ($resource.ResourceGroupName -eq $Test) {
+      return $true
     }
+  }
+
+  return $false
+}
+
+function Find-ResourceGroupName {
+  Param([string] $Prefix)
+
+  $resources = Get-AzResourceGroup
+  if (Find-ResourceGroupNameCollision -Test $Prefix -Resources $resources) {
+    return $Prefix
   }
 
   $suffix = 0
-  while ($collision) {
-    $collision = $false
+  do {
     $suffix++
-    $result = "$prefix-$suffix"
-    foreach ($resource in $resources) {
-      if ($resource.ResourceGroupName -eq $result) {
-        $collision = $true
-        break
-      }
-    }
-  }
-
+    $result = "$Prefix-$suffix"
+  } while (Find-ResourceGroupNameCollision -Test $result -Resources $resources)
   return $result
 }
 
 function New-Password {
-  Param (
-    [int] $length = 32
-  )
+  Param ([int] $Length = 32)
 
   $Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
   $result = ''
-  for ($idx = 0; $idx -lt $length; $idx++) {
-    $result += $Chars[(Get-Random -Minimum 0 -Maximum ($Chars.Length - 1))]
+  for ($idx = 0; $idx -lt $Length; $idx++) {
+    $result += $Chars[(Get-Random -Minimum 0 -Maximum $Chars.Length)]
   }
 
   return $result
@@ -65,6 +59,7 @@ function New-Password {
 
 function Start-WaitForShutdown {
   Param([string]$ResourceGroupName, [string]$Name)
+
   Write-Output "Waiting for $Name to stop..."
   while ($true) {
     $Vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status
@@ -82,10 +77,11 @@ function Start-WaitForShutdown {
 
 function Write-Reminders {
   Param([string]$AdminPW)
+
   Write-Output "Location: $Location"
   Write-Output "Resource group name: $ResourceGroupName"
   Write-Output "User name: AdminUser"
-  Write-Output "Using Generated Password: $AdminPW"
+  Write-Output "Using generated password: $AdminPW"
 }
 
 ####################################################################################################
@@ -108,7 +104,7 @@ Write-Progress `
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Name AllowHTTP `
-  -Description 'Allow HTTP(s)' `
+  -Description 'Allow HTTP(S)' `
   -Access Allow `
   -Protocol Tcp `
   -Direction Outbound `
@@ -294,4 +290,4 @@ New-AzVmss `
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Status -Completed
 Write-Reminders $AdminPW
-Write-Output 'Finished! Terminate.'
+Write-Output 'Finished!'
