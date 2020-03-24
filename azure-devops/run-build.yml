@@ -3,6 +3,7 @@
 
 jobs:
 - job: ${{ parameters.targetPlatform }}
+  timeoutInMinutes: 360
   pool:
     name: STL
 
@@ -84,6 +85,7 @@ jobs:
           $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
     - task: PublishTestResults@2
       displayName: 'Publish libcxx Tests'
+      timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
@@ -92,6 +94,7 @@ jobs:
         testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
     - task: PublishTestResults@2
       displayName: 'Publish std Tests'
+      timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
