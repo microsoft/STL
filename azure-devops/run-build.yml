@@ -3,6 +3,9 @@
 
 jobs:
 - job: ${{ parameters.targetPlatform }}
+  pool:
+    name: StlBuild-2020-03-23-1
+
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
