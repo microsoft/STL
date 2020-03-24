@@ -287,6 +287,6 @@ New-AzVmss `
   -VirtualMachineScaleSet $Vmss
 
 ####################################################################################################
-Write-Progress -Activity $ProgressActivity -Status -Completed
+Write-Progress -Activity $ProgressActivity -Completed
 Write-Reminders $AdminPW
 Write-Output 'Finished!'
