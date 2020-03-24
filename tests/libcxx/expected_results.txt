@@ -479,26 +479,26 @@ std/strings/char.traits/char.traits.specializations/char.traits.specializations.
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/move.pass.cpp SKIP
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
-atomics/types.pass.cpp SKIP
-atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp SKIP
-thread/thread.barrier/arrive.pass.cpp SKIP
-thread/thread.barrier/arrive_and_drop.pass.cpp SKIP
-thread/thread.barrier/arrive_and_wait.pass.cpp SKIP
-thread/thread.barrier/completion.pass.cpp SKIP
-thread/thread.barrier/max.pass.cpp SKIP
-thread/thread.barrier/version.pass.cpp SKIP
-thread/thread.latch/arrive_and_wait.pass.cpp SKIP
-thread/thread.latch/count_down.pass.cpp SKIP
-thread/thread.latch/max.pass.cpp SKIP
-thread/thread.latch/try_wait.pass.cpp SKIP
-thread/thread.latch/version.pass.cpp SKIP
-thread/thread.semaphore/acquire.pass.cpp SKIP
-thread/thread.semaphore/binary.pass.cpp SKIP
-thread/thread.semaphore/max.pass.cpp SKIP
-thread/thread.semaphore/release.pass.cpp SKIP
-thread/thread.semaphore/timed.pass.cpp SKIP
-thread/thread.semaphore/try_acquire.pass.cpp SKIP
-thread/thread.semaphore/version.pass.cpp SKIP
+std/atomics/types.pass.cpp SKIP
+std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp SKIP
+std/thread/thread.barrier/arrive.pass.cpp SKIP
+std/thread/thread.barrier/arrive_and_drop.pass.cpp SKIP
+std/thread/thread.barrier/arrive_and_wait.pass.cpp SKIP
+std/thread/thread.barrier/completion.pass.cpp SKIP
+std/thread/thread.barrier/max.pass.cpp SKIP
+std/thread/thread.barrier/version.pass.cpp SKIP
+std/thread/thread.latch/arrive_and_wait.pass.cpp SKIP
+std/thread/thread.latch/count_down.pass.cpp SKIP
+std/thread/thread.latch/max.pass.cpp SKIP
+std/thread/thread.latch/try_wait.pass.cpp SKIP
+std/thread/thread.latch/version.pass.cpp SKIP
+std/thread/thread.semaphore/acquire.pass.cpp SKIP
+std/thread/thread.semaphore/binary.pass.cpp SKIP
+std/thread/thread.semaphore/max.pass.cpp SKIP
+std/thread/thread.semaphore/release.pass.cpp SKIP
+std/thread/thread.semaphore/timed.pass.cpp SKIP
+std/thread/thread.semaphore/try_acquire.pass.cpp SKIP
+std/thread/thread.semaphore/version.pass.cpp SKIP
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -712,10 +712,10 @@ std/language.support/support.limits/support.limits.general/string.version.pass.c
 
 # Test needs to be updated for LWG-3320 removing span::const_iterator.
 std/containers/views/types.pass.cpp SKIP
-containers/views/span.iterators/begin.pass.cpp SKIP
-containers/views/span.iterators/rbegin.pass.cpp SKIP
-containers/views/span.iterators/end.pass.cpp SKIP
-containers/views/span.iterators/rend.pass.cpp SKIP
+std/containers/views/span.iterators/begin.pass.cpp SKIP
+std/containers/views/span.iterators/rbegin.pass.cpp SKIP
+std/containers/views/span.iterators/end.pass.cpp SKIP
+std/containers/views/span.iterators/rend.pass.cpp SKIP
 
 # Test needs to be updated for P2116R0 removing the tuple interface of span
 std/containers/views/span.tuple/get.fail.cpp SKIP
