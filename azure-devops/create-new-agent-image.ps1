@@ -224,9 +224,10 @@ $VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id 
 $VmssName = $ResourceGroupName + 'Vmss'
 $Vmss = New-AzVmssConfig `
   -Location $Location `
-  -SkuCapacity 1 `
+  -SkuCapacity 2 `
   -SkuName $VMSize `
   -SkuTier 'Standard' `
+  -Overprovision $false `
   -UpgradePolicyMode Manual `
   -EvictionPolicy Delete `
   -Priority Spot `
