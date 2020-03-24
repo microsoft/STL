@@ -210,7 +210,6 @@ std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIP
 # C++20 P0019R8 "atomic_ref"
 std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp SKIP
 
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 std/utilities/time/days.pass.cpp SKIP
 std/utilities/time/months.pass.cpp SKIP
@@ -705,8 +704,8 @@ std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp SKIP
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIP
-std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIP
 std/thread/futures/futures.shared_future/get.pass.cpp SKIP
+std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIP
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIP
 std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIP
 std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp SKIP
