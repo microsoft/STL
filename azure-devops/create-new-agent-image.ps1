@@ -255,6 +255,7 @@ $Vmss = New-AzVmssConfig `
   -Overprovision $false `
   -UpgradePolicyMode Manual `
   -EvictionPolicy Delete `
+  -ScaleInPolicy OldestVM `
   -Priority Spot `
   -MaxPrice -1
 
