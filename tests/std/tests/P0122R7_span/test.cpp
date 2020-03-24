@@ -367,35 +367,33 @@ constexpr bool test() {
         using C = array<int, 3>::const_iterator;
         using Z = array<double, 3>::iterator;
 
-        // TRANSITION, GH-427, array iterators haven't strengthened noexcept
+        static_assert(is_nothrow_constructible_v<span<int>, I, I>); // strengthened 
+        static_assert(is_nothrow_constructible_v<span<int>, I, C>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, I, Z>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, C, I>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, C, C>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, C, Z>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, Z, I>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, Z, C>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, Z, Z>);
 
-        static_assert(is_constructible_v<span<int>, I, I>);
-        static_assert(is_constructible_v<span<int>, I, C>);
-        static_assert(!is_constructible_v<span<int>, I, Z>);
-        static_assert(!is_constructible_v<span<int>, C, I>);
-        static_assert(!is_constructible_v<span<int>, C, C>);
-        static_assert(!is_constructible_v<span<int>, C, Z>);
-        static_assert(!is_constructible_v<span<int>, Z, I>);
-        static_assert(!is_constructible_v<span<int>, Z, C>);
-        static_assert(!is_constructible_v<span<int>, Z, Z>);
+        static_assert(is_nothrow_constructible_v<span<int, 3>, I, C>); // strengthened 
+        static_assert(is_nothrow_constructible_v<span<int, 3>, I, I>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, I, Z>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, C, I>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, C, C>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, C, Z>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, Z, I>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, Z, C>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int, 3>, Z, Z>); // strengthened 
 
-        static_assert(is_constructible_v<span<int, 3>, I, I>);
-        static_assert(is_constructible_v<span<int, 3>, I, C>);
-        static_assert(!is_constructible_v<span<int, 3>, I, Z>);
-        static_assert(!is_constructible_v<span<int, 3>, C, I>);
-        static_assert(!is_constructible_v<span<int, 3>, C, C>);
-        static_assert(!is_constructible_v<span<int, 3>, C, Z>);
-        static_assert(!is_constructible_v<span<int, 3>, Z, I>);
-        static_assert(!is_constructible_v<span<int, 3>, Z, C>);
-        static_assert(!is_constructible_v<span<int, 3>, Z, Z>);
+        static_assert(is_nothrow_constructible_v<span<const int>, I, I>); // strengthened 
+        static_assert(is_nothrow_constructible_v<span<const int>, I, C>); // strengthened 
+        static_assert(is_nothrow_constructible_v<span<const int>, C, I>); // strengthened 
+        static_assert(is_nothrow_constructible_v<span<const int>, C, C>); // strengthened 
 
-        static_assert(is_constructible_v<span<const int>, I, I>);
-        static_assert(is_constructible_v<span<const int>, I, C>);
-        static_assert(is_constructible_v<span<const int>, C, I>);
-        static_assert(is_constructible_v<span<const int>, C, C>);
-
-        static_assert(!is_constructible_v<span<int>, I, int*>);
-        static_assert(!is_constructible_v<span<int>, int*, I>);
+        static_assert(!is_nothrow_constructible_v<span<int>, I, int*>); // strengthened 
+        static_assert(!is_nothrow_constructible_v<span<int>, int*, I>); // strengthened 
 
         static_assert(is_nothrow_constructible_v<span<Base>, Base*, Base*>); // strengthened
         static_assert(is_nothrow_constructible_v<span<Base, 3>, Base*, Base*>); // strengthened
