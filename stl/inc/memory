@@ -14,7 +14,7 @@
 #include <typeinfo>
 #include <xmemory>
 
-#if _HAS_CXX20 && !defined(_M_CEE_PURE)
+#if _HAS_CXX20
 #include <atomic>
 #endif
 
@@ -2459,7 +2459,7 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_stro
         _Ptr, _Exp, _STD move(_Value), memory_order_seq_cst, memory_order_seq_cst);
 }
 
-#if _HAS_CXX20 && !defined(_M_CEE_PURE)
+#if _HAS_CXX20
 template <class _Ty>
 struct alignas(2 * sizeof(void*)) _Atomic_ptr_base {
 protected:
@@ -2727,7 +2727,7 @@ public:
         }
     }
 };
-#endif // _HAS_CXX20 && !defined(_M_CEE_PURE)
+#endif // _HAS_CXX20
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
