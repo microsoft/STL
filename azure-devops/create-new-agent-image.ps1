@@ -7,14 +7,14 @@
 #
 
 $Location = 'westus2'
-$Prefix = 'StlBuild' + (Get-Date -Format 'yyyy-MM-dd')
+$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
 $VMSize = 'Standard_D16s_v3'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 7
+$TotalProgress = 8
 $CurrentProgress = 1
 
 function Find-ResourceGroupName {
@@ -61,6 +61,23 @@ function New-Password {
   }
 
   return $result
+}
+
+function Start-WaitForShutdown {
+  Param([string]$ResourceGroupName, [string]$Name)
+  Write-Output "Waiting for $Name to stop..."
+  while ($true) {
+    $Vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status
+    $highestStatus = $Vm.Statuses.Count
+    for ($idx = 0; $idx -lt $highestStatus; $idx++) {
+      if ($Vm.Statuses[$idx].Code -eq 'PowerState/stopped') {
+        return
+      }
+    }
+
+    Write-Output "... not stopped yet, sleeping for 10 seconds"
+    Start-Sleep -Seconds 10
+  }
 }
 
 function Write-Reminders {
@@ -188,8 +205,16 @@ Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath 'provision-image-bootstrap.ps1' `
+  -ScriptPath "$PSScriptRoot\provision-image-bootstrap.ps1" `
   -Parameter @{AdminUserPassword = $AdminPW }
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Waiting for VM to shut down' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Start-WaitForShutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
 Write-Progress `
