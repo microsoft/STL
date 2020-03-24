@@ -7,20 +7,32 @@
 #
 
 $Location = 'westus2'
-$Prefix = 'CppStlGithubBuild'
+$Prefix = 'CppStlGithubBuild' + (Get-Date -Format 'yyyyMMdd')
 $VMSize = 'Standard_D16s_v3'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
+
+$TotalProgress = 7
+$CurrentProgress = 1
 
 function Find-ResourceGroupName {
   Param(
     [string] $prefix
   )
 
-  $suffix = 0
+  $result = $prefix
   $resources = Get-AzResourceGroup
-  do {
+  $collision = $false
+  foreach ($resource in $resources) {
+    if ($resource.ResourceGroupName -eq $result) {
+      $collision = $true
+      break
+    }
+  }
+
+  $suffix = 0
+  while ($collision) {
     $collision = $false
     $suffix++
     $result = "$prefix$suffix"
@@ -30,7 +42,8 @@ function Find-ResourceGroupName {
         break
       }
     }
-  } while ($collision)
+  }
+
   return $result
 }
 
@@ -49,17 +62,30 @@ function New-Password {
   return $result
 }
 
+function Write-Reminders {
+  Param([string]$AdminPW)
+  Write-Output "Location: $Location"
+  Write-Output "Resource group name: $ResourceGroupName"
+  Write-Output "User name: AdminUser"
+  Write-Output "Using Generated Password: $AdminPW"
+}
+
+####################################################################################################
+Write-Progress `
+  -Activity 'Creating resource group' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-Write-Output "Location: $Location"
-Write-Output "Resource group name: $ResourceGroupName"
-Write-Output "User name: AdminUser"
-Write-Output "Using Generated Password: $AdminPW"
-
+Write-Reminders $AdminPW
 New-AzResourceGroup -Name $ResourceGroupName -Location $Location
-
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ("AdminUser", $AdminPWSecure)
+
+####################################################################################################
+Write-Progress `
+  -Activity 'Creating prototype VM' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Name AllowHTTP `
@@ -148,15 +174,24 @@ New-AzVm `
   -Location $Location `
   -VM $VM
 
+####################################################################################################
+Write-Progress `
+  -Activity 'Running provisioning script in VM' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath 'provision-image-bootstrap.ps1' `
   -Parameter @{AdminUserPassword = $AdminPW }
+
+####################################################################################################
+Write-Progress `
+  -Activity 'Converting VM to Image' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
@@ -170,15 +205,22 @@ Set-AzVM `
 
 $ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
-$Image
 
-# Clean up stuff we no longer need now that we have an image
+####################################################################################################
+Write-Progress `
+  -Activity 'Deleting unused VM and disk' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
 Remove-AzVM -Id $VM.ID -Force
 Remove-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $PrototypeOSDiskName -Force
 
+####################################################################################################
+Write-Progress `
+  -Activity 'Creating scale set' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
 $VmssIpConfigName = $ResourceGroupName + 'VmssIpConfig'
 $VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
-
 $VmssName = $ResourceGroupName + 'Vmss'
 $Vmss = New-AzVmssConfig `
   -Location $Location `
@@ -190,8 +232,8 @@ $Vmss = New-AzVmssConfig `
   -Priority Spot `
   -MaxPrice -1
 
-$Vmss = Add-AzVmssNetworkInterfaceConfiguration
--VirtualMachineScaleSet $Vmss `
+$Vmss = Add-AzVmssNetworkInterfaceConfiguration `
+  -VirtualMachineScaleSet $Vmss `
   -Primary $true `
   -IpConfiguration $VmssIpConfig `
   -NetworkSecurityGroupId $NetworkSecurityGroup.Id `
@@ -217,5 +259,6 @@ New-AzVmss `
   -Name $VmssName `
   -VirtualMachineScaleSet $Vmss
 
-$VmssResult = Get-AzVmss -ResourceGroupName $ResourceGroupName -Name $VmssName
-$VmssResult
+####################################################################################################
+Write-Progress -Completed
+Write-Reminders $AdminPW
