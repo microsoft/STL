@@ -33,15 +33,13 @@ function Find-ResourceGroupName {
   Param([string] $Prefix)
 
   $resources = Get-AzResourceGroup
-  if (Find-ResourceGroupNameCollision -Test $Prefix -Resources $resources) {
-    return $Prefix
-  }
-
+  $result = $Prefix
   $suffix = 0
-  do {
+  while (Find-ResourceGroupNameCollision -Test $result -Resources $resources) {
     $suffix++
     $result = "$Prefix-$suffix"
-  } while (Find-ResourceGroupNameCollision -Test $result -Resources $resources)
+  }
+
   return $result
 }
 
