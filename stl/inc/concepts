@@ -113,7 +113,7 @@ template <class _Ty>
 concept default_initializable = constructible_from<_Ty>
     && requires {
         _Ty{};
-        ::new ((void*)nullptr) _Ty; // is-default-initializable<_Ty>
+        ::new (static_cast<void*>(nullptr)) _Ty; // is-default-initializable<_Ty>
     };
 
 // CONCEPT move_constructible

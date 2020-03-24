@@ -1490,13 +1490,13 @@ namespace test_default_initializable {
     STATIC_ASSERT(default_initializable<int>);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
     STATIC_ASSERT(!default_initializable<int const>);
-#else // ^^^ non-MSVC / MSVC vvv
+#else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(default_initializable<int const>);
 #endif // TRANSITION, VSO-1084668
     STATIC_ASSERT(default_initializable<int volatile>);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
     STATIC_ASSERT(!default_initializable<int const volatile>);
-#else // ^^^ non-MSVC / MSVC vvv
+#else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(default_initializable<int const volatile>);
 #endif // TRANSITION, VSO-1084668
     STATIC_ASSERT(default_initializable<double>);
@@ -1513,7 +1513,7 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<char[][3]>);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
     STATIC_ASSERT(!default_initializable<int const[2]>);
-#else // ^^^ non-MSVC / MSVC vvv
+#else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(default_initializable<int const[2]>);
 #endif // TRANSITION, VSO-1084668
 
@@ -1561,7 +1561,7 @@ namespace test_default_initializable {
     STATIC_ASSERT(default_initializable<S>);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
     STATIC_ASSERT(!default_initializable<S const>);
-#else // ^^^ non-MSVC / MSVC vvv
+#else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(default_initializable<S const>);
 #endif // TRANSITION, VSO-1084668
 } // namespace test_default_initializable
