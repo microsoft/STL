@@ -105,7 +105,7 @@ class CXXCompiler:
         output_file = None
 
         if out_base is None:
-            out_base = source_files[0].name
+            out_base = source_files[0].name.rsplit('.', 1)[0]
 
         add_analyze_output = False
         for flag in chain(flags, self.flags):
@@ -130,14 +130,8 @@ class CXXCompiler:
             exec_file = output_file
 
         if add_analyze_output and mode != self.CM_Analyze:
-            if output_file:
-                flags.append('/analyze:log' +
-                             str(out_dir /
-                                 (output_file.name +
-                                  '.nativecodeanalysis.xml')))
-            else:
-                flags.append('/analyze:log' +
-                             str(out_dir / 'nativecodeanalysis.xml'))
+            flags.append('/analyze:log' +
+                         str(out_dir / (out_base + '.nativecodeanalysis.xml')))
 
         cmd, out_files = self._basicCmd(source_files, output_file, mode, flags,
                                         compile_flags, link_flags, True)
