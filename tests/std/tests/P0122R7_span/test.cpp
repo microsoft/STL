@@ -377,8 +377,8 @@ constexpr bool test() {
         static_assert(!is_constructible_v<span<int>, Z, C>);
         static_assert(!is_constructible_v<span<int>, Z, Z>);
 
-        static_assert(is_nothrow_constructible_v<span<int, 3>, I, C>); // strengthened
         static_assert(is_nothrow_constructible_v<span<int, 3>, I, I>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<int, 3>, I, C>); // strengthened
         static_assert(!is_constructible_v<span<int, 3>, I, Z>);
         static_assert(!is_constructible_v<span<int, 3>, C, I>);
         static_assert(!is_constructible_v<span<int, 3>, C, C>);
