@@ -45,8 +45,7 @@ class STLTest(Test):
 
     def getOutputDir(self):
         return Path(os.path.join(
-            self.suite.getExecPath(self.path_in_suite[:-1]))) / \
-            "out" / self.env_num
+            self.suite.getExecPath(self.path_in_suite[:-1]))) / self.env_num
 
     def getOutputBaseName(self):
         return self.path_in_suite[-2]
@@ -203,9 +202,15 @@ class LibcxxTest(STLTest):
             return output_base
 
     def getOutputDir(self):
+        dir_name = self.path_in_suite[-1]
+        for suffix in self.config.suffixes:
+            if dir_name.endswith(suffix):
+                dir_name = dir_name[:-len(suffix)]
+                break
+
         return Path(os.path.join(
-            self.suite.getExecPath(self.path_in_suite[:-1]))) / \
-                "out" / self.path_in_suite[-1] / self.env_num
+            self.suite.getExecPath(self.path_in_suite[:-1]))) / dir_name / \
+            self.env_num
 
     def getXMLOutputTestName(self):
         return ':'.join((self.path_in_suite[-1], self.env_num))

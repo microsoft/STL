@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-set(STL_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 set(STL_BUILD_ROOT "${PROJECT_BINARY_DIR}/out")
-set(STL_TESTED_HEADERS_DIR "${STL_BUILD_ROOT}/inc")
+set(STL_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
+set(STL_TEST_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 set(STL_TEST_UTILS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/utils")
-set(STL_TEST_OUTPUT_DIR "${PROJECT_BINARY_DIR}/test")
+set(STL_TESTED_HEADERS_DIR "${STL_BUILD_ROOT}/inc")
 
 set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
     "Location of the llvm-project source tree")

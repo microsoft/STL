@@ -22,3 +22,5 @@ config.test_subdirs                = ["@LIBCXX_SOURCE_DIR@/test/std"]
 
 config.loaded_site_config = True
 lit_config.load_config(config, "@LIBCXX_SOURCE_DIR@/test/lit.cfg")
+
+config.test_exec_root              = "@LIBCXX_TEST_OUTPUT_DIR@"

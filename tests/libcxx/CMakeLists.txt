@@ -3,7 +3,7 @@
 
 set(LIBCXX_ENVLST "${CMAKE_CURRENT_SOURCE_DIR}/usual_matrix.lst")
 set(LIBCXX_EXPECTED_RESULTS "${CMAKE_CURRENT_SOURCE_DIR}/expected_results.txt")
-set(LIBCXX_TEST_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(LIBCXX_TEST_OUTPUT_DIR "${STL_TEST_OUTPUT_DIR}/libcxx")
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in
