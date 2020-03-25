@@ -203,10 +203,8 @@ class LibcxxTest(STLTest):
 
     def getOutputDir(self):
         dir_name = self.path_in_suite[-1]
-        for suffix in self.config.suffixes:
-            if dir_name.endswith(suffix):
-                dir_name = dir_name[:-len(suffix)]
-                break
+        if dir_name.endswith('.cpp'):
+            dir_name = dir_name[:-4]
 
         return Path(os.path.join(
             self.suite.getExecPath(self.path_in_suite[:-1]))) / dir_name / \

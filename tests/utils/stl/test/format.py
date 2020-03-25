@@ -109,10 +109,13 @@ class STLTestFormat:
 
     def setup(self, test):
         exec_dir = test.getExecDir()
+        output_dir = test.getOutputDir()
         source_dir = Path(test.getSourcePath()).parent
 
         shutil.rmtree(exec_dir, ignore_errors=True)
+        shutil.rmtree(output_dir, ignore_errors=True)
         exec_dir.mkdir(parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         # TRANSITION: This should be handled by a TestStep with a dependency
         # on the .dat files the test requires.
@@ -122,6 +125,7 @@ class STLTestFormat:
 
     def cleanup(self, test):
         shutil.rmtree(test.getExecDir(), ignore_errors=True)
+        shutil.rmtree(test.getOutputDir(), ignore_errors=True)
 
     def getIntegratedScriptResult(self, test, lit_config):
         if test.skipped:
