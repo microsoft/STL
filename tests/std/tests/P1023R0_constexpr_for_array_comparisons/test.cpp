@@ -23,7 +23,7 @@ constexpr bool test_operator_eq() {
 constexpr bool test_operator_neq() {
     assert(!(a0 != a0));
     assert(!(a1 != a1));
-    assert(!(a0 != a2));
+    assert((a0 != a2));
     assert(!(a3 != a3));
 
     return true;
@@ -50,7 +50,6 @@ constexpr bool test_operator_gt() {
 
 constexpr bool test_operator_leq() {
     assert(a0 <= a0);
-    assert(a0 <= a0);
     assert(a1 <= a1);
     assert(a2 <= a0);
     assert(a3 <= a3);
@@ -70,8 +69,7 @@ constexpr bool test_operator_geq() {
 
 constexpr bool test() {
     // clang-format off
-    return
-        test_operator_eq()
+    return test_operator_eq()
         && test_operator_neq()
         && test_operator_lt()
         && test_operator_gt()
