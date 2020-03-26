@@ -2658,8 +2658,8 @@ public:
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
-    bool compare_exchange_strong(weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+    bool compare_exchange_strong(
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
         _Ref_count_base* _Ref = this->_Lock_and_load();
         if (this->_Ptr == _Expected._Ptr && _Ref == _Expected._Rep) {
