@@ -182,13 +182,21 @@ struct _Tuple_val { // stores each value in a tuple
 };
 
 // CLASS TEMPLATE tuple
-struct _Exact_args_t {}; // tag type to disambiguate construction (from one arg per element)
+struct _Exact_args_t {
+    explicit _Exact_args_t() = default;
+}; // tag type to disambiguate construction (from one arg per element)
 
-struct _Unpack_tuple_t {}; // tag type to disambiguate construction (from unpacking a tuple/pair)
+struct _Unpack_tuple_t {
+    explicit _Unpack_tuple_t() = default;
+}; // tag type to disambiguate construction (from unpacking a tuple/pair)
 
-struct _Alloc_exact_args_t {}; // tag type to disambiguate construction (from an allocator and one arg per element)
+struct _Alloc_exact_args_t {
+    explicit _Alloc_exact_args_t() = default;
+}; // tag type to disambiguate construction (from an allocator and one arg per element)
 
-struct _Alloc_unpack_tuple_t {}; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
+struct _Alloc_unpack_tuple_t {
+    explicit _Alloc_unpack_tuple_t() = default;
+}; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
 template <class... _Types>
 class tuple;
@@ -941,7 +949,7 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&.
 template <class _Callable, class _Tuple, size_t... _Indices>
 constexpr decltype(auto) _Apply_impl(
     _Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) { // invoke _Obj with the elements of _Tpl
-    return _C_invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
+    return _STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 #pragma warning(pop)
 

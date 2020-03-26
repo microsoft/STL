@@ -267,9 +267,10 @@ _FS_DLL unsigned long long __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fn
 // 1908 is leap year #2
 // 1968 is leap year #17
 
-#define WIN_TICKS_PER_SECOND 10000000ULL
 
-#define WIN_TICKS_FROM_EPOCH (((1970 - 1601) * 365 + 3 * 24 + 17) * 86400ULL * WIN_TICKS_PER_SECOND)
+constexpr uint64_t _Win_ticks_per_second = 10000000ULL;
+constexpr uint64_t _Win_ticks_from_epoch = ((1970 - 1601) * 365 + 3 * 24 + 17) * 86400ULL * _Win_ticks_per_second;
+
 
 _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) { // get last write time
     WIN32_FILE_ATTRIBUTE_DATA _Data;
@@ -281,7 +282,7 @@ _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) 
     // success, convert time
     unsigned long long _Wtime = static_cast<unsigned long long>(_Data.ftLastWriteTime.dwHighDateTime) << 32
                                 | _Data.ftLastWriteTime.dwLowDateTime;
-    return static_cast<int64_t>(_Wtime - WIN_TICKS_FROM_EPOCH);
+    return static_cast<int64_t>(_Wtime - _Win_ticks_from_epoch);
 }
 
 
@@ -294,7 +295,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t* _Fname, 
     }
 
     // convert to FILETIME and set
-    unsigned long long _Wtime = static_cast<unsigned long long>(_When) + WIN_TICKS_FROM_EPOCH;
+    unsigned long long _Wtime = static_cast<unsigned long long>(_When) + _Win_ticks_from_epoch;
     FILETIME _Ft;
     _Ft.dwLowDateTime  = static_cast<DWORD>(_Wtime); // intentionally discard upper bits
     _Ft.dwHighDateTime = static_cast<DWORD>(_Wtime >> 32);
@@ -313,7 +314,9 @@ _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) {
         _Devname.push_back(L'/');
     }
 
-    _ULARGE_INTEGER _Available, _Capacity, _Free;
+    _ULARGE_INTEGER _Available;
+    _ULARGE_INTEGER _Capacity;
+    _ULARGE_INTEGER _Free;
 
     if (GetDiskFreeSpaceExW(_Devname.c_str(), &_Available, &_Capacity, &_Free)) { // convert values
         _Ans.capacity  = _Capacity.QuadPart;

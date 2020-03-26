@@ -63,10 +63,10 @@ add_compile_definitions(
     _CRT_DECLARE_NONSTDC_NAMES=1 )
 
 # TRANSITION, /analyze ?
-add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /d2Zi+ /Gm- /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit-)
+add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /d2Zi+ /Gm- /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit- /Zl)
 
 set(VCLIBS_DEBUG_OPTIONS "/Od")
-set(VCLIBS_RELEASE_FLAGS "/O2;/Os") # TRANSITION: Potentially remove /Os
+set(VCLIBS_RELEASE_OPTIONS "/O2;/Os") # TRANSITION: Potentially remove /Os
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
@@ -87,3 +87,7 @@ get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\
 set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 
 add_subdirectory(stl)
+
+# Since we don't configure any of the tests with CMake, there is no downside to enabling testing unconditionally.
+enable_testing()
+add_subdirectory(tests)

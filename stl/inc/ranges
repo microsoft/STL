@@ -25,11 +25,12 @@ namespace ranges {
     // Much machinery defined in <xutility>
 
     // clang-format off
-    // CONCEPT ranges::common_range
+    // CONCEPT ranges::viewable_range
     template <class _Rng>
-    concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
-    // clang-format on
+    concept viewable_range = range<_Rng>
+        && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
 } // namespace ranges
+
 _STD_END
 
 #pragma pop_macro("new")

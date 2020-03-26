@@ -15,6 +15,10 @@
 #include <concepts>
 #endif // __cpp_lib_concepts
 
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -23,29 +27,65 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FUNCTION TEMPLATE _Min_value
-template <class _Ty>
-_Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty& _Min_value(
-    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) {
-    return _Right < _Left ? _Right : _Left;
+// FUNCTION TEMPLATE max
+template <class _Ty, class _Pr>
+_NODISCARD constexpr const _Ty&(max)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
+    noexcept(_Pred(_Left, _Right))) /* strengthened */ {
+    // return larger of _Left and _Right using _Pred
+    return _Pred(_Left, _Right) ? _Right : _Left;
 }
 
-// FUNCTION TEMPLATE _Max_value
+#pragma warning(push)
+#pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
 template <class _Ty>
-_Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty& _Max_value(
-    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) {
+_NODISCARD _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty&(max)(
+    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */ {
+    // return larger of _Left and _Right
     return _Left < _Right ? _Right : _Left;
 }
+#pragma warning(pop)
+
+template <class _Ty, class _Pr>
+_NODISCARD constexpr _Ty(max)(initializer_list<_Ty>, _Pr); // implemented in <algorithm>
+
+template <class _Ty>
+_NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorithm>
+
+
+// FUNCTION TEMPLATE min
+template <class _Ty, class _Pr>
+_NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
+    noexcept(_Pred(_Right, _Left))) /* strengthened */ {
+    // return smaller of _Left and _Right using _Pred
+    return _Pred(_Right, _Left) ? _Right : _Left;
+}
+
+#pragma warning(push)
+#pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
+template <class _Ty>
+_NODISCARD _Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty&(min)(
+    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */ {
+    // return smaller of _Left and _Right
+    return _Right < _Left ? _Right : _Left;
+}
+#pragma warning(pop)
+
+template <class _Ty, class _Pr>
+_NODISCARD constexpr _Ty(min)(initializer_list<_Ty>, _Pr); // implemented in <algorithm>
+
+template <class _Ty>
+_NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorithm>
+
 
 // FUNCTION TEMPLATE iter_swap (from <algorithm>)
 template <class _FwdIt1, class _FwdIt2>
-void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
+_CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
     swap(*_Left, *_Right);
 }
 
 // FUNCTION TEMPLATE swap
 template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> _Enabled>
-void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
+_CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     if (&_Left != &_Right) {
         _Ty* _First1 = _Left;
         _Ty* _Last1  = _First1 + _Size;
@@ -61,7 +101,8 @@ template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assigna
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled>
 #endif // _HAS_CXX17
-void swap(_Ty& _Left, _Ty& _Right) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
+_CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right) noexcept(
+    is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
     _Ty _Tmp = _STD move(_Left);
     _Left    = _STD move(_Right);
     _Right   = _STD move(_Tmp);
@@ -69,7 +110,7 @@ void swap(_Ty& _Left, _Ty& _Right) noexcept(is_nothrow_move_constructible_v<_Ty>
 
 // FUNCTION TEMPLATE _Swap_adl
 template <class _Ty>
-void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
+_CONSTEXPR20 void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     swap(_Left, _Right);
 }
 
@@ -355,30 +396,28 @@ _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1
     return _Mypair(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
 }
 
-namespace rel_ops { // nested namespace to hide relational operators from std
+namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
     template <class _Ty>
-    _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator!=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left == _Right);
     }
 
     template <class _Ty>
-    _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator>(const _Ty& _Left, const _Ty& _Right) {
         return _Right < _Left;
     }
 
     template <class _Ty>
-    _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator<=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Right < _Left);
     }
 
     template <class _Ty>
-    _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
+    _CXX20_DEPRECATE_REL_OPS _NODISCARD bool operator>=(const _Ty& _Left, const _Ty& _Right) {
         return !(_Left < _Right);
     }
 } // namespace rel_ops
-_STD_END
 
-_STD_BEGIN
 // STRUCTS FOR STRUCTURED BINDINGS tuple_size AND tuple_element
 template <class _Tuple>
 struct tuple_size;
@@ -411,20 +450,19 @@ template <size_t _Index, class _Tuple>
 struct tuple_element;
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> { // tuple_element for const
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_const_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> { // tuple_element for volatile
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_volatile_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct tuple_element<_Index, const volatile _Tuple>
-    : tuple_element<_Index, _Tuple> { // tuple_element for const volatile
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const volatile _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };
@@ -442,7 +480,7 @@ struct tuple_size<array<_Ty, _Size>>
 };
 
 template <size_t _Idx, class _Ty, size_t _Size>
-struct tuple_element<_Idx, array<_Ty, _Size>> { // struct to determine type of element _Idx in array
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
     static_assert(_Idx < _Size, "array index out of bounds");
 
     using type = _Ty;
@@ -455,18 +493,19 @@ struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types
 };
 
 template <size_t _Index>
-struct tuple_element<_Index, tuple<>> { // enforce bounds checking
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<>> { // enforce bounds checking
     static_assert(_Always_false<integral_constant<size_t, _Index>>, "tuple index out of bounds");
 };
 
 template <class _This, class... _Rest>
-struct tuple_element<0, tuple<_This, _Rest...>> { // select first element
-    using type   = _This;
+struct _MSVC_KNOWN_SEMANTICS tuple_element<0, tuple<_This, _Rest...>> { // select first element
+    using type = _This;
+    // MSVC assumes the meaning of _Ttype; remove or rename, but do not change semantics
     using _Ttype = tuple<_This, _Rest...>;
 };
 
 template <size_t _Index, class _This, class... _Rest>
-struct tuple_element<_Index, tuple<_This, _Rest...>>
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
     : tuple_element<_Index - 1, tuple<_Rest...>> { // recursive tuple_element definition
 };
 
@@ -476,7 +515,7 @@ struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> { // size of 
 };
 
 template <size_t _Idx, class _Ty1, class _Ty2>
-struct tuple_element<_Idx, pair<_Ty1, _Ty2>> { // struct to determine type of element _Idx in pair
+struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, pair<_Ty1, _Ty2>> {
     static_assert(_Idx < 2, "pair index out of bounds");
 
     using type = conditional_t<_Idx == 0, _Ty1, _Ty2>;
@@ -566,7 +605,9 @@ _NODISCARD constexpr const _Ty2&& get(
 
 // FUNCTION TEMPLATE exchange
 template <class _Ty, class _Other = _Ty>
-_Ty exchange(_Ty& _Val, _Other&& _New_val) { // assign _New_val to _Val, return previous _Val
+_CONSTEXPR20 _Ty exchange(_Ty& _Val, _Other&& _New_val) noexcept(
+    conjunction_v<is_nothrow_move_constructible<_Ty>, is_nothrow_assignable<_Ty&, _Other>>) /* strengthened */ {
+    // assign _New_val to _Val, return previous _Val
     _Ty _Old_val = static_cast<_Ty&&>(_Val);
     _Val         = static_cast<_Other&&>(_New_val);
     return _Old_val;

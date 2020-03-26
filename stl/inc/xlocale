@@ -354,7 +354,7 @@ public:
         }
     }
 
-    locale& operator=(const locale& _Right) noexcept {
+    const locale& operator=(const locale& _Right) noexcept {
         if (_Ptr != _Right._Ptr) { // different implementation, point at new one
             delete _Ptr->_Decref();
             _Ptr = _Right._Ptr;
@@ -438,7 +438,7 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
 #if _HAS_EXCEPTIONS
             _Throw_bad_cast(); // lazy disallowed
 #else // _HAS_EXCEPTIONS
-            abort(); // lazy disallowed
+            _CSTD abort(); // lazy disallowed
 #endif // _HAS_EXCEPTIONS
         } else { // queue up lazy facet for destruction
             auto _Pfmod = const_cast<locale::facet*>(_Psave);
@@ -829,8 +829,8 @@ protected:
         // return p - _First1, for the largest value p in [_First1, _Last1] such that [_First1, p) successfully
         // converts to at most _Count _Elems
         // assumes 1:1 conversion
-        const auto _Dist = static_cast<size_t>(_Min_value(_Last1 - _First1, ptrdiff_t{INT_MAX}));
-        return static_cast<int>(_Min_value(_Count, _Dist));
+        const auto _Dist = static_cast<size_t>((_STD min)(_Last1 - _First1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_Count, _Dist));
     }
 };
 
@@ -874,7 +874,7 @@ _NODISCARD int _Codecvt_do_length(
 
         if (_Result != codecvt_base::ok) {
             if (_Result == codecvt_base::noconv) {
-                _First1 += _Min_value(static_cast<size_t>(_Last1 - _First1), _Count);
+                _First1 += (_STD min)(static_cast<size_t>(_Last1 - _First1), _Count);
             }
 
             break; // error, noconv, or partial
@@ -887,7 +887,7 @@ _NODISCARD int _Codecvt_do_length(
         _First1 = _Mid1;
     }
 
-    return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+    return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
 }
 
 // ENUM _Codecvt_mode
@@ -1710,7 +1710,7 @@ protected:
             _First1 = _Peek;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -1953,7 +1953,7 @@ protected:
             _First1 = _Peek;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2150,7 +2150,7 @@ protected:
             _First1 += _Bytes;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2352,7 +2352,7 @@ protected:
             _First1 += _Bytes;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {

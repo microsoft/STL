@@ -532,9 +532,14 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
         _CATCH_IO_(_Istr_t, _Istr)
     }
 
-    if (!_Changed) {
-        _State |= _Istr_t::failbit;
-    }
+    constexpr bool _Has_bits = _Bits > 0;
+
+    if
+        _CONSTEXPR_IF(_Has_bits) {
+            if (!_Changed) {
+                _State |= _Istr_t::failbit;
+            }
+        }
 
     _Istr.setstate(_State);
     _Right = bitset<_Bits>(_Str); // convert string and store
@@ -544,8 +549,8 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <size_t _Bits>
 struct hash<bitset<_Bits>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bitset<_Bits> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bitset<_Bits> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const bitset<_Bits>& _Keyval) const noexcept {
         return _Hash_representation(_Keyval._Array);

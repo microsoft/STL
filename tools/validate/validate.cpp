@@ -156,6 +156,8 @@ int main() {
         ".git"sv,
         ".vs"sv,
         ".vscode"sv,
+        "__pycache__"sv,
+        "llvm-project"sv,
         "out"sv,
         "vcpkg"sv,
     };

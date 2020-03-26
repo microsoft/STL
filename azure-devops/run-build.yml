@@ -1,0 +1,103 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+jobs:
+- job: ${{ parameters.targetPlatform }}
+  timeoutInMinutes: 360
+  pool:
+    name: StlBuild-2020-03-24
+
+  variables:
+    vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+  steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+    - task: Cache@2
+      displayName: Cache vcpkg
+      timeoutInMinutes: 10
+      inputs:
+        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
+        path: '$(vcpkgLocation)/installed'
+        cacheHitVar: CACHE_RESTORED
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg to Install boost-build'
+      condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
+      timeoutInMinutes: 10
+      inputs:
+        vcpkgArguments: 'boost-build'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg'
+      timeoutInMinutes: 10
+      inputs:
+        vcpkgArguments: 'boost-math'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
+    - task: run-cmake@0
+      displayName: 'Build Support Tools'
+      timeoutInMinutes: 2
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        cmakeListsTxtPath: 'tools/CMakeSettings.json'
+        useVcpkgToolchainFile: true
+        configurationRegexFilter: '.*x64-Release.*'
+        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
+    - task: BatchScript@1
+      displayName: 'Enforce clang-format'
+      timeoutInMinutes: 60
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        filename: 'azure-devops/enforce-clang-format.cmd'
+        failOnStandardError: true
+        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+    - task: BatchScript@1
+      displayName: 'Validate Files'
+      timeoutInMinutes: 2
+      condition: eq('${{ parameters.targetPlatform }}', 'x64')
+      inputs:
+        filename: 'azure-devops/validate-files.cmd'
+        failOnStandardError: true
+        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+    - task: run-cmake@0
+      displayName: 'Build the STL'
+      timeoutInMinutes: 10
+      inputs:
+        cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
+        cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
+        buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        useVcpkgToolchainFile: true
+        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE'
+    - task: PowerShell@2
+      displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        targetType: inline
+        script: |
+          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command ctest).source);%PATH%"
+          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command clang-cl).source);%PATH%"
+          $currentDir = "$((Get-Item -Path "./").FullName)"
+          Add-Content -Path ./run-tests.cmd -Value "cd $currentDir"
+          Add-Content -Path ./run-tests.cmd -Value "ctest -V"
+          $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
+    - task: PublishTestResults@2
+      displayName: 'Publish libcxx Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/libcxx.test.xml'
+        testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish std Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/std.test.xml'
+        testRunTitle: 'std-${{ parameters.targetPlatform }}'

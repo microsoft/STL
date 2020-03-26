@@ -136,10 +136,9 @@ _Success_(return > 0) _ACRTIMP size_t __cdecl _Wcsftime(
 _END_EXTERN_C
 
 #ifdef _M_CEE_PURE
-    [System::Runtime::InteropServices::DllImport(_CRT_MSVCP_CURRENT, EntryPoint = "_GetLocaleForCP",
-        CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" _locale_t
+[System::Runtime::InteropServices::DllImport(_CRT_MSVCP_CURRENT, EntryPoint = "_GetLocaleForCP",
+    CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" _locale_t
     _GetLocaleForCP(unsigned int);
-
 #else // _M_CEE_PURE
 _MRTIMP2 _locale_t __cdecl _GetLocaleForCP(unsigned int);
 #endif // _M_CEE_PURE

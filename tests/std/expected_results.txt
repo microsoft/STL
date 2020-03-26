@@ -1,0 +1,46 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# *** INSUFFICIENTLY NEW PUBLIC TOOLSET ***
+# TRANSITION, VS 2019 16.6p2
+tests/P0768R1_spaceship_operator:00 FAIL
+tests/P0768R1_spaceship_operator:01 FAIL
+tests/P0768R1_spaceship_operator:02 FAIL
+tests/P0768R1_spaceship_operator:03 FAIL
+tests/P0768R1_spaceship_operator:04 FAIL
+tests/P0768R1_spaceship_operator:05 FAIL
+tests/P0768R1_spaceship_operator:06 FAIL
+tests/P0768R1_spaceship_operator:07 FAIL
+tests/P0768R1_spaceship_operator:08 FAIL
+tests/P0768R1_spaceship_operator:09 FAIL
+tests/P0768R1_spaceship_operator:10 FAIL
+tests/P0768R1_spaceship_operator:11 FAIL
+tests/P0768R1_spaceship_operator:12 FAIL
+tests/P0768R1_spaceship_operator:13 FAIL
+tests/P0768R1_spaceship_operator:14 FAIL
+
+# TRANSITION, VS 2019 16.6p2
+tests/VSO_0157762_feature_test_macros:03 FAIL
+tests/VSO_0157762_feature_test_macros:04 FAIL
+tests/VSO_0157762_feature_test_macros:05 FAIL
+tests/VSO_0157762_feature_test_macros:06 FAIL
+tests/VSO_0157762_feature_test_macros:10 FAIL
+tests/VSO_0157762_feature_test_macros:11 FAIL
+tests/VSO_0157762_feature_test_macros:12 FAIL
+tests/VSO_0157762_feature_test_macros:13 FAIL
+tests/VSO_0157762_feature_test_macros:14 FAIL
+tests/VSO_0157762_feature_test_macros:15 FAIL
+tests/VSO_0157762_feature_test_macros:16 FAIL
+tests/VSO_0157762_feature_test_macros:17 FAIL
+tests/VSO_0157762_feature_test_macros:18 FAIL
+tests/VSO_0157762_feature_test_macros:23 FAIL
+tests/VSO_0157762_feature_test_macros:24 FAIL
+tests/VSO_0157762_feature_test_macros:25 FAIL
+tests/VSO_0157762_feature_test_macros:29 FAIL
+tests/VSO_0157762_feature_test_macros:30 FAIL
+tests/VSO_0157762_feature_test_macros:31 FAIL
+tests/VSO_0157762_feature_test_macros:32 FAIL
+tests/VSO_0157762_feature_test_macros:33 FAIL
+tests/VSO_0157762_feature_test_macros:34 FAIL
+tests/VSO_0157762_feature_test_macros:35 FAIL
+tests/VSO_0157762_feature_test_macros:36 FAIL
