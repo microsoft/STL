@@ -6,10 +6,10 @@
 
 using namespace std;
 
-const array<int, 5> a0{2, 8, 9, 1, 9};
-const array<int, 3> a1{2, 8, 9};
-const array<int, 5> a2{2, 8, 9, 1, 8};
-const array<int, 0> a3{};
+constexpr array<int, 5> a0{2, 8, 9, 1, 9};
+constexpr array<int, 3> a1{2, 8, 9};
+constexpr array<int, 5> a2{2, 8, 9, 1, 8};
+constexpr array<int, 0> a3{};
 
 constexpr bool test_operator_eq() {
     assert(a0 == a0);
