@@ -60,6 +60,14 @@ jobs:
         filename: 'azure-devops/validate-files.cmd'
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+    - task: PowerShell@2
+      displayName: 'Get Test Parallelsim'
+      timeoutInMinutes: 2
+      inputs:
+        targetType: inline
+        script: |
+          $number_of_parallel_tests = $env:NUMBER_OF_PROCESSORS - 2
+          Write-Output "##vso[task.setvariable variable=NUMBER_OF_PROCESSORS;]$number_of_parallel_tests"
     - task: run-cmake@0
       displayName: 'Build the STL'
       timeoutInMinutes: 10
@@ -68,7 +76,7 @@ jobs:
         cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j14'
+        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=$(NUMBER_OF_PROCESSORS)'
     - task: PowerShell@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
