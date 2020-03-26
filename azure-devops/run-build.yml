@@ -61,7 +61,7 @@ jobs:
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
     - task: PowerShell@2
-      displayName: 'Get Test Parallelsim'
+      displayName: 'Get Test Parallelism'
       timeoutInMinutes: 2
       inputs:
         targetType: inline
