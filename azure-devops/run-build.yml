@@ -66,8 +66,8 @@ jobs:
       inputs:
         targetType: inline
         script: |
-          $number_of_parallel_tests = $env:NUMBER_OF_PROCESSORS - 2
-          Write-Output "##vso[task.setvariable variable=NUMBER_OF_PROCESSORS;]$number_of_parallel_tests"
+          $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+          Write-Output "##vso[task.setvariable variable=testParallelism;]$testParallelism"
     - task: run-cmake@0
       displayName: 'Build the STL'
       timeoutInMinutes: 10
@@ -76,7 +76,7 @@ jobs:
         cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(NUMBER_OF_PROCESSORS)'
+        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)'
     - task: PowerShell@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
