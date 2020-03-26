@@ -64,11 +64,9 @@ template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
     { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
     { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-#if 1 // Implement the PR for LWG-3150
     typename _Require_constant<(_Ty::min)()>;
     typename _Require_constant<(_Ty::max)()>;
     requires (_Ty::min)() < (_Ty::max)();
-#endif // LWG-3150
 };
 // clang-format on
 #endif // __cpp_lib_concepts
