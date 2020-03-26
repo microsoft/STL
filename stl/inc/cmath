@@ -1385,17 +1385,17 @@ _NODISCARD /* constexpr */ _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, co
 // LWG-3223 is pending.
 
 _NODISCARD /* constexpr */ inline float lerp(
-    const float _ArgA, const float _ArgB, const float _ArgT) noexcept /* strengthened */ {
+    const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
 _NODISCARD /* constexpr */ inline double lerp(
-    const double _ArgA, const double _ArgB, const double _ArgT) noexcept /* strengthened */ {
+    const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
 _NODISCARD /* constexpr */ inline long double lerp(
-    const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept /* strengthened */ {
+    const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 #endif // _HAS_CXX20
