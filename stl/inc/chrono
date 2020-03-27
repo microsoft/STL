@@ -614,12 +614,12 @@ namespace chrono {
             // ad-hoc <atomic> load/store with std::memory_order_relaxed
             // avoid dependency on real <atomic>
             static volatile long long _Freq_cached = -1; // doesn't change after system boot
-            long long _Freq = __iso_volatile_load64(&_Freq_cached);
+            long long _Freq                        = __iso_volatile_load64(&_Freq_cached);
             if (_Freq == -1) {
                 _Freq = _Query_perf_frequency();
                 __iso_volatile_store64(&_Freq_cached, _Freq);
             }
-#else // ^^^ (defined(_M_ARM) || defined(_M_IX86) || defined(_M_ARM64) || defined(_M_X64)) && !defined(_M_CEE_PURE) /  otherwise vvv 
+#else
             const long long _Freq = _Query_perf_frequency();
 #endif
             const long long _Ctr = _Query_perf_counter();
