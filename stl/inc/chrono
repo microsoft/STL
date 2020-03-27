@@ -617,7 +617,9 @@ namespace chrono {
             long long _Freq                        = __iso_volatile_load64(&_Freq_cached);
             if (_Freq == -1) {
                 _Freq = _Query_perf_frequency();
-#pragma warning (suppress: 28112) // _Freq_cached must always be accessed via an Interlocked function, but it is accessed via __iso_volatile_load64
+                // _Freq_cached must always be accessed via an Interlocked function,
+                // But it is accessed via __iso_volatile_load64, which is also proper way
+#pragma warning (suppress: 28112) 
                 _InterlockedCompareExchange64(&_Freq_cached, _Freq, -1);
             }
 #else
