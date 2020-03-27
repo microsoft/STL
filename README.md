@@ -31,8 +31,9 @@ flavor of the STL (native desktop). We need to extend this to build all of the f
 because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
-* Tests: **Coming soon.** We rely on three test suites: std, tr1, and [libcxx][]. We need to replace our current test
-harness, which extensively uses Microsoft-internal machinery.
+* Tests: **In progress.** We rely on three test suites: std, tr1, and [libcxx][]. We've partially ported std and fully
+ported libcxx to run under [lit][] using the various configuration/compilers we test internally. tr1 and portions of
+std are still a work in progress.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
 Currently, it builds the STL (native desktop for x86, x64, ARM, and ARM64). Also, it strictly verifies that all of our
@@ -220,6 +221,45 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
+# How To Run The Tests
+
+In order to run any of the tests you must be in a correctly configured environment for the architecture you are
+targeting, have python 3.8 or newer and have `clang-cl` on the PATH. If you are testing the x64 flavor of the STL then
+running from the "x64 Native Tools Command Prompt" is sufficient for setting up the environment.
+
+## Running All The Tests
+
+After configuring the project, running `ctest` from the root of the build output directory will run all the tests.
+CTest will only display the standard error output of tests which failed. In order to get more details from CTest's
+`lit` invocations, run the tests with `ctest -V`.
+
+## Running A Subset Of The Tests
+
+In order to run a subset of one of the testsuites you must invoke `lit` yourself and point it to the desired
+subdirectory of tests.
+
+The CMake configuration step produces a Python script, `${PROJECT_BINARY_DIR}\tests\llvm-lit\llvm-lit.py`.
+`llvm-lit.py` simply calls into the standard `lit` found in `llvm-project\llvm\utils\lit` with certain options
+pre-configured. Namely a mapping of `lit.cfg` files to `lit.site.cfg` files is provided, which informs lit which
+site-specific config file to load whenever it discovers a general config file.
+
+While one can directly use `lit` to run our tests by hand, we only support using the generated `llvm-lit`.
+
+### Examples
+
+```
+C:\Dev\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ..
+
+:: This command will run all of the std testsuite.
+C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py tests\std
+
+:: However if you want to run a subset of std you need to point it to the right place in the sources.
+C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+
+:: The same applies for libcxx. The following will run all the libcxx containers tests.
+C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers
+```
+
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
@@ -270,6 +310,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
+[lit]: http://llvm.org/docs/CommandGuide/lit.html
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
