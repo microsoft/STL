@@ -23,7 +23,7 @@ constexpr bool test_operator_eq() {
 constexpr bool test_operator_neq() {
     assert(!(a0 != a0));
     assert(!(a1 != a1));
-    assert((a0 != a2));
+    assert(a0 != a2);
     assert(!(a3 != a3));
 
     return true;
