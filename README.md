@@ -150,7 +150,7 @@ acquire this dependency.
 6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
    done this before, you may be prompted to elevate.
 7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
-   repository, typically `https://github.com/microsoft/STL`
+   repository, typically `https://github.com/microsoft/STL`. Make sure that submodules are also checked out.
 8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
 
@@ -166,7 +166,7 @@ architectures.
 5. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
 6. Open an "x64 Native Tools Command Prompt for VS 2019".
 7. Change directories to a location where you'd like a clone of this STL repository.
-8. Invoke `git clone https://github.com/microsoft/STL`
+8. Invoke `git clone --recurse-submodules https://github.com/microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -S . -B {wherever you want binaries}` to configure the project. For example,
