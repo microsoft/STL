@@ -223,14 +223,14 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 # How To Run The Tests
 
-In order to run any of the tests you must be in a correctly configured environment for the architecture you are
-targeting, have python 3.8 or newer and have `clang-cl` on the PATH. If you are testing the x64 flavor of the STL then
+In order to run any of the tests, you must be in a correctly configured environment for the architecture you are
+targeting, have Python 3.8 or newer, and have `clang-cl` on the PATH. If you are testing the x64 flavor of the STL then
 running from the "x64 Native Tools Command Prompt" is sufficient for setting up the environment.
 
 ## Running All The Tests
 
-After configuring the project, running `ctest` from the root of the build output directory will run all the tests.
-CTest will only display the standard error output of tests which failed. In order to get more details from CTest's
+After configuring the project, running `ctest` from the build output directory will run all the tests.
+CTest will only display the standard error output of tests that failed. In order to get more details from CTest's
 `lit` invocations, run the tests with `ctest -V`.
 
 ## Running A Subset Of The Tests
@@ -245,7 +245,7 @@ site-specific config file to load whenever it discovers a general config file.
 
 While one can directly use `lit` to run our tests by hand, we only support using the generated `llvm-lit`.
 
-### Examples
+## Examples
 
 ```
 C:\Dev\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ..
@@ -253,7 +253,7 @@ C:\Dev\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..
 :: This command will run all of the std testsuite.
 C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py tests\std
 
-:: However if you want to run a subset of std you need to point it to the right place in the sources.
+:: However, if you want to run a subset of std, you need to point it to the right place in the sources.
 C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
 
 :: The same applies for libcxx. The following will run all the libcxx containers tests.
@@ -310,7 +310,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
-[lit]: http://llvm.org/docs/CommandGuide/lit.html
+[lit]: https://llvm.org/docs/CommandGuide/lit.html
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
