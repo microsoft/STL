@@ -159,7 +159,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.17.0 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.6 Preview 2 or later.
+1. Install [CMake][] 3.16.5 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.6 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
