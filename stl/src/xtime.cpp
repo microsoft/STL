@@ -3,6 +3,7 @@
 
 // xtime functions
 
+#include <atomic>
 #include "awint.h"
 #include <stdlib.h>
 #include <time.h>
@@ -86,10 +87,20 @@ _CRTIMP2_PURE long long __cdecl _Query_perf_counter() { // get current value of 
     return li.QuadPart;
 }
 
-_CRTIMP2_PURE long long __cdecl _Query_perf_frequency() { // get frequency of performance counter
+static long long __cdecl _Query_perf_frequency_internal() { // get frequency of performance counter
     LARGE_INTEGER li;
     QueryPerformanceFrequency(&li); // always succeeds
     return li.QuadPart;
+}
+
+_CRTIMP2_PURE long long __cdecl _Query_perf_frequency() { // get frequency of performance counter
+    static std::atomic<long long> freq_cached = 0; 
+    long long freq                            = freq_cached.load(std::memory_order_relaxed);
+    if (freq == 0) {
+        freq = _Query_perf_frequency_internal(); // doesn't change after system boot
+        freq_cached.store(freq, std::memory_order_relaxed);
+    }
+    return freq;
 }
 
 _END_EXTERN_C
