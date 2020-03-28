@@ -670,7 +670,7 @@ template <typename _Ty1, typename _Ty2>
 constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>);
     if constexpr (is_signed_v<_Ty1> && is_unsigned_v<_Ty2>) {
-        return _Left >= 0 || static_cast<make_unsigned_t<_Ty1>>(_Left) == _Right;
+        return _Left >= 0 && static_cast<make_unsigned_t<_Ty1>>(_Left) == _Right;
     } else if constexpr (is_unsigned_v<_Ty1> && is_signed_v<_Ty2>) {
         return _Right >= 0 && _Left == static_cast<make_unsigned_t<_Ty2>>(_Right);
     } else {
