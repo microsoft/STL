@@ -658,9 +658,9 @@ template <typename _Ty1, typename _Ty2>
 constexpr bool in_range(const _Ty2 _Value) noexcept {
     static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>);
     if constexpr (is_signed_v<_Ty1> && is_unsigned_v<_Ty2>) {
-        return _Value <= (numeric_limits<_Ty1>::max)();
+        return _Value <= make_unsigned_t<_Ty1>((numeric_limits<_Ty1>::max)());
     } else if constexpr (is_unsigned_v<_Ty1> && is_signed_v<_Ty2>) {
-        return _Value >= 0 && _Value <= (numeric_limits<_Ty1>::max)();
+        return _Value >= 0 && make_unsigned_t<_Ty2>(_Value) <= (numeric_limits<_Ty1>::max)();
     } else {
         return (numeric_limits<_Ty1>::min)() <= _Value && _Value <= (numeric_limits<_Ty1>::max)();
     }
