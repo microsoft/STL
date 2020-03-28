@@ -3,8 +3,8 @@
 
 // xtime functions
 
-#include <atomic>
 #include "awint.h"
+#include <atomic>
 #include <stdlib.h>
 #include <time.h>
 #include <xtimec.h>
@@ -94,7 +94,7 @@ static long long __cdecl _Query_perf_frequency_internal() { // get frequency of 
 }
 
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency() { // get frequency of performance counter
-    static std::atomic<long long> freq_cached = 0; 
+    static std::atomic<long long> freq_cached = 0;
     long long freq                            = freq_cached.load(std::memory_order_relaxed);
     if (freq == 0) {
         freq = _Query_perf_frequency_internal(); // doesn't change after system boot
