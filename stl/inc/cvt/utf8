@@ -96,18 +96,17 @@ namespace stdext {
                     if (*_Pstate == 0) { // first time, maybe look for and consume header
                         *_Pstate = 1;
 
-                        if
-                            _CONSTEXPR_IF((_Mode & _STD consume_header) != 0) {
-                                if (_Ch == 0xfeff) { // drop header and retry
-                                    result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
+                        if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0) {
+                            if (_Ch == 0xfeff) { // drop header and retry
+                                result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
-                                    if (_Ans == _Mybase::partial) { // roll back header determination
-                                        *_Pstate = 0;
-                                        _Mid1    = _First1;
-                                    }
-                                    return _Ans;
+                                if (_Ans == _Mybase::partial) { // roll back header determination
+                                    *_Pstate = 0;
+                                    _Mid1    = _First1;
                                 }
+                                return _Ans;
                             }
+                        }
                     }
 
                     if (_Maxcode < _Ch) {
@@ -158,17 +157,16 @@ namespace stdext {
                     if (*_Pstate == 0) { // first time, maybe generate header
                         *_Pstate = 1;
 
-                        if
-                            _CONSTEXPR_IF((_Mode & _STD generate_header) != 0) {
-                                if (_Last2 - _Mid2 < 3 + 1 + _Nextra) {
-                                    return _Mybase::partial; // not enough room for both
-                                }
-
-                                // prepend header
-                                *_Mid2++ = '\xef';
-                                *_Mid2++ = '\xbb';
-                                *_Mid2++ = '\xbf';
+                        if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0) {
+                            if (_Last2 - _Mid2 < 3 + 1 + _Nextra) {
+                                return _Mybase::partial; // not enough room for both
                             }
+
+                            // prepend header
+                            *_Mid2++ = '\xef';
+                            *_Mid2++ = '\xbb';
+                            *_Mid2++ = '\xbf';
+                        }
                     }
 
                     if (_Last2 - _Mid2 < 1 + _Nextra) {
@@ -189,8 +187,8 @@ namespace stdext {
                 return _Mybase::ok;
             }
 
-            virtual int do_length(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
-                noexcept override {
+            virtual int do_length(
+                _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 size_t _Wchars    = 0;
                 _Statype _Mystate = _State;
@@ -226,21 +224,17 @@ namespace stdext {
             }
 
             virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
-                if
-                    _CONSTEXPR_IF((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
-                        return 9;
-                    }
-                else {
+                if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
+                    return 9;
+                } else {
                     return 6;
                 }
             }
 
             virtual int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
-                if
-                    _CONSTEXPR_IF((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
-                        return -1; // -1 => state dependent
-                    }
-                else {
+                if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
+                    return -1; // -1 => state dependent
+                } else {
                     return 0; // 0 => varying length
                 }
             }

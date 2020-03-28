@@ -895,14 +895,13 @@ public:
     }
 
     list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
-                        _STD make_move_iterator(_Right._Unchecked_end()));
-                    return;
-                }
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
+                    _STD make_move_iterator(_Right._Unchecked_end()));
+                return;
             }
+        }
 
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
@@ -1683,10 +1682,9 @@ private:
 
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Right._Unchecked_end(), _Pred);
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
-            }
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
+        }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         const auto _Right_size = _Right._Mypair._Myval2._Mysize;
@@ -1741,10 +1739,9 @@ private:
         // splice _Right [_First, _Last) before _Where; returns _Last
         if (this != _STD addressof(_Right)) { // splicing from another list, adjust counts
 #if _ITERATOR_DEBUG_LEVEL != 0
-            if
-                _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                    _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for splice");
-                }
+            if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+                _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for splice");
+            }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
             auto& _My_data = _Mypair._Myval2;
@@ -1800,7 +1797,7 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-list(_Iter, _Iter, _Alloc = _Alloc())->list<_Iter_value_t<_Iter>, _Alloc>;
+list(_Iter, _Iter, _Alloc = _Alloc()) -> list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Alloc>

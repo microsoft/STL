@@ -140,7 +140,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.6 Preview 1 or later.
+1. Install Visual Studio 2019 16.6 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -159,7 +159,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.16.5 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.6 Preview 1 or later.
+1. Install [CMake][] 3.17.0 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.6 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`

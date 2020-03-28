@@ -4005,8 +4005,8 @@ _DestTy* copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _DestTy (&_Dest)[_Des
 
 template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _DestTy, size_t _DestSize,
     _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* copy_n(_ExPo&&, _SourceTy (&_First)[_SourceSize], _Diff _Count_raw,
-    _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
+_DestTy* copy_n(_ExPo&&, _SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) noexcept
+/* terminates */ {
     // copy [_First, _First + _Count) to [_Dest, ...), array source/dest
     // not parallelized as benchmarks show it isn't worth it
     return _STD copy_n(_First, _Count_raw, _Dest);
@@ -4570,8 +4570,8 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, _R
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool equal(
-    _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept /* terminates */ {
+_NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept
+/* terminates */ {
     // compare [_First1, _Last1) to [_First2, ...)
     return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>());
 }

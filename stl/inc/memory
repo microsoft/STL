@@ -1300,10 +1300,10 @@ private:
 
 #if _HAS_CXX17
 template <class _Ty>
-shared_ptr(weak_ptr<_Ty>)->shared_ptr<_Ty>;
+shared_ptr(weak_ptr<_Ty>) -> shared_ptr<_Ty>;
 
 template <class _Ty, class _Dx>
-shared_ptr(unique_ptr<_Ty, _Dx>)->shared_ptr<_Ty>;
+shared_ptr(unique_ptr<_Ty, _Dx>) -> shared_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty1, class _Ty2>
@@ -1705,7 +1705,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Ty>
-weak_ptr(shared_ptr<_Ty>)->weak_ptr<_Ty>;
+weak_ptr(shared_ptr<_Ty>) -> weak_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
