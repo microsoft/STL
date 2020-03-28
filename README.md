@@ -221,43 +221,44 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
-# How To Run The Tests
+# How To Run The Tests From The Developer Command Prompt For VS
 
-In order to run any of the tests, you must be in a correctly configured environment for the architecture you are
-targeting, have Python 3.8 or newer, and have `clang-cl` on the PATH. If you are testing the x64 flavor of the STL then
-running from the "x64 Native Tools Command Prompt" is sufficient for setting up the environment.
+Before running the tests you must configure and build the project as described above. You must also have [Python][] 3.8
+or newer, and have LLVM's `bin` directory on the PATH.
 
 ## Running All The Tests
 
-After configuring the project, running `ctest` from the build output directory will run all the tests.
-CTest will only display the standard error output of tests that failed. In order to get more details from CTest's
+After configuring and building the project, running `ctest` from the build output directory will run all the tests.
+CTest will only display the standard error output of tests which failed. In order to get more details from CTest's
 `lit` invocations, run the tests with `ctest -V`.
 
 ## Running A Subset Of The Tests
 
-In order to run a subset of one of the testsuites you must invoke `lit` yourself and point it to the desired
-subdirectory of tests.
-
-The CMake configuration step produces a Python script, `${PROJECT_BINARY_DIR}\tests\llvm-lit\llvm-lit.py`.
-`llvm-lit.py` simply calls into the standard `lit` found in `llvm-project\llvm\utils\lit` with certain options
-pre-configured. Namely a mapping of `lit.cfg` files to `lit.site.cfg` files is provided, which informs lit which
-site-specific config file to load whenever it discovers a general config file.
-
-While one can directly use `lit` to run our tests by hand, we only support using the generated `llvm-lit`.
+`${PROJECT_BINARY_DIR}\tests\llvm-lit\llvm-lit.py` can be invoked on a subdirectory of a testsuite and will execute all
+the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests under
+a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
 ```
-C:\Dev\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ..
+:: These two commands configure and build the stl. They are unecessary if you have already followed the build steps
+:: as described above.
+C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ..
+C:\STL\build>ninja
 
-:: This command will run all of the std testsuite.
-C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py tests\std
+:: This command will run all of the testsuites with verbose output.
+C:\STL\build>ctest -V
 
-:: However, if you want to run a subset of std, you need to point it to the right place in the sources.
-C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+:: This command will run all of the std testuite.
+C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std
 
-:: The same applies for libcxx. The following will run all the libcxx containers tests.
-C:\Dev\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers
+:: If you want to run a subset of std you need to point it to the right place in the sources. The following will run
+:: the single test found under VSO_0000000_any_calling_conventions.
+C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+
+:: You can invoke llvm-lit with any arbitrary subdirectory of a testuite. In libcxx this allows you to have a finer
+:: control over what category of tests you would like to run. The following will run all the libcxx map tests.
+C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
 ```
 
 # Block Diagram
@@ -303,6 +304,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
+[Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Wandbox]: https://wandbox.org
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
