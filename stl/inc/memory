@@ -939,7 +939,7 @@ private:
 
     friend shared_ptr<_Ty>;
 
-    template <class _Ty>
+    template <class _Ty0>
     friend struct atomic;
 
     friend _Exception_ptr_access;
