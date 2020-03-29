@@ -665,7 +665,6 @@ namespace chrono {
 #endif // hardware
         }
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
-
     };
 
     using high_resolution_clock = steady_clock;

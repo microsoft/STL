@@ -7,9 +7,9 @@
 #include "tdefs.h"
 #include <chrono>
 #include <iostream>
+#include <thread>
 #include <time.h>
 #include <typeinfo>
-#include <thread>
 
 namespace {
 
@@ -303,7 +303,7 @@ namespace {
         auto t1 = ClockToTestAgainst::now();
         auto t2 = ClockBeingTested::now();
         auto t3 = ClockToTestAgainst::now();
-        
+
         auto sleep_time = STD chrono::milliseconds(2);
         STD this_thread::sleep_for(sleep_time);
 
