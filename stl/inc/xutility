@@ -172,25 +172,24 @@ struct identity {
 template <class _Fx>
 struct _Ref_fn { // pass function object by value as a reference
     template <class... _Args>
-    constexpr decltype(auto) operator()(_Args&&... _Vals) { // forward function call operator
-        return _Fn(_STD forward<_Args>(_Vals)...);
+    constexpr decltype(auto) operator()(_Args&&... _Vals) noexcept(noexcept(_Fn(static_cast<_Args&&>(_Vals)...))) {
+        return _Fn(static_cast<_Args&&>(_Vals)...);
     }
 
     _Fx& _Fn;
 };
 
 template <class _Fn>
-_INLINE_VAR constexpr bool
-    _Pass_functor_by_value_v = sizeof(_Fn) <= sizeof(void*)
-                               && conjunction_v<is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
+_INLINE_VAR constexpr bool _Pass_functor_by_value_v = conjunction_v<bool_constant<sizeof(_Fn) <= sizeof(void*)>,
+    is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
 
 template <class _Fn, enable_if_t<_Pass_functor_by_value_v<_Fn>, int> = 0> // TRANSITION, if constexpr
-constexpr _Fn _Pass_fn(_Fn _Val) { // pass functor by value
+_NODISCARD constexpr _Fn _Pass_fn(_Fn _Val) noexcept(is_nothrow_move_constructible_v<_Fn>) { // pass functor by value
     return _Val;
 }
 
 template <class _Fn, enable_if_t<!_Pass_functor_by_value_v<_Fn>, int> = 0>
-constexpr _Ref_fn<_Fn> _Pass_fn(_Fn& _Val) { // pass functor by "reference"
+_NODISCARD constexpr _Ref_fn<_Fn> _Pass_fn(_Fn& _Val) noexcept { // pass functor by "reference"
     return {_Val};
 }
 
