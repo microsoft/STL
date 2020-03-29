@@ -1415,7 +1415,7 @@ public:
         _Mysymstat = _Symstatarg;
     }
 
-    operator const _FSPFX path&() const noexcept {
+    operator const _FSPFX path &() const noexcept {
         return _Mypval;
     }
 

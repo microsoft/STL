@@ -776,13 +776,11 @@ protected:
         _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const { // convert bytes [_First1, _Last1) to [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if
-            _CONSTEXPR_IF(is_same_v<_Byte, _Elem>) {
-                (void) _Last1;
-                (void) _Last2;
-                return noconv; // convert nothing
-            }
-        else {
+        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+            (void) _Last1;
+            (void) _Last2;
+            return noconv; // convert nothing
+        } else {
             // types differ, copy one for one
             for (; _Mid1 != _Last1; ++_Mid1, ++_Mid2) {
                 if (_Mid2 == _Last2) {
@@ -799,13 +797,11 @@ protected:
         _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const { // convert [_First1, _Last1) to bytes [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if
-            _CONSTEXPR_IF(is_same_v<_Byte, _Elem>) {
-                (void) _Last1;
-                (void) _Last2;
-                return noconv; // convert nothing
-            }
-        else {
+        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+            (void) _Last1;
+            (void) _Last2;
+            return noconv; // convert nothing
+        } else {
             // types differ, copy one for one
             for (; _Mid1 != _Last1; ++_Mid1, ++_Mid2) {
                 if (_Mid2 == _Last2) {
