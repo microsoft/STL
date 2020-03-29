@@ -612,22 +612,22 @@ namespace chrono {
         _NODISCARD static time_point now() noexcept { // get current time
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
             // Implement atomics avoiding <atomic> header dependency
-            static volatile long long _Freq_cached = -1;
-            static volatile long long _Quot_cached = -1;
-            static volatile long long _Rem_cached  = -1;
-            long long _Freq                        = _Atomic_load_ll_relaxed(&_Freq_cached);
-            if (_Freq == -1) {
-                _Freq = _Query_perf_frequency();
-                _Atomic_store_ll_relaxed(&_Freq_cached, _Freq, -1);
-            }
-            long long _Quot = _Atomic_load_ll_relaxed(&_Quot_cached);
-            long long _Rem  = _Atomic_load_ll_relaxed(&_Rem_cached);
-            if (_Quot == -1 || _Rem == -1) {
+            static struct {
+                volatile long long _Freq = -1;
+                volatile long long _Quot = -1;
+                volatile long long _Rem  = -1;
+            } _Cached;
+            long long _Freq = _Atomic_load_ll_relaxed(&_Cached._Freq);
+            long long _Quot = _Atomic_load_ll_relaxed(&_Cached._Quot);
+            long long _Rem  = _Atomic_load_ll_relaxed(&_Cached._Rem);
+            if ((_Freq | _Quot | _Rem) < 0) {
                 static_assert(period::num == 1, "This assumes period::num == 1.");
+                _Freq = _Query_perf_frequency();
                 _Quot = period::den / _Freq;
                 _Rem  = period::den % _Freq;
-                _Atomic_store_ll_relaxed(&_Quot_cached, _Quot, -1);
-                _Atomic_store_ll_relaxed(&_Rem_cached, _Rem, -1);
+                _Atomic_store_ll_relaxed(&_Cached._Freq, _Freq, -1);
+                _Atomic_store_ll_relaxed(&_Cached._Quot, _Quot, -1);
+                _Atomic_store_ll_relaxed(&_Cached._Rem, _Rem, -1);
             }
 #else // ^^^ known hardware && !defined(_M_CEE_PURE) / unknown hardware || defined(_M_CEE_PURE) vvv
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
