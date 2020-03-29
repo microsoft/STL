@@ -620,7 +620,7 @@ namespace chrono {
             long long _Freq = _Atomic_load_ll_relaxed(&_Cached._Freq);
             long long _Quot = _Atomic_load_ll_relaxed(&_Cached._Quot);
             long long _Rem  = _Atomic_load_ll_relaxed(&_Cached._Rem);
-            if ((_Freq | _Quot | _Rem) < 0) {
+            if (_Freq == -1 || _Quot == -1 || _Rem == -1) {
                 static_assert(period::num == 1, "This assumes period::num == 1.");
                 _Freq = _Query_perf_frequency();
                 _Quot = period::den / _Freq;
