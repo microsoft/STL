@@ -637,9 +637,7 @@ namespace chrono {
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
             const long long _Ctr   = _Query_perf_counter();
             const long long _Whole = _Quot * _Ctr;
-            // cast to unsigned for faster division
-            const long long _Part = static_cast<unsigned long long>(
-                static_cast<unsigned long long>(_Rem * _Ctr) / static_cast<unsigned long long>(_Freq));
+            const long long _Part  = _Rem * _Ctr / _Freq;
             return time_point(duration(_Whole + _Part));
         }
 
