@@ -710,7 +710,7 @@ void test_VSO_684710() {
     struct S2 {
         P p;
 
-        operator P &&() {
+        operator P&&() {
             return move(p);
         }
     };

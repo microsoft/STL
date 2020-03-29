@@ -64,11 +64,9 @@ template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
     { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
     { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-#if 1 // Implement the PR for LWG-3150
     typename _Require_constant<(_Ty::min)()>;
     typename _Require_constant<(_Ty::max)()>;
     requires (_Ty::min)() < (_Ty::max)();
-#endif // LWG-3150
 };
 // clang-format on
 #endif // __cpp_lib_concepts
@@ -313,36 +311,25 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Divide by _Ax:
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
-    if
-        _CONSTEXPR_IF(_Ax == 0) { // degenerate case; avoid divide by 0
-            (void) _Prev;
-            return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
-        }
-    else if
-        _CONSTEXPR_IF(
-            _Mx == 0) { // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m used throughout
-                        // this subclause [rand.eng.lcong] is numeric_limits<result_type>::max() plus 1."
-                        // That is: Just do the multiply and let normal unsigned modulo take care of it
-            return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
-        }
-    else if
-        _CONSTEXPR_IF(
-            _Cx <= UINT_MAX
-            && static_cast<_Uint>(_Mx - 1)
-                   <= (UINT_MAX - _Cx) / _Ax) { // unsigned int is sufficient to store intermediate calculation
-            const auto _Mul =
-                static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
-            return static_cast<_Uint>(_Mul % _Mx);
-        }
-    else if
-        _CONSTEXPR_IF(
-            _Cx <= ULLONG_MAX
-            && static_cast<_Uint>(_Mx - 1)
-                   <= (ULLONG_MAX - _Cx) / _Ax) { // unsigned long long is sufficient to store intermediate calculation
-            const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
-            return static_cast<_Uint>(_Mul % _Mx);
-        }
-    else { // no intermediate integral type fits; fall back to multiprecision
+    if _CONSTEXPR_IF (_Ax == 0) { // degenerate case; avoid divide by 0
+        (void) _Prev;
+        return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
+    } else if _CONSTEXPR_IF (_Mx == 0) {
+        // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
+        // used throughout this subclause [rand.eng.lcong] is
+        // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
+        // and let normal unsigned modulo take care of it
+        return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
+    } else if _CONSTEXPR_IF (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
+        // unsigned int is sufficient to store intermediate calculation
+        const auto _Mul =
+            static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
+        return static_cast<_Uint>(_Mul % _Mx);
+    } else if _CONSTEXPR_IF (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
+        // unsigned long long is sufficient to store intermediate calculation
+        const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
+        return static_cast<_Uint>(_Mul % _Mx);
+    } else { // no intermediate integral type fits; fall back to multiprecision
         _MP_arr _Wx;
         _MP_Mul(_Wx, _Prev, _Ax);
         _MP_Add(_Wx, _Cx);
@@ -379,17 +366,15 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
 
 template <class _Uint, _Uint _Cx, _Uint _Mx>
 _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
-    if
-        _CONSTEXPR_IF(_Mx != 0) {
-            _Sx %= _Mx;
-        }
+    if _CONSTEXPR_IF (_Mx != 0) {
+        _Sx %= _Mx;
+    }
 
-    if
-        _CONSTEXPR_IF(_Cx == 0) {
-            if (_Sx == 0) {
-                _Sx = _Uint{1};
-            }
+    if _CONSTEXPR_IF (_Cx == 0) {
+        if (_Sx == 0) {
+            _Sx = _Uint{1};
         }
+    }
 
     return _Sx;
 }
@@ -397,21 +382,15 @@ _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { /
 template <class _Uint, _Uint _Cx, _Uint _Mx, class _Seed_seq>
 _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4741 [rand.eng.lcong]/6
     _Uint _Sx;
-    if
-        _CONSTEXPR_IF(_Mx == 0) {
-            if
-                _CONSTEXPR_IF(sizeof(_Uint) <= sizeof(unsigned int)) {
-                    _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq));
-                }
-            else {
-                _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq));
-            }
+    if _CONSTEXPR_IF (_Mx == 0) {
+        if _CONSTEXPR_IF (sizeof(_Uint) <= sizeof(unsigned int)) {
+            _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq));
+        } else {
+            _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq));
         }
-    else if
-        _CONSTEXPR_IF(_Mx <= UINT_MAX) {
-            _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq) % _Mx);
-        }
-    else {
+    } else if _CONSTEXPR_IF (_Mx <= UINT_MAX) {
+        _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq) % _Mx);
+    } else {
         _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq) % _Mx);
     }
 
@@ -487,16 +466,16 @@ public:
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator==(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
+    friend bool operator==(const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator!=(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
+    friend bool operator!=(const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 
@@ -581,16 +560,16 @@ public:
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator==(
-        const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept /* strengthened */ {
+    friend bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator!=(
-        const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept /* strengthened */ {
+    friend bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 
@@ -830,11 +809,9 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     static int _Get_wc() { // compute number of 32-bit words per element
         int _Kx;
 
-        if
-            _CONSTEXPR_IF(_Mx == 0) {
-                _Kx = (8 * sizeof(_Ty) + 31) / 32;
-            }
-        else { // compute number of 32-bit words required
+        if _CONSTEXPR_IF (_Mx == 0) {
+            _Kx = (8 * sizeof(_Ty) + 31) / 32;
+        } else { // compute number of 32-bit words required
             unsigned long long _Val = 1ULL << 32;
             for (_Kx = 1; 0 < _Val && _Val < _Mx; ++_Kx) {
                 _Val = _Val << 32;
@@ -868,12 +845,11 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 #pragma warning(push)
 #pragma warning(disable : 4724) // potential mod by 0
     static _Cy_t _Reduce(_Ty* _Ax) { // reduce values to allowed range
-        if
-            _CONSTEXPR_IF(_Mx != 0) {
-                for (int _Ix = 0; _Ix < _Nw; ++_Ix) {
-                    _Ax[_Ix] = _Ax[_Ix] % _Mx;
-                }
+        if _CONSTEXPR_IF (_Mx != 0) {
+            for (int _Ix = 0; _Ix < _Nw; ++_Ix) {
+                _Ax[_Ix] = _Ax[_Ix] % _Mx;
             }
+        }
 
         return _Ax[_Nw - 1] == 0;
     }
@@ -963,10 +939,9 @@ public:
             }
 
             constexpr bool _Mod_non_zero = _Traits::_Mod != 0;
-            if
-                _CONSTEXPR_IF(_Mod_non_zero) {
-                    this->_Ax[_Ix] %= _Traits::_Mod;
-                }
+            if _CONSTEXPR_IF (_Mod_non_zero) {
+                this->_Ax[_Ix] %= _Traits::_Mod;
+            }
         }
 
         this->_Carry = _Traits::_Reduce(this->_Ax);

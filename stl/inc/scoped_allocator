@@ -250,7 +250,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Outer, class... _Inner>
-scoped_allocator_adaptor(_Outer, _Inner...)->scoped_allocator_adaptor<_Outer, _Inner...>;
+scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
 template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>

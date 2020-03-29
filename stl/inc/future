@@ -1563,7 +1563,7 @@ namespace experimental {
 
         void await_suspend(experimental::coroutine_handle<> _ResumeCb) {
             // TRANSITION, change to .then if and when future gets .then
-            thread _WaitingThread([& _Fut = _Fut, _ResumeCb]() mutable {
+            thread _WaitingThread([&_Fut = _Fut, _ResumeCb]() mutable {
                 _Fut.wait();
                 _ResumeCb();
             });

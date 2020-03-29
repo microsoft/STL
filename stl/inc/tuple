@@ -695,19 +695,19 @@ public:
 
 #if _HAS_CXX17
 template <class... _Types>
-tuple(_Types...)->tuple<_Types...>;
+tuple(_Types...) -> tuple<_Types...>;
 
 template <class _Ty1, class _Ty2>
-tuple(pair<_Ty1, _Ty2>)->tuple<_Ty1, _Ty2>;
+tuple(pair<_Ty1, _Ty2>) -> tuple<_Ty1, _Ty2>;
 
 template <class _Alloc, class... _Types>
-tuple(allocator_arg_t, _Alloc, _Types...)->tuple<_Types...>;
+tuple(allocator_arg_t, _Alloc, _Types...) -> tuple<_Types...>;
 
 template <class _Alloc, class _Ty1, class _Ty2>
-tuple(allocator_arg_t, _Alloc, pair<_Ty1, _Ty2>)->tuple<_Ty1, _Ty2>;
+tuple(allocator_arg_t, _Alloc, pair<_Ty1, _Ty2>) -> tuple<_Ty1, _Ty2>;
 
 template <class _Alloc, class... _Types>
-tuple(allocator_arg_t, _Alloc, tuple<_Types...>)->tuple<_Types...>;
+tuple(allocator_arg_t, _Alloc, tuple<_Types...>) -> tuple<_Types...>;
 #endif // _HAS_CXX17
 
 // OPERATORS FOR tuple
