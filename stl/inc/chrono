@@ -8,6 +8,7 @@
 #define _CHRONO_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <intrin0.h>
 #include <limits>
 #include <ratio>
 #include <time.h>
@@ -609,13 +610,62 @@ namespace chrono {
         static constexpr bool is_steady = true;
 
         _NODISCARD static time_point now() noexcept { // get current time
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
+            // Implement atomics avoiding <atomic> header dependency
+            static volatile long long _Freq_cached = -1;
+            static volatile long long _Quot_cached = -1;
+            static volatile long long _Rem_cached  = -1;
+            long long _Freq                        = _Atomic_load_ll_relaxed(&_Freq_cached);
+            if (_Freq == -1) {
+                _Freq = _Query_perf_frequency();
+                _Atomic_store_ll_relaxed(&_Freq_cached, _Freq, -1);
+            }
+            long long _Quot = _Atomic_load_ll_relaxed(&_Quot_cached);
+            long long _Rem  = _Atomic_load_ll_relaxed(&_Rem_cached);
+            if (_Quot == -1 || _Rem == -1) {
+                static_assert(period::num == 1, "This assumes period::num == 1.");
+                _Quot = period::den / _Freq;
+                _Rem  = period::den % _Freq;
+                _Atomic_store_ll_relaxed(&_Quot_cached, _Quot, -1);
+                _Atomic_store_ll_relaxed(&_Rem_cached, _Rem, -1);
+            }
+#else // ^^^ known hardware && !defined(_M_CEE_PURE) / unknown hardware || defined(_M_CEE_PURE) vvv
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
-            const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
-            const long long _Whole = (_Ctr / _Freq) * period::den;
-            const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
+            const long long _Quot = period::den / _Freq;
+            const long long _Rem  = period::den % _Freq;
+#endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
+            const long long _Ctr   = _Query_perf_counter();
+            const long long _Whole = _Quot * _Ctr;
+            const long long _Part  = _Rem * _Ctr / _Freq;
             return time_point(duration(_Whole + _Part));
         }
+
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
+        static long long _Atomic_load_ll_relaxed(volatile long long* _Mem) {
+            // Copy from _Atomic_storage<_Ty, 8>::load
+#if defined(_M_IX86) || defined(_M_ARM64)
+            return __iso_volatile_load64(_Mem);
+#elif defined(_M_X64)
+            return *_Mem;
+#else // _M_ARM
+            return __ldrexd(_Mem);
+#endif // hardware
+        }
+
+        static void _Atomic_store_ll_relaxed(volatile long long* _Mem, long long _Value, long long _Assumed_mem) {
+            (void) _Assumed_mem; // maybe unused. Useful for x86 to avoid loop
+            // Copy from _Atomic_storage<_Ty, 8>::store
+#if defined(_M_IX86)
+            _InterlockedCompareExchange64(_Mem, _Value, _Assumed_mem);
+#elif defined(_M_X64)
+            *_Mem = _Value;
+#else // defined(_M_ARM) || defined(_M_ARM64)
+            __iso_volatile_store64(_Mem, _Value);
+#endif // hardware
+        }
+#endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
+
     };
 
     using high_resolution_clock = steady_clock;
