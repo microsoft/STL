@@ -610,15 +610,15 @@ namespace chrono {
 
         template <long long _Period_den>
         static long long _Convert_time_point(const long long _Ctr, const long long _Freq) {
-            // Iterative convert by 1000 steps, three steps with nano period
+            // Iterative convert by 50000 steps, two steps with nano period
             // Assumptions are that:
-            //  * _Ctr*1000 does not overflow long long.
-            //  * _Freq*1000 does not overflow long long.
+            //  * _Ctr*50000 does not overflow long long.
+            //  * _Freq*50000 does not overflow long long.
             // If instead of this loop doing just one iteration, assumtion would be that:
             //  * _Freq*period::den does not overflow.
             // Later could be false with nano period and 100 picosecond _Query_perf_frequency precision.
             // (Such precision corresponds to 10 GHz clock).
-            constexpr long long _Period_den_part = 1000;
+            constexpr long long _Period_den_part = 50000;
             if constexpr (_Period_den > _Period_den_part) {
                 static_assert((_Period_den % _Period_den_part) == 0, "Period should factor");
                 constexpr long long _Next_period_den = _Period_den / _Period_den_part;
