@@ -602,7 +602,7 @@ namespace chrono {
     };
 
 #pragma float_control(precise, on, push)
-#pragma float_control(except, off) // assume no overflows posible here
+#pragma float_control(except, off, push) // assume no overflows posible here
     struct steady_clock { // wraps QueryPerformanceCounter
         using rep                       = long long;
         using period                    = nano;
@@ -617,7 +617,8 @@ namespace chrono {
             return time_point(duration(static_cast<const long long>(_Ctr * period::den / (_Freq * period::num))));
         }
     };
-#pragma float_control(pop)
+#pragma float_control(pop) // except, off
+#pragma float_control(pop) // precise, on
 
     using high_resolution_clock = steady_clock;
 } // namespace chrono
