@@ -31,9 +31,8 @@ flavor of the STL (native desktop). We need to extend this to build all of the f
 because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
-* Tests: **In progress.** We rely on three test suites: std, tr1, and [libcxx][]. We've partially ported std and fully
-ported libcxx to run under [lit][] using the various configuration/compilers we test internally. tr1 and portions of
-std are still a work in progress.
+* Tests: **In progress.** We rely on three test suites: std, tr1, and [libcxx][]. We've partially ported std and tr1,
+and fully ported libcxx to run under [lit][] using the various configuration/compilers we test internally.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
 Currently, it builds the STL (native desktop for x86, x64, ARM, and ARM64). Also, it strictly verifies that all of our
@@ -223,13 +222,24 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 # How To Run The Tests From The Developer Command Prompt For VS
 
-Before running the tests you must configure and build the project as described above. You must also have [Python][] 3.8
-or newer, and have LLVM's `bin` directory on the PATH.
+1. Follow steps 1-9 of
+[How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt).
+2. Invoke `git submodule init llvm-project`
+3. Invoke `git submodule update`
+4. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
+-DENABLE_TESTS=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DENABLE_TESTS=TRUE`.
+5. If you have already followed the steps from 
+[How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt), and have not
+changed the value of {wherever you want binaries} in step four, then there is no need to rebuild to run the tests.
+Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
+
+In addition to following the above steps you must also have [Python][] 3.8 or newer, and have LLVM's `bin` directory on
+the PATH.
 
 ## Running All The Tests
 
 After configuring and building the project, running `ctest` from the build output directory will run all the tests.
-CTest will only display the standard error output of tests which failed. In order to get more details from CTest's
+CTest will only display the standard error output of tests that failed. In order to get more details from CTest's
 `lit` invocations, run the tests with `ctest -V`.
 
 ## Running A Subset Of The Tests
@@ -241,19 +251,26 @@ a category in libcxx, or running a single test in `std` and `tr1`.
 ## Examples
 
 ```
-:: These two commands configure and build the stl. They are unecessary if you have already followed the build steps
-:: as described above.
-C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ..
+:: This command configures the project with tests enabled. It assumes you are using the vcpkg submodule and have
+:: already installed boost. It also assumes you have inited and updated the llvm-project submodule.
+C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake -DENABLE_TESTS=TRUE ..
+
+:: As stated above this step is only strictly necessary if you have yet to build the STL or if you have changed the
+:: output directory of the binaries. Any changes or additions in any of the existing testsuites do not require
+:: recompilation or reconfiguration to take effect when running the tests.
 C:\STL\build>ninja
 
 :: This command will run all of the testsuites with verbose output.
 C:\STL\build>ctest -V
 
-:: This command will run all of the std testuite.
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std
+:: This command will run all of the tr1 testuite
+C:\STL\build>ctest -R tr1
 
-:: If you want to run a subset of std you need to point it to the right place in the sources. The following will run
-:: the single test found under VSO_0000000_any_calling_conventions.
+:: This command will also run all of the tr1 testuite.
+C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\tr1
+
+:: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
+:: will run the single test found under VSO_0000000_any_calling_conventions.
 C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
 
 :: You can invoke llvm-lit with any arbitrary subdirectory of a testuite. In libcxx this allows you to have a finer
