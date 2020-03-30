@@ -349,7 +349,8 @@ Our tests use the standard [lit result codes][] and the addition of a non-standa
 one need mostly only concern themselves with the `PASS`, `XFAIL`, `XPASS`, `FAIL`, and `UNSUPPORTED` result codes.
 
 The `PASS` and `FAIL` result codes are self explanatory. We want our tests to `PASS` and not `FAIL`.
-The `XPASS` and `XFAIL` are less obvious. `XFAIL` is actually a successfull result and indicates that we expected the
+The `XPASS` and `XFAIL` are less obvious. `XFAIL` is actually a successful result and indicates that we expected the
+
 test to fail and it did. `XPASS` is a failure result and indicates that we expected a test to fail but it passed.
 Typically this means that the `expected_results.txt` file for the testsuite needs to be modified and a `FAIL` entry
 needs to be removed.
