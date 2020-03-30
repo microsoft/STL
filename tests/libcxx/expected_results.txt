@@ -733,6 +733,7 @@ std/thread/futures/futures.async/async.pass.cpp SKIP
 std/thread/futures/futures.shared_future/get.pass.cpp SKIP
 std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIP
 std/thread/futures/futures.shared_future/wait.pass.cpp SKIP
+std/thread/futures/futures.unique_future/get.pass.cpp SKIP
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIP
 std/thread/futures/futures.unique_future/wait.pass.cpp SKIP
 std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIP
