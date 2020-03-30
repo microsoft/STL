@@ -1315,10 +1315,10 @@ private:
 
 #if _HAS_CXX17
 template <class _Ty>
-shared_ptr(weak_ptr<_Ty>)->shared_ptr<_Ty>;
+shared_ptr(weak_ptr<_Ty>) -> shared_ptr<_Ty>;
 
 template <class _Ty, class _Dx>
-shared_ptr(unique_ptr<_Ty, _Dx>)->shared_ptr<_Ty>;
+shared_ptr(unique_ptr<_Ty, _Dx>) -> shared_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty1, class _Ty2>
@@ -1720,7 +1720,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Ty>
-weak_ptr(shared_ptr<_Ty>)->weak_ptr<_Ty>;
+weak_ptr(shared_ptr<_Ty>) -> weak_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
@@ -1854,12 +1854,9 @@ public:
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(pointer, remove_reference_t<_Dx>&&) = delete;
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Ty2, class _Dx2,
         enable_if_t<
@@ -1885,9 +1882,7 @@ public:
         return *this;
     }
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
@@ -1987,16 +1982,11 @@ public:
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(_Uty, remove_reference_t<_Dx>&&) = delete;
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());

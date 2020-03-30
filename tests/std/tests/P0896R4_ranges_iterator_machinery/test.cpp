@@ -5,8 +5,10 @@
 #include <compare>
 #include <concepts>
 #include <iterator>
+#include <list>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -158,18 +160,15 @@ struct weakly_incrementable_archetype : destructible_archetype<I>,
 
 inline constexpr std::size_t weakly_incrementable_archetype_max = 12;
 
-template <std::size_t I, class Derived, std::size_t N>
-struct equality_ops {
-    bool operator==(Derived const&) const requires(I != N);
-    bool operator!=(Derived const&) const requires(I == N + 1) = delete;
-};
-
 template <std::size_t I>
 struct incrementable_archetype : weakly_incrementable_archetype<I>,
-                                 increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>>,
-                                 equality_ops<I, incrementable_archetype<I>, weakly_incrementable_archetype_max> {
+                                 increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>> {
     SEMIREGULAR_OPS(incrementable);
     using increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>>::operator++;
+
+    bool operator==(incrementable_archetype const&) const requires(I != weakly_incrementable_archetype_max);
+    bool operator!=(incrementable_archetype const&) const
+        requires(I == weakly_incrementable_archetype_max + 1) = delete;
 };
 
 inline constexpr std::size_t incrementable_archetype_max = 14;
@@ -226,7 +225,7 @@ std::iter_difference_t<iterator_archetype<J>> operator-(
 // clang-format on
 
 template <class I>
-inline constexpr bool std::disable_sized_sentinel<sized_sentinel_archetype<11>, I> = true;
+inline constexpr bool std::disable_sized_sentinel_for<sized_sentinel_archetype<11>, I> = true;
 
 inline constexpr std::size_t sized_sentinel_archetype_max = 12;
 
@@ -283,10 +282,12 @@ inline constexpr std::size_t input_iterator_archetype_max = 17;
 
 template <std::size_t I>
 struct forward_iterator_archetype : input_iterator_archetype<I>,
-                                    increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>>,
-                                    equality_ops<I, forward_iterator_archetype<I>, input_iterator_archetype_max> {
+                                    increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>> {
     SEMIREGULAR_OPS(forward_iterator);
     using increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>>::operator++;
+
+    bool operator==(forward_iterator_archetype const&) const requires(I != input_iterator_archetype_max);
+    bool operator!=(forward_iterator_archetype const&) const requires(I == input_iterator_archetype_max + 1) = delete;
 };
 
 inline constexpr std::size_t forward_iterator_archetype_max = 19;
@@ -928,8 +929,10 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(noexcept(ranges::iter_move(static_cast<int const*>(&some_ints[2]))));
 
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int[]>, int&&>);
-#ifdef __clang__ // TRANSITION, VSO-1008447
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int(int)>, int (&)(int)>);
+#else // ^^^ no workaround / workaround vvv
+    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int(int)>, int (*)(int)>);
 #endif // TRANSITION, VSO-1008447
 
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int[4]>, int&&>);
@@ -939,8 +942,12 @@ namespace iterator_cust_move_test {
     constexpr int f(int i) noexcept {
         return i + 1;
     }
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
+    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
+#else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int(&&)(int)>);
-    STATIC_ASSERT((ranges::iter_move(&f))(42) == 43);
+#endif // TRANSITION, VSO-1008447
+    STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));
 
     struct ref_is_lvalue {
@@ -1522,7 +1529,7 @@ namespace std_iterator_tags_test {
 
         STATIC_ASSERT(std::is_empty_v<T>);
         STATIC_ASSERT(std::semiregular<T>);
-        T{};
+        (void) T{};
 
         STATIC_ASSERT(derived_from<T, output_iterator_tag> == derives_from_output);
         STATIC_ASSERT(derived_from<T, input_iterator_tag> == derives_from_input);
@@ -1550,10 +1557,9 @@ namespace incomplete_test {
     using E = do_not_instantiate<void>;
 
     // Verify that the iterator trait aliases do not cause instantiation of pointee types
-    using V  = std::iter_value_t<E*>;
-    using D  = std::iter_difference_t<E*>;
-    using R  = std::iter_reference_t<E*>;
-    using RR = std::iter_rvalue_reference_t<E*>;
+    using V = std::iter_value_t<E*>;
+    using D = std::iter_difference_t<E*>;
+    using R = std::iter_reference_t<E*>;
 } // namespace incomplete_test
 
 namespace default_sentinel_test {
@@ -1574,7 +1580,7 @@ namespace default_sentinel_test {
         // Validate that default_sentinel_t's special member functions are all constexpr
         default_sentinel_t ds0{}; // default constructor
         default_sentinel_t ds1{default_sentinel}; // copy constructor
-        default_sentinel_t ds2{std::move(ds0)}; // move constructor
+        [[maybe_unused]] default_sentinel_t ds2{std::move(ds0)}; // move constructor
         ds0 = default_sentinel; // copy assignment
         ds1 = std::move(ds0); // move assignment
         return true;
@@ -1612,7 +1618,7 @@ namespace unreachable_sentinel_test {
     constexpr bool test(std::integer_sequence<int, Is...>) {
         unreachable_sentinel_t us0{}; // default constructor is (implicitly) constexpr
         unreachable_sentinel_t us1{unreachable_sentinel}; // ditto copy constructor
-        unreachable_sentinel_t us2{std::move(us0)}; // ditto move constructor
+        [[maybe_unused]] unreachable_sentinel_t us2{std::move(us0)}; // ditto move constructor
         us0 = unreachable_sentinel; // ditto copy assignment
         us1 = std::move(us0); // ditto move assignment
 
@@ -2769,6 +2775,29 @@ namespace iter_ops {
         test_distance();
     }
 } // namespace iter_ops
+
+namespace insert_iterators {
+    template <class Container>
+    constexpr bool test() {
+        using std::back_insert_iterator, std::front_insert_iterator, std::insert_iterator;
+        using std::default_initializable, std::is_nothrow_default_constructible_v, std::iter_difference_t,
+            std::ptrdiff_t, std::same_as;
+
+        STATIC_ASSERT(default_initializable<back_insert_iterator<Container>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<back_insert_iterator<Container>>);
+        STATIC_ASSERT(default_initializable<front_insert_iterator<Container>>);
+        STATIC_ASSERT(is_nothrow_default_constructible_v<front_insert_iterator<Container>>);
+        STATIC_ASSERT(default_initializable<insert_iterator<Container>>);
+        STATIC_ASSERT(same_as<iter_difference_t<back_insert_iterator<Container>>, ptrdiff_t>);
+        STATIC_ASSERT(same_as<iter_difference_t<front_insert_iterator<Container>>, ptrdiff_t>);
+        STATIC_ASSERT(same_as<iter_difference_t<insert_iterator<Container>>, ptrdiff_t>);
+
+        return true;
+    }
+
+    STATIC_ASSERT(test<std::list<double>>());
+    STATIC_ASSERT(test<std::vector<int>>());
+} // namespace insert_iterators
 
 int main() {
     iterator_cust_swap_test::test();

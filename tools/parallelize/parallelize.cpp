@@ -80,8 +80,8 @@ public:
         cv.wait(lck, [this] { return runningConcurrency.load(std::memory_order_relaxed) == 0; });
     }
 
-    [[nodiscard]] const std::vector<std::pair<std::wstring, std::optional<execution_result>>>& results() const
-        noexcept {
+    [[nodiscard]] const std::vector<std::pair<std::wstring, std::optional<execution_result>>>&
+        results() const noexcept {
         assert(runningConcurrency.load(std::memory_order_relaxed) == 0);
         return commands;
     }

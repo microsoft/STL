@@ -19,8 +19,6 @@ struct is_bool_wrapper<STD true_type> { // true_type is a boolean wrapper
     static const bool value = true;
 };
 
-#define CHECK_TYPEX(t1, t2) CHECK_TYPE(void(t1), void(t2))
-
 #define T_INTEGRAL_CONSTANT(Ty, NTy, val) \
     CHECK_TYPE(Ty::type, Ty);             \
     CHECK_TYPE(Ty::value_type, NTy);      \

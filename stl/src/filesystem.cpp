@@ -224,13 +224,11 @@ namespace {
     }
 
     [[nodiscard]] __std_win_error __stdcall _Translate_not_found_to_success(const __std_win_error _Err) noexcept {
-        switch (_Err) {
-        case __std_win_error::_File_not_found:
-        case __std_win_error::_Path_not_found:
+        if (__std_is_file_not_found(_Err)) {
             return __std_win_error::_Success;
-        default:
-            return _Err;
         }
+
+        return _Err;
     }
 
     [[nodiscard]] __std_win_error __stdcall _Get_last_write_time_by_handle(

@@ -2043,7 +2043,7 @@ private:
 #if _HAS_CXX17
 template <class _FwdIt>
 basic_regex(_FwdIt, _FwdIt, regex_constants::syntax_option_type = regex_constants::ECMAScript)
-    ->basic_regex<typename iterator_traits<_FwdIt>::value_type>;
+    -> basic_regex<typename iterator_traits<_FwdIt>::value_type>;
 #endif // _HAS_CXX17
 
 template <class _Elem, class _RxTraits>

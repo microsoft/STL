@@ -101,7 +101,7 @@ constexpr bool test_cpo(T const& obj) {
     STATIC_ASSERT(std::is_trivially_move_assignable_v<T>);
 
     // Not required to be constant expressions, but likely portable nonetheless:
-    T value_initialized{};
+    [[maybe_unused]] T value_initialized{};
     T copy_constructed = obj;
     T move_constructed = std::move(copy_constructed);
     copy_constructed   = std::move(move_constructed);

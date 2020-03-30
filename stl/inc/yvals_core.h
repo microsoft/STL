@@ -192,6 +192,7 @@
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
+// P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
 // P1878R1 Constraining Readable Types
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
@@ -469,7 +470,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202002L
+#define _MSVC_STL_UPDATE  202003L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__

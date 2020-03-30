@@ -145,8 +145,8 @@ _NODISCARD to_chars_result _Integer_to_chars(
     return {_First + _Digits_written, errc{}};
 }
 
-inline to_chars_result to_chars(
-    char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept /* strengthened */ {
+inline to_chars_result to_chars(char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept
+/* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 inline to_chars_result to_chars(
@@ -165,16 +165,16 @@ inline to_chars_result to_chars(char* const _First, char* const _Last, const uns
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(
-    char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept /* strengthened */ {
+inline to_chars_result to_chars(char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept
+/* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned int _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(
-    char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept /* strengthened */ {
+inline to_chars_result to_chars(char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept
+/* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long _Value,
@@ -3059,12 +3059,12 @@ _NODISCARD to_chars_result _Floating_to_chars(
 inline to_chars_result to_chars(char* const _First, char* const _Last, const float _Value) noexcept /* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(_First, _Last, _Value, chars_format{}, 0);
 }
-inline to_chars_result to_chars(
-    char* const _First, char* const _Last, const double _Value) noexcept /* strengthened */ {
+inline to_chars_result to_chars(char* const _First, char* const _Last, const double _Value) noexcept
+/* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(_First, _Last, _Value, chars_format{}, 0);
 }
-inline to_chars_result to_chars(
-    char* const _First, char* const _Last, const long double _Value) noexcept /* strengthened */ {
+inline to_chars_result to_chars(char* const _First, char* const _Last, const long double _Value) noexcept
+/* strengthened */ {
     return _Floating_to_chars<_Floating_to_chars_overload::_Plain>(
         _First, _Last, static_cast<double>(_Value), chars_format{}, 0);
 }
