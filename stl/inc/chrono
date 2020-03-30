@@ -602,7 +602,7 @@ namespace chrono {
     };
 
 #pragma float_control(precise, on, push)
-#pragma float_control(except, off) // assume noi overflows posible here
+#pragma float_control(except, off) // assume no overflows posible here
     struct steady_clock { // wraps QueryPerformanceCounter
         using rep                       = long long;
         using period                    = nano;
@@ -613,8 +613,8 @@ namespace chrono {
         _NODISCARD static time_point now() noexcept { // get current time
             // Though double has 53 significant bits, that is enough for QPF
             const double _Freq = static_cast<double>(_Query_perf_frequency()); // doesn't change after system boot
-            const double _Ctr = static_cast<double>(_Query_perf_counter());
-            return time_point(duration(static_cast<long long>(_Ctr * period::den / (_Freq * period::num))));
+            const double _Ctr  = static_cast<double>(_Query_perf_counter());
+            return time_point(duration(static_cast<const long long>(_Ctr * period::den / (_Freq * period::num))));
         }
     };
 #pragma float_control(pop)
