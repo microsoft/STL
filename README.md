@@ -228,7 +228,7 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 3. Invoke `git submodule update`
 4. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -DENABLE_TESTS=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DENABLE_TESTS=TRUE`.
-5. If you have already followed the steps from 
+5. If you have already followed the steps from
 [How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt), and have not
 changed the value of {wherever you want binaries} in step four, then there is no need to rebuild to run the tests.
 Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
