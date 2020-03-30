@@ -252,7 +252,8 @@ a category in libcxx, or running a single test in `std` and `tr1`.
 ```
 :: This command configures the project with tests enabled. It assumes you are using the vcpkg submodule and have
 :: already installed boost. It also assumes you have inited and updated the llvm-project submodule.
-C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake -DENABLE_TESTS=TRUE ..
+C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake^
+ -DENABLE_TESTS=TRUE ..
 
 :: As stated above this step is only strictly necessary if you have yet to build the STL or if you have changed the
 :: output directory of the binaries. Any changes or additions in any of the existing testsuites do not require
@@ -301,7 +302,7 @@ order to see the stdout of the tests.
 ## llvm-lit
 
 When running the tests directly via the generated `llvm-lit.py` script the result of each test will be printed. The
-format of each result is <[Result Code](#result-code-values)>: <Testsuite Name> :: <Test Name>:<Configuration Number>.
+format of each result is {[Result Code](#result-code-values)}: {Testsuite Name} :: {Test Name}:{Configuration Number}.
 
 Example:
 ```
