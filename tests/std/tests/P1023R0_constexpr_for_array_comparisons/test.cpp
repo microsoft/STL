@@ -11,72 +11,58 @@ constexpr array<int, 3> a1{{2, 8, 9}};
 constexpr array<int, 5> a2{{2, 8, 9, 1, 8}};
 constexpr array<int, 0> a3{};
 
-constexpr bool test_operator_eq() {
+constexpr void test_operator_eq() {
     assert(a0 == a0);
     assert(a1 == a1);
     assert(!(a0 == a2));
     assert(a3 == a3);
-
-    return true;
 }
 
-constexpr bool test_operator_neq() {
+constexpr void test_operator_neq() {
     assert(!(a0 != a0));
     assert(!(a1 != a1));
     assert(a0 != a2);
     assert(!(a3 != a3));
-
-    return true;
 }
 
-constexpr bool test_operator_lt() {
+constexpr void test_operator_lt() {
     assert(!(a0 < a0));
     assert(!(a1 < a1));
     assert(a2 < a0);
     assert(!(a3 < a3));
-
-    return true;
 }
 
-constexpr bool test_operator_gt() {
+constexpr void test_operator_gt() {
     assert(!(a0 > a0));
     assert(!(a1 > a1));
     assert(a0 > a2);
     assert(!(a3 > a3));
-
-    return true;
 }
 
 
-constexpr bool test_operator_leq() {
+constexpr void test_operator_leq() {
     assert(a0 <= a0);
     assert(a1 <= a1);
     assert(a2 <= a0);
     assert(a3 <= a3);
-
-    return true;
 }
 
 
-constexpr bool test_operator_geq() {
+constexpr void test_operator_geq() {
     assert(a0 >= a0);
     assert(a1 >= a1);
     assert(a0 >= a2);
     assert(a3 >= a3);
-
-    return true;
 }
 
 constexpr bool test() {
-    // clang-format off
-    return test_operator_eq()
-        && test_operator_neq()
-        && test_operator_lt()
-        && test_operator_gt()
-        && test_operator_leq()
-        && test_operator_geq()
-        ;
-    // clang-format on
+    test_operator_eq();
+    test_operator_neq();
+    test_operator_lt();
+    test_operator_gt();
+    test_operator_leq();
+    test_operator_geq();
+    return true;
 }
 
 int main() {
