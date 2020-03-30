@@ -224,11 +224,10 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 1. Follow steps 1-9 of
 [How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt).
-2. Invoke `git submodule init llvm-project`
-3. Invoke `git submodule update`
-4. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
+2. Invoke `git submodule update --init llvm-project`
+3. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -DENABLE_TESTS=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DENABLE_TESTS=TRUE`.
-5. If you have already followed the steps from
+4. If you have already followed the steps from
 [How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt), and have not
 changed the value of {wherever you want binaries} in step four, then there is no need to rebuild to run the tests.
 Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
@@ -277,6 +276,86 @@ C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_an
 :: control over what category of tests you would like to run. The following will run all the libcxx map tests.
 C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
 ```
+
+## Interpreting The Results Of Tests
+
+## CTest
+
+When running the tests via CTest each of the testsuites is considered to be a single test. If any single test in a
+testsuite fails, CTest will report the test which represents that testsuite as failed.
+
+Example:
+```
+67% tests passed, 1 tests failed out of 3
+
+Total Test time (real) = 2441.55 sec
+
+The following tests FAILED:
+      1 - libcxx (Failed)
+```
+
+CTest will output everything that was sent to stderr for each of the failed testsuites, which can be used to identify
+which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
+order to see the stdout of the tests.
+
+## llvm-lit
+
+When running the tests directly via the generated `llvm-lit.py` script the result of each test will be printed. The
+format of each result is
+`<[Result Code](#result-code-values)>: <Testsuite Name> :: <Test Name>:<Configuration Number>`.
+
+Example:
+```
+-- Testing: 28 tests, 12 workers --
+PASS: tr1 :: tests/cwchar1:01 (1 of 28)
+PASS: tr1 :: tests/cwchar1:11 (2 of 28)
+PASS: tr1 :: tests/cwchar1:02 (3 of 28)
+PASS: tr1 :: tests/cwchar1:03 (4 of 28)
+PASS: tr1 :: tests/cwchar1:00 (5 of 28)
+PASS: tr1 :: tests/cwchar1:04 (6 of 28)
+PASS: tr1 :: tests/cwchar1:05 (7 of 28)
+PASS: tr1 :: tests/cwchar1:09 (8 of 28)
+PASS: tr1 :: tests/cwchar1:06 (9 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:20 (10 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:21 (11 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:22 (12 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:23 (13 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:24 (14 of 28)
+PASS: tr1 :: tests/cwchar1:07 (15 of 28)
+PASS: tr1 :: tests/cwchar1:08 (16 of 28)
+PASS: tr1 :: tests/cwchar1:10 (17 of 28)
+PASS: tr1 :: tests/cwchar1:16 (18 of 28)
+PASS: tr1 :: tests/cwchar1:17 (19 of 28)
+PASS: tr1 :: tests/cwchar1:14 (20 of 28)
+PASS: tr1 :: tests/cwchar1:12 (21 of 28)
+PASS: tr1 :: tests/cwchar1:13 (22 of 28)
+PASS: tr1 :: tests/cwchar1:19 (23 of 28)
+PASS: tr1 :: tests/cwchar1:18 (24 of 28)
+PASS: tr1 :: tests/cwchar1:15 (25 of 28)
+PASS: tr1 :: tests/cwchar1:25 (26 of 28)
+PASS: tr1 :: tests/cwchar1:26 (27 of 28)
+PASS: tr1 :: tests/cwchar1:27 (28 of 28)
+
+Testing Time: 3.96s
+  Expected Passes    : 23
+  Unsupported Tests  : 5
+```
+
+In the above example we see that twenty-three tests succeeded and five were unsupported. 
+
+### Result Code Values
+
+Our tests use the standard [lit result codes][] and the addition of a non-standard result code `SKIP`. For our tests
+one need mostly only concern themselves with the `PASS`, `XFAIL`, `XPASS`, `FAIL`, and `UNSUPPORTED` result codes.
+
+The `PASS` and `FAIL` result codes are self explanatory. We want our tests to `PASS` and not `FAIL`.
+The `XPASS` and `XFAIL` are less obvious. `XFAIL` is actually a successfull result and indicates that we expected the
+test to fail and it did. `XPASS` is a failure result and indicates that we expected a test to fail but it passed.
+Typically this means that the `expected_results.txt` file for the testsuite needs to be modified and a `FAIL` entry
+needs to be removed.
+
+The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
+all tests which use the `/BE` or `clr:pure` flags are unsupported.
 
 # Block Diagram
 
@@ -330,6 +409,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
+[lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
