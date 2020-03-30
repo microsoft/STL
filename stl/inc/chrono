@@ -601,6 +601,8 @@ namespace chrono {
         }
     };
 
+#pragma float_control(precise, on, push)
+#pragma float_control(except, off) // assume noi overflows posible here
     struct steady_clock { // wraps QueryPerformanceCounter
         using rep                       = long long;
         using period                    = nano;
@@ -608,37 +610,14 @@ namespace chrono {
         using time_point                = chrono::time_point<steady_clock>;
         static constexpr bool is_steady = true;
 
-        template <long long _Period_den>
-        static long long _Convert_time_point(const long long _Ctr, const long long _Freq) {
-            // Iterative convert by 50000 steps, two steps with nano period
-            // Assumptions are that:
-            //  * _Ctr*50000 does not overflow long long.
-            //  * _Freq*50000 does not overflow long long.
-            // If instead of this loop doing just one iteration, assumtion would be that:
-            //  * _Freq*period::den does not overflow.
-            // Later could be false with nano period and 100 picosecond _Query_perf_frequency precision.
-            // (Such precision corresponds to 10 GHz clock).
-            constexpr long long _Period_den_part = 50000;
-            if constexpr (_Period_den > _Period_den_part) {
-                static_assert((_Period_den % _Period_den_part) == 0, "Period should factor");
-                constexpr long long _Next_period_den = _Period_den / _Period_den_part;
-                const long long _Ctr_mul             = _Ctr * _Period_den_part;
-                const long long _Whole               = (_Ctr_mul / _Freq) * _Next_period_den;
-                return _Whole + _Convert_time_point<_Next_period_den>(_Ctr_mul % _Freq, _Freq);
-            } else {
-                const long long _Whole = (_Ctr / _Freq) * _Period_den;
-                const long long _Part  = (_Ctr % _Freq) * _Period_den / _Freq;
-                return _Whole + _Part;
-            }
-        }
-
         _NODISCARD static time_point now() noexcept { // get current time
-            const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
-            const long long _Ctr  = _Query_perf_counter();
-            static_assert(period::num == 1, "This assumes period::num == 1.");
-            return time_point(duration(_Convert_time_point<period::den>(_Ctr, _Freq)));
+            // Though double has 53 significant bits, that is enough for QPF
+            const double _Freq = static_cast<double>(_Query_perf_frequency()); // doesn't change after system boot
+            const double _Ctr = static_cast<double>(_Query_perf_counter());
+            return time_point(duration(static_cast<long long>(_Ctr * period::den / (_Freq * period::num))));
         }
     };
+#pragma float_control(pop)
 
     using high_resolution_clock = steady_clock;
 } // namespace chrono
