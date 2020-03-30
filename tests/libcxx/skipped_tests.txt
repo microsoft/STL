@@ -732,6 +732,7 @@ utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\get.pass.cpp
 thread\futures\futures.shared_future\wait_for.pass.cpp
+thread\futures\futures.shared_future\wait.pass.cpp
 thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\futures\futures.unique_future\wait.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_all.pass.cpp
