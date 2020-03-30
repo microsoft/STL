@@ -341,7 +341,7 @@ Testing Time: 3.96s
   Unsupported Tests  : 5
 ```
 
-In the above example we see that twenty-three tests succeeded and five were unsupported. 
+In the above example we see that twenty-three tests succeeded and five were unsupported.
 
 ### Result Code Values
 
