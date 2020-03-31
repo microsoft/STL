@@ -2452,27 +2452,29 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_stro
 #if _HAS_CXX20
 template <class _Ty>
 struct alignas(2 * sizeof(void*)) _Atomic_ptr_base {
+    // overalignment is to allow potential future use of cmpxchg16b
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
     _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept
-        : _Ptr(_Px), _Refptr(reinterpret_cast<const uintptr_t>(_Ref)) {}
+        : _Ptr(_Px), _Repptr(reinterpret_cast<const uintptr_t>(_Ref)) {}
 
     _Ref_count_base* _Lock_and_load() const noexcept {
-        uintptr_t _Ref = _Refptr & ~1;
-        while (!_Refptr.compare_exchange_strong(_Ref, _Ref | 1)) {
-            _Ref &= ~1;
+        static constexpr uintptr_t _Low_bit = static_cast<uintptr_t>(1u);
+        uintptr_t _Rep                      = _Repptr & ~_Low_bit;
+        while (!_Repptr.compare_exchange_strong(_Rep, _Rep | _Low_bit)) {
+            _Rep &= ~_Low_bit;
             _YIELD_PROCESSOR();
         }
-        return reinterpret_cast<_Ref_count_base*>(_Ref);
+        return reinterpret_cast<_Ref_count_base*>(_Rep);
     }
 
     void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
-        _Refptr = reinterpret_cast<uintptr_t>(_Value);
+        _Repptr = reinterpret_cast<uintptr_t>(_Value);
     }
 
     _Ty* _Ptr                         = nullptr;
-    mutable atomic<uintptr_t> _Refptr = 0;
+    mutable atomic<uintptr_t> _Repptr = 0;
 };
 
 template <class _Ty>
@@ -2491,20 +2493,20 @@ public:
 
     void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Old_ref = this->_Lock_and_load();
+        const auto _Rep = this->_Lock_and_load();
         _STD swap(this->_Ptr, _Value._Ptr);
         this->_Store_and_unlock(_Value._Rep);
-        _Value._Rep = _Old_ref;
+        _Value._Rep = _Rep;
     }
 
     _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         shared_ptr<_Ty> _Result;
-        _Ref_count_base* _Ref = this->_Lock_and_load();
-        _Result._Ptr          = this->_Ptr;
-        _Result._Rep          = _Ref;
+        const auto _Rep = this->_Lock_and_load();
+        _Result._Ptr    = this->_Ptr;
+        _Result._Rep    = _Rep;
         _Result._Incref();
-        this->_Store_and_unlock(_Ref);
+        this->_Store_and_unlock(_Rep);
         return _Result;
     }
 
@@ -2543,18 +2545,18 @@ public:
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
         const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
-        _Ref_count_base* _Ref = this->_Lock_and_load();
-        if (this->_Ptr == _Expected._Ptr && _Ref == _Expected._Rep) {
+        const auto _Rep = this->_Lock_and_load();
+        if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
             _STD swap(this->_Ptr, _Desired._Ptr);
-            _STD swap(_Ref, _Desired._Rep);
-            this->_Store_and_unlock(_Ref);
+            _STD swap(_Rep, _Desired._Rep);
+            this->_Store_and_unlock(_Rep);
             return true;
         } else {
             _Ref_count_base* _ExpectedRep = _Expected._Rep;
             _Expected._Ptr                = this->_Ptr;
-            _Expected._Rep                = _Ref;
+            _Expected._Rep                = _Rep;
             _Expected._Incref();
-            this->_Store_and_unlock(_Ref);
+            this->_Store_and_unlock(_Rep);
             if (_ExpectedRep) {
                 _ExpectedRep->_Decref();
             }
@@ -2576,9 +2578,9 @@ public:
     }
 
     ~atomic() {
-        _Ref_count_base* _Ref = reinterpret_cast<_Ref_count_base*>(this->_Refptr.load(memory_order::relaxed));
-        if (_Ref) {
-            _Ref->_Decref();
+        _Ref_count_base* _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        if (_Rep) {
+            _Rep->_Decref();
         }
     }
 };
@@ -2599,20 +2601,20 @@ public:
 
     void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Old_ref = this->_Lock_and_load();
+        const auto _Rep = this->_Lock_and_load();
         _STD swap(this->_Ptr, _Value._Ptr);
         this->_Store_and_unlock(_Value._Rep);
-        _Value._Rep = _Old_ref;
+        _Value._Rep = _Rep;
     }
 
     _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         weak_ptr<_Ty> _Result;
-        _Ref_count_base* _Ref = this->_Lock_and_load();
-        _Result._Ptr          = this->_Ptr;
-        _Result._Rep          = _Ref;
+        const auto _Rep = this->_Lock_and_load();
+        _Result._Ptr    = this->_Ptr;
+        _Result._Rep    = _Rep;
         _Result._Incwref();
-        this->_Store_and_unlock(_Ref);
+        this->_Store_and_unlock(_Rep);
         return _Result;
     }
 
@@ -2651,18 +2653,18 @@ public:
     bool compare_exchange_strong(
         weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
-        _Ref_count_base* _Ref = this->_Lock_and_load();
-        if (this->_Ptr == _Expected._Ptr && _Ref == _Expected._Rep) {
+        const auto _Rep = this->_Lock_and_load();
+        if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
             _STD swap(this->_Ptr, _Desired._Ptr);
-            _STD swap(_Ref, _Desired._Rep);
-            this->_Store_and_unlock(_Ref);
+            _STD swap(_Rep, _Desired._Rep);
+            this->_Store_and_unlock(_Rep);
             return true;
         } else {
-            _Ref_count_base* _ExpectedRep = _Expected._Rep;
-            _Expected._Ptr                = this->_Ptr;
-            _Expected._Rep                = _Ref;
+            const auto _ExpectedRep = _Expected._Rep;
+            _Expected._Ptr          = this->_Ptr;
+            _Expected._Rep          = _Rep;
             _Expected._Incwref();
-            this->_Store_and_unlock(_Ref);
+            this->_Store_and_unlock(_Rep);
             if (_ExpectedRep) {
                 _ExpectedRep->_Decwref();
             }
@@ -2684,9 +2686,9 @@ public:
     }
 
     ~atomic() {
-        _Ref_count_base* _Ref = reinterpret_cast<_Ref_count_base*>(this->_Refptr.load(memory_order::relaxed));
-        if (_Ref) {
-            _Ref->_Decwref();
+        _Ref_count_base* _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        if (_Rep) {
+            _Rep->_Decwref();
         }
     }
 };
