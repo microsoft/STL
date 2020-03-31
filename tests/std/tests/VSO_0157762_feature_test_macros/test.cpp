@@ -741,6 +741,20 @@ STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_shared_ptr
+#error __cpp_lib_shared_ptr is not defined
+#elif __cpp_lib_atomic_float != 201711L
+#error __cpp_lib_shared_ptr is not 201711L
+#else
+STATIC_ASSERT(__cpp_lib_shared_ptr == 201711L);
+#endif
+#else
+#ifdef __cpp_lib_shared_ptr
+#error __cpp_lib_shared_ptr is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_float
 #error __cpp_lib_atomic_float is not defined
 #elif __cpp_lib_atomic_float != 201711L
