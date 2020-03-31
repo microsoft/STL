@@ -32,11 +32,13 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
   exit $?
 }
 
-$WorkLoads = '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
-  '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + `
-  '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 ' + `
-  '--add Microsoft.VisualStudio.Component.VC.Tools.ARM ' + `
-  '--add Microsoft.VisualStudio.Component.Windows10SDK.18362 '
+$Workloads = @(
+  'Microsoft.VisualStudio.Component.VC.CLI.Support',
+  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64 ',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM ',
+  'Microsoft.VisualStudio.Component.Windows10SDK.18362 '
+)
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
@@ -67,6 +69,7 @@ Function Get-TempFilePath {
   Param(
     [String]$Extension
   )
+
   if ([String]::IsNullOrWhiteSpace($Extension)) {
     throw 'Missing Extension'
   }
@@ -76,17 +79,33 @@ Function Get-TempFilePath {
 
 Function InstallVisualStudio {
   Param(
-    [String]$WorkLoads,
-    [String]$Sku,
-    [String]$BootstrapperUrl
+    [String[]]$Workloads,
+    [String]$BootstrapperUrl,
+    [String]$InstallPath = $null,
+    [String]$Nickname = $null
   )
 
   try {
     Write-Output 'Downloading Visual Studio...'
-    [string]$bootstrapperExe = Get-TempFileName -Extension 'exe'
+    [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $bootstrapperExe $BootstrapperUrl
     Write-Output "Installing Visual Studio..."
-    $args = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache')
+    $args = @('/c', $bootstrapperExe, '--quiet', '--norestart', '--wait', '--nocache')
+    foreach ($workload in $Workloads) {
+      $args += '--add'
+      $args += $workload
+    }
+
+    if (-not ([String]::IsNullOrWhiteSpace($InstallPath))) {
+      $args += '--installpath'
+      $args += $InstallPath
+    }
+
+    if (-not ([String]::IsNullOrWhiteSpace($Nickname))) {
+      $args += '--nickname'
+      $args += $Nickname
+    }
+
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
   }
@@ -105,7 +124,7 @@ Function InstallMSI {
 
   try {
     Write-Output "Downloading $Name..."
-    [string]$msiPath = Get-TempFileName -Extension 'msi'
+    [string]$msiPath = Get-TempFilePath -Extension 'msi'
     curl.exe -L -o $msiPath $Url
     Write-Output "Installing $Name..."
     $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
@@ -128,7 +147,7 @@ Function InstallZip {
 
   try {
     Write-Output "Downloading $Name..."
-    [string]$zipPath = Get-TempFileName -Extension 'zip'
+    [string]$zipPath = Get-TempFilePath -Extension 'zip'
     curl.exe -L -o $zipPath $Url
     Write-Output "Installing $Name..."
     Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
@@ -147,7 +166,7 @@ Function InstallLLVM {
 
   try {
     Write-Output 'Downloading LLVM...'
-    [string]$installerPath = Get-TempFileName -Extension 'exe'
+    [string]$installerPath = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $installerPath $Url
     Write-Output 'Installing LLVM...'
     $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
@@ -166,7 +185,7 @@ Function InstallPython {
   )
 
   Write-Output 'Downloading Python...'
-  [string]$installerPath = Get-TempFileName -Extension 'exe'
+  [string]$installerPath = Get-TempFilePath -Extension 'exe'
   curl.exe -L -o $installerPath $Url
   Write-Output 'Installing Python...'
   $proc = Start-Process -FilePath $installerPath -ArgumentList `
@@ -187,7 +206,7 @@ InstallMSI 'CMake' $CMakeUrl
 InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
 InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
-InstallVisualStudio -WorkLoads $WorkLoads -Sku $Sku -BootstrapperUrl $VisualStudioBootstrapperUrl
+InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 Write-Output 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
