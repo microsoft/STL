@@ -47,23 +47,16 @@ constexpr void global_test() {
     assert(string_view{g.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
 
-constexpr void calling_test(source_location x = source_location::current()) {
-    assert(x.line() == 121);
-    assert(x.column() == 5);
-    assert(x.function_name() == "test"sv);
-    assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
-}
-
-constexpr void argument_test(source_location x = source_location::current()) {
-    assert(x.line() == 122);
-    assert(x.column() == 38);
+constexpr void argument_test(unsigned line, unsigned column, source_location x = source_location::current()) {
+    assert(x.line() == line);
+    assert(x.column() == column);
     assert(x.function_name() == "test"sv);
     assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
 
 constexpr void sloc_constructor_test() {
     s x;
-    assert(x.loc.line() == 65);
+    assert(x.loc.line() == 58);
     assert(x.loc.column() == 7);
     assert(x.loc.function_name() == "sloc_constructor_test"sv);
     assert(string_view{x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -88,7 +81,7 @@ constexpr void sub_member_test() {
 constexpr void lambda_test() {
     auto l = [loc = source_location::current()]() { return loc; };
     auto x = l();
-    assert(x.line() == 89);
+    assert(x.line() == 82);
     assert(x.column() == 21);
     assert(x.function_name() == "lambda_test"sv);
     assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -101,7 +94,7 @@ constexpr source_location function_template() {
 
 constexpr void function_template_test() {
     auto x1 = function_template<void>();
-    assert(x1.line() == 99);
+    assert(x1.line() == 92);
     assert(x1.column() == 29);
     assert(x1.function_name() == "function_template"sv);
     assert(string_view{x1.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -118,9 +111,9 @@ constexpr bool test() {
     // tab_test();
     global_test();
     local_test();
-    calling_test();
+    argument_test(114, 5);
     auto loc = std::source_location::current();
-    argument_test(loc);
+    argument_test(115, 38, loc);
     sloc_constructor_test();
     different_constructor_test();
     // sub_member_test();
