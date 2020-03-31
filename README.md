@@ -368,8 +368,10 @@ The `UNSUPPORTED` result code means that the requirements for a test are not met
 all tests which use the `/BE` or `/clr:pure` options are unsupported.
 
 The `SKIP` result code indicates that a given test was explicitly skipped by adding a `SKIP` entry to the
-`expected_results.txt`. A test may be skipped for a number or reasons, which include, but are not limited to: it being
-an incorrect test; it taking a very long time to run; it failing or passing for the incorrect reason.
+`expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
+* being an incorrect test
+* taking a very long time to run
+* failing or passing for the incorrect reason
 
 # Block Diagram
 
