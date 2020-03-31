@@ -81,6 +81,7 @@
 #include <regex>
 #include <scoped_allocator>
 #include <set>
+#include <source_location>
 #include <span>
 #include <sstream>
 #include <stack>

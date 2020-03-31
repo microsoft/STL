@@ -174,6 +174,7 @@
 // P1115R3 erase()/erase_if() Return size_type
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
+// P1208R6 <source_location>
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1243R4 Rangify New Algorithms
@@ -1121,6 +1122,7 @@
 #define __cpp_lib_span                     202002L
 #define __cpp_lib_ssize                    201902L
 #define __cpp_lib_starts_ends_with         201711L
+#define __cpp_lib_source_location          201907L
 #define __cpp_lib_to_address               201711L
 #define __cpp_lib_to_array                 201907L
 #define __cpp_lib_type_identity            201806L
