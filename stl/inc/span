@@ -575,8 +575,8 @@ public:
         return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
     }
 
-    _NODISCARD constexpr auto subspan(const size_type _Offset, const size_type _Count = dynamic_extent) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr auto subspan(const size_type _Offset, const size_type _Count = dynamic_extent) const noexcept
+    /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Offset <= this->size(), "Offset out of range in span::subspan(offset, count)");
         _STL_VERIFY(_Count == dynamic_extent || _Count <= this->size() - _Offset,
@@ -667,29 +667,29 @@ private:
 
 // DEDUCTION GUIDES
 template <class _Ty, size_t _Extent>
-span(_Ty (&)[_Extent])->span<_Ty, _Extent>;
+span(_Ty (&)[_Extent]) -> span<_Ty, _Extent>;
 
 template <class _Ty, size_t _Size>
-span(array<_Ty, _Size>&)->span<_Ty, _Size>;
+span(array<_Ty, _Size>&) -> span<_Ty, _Size>;
 
 template <class _Ty, size_t _Size>
-span(const array<_Ty, _Size>&)->span<const _Ty, _Size>;
+span(const array<_Ty, _Size>&) -> span<const _Ty, _Size>;
 
 #ifdef __cpp_lib_concepts
 
 template <contiguous_iterator _It, class _End>
-span(_It, _End)->span<remove_reference_t<iter_reference_t<_It>>>;
+span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
 
 template <_RANGES contiguous_range _Rng>
-span(_Rng &&)->span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
+span(_Rng &&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 
 template <class _Rng>
-span(_Rng&)->span<typename _Rng::value_type>;
+span(_Rng&) -> span<typename _Rng::value_type>;
 
 template <class _Rng>
-span(const _Rng&)->span<const typename _Rng::value_type>;
+span(const _Rng&) -> span<const typename _Rng::value_type>;
 
 #endif // !__cpp_lib_concepts
 

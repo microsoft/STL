@@ -5,7 +5,7 @@ jobs:
 - job: ${{ parameters.targetPlatform }}
   timeoutInMinutes: 360
   pool:
-    name: StlBuild-2020-03-24
+    name: StlBuild-2020-03-28
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
@@ -109,3 +109,12 @@ jobs:
         testResultsFormat: JUnit
         testResultsFiles: '**/std.test.xml'
         testRunTitle: 'std-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish tr1 Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/tr1.test.xml'
+        testRunTitle: 'tr1-${{ parameters.targetPlatform }}'

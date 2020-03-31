@@ -90,7 +90,7 @@ public:
 };
 
 template <ranges::contiguous_range R>
-move_only_range(R&)->move_only_range<std::remove_reference_t<ranges::range_reference_t<R>>>;
+move_only_range(R&) -> move_only_range<std::remove_reference_t<ranges::range_reference_t<R>>>;
 
 template <class T>
 class move_only_range<T>::iterator {
