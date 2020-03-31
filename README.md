@@ -250,29 +250,36 @@ a category in libcxx, or running a single test in `std` and `tr1`.
 ```
 :: This command configures the project with tests enabled. It assumes you are using the vcpkg submodule and have
 :: already installed boost. It also assumes you have inited and updated the llvm-project submodule.
+
 C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ^
 -DENABLE_TESTS=TRUE ..
 
 :: As stated above, this step is only strictly necessary if you have yet to build the STL or if you have changed the
 :: output directory of the binaries. Any changes or additions in any of the existing testsuites do not require
 :: recompilation or reconfiguration to take effect when running the tests.
+
 C:\STL\build>ninja
 
 :: This command will run all of the testsuites with verbose output.
+
 C:\STL\build>ctest -V
 
 :: This command will run all of the std testsuite.
+
 C:\STL\build>ctest -R std
 
 :: This command will also run all of the std testsuite.
+
 C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std
 
 :: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
 :: will run the single test found under VSO_0000000_any_calling_conventions.
+
 C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
 
 :: You can invoke llvm-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
 :: control over what category of tests you would like to run. The following will run all the libcxx map tests.
+
 C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
 ```
 
