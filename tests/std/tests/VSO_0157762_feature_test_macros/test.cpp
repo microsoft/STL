@@ -51,7 +51,7 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
-#if defined(__clang__) || defined(__EDG__) // Clang and EDG don't yet implement P1771R1
+#if defined(__EDG__) || (defined(__clang__) && __clang_major__ < 10) // Clang 9 and EDG don't yet implement P1771R1
 #if __has_cpp_attribute(nodiscard) != 201603L
 #error __has_cpp_attribute(nodiscard) is not 201603L
 #endif
@@ -160,6 +160,12 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
+#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and VSO-951142
+#if __cpp_constexpr != 201907L
+#error __cpp_constexpr is not 201907L
+#else
+STATIC_ASSERT(__cpp_constexpr == 201907L);
+#endif
 #elif _HAS_CXX17
 #if __cpp_constexpr != 201603L
 #error __cpp_constexpr is not 201603L
@@ -257,6 +263,12 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 
 #ifndef __cpp_generic_lambdas
 #error __cpp_generic_lambdas is not defined
+#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and EDG
+#if __cpp_generic_lambdas != 201707L
+#error __cpp_generic_lambdas is not 201707L
+#else
+STATIC_ASSERT(__cpp_generic_lambdas == 201707L);
+#endif
 #elif __cpp_generic_lambdas != 201304L
 #error __cpp_generic_lambdas is not 201304L
 #else
@@ -305,8 +317,7 @@ STATIC_ASSERT(__cpp_if_constexpr == 201606L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__)
-// Clang only has partial support for <=> but that does not include the feature test macro.
+#if _HAS_CXX20 && (!defined(__clang__) || __clang_major__ >= 10)
 #ifndef __cpp_impl_three_way_comparison
 #error __cpp_impl_three_way_comparison is not defined
 #elif defined(__EDG__) // EDG does not yet implement P1630R1 or P1186R3 so they still report the old value.
@@ -347,6 +358,12 @@ STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
 
 #ifndef __cpp_init_captures
 #error __cpp_init_captures is not defined
+#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and EDG
+#if __cpp_init_captures != 201803L
+#error __cpp_init_captures is not 201803L
+#else
+STATIC_ASSERT(__cpp_init_captures == 201803L);
+#endif
 #elif __cpp_init_captures != 201304L
 #error __cpp_init_captures is not 201304L
 #else
@@ -701,7 +718,15 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_array_constexpr
+#error __cpp_lib_array_constexpr is not defined
+#elif __cpp_lib_array_constexpr != 201806L
+#error __cpp_lib_array_constexpr is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
 #elif __cpp_lib_array_constexpr != 201803L

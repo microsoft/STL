@@ -156,13 +156,13 @@ protected:
 
 #if _HAS_CXX17
 template <class _Container, enable_if_t<!_Is_allocator<_Container>::value, int> = 0>
-queue(_Container)->queue<typename _Container::value_type, _Container>;
+queue(_Container) -> queue<typename _Container::value_type, _Container>;
 
 template <class _Container, class _Alloc,
     enable_if_t<
         conjunction_v<negation<_Is_allocator<_Container>>, _Is_allocator<_Alloc>, uses_allocator<_Container, _Alloc>>,
         int> = 0>
-queue(_Container, _Alloc)->queue<typename _Container::value_type, _Container>;
+queue(_Container, _Alloc) -> queue<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
@@ -298,19 +298,19 @@ protected:
 #if _HAS_CXX17
 template <class _Pr, class _Container,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>>, int> = 0>
-priority_queue(_Pr, _Container)->priority_queue<typename _Container::value_type, _Container, _Pr>;
+priority_queue(_Pr, _Container) -> priority_queue<typename _Container::value_type, _Container, _Pr>;
 
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Container = vector<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>>,
         int> = 0>
 priority_queue(_Iter, _Iter, _Pr = _Pr(), _Container = _Container())
-    ->priority_queue<_Iter_value_t<_Iter>, _Container, _Pr>;
+    -> priority_queue<_Iter_value_t<_Iter>, _Container, _Pr>;
 
 template <class _Pr, class _Container, class _Alloc,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>, _Is_allocator<_Alloc>,
                     uses_allocator<_Container, _Alloc>>,
         int> = 0>
-priority_queue(_Pr, _Container, _Alloc)->priority_queue<typename _Container::value_type, _Container, _Pr>;
+priority_queue(_Pr, _Container, _Alloc) -> priority_queue<typename _Container::value_type, _Container, _Pr>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Container, class _Pr,

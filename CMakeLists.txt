@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
@@ -88,6 +88,7 @@ set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 
 add_subdirectory(stl)
 
-# Since we don't configure any of the tests with CMake, there is no downside to enabling testing unconditionally.
-enable_testing()
-add_subdirectory(tests)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

@@ -88,8 +88,8 @@ struct _Char_traits { // properties of a string or stream element
         return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count * sizeof(_Elem)));
     }
 
-    static _Elem* assign(
-        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
+    static _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept
+    /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
         _Elem* _Next = _First;
         for (; 0 < _Count; --_Count, ++_Next) {
@@ -205,8 +205,8 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
             _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
     }
 
-    static _Elem* assign(
-        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, _Elem _Ch) noexcept /* strengthened */ {
+    static _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, size_t _Count, _Elem _Ch) noexcept
+    /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
         return reinterpret_cast<_Elem*>(_CSTD wmemset(reinterpret_cast<wchar_t*>(_First), _Ch, _Count));
     }
@@ -367,8 +367,8 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
         return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count));
     }
 
-    static _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, const size_t _Count,
-        const _Elem _Ch) noexcept /* strengthened */ {
+    static _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, const size_t _Count, const _Elem _Ch) noexcept
+    /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
         return static_cast<_Elem*>(_CSTD memset(_First, _Ch, _Count));
     }
@@ -1414,8 +1414,8 @@ public:
         return _Traits_find<_Traits>(_Mydata, _Mysize, _Off, _Ptr, _Count);
     }
 
-    _NODISCARD constexpr size_type find(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr size_type find(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for [_Ptr, <null>) beginning at or after _Off
         return _Traits_find<_Traits>(_Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr));
     }
@@ -1436,8 +1436,8 @@ public:
         return _Traits_rfind<_Traits>(_Mydata, _Mysize, _Off, _Ptr, _Count);
     }
 
-    _NODISCARD constexpr size_type rfind(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr size_type rfind(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
+    /* strengthened */ {
         // look for [_Ptr, <null>) beginning before _Off
         return _Traits_rfind<_Traits>(_Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr));
     }
@@ -1460,15 +1460,15 @@ public:
             _Mydata, _Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{});
     }
 
-    _NODISCARD constexpr size_type find_first_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr size_type find_first_of(
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return _Traits_find_first_of<_Traits>(
             _Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{});
     }
 
-    _NODISCARD constexpr size_type find_last_of(const basic_string_view _Right, const size_type _Off = npos) const
-        noexcept { // look for one of _Right before _Off
+    _NODISCARD constexpr size_type find_last_of(const basic_string_view _Right,
+        const size_type _Off = npos) const noexcept { // look for one of _Right before _Off
         return _Traits_find_last_of<_Traits>(
             _Mydata, _Mysize, _Off, _Right._Mydata, _Right._Mysize, _Is_specialization<_Traits, char_traits>{});
     }
@@ -1485,8 +1485,8 @@ public:
             _Mydata, _Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{});
     }
 
-    _NODISCARD constexpr size_type find_last_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr size_type find_last_of(
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) before _Off
         return _Traits_find_last_of<_Traits>(
             _Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{});
@@ -1510,8 +1510,8 @@ public:
             _Mydata, _Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{});
     }
 
-    _NODISCARD constexpr size_type find_first_not_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr size_type find_first_not_of(
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for none of [_Ptr, <null>) at or after _Off
         return _Traits_find_first_not_of<_Traits>(
             _Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{});
@@ -1535,8 +1535,8 @@ public:
             _Mydata, _Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{});
     }
 
-    _NODISCARD constexpr size_type find_last_not_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr size_type find_last_not_of(
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for none of [_Ptr, <null>) before _Off
         return _Traits_find_last_not_of<_Traits>(
             _Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{});
@@ -2430,14 +2430,13 @@ public:
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        if
-            _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    _Construct_lv_contents(_Right);
-                    _Proxy._Release();
-                    return;
-                }
+        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                _Construct_lv_contents(_Right);
+                _Proxy._Release();
+                return;
             }
+        }
 
         _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
         _Proxy._Release();
@@ -2741,11 +2740,9 @@ private:
     void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
         _Tidy_deallocate();
-        if
-            _CONSTEXPR_IF(_Can_memcpy_val) {
-                _Memcpy_val_from(_Right);
-            }
-        else {
+        if _CONSTEXPR_IF (_Can_memcpy_val) {
+            _Memcpy_val_from(_Right);
+        } else {
             _Traits::copy(
                 _Mypair._Myval2._Bx._Buf, _Right._Mypair._Myval2._Bx._Buf, _Right._Mypair._Myval2._Mysize + 1);
             _Mypair._Myval2._Mysize = _Right._Mypair._Myval2._Mysize;
@@ -3883,8 +3880,8 @@ public:
             _Traits_find<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
     }
 
-    _NODISCARD size_type find(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for [_Ptr, <null>) beginning at or after _Off
         return static_cast<size_type>(_Traits_find<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
@@ -3919,8 +3916,8 @@ public:
             _Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
     }
 
-    _NODISCARD size_type rfind(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type rfind(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
+    /* strengthened */ {
         // look for [_Ptr, <null>) beginning before _Off
         return static_cast<size_type>(_Traits_rfind<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
@@ -3956,8 +3953,8 @@ public:
             _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD size_type find_first_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find_first_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
@@ -3993,8 +3990,8 @@ public:
             _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD size_type find_last_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find_last_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
+    /* strengthened */ {
         // look for one of [_Ptr, <null>) before _Off
         return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
@@ -4031,15 +4028,15 @@ public:
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD size_type find_first_not_of(_In_z_ const _Elem* const _Ptr, size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find_first_not_of(_In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept
+    /* strengthened */ {
         // look for non _Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4070,15 +4067,15 @@ public:
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD size_type find_last_not_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find_last_not_of(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
+    /* strengthened */ {
         // look for none of [_Ptr, <null>) before _Off
         return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const
-        noexcept /* strengthened */ {
+    _NODISCARD size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept
+    /* strengthened */ {
         // look for non _Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4346,23 +4343,22 @@ private:
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
 basic_string(_Iter, _Iter, _Alloc = _Alloc())
-    ->basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
+    -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 explicit basic_string(basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc())
-    ->basic_string<_Elem, _Traits, _Alloc>;
+    -> basic_string<_Elem, _Traits, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-basic_string(
-    basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>, const _Alloc& = _Alloc())
-    ->basic_string<_Elem, _Traits, _Alloc>;
+basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>,
+    const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_string<_Elem, _Traits, _Alloc>& _Left,
-    basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
+void swap(basic_string<_Elem, _Traits, _Alloc>& _Left, basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     _Left.swap(_Right);
 }
 
