@@ -76,7 +76,8 @@ jobs:
         cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)'
+        cmakeAppendedArgs: |
+          -G Ninja -DENABLE_TESTS=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
     - task: PowerShell@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
@@ -109,3 +110,12 @@ jobs:
         testResultsFormat: JUnit
         testResultsFiles: '**/std.test.xml'
         testRunTitle: 'std-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish tr1 Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/tr1.test.xml'
+        testRunTitle: 'tr1-${{ parameters.targetPlatform }}'

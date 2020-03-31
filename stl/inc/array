@@ -380,32 +380,32 @@ void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator>(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator>(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator<=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator<=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Right < _Left);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
 
