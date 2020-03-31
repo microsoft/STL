@@ -452,9 +452,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp SKIP
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp SKIP
 
-# C++20 P1023R0 "constexpr For std::array Comparisons"
-std/containers/sequences/array/compare.pass.cpp SKIP
-
 # C++20 P1032R1 "Miscellaneous constexpr"
 std/language.support/support.limits/support.limits.general/array.version.pass.cpp SKIP
 std/language.support/support.limits/support.limits.general/functional.version.pass.cpp SKIP
