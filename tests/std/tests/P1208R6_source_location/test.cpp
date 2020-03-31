@@ -8,6 +8,10 @@ static_assert(is_nothrow_move_assignable_v<source_location>, "source_location is
 static_assert(is_nothrow_swappable_v<source_location>, "source_location is not nothrow swappable.");
 
 constexpr auto g = source_location::current();
+static_assert(g.line() == __LINE__ - 1);
+static_assert(g.column() == 37);
+// static_assert(g.function_name() == ""sv);
+// static_assert(string_view{g.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 
 constexpr int s_int_line = __LINE__ + 3;
 struct s {
@@ -40,13 +44,6 @@ constexpr void local_test() {
     assert(x.column() == 41);
     assert(x.function_name() == "local_test"sv);
     assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
-}
-
-constexpr void global_test() { // move to global static_asserts
-    assert(g.line() == 10);
-    assert(g.column() == 37);
-    assert(g.function_name() == ""sv);
-    assert(string_view{g.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
 
 constexpr void argument_test(unsigned line, unsigned column, source_location x = source_location::current()) {
@@ -111,7 +108,6 @@ constexpr void function_template_test() {
 constexpr bool test() {
     copy_test();
     // tab_test();
-    global_test();
     local_test();
     argument_test(__LINE__, 5);
     auto loc = std::source_location::current();
