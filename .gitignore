@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+__pycache__/
 .vs/
 .vscode/
+/build/
 /out/
 /tools/out/

@@ -459,18 +459,17 @@ _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVal into buff
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
 
     constexpr bool _Big_uty = sizeof(_UTy) > 4;
-    if
-        _CONSTEXPR_IF(_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
-            while (_UVal > 0xFFFFFFFFU) {
-                auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
-                _UVal /= 1000000000;
+    if _CONSTEXPR_IF (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+        while (_UVal > 0xFFFFFFFFU) {
+            auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
+            _UVal /= 1000000000;
 
-                for (int _Idx = 0; _Idx != 9; ++_Idx) {
-                    *--_RNext = static_cast<_Elem>('0' + _UVal_chunk % 10);
-                    _UVal_chunk /= 10;
-                }
+            for (int _Idx = 0; _Idx != 9; ++_Idx) {
+                *--_RNext = static_cast<_Elem>('0' + _UVal_chunk % 10);
+                _UVal_chunk /= 10;
             }
         }
+    }
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
 #endif // _WIN64

@@ -1,7 +1,8 @@
 # Microsoft's C++ Standard Library
 
 This is the official repository for Microsoft's implementation of the C++ Standard Library (also known as the STL),
-which ships as part of the MSVC toolset and the Visual Studio IDE.
+which ships as part of the MSVC toolset and the Visual Studio IDE. Our [Changelog][] tracks which updates to this
+repository appear in each VS release.
 
 [![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=master)][Pipelines]
 
@@ -30,7 +31,7 @@ flavor of the STL (native desktop). We need to extend this to build all of the f
 because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
-* Tests: **Coming soon.** We rely on three test suites: devcrt, tr1, and [libcxx][]. We need to replace our current test
+* Tests: **Coming soon.** We rely on three test suites: std, tr1, and [libcxx][]. We need to replace our current test
 harness, which extensively uses Microsoft-internal machinery.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
@@ -49,7 +50,7 @@ approximately 200 active bugs in the STL's Microsoft-internal database; we need 
 GitHub issues. Currently, the [cxx20 tag][] and [LWG tag][] are done; every remaining work item is tracked by a GitHub
 issue. The [bug tag][] and [enhancement tag][] are being populated.
 
-* Plans: **In progress.** We're writing up our [Roadmap][] and [Iteration Plans][].
+* Plans: **In progress.** We're writing up our [Roadmap][].
 
 # Goals
 
@@ -139,7 +140,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.5 Preview 2 or later.
+1. Install Visual Studio 2019 16.6 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -158,7 +159,7 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.15 or later, [Ninja][] 1.8.2 or later, and Visual Studio 2019 16.5 Preview 2 or later.
+1. Install [CMake][] 3.16.5 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.6 Preview 2 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -248,12 +249,12 @@ Copyright (c) Microsoft Corporation.
 
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+[Changelog]: https://github.com/microsoft/STL/wiki/Changelog
 [clang-format]: https://clang.llvm.org/docs/ClangFormat.html
 [CMake]: https://cmake.org/download
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
-[Iteration Plans]: https://github.com/microsoft/STL/wiki/Iteration-Plans
 [LICENSE.txt]: LICENSE.txt
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG

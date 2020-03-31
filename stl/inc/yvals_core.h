@@ -192,13 +192,16 @@
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
+// P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
 // P1878R1 Constraining Readable Types
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
 // P1964R2 Replacing boolean With boolean-testable
+// P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
+// P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -467,7 +470,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202002L
+#define _MSVC_STL_UPDATE  202003L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -1117,7 +1120,7 @@
 #define __cpp_lib_math_constants           201907L
 #define __cpp_lib_remove_cvref             201711L
 #define __cpp_lib_shift                    201806L
-#define __cpp_lib_span                     201902L
+#define __cpp_lib_span                     202002L
 #define __cpp_lib_ssize                    201902L
 #define __cpp_lib_starts_ends_with         201711L
 #define __cpp_lib_to_address               201711L

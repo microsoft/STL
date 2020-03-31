@@ -1,0 +1,1050 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# *** ISSUES REPORTED/KNOWN UPSTREAM ***
+# Non-Standard regex behavior.
+# "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
+std/re/re.traits/lookup_classname.pass.cpp SKIP
+
+# These tests are extremely slow, taking over 23 minutes to execute (in debug mode, non-optimized).
+# They contain 10K^2 / 2 == 50M loops.
+std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIP
+std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIP
+
+# "The behavior demonstrated in this test is not meant to be standard"
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/null.pass.cpp SKIP
+
+# allocator<const T>.
+std/utilities/memory/default.allocator/allocator.ctor.pass.cpp SKIP
+
+# path::value_type is char assumptions
+std/input.output/file.streams/fstreams/filebuf.members/open_path.pass.cpp SKIP
+std/input.output/file.streams/fstreams/fstream.cons/path.pass.cpp SKIP
+std/input.output/file.streams/fstreams/fstream.members/open_path.pass.cpp SKIP
+std/input.output/file.streams/fstreams/ofstream.cons/path.pass.cpp SKIP
+std/input.output/file.streams/fstreams/ofstream.members/open_path.pass.cpp SKIP
+
+# This test is passing non-BidirectionalIterators to std::prev.
+# LWG-3197 "std::prev should not require BidirectionalIterator" (New)
+std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp SKIP
+
+# Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
+std/language.support/support.exception/propagation/current_exception.pass.cpp SKIP
+std/language.support/support.exception/propagation/make_exception_ptr.pass.cpp SKIP
+std/language.support/support.exception/propagation/rethrow_exception.pass.cpp SKIP
+std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp SKIP
+
+# Testing nonstandard behavior
+std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp SKIP
+
+# This test has undefined behavior under N4842 [basic.start.term]/6
+std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIP
+
+# libcxx is incorrect on what the type passed to allocator construct should be
+# See https://reviews.llvm.org/D61364
+std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp SKIP
+std/containers/associative/set/insert_and_emplace_allocator_requirements.pass.cpp SKIP
+std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp SKIP
+std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp SKIP
+
+# libcxx doesn't yet implement P1423R3, so it expects an "old" value for __cpp_lib_char8_t
+std/language.support/support.limits/support.limits.general/filesystem.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/istream.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/limits.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/locale.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp SKIP
+
+
+# *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
+# Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
+# rapid-cxx-test.hpp uses pragma system_header
+# test header filesystem_test_helper.hpp emits "error: "STATIC TESTS DISABLED""
+# const_cast from const std::wstring& to std::string& is not allowed
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/copy.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/copy_assign.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/move.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/move_assign.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/path.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/assign.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/refresh.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/replace_filename.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_size.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_type_obs.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/hard_link_count.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/last_write_time.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/status.pass.cpp SKIP
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/symlink_status.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.members/copy.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.members/copy_assign.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.members/ctor.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.members/increment.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.members/move.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.members/move_assign.pass.cpp SKIP
+std/input.output/filesystems/class.directory_iterator/directory_iterator.nonmembers/begin_end.pass.cpp SKIP
+std/input.output/filesystems/class.path/synop.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.itr/iterator.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.append.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.compare.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.concat.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.assign/braced_init.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.assign/copy.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.assign/move.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.assign/source.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.construct/copy.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.construct/move.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.construct/source.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.decompose/path.decompose.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.gen/lexically_normal.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.gen/lexically_relative_and_proximate.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.generic.obs/generic_string_alloc.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.generic.obs/named_overloads.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.modifiers/clear.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.modifiers/make_preferred.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.modifiers/remove_filename.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.modifiers/replace_extension.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.modifiers/replace_filename.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.modifiers/swap.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.native.obs/c_str.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.native.obs/named_overloads.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.native.obs/native.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.native.obs/operator_string.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.member/path.native.obs/string_alloc.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.nonmember/append_op.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.nonmember/path.factory.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.nonmember/path.io.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.nonmember/path.io.unicode_bug.pass.cpp SKIP
+std/input.output/filesystems/class.path/path.nonmember/swap.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/copy.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/copy_assign.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/ctor.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/depth.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/disable_recursion_pending.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/increment.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/move.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/move_assign.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/pop.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/recursion_pending.pass.cpp SKIP
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.nonmembers/begin_end.pass.cpp SKIP
+std/input.output/filesystems/fs.enum/enum.copy_options.pass.cpp SKIP
+std/input.output/filesystems/fs.enum/enum.directory_options.pass.cpp SKIP
+std/input.output/filesystems/fs.enum/enum.file_type.pass.cpp SKIP
+std/input.output/filesystems/fs.enum/enum.path.format.pass.cpp SKIP
+std/input.output/filesystems/fs.enum/enum.perms.pass.cpp SKIP
+std/input.output/filesystems/fs.enum/enum.perm_options.pass.cpp SKIP
+std/input.output/filesystems/fs.filesystem.synopsis/file_time_type.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.canonical/canonical.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.copy/copy.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file_large.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_symlink/copy_symlink.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directory/create_directory.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directory/create_directory_with_attributes.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directory_symlink/create_directory_symlink.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.create_hard_link/create_hard_link.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.create_symlink/create_symlink.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.current_path/current_path.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.equivalent/equivalent.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.exists/exists.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.file_size/file_size.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.hard_lk_ct/hard_link_count.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_block_file/is_block_file.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_char_file/is_character_file.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_directory/is_directory.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_empty/is_empty.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_fifo/is_fifo.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_other/is_other.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_regular_file/is_regular_file.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_socket/is_socket.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.is_symlink/is_symlink.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.last_write_time/last_write_time.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.permissions/permissions.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.proximate/proximate.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.read_symlink/read_symlink.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.relative/relative.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.remove/remove.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/remove_all.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.rename/rename.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.resize_file/resize_file.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.space/space.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.status/status.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.status_known/status_known.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.symlink_status/symlink_status.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp SKIP
+std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp SKIP
+
+# We need some way to turn on deprecations for tests asking for _LIBCPP_ENABLE_DEPRECATION_WARNINGS
+std/utilities/function.objects/negators/binary_negate.depr_in_cxx17.fail.cpp SKIP
+std/utilities/function.objects/negators/unary_negate.depr_in_cxx17.fail.cpp SKIP
+
+# generate_feature_test_macro_components.py needs to learn about C1XX
+std/language.support/support.limits/support.limits.general/new.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/version.version.pass.cpp SKIP
+
+# Contest does not understand .sh tests, which must be run specially
+std/depr/depr.c.headers/stdint_h.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align_nothrow.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align_nothrow.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp SKIP
+
+# These tests set an allocator with a max_size() too small to default construct an unordered container
+# (due to our minimum bucket size).
+std/containers/unord/unord.map/max_size.pass.cpp SKIP
+std/containers/unord/unord.multimap/max_size.pass.cpp SKIP
+std/containers/unord/unord.multiset/max_size.pass.cpp SKIP
+std/containers/unord/unord.set/max_size.pass.cpp SKIP
+
+# Requires too great a template instantiation depth for C1XX.
+std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIP
+
+
+# *** MISSING STL FEATURES ***
+# C++20 P0019R8 "atomic_ref"
+std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp SKIP
+
+# C++20 P0355R7 "<chrono> Calendars And Time Zones"
+std/utilities/time/days.pass.cpp SKIP
+std/utilities/time/months.pass.cpp SKIP
+std/utilities/time/weeks.pass.cpp SKIP
+std/utilities/time/years.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.members/decrement.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.members/increment.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.members/plus_minus_equal.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/literals.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.last/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/time.cal.md.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/time.cal.md.members/day.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/time.cal.md.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/time.cal.md.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/time.cal.md.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.md/time.cal.md.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mdlast/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mdlast/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mdlast/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mdlast/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mdlast/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mdlast/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.members/decrement.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.members/increment.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.members/plus_minus_equal.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/literals.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.members/weekday_indexed.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.members/weekday_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/month_day.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/month_day_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/month_weekday.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/month_weekday_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/year_month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/year_month_day.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/year_month_day_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/year_month_weekday.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.operators/year_month_weekday_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.members/index.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.members/weekday.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdlast/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.members/weekday.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/c_encoding.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/ctor.local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/ctor.sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/decrement.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/increment.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/iso_encoding.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/operator[].pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/plus_minus_equal.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/literals.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/decrement.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/increment.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/is_leap.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/plus_minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.members/plus_minus_equal.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/literals.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.members/plus_minus_equal_month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.members/plus_minus_equal_year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.members/year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/ctor.local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/ctor.sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/ctor.year_month_day_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/day.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/op.local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/op.sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/plus_minus_equal_month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/plus_minus_equal_year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.members/year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/day.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/month_day_last.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/op_local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/op_sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/plus_minus_equal_month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/plus_minus_equal_year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.members/year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/ctor.local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/ctor.sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/index.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/op.local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/op.sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/plus_minus_equal_month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/plus_minus_equal_year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/weekday.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/weekday_indexed.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.members/year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/types.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/ctor.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/ok.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/op_local_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/op_sys_days.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/plus_minus_equal_month.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/plus_minus_equal_year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/weekday.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.members/year.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/comparisons.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/minus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/plus.pass.cpp SKIP
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/streaming.pass.cpp SKIP
+std/utilities/time/time.clock/time.clock.file/consistency.pass.cpp SKIP
+std/utilities/time/time.clock/time.clock.file/file_time.pass.cpp SKIP
+std/utilities/time/time.clock/time.clock.file/now.pass.cpp SKIP
+std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp SKIP
+std/utilities/time/time.clock/time.clock.system/local_time.types.pass.cpp SKIP
+std/utilities/time/time.clock/time.clock.system/sys.time.types.pass.cpp SKIP
+std/utilities/time/time.duration/time.duration.literals/literals1.pass.cpp SKIP
+std/utilities/time/time.hms/time.12/is_am.pass.cpp SKIP
+std/utilities/time/time.hms/time.12/is_pm.pass.cpp SKIP
+std/utilities/time/time.hms/time.12/make12.pass.cpp SKIP
+std/utilities/time/time.hms/time.12/make24.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/hours.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/is_negative.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/minutes.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/precision.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/precision_type.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/seconds.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp SKIP
+std/utilities/time/time.hms/time.hms.members/width.pass.cpp SKIP
+
+# C++20 P0415R1 "constexpr For <complex> (Again)"
+std/numerics/complex.number/cmplx.over/imag.pass.cpp SKIP
+std/numerics/complex.number/cmplx.over/real.pass.cpp SKIP
+
+# C++20 P0476R2 "<bit> bit_cast"
+std/language.support/support.limits/support.limits.general/bit.version.pass.cpp SKIP
+
+# C++20 P0553R4 "<bit> Rotating And Counting Functions"
+std/numerics/bit/bitops.count/countl_one.pass.cpp SKIP
+std/numerics/bit/bitops.count/countl_zero.pass.cpp SKIP
+std/numerics/bit/bitops.count/countr_one.pass.cpp SKIP
+std/numerics/bit/bitops.count/countr_zero.pass.cpp SKIP
+std/numerics/bit/bitops.count/popcount.pass.cpp SKIP
+std/numerics/bit/bitops.rot/rotl.pass.cpp SKIP
+std/numerics/bit/bitops.rot/rotr.pass.cpp SKIP
+
+# C++20 P0556R3 "<bit> ispow2(), ceil2(), floor2(), log2p1()"
+std/numerics/bit/bit.pow.two/ceil2.pass.cpp SKIP
+std/numerics/bit/bit.pow.two/floor2.pass.cpp SKIP
+std/numerics/bit/bit.pow.two/ispow2.pass.cpp SKIP
+std/numerics/bit/bit.pow.two/log2p1.pass.cpp SKIP
+
+# C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
+std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp SKIP
+std/utilities/variant/variant.variant/variant.assign/T.pass.cpp SKIP
+std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp SKIP
+std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp SKIP
+
+# C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
+std/language.support/support.limits/support.limits.general/compare.version.pass.cpp SKIP
+
+# C++20 P0811R2 "midpoint(), lerp()"
+std/language.support/support.limits/support.limits.general/numeric.version.pass.cpp SKIP
+std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp SKIP
+
+# C++20 P0896R4 "<ranges>"
+std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/functional.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/memory.version.pass.cpp SKIP
+
+# C++20 P1023R0 "constexpr For std::array Comparisons"
+std/containers/sequences/array/compare.pass.cpp SKIP
+
+# C++20 P1032R1 "Miscellaneous constexpr"
+std/language.support/support.limits/support.limits.general/array.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/functional.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/utility.version.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/assign3.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/copy.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/move.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/assign3.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/copy.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/move.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/assign3.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/copy.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/move.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/assign3.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/copy.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/move.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/assign3.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/copy.pass.cpp SKIP
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/move.pass.cpp SKIP
+
+# C++20 P1135R6 "The C++20 Synchronization Library"
+std/atomics/types.pass.cpp SKIP
+std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp SKIP
+std/thread/thread.barrier/arrive.pass.cpp SKIP
+std/thread/thread.barrier/arrive_and_drop.pass.cpp SKIP
+std/thread/thread.barrier/arrive_and_wait.pass.cpp SKIP
+std/thread/thread.barrier/completion.pass.cpp SKIP
+std/thread/thread.barrier/max.pass.cpp SKIP
+std/thread/thread.barrier/version.pass.cpp SKIP
+std/thread/thread.latch/arrive_and_wait.pass.cpp SKIP
+std/thread/thread.latch/count_down.pass.cpp SKIP
+std/thread/thread.latch/max.pass.cpp SKIP
+std/thread/thread.latch/try_wait.pass.cpp SKIP
+std/thread/thread.latch/version.pass.cpp SKIP
+std/thread/thread.semaphore/acquire.pass.cpp SKIP
+std/thread/thread.semaphore/binary.pass.cpp SKIP
+std/thread/thread.semaphore/max.pass.cpp SKIP
+std/thread/thread.semaphore/release.pass.cpp SKIP
+std/thread/thread.semaphore/timed.pass.cpp SKIP
+std/thread/thread.semaphore/try_acquire.pass.cpp SKIP
+std/thread/thread.semaphore/version.pass.cpp SKIP
+
+
+# *** MISSING COMPILER FEATURES ***
+# C++20 P0722R3 "Efficient sized delete for variable sized classes"
+std/language.support/support.dynamic/destroying_delete_t_declaration.pass.cpp SKIP
+std/language.support/support.dynamic/destroying_delete_t.pass.cpp SKIP
+
+
+# *** MISSING LWG ISSUE RESOLUTIONS ***
+# LWG-2532 "Satisfying a promise at thread exit" (Open)
+# WCFB02 implements the proposed resolution for this issue
+std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp SKIP
+std/thread/futures/futures.promise/set_lvalue_at_thread_exit.pass.cpp SKIP
+std/thread/futures/futures.promise/set_rvalue_at_thread_exit.pass.cpp SKIP
+std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp SKIP
+std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp SKIP
+std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp SKIP
+
+
+# *** C1XX COMPILER BUGS ***
+# Compiler bug: VSO-120957 "alignas by-value parameters should be permitted"
+std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp SKIP
+
+# Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
+std/utilities/tuple/tuple.tuple/tuple.cnstr/test_lazy_sfinae.pass.cpp:0 SKIP
+
+# Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
+std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 SKIP
+
+# Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
+std/containers/views/span.cons/ptr_len.pass.cpp:0 SKIP
+std/containers/views/span.cons/ptr_ptr.pass.cpp:0 SKIP
+
+
+# *** CLANG COMPILER BUGS ***
+# LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
+std/thread/macro.pass.cpp:1 SKIP
+
+# <concepts> hasn't been enabled for Clang yet.
+std/iterators/iterator.primitives/iterator.traits/pointer.pass.cpp:1 SKIP
+std/iterators/iterator.primitives/std.iterator.tags/contiguous_iterator_tag.pass.cpp:1 SKIP
+
+# Clang 9 doesn't support comparison rewriting; implemented in Clang 10.
+std/containers/views/span.iterators/begin.pass.cpp SKIP
+std/containers/views/span.iterators/end.pass.cpp SKIP
+std/containers/views/span.iterators/rbegin.pass.cpp SKIP
+std/containers/views/span.iterators/rend.pass.cpp SKIP
+
+
+# *** CLANG ISSUES, NOT YET ANALYZED ***
+# Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
+std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14.pass.cpp SKIP
+
+# Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp SKIP
+
+
+# *** STL BUGS ***
+# STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
+std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
+
+# STL Bug: VSO-595631 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
+std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
+std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
+
+# STL bug: We don't have tgmath.h.
+std/depr/depr.c.headers/tgmath_h.pass.cpp SKIP
+
+# STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
+std/numerics/complex.number/complex.special/double_long_double_implicit.fail.cpp FAIL
+std/numerics/complex.number/complex.special/float_double_implicit.fail.cpp FAIL
+std/numerics/complex.number/complex.special/float_long_double_implicit.fail.cpp FAIL
+
+# STL bug: regex_traits::transform() isn't following the Standard.
+std/re/re.traits/transform.pass.cpp FAIL
+
+# STL bug: Incorrect return types.
+std/numerics/complex.number/cmplx.over/conj.pass.cpp FAIL
+std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
+std/numerics/complex.number/cmplx.over/proj.pass.cpp FAIL
+
+# STL bug: Missing <valarray> assignment operators.
+std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
+std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp FAIL
+
+# STL bug: We allow fill() and swap() for array<const T, 0>.
+std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
+std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
+
+# STL bug: VSO-207715 We reject array<NoDefault, 0>.
+std/containers/sequences/array/array.cons/default.pass.cpp FAIL
+std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
+std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
+std/containers/sequences/array/array.data/data.pass.cpp FAIL
+std/containers/sequences/array/begin.pass.cpp FAIL
+
+# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
+std/strings/string.view/char.bad.fail.cpp:0 FAIL
+
+# Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
+std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
+
+# STL bug: We don't match strtod / strtof when doing field extraction for hexfloats, or special cases like inf
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
+
+# STL bug: We don't match numpunct groups correctly in do_get
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
+
+# STL test bug: We don't have the locale names libcxx wants specialized in platform_support.hpp
+# More bugs may be uncovered when the locale names are present.
+std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp FAIL
+std/localization/locale.categories/category.collate/locale.collate.byname/compare.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/is_1.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/is_many.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/narrow_1.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/narrow_many.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/scan_is.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/scan_not.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/widen_1.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/widen_many.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/curr_symbol.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/decimal_point.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/grouping.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/neg_format.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/negative_sign.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/pos_format.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/thousands_sep.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
+std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/grouping.pass.cpp FAIL
+std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp FAIL
+
+# STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
+std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
+
+# STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp:1 FAIL
+
+# STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
+std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
+
+
+# *** CRT BUGS ***
+# We're permanently missing aligned_alloc().
+std/depr/depr.c.headers/stdlib_h.pass.cpp SKIP
+std/language.support/support.runtime/cstdlib.pass.cpp SKIP
+
+# OS-11107628 "_Exit allows cleanup in other DLLs"
+std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIP
+std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIP
+
+
+# *** LIKELY BOGUS TESTS ***
+# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
+std/depr/depr.c.headers/math_h.pass.cpp SKIP
+std/numerics/c.math/cmath.pass.cpp SKIP
+
+# Tests need to be updated for P1115R3 "erase()/erase_if() Return size_type".
+std/containers/associative/map/map.erasure/erase_if.pass.cpp SKIP
+std/containers/associative/multimap/multimap.erasure/erase_if.pass.cpp SKIP
+std/containers/associative/multiset/multiset.erasure/erase_if.pass.cpp SKIP
+std/containers/associative/set/set.erasure/erase_if.pass.cpp SKIP
+std/containers/sequences/deque/deque.erasure/erase_if.pass.cpp SKIP
+std/containers/sequences/deque/deque.erasure/erase.pass.cpp SKIP
+std/containers/sequences/forwardlist/forwardlist.erasure/erase_if.pass.cpp SKIP
+std/containers/sequences/forwardlist/forwardlist.erasure/erase.pass.cpp SKIP
+std/containers/sequences/list/list.erasure/erase_if.pass.cpp SKIP
+std/containers/sequences/list/list.erasure/erase.pass.cpp SKIP
+std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp SKIP
+std/containers/sequences/vector/vector.erasure/erase.pass.cpp SKIP
+std/containers/unord/unord.map/erase_if.pass.cpp SKIP
+std/containers/unord/unord.multimap/erase_if.pass.cpp SKIP
+std/containers/unord/unord.multiset/erase_if.pass.cpp SKIP
+std/containers/unord/unord.set/erase_if.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/deque.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/forward_list.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/list.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/map.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/set.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/unordered_map.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/unordered_set.version.pass.cpp SKIP
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp SKIP
+std/strings/strings.erasure/erase_if.pass.cpp SKIP
+std/strings/strings.erasure/erase.pass.cpp SKIP
+
+# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
+std/containers/views/span.cons/assign.pass.cpp SKIP
+
+# Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp SKIP
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.runtime.pass.cpp SKIP
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.single.pass.cpp SKIP
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp SKIP
+
+# Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
+std/language.support/support.limits/support.limits.general/string.version.pass.cpp SKIP
+
+# Test needs to be updated for LWG-3320 removing span::const_iterator.
+std/containers/views/types.pass.cpp SKIP
+std/containers/views/span.iterators/begin.pass.cpp SKIP
+std/containers/views/span.iterators/rbegin.pass.cpp SKIP
+std/containers/views/span.iterators/end.pass.cpp SKIP
+std/containers/views/span.iterators/rend.pass.cpp SKIP
+
+# Test needs to be updated for P2116R0 removing the tuple interface of span
+std/containers/views/span.tuple/get.fail.cpp SKIP
+std/containers/views/span.tuple/get.pass.cpp SKIP
+std/containers/views/span.tuple/tuple_element.fail.cpp SKIP
+std/containers/views/span.tuple/tuple_element.pass.cpp SKIP
+std/containers/views/span.tuple/tuple_size.fail.cpp SKIP
+std/containers/views/span.tuple/tuple_size.pass.cpp SKIP
+
+# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
+std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp SKIP
+
+# Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
+std/thread/futures/futures.async/async.pass.cpp SKIP
+std/thread/futures/futures.shared_future/get.pass.cpp SKIP
+std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIP
+std/thread/futures/futures.shared_future/wait.pass.cpp SKIP
+std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIP
+std/thread/futures/futures.unique_future/wait.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvar/wait_for.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvar/wait_until_pred.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvar/wait_until.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/notify_all.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/notify_one.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/wait_for_pred.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/wait_for.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/wait_until_pred.pass.cpp SKIP
+std/thread/thread.condition/thread.condition.condvarany/wait_until.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.guard/adopt_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.guard/mutex.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_duration.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_time_point.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_try_to_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_duration.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_time_point.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_try_to_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex.pass.cpp SKIP
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.class/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.class/try_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.recursive/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.recursive/try_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/lock_shared.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/try_lock_shared.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/try_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/lock_shared.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_for.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared_for.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared_until.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/try_lock_for.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/try_lock_until.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/try_lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/lock.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/try_lock_for.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/try_lock_until.pass.cpp SKIP
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/try_lock.pass.cpp SKIP
+std/thread/thread.threads/thread.thread.class/thread.thread.destr/dtor.pass.cpp SKIP
+std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.cpp SKIP
+std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIP
+
+# Not yet analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
+std/diagnostics/syserr/syserr.compare/eq_error_code_error_code.pass.cpp SKIP
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.derived/message.pass.cpp SKIP
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp SKIP
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_const_char_pointer.pass.cpp SKIP
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_string.pass.cpp SKIP
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code.pass.cpp SKIP
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_const_char_pointer.pass.cpp SKIP
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_string.pass.cpp SKIP
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category.pass.cpp SKIP
+
+# libc++ disagrees with libstdc++ and MSVC on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
+std/input.output/iostream.format/input.streams/istream.unformatted/get_pointer_size_chart.pass.cpp SKIP
+std/input.output/iostream.format/input.streams/istream.unformatted/get_pointer_size.pass.cpp SKIP
+
+# Sensitive to implementation details. Assertion failed: test_alloc_base::count == expected_num_allocs
+std/containers/container.requirements/container.requirements.general/allocator_move.pass.cpp SKIP
+
+# Tests std::weak_equality/strong_equality which were removed by P1959R0
+std/language.support/cmp/cmp.common/common_comparison_category.pass.cpp SKIP
+std/language.support/cmp/cmp.partialord/partialord.pass.cpp SKIP
+std/language.support/cmp/cmp.strongeq/cmp.strongeq.pass.cpp SKIP
+std/language.support/cmp/cmp.strongord/strongord.pass.cpp SKIP
+std/language.support/cmp/cmp.weakeq/cmp.weakeq.pass.cpp SKIP
+std/language.support/cmp/cmp.weakord/weakord.pass.cpp SKIP
+
+# Comment: "Test C99 compound literal."
+# Code: `(int[]){3, 4}`
+# error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
+std/containers/sequences/array/array.creation/to_array.pass.cpp SKIP
+
+# Tests that need to learn that insert iterators have non-void difference type in C++20
+std/iterators/predef.iterators/insert.iterators/back.insert.iterator/types.pass.cpp SKIP
+std/iterators/predef.iterators/insert.iterators/front.insert.iterator/types.pass.cpp SKIP
+std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp SKIP
+
+
+# *** LIKELY STL BUGS ***
+# Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.f/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.exp/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eq.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_init_func.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_iterator.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_init_func.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_iterator.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_default.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_func.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_init_func.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_iterator.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_default.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_func.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_init_func.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_iterator.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
+
+# Not yet analyzed, likely STL bugs. Various assertions.
+std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
+std/re/re.alg/re.alg.match/basic.pass.cpp FAIL
+std/re/re.alg/re.alg.match/ecma.pass.cpp FAIL
+std/re/re.alg/re.alg.match/extended.pass.cpp FAIL
+std/re/re.alg/re.alg.search/awk.pass.cpp FAIL
+std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
+std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
+std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
+std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
+std/re/re.badexp/regex_error.pass.cpp FAIL
+std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
+std/re/re.grammar/excessive_brace_count.pass.cpp FAIL
+std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
+std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
+std/re/re.regex/re.regex.construct/bad_range.pass.cpp FAIL
+std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
+std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
+std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
+std/re/re.traits/lookup_collatename.pass.cpp FAIL
+std/re/re.traits/transform_primary.pass.cpp FAIL
+
+# Not yet analyzed, likely STL bugs. Various assertions.
+std/numerics/complex.number/complex.member.ops/divide_equal_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.ops/complex_times_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.ops/scalar_divide_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/acos.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/acosh.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/asin.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/cos.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/exp.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/log10.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/pow_scalar_complex.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/sqrt.pass.cpp FAIL
+std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
+std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
+std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
+std/numerics/complex.number/complex.value.ops/proj.pass.cpp FAIL
+
+# Not yet analyzed, likely STL bugs. Many various assertions.
+std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_string_en_US.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_string_en_US.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/decimal_point.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/thousands_sep.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf16_in.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf16_length.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf16_max_length.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf16_out.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf16.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_in.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_length.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_max_length.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_out.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_in.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_length.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_max_length.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_out.pass.cpp FAIL
+std/localization/locale.stdcvt/codecvt_utf8.pass.cpp FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/overflow.pass.cpp FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/pbackfail.pass.cpp FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/underflow.pass.cpp FAIL
+std/localization/locales/locale.convenience/conversions/conversions.string/ctor_err_string.pass.cpp FAIL
+
+# Not yet analyzed, likely STL bugs. Various assertions.
+std/input.output/iostream.format/ext.manip/get_money.pass.cpp FAIL
+std/input.output/iostream.format/ext.manip/put_money.pass.cpp FAIL
+std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp FAIL
+
+# Not yet analyzed, likely STL bugs. Assertion failed: os.str() == a
+std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp FAIL
+std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp FAIL
+std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp FAIL
+std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp FAIL
+std/numerics/rand/rand.eng/rand.eng.mers/ctor_result_type.pass.cpp FAIL
+std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq.pass.cpp FAIL
+std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp FAIL
+std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp FAIL
+
+# Not yet analyzed, likely STL bugs. Assertion failed: e1 == e2
+std/numerics/rand/rand.adapt/rand.adapt.disc/io.pass.cpp FAIL
+std/numerics/rand/rand.adapt/rand.adapt.ibits/io.pass.cpp FAIL
+std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp FAIL
+
+# Likely STL bug: Looks like we shouldn't be using assignment.
+std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
+
+# Possible STL bugs in pair and tuple.
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR31384.pass.cpp FAIL
+
+# Likely STL bugs in mersenne_twister; also fails at runtime
+# random(1186,26):  error: constexpr variable '_WMSK' must be initialized by a constant expression
+#    static constexpr _Ty _WMSK = ~((~_Ty(0) << (_Wx - 1)) << 1);
+#                         ^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq_all_zero.pass.cpp FAIL
+
+# Bugs/questionable choices in codecvt<char(16|32)_t, char, mbstate_t>, which we probably will not fix since
+# (1) they are deprecated, and (2) we don't want to break existing users.
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_max_length.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_unshift.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
+
+# Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
+std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
+
+
+# *** NOT YET ANALYZED ***
+# Not yet analyzed. Asserting about alloc_count.
+std/thread/futures/futures.promise/alloc_ctor.pass.cpp FAIL
+std/thread/futures/futures.promise/move_assign.pass.cpp FAIL
+std/thread/futures/futures.promise/move_ctor.pass.cpp FAIL
+std/thread/futures/futures.promise/swap.pass.cpp FAIL
+std/thread/futures/futures.shared_future/dtor.pass.cpp FAIL
+std/thread/futures/futures.unique_future/dtor.pass.cpp FAIL
+
+# Not yet analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
+std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp FAIL
+
+# Not yet analyzed. Possibly testing nonstandard deduction guides.
+std/containers/associative/map/map.cons/deduct_const.pass.cpp FAIL
+std/containers/associative/multimap/multimap.cons/deduct_const.pass.cpp FAIL
+std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
+std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 FAIL
+std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
+
+# Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
+
+
+# *** XFAILs WHICH PASS ***
+# Not yet implemented in libcxx and marked as XFAIL
+std/strings/c.strings/cuchar.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bm/default.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bm/hash.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bm/hash.pred.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bm/pred.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bmh/default.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bmh/hash.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bmh/hash.pred.pass.cpp PASS
+std/utilities/function.objects/func.search/func.search.bmh/pred.pass.cpp PASS

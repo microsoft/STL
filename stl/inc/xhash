@@ -436,11 +436,9 @@ private:
 public:
     _Hash(_Hash&& _Right, const allocator_type& _Al) : _Traitsobj(_Right._Traitsobj), _List(_Al), _Vec(_Al) {
         // construct hash table by moving _Right, allocator
-        if
-            _CONSTEXPR_IF(_Alnode_traits::is_always_equal::value) {
-                _Move_construct_equal_alloc(_Right);
-            }
-        else if (_List._Getal() == _Right._List._Getal()) {
+        if _CONSTEXPR_IF (_Alnode_traits::is_always_equal::value) {
+            _Move_construct_equal_alloc(_Right);
+        } else if (_List._Getal() == _Right._List._Getal()) {
             _Move_construct_equal_alloc(_Right);
         } else {
             _Maxidx            = _Min_buckets;
@@ -1234,13 +1232,11 @@ public:
         _Nothrow_hash<_Traits, key_type> //
         && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
-        if
-            _CONSTEXPR_IF(_Multi) {
-                const auto _Where = _Equal_range(_Keyval, _Hashval);
-                _Unchecked_erase(_Where._First._Ptr, _Where._Last._Ptr);
-                return _Where._Distance;
-            }
-        else {
+        if _CONSTEXPR_IF (_Multi) {
+            const auto _Where = _Equal_range(_Keyval, _Hashval);
+            _Unchecked_erase(_Where._First._Ptr, _Where._Last._Ptr);
+            return _Where._Distance;
+        } else {
             const auto _Target = _Find_last(_Keyval, _Hashval)._Duplicate;
             if (_Target) {
                 _Erase_bucket(_Target, _Hashval & _Mask);
@@ -1265,17 +1261,16 @@ public:
             return;
         }
 
-        if
-            _CONSTEXPR_IF(_Nothrow_hash<_Traits, key_type>) {
-                // In testing, hash<size_t>{}(size_t{}) takes about 14 times as much time as assigning a pointer, or
-                // ~7-8 times as much as clearing a bucket. Therefore, if we would need to assign over more than 8 times
-                // as many buckets as elements, remove element-by-element.
-                if (bucket_count() / 8 > _Oldsize) {
-                    const auto _Head = _List._Mypair._Myval2._Myhead;
-                    _Unchecked_erase(_Head->_Next, _Head);
-                    return;
-                }
+        if _CONSTEXPR_IF (_Nothrow_hash<_Traits, key_type>) {
+            // In testing, hash<size_t>{}(size_t{}) takes about 14 times as much time as assigning a pointer, or
+            // ~7-8 times as much as clearing a bucket. Therefore, if we would need to assign over more than 8 times
+            // as many buckets as elements, remove element-by-element.
+            if (bucket_count() / 8 > _Oldsize) {
+                const auto _Head = _List._Mypair._Myval2._Myhead;
+                _Unchecked_erase(_Head->_Next, _Head);
+                return;
             }
+        }
 
         // Bulk destroy items and reset buckets
         _List.clear();
@@ -1296,12 +1291,11 @@ private:
         const _Nodeptr _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1]._Ptr;
         for (;;) {
             if (!_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                if
-                    _CONSTEXPR_IF(!_Traits::_Standard) {
-                        if (_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                            return _End;
-                        }
+                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                    if (_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
+                        return _End;
                     }
+                }
 
                 return _Where;
             }
@@ -1316,11 +1310,9 @@ private:
 
     template <class _Keyty>
     _Nodeptr _Find(const _Keyty& _Keyval, const size_t _Hashval) const {
-        if
-            _CONSTEXPR_IF(_Traits::_Multi) {
-                return _Find_first(_Keyval, _Hashval);
-            }
-        else {
+        if _CONSTEXPR_IF (_Traits::_Multi) {
+            return _Find_first(_Keyval, _Hashval);
+        } else {
             // use _Find_last for unique containers to avoid increase in code size of instantiating _Find_first
             auto _Target = _Find_last(_Keyval, _Hashval)._Duplicate;
             if (_Target) {
@@ -1352,11 +1344,9 @@ public:
     template <class _Keyty = void>
     _NODISCARD size_type count(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
         const size_t _Hashval = _Traitsobj(_Keyval);
-        if
-            _CONSTEXPR_IF(_Multi) {
-                return _Equal_range(_Keyval, _Hashval)._Distance;
-            }
-        else {
+        if _CONSTEXPR_IF (_Multi) {
+            return _Equal_range(_Keyval, _Hashval)._Distance;
+        } else {
             return static_cast<bool>(_Find_last(_Keyval, _Hashval)._Duplicate);
         }
     }
@@ -1415,34 +1405,31 @@ private:
             }
         }
 
-        if
-            _CONSTEXPR_IF(!_Traits::_Standard) {
-                if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
-                    return {_End, _End, 0};
-                }
+        if _CONSTEXPR_IF (!_Traits::_Standard) {
+            if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
+                return {_End, _End, 0};
             }
+        }
 
         const _Unchecked_const_iterator _First = _Where;
-        if
-            _CONSTEXPR_IF(_Multi) {
-                size_type _Distance = 0;
-                for (;;) {
-                    ++_Distance;
+        if _CONSTEXPR_IF (_Multi) {
+            size_type _Distance = 0;
+            for (;;) {
+                ++_Distance;
 
-                    const bool _At_bucket_end = _Where == _Bucket_hi;
-                    ++_Where;
-                    if (_At_bucket_end) {
-                        break;
-                    }
-
-                    if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
-                        break;
-                    }
+                const bool _At_bucket_end = _Where == _Bucket_hi;
+                ++_Where;
+                if (_At_bucket_end) {
+                    break;
                 }
 
-                return {_First, _Where, _Distance};
+                if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
+                    break;
+                }
             }
-        else {
+
+            return {_First, _Where, _Distance};
+        } else {
             ++_Where; // found the unique element
             return {_First, _Where, 1};
         }
@@ -1675,12 +1662,11 @@ protected:
         for (;;) {
             // Search backwards to maintain sorted [_Bucket_lo, _Bucket_hi] when !_Standard
             if (!_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                if
-                    _CONSTEXPR_IF(!_Traits::_Standard) {
-                        if (_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                            return {_Where->_Next, _Nodeptr{}};
-                        }
+                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                    if (_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
+                        return {_Where->_Next, _Nodeptr{}};
                     }
+                }
 
                 return {_Where->_Next, _Where};
             }
@@ -1699,12 +1685,11 @@ protected:
         // if _Hint points to an element equivalent to _Keyval, returns _Hint; otherwise,
         // returns _Find_last(_Keyval, _Hashval)
         if (_Hint != _List._Mypair._Myval2._Myhead && !_Traitsobj(_Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-            if
-                _CONSTEXPR_IF(!_Traits::_Standard) {
-                    if (_Traitsobj(_Keyval, _Traits::_Kfn(_Hint->_Myval))) {
-                        return _Find_last(_Keyval, _Hashval);
-                    }
+            if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if (_Traitsobj(_Keyval, _Traits::_Kfn(_Hint->_Myval))) {
+                    return _Find_last(_Keyval, _Hashval);
                 }
+            }
 
             return {_Hint->_Next, _Hint};
         }
@@ -1943,11 +1928,9 @@ protected:
         }
 
         _Unchecked_const_iterator _Left_stop_at;
-        if
-            _CONSTEXPR_IF(_Traits::_Standard) {
-                _Left_stop_at = _Unchecked_end();
-            }
-        else {
+        if _CONSTEXPR_IF (_Traits::_Standard) {
+            _Left_stop_at = _Unchecked_end();
+        } else {
             // check the first elements for equivalence when !_Standard
             if (_Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2))) {
                 return {};
@@ -2053,30 +2036,26 @@ public:
             const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
             if (_Where != _End) {
                 // check that the bucket is sorted for legacy hash_meow:
-                if
-                    _CONSTEXPR_IF(!_Traits::_Standard) {
-                        if (_Where != _Bucket_hi) {
-                            auto _SFirst = _Where;
-                            auto _SNext  = _Where;
-                            for (;;) {
-                                ++_SNext;
-                                if
-                                    _CONSTEXPR_IF(_Traits::_Multi) {
-                                        _STL_INTERNAL_CHECK(
-                                            !_Traitsobj(_Traits::_Kfn(*_SNext), _Traits::_Kfn(*_SFirst)));
-                                    }
-                                else {
-                                    _STL_INTERNAL_CHECK(_Traitsobj(_Traits::_Kfn(*_SFirst), _Traits::_Kfn(*_SNext)));
-                                }
-
-                                if (_SNext == _Bucket_hi) {
-                                    break;
-                                }
-
-                                _SFirst = _SNext;
+                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                    if (_Where != _Bucket_hi) {
+                        auto _SFirst = _Where;
+                        auto _SNext  = _Where;
+                        for (;;) {
+                            ++_SNext;
+                            if _CONSTEXPR_IF (_Traits::_Multi) {
+                                _STL_INTERNAL_CHECK(!_Traitsobj(_Traits::_Kfn(*_SNext), _Traits::_Kfn(*_SFirst)));
+                            } else {
+                                _STL_INTERNAL_CHECK(_Traitsobj(_Traits::_Kfn(*_SFirst), _Traits::_Kfn(*_SNext)));
                             }
+
+                            if (_SNext == _Bucket_hi) {
+                                break;
+                            }
+
+                            _SFirst = _SNext;
                         }
                     }
+                }
                 // check that all the elements in the bucket belong in the bucket:
                 for (;;) {
                     ++_Elements;
