@@ -12,6 +12,7 @@
 #pragma message("The contents of <bit> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
+#include <intrin.h>
 #include <limits>
 #include <type_traits>
 
@@ -94,17 +95,177 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
-template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
-_NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
+
+inline bool _Intel_is_popcnt_supported() {
+    int cpuinfo[4];
+    __cpuid(cpuinfo, 0x01);
+    return cpuinfo[2] & (1 << 23);
+}
+
+inline bool _Intel_is_lzcnt_supported() {
+    int cpuinfo[4];
+    __cpuid(cpuinfo, 0x80000001);
+    return cpuinfo[2] & (1 << 5);
+}
+
+inline bool _Intel_is_tzcnt_supported() {
+    // tzcnt and lzcnt support are indicated with
+    // different cpuid flags.
+    int cpuinfo[4];
+    __cpuid(cpuinfo, 0x07);
+    return cpuinfo[1] & (1 << 3);
+}
+
+// see "Hacker's Delight" section 5-3
+template <typename T>
+constexpr int _Countl_zero_helper(T x) {
+    T y   = 0;
+    int n = numeric_limits<T>::digits;
+    int c = numeric_limits<T>::digits / 2;
+    do {
+        y = x >> c;
+        if (y != 0) {
+            n = n - c;
+            x = y;
+        }
+        c = c >> 1;
+    } while (c != 0);
+    return n - (int) x;
+}
+
+// see "Hacker's Delight" section 5-4
+template <typename T>
+constexpr int _Countr_zero_helper(T x) {
+    return numeric_limits<T>::digits - _Countl_zero_helper(~x & (x - 1));
+}
+
+template <typename T>
+constexpr int _Popcount_helper(T x) {
+    constexpr int _Digits = numeric_limits<T>::digits;
+    // we static cast these bit patterns in order to truncate
+    // them to the correct size
+    x = x - ((x >> 1) & static_cast<T>(0x5555555555555555ull));
+    x = (x & static_cast<T>(0x3333333333333333ull)) + ((x >> 2) & static_cast<T>(0x3333333333333333ull));
+    x = (x + (x >> 4)) & static_cast<T>(0x0F0F0F0F0F0F0F0Full);
+    for (int _ShiftDigits = numeric_limits<char>::digits; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
+        x = x + (x >> _ShiftDigits);
+    }
+    // we want the bottom "slot" that's big enough to store _Digits
+    return x & (_Digits + _Digits - 1);
+}
+
+#if defined(_M_IX86) || defined(_M_X64)
+
+template <typename _Ty>
+inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
+    static bool _Have_lzcnt = _Intel_is_lzcnt_supported();
+    constexpr int _Digits   = numeric_limits<_Ty>::digits;
+    // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
+    if (!_Have_lzcnt && _Val == 0) {
+        return _Digits;
+    }
+    // we use lzcnt (actually bsr if lzcnt is not supported) for all cases now we know
+    // we're not zero. We can do this because lzcnt and bsr share the same instruction
+    // encoding.
+    if (_Digits <= 16) {
+        return __lzcnt16(_Val) - (16 - _Digits);
+    } else if (_Digits <= 32) {
+        return __lzcnt(_Val) - (32 - _Digits);
+    } else {
+#ifdef _M_IX86
+        if (_Have_lzcnt) {
+            return (__lzcnt(_Val >> 32) + __lzcnt(static_cast<unsigned int>(_Val)) - (64 - _Digits);
+        } else {
+            unsigned int _High = _Val >> 32;
+            unsigned int _Low  = static_cast<unsigned int>(_Val);
+            int _Result        = 0;
+            _Result += _High ? __lzcnt(_High) : 0;
+            _Result += _Low ? __lzcnt(_Low) : 0;
+            return result;
+        }
+#else
+        return __lzcnt64(_Val) - (64 - _Digits);
+#endif
+    }
+    // note we don't need to call a fallback here because
+    // all supported intel processors at least have bsr/bsf
+}
+
+template <typename _Ty>
+inline int _Checked_x86_x86_64_countr_zero(_Ty _Val) {
+    static bool _Have_tzcnt = _Intel_is_tzcnt_supported();
+    constexpr int _Digits   = numeric_limits<_Ty>::digits;
+    constexpr _Ty _Max      = (numeric_limits<_Ty>::max)();
+    if (!_Have_tzcnt && _Val == 0) {
+        return _Digits;
+    }
+    if (_Digits <= 32) {
+        // intended widening to int
+        return _tzcnt_u32(~_Max | _Val);
+    } else {
+#ifdef _M_IX86
+        unsigned int _High = _Val >> 32;
+        unsigned int _Low  = static_cast<unsigned int>(_Val);
+        int _Result        = 0;
+        _Result += _High ? _tzcnt_u32(_High) : 0;
+        _Result += _Low ? _tzcnt_u32(_Low) : 0;
+        return _Result;
+#else
+        return _tzcnt_u64(_Val);
+#endif
+    }
+}
+
+template <typename _Ty>
+inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
+    static bool _Have_popcnt = _Intel_is_popcnt_supported();
+    constexpr int _Digits    = numeric_limits<_Ty>::digits;
+    if (_Have_popcnt) {
+        if constexpr (_Digits <= 16) {
+            return __popcnt16(_Val);
+        } else if (_Digits <= 32) {
+            return __popcnt(_Val);
+        } else {
+#ifdef _M_IX86
+            return __popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val));
+#else
+            return __popcnt64(_Val);
+#endif
+        }
+    } else {
+        _Popcount_helper(_Val);
+    }
+}
+#endif // defined(_M_IX86) || defined(_M_X64)
+
+
+#if defined(_M_ARM) || defined(_M_ARM64)
+template <typename _Ty>
+inline int _Checked_arm_countl_zero(_Ty _Val) {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if (_Val == 0) {
         return _Digits;
     }
-
-    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
-        return __builtin_clz(_Val) - (numeric_limits<unsigned int>::digits - _Digits);
+    if constexpr (_Digits <= 32) {
+        return _CountLeadingZeros(_Val);
     } else {
-        return __builtin_clzll(_Val) - (numeric_limits<unsigned long long>::digits - _Digits);
+        return _CountLeadingZeros64(_Val);
+    }
+}
+#endif // defined(_M_ARM) || defined(_M_ARM64)
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
+_NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
+    if (is_constant_evaluated()) {
+        return _Countl_zero_helper(_Val);
+    } else {
+#if defined(_M_IX86) || defined(_M_X64)
+        return _Checked_x86_x86_64_countl_zero(_Val);
+#elif defined(_M_ARM) || defined(_M_ARM64)
+        return _Checked_arm_countl_zero(_Val);
+#else
+        return _Countl_zero_helper(_Val);
+#endif
     }
 }
 
@@ -125,10 +286,16 @@ _NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
-    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
-        return __builtin_popcount(_Val);
+    if (is_constant_evaluated()) {
+        return _Popcount_helper(_Val);
     } else {
-        return __builtin_popcountll(_Val);
+#if defined(_M_IX86) || defined(_M_X64)
+        return _Checked_x86_x86_64_popcount(_Val);
+#else
+        // arm NEON has a popcount instruction, but we're not going to use that
+        // yet.
+        return _Popcount_helper(_Val);
+#endif
     }
 }
 #endif // __cpp_lib_bitops
