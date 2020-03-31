@@ -358,7 +358,7 @@ The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `P
 The `XPASS` and `XFAIL` result codes are less obvious. `XPASS` is actually a failure result and indicates that we
 expected a test to fail but it passed. `XFAIL` is a successful result and indicates that we expected the test to fail
 and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
-modified. If the `XPASS` result is a test legitimately passing the usual course of action would be to remove a `FAIL`
+modified. If the `XPASS` result is a test legitimately passing, the usual course of action would be to remove a `FAIL`
 entry from the `expected_results.txt`. However, some tests from `libcxx` mark themselves as `XFAIL` (meaning they
 expect to fail) for features they have added tests for but have yet to implement in `libcxx`. If the STL implements
 those features first the tests will begin passing unexpectedly for us and return `XPASS` results. In order to resolve
