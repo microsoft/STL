@@ -4,15 +4,18 @@
 #include <assert.h>
 #include <memory>
 #include <thread>
+#ifdef _DEBUG
+#include <crtdbg.h>
+#endif // _DEBUG
 
 using namespace std;
 
 constexpr uintmax_t iterations = 100000;
 
-const shared_ptr<int> sptr0 = make_shared<int>(0);
-const shared_ptr<int> sptr1 = make_shared<int>(1);
-const weak_ptr<int> wptr0   = sptr0;
-const weak_ptr<int> wptr1   = sptr1;
+shared_ptr<int> sptr0 = make_shared<int>(0);
+shared_ptr<int> sptr1 = make_shared<int>(1);
+weak_ptr<int> wptr0   = sptr0;
+weak_ptr<int> wptr1   = sptr1;
 
 atomic<shared_ptr<int>> atomic_sptr;
 atomic<weak_ptr<int>> atomic_wptr;
@@ -240,4 +243,14 @@ int main() {
     ensure_nonmember_calls_compile<atomic<weak_ptr<int>>>();
     ensure_nonmember_calls_compile<volatile atomic<shared_ptr<int>>>();
     ensure_nonmember_calls_compile<volatile atomic<weak_ptr<int>>>();
+
+#ifdef _DEBUG
+    sptr0 = {};
+    sptr1 = {};
+    wptr0 = {};
+    wptr1 = {};
+    atomic_sptr.store({});
+    atomic_wptr.store({});
+    assert(!_CrtDumpMemoryLeaks());
+#endif // _DEBUG
 }
