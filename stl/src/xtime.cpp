@@ -88,8 +88,8 @@ _CRTIMP2_PURE long long __cdecl _Query_perf_counter() { // get current value of 
 }
 
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency() { // get frequency of performance counter
-    static std::atomic<long long> freq_cached = 0;
-    long long freq                            = freq_cached.load(std::memory_order_relaxed);
+    static std::atomic<long long> freq_cached{0};
+    long long freq = freq_cached.load(std::memory_order_relaxed);
     if (freq == 0) {
         LARGE_INTEGER li;
         QueryPerformanceFrequency(&li); // always succeeds
