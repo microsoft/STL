@@ -300,7 +300,7 @@ order to see the stdout of the tests.
 ### llvm-lit
 
 When running the tests directly via the generated `llvm-lit.py` script the result of each test will be printed. The
-format of each result is {[Result Code](#result-code-values)}: {Testsuite Name} :: {Test Name}:{Configuration Number}.
+format of each result is `{Result Code}: {Testsuite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
 ```
