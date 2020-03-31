@@ -191,6 +191,7 @@ static void run_test(void (*fp)()) {
 }
 
 int main() {
+    // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.
     static_assert(
         atomic<shared_ptr<int>>::is_always_lock_free == true || atomic<shared_ptr<int>>::is_always_lock_free == false);
     static_assert(
