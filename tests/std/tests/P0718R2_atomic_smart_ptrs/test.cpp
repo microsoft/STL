@@ -199,22 +199,24 @@ void ensure_nonmember_calls_compile() {
     const AtomicType constInstance;
     auto loaded = atomic_load(&instance);
     loaded      = atomic_load(&constInstance);
-    loaded      = atomic_load_explicit(&instance, memory_order_relaxed);
-    loaded      = atomic_load_explicit(&constInstance, memory_order_relaxed);
+    loaded      = atomic_load_explicit(&instance, memory_order::relaxed);
+    loaded      = atomic_load_explicit(&constInstance, memory_order::relaxed);
     atomic_store(&instance, loaded);
-    atomic_store_explicit(&instance, loaded, memory_order_relaxed);
-    loaded = atomic_exchange(&instanced, loaded);
-    loaded = atomic_exchange_explicit(&instanced, loaded, memory_order_relaxed);
+    atomic_store_explicit(&instance, loaded, memory_order::relaxed);
+    loaded = atomic_exchange(&instance, loaded);
+    loaded = atomic_exchange_explicit(&instance, loaded, memory_order::relaxed);
     if (atomic_compare_exchange_strong(&instance, &loaded, loaded)) {
         // intentionally empty
     }
-    if (atomic_compare_exchange_strong_explicit(&instance, &loaded, loaded, memory_order_relaxed)) {
+    if (atomic_compare_exchange_strong_explicit(
+            &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
     }
     if (atomic_compare_exchange_weak(&instance, &loaded, loaded)) {
         // intentionally empty
     }
-    if (atomic_compare_exchange_weak_explicit(&instance, &loaded, loaded, memory_order_relaxed)) {
+    if (atomic_compare_exchange_weak_explicit(
+            &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
     }
 }
@@ -241,8 +243,6 @@ int main() {
     run_test(test_weak_ptr_compare_exchange_strong);
     ensure_nonmember_calls_compile<atomic<shared_ptr<int>>>();
     ensure_nonmember_calls_compile<atomic<weak_ptr<int>>>();
-    ensure_nonmember_calls_compile<volatile atomic<shared_ptr<int>>>();
-    ensure_nonmember_calls_compile<volatile atomic<weak_ptr<int>>>();
 
 #ifdef _DEBUG
     sptr0 = {};

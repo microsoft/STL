@@ -2545,7 +2545,7 @@ public:
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
         const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
-        const auto _Rep = this->_Lock_and_load();
+        auto _Rep = this->_Lock_and_load();
         if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
             _STD swap(this->_Ptr, _Desired._Ptr);
             _STD swap(_Rep, _Desired._Rep);
@@ -2653,7 +2653,7 @@ public:
     bool compare_exchange_strong(
         weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
-        const auto _Rep = this->_Lock_and_load();
+        auto _Rep = this->_Lock_and_load();
         if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
             _STD swap(this->_Ptr, _Desired._Ptr);
             _STD swap(_Rep, _Desired._Rep);
