@@ -222,13 +222,11 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 # How To Run The Tests From The Developer Command Prompt For VS
 
-1. Follow steps 1-9 of
-[How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt).
+1. Follow steps 1-9 of [How To Build With A Native Tools Command Prompt][].
 2. Invoke `git submodule update --init llvm-project`
 3. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -DENABLE_TESTS=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DENABLE_TESTS=TRUE`.
-4. If you have already followed the steps from
-[How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt), and have not
+4. If you have already followed the steps from [How To Build With A Native Tools Command Prompt][], and have not
 changed the value of `{wherever you want binaries}` in step 4, then there is no need to rebuild to run the tests.
 Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
 
@@ -263,11 +261,11 @@ C:\STL\build>ninja
 :: This command will run all of the testsuites with verbose output.
 C:\STL\build>ctest -V
 
-:: This command will run all of the tr1 testsuite.
-C:\STL\build>ctest -R tr1
+:: This command will run all of the std testsuite.
+C:\STL\build>ctest -R std
 
-:: This command will also run all of the tr1 testsuite.
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\tr1
+:: This command will also run all of the std testsuite.
+C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std
 
 :: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
 :: will run the single test found under VSO_0000000_any_calling_conventions.
@@ -280,7 +278,7 @@ C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\c
 
 ## Interpreting The Results Of Tests
 
-## CTest
+### CTest
 
 When running the tests via CTest each of the testsuites is considered to be a single test. If any single test in a
 testsuite fails, CTest will report the test which represents that testsuite as failed.
@@ -299,7 +297,7 @@ CTest will output everything that was sent to stderr for each of the failed test
 which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
 order to see the stdout of the tests.
 
-## llvm-lit
+### llvm-lit
 
 When running the tests directly via the generated `llvm-lit.py` script the result of each test will be printed. The
 format of each result is {[Result Code](#result-code-values)}: {Testsuite Name} :: {Test Name}:{Configuration Number}.
@@ -345,18 +343,26 @@ In the above example we see that 23 tests succeeded and 5 were unsupported.
 
 ### Result Code Values
 
-Our tests use the standard [lit result codes][] and the addition of a non-standard result code `SKIP`. For our tests
-one need mostly only concern themselves with the `PASS`, `XFAIL`, `XPASS`, `FAIL`, and `UNSUPPORTED` result codes.
+Our tests use the standard [lit result codes][], and a non-standard result code: `SKIP`. For our tests, only the
+`PASS`, `XFAIL`, `XPASS`, `FAIL`, and `UNSUPPORTED` standard result codes are relevant.
 
 The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `PASS` and not `FAIL`.
-The `XPASS` and `XFAIL` result codes are less obvious. `XFAIL` is actually a successful result and indicates that we expected the
 
-test to fail and it did. `XPASS` is a failure result and indicates that we expected a test to fail but it passed.
-Typically this means that the `expected_results.txt` file for the testsuite needs to be modified and a `FAIL` entry
-needs to be removed.
+The `XPASS` and `XFAIL` result codes are less obvious. `XPASS` is actually a failure result and indicates that we
+expected a test to fail but it passed. `XFAIL` is a successful result and indicates that we expected the test to fail
+and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
+modified. If the `XPASS` result is a test legitimately passing the usual course of action would be to remove a `FAIL`
+entry from the `expected_results.txt`. However, some tests from `libcxx` mark themselves as `XFAIL` (meaning they
+expect to fail) for features they have added tests for but have yet to implement in `libcxx`. If the STL implements
+those features first the tests will begin passing unexpectedly for us and return `XPASS` results. In order to resolve
+this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
 all tests which use the `/BE` or `/clr:pure` options are unsupported.
+
+The `SKIP` result code indicates that a given test was explicitly skipped by adding a `SKIP` entry to the
+`expected_results.txt`. A test may be skipped for a number or reasons, which include, but are not limited to: it being
+an incorrect test; it taking a very long time to run; it failing or passing for the incorrect reason.
 
 # Block Diagram
 
@@ -393,6 +399,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
 [LICENSE.txt]: LICENSE.txt
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
