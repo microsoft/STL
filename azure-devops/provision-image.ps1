@@ -7,9 +7,11 @@ param(
   [string]$AdminUserPassword = $null
 )
 
+$TempPath = [System.IO.Path]::GetTempPath()
+
 if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
   Write-Output "AdminUser password supplied; switching to AdminUser"
-  $PsExecPath = $env:TEMP + "\psexec.exe"
+  $PsExecPath = $TempPath + "\psexec.exe"
   Write-Output "Downloading psexec to $PsExecPath"
   & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
   $PsExecArgs = @(
@@ -61,6 +63,17 @@ Function PrintMsiExitCodeMessage {
   }
 }
 
+Function Get-TempFilePath {
+  Param(
+    [String]$Extension
+  )
+  if ([String]::IsNullOrWhiteSpace($Extension)) {
+    throw 'Missing Extension'
+  }
+
+  return Join-Path $TempPath ([System.IO.Path]::GetRandomFileName() + '.' + $Extension)
+}
+
 Function InstallVisualStudio {
   Param(
     [String]$WorkLoads,
@@ -70,10 +83,8 @@ Function InstallVisualStudio {
 
   try {
     Write-Output 'Downloading Visual Studio...'
-    [string]$bootstrapperExe = Join-Path ([System.IO.Path]::GetTempPath()) `
-    ([System.IO.Path]::GetRandomFileName() + '.exe')
+    [string]$bootstrapperExe = Get-TempFileName -Extension 'exe'
     curl.exe -L -o $bootstrapperExe $BootstrapperUrl
-
     Write-Output "Installing Visual Studio..."
     $args = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache')
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
@@ -94,10 +105,8 @@ Function InstallMSI {
 
   try {
     Write-Output "Downloading $Name..."
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$msiPath = $randomRoot + '.msi'
+    [string]$msiPath = Get-TempFileName -Extension 'msi'
     curl.exe -L -o $msiPath $Url
-
     Write-Output "Installing $Name..."
     $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
     $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList $args -Wait -PassThru
@@ -119,10 +128,8 @@ Function InstallZip {
 
   try {
     Write-Output "Downloading $Name..."
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$zipPath = $randomRoot + '.zip'
+    [string]$zipPath = Get-TempFileName -Extension 'zip'
     curl.exe -L -o $zipPath $Url
-
     Write-Output "Installing $Name..."
     Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
   }
@@ -140,10 +147,8 @@ Function InstallLLVM {
 
   try {
     Write-Output 'Downloading LLVM...'
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$installerPath = $randomRoot + '.exe'
+    [string]$installerPath = Get-TempFileName -Extension 'exe'
     curl.exe -L -o $installerPath $Url
-
     Write-Output 'Installing LLVM...'
     $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
@@ -161,10 +166,8 @@ Function InstallPython {
   )
 
   Write-Output 'Downloading Python...'
-  [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-  [string]$installerPath = $randomRoot + '.exe'
+  [string]$installerPath = Get-TempFileName -Extension 'exe'
   curl.exe -L -o $installerPath $Url
-
   Write-Output 'Installing Python...'
   $proc = Start-Process -FilePath $installerPath -ArgumentList `
   @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
