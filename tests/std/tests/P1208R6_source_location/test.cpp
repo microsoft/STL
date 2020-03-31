@@ -9,12 +9,14 @@ static_assert(is_nothrow_swappable_v<source_location>, "source_location is not n
 
 constexpr auto g = source_location::current();
 
+constexpr int s_int_line = __LINE__ + 3;
 struct s {
     constexpr s(source_location x = source_location::current()) : loc(x) {}
     constexpr s([[maybe_unused]] int i) {}
     source_location loc = source_location::current();
 };
 
+constexpr int s2_line = __LINE__ + 2;
 struct s2 {
     s x;
 };
@@ -34,13 +36,13 @@ constexpr void copy_test() {
 
 constexpr void local_test() {
     constexpr auto x = source_location::current();
-    assert(x.line() == 36);
+    assert(x.line() == __LINE__ - 1);
     assert(x.column() == 41);
     assert(x.function_name() == "local_test"sv);
     assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
 
-constexpr void global_test() {
+constexpr void global_test() { // move to global static_asserts
     assert(g.line() == 10);
     assert(g.column() == 37);
     assert(g.function_name() == ""sv);
@@ -56,7 +58,7 @@ constexpr void argument_test(unsigned line, unsigned column, source_location x =
 
 constexpr void sloc_constructor_test() {
     s x;
-    assert(x.loc.line() == 58);
+    assert(x.loc.line() == __LINE__ - 1);
     assert(x.loc.column() == 7);
     assert(x.loc.function_name() == "sloc_constructor_test"sv);
     assert(string_view{x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -64,7 +66,7 @@ constexpr void sloc_constructor_test() {
 
 constexpr void different_constructor_test() {
     s x{1};
-    assert(x.loc.line() == 14);
+    assert(x.loc.line() == s_int_line);
     assert(x.loc.column() == 5);
     assert(x.loc.function_name() == "s"sv);
     assert(string_view{x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -72,7 +74,7 @@ constexpr void different_constructor_test() {
 
 constexpr void sub_member_test() {
     s2 s;
-    assert(s.x.loc.line() == 19);
+    assert(s.x.loc.line() == s2_line);
     assert(s.x.loc.column() == 7);
     assert(s.x.loc.function_name() == "s2"sv);
     assert(string_view{s.x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -81,7 +83,7 @@ constexpr void sub_member_test() {
 constexpr void lambda_test() {
     auto l = [loc = source_location::current()]() { return loc; };
     auto x = l();
-    assert(x.line() == 82);
+    assert(x.line() == __LINE__ - 2);
     assert(x.column() == 21);
     assert(x.function_name() == "lambda_test"sv);
     assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -94,7 +96,7 @@ constexpr source_location function_template() {
 
 constexpr void function_template_test() {
     auto x1 = function_template<void>();
-    assert(x1.line() == 92);
+    assert(x1.line() == __LINE__ - 5);
     assert(x1.column() == 29);
     assert(x1.function_name() == "function_template"sv);
     assert(string_view{x1.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
@@ -111,9 +113,9 @@ constexpr bool test() {
     // tab_test();
     global_test();
     local_test();
-    argument_test(114, 5);
+    argument_test(__LINE__, 5);
     auto loc = std::source_location::current();
-    argument_test(115, 38, loc);
+    argument_test(__LINE__ - 1, 38, loc);
     sloc_constructor_test();
     different_constructor_test();
     // sub_member_test();
