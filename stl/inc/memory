@@ -2578,7 +2578,7 @@ public:
     }
 
     ~atomic() {
-        _Ref_count_base* _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
         if (_Rep) {
             _Rep->_Decref();
         }
