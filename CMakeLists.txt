@@ -12,6 +12,7 @@ if("${Boost_VERSION}" VERSION_LESS "${VCLIBS_MIN_BOOST_VERSION}")
     message(FATAL_ERROR "Detected Boost version is too old (older than ${VCLIBS_MIN_BOOST_VERSION}).")
 endif()
 
+option(BUILD_TESTING "Enable testing" OFF)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -88,7 +89,7 @@ set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 
 add_subdirectory(stl)
 
-if(ENABLE_TESTS)
+if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
