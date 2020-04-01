@@ -40,7 +40,7 @@ $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_buildtools.exe'
 $CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-win64-x64.msi'
-$LlvmUrl = 'https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe'
+$LlvmUrl = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe'
 $NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
 $PythonUrl = 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe'
 
@@ -190,4 +190,13 @@ $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `
   -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
+
+Add-MPPreference -ExclusionPath C:\agent
+Add-MPPreference -ExclusionPath D:\
+Add-MPPreference -ExclusionProcess ninja.exe
+Add-MPPreference -ExclusionProcess clang-cl.exe
+Add-MPPreference -ExclusionProcess cl.exe
+Add-MPPreference -ExclusionProcess link.exe
+Add-MPPreference -ExclusionProcess python.exe
+
 C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /shutdown

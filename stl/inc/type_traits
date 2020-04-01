@@ -1936,7 +1936,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Ty>
-reference_wrapper(_Ty&)->reference_wrapper<_Ty>;
+reference_wrapper(_Ty&) -> reference_wrapper<_Ty>;
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATES ref AND cref
@@ -2030,8 +2030,8 @@ struct _Is_swappable : _Is_swappable_with<add_lvalue_reference_t<_Ty>, add_lvalu
 
 // STRUCT TEMPLATE _Swap_cannot_throw
 template <class _Ty1, class _Ty2>
-struct _Swap_cannot_throw : bool_constant<noexcept(swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))
-                                          && noexcept(swap(_STD declval<_Ty2>(), _STD declval<_Ty1>()))> {
+struct _Swap_cannot_throw : bool_constant<noexcept(swap(_STD declval<_Ty1>(), _STD declval<_Ty2>())) //
+                                    && noexcept(swap(_STD declval<_Ty2>(), _STD declval<_Ty1>()))> {
     // Determine if expressions with type and value category _Ty1 and _Ty2
     // (presumed to satisfy is_swappable_with) can be swapped without emitting exceptions
 };

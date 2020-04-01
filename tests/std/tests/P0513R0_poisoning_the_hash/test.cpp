@@ -55,7 +55,7 @@ constexpr bool standard_hash_enabled() {
            && is_trivial_v<hash<T>> // as a consequence of the above
            && is_same_v<typename hash<T>::argument_type, T> //
            && is_same_v<typename hash<T>::result_type, size_t> //
-           && noexcept(hash<T>{}(declval<const T&>())) == NoExcept //
+           && (noexcept(hash<T>{}(declval<const T&>())) == NoExcept) //
            && hash_disabled<const T>() //
            && hash_disabled<volatile T>() //
            && hash_disabled<const volatile T>();

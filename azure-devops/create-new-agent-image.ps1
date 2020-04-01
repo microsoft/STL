@@ -8,7 +8,7 @@
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D16s_v3'
+$VMSize = 'Standard_F16s_v2'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
@@ -249,7 +249,7 @@ $VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id 
 $VmssName = $ResourceGroupName + 'Vmss'
 $Vmss = New-AzVmssConfig `
   -Location $Location `
-  -SkuCapacity 2 `
+  -SkuCapacity 0 `
   -SkuName $VMSize `
   -SkuTier 'Standard' `
   -Overprovision $false `
