@@ -2160,7 +2160,7 @@ void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_
 }
 
 template <class _Ty>
-void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept 
+void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
 /* strengthened */ {
     _Mem->wait(_Expected);
 }
