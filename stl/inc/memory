@@ -2451,7 +2451,7 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_stro
 
 #if _HAS_CXX20
 template <class _Ty>
-struct alignas(2 * sizeof(void*)) _Atomic_ptr_base {
+class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
     // overalignment is to allow potential future use of cmpxchg16b
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
@@ -2459,10 +2459,10 @@ protected:
     _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept
         : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
 
-    _Ref_count_base* _Lock_and_load() const noexcept {
-        static constexpr uintptr_t _Low_bit = static_cast<uintptr_t>(1u);
-        uintptr_t _Rep                      = _Repptr.load() & ~_Low_bit;
-        while (!_Repptr.compare_exchange_strong(_Rep, _Rep | _Low_bit)) {
+    _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
+        constexpr uintptr_t _Low_bit = 1;
+        uintptr_t _Rep               = _Repptr.load() & ~_Low_bit;
+        while (!_Repptr.compare_exchange_weak(_Rep, _Rep | _Low_bit)) {
             _Rep &= ~_Low_bit;
             _YIELD_PROCESSOR();
         }
@@ -2473,12 +2473,12 @@ protected:
         _Repptr.store(reinterpret_cast<uintptr_t>(_Value));
     }
 
-    _Ty* _Ptr                         = nullptr;
+    _Ty* _Ptr = nullptr;
     mutable atomic<uintptr_t> _Repptr{0};
 };
 
 template <class _Ty>
-struct atomic<shared_ptr<_Ty>> : _Atomic_ptr_base<_Ty> {
+struct atomic<shared_ptr<_Ty>> : private _Atomic_ptr_base<_Ty> {
 private:
     using _Base = _Atomic_ptr_base<_Ty>;
 
@@ -2514,15 +2514,14 @@ public:
         return load();
     }
 
-    _NODISCARD shared_ptr<_Ty> exchange(
-        shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
         shared_ptr<_Ty> _Result;
         _Result._Rep = this->_Lock_and_load();
         _Result._Ptr = this->_Ptr;
         this->_Ptr   = _Value._Ptr;
         this->_Store_and_unlock(_Value._Rep);
-        _Value._Ptr = nullptr; // ownership of this ref has been given to this, silence decrement
+        _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
         return _Result;
     }
@@ -2551,17 +2550,16 @@ public:
             _STD swap(_Rep, _Desired._Rep);
             this->_Store_and_unlock(_Rep);
             return true;
-        } else {
-            _Ref_count_base* _ExpectedRep = _Expected._Rep;
-            _Expected._Ptr                = this->_Ptr;
-            _Expected._Rep                = _Rep;
-            _Expected._Incref();
-            this->_Store_and_unlock(_Rep);
-            if (_ExpectedRep) {
-                _ExpectedRep->_Decref();
-            }
-            return false;
         }
+        _Ref_count_base* _Expected_rep = _Expected._Rep;
+        _Expected._Ptr                 = this->_Ptr;
+        _Expected._Rep                 = _Rep;
+        _Expected._Incref();
+        this->_Store_and_unlock(_Rep);
+        if (_Expected_rep) {
+            _Expected_rep->_Decref();
+        }
+        return false;
     }
 
     constexpr atomic() noexcept = default;
@@ -2586,7 +2584,7 @@ public:
 };
 
 template <class _Ty>
-struct atomic<weak_ptr<_Ty>> : _Atomic_ptr_base<_Ty> {
+struct atomic<weak_ptr<_Ty>> : private _Atomic_ptr_base<_Ty> {
 private:
     using _Base = _Atomic_ptr_base<_Ty>;
 
@@ -2622,15 +2620,14 @@ public:
         return load();
     }
 
-    _NODISCARD weak_ptr<_Ty> exchange(
-        weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_memory_order(_Order);
         weak_ptr<_Ty> _Result;
         _Result._Rep = this->_Lock_and_load();
         _Result._Ptr = this->_Ptr;
         this->_Ptr   = _Value._Ptr;
         this->_Store_and_unlock(_Value._Rep);
-        _Value._Ptr = nullptr; // ownership of this ref has been given to this, silence decrement
+        _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
         return _Result;
     }
@@ -2659,17 +2656,16 @@ public:
             _STD swap(_Rep, _Desired._Rep);
             this->_Store_and_unlock(_Rep);
             return true;
-        } else {
-            const auto _ExpectedRep = _Expected._Rep;
-            _Expected._Ptr          = this->_Ptr;
-            _Expected._Rep          = _Rep;
-            _Expected._Incwref();
-            this->_Store_and_unlock(_Rep);
-            if (_ExpectedRep) {
-                _ExpectedRep->_Decwref();
-            }
-            return false;
         }
+        const auto _Expected_rep = _Expected._Rep;
+        _Expected._Ptr           = this->_Ptr;
+        _Expected._Rep           = _Rep;
+        _Expected._Incwref();
+        this->_Store_and_unlock(_Rep);
+        if (_Expected_rep) {
+            _Expected_rep->_Decwref();
+        }
+        return false;
     }
 
     constexpr atomic() noexcept = default;

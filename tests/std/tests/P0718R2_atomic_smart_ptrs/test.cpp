@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
+#include <cstdint>
 #include <memory>
 #include <thread>
 #ifdef _DEBUG
@@ -182,7 +183,7 @@ void test_weak_ptr_compare_exchange_strong() {
     }
 }
 
-static void run_test(void (*fp)()) {
+void run_test(void (*fp)()) {
     thread thr0(fp);
     thread thr1(fp);
     thread thr2(fp);
@@ -205,13 +206,6 @@ void ensure_nonmember_calls_compile() {
     atomic_store_explicit(&instance, loaded, memory_order::relaxed);
     loaded = atomic_exchange(&instance, loaded);
     loaded = atomic_exchange_explicit(&instance, loaded, memory_order::relaxed);
-    if (atomic_compare_exchange_strong(&instance, &loaded, loaded)) {
-        // intentionally empty
-    }
-    if (atomic_compare_exchange_strong_explicit(
-            &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
-        // intentionally empty
-    }
     if (atomic_compare_exchange_weak(&instance, &loaded, loaded)) {
         // intentionally empty
     }
@@ -219,19 +213,21 @@ void ensure_nonmember_calls_compile() {
             &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
         // intentionally empty
     }
+    if (atomic_compare_exchange_strong(&instance, &loaded, loaded)) {
+        // intentionally empty
+    }
+    if (atomic_compare_exchange_strong_explicit(
+            &instance, &loaded, loaded, memory_order::relaxed, memory_order::relaxed)) {
+        // intentionally empty
+    }
 }
 
 int main() {
     // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.
-    static_assert(
-        atomic<shared_ptr<int>>::is_always_lock_free == true || atomic<shared_ptr<int>>::is_always_lock_free == false);
-    static_assert(
-        atomic<weak_ptr<int>>::is_always_lock_free == true || atomic<weak_ptr<int>>::is_always_lock_free == false);
-
-    bool is_lock_free = atomic_sptr.is_lock_free();
-    assert(is_lock_free == true || is_lock_free == false);
-    is_lock_free = atomic_wptr.is_lock_free();
-    assert(is_lock_free == true || is_lock_free == false);
+    static_assert(atomic<shared_ptr<int>>::is_always_lock_free == false);
+    static_assert(atomic<weak_ptr<int>>::is_always_lock_free == false);
+    assert(atomic_sptr.is_lock_free() == false);
+    assert(atomic_wptr.is_lock_free() == false);
 
     run_test(test_shared_ptr_load_store);
     run_test(test_shared_ptr_exchange);
