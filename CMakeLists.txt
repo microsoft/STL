@@ -12,7 +12,7 @@ if("${Boost_VERSION}" VERSION_LESS "${VCLIBS_MIN_BOOST_VERSION}")
     message(FATAL_ERROR "Detected Boost version is too old (older than ${VCLIBS_MIN_BOOST_VERSION}).")
 endif()
 
-set(VCLIBS_SUFFIX "_oss")
+set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
     set(VCLIBS_TARGET_ARCHITECTURE "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
