@@ -2155,13 +2155,13 @@ _Ty atomic_fetch_xor_explicit(
 
 template <class _Ty>
 void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
-    /* strengthened */ {
+/* strengthened */ {
     _Mem->wait(_Expected);
 }
 
 template <class _Ty>
 void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept 
-    /* strengthened */ {
+/* strengthened */ {
     _Mem->wait(_Expected);
 }
 
