@@ -107,7 +107,7 @@ void test_weak_ptr_load_store() {
     weak_ptr<int> wp0 = wptr0;
     weak_ptr<int> wp1 = wptr1;
     for (uintmax_t i = 0; i < iterations; ++i) {
-        atomic_wptr        = wp1;
+        atomic_wptr        = wp0;
         weak_ptr<int> temp = atomic_wptr;
         assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
         this_thread::yield();
