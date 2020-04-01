@@ -20,7 +20,7 @@ weak_ptr<int> wptr1   = sptr1;
 atomic<shared_ptr<int>> atomic_sptr;
 atomic<weak_ptr<int>> atomic_wptr;
 
-bool weak_ptr_equal(const weak_ptr<int>& left, const weak_ptr<int>& right) {
+[[nodiscard]] bool weak_ptr_equal(const weak_ptr<int>& left, const weak_ptr<int>& right) {
     return !(left.owner_before(right) || right.owner_before(left));
 }
 
