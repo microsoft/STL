@@ -1887,6 +1887,7 @@ public:
     void notify_all() volatile noexcept {
         const_cast<atomic*>(this)->_Base::notify_all();
     }
+#endif // _HAS_CXX20
 
     operator _Ty() const volatile noexcept {
         return this->load();
@@ -1895,7 +1896,6 @@ public:
     operator _Ty() const noexcept {
         return this->load();
     }
-#endif // _HAS_CXX20
 };
 
 #if _HAS_CXX17
@@ -2153,6 +2153,7 @@ _Ty atomic_fetch_xor_explicit(
     return _Mem->fetch_xor(_Value, _Order);
 }
 
+#if _HAS_CXX20
 template <class _Ty>
 void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
 /* strengthened */ {
@@ -2196,6 +2197,7 @@ template <class _Ty>
 void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
     _Mem->notify_all();
 }
+#endif // _HAS_CXX20
 
 // FENCES
 extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
