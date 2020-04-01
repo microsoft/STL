@@ -400,6 +400,7 @@
 // warning C4625: copy constructor was implicitly defined as deleted (/Wall)
 // warning C4626: assignment operator was implicitly defined as deleted (/Wall)
 // warning C4643: Forward declaring 'meow' in namespace std is not permitted by the C++ Standard. (/Wall)
+// warning C4648: standard attribute 'meow' is ignored
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
@@ -412,8 +413,8 @@
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4702 4793 4820 \
-    4988 5026 5027 5045                               \
+    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
+    4820 4988 5026 5027 5045                          \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
