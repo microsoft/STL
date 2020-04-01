@@ -404,12 +404,12 @@ public:
             return true;
         }
         for (size_t _Wpos = 0; _Wpos < _Words; ++_Wpos) {
-            if (~_Array[_Wpos] != 0) {
+            if (_Array[_Wpos] != ~static_cast<_Ty>(0)) {
                 return false;
             }
         }
         if _CONSTEXPR_IF ((_Bits % _Bitsperword) == 0) {
-            return ~_Array[_Words] == 0;
+            return _Array[_Words] == ~static_cast<_Ty>(0);
         }
         return _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
