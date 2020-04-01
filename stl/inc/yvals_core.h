@@ -939,7 +939,7 @@
 #define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT                                              \
     [[deprecated("warning STL4029: "                                                                \
                  "std::atomic_*() overloads for shared_ptr are deprecated in C++20. "               \
-                 "The shared_ptr specialization of std::atomic provide equivalent functionality. "  \
+                 "The shared_ptr specialization of std::atomic provides superior functionality. "  \
                  "You can define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING " \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
