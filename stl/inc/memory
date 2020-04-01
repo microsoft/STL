@@ -2470,7 +2470,7 @@ protected:
     }
 
     void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
-        _Repptr = reinterpret_cast<uintptr_t>(_Value);
+        _Repptr.store(reinterpret_cast<uintptr_t>(_Value));
     }
 
     _Ty* _Ptr                         = nullptr;
