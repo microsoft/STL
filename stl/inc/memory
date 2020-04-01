@@ -2474,7 +2474,7 @@ protected:
     }
 
     _Ty* _Ptr                         = nullptr;
-    mutable atomic<uintptr_t> _Repptr = 0;
+    mutable atomic<uintptr_t> _Repptr{0};
 };
 
 template <class _Ty>
