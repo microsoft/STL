@@ -2461,7 +2461,7 @@ protected:
 
     _Ref_count_base* _Lock_and_load() const noexcept {
         static constexpr uintptr_t _Low_bit = static_cast<uintptr_t>(1u);
-        uintptr_t _Rep                      = _Repptr & ~_Low_bit;
+        uintptr_t _Rep                      = _Repptr.load() & ~_Low_bit;
         while (!_Repptr.compare_exchange_strong(_Rep, _Rep | _Low_bit)) {
             _Rep &= ~_Low_bit;
             _YIELD_PROCESSOR();
