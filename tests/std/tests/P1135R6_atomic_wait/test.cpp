@@ -12,7 +12,7 @@ template <class UnderlyingType>
 void test_atomic_wait_func(
     UnderlyingType old_value, UnderlyingType new_value, std::chrono::steady_clock::duration waiting_duration) {
 
-    constexpr std::size_t seq_max_size = 10;
+    constexpr std::ptrdiff_t seq_max_size = 10;
     char seq[seq_max_size + 1];
     std::atomic<char*> base = seq;
     auto add_seq            = [&](char ch) {
