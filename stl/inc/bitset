@@ -20,6 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #pragma warning(disable : 6294) // Ill-defined for-loop:
                                 // initial condition does not satisfy test.  Loop body not executed.
+#pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
 // CLASS TEMPLATE bitset
