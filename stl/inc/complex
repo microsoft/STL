@@ -82,7 +82,7 @@ public:
     }
 
     static constexpr _Ty _Infv() { // return infinity
-        return numeric_limits<double>::infinity();
+        return numeric_limits<_Ty>::infinity();
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
@@ -95,14 +95,14 @@ public:
 #if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
         if (_STD is_constant_evaluated()) {
             uint64_t _Uint = _STD bit_cast<uint64_t>(_Tmp);
-            return ((_Uint >> 32) & 0x7fffffffU) + (_Uint != 0U) > 0x7ff00000U;
+            return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
         } else
 #endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
             return _CSTD _Dtest(&_Tmp) == _NANCODE;
     }
 
     static constexpr _Ty _Nanv() { // return NaN
-        return numeric_limits<double>::quiet_NaN();
+        return numeric_limits<_Ty>::quiet_NaN();
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -213,8 +213,8 @@ public:
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
 #if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
         if (_STD is_constant_evaluated()) {
-            uint64_t _Tmp = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
-            return ((_Tmp >> 32) & 0x7fffffffU) + (_Tmp != 0U) > 0x7ff00000U;
+            uint64_t _Uint = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
+            return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
         } else
 #endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
             return _CSTD _LDtest(&_Left) == _NANCODE;
@@ -332,8 +332,8 @@ public:
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
 #if defined(__cpp_lib_is_constant_evaluated) && defined(__cpp_lib_bit_cast)
         if (_STD is_constant_evaluated()) {
-            uint64_t _Tmp = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
-            return ((_Tmp >> 32) & 0x7fffffffU) + (_Tmp != 0U) > 0x7ff00000U;
+            uint64_t _Uint = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
+            return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
         } else
 #endif // __cpp_lib_is_constant_evaluated && __cpp_lib_bit_cast
             return _CSTD _Dtest(&_Left) == _NANCODE;
