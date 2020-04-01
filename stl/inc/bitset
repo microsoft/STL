@@ -400,7 +400,18 @@ public:
     }
 
     _NODISCARD bool all() const noexcept {
-        return count() == size();
+        if _CONSTEXPR_IF (_Bits == 0) {
+            return true;
+        }
+        for (size_t _Wpos = 0; _Wpos < _Words; ++_Wpos) {
+            if (~_Array[_Wpos] != 0) {
+                return false;
+            }
+        }
+        if _CONSTEXPR_IF ((_Bits % _Bitsperword) == 0) {
+            return ~_Array[_Words] == 0;
+        }
+        return _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword))-1;
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
