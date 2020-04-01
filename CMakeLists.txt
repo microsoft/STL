@@ -88,6 +88,7 @@ set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 
 add_subdirectory(stl)
 
-# Since we don't configure any of the tests with CMake, there is no downside to enabling testing unconditionally.
-enable_testing()
-add_subdirectory(tests)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
