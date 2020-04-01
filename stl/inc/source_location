@@ -23,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 struct source_location {
-    static constexpr source_location current(uint_least32_t _InLine = __builtin_LINE(),
+    _NODISCARD static constexpr source_location current(uint_least32_t _InLine = __builtin_LINE(),
         uint_least32_t _InColumn = __builtin_COLUMN(), const char* _InFile = __builtin_FILE(),
         const char* _InFunction = __builtin_FUNCTION()) noexcept {
         source_location _Result;
