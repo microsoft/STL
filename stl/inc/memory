@@ -2457,7 +2457,7 @@ protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
     _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept
-        : _Ptr(_Px), _Repptr(reinterpret_cast<const uintptr_t>(_Ref)) {}
+        : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
 
     _Ref_count_base* _Lock_and_load() const noexcept {
         static constexpr uintptr_t _Low_bit = static_cast<uintptr_t>(1u);
