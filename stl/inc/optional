@@ -394,7 +394,7 @@ public:
     }
 
     template <class _Ty2>
-    _NODISCARD constexpr _Ty value_or(_Ty2&& _Right) const& {
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) const& {
         static_assert(is_copy_constructible_v<_Ty>,
             "The const overload of optional<T>::value_or requires T to be copy constructible "
             "(N4828 [optional.observe]/18).");
@@ -405,10 +405,10 @@ public:
             return this->_Value;
         }
 
-        return static_cast<_Ty>(_STD forward<_Ty2>(_Right));
+        return static_cast<remove_cv_t<_Ty>>(_STD forward<_Ty2>(_Right));
     }
     template <class _Ty2>
-    _NODISCARD constexpr _Ty value_or(_Ty2&& _Right) && {
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) && {
         static_assert(is_move_constructible_v<_Ty>,
             "The rvalue overload of optional<T>::value_or requires T to be move constructible "
             "(N4828 [optional.observe]/20).");
@@ -419,7 +419,7 @@ public:
             return _STD move(this->_Value);
         }
 
-        return static_cast<_Ty>(_STD forward<_Ty2>(_Right));
+        return static_cast<remove_cv_t<_Ty>>(_STD forward<_Ty2>(_Right));
     }
 
     // modifiers [optional.object.mod]
