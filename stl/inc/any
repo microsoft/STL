@@ -401,7 +401,7 @@ _NODISCARD _ValueType* any_cast(any* const _Any) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD _Ty any_cast(const any& _Any) { // retrieve _Any's contained value as _Ty
+_NODISCARD remove_cv_t<_Ty> any_cast(const any& _Any) {
     static_assert(is_constructible_v<_Ty, const _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(const any&) requires T to be constructible from const remove_cv_t<remove_reference_t<T>>&");
 
@@ -410,10 +410,10 @@ _NODISCARD _Ty any_cast(const any& _Any) { // retrieve _Any's contained value as
         _Throw_bad_any_cast();
     }
 
-    return static_cast<_Ty>(*_Ptr);
+    return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
 template <class _Ty>
-_NODISCARD _Ty any_cast(any& _Any) { // retrieve _Any's contained value as _Ty
+_NODISCARD remove_cv_t<_Ty> any_cast(any& _Any) {
     static_assert(is_constructible_v<_Ty, _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(any&) requires T to be constructible from remove_cv_t<remove_reference_t<T>>&");
 
@@ -422,10 +422,10 @@ _NODISCARD _Ty any_cast(any& _Any) { // retrieve _Any's contained value as _Ty
         _Throw_bad_any_cast();
     }
 
-    return static_cast<_Ty>(*_Ptr);
+    return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
 template <class _Ty>
-_NODISCARD _Ty any_cast(any&& _Any) { // retrieve _Any's contained value as _Ty
+_NODISCARD remove_cv_t<_Ty> any_cast(any&& _Any) {
     static_assert(is_constructible_v<_Ty, _Remove_cvref_t<_Ty>>,
         "any_cast<T>(any&&) requires T to be constructible from remove_cv_t<remove_reference_t<T>>");
 
@@ -434,7 +434,7 @@ _NODISCARD _Ty any_cast(any&& _Any) { // retrieve _Any's contained value as _Ty
         _Throw_bad_any_cast();
     }
 
-    return static_cast<_Ty>(_STD move(*_Ptr));
+    return static_cast<remove_cv_t<_Ty>>(_STD move(*_Ptr));
 }
 
 _STD_END
