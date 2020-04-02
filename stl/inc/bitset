@@ -411,7 +411,7 @@ public:
                 return false;
             }
         }
-        return _No_padding ? true : _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
+        return _No_padding || _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
