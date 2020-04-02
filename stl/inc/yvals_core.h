@@ -455,8 +455,8 @@
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #else // __clang__
 #define _STL_DISABLE_DEPRECATED_WARNING \
-    __pragma(warning(push))             \
-    __pragma(warning(disable : 4996)) // was declared deprecated
+    _Pragma("warning(push)")            \
+    _Pragma("warning(disable : 4996)") // was declared deprecated
 #endif // __clang__
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
@@ -465,7 +465,7 @@
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
 #else // __clang__
-#define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
+#define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
 #endif // __clang__
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
