@@ -297,8 +297,8 @@ bool _Try_lock_from_locks(
 
 // FUNCTION TEMPLATE _Unlock_locks
 template <size_t... _Indices, class... _LockN>
-void _Unlock_locks(
-    const int _First, const int _Last, index_sequence<_Indices...>, _LockN&... _LkN) noexcept /* terminates */ {
+void _Unlock_locks(const int _First, const int _Last, index_sequence<_Indices...>, _LockN&... _LkN) noexcept
+/* terminates */ {
     // unlock locks in _LkN[_First, _Last)
     int _Ignored[] = {
         ((_First <= static_cast<int>(_Indices) && static_cast<int>(_Indices) < _Last ? (void) _LkN.unlock() : void()),

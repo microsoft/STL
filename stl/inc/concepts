@@ -13,6 +13,7 @@
 #pragma message("The contents of <concepts> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <type_traits>
+#include <vcruntime_new.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -108,9 +109,12 @@ concept constructible_from = destructible<_Ty>
     && __is_constructible(_Ty, _ArgTys...);
 
 // CONCEPT default_initializable
-template <class _Ty> // Per P1754R1 and LWG-3149
+template <class _Ty>
 concept default_initializable = constructible_from<_Ty>
-    && requires { _Ty{}; }; // && __is_default_initializable(_Ty); // TRANSITION, VSO-896348
+    && requires {
+        _Ty{};
+        ::new (static_cast<void*>(nullptr)) _Ty; // is-default-initializable<_Ty>
+    };
 
 // CONCEPT move_constructible
 template <class _Ty>

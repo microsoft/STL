@@ -170,6 +170,7 @@
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
@@ -400,6 +401,7 @@
 // warning C4625: copy constructor was implicitly defined as deleted (/Wall)
 // warning C4626: assignment operator was implicitly defined as deleted (/Wall)
 // warning C4643: Forward declaring 'meow' in namespace std is not permitted by the C++ Standard. (/Wall)
+// warning C4648: standard attribute 'meow' is ignored
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
@@ -412,8 +414,8 @@
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4702 4793 4820 \
-    4988 5026 5027 5045                               \
+    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
+    4820 4988 5026 5027 5045                          \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -454,8 +456,8 @@
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #else // __clang__
 #define _STL_DISABLE_DEPRECATED_WARNING \
-    __pragma(warning(push))             \
-    __pragma(warning(disable : 4996)) // was declared deprecated
+    _Pragma("warning(push)")            \
+    _Pragma("warning(disable : 4996)") // was declared deprecated
 #endif // __clang__
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
@@ -464,13 +466,13 @@
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
 #else // __clang__
-#define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
+#define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
 #endif // __clang__
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202002L
+#define _MSVC_STL_UPDATE  202003L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -1037,7 +1039,6 @@
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
 #define __cpp_lib_apply                      201603L
-#define __cpp_lib_array_constexpr            201803L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
 #if _HAS_STD_BYTE
@@ -1129,6 +1130,12 @@
 #define __cpp_lib_type_identity            201806L
 #define __cpp_lib_unwrap_ref               201811L
 #endif // _HAS_CXX20
+
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_array_constexpr 201803L
+#endif // _HAS_CXX17
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays

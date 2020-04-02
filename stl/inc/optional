@@ -427,7 +427,7 @@ public:
 };
 
 template <class _Ty>
-optional(_Ty)->optional<_Ty>;
+optional(_Ty) -> optional<_Ty>;
 
 // RELATIONAL OPERATORS [optional.relops]
 template <class _Ty1, class _Ty2>

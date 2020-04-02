@@ -283,8 +283,8 @@ _NODISCARD _Check_return_ inline long double atanh(_In_ long double _Xx) noexcep
     return _CSTD atanhl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double atan2(
-    _In_ long double _Yx, _In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double atan2(_In_ long double _Yx, _In_ long double _Xx) noexcept
+/* strengthened */ {
     return _CSTD atan2l(_Yx, _Xx);
 }
 
@@ -296,8 +296,8 @@ _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept
     return _CSTD ceill(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double copysign(
-    _In_ long double _Number, _In_ long double _Sign) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, _In_ long double _Sign) noexcept
+/* strengthened */ {
     return _CSTD copysignl(_Number, _Sign);
 }
 
@@ -333,8 +333,8 @@ _NODISCARD _Check_return_ inline long double fabs(_In_ long double _Xx) noexcept
     return _CSTD fabsl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double fdim(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double fdim(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD fdiml(_Xx, _Yx);
 }
 
@@ -347,18 +347,18 @@ _NODISCARD _Check_return_ inline long double fma(
     return _CSTD fmal(_Xx, _Yx, _Zx);
 }
 
-_NODISCARD _Check_return_ inline long double fmax(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double fmax(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD fmaxl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double fmin(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double fmin(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD fminl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double fmod(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double fmod(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD fmodl(_Xx, _Yx);
 }
 
@@ -366,8 +366,8 @@ inline long double frexp(_In_ long double _Xx, _Out_ int* _Yx) noexcept /* stren
     return _CSTD frexpl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double hypot(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double hypot(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD hypotl(_Xx, _Yx);
 }
 
@@ -427,18 +427,18 @@ _NODISCARD _Check_return_ inline long double nearbyint(_In_ long double _Xx) noe
     return _CSTD nearbyintl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double nextafter(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double nextafter(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD nextafterl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double nexttoward(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double nexttoward(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD nexttowardl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double pow(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double pow(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD powl(_Xx, _Yx);
 }
 
@@ -450,8 +450,8 @@ _NODISCARD _Check_return_ inline long double pow(_In_ long double _Xx, _In_ int 
     return _CSTD powl(_Xx, static_cast<long double>(_Yx));
 }
 
-_NODISCARD _Check_return_ inline long double remainder(
-    _In_ long double _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ inline long double remainder(_In_ long double _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD remainderl(_Xx, _Yx);
 }
 
@@ -1384,18 +1384,16 @@ _NODISCARD /* constexpr */ _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, co
 // As of 2019-06-17 it is unclear whether the "sufficient additional overloads" clause is intended to target lerp;
 // LWG-3223 is pending.
 
-_NODISCARD /* constexpr */ inline float lerp(
-    const float _ArgA, const float _ArgB, const float _ArgT) noexcept /* strengthened */ {
+_NODISCARD /* constexpr */ inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_NODISCARD /* constexpr */ inline double lerp(
-    const double _ArgA, const double _ArgB, const double _ArgT) noexcept /* strengthened */ {
+_NODISCARD /* constexpr */ inline double lerp(const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
 _NODISCARD /* constexpr */ inline long double lerp(
-    const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept /* strengthened */ {
+    const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 #endif // _HAS_CXX20

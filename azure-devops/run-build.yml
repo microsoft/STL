@@ -3,8 +3,9 @@
 
 jobs:
 - job: ${{ parameters.targetPlatform }}
+  timeoutInMinutes: 360
   pool:
-    name: STL
+    name: StlBuild-2020-03-28
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
@@ -24,15 +25,16 @@ jobs:
       condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
       timeoutInMinutes: 10
       inputs:
-        vcpkgArguments: 'boost-build:x86-windows'
+        vcpkgArguments: 'boost-build'
         vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg'
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
-        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
+        vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
     - task: run-cmake@0
       displayName: 'Build Support Tools'
       timeoutInMinutes: 2
@@ -58,11 +60,62 @@ jobs:
         filename: 'azure-devops/validate-files.cmd'
         failOnStandardError: true
         arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+    - task: PowerShell@2
+      displayName: 'Get Test Parallelism'
+      timeoutInMinutes: 2
+      inputs:
+        targetType: inline
+        script: |
+          $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+          Write-Output "##vso[task.setvariable variable=testParallelism;]$testParallelism"
     - task: run-cmake@0
       displayName: 'Build the STL'
       timeoutInMinutes: 10
       inputs:
-        cmakeListsTxtPath: 'CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
+        cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
+        cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        useVcpkgToolchainFile: true
+        cmakeAppendedArgs: |
+          -G Ninja -DENABLE_TESTS=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
+    - task: PowerShell@2
+      displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        targetType: inline
+        script: |
+          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command ctest).source);%PATH%"
+          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command clang-cl).source);%PATH%"
+          $currentDir = "$((Get-Item -Path "./").FullName)"
+          Add-Content -Path ./run-tests.cmd -Value "cd $currentDir"
+          Add-Content -Path ./run-tests.cmd -Value "ctest -V"
+          $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
+    - task: PublishTestResults@2
+      displayName: 'Publish libcxx Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/libcxx.test.xml'
+        testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish std Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/std.test.xml'
+        testRunTitle: 'std-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish tr1 Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/tr1.test.xml'
+        testRunTitle: 'tr1-${{ parameters.targetPlatform }}'
