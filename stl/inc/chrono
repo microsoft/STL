@@ -612,7 +612,7 @@ namespace chrono {
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
-            // Below algorithm istead of just having "(_Ctr * period::den) / _Freq" 
+            // Below algorithm istead of just having "(_Ctr * period::den) / _Freq"
             // prevents overflow when _Ctr is sufficiently large.
             // It assumes that _Freq * period::den does not overflow, which is currently true for nano period
             // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
