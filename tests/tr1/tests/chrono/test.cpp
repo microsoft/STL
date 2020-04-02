@@ -7,7 +7,6 @@
 #include "tdefs.h"
 #include <chrono>
 #include <iostream>
-#include <thread>
 #include <time.h>
 #include <typeinfo>
 
@@ -298,34 +297,6 @@ namespace {
         }
     }
 
-    template <class ClockBeingTested, class ClockToTestAgainst, class DurationType>
-    void test_sleep() {
-        auto t1 = ClockToTestAgainst::now();
-        auto t2 = ClockBeingTested::now();
-        auto t3 = ClockToTestAgainst::now();
-
-        auto sleep_time = STD chrono::milliseconds(2);
-        STD this_thread::sleep_for(sleep_time);
-
-        auto d4 = STD chrono::duration_cast<DurationType>(sleep_time);
-
-        auto d3 = STD chrono::duration_cast<DurationType>(ClockToTestAgainst::now() - t3);
-        auto d2 = STD chrono::duration_cast<DurationType>(ClockBeingTested::now() - t2);
-        auto d1 = STD chrono::duration_cast<DurationType>(ClockToTestAgainst::now() - t1);
-
-        CHECK_INT(d4.count() <= d3.count(), true);
-        CHECK_INT(d3.count() <= d2.count(), true);
-        CHECK_INT(d2.count() <= d1.count(), true);
-    }
-
-    void t_sleep() {
-        test_sleep<STD chrono::steady_clock, STD chrono::system_clock,
-            typename STD chrono::high_resolution_clock::duration>();
-
-        test_sleep<STD chrono::system_clock, STD chrono::steady_clock,
-            typename STD chrono::high_resolution_clock::duration>();
-    }
-
 } // anonymous namespace
 
 void test_main() {
@@ -335,5 +306,4 @@ void test_main() {
     t_duration();
     t_clocks();
     t_time_point();
-    t_sleep();
 }
