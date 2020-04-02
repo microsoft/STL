@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #pragma warning(disable : 6294) // Ill-defined for-loop:
                                 // initial condition does not satisfy test.  Loop body not executed.
-#pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
 // CLASS TEMPLATE bitset
@@ -401,18 +400,18 @@ public:
     }
 
     _NODISCARD bool all() const noexcept {
-        if _CONSTEXPR_IF (_Bits == 0) {
-            return true;
+        constexpr bool _Zero_length = _Bits == 0;
+        if _CONSTEXPR_IF (_Zero_length) { // must test for this, otherwise would count one full word
+            return true; 
         }
-        for (size_t _Wpos = 0; _Wpos < _Words; ++_Wpos) {
+
+        constexpr bool _No_padding = _Bits % _Bitsperword == 0;
+        for (size_t _Wpos = 0; _Wpos < _Words + _No_padding; ++_Wpos) {
             if (_Array[_Wpos] != ~static_cast<_Ty>(0)) {
                 return false;
             }
         }
-        if _CONSTEXPR_IF (_Bits % _Bitsperword == 0) {
-            return _Array[_Words] == ~static_cast<_Ty>(0);
-        }
-        return _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
+        return _No_padding ? 0 : _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
