@@ -638,7 +638,7 @@ namespace chrono {
                 _Atomic_compare_exchange_strong_ll_cst_seq(&_Cached._Result_base, _Result, LLONG_MAX);
             }
             // if _Result is not saved as first, it is still compatible with fast result
-            return time_point(duration(_Result));            
+            return time_point(duration(_Result));
 #else // ^^^ known hardware && !defined(_M_CEE_PURE) / unknown hardware || defined(_M_CEE_PURE) vvv
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
