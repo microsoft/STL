@@ -402,7 +402,7 @@ public:
     _NODISCARD bool all() const noexcept {
         constexpr bool _Zero_length = _Bits == 0;
         if _CONSTEXPR_IF (_Zero_length) { // must test for this, otherwise would count one full word
-            return true; 
+            return true;
         }
 
         constexpr bool _No_padding = _Bits % _Bitsperword == 0;
