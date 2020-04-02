@@ -1616,7 +1616,7 @@ struct _Uninitialized_rev_destroying_backout {
     _NoThrowIt _First;
     _NoThrowIt _Last;
 
-    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) : _First(_Dest), _Last(_Dest) {}
+    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept : _First(_Dest), _Last(_Dest) {}
 
     _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
@@ -1634,17 +1634,17 @@ struct _Uninitialized_rev_destroying_backout {
         ++_Last;
     }
 
-    _NoThrowIt _Release() { // suppress any exception handling backout and return _Last
+    _NoThrowIt _Release() noexcept { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
 };
 
 template <class _Ty>
-void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) {
+void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) noexcept {
     while (_Size > 0) {
         --_Size;
-        if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
+        if constexpr (is_array_v<_Ty>) {
             _Reverse_destroy_multidimensional_n(_Arr[_Size], extent_v<_Ty>);
         } else {
             _Destroy_in_place(_Arr[_Size]);
@@ -1653,39 +1653,27 @@ void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) {
 }
 
 template <class _Ty>
-class _Reverse_destroy_multidimensional_n_guard {
-public:
-    _Reverse_destroy_multidimensional_n_guard(_Ty* const _Arr_, const size_t _Size_) noexcept
-        : _Arr(_Arr_), _Size(_Size_) {}
-
-    void _Dismiss() noexcept {
-        _Arr = nullptr;
-    }
+struct _Reverse_destroy_multidimensional_n_guard {
+    _Ty* _Target;
+    size_t _Index;
 
     ~_Reverse_destroy_multidimensional_n_guard() {
-        if (_Arr) {
-            _Reverse_destroy_multidimensional_n(_Arr, _Size);
+        if (_Target) {
+            _Reverse_destroy_multidimensional_n(_Target, _Index);
         }
     }
-
-    _Reverse_destroy_multidimensional_n_guard(const _Reverse_destroy_multidimensional_n_guard&) = delete;
-    _Reverse_destroy_multidimensional_n_guard& operator=(const _Reverse_destroy_multidimensional_n_guard&) = delete;
-
-private:
-    _Ty* _Arr;
-    size_t _Size;
 };
 
 template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
-    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
-        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Reverse_destroy_multidimensional_n_guard _Guard{_Out, _Idx};
-            _Uninitialized_copy_multidimensional(_In[_Idx], _Out[_Idx]);
-            _Guard._Dismiss();
-        }
-    } else if constexpr (_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial) {
+    if constexpr (is_trivial_v<_Ty>) {
         _Copy_memmove(_In, _In + _Size, _Out);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional(_In[_Idx], _Out[_Idx]);
+        }
+        _Guard._Target = nullptr;
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1697,17 +1685,18 @@ void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_
 
 template <class _Ty>
 void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const size_t _Size) {
-    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
-        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Reverse_destroy_multidimensional_n_guard _Guard{_Out, _Idx};
-            _Uninitialized_value_construct_multidimensional_n(_Out[_Idx], extent_v<_Ty>);
-            _Guard._Dismiss();
-        }
-    } else if constexpr (_Use_memset_value_construct_v<_Ty*>) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (_Use_memset_value_construct_v<_Item*>) {
         _Zero_range(_Out, _Out + _Size);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_value_construct_multidimensional_n(_Out[_Idx], extent_v<_Ty>);
+        }
+        _Guard._Target = nullptr;
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
-        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back();
         }
         _Backout._Release();
@@ -1716,17 +1705,17 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
 
 template <class _Ty>
 void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size, const _Ty& _Val) {
-    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
-        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Reverse_destroy_multidimensional_n_guard _Guard{_Out, _Idx};
-            _Uninitialized_copy_multidimensional(_Val, _Out[_Idx]);
-            _Guard._Dismiss();
+    if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional(_Val, _Out[_Idx]); // intentionally copy, not fill
         }
+        _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
         _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
-        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back(_Val);
         }
         _Backout._Release();
@@ -1748,7 +1737,7 @@ public:
         _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
     }
 
-    auto _Get_ptr() {
+    _NODISCARD auto _Get_ptr() noexcept {
         return _STD addressof(_Storage._Value);
     }
 
@@ -1788,7 +1777,7 @@ public:
         _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Size, _Val);
     }
 
-    auto _Get_ptr() {
+    _NODISCARD auto _Get_ptr() noexcept {
         return _STD addressof(_Storage._Value);
     }
 
@@ -1887,17 +1876,22 @@ protected:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_obj_alloc2
+// CLASS TEMPLATE _Ref_count_obj_alloc3
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_obj_alloc2 : public _Ebco_base<_Alloc>, public _Ref_count_base {
+class __declspec(empty_bases) _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>,
+                                                      public _Ref_count_base {
     // handle reference counting for object in control block, allocator
+private:
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
+
+    using _Rebound = _Rebind_alloc_t<_Alloc, _Ty>;
+
 public:
     template <class... _Types>
-    explicit _Ref_count_obj_alloc2(const _Alloc& _Al_arg, _Types&&... _Args)
-        : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base() {
-        _Maybe_rebind_alloc_t<_Alloc, _Ty> _Alty(this->_Get_val());
-        allocator_traits<_Rebind_alloc_t<_Alloc, _Ty>>::construct(
-            _Alty, _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
+    explicit _Ref_count_obj_alloc3(const _Alloc& _Al_arg, _Types&&... _Args)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
+        allocator_traits<_Rebound>::construct(
+            this->_Get_val(), _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
     }
 
     union {
@@ -1905,20 +1899,19 @@ public:
     };
 
 private:
-    ~_Ref_count_obj_alloc2() {
+    ~_Ref_count_obj_alloc3() {
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        _Maybe_rebind_alloc_t<_Alloc, _Ty> _Alty(this->_Get_val());
-        allocator_traits<_Rebind_alloc_t<_Alloc, _Ty>>::destroy(_Alty, _STD addressof(_Storage._Value));
+        allocator_traits<_Rebound>::destroy(this->_Get_val(), _STD addressof(_Storage._Value));
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
-        _Rebind_alloc_t<_Alloc, _Ref_count_obj_alloc2> _Al(this->_Get_val());
-        this->~_Ref_count_obj_alloc2();
+        _Rebind_alloc_t<_Alloc, _Ref_count_obj_alloc3> _Al(this->_Get_val());
+        this->~_Ref_count_obj_alloc3();
         _Deallocate_plain(_Al, this);
     }
 };
@@ -1932,7 +1925,8 @@ private:
     using pointer = _Alloc_ptr_t<_Alloc>;
 
 public:
-    _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
+    _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) noexcept
+        : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
 
     _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&) = delete;
     _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
@@ -1950,7 +1944,7 @@ public:
         ++_Last;
     }
 
-    pointer _Release() { // suppress any exception handling backout and return _Last
+    pointer _Release() noexcept { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
@@ -1962,10 +1956,10 @@ private:
 };
 
 template <class _Ty, class _Alloc>
-void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Alloc& _Al) {
+void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Alloc& _Al) noexcept {
     while (_Size > 0) {
         --_Size;
-        if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
+        if constexpr (is_array_v<_Ty>) {
             _Reverse_destroy_multidimensional_n_al(_Arr[_Size], extent_v<_Ty>, _Al);
         } else {
             allocator_traits<_Alloc>::destroy(_Al, _Arr + _Size);
@@ -1974,43 +1968,30 @@ void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Allo
 }
 
 template <class _Ty, class _Alloc>
-class _Reverse_destroy_multidimensional_n_al_guard {
-public:
-    _Reverse_destroy_multidimensional_n_al_guard(_Ty* const _Arr_, const size_t _Size_, _Alloc& _Al_) noexcept
-        : _Arr(_Arr_), _Size(_Size_), _Al(_Al_) {}
-
-    void _Dismiss() noexcept {
-        _Arr = nullptr;
-    }
+struct _Reverse_destroy_multidimensional_n_al_guard {
+    _Ty* _Target;
+    size_t _Index;
+    _Alloc& _Al;
 
     ~_Reverse_destroy_multidimensional_n_al_guard() {
-        if (_Arr) {
-            _Reverse_destroy_multidimensional_n_al(_Arr, _Size, _Al);
+        if (_Target) {
+            _Reverse_destroy_multidimensional_n_al(_Target, _Index, _Al);
         }
     }
-
-    _Reverse_destroy_multidimensional_n_al_guard(const _Reverse_destroy_multidimensional_n_al_guard&) = delete;
-    _Reverse_destroy_multidimensional_n_al_guard& operator=( //
-        const _Reverse_destroy_multidimensional_n_al_guard&) = delete;
-
-private:
-    _Ty* _Arr;
-    size_t _Size;
-    _Alloc& _Al;
 };
 
 template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
-    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
-        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Reverse_destroy_multidimensional_n_al_guard _Guard{_Out, _Idx, _Al};
-            _Uninitialized_copy_multidimensional_al(_In[_Idx], _Out[_Idx], _Al);
-            _Guard._Dismiss();
-        }
-    } else if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Really_trivial>,
-                             _Uses_default_construct<_Alloc, _Ty*, _Ty>>) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
         (void) _Al;
         _Copy_memmove(_In, _In + _Size, _Out);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional_al(_In[_Idx], _Out[_Idx], _Al);
+        }
+        _Guard._Target = nullptr;
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -2022,18 +2003,19 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
 
 template <class _Ty, class _Alloc>
 void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const size_t _Size, _Alloc& _Al) {
-    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
-        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Reverse_destroy_multidimensional_n_al_guard _Guard{_Out, _Idx, _Al};
-            _Uninitialized_value_construct_multidimensional_n_al(_Out[_Idx], extent_v<_Ty>, _Al);
-            _Guard._Dismiss();
-        }
-    } else if constexpr (_Use_memset_value_construct_v<_Ty*> && _Uses_default_construct<_Alloc, _Ty*>::value) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (_Use_memset_value_construct_v<_Item*> && _Uses_default_construct<_Alloc, _Item*>::value) {
         (void) _Al;
         _Zero_range(_Out, _Out + _Size);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_value_construct_multidimensional_n_al(_Out[_Idx], extent_v<_Ty>, _Al);
+        }
+        _Guard._Target = nullptr;
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
-        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back();
         }
         _Backout._Release();
@@ -2042,18 +2024,18 @@ void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const
 
 template <class _Ty, class _Alloc>
 void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Size, const _Ty& _Val, _Alloc& _Al) {
-    if constexpr ((rank_v<_Ty>) > 0) { // TRANSITION, LLVM-42404
-        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Reverse_destroy_multidimensional_n_al_guard _Guard{_Out, _Idx, _Al};
+    if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
             _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al); // intentionally copy, not fill
-            _Guard._Dismiss();
         }
-    } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+        _Guard._Target = nullptr;
+    } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
         (void) _Al;
         _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
-        for (size_t _Count = 0; _Count < _Size; ++_Count) {
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back(_Val);
         }
         _Backout._Release();
@@ -2062,24 +2044,30 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
 
 // CLASS TEMPLATE _Ref_count_unbounded_array_alloc
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_unbounded_array_alloc : public _Ebco_base<_Alloc>, public _Ref_count_base {
+class __declspec(empty_bases) _Ref_count_unbounded_array_alloc
+    : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
+      public _Ref_count_base {
     // handle reference counting for unbounded array in control block, allocator
+private:
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
+
+    using _Item    = remove_all_extents_t<_Ty>;
+    using _Rebound = _Rebind_alloc_t<_Alloc, _Item>;
+
 public:
     using _Element_type = remove_extent_t<_Ty>;
 
     explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count)
-        : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base(), _Size(_Count) {
-        _Maybe_rebind_alloc_t<_Alloc, remove_cv_t<remove_all_extents_t<_Ty>>> _Alty(this->_Get_val());
-        _Uninitialized_value_construct_multidimensional_n_al(_Get_ptr(), _Size, _Alty);
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base(), _Size(_Count) {
+        _Uninitialized_value_construct_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
     }
 
     explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count, const _Element_type& _Val)
-        : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base(), _Size(_Count) {
-        _Maybe_rebind_alloc_t<_Alloc, remove_cv_t<remove_all_extents_t<_Ty>>> _Alty(this->_Get_val());
-        _Uninitialized_fill_multidimensional_n_al(_Get_ptr(), _Size, _Val, _Alty);
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base(), _Size(_Count) {
+        _Uninitialized_fill_multidimensional_n_al(_Get_ptr(), _Size, _Val, this->_Get_val());
     }
 
-    auto _Get_ptr() {
+    _NODISCARD auto _Get_ptr() noexcept {
         return _STD addressof(_Storage._Value);
     }
 
@@ -2097,11 +2085,8 @@ private:
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        using _Rebound = _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>;
-        if constexpr (!conjunction_v<is_trivially_destructible<_Element_type>,
-                          _Uses_default_destroy<remove_reference_t<_Rebound>, remove_all_extents_t<_Ty>*>>) {
-            _Rebound _Alty(this->_Get_val());
-            _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, _Alty);
+        if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
+            _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
         }
     }
 
@@ -2122,18 +2107,24 @@ private:
 
 // CLASS TEMPLATE _Ref_count_bounded_array_alloc
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_bounded_array_alloc : public _Ebco_base<_Alloc>, public _Ref_count_base {
-    // handle reference counting for object in control block, allocator
+class __declspec(empty_bases) _Ref_count_bounded_array_alloc
+    : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
+      public _Ref_count_base {
+    // handle reference counting for bounded array in control block, allocator
+private:
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
+
+    using _Item    = remove_all_extents_t<_Ty>;
+    using _Rebound = _Rebind_alloc_t<_Alloc, _Item>;
+
 public:
-    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg) : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base() {
-        _Maybe_rebind_alloc_t<_Alloc, remove_cv_t<remove_all_extents_t<_Ty>>> _Alty(this->_Get_val());
-        _Uninitialized_value_construct_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Alty);
+    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg) : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
+        _Uninitialized_value_construct_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
     }
 
     explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg, const remove_extent_t<_Ty>& _Val)
-        : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base() {
-        _Maybe_rebind_alloc_t<_Alloc, remove_cv_t<remove_all_extents_t<_Ty>>> _Alty(this->_Get_val());
-        _Uninitialized_fill_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Val, _Alty);
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
+        _Uninitialized_fill_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Val, this->_Get_val());
     }
 
     union {
@@ -2148,11 +2139,8 @@ private:
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        using _Rebound = _Maybe_rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>;
-        if constexpr (!conjunction_v<is_trivially_destructible<_Ty>,
-                          _Uses_default_destroy<remove_reference_t<_Rebound>, remove_all_extents_t<_Ty>*>>) {
-            _Rebound _Alty(this->_Get_val());
-            _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Alty);
+        if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
+            _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
         }
     }
 
@@ -2247,7 +2235,7 @@ _NODISCARD
     allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
-    using _Refoa   = _Ref_count_obj_alloc2<remove_cv_t<_Ty>, _Alloc>;
+    using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
