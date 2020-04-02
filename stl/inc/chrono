@@ -613,32 +613,42 @@ namespace chrono {
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
             // Implement atomics avoiding <atomic> header dependency
             static struct {
-                volatile long long _Freq = -1;
-                volatile long long _Quot = -1;
-                volatile long long _Rem  = -1;
+                volatile long long _Freq        = LLONG_MAX;
+                volatile long long _Ctr_base    = LLONG_MAX;
+                volatile long long _Result_base = LLONG_MAX;
             } _Cached;
-            long long _Freq = _Atomic_load_ll_relaxed(&_Cached._Freq);
-            long long _Quot = _Atomic_load_ll_relaxed(&_Cached._Quot);
-            long long _Rem  = _Atomic_load_ll_relaxed(&_Cached._Rem);
-            if (_Freq == -1 || _Quot == -1 || _Rem == -1) {
+            long long _Freq;
+            long long _Ctr_base;
+            long long _Result_base;
+            for (;;) {
+                _Freq        = _Atomic_load_ll_relaxed(&_Cached._Freq);
+                _Ctr_base    = _Atomic_load_ll_relaxed(&_Cached._Ctr_base);
+                _Result_base = _Atomic_load_ll_relaxed(&_Cached._Result_base);
+                if (_Freq != LLONG_MAX && _Ctr_base != LLONG_MAX && _Result_base != LLONG_MAX) {
+                    break;
+                }
                 static_assert(period::num == 1, "This assumes period::num == 1.");
-                _Freq = _Query_perf_frequency();
-                _Quot = period::den / _Freq;
-                _Rem  = period::den % _Freq;
-                _Atomic_store_ll_relaxed(&_Cached._Freq, _Freq, -1);
-                _Atomic_store_ll_relaxed(&_Cached._Quot, _Quot, -1);
-                _Atomic_store_ll_relaxed(&_Cached._Rem, _Rem, -1);
+                _Freq                  = _Query_perf_frequency();
+                _Ctr_base              = _Query_perf_counter();
+                const long long _Whole = (_Ctr_base / _Freq) * period::den;
+                const long long _Part  = (_Ctr_base % _Freq) * period::den / _Freq;
+                _Result_base           = _Whole + _Part;
+                if (_Atomic_compare_exchange_strong_ll_cst_seq(&_Cached._Freq, _Freq, LLONG_MAX) && 
+                    _Atomic_compare_exchange_strong_ll_cst_seq(&_Cached._Ctr_base, _Ctr_base, LLONG_MAX) &&
+                    _Atomic_compare_exchange_strong_ll_cst_seq(&_Cached._Result_base, _Result_base, LLONG_MAX)) {
+                    return time_point(duration(_Result_base));
+                }
             }
+            const long long _Ctr = _Query_perf_counter();
+            return time_point(duration((_Ctr - _Ctr_base) * period::den / _Freq + _Result_base));
 #else // ^^^ known hardware && !defined(_M_CEE_PURE) / unknown hardware || defined(_M_CEE_PURE) vvv
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
+            const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
-            const long long _Quot = period::den / _Freq;
-            const long long _Rem  = period::den % _Freq;
-#endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
-            const long long _Ctr   = _Query_perf_counter();
-            const long long _Whole = _Quot * _Ctr;
-            const long long _Part  = _Rem * _Ctr / _Freq;
+            const long long _Whole = (_Ctr / _Freq) * period::den;
+            const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
             return time_point(duration(_Whole + _Part));
+#endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
         }
 
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
@@ -653,16 +663,10 @@ namespace chrono {
 #endif // hardware
         }
 
-        static void _Atomic_store_ll_relaxed(volatile long long* _Mem, long long _Value, long long _Assumed_mem) {
-            (void) _Assumed_mem; // maybe unused. Useful for x86 to avoid loop
+        static bool _Atomic_compare_exchange_strong_ll_cst_seq(
+            volatile long long* _Mem, long long _Value, long long _Comparand) {
             // Copy from _Atomic_storage<_Ty, 8>::store
-#if defined(_M_IX86)
-            _InterlockedCompareExchange64(_Mem, _Value, _Assumed_mem);
-#elif defined(_M_X64)
-            *_Mem = _Value;
-#else // defined(_M_ARM) || defined(_M_ARM64)
-            __iso_volatile_store64(_Mem, _Value);
-#endif // hardware
+            return _InterlockedCompareExchange64(_Mem, _Value, _Comparand) == _Comparand;
         }
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
     };
