@@ -409,7 +409,7 @@ public:
                 return false;
             }
         }
-        if _CONSTEXPR_IF ((_Bits % _Bitsperword) == 0) {
+        if _CONSTEXPR_IF (_Bits % _Bitsperword == 0) {
             return _Array[_Words] == ~static_cast<_Ty>(0);
         }
         return _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
