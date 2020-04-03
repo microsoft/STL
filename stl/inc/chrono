@@ -1036,7 +1036,7 @@ namespace chrono {
         return _Right + _Left;
     }
     constexpr day operator-(const day& _Left, const days& _Right) noexcept {
-        return _Left + -_Right;
+        return day{static_cast<unsigned>(_Left) - _Right.count()};
     }
     constexpr days operator-(const day& _Left, const day& _Right) noexcept {
         return days{static_cast<int>(static_cast<unsigned>(_Left)) - static_cast<int>(static_cast<unsigned>(_Right))};
