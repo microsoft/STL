@@ -94,9 +94,7 @@ ColumnLimit:     120
 # DisableFormat:   false
 # ExperimentalAutoDetectBinPacking: false
 
-# TRANSITION, LLVM-39247, fixed in clang-format 10.
-# FixNamespaceComments: true
-FixNamespaceComments: false
+FixNamespaceComments: true
 
 # ForEachMacros:
 #   - foreach
