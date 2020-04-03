@@ -40,7 +40,7 @@ namespace {
     std::atomic<size_t> _Atomic_spin_count{_Uninitialized_spin_count};
 
     size_t _Atomic_init_spin_count() noexcept {
-        std::size_t result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+        size_t result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
         _Atomic_spin_count.store(result, std::memory_order_relaxed);
         // Make sure another thread is likely to get this,
         // as we've done a kernel call for that.
@@ -156,7 +156,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const std::size_t _Size,
+void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const size_t _Size,
     unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
