@@ -287,7 +287,7 @@ class LibcxxTestFormat(STLTestFormat):
         return super().getTestsInDirectory(testSuite, path_in_suite, litConfig,
                                            localConfig, test_class)
 
-    def addCompilerFlags(self, *args):
+    def addCompileFlags(self, *args):
         # For now, this is necessary to discard the value of
         # `LIBCXX_FILESYSTEM_STATIC_TEST_ROOT` which we don't care about;
         # eventually it will probably need to be made meaningful.
