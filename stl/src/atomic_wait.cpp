@@ -12,9 +12,9 @@
 
 namespace {
 
-    constexpr std::size_t _Wait_table_size_power = 8;
-    constexpr std::size_t _Wait_table_size       = 1 << _Wait_table_size_power;
-    constexpr std::size_t _Wait_table_index_mask = _Wait_table_size - 1;
+    constexpr size_t _Wait_table_size_power = 8;
+    constexpr size_t _Wait_table_size       = 1 << _Wait_table_size_power;
+    constexpr size_t _Wait_table_index_mask = _Wait_table_size - 1;
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
@@ -36,10 +36,10 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    static constexpr std::size_t _Uninitialized_spin_count = (std::numeric_limits<std::size_t>::max)();
-    static std::atomic<std::size_t> _Atomic_spin_count     = _Uninitialized_spin_count;
+    constexpr size_t _Uninitialized_spin_count = (std::numeric_limits<size_t>::max)();
+    std::atomic<size_t> _Atomic_spin_count{_Uninitialized_spin_count};
 
-    std::size_t _Atomic_init_spin_count() noexcept {
+    size_t _Atomic_init_spin_count() noexcept {
         std::size_t result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
         _Atomic_spin_count.store(result, std::memory_order_relaxed);
         // Make sure another thread is likely to get this,
@@ -73,21 +73,18 @@ namespace {
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     void _Atomic_wait_fallback(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
         switch (_Wait_context & _Atomic_wait_phase_mask) {
-        case _Atomic_wait_phase_wait_none: {
-            _Wait_context = _Atomic_wait_phase_wait_locked;
-            auto& _Entry  = _Atomic_wait_table_entry(_Storage);
+        case _Atomic_wait_phase_wait_none:
             ::AcquireSRWLockExclusive(&_Entry._Lock);
-            // re-check, and still in _Atomic_wait_phase_wait_locked
+            _Wait_context = _Atomic_wait_phase_wait_locked;
+            // re-check, and go to _Atomic_wait_phase_wait_locked
             break;
-        }
 
-        case _Atomic_wait_phase_wait_locked: {
-            auto& _Entry = _Atomic_wait_table_entry(_Storage);
+        case _Atomic_wait_phase_wait_locked:
             ::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, INFINITE, 0);
             // re-check, and still in _Atomic_wait_phase_wait_locked
             break;
-        }
         }
     }
 
@@ -186,21 +183,19 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
 
 void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
         switch (_Wait_context & _Atomic_wait_phase_mask) {
         case _Atomic_wait_phase_wait_none: {
-            auto& _Entry = _Atomic_wait_table_entry(_Storage);
             std::atomic_thread_fence(std::memory_order_seq_cst);
-            unsigned long long _Counter = _Entry._Counter.load(std::memory_order_relaxed);
+            const unsigned long long _Counter = _Entry._Counter.load(std::memory_order_relaxed);
             // Save counter in context and check again
             _Wait_context = _Counter | _Atomic_wait_phase_wait_counter;
             break;
         }
-
         case _Atomic_wait_phase_wait_counter: {
-            unsigned long long _Counter = _Wait_context & _Atomic_counter_value_mask;
-            auto& _Entry                = _Atomic_wait_table_entry(_Storage);
-            __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&_Entry._Counter._Storage._Value), &_Counter,
-                sizeof(_Entry._Counter._Storage._Value), INFINITE);
+            const unsigned long long _Counter = _Wait_context & _Atomic_counter_value_mask;
+            __crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&_Entry._Counter._Storage._Value),
+                const_cast<std::uint64_t*>(&_Counter), sizeof(_Entry._Counter._Storage._Value), INFINITE);
             // Lock on new counter value if coming back
             _Wait_context = _Atomic_wait_phase_wait_none;
             break;
@@ -234,13 +229,13 @@ void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
-std::size_t __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
+size_t __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
     if (_Is_direct && _Have_wait_functions()) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
         return 0;
     }
-    std::size_t result = _Atomic_spin_count.load(std::memory_order_relaxed);
+    size_t result = _Atomic_spin_count.load(std::memory_order_relaxed);
     if (result == _Uninitialized_spin_count) {
         result = _Atomic_init_spin_count();
     }

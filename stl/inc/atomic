@@ -132,23 +132,24 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_POINTER_LOCK_FREE  2
 
 #if _HAS_CXX20
-extern "C" {
-void __stdcall __std_atomic_wait_direct(const void* const _Storage, const void* const _Comparand,
-    const std::size_t _Size, unsigned long long& _Wait_context) noexcept;
-void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept;
-void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept;
+_EXTERN_C
+void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* _Comparand,
+    const size_t _Size, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
+void __stdcall __std_atomic_notify_all_direct(const void* _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_direct(const void* _Storage, unsigned long long& _Wait_context) noexcept;
 
-void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept;
-void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept;
-void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept;
+void __stdcall __std_atomic_wait_indirect(const void* _Storage, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_notify_one_indirect(const void* _Storage) noexcept;
+void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
 
-void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept;
+void __stdcall __std_atomic_unwait_indirect(const void* _Storage, unsigned long long& _Wait_context) noexcept;
 
-std::size_t __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept;
+_NODISCARD size_t __stdcall __std_atomic_get_spin_count(bool _Is_direct) noexcept;
+_END_EXTERN_C
 
-enum _Atomic_spin_phase : unsigned long long {
+enum _Atomic_spin_phase : unsigned long long { // 64 bit type even x86 - make indirect counter aliasing very unlikely
     _Atomic_wait_phase_mask            = 0x0000'000F,
     _Atomic_spin_value_mask            = 0xFFFF'FFF0,
     _Atomic_spin_value_step            = _Atomic_wait_phase_mask + 1,
@@ -161,34 +162,31 @@ enum _Atomic_spin_phase : unsigned long long {
     _Atomic_wait_phase_wait_counter    = 0x0000'0004,
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
-}
 
-inline bool __std_atomic_wait_spin(unsigned long long& _Wait_context, const bool _Is_direct) noexcept {
+
+_NODISCARD inline bool _Atomic_wait_spin(unsigned long long& _Wait_context, bool _Is_direct) noexcept {
 #ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     if (_Is_direct) {
+        // WaitOnAddress spins by itself, but this is only helpful for direct waits,
+        // since for indirect waits this will work only if notified.
         return false;
-    } else {
+    }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-        switch (_Wait_context & _Atomic_wait_phase_mask) {
-        case _Atomic_wait_phase_init_spin_count: {
-            _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
-            [[fallthrough]];
-        }
+    switch (_Wait_context & _Atomic_wait_phase_mask) {
+    case _Atomic_wait_phase_init_spin_count:
+        _Wait_context = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
+        [[fallthrough]];
 
-        case _Atomic_wait_phase_spin: {
-            if ((_Wait_context & _Atomic_spin_value_mask) != 0) {
-                _Wait_context -= _Atomic_spin_value_step;
-                _YIELD_PROCESSOR();
-                return true;
-            }
-            _Wait_context = _Atomic_wait_phase_wait_none;
-            break;
+    case _Atomic_wait_phase_spin:
+        if ((_Wait_context & _Atomic_spin_value_mask) != 0) {
+            _Wait_context -= _Atomic_spin_value_step;
+            _YIELD_PROCESSOR();
+            return true;
         }
-        }
-        return false;
-#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-    } // if (_Is_direct)
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+        _Wait_context = _Atomic_wait_phase_wait_none;
+        break;
+    }
+    return false;
 }
 
 #endif // _HAS_CXX20
@@ -423,10 +421,11 @@ struct _Atomic_storage {
             if (_CSTD memcmp(_STD addressof(_Observed), _Expected_ptr, sizeof(_Ty)) != 0) {
                 break;
             }
-            if (!__std_atomic_wait_spin(_Wait_context, false)) {
+            if (!_Atomic_wait_spin(_Wait_context, false)) {
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
+
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context & _Atomic_unwait_needed) {
             __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
@@ -575,10 +574,11 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            if (!__std_atomic_wait_spin(_Wait_context, true)) {
+            if (!_Atomic_wait_spin(_Wait_context, true)) {
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 1, _Wait_context);
             }
         }
+
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context & _Atomic_unwait_needed) {
             __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
@@ -685,10 +685,11 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            if (!__std_atomic_wait_spin(_Wait_context, true)) {
+            if (!_Atomic_wait_spin(_Wait_context, true)) {
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 2, _Wait_context);
             }
         }
+
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context & _Atomic_unwait_needed) {
             __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
@@ -793,10 +794,11 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            if (!__std_atomic_wait_spin(_Wait_context, true)) {
+            if (!_Atomic_wait_spin(_Wait_context, true)) {
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 4, _Wait_context);
             }
         }
+
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context & _Atomic_unwait_needed) {
             __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
@@ -940,10 +942,11 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             if (_Expected_bytes != _Observed_bytes) {
                 break;
             }
-            if (!__std_atomic_wait_spin(_Wait_context, true)) {
+            if (!_Atomic_wait_spin(_Wait_context, true)) {
                 __std_atomic_wait_direct(_Storage_ptr, _Expected_ptr, 8, _Wait_context);
             }
         }
+
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context & _Atomic_unwait_needed) {
             __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
@@ -1066,10 +1069,11 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
-            if (!__std_atomic_wait_spin(_Wait_context, false)) {
+            if (!_Atomic_wait_spin(_Wait_context, false)) {
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
+
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context & _Atomic_unwait_needed) {
             __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
@@ -2310,11 +2314,11 @@ struct atomic_flag { // flag with test-and-set semantics
     constexpr atomic_flag() noexcept = default;
 
 #if _HAS_CXX20
-    bool test(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD bool test(const memory_order _Order = memory_order::seq_cst) const noexcept {
         return _Storage.load(_Order) != 0;
     }
 
-    bool test(const memory_order _Order = memory_order::seq_cst) const volatile noexcept {
+    _NODISCARD bool test(const memory_order _Order = memory_order::seq_cst) const volatile noexcept {
         return _Storage.load(_Order) != 0;
     }
 
@@ -2389,15 +2393,16 @@ inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
-inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
+_NODISCARD inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
-inline bool atomic_flag_test_explicit(const volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_NODISCARD inline bool atomic_flag_test_explicit(
+    const volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test(_Order);
 }
 
-inline bool atomic_flag_test_explicit(const atomic_flag* const _Flag, const memory_order _Order) noexcept {
+_NODISCARD inline bool atomic_flag_test_explicit(const atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test(_Order);
 }
 

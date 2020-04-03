@@ -6,13 +6,14 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
+#include <string.h>
 #include <thread>
 
 template <class UnderlyingType>
-void test_atomic_wait_func(
-    UnderlyingType old_value, UnderlyingType new_value, std::chrono::steady_clock::duration waiting_duration) {
+void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
+    const std::chrono::steady_clock::duration waiting_duration) {
 
-    constexpr std::ptrdiff_t seq_max_size = 10;
+    constexpr int seq_max_size = 10;
     char seq[seq_max_size + 1];
     std::atomic<char*> base = seq;
     auto add_seq            = [&](char ch) {
@@ -54,44 +55,44 @@ void test_atomic_wait_func(
 }
 
 int main() {
-    auto duration = std::chrono::milliseconds(200);
-    test_atomic_wait_func<char>(1, 2, duration);
-    test_atomic_wait_func<signed char>(1, 2, duration);
-    test_atomic_wait_func<unsigned char>(1, 2, duration);
-    test_atomic_wait_func<signed short>(1, 2, duration);
-    test_atomic_wait_func<unsigned short>(1, 2, duration);
-    test_atomic_wait_func<signed int>(1, 2, duration);
-    test_atomic_wait_func<unsigned int>(1, 2, duration);
-    test_atomic_wait_func<signed long>(1, 2, duration);
-    test_atomic_wait_func<unsigned long>(1, 2, duration);
-    test_atomic_wait_func<signed long long>(1, 2, duration);
-    test_atomic_wait_func<unsigned long long>(1, 2, duration);
-    test_atomic_wait_func<float>(1, 2, duration);
-    test_atomic_wait_func<double>(1, 2, duration);
-    test_atomic_wait_func<long double>(1, 2, duration);
+    auto waiting_duration = std::chrono::milliseconds(200);
+    test_atomic_wait_func<char>(1, 2, waiting_duration);
+    test_atomic_wait_func<signed char>(1, 2, waiting_duration);
+    test_atomic_wait_func<unsigned char>(1, 2, waiting_duration);
+    test_atomic_wait_func<short>(1, 2, waiting_duration);
+    test_atomic_wait_func<unsigned short>(1, 2, waiting_duration);
+    test_atomic_wait_func<int>(1, 2, waiting_duration);
+    test_atomic_wait_func<unsigned int>(1, 2, waiting_duration);
+    test_atomic_wait_func<long>(1, 2, waiting_duration);
+    test_atomic_wait_func<unsigned long>(1, 2, waiting_duration);
+    test_atomic_wait_func<long long>(1, 2, waiting_duration);
+    test_atomic_wait_func<unsigned long long>(1, 2, waiting_duration);
+    test_atomic_wait_func<float>(1, 2, waiting_duration);
+    test_atomic_wait_func<double>(1, 2, waiting_duration);
+    test_atomic_wait_func<long double>(1, 2, waiting_duration);
 
-    test_atomic_wait_func<const void*>("1", "2", duration);
+    test_atomic_wait_func<const void*>("1", "2", waiting_duration);
 
     struct two_shorts {
         short a;
         short b;
 
-        bool operator==(const two_shorts& other) const {
+        _NODISCARD bool operator==(const two_shorts& other) const {
             return a == other.a && b == other.b;
         }
     };
 
-    test_atomic_wait_func<two_shorts>({1, 1}, {1, 2}, duration);
+    test_atomic_wait_func<two_shorts>({1, 1}, {1, 2}, waiting_duration);
 
     struct three_chars {
         char a;
         char b;
         char c;
 
-        bool operator==(const three_chars& other) const {
+        _NODISCARD bool operator==(const three_chars& other) const {
             return a == other.a && b == other.b && c == other.c;
         }
     };
 
-    test_atomic_wait_func<three_chars>({1, 1, 3}, {1, 2, 3}, duration);
+    test_atomic_wait_func<three_chars>({1, 1, 3}, {1, 2, 3}, waiting_duration);
 }
