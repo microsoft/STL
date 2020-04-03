@@ -7,11 +7,23 @@ param(
   [string]$AdminUserPassword = $null
 )
 
-$TempPath = [System.IO.Path]::GetTempPath()
+Function Get-TempFilePath {
+  Param(
+    [String]$Extension
+  )
+
+  if ([String]::IsNullOrWhiteSpace($Extension)) {
+    throw 'Missing Extension'
+  }
+
+  $tempPath = [System.IO.Path]::GetTempPath()
+  $tempName = [System.IO.Path]::GetRandomFileName() + '.' + $Extension
+  return Join-Path $tempPath $tempName
+}
 
 if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
   Write-Output "AdminUser password supplied; switching to AdminUser"
-  $PsExecPath = $TempPath + "\psexec.exe"
+  $PsExecPath = Get-TempFilePath -Extension 'exe'
   Write-Output "Downloading psexec to $PsExecPath"
   & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
   $PsExecArgs = @(
@@ -27,9 +39,13 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
     '-File',
     $PSCommandPath
   )
-  Write-Output "Executing $PsExecPath @PsExecArgs"
-  & $PsExecPath @PsExecArgs
-  exit $?
+
+  Write-Output "Executing $PsExecPath " + @PsExecArgs
+
+  $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
+  Write-Output 'Cleaning up...'
+  Remove-Item $PsExecPath
+  exit $proc.ExitCode
 }
 
 $Workloads = @(
@@ -65,18 +81,6 @@ Function PrintMsiExitCodeMessage {
   }
 }
 
-Function Get-TempFilePath {
-  Param(
-    [String]$Extension
-  )
-
-  if ([String]::IsNullOrWhiteSpace($Extension)) {
-    throw 'Missing Extension'
-  }
-
-  return Join-Path $TempPath ([System.IO.Path]::GetRandomFileName() + '.' + $Extension)
-}
-
 Function InstallVisualStudio {
   Param(
     [String[]]$Workloads,
@@ -88,7 +92,7 @@ Function InstallVisualStudio {
   try {
     Write-Output 'Downloading Visual Studio...'
     [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
-    curl.exe -L -o $bootstrapperExe $BootstrapperUrl
+    curl.exe -L -o $bootstrapperExe -s -S $BootstrapperUrl
     Write-Output "Installing Visual Studio..."
     $args = @('/c', $bootstrapperExe, '--quiet', '--norestart', '--wait', '--nocache')
     foreach ($workload in $Workloads) {
@@ -125,7 +129,7 @@ Function InstallMSI {
   try {
     Write-Output "Downloading $Name..."
     [string]$msiPath = Get-TempFilePath -Extension 'msi'
-    curl.exe -L -o $msiPath $Url
+    curl.exe -L -o $msiPath -s -S $Url
     Write-Output "Installing $Name..."
     $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
     $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList $args -Wait -PassThru
@@ -148,7 +152,7 @@ Function InstallZip {
   try {
     Write-Output "Downloading $Name..."
     [string]$zipPath = Get-TempFilePath -Extension 'zip'
-    curl.exe -L -o $zipPath $Url
+    curl.exe -L -o $zipPath -s -S $Url
     Write-Output "Installing $Name..."
     Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
   }
@@ -167,7 +171,7 @@ Function InstallLLVM {
   try {
     Write-Output 'Downloading LLVM...'
     [string]$installerPath = Get-TempFilePath -Extension 'exe'
-    curl.exe -L -o $installerPath $Url
+    curl.exe -L -o $installerPath -s -S $Url
     Write-Output 'Installing LLVM...'
     $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
@@ -186,7 +190,7 @@ Function InstallPython {
 
   Write-Output 'Downloading Python...'
   [string]$installerPath = Get-TempFilePath -Extension 'exe'
-  curl.exe -L -o $installerPath $Url
+  curl.exe -L -o $installerPath -s -S $Url
   Write-Output 'Installing Python...'
   $proc = Start-Process -FilePath $installerPath -ArgumentList `
   @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
@@ -202,6 +206,16 @@ Function InstallPython {
 
 
 Write-Output "AdminUser password not supplied; assuming already running as AdminUser"
+
+Write-Host 'Configuring AntiVirus exclusions...'
+Add-MPPreference -ExclusionPath C:\agent
+Add-MPPreference -ExclusionPath D:\
+Add-MPPreference -ExclusionProcess ninja.exe
+Add-MPPreference -ExclusionProcess clang-cl.exe
+Add-MPPreference -ExclusionProcess cl.exe
+Add-MPPreference -ExclusionProcess link.exe
+Add-MPPreference -ExclusionProcess python.exe
+
 InstallMSI 'CMake' $CMakeUrl
 InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
 InstallLLVM $LlvmUrl
@@ -213,12 +227,5 @@ Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\E
   -Name Path `
   -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
 
-Add-MPPreference -ExclusionPath C:\agent
-Add-MPPreference -ExclusionPath D:\
-Add-MPPreference -ExclusionProcess ninja.exe
-Add-MPPreference -ExclusionProcess clang-cl.exe
-Add-MPPreference -ExclusionProcess cl.exe
-Add-MPPreference -ExclusionProcess link.exe
-Add-MPPreference -ExclusionProcess python.exe
-
-C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /shutdown
+Write-Output 'Running sysprep'
+& C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /shutdown
