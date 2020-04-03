@@ -13,7 +13,7 @@ stages:
     jobs:
       - job: Run_Code_Format_Validation
         timeoutInMinutes: 90
-        displayName: "Run"
+        displayName: "Run Validation"
         pool:
           name: $(agentPool)
 
