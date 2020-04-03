@@ -42,8 +42,8 @@ namespace {
     std::size_t _Atomic_init_spin_count() noexcept {
         std::size_t result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
         _Atomic_spin_count.store(result, std::memory_order_relaxed);
-        // Make sure other thread is likely to get this,
-        // as we've done kernel call for that.
+        // Make sure another thread is likely to get this,
+        // as we've done a kernel call for that.
         std::atomic_thread_fence(std::memory_order_seq_cst);
         return result;
     }
