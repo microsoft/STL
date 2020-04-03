@@ -862,7 +862,6 @@ template <class _Unsigned>
 _NODISCARD constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
     return static_cast<unsigned long>(_Countl_zero(static_cast<_Unsigned>(~_Mask)));
-
 #else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
     // find the index of the least significant set bit (_BitScanForward isn't constexpr... yet :))
     static_assert(is_unsigned_v<_Unsigned>, "Bitscan only works on bits");
