@@ -12,7 +12,7 @@ jobs:
   steps:
     - checkout: self
       clean: true
-      submodules: recursive
+      submodules: true
     - task: Cache@2
       displayName: Cache vcpkg
       timeoutInMinutes: 10
@@ -35,31 +35,6 @@ jobs:
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
-    - task: run-cmake@0
-      displayName: 'Build Support Tools'
-      timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        cmakeListsTxtPath: 'tools/CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*x64-Release.*'
-        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
-    - task: BatchScript@1
-      displayName: 'Enforce clang-format'
-      timeoutInMinutes: 60
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/enforce-clang-format.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
-    - task: BatchScript@1
-      displayName: 'Validate Files'
-      timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/validate-files.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
     - task: PowerShell@2
       displayName: 'Get Test Parallelism'
       timeoutInMinutes: 2

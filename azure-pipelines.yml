@@ -3,19 +3,67 @@
 
 # Build STL targeting x86, x64, arm, arm64
 
-jobs:
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: x86
+stages:
+  - stage: Code_Format_Validation
+    displayName: "Code Format Validation"
+    jobs:
+      - job: Run_Code_Format_Validation
+        timeoutInMinutes: 90
+        displayName: "Run Code Format Validation"
+        pool:
+          name: StlBuild-2020-03-28
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: x64
+        variables:
+          vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+        steps:
+          - checkout: self
+            clean: true
+            submodules: true
+          - task: run-vcpkg@0
+            displayName: 'Setup environment variables for run-cmake'
+            timeoutInMinutes: 10
+            inputs:
+              setupOnly: true
+              vcpkgArguments: 'boost-build'
+              vcpkgDirectory: '$(vcpkgLocation)'
+              vcpkgTriplet: 'x64-windows'
+          - task: run-cmake@0
+            displayName: 'Build Support Tools'
+            timeoutInMinutes: 2
+            inputs:
+              cmakeListsTxtPath: 'tools/CMakeSettings.json'
+              useVcpkgToolchainFile: true
+              configurationRegexFilter: '.*x64-Release.*'
+              buildDirectory: $(Build.ArtifactStagingDirectory)/tools
+          - task: BatchScript@1
+            displayName: 'Enforce clang-format'
+            timeoutInMinutes: 60
+            inputs:
+              filename: 'azure-devops/enforce-clang-format.cmd'
+              failOnStandardError: true
+              arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+          - task: BatchScript@1
+            displayName: 'Validate Files'
+            timeoutInMinutes: 2
+            inputs:
+              filename: 'azure-devops/validate-files.cmd'
+              failOnStandardError: true
+              arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+  - stage: Build_And_Test
+    displayName: "Build and Test the STL"
+    jobs:
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: arm
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: arm64
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: arm
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: arm64
