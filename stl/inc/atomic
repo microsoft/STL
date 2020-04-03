@@ -164,7 +164,7 @@ enum _Atomic_spin_phase : unsigned long long { // 64 bit type even x86 - make in
 };
 
 
-_NODISCARD inline bool _Atomic_wait_spin(unsigned long long& _Wait_context, bool _Is_direct) noexcept {
+_NODISCARD inline bool _Atomic_wait_spin(unsigned long long& _Wait_context, const bool _Is_direct) noexcept {
 #ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     if (_Is_direct) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
