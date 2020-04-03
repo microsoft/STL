@@ -2019,7 +2019,7 @@ struct atomic_flag { // flag with test-and-set semantics
 
 // atomic_flag NONMEMBERS
 #if _HAS_CXX20
-inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
+_NODISCARD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
