@@ -749,6 +749,20 @@ STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_flag_test
+#error __cpp_lib_atomic_flag_test is not defined
+#elif __cpp_lib_atomic_flag_test != 201907L
+#error __cpp_lib_atomic_flag_test is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_flag_test == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_flag_test
+#error __cpp_lib_atomic_flag_test is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_float
 #error __cpp_lib_atomic_float is not defined
 #elif __cpp_lib_atomic_float != 201711L
@@ -776,12 +790,40 @@ STATIC_ASSERT(__cpp_lib_atomic_is_always_lock_free == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_lock_free_type_aliases
+#error __cpp_lib_atomic_lock_free_type_aliases is not defined
+#elif __cpp_lib_atomic_lock_free_type_aliases != 201907L
+#error __cpp_lib_atomic_lock_free_type_aliases is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
+#error __cpp_lib_atomic_lock_free_type_aliases is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_atomic_value_initialization
 #error __cpp_lib_atomic_value_initialization is not defined
 #elif __cpp_lib_atomic_value_initialization != 201911L
 #error __cpp_lib_atomic_value_initialization is not 201911L
 #else
 STATIC_ASSERT(__cpp_lib_atomic_value_initialization == 201911L);
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is not defined
+#elif __cpp_lib_atomic_wait != 201907L
+#error __cpp_lib_atomic_wait is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is defined
+#endif
 #endif
 
 #if _HAS_CXX20
