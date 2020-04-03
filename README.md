@@ -225,7 +225,7 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 1. Follow steps 1-9 of [How To Build With A Native Tools Command Prompt][].
 2. Invoke `git submodule update --init llvm-project`
 3. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--DENABLE_TESTS=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DENABLE_TESTS=TRUE`.
+-DBUILD_TESTING=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DBUILD_TESTING=TRUE`.
 4. If you have already followed the steps from [How To Build With A Native Tools Command Prompt][], and have not
 changed the value of `{wherever you want binaries}` in step 4, then there is no need to rebuild to run the tests.
 Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
@@ -252,7 +252,7 @@ a category in libcxx, or running a single test in `std` and `tr1`.
 :: already installed boost. It also assumes you have inited and updated the llvm-project submodule.
 
 C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ^
--DENABLE_TESTS=TRUE ..
+-DBUILD_TESTING=TRUE ..
 
 :: As stated above, this step is only strictly necessary if you have yet to build the STL or if you have changed the
 :: output directory of the binaries. Any changes or additions in any of the existing testsuites do not require

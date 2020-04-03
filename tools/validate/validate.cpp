@@ -172,10 +172,9 @@ int main() {
         ".gitmodules"sv,
     };
 
-    // TRANSITION, P0202R3, use constexpr is_sorted()
-    assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
-    assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
-    assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
+    static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
+    static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
+    static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
     vector<unsigned char> buffer; // reused for performance
 
