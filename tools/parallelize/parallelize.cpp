@@ -3,6 +3,7 @@
 
 #include "stljobs.h"
 #include <algorithm>
+#include <array>
 #include <assert.h>
 #include <atomic>
 #include <condition_variable>
@@ -79,8 +80,8 @@ public:
         cv.wait(lck, [this] { return runningConcurrency.load(std::memory_order_relaxed) == 0; });
     }
 
-    [[nodiscard]] const std::vector<std::pair<std::wstring, std::optional<execution_result>>>& results() const
-        noexcept {
+    [[nodiscard]] const std::vector<std::pair<std::wstring, std::optional<execution_result>>>&
+        results() const noexcept {
         assert(runningConcurrency.load(std::memory_order_relaxed) == 0);
         return commands;
     }
@@ -148,11 +149,29 @@ void schedule_command(parallelizer& p, const std::wstring_view commandPrefix, co
 
 extern "C" int wmain(int argc, wchar_t* argv[]) {
     try {
+        using namespace std::string_view_literals;
+
+        static constexpr std::array accepted_extensions{
+            L""sv, // extensionless headers like <vector>
+            L".cpp"sv,
+            L".h"sv,
+            L".hpp"sv,
+        };
+
+        // TRANSITION, P0202R3, use constexpr is_sorted()
+        assert(std::is_sorted(accepted_extensions.begin(), accepted_extensions.end()));
+
         if (argc < 3) {
             puts("Usage: parallelize.exe commandPrefix pathRoot0 [... pathRootN]\n"
                  "The command:\n"
                  "commandPrefix file\n"
-                 "will be launched in parallel for every regular file under any of pathRoots, recursively.");
+                 "will be launched in parallel for regular files under any of pathRoots, recursively.");
+            printf("Accepted extensions: ");
+            for (const auto& sv : accepted_extensions) {
+                printf("\"%.*ls\", ", static_cast<int>(sv.size()), sv.data());
+            }
+            printf("\n");
+            puts("Other extensions will be skipped.");
             return 1;
         }
 
@@ -168,6 +187,12 @@ extern "C" int wmain(int argc, wchar_t* argv[]) {
             for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(std::move(thisSpec))) {
                 if (!dirEntry.is_regular_file()) {
                     printf("Skipping non-regular-file %ls\n", dirEntry.path().c_str());
+                    continue;
+                }
+
+                if (!binary_search(
+                        accepted_extensions.begin(), accepted_extensions.end(), dirEntry.path().extension().native())) {
+                    printf("Skipping non-accepted-extension %ls\n", dirEntry.path().c_str());
                     continue;
                 }
 

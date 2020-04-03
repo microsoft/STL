@@ -18,49 +18,49 @@
 #endif // _STL_COMPILER_PREPROCESSOR
 
 #if _STL_COMPILER_PREPROCESSOR
-// _HAS_CXX20 directly controls:
-// P0020R6 atomic<float>, atomic<double>, atomic<long double>
-// P0318R1 unwrap_reference, unwrap_ref_decay
-// P0325R4 to_array()
-// P0355R7 Calendars And Time Zones
-//     (partially implemented)
-// P0356R5 bind_front()
-// P0439R0 enum class memory_order
-// P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
-// P0458R2 contains() For Ordered And Unordered Associative Containers
-// P0463R1 endian
-// P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented)
-// P0487R1 Fixing operator>>(basic_istream&, CharT*)
-// P0550R2 remove_cvref
-// P0553R4 <bit> Rotating And Counting Functions
-// P0556R3 <bit> ispow2(), ceil2(), floor2(), log2p1()
-//            (log2p1() is called bit_length() as of D1956)
-// P0616R0 Using move() In <numeric>
-// P0631R8 <numbers> Math Constants
-// P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
-// P0653R2 to_address()
-// P0655R1 visit<R>()
-// P0758R1 is_nothrow_convertible
-// P0768R1 Library Support For The Spaceship Comparison Operator <=>
-//     (partially implemented)
-// P0769R2 shift_left(), shift_right()
-// P0811R3 midpoint(), lerp()
-//     (partially implemented, lerp() not yet constexpr)
-// P0887R1 type_identity
-// P0896R4 Ranges
-//     (partially implemented)
-// P0898R3 Standard Library Concepts
-// P0919R3 Heterogeneous Lookup For Unordered Containers
-// P0966R1 string::reserve() Should Not Shrink
-// P1209R0 erase_if(), erase()
-// P1227R2 Signed std::ssize(), Unsigned span::size()
-//     (partially implemented)
-// P1357R1 is_bounded_array, is_unbounded_array
-// P1612R1 Relocating endian To <bit>
-// P1651R0 bind_front() Should Not Unwrap reference_wrapper
-// P1754R1 Rename Concepts To standard_case
-// P????R? directory_entry::clear_cache()
+// Implemented unconditionally:
+// N3911 void_t
+// N4089 Safe Conversions In unique_ptr<T[]>
+// N4169 invoke()
+// N4258 noexcept Cleanups
+// N4259 uncaught_exceptions()
+// N4277 Trivially Copyable reference_wrapper
+// N4279 insert_or_assign()/try_emplace() For map/unordered_map
+// N4280 size(), empty(), data()
+// N4366 Precisely Constraining unique_ptr Assignment
+// N4387 Improving pair And tuple
+// N4389 bool_constant
+// N4508 shared_mutex (Untimed)
+// N4510 Supporting Incomplete Types In vector/list/forward_list
+// P0006R0 Variable Templates For Type Traits (is_same_v, etc.)
+// P0007R1 as_const()
+// P0013R1 Logical Operator Type Traits (conjunction, etc.)
+// P0033R1 Rewording enable_shared_from_this
+// P0063R3 C11 Standard Library
+// P0074R0 owner_less<>
+// P0092R1 <chrono> floor(), ceil(), round(), abs()
+// P0340R3 SFINAE-Friendly underlying_type
+// P0414R2 shared_ptr<T[]>, shared_ptr<T[N]>
+// P0418R2 atomic compare_exchange memory_order Requirements
+// P0435R1 Overhauling common_type
+// P0497R0 Fixing shared_ptr For Arrays
+// P0513R0 Poisoning hash
+// P0516R0 Marking shared_future Copying As noexcept
+// P0517R0 Constructing future_error From future_errc
+// P0548R1 Tweaking common_type And duration
+// P0558R1 Resolving atomic<T> Named Base Class Inconsistencies
+// P0599R1 noexcept hash
+// P0738R2 istream_iterator Cleanup
+// P0771R1 noexcept For std::function's Move Constructor
+// P0777R1 Avoiding Unnecessary decay
+// P0809R0 Comparing Unordered Containers
+// P0883R2 Fixing Atomic Initialization
+// P0935R0 Eradicating Unnecessarily Explicit Default Constructors
+// P0941R2 Feature-Test Macros
+// P0972R0 noexcept For <chrono> zero(), min(), max()
+// P1164R1 Making create_directory() Intuitive
+// P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
+// P1902R1 Missing Feature-Test Macros 2017-2019
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -109,6 +109,8 @@
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
+// P1065R2 constexpr INVOKE
+//   (the std::invoke function only; other components like bind and reference_wrapper will be C++20 only)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -122,63 +124,98 @@
 // The non-Standard std::tr1 namespace and TR1-only machinery
 // Enforcement of matching allocator value_types
 
-// _HAS_NODISCARD (in vcruntime.h) controls:
-// [[nodiscard]] attributes on STL functions
-
 // _HAS_CXX17 and _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS control:
 // P0174R2 Deprecating Vestigial Library Parts
 // P0521R0 Deprecating shared_ptr::unique()
 // P0618R0 Deprecating <codecvt>
 // Other C++17 deprecation warnings
 
+// _HAS_CXX20 directly controls:
+// P0020R6 atomic<float>, atomic<double>, atomic<long double>
+// P0122R7 <span>
+// P0202R3 constexpr For <algorithm> And exchange()
+// P0318R1 unwrap_reference, unwrap_ref_decay
+// P0325R4 to_array()
+// P0355R7 Calendars And Time Zones
+//     (partially implemented)
+// P0356R5 bind_front()
+// P0357R3 Supporting Incomplete Types In reference_wrapper
+// P0439R0 enum class memory_order
+// P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
+// P0458R2 contains() For Ordered And Unordered Associative Containers
+// P0463R1 endian
+// P0476R2 <bit> bit_cast
+// P0482R6 Library Support For char8_t
+//     (mbrtoc8 and c8rtomb not yet implemented)
+// P0487R1 Fixing operator>>(basic_istream&, CharT*)
+// P0550R2 remove_cvref
+// P0553R4 <bit> Rotating And Counting Functions
+// P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
+// P0595R2 is_constant_evaluated()
+// P0616R0 Using move() In <numeric>
+// P0631R8 <numbers> Math Constants
+// P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
+// P0653R2 to_address()
+// P0655R1 visit<R>()
+// P0758R1 is_nothrow_convertible
+// P0768R1 Library Support For The Spaceship Comparison Operator <=>
+//     (partially implemented)
+// P0769R2 shift_left(), shift_right()
+// P0811R3 midpoint(), lerp()
+//     (partially implemented, lerp() not yet constexpr)
+// P0879R0 constexpr For Swapping Functions
+// P0887R1 type_identity
+// P0896R4 Ranges
+//     (partially implemented)
+// P0898R3 Standard Library Concepts
+// P0919R3 Heterogeneous Lookup For Unordered Containers
+// P0966R1 string::reserve() Should Not Shrink
+// P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1023R0 constexpr For std::array Comparisons
+// P1024R3 Enhancing span Usability
+// P1085R2 Removing span Comparisons
+// P1115R3 erase()/erase_if() Return size_type
+// P1207R4 Movability Of Single-Pass Iterators
+//     (partially implemented)
+// P1209R0 erase_if(), erase()
+// P1227R2 Signed std::ssize(), Unsigned span::size()
+// P1243R4 Rangify New Algorithms
+//     (partially implemented)
+// P1248R1 Fixing Relations
+// P1357R1 is_bounded_array, is_unbounded_array
+// P1394R4 Range Constructor For span
+// P1423R3 char8_t Backward Compatibility Remediation
+// P1456R1 Move-Only Views
+// P1474R1 Helpful Pointers For contiguous_iterator
+// P1612R1 Relocating endian To <bit>
+// P1645R1 constexpr For <numeric> Algorithms
+// P1651R0 bind_front() Should Not Unwrap reference_wrapper
+// P1690R1 Refining Heterogeneous Lookup For Unordered Containers
+// P1716R3 Range Comparison Algorithms Are Over-Constrained
+// P1754R1 Rename Concepts To standard_case
+// P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
+// P1871R1 disable_sized_sentinel_for
+// P1872R0 span Should Have size_type, Not index_type
+// P1878R1 Constraining Readable Types
+// P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
+// P1959R0 Removing weak_equality And strong_equality
+// P1964R2 Replacing boolean With boolean-testable
+// P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
+// P2091R0 Fixing Issues With Range Access CPOs
+// P2102R0 Making "Implicit Expression Variations" More Explicit
+// P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P????R? directory_entry::clear_cache()
+
+// _HAS_CXX20 indirectly controls:
+// P0619R4 Removing C++17-Deprecated Features
+
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
 // Other C++20 deprecation warnings
 
-// Implemented unconditionally:
-// N3911 void_t
-// N4089 Safe Conversions In unique_ptr<T[]>
-// N4169 invoke()
-// N4258 noexcept Cleanups
-// N4259 uncaught_exceptions()
-// N4277 Trivially Copyable reference_wrapper
-// N4279 insert_or_assign()/try_emplace() For map/unordered_map
-// N4280 size(), empty(), data()
-// N4366 Precisely Constraining unique_ptr Assignment
-// N4387 Improving pair And tuple
-// N4389 bool_constant
-// N4508 shared_mutex (Untimed)
-// N4510 Supporting Incomplete Types In vector/list/forward_list
-// P0006R0 Variable Templates For Type Traits (is_same_v, etc.)
-// P0007R1 as_const()
-// P0013R1 Logical Operator Type Traits (conjunction, etc.)
-// P0033R1 Rewording enable_shared_from_this
-// P0063R3 C11 Standard Library
-// P0074R0 owner_less<>
-// P0092R1 <chrono> floor(), ceil(), round(), abs()
-// P0340R3 SFINAE-Friendly underlying_type
-// P0414R2 shared_ptr<T[]>, shared_ptr<T[N]>
-// P0418R2 atomic compare_exchange memory_order Requirements
-// P0435R1 Overhauling common_type
-// P0497R0 Fixing shared_ptr For Arrays
-// P0513R0 Poisoning hash
-// P0516R0 Marking shared_future Copying As noexcept
-// P0517R0 Constructing future_error From future_errc
-// P0548R1 Tweaking common_type And duration
-// P0558R1 Resolving atomic<T> Named Base Class Inconsistencies
-// P0599R1 noexcept hash
-// P0738R2 istream_iterator Cleanup
-// P0771R1 noexcept For std::function's Move Constructor
-// P0777R1 Avoiding Unnecessary decay
-// P0809R0 Comparing Unordered Containers
-// P0941R2 Feature-Test Macros
-// P0972R0 noexcept For <chrono> zero(), min(), max()
-// P1164R1 Making create_directory() Intuitive
-
 // Parallel Algorithms Notes
-// C++ allows an implementation to implement parallel algorithms as calls to the
-// serial algorithms. This implementation parallelizes several common algorithm
-// calls, but not all.
+// C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
+// This implementation parallelizes several common algorithm calls, but not all.
 //
 // The following algorithms are parallelized.
 // * adjacent_difference
@@ -223,9 +260,8 @@
 //
 // The following are not presently parallelized:
 //
-// No apparent parallelism performance improvement on target hardware; all
-// algorithms which merely copy or permute elements with no branches are
-// typically memory bandwidth limited.
+// No apparent parallelism performance improvement on target hardware; all algorithms which
+// merely copy or permute elements with no branches are typically memory bandwidth limited.
 // * copy
 // * copy_n
 // * fill
@@ -239,8 +275,7 @@
 // * shift_right
 // * swap_ranges
 //
-// Confusion over user parallelism requirements exists; likely in the above
-// category anyway.
+// Confusion over user parallelism requirements exists; likely in the above category anyway.
 // * generate
 // * generate_n
 //
@@ -248,8 +283,7 @@
 // * partial_sort
 // * partial_sort_copy
 //
-// Not yet evaluated; parallelism may be implemented in a future release and is
-// suspected to be beneficial.
+// Not yet evaluated; parallelism may be implemented in a future release and is suspected to be beneficial.
 // * copy_if
 // * includes
 // * inplace_merge
@@ -289,6 +323,19 @@
 #error _STL_WARNING_LEVEL cannot be greater than 4.
 #endif // _STL_WARNING_LEVEL > 4
 
+// _HAS_NODISCARD (in vcruntime.h) controls:
+// [[nodiscard]] attributes on STL functions
+
+// Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
+// that certain type trait specializations have the standard-mandated semantics
+#ifndef __has_cpp_attribute
+#define _MSVC_KNOWN_SEMANTICS
+#elif __has_cpp_attribute(msvc::known_semantics)
+#define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
+#else
+#define _MSVC_KNOWN_SEMANTICS
+#endif
+
 // Controls whether the STL uses "if constexpr" internally
 #ifndef _HAS_IF_CONSTEXPR
 #ifdef __CUDACC__
@@ -302,13 +349,11 @@
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__CUDACC__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION
-#elif defined(__clang__)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694
-#else // vvv C1XX or non-CUDA EDG vvv
+#elif defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694/CUDA/ICC
+#else // vvv C1XX or IntelliSense vvv
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or non-CUDA EDG ^^^
+#endif // ^^^ C1XX or IntelliSense ^^^
 #endif // _HAS_CONDITIONAL_EXPLICIT
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
@@ -357,6 +402,7 @@
 // warning C4625: copy constructor was implicitly defined as deleted (/Wall)
 // warning C4626: assignment operator was implicitly defined as deleted (/Wall)
 // warning C4643: Forward declaring 'meow' in namespace std is not permitted by the C++ Standard. (/Wall)
+// warning C4648: standard attribute 'meow' is ignored
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
@@ -369,8 +415,8 @@
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4702 4793 4820 \
-    4988 5026 5027 5045                               \
+    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
+    4820 4988 5026 5027 5045                          \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -427,7 +473,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  201911L
+#define _MSVC_STL_UPDATE  202004L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -437,8 +483,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 9.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1924 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.24 or newer.
+#if _MSC_VER < 1925 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.25 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -453,12 +499,22 @@
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// C++17 constexpr additions
+// N4842 [dcl.constexpr]/1: "A function or static data member declared with the
+// constexpr or consteval specifier is implicitly an inline function or variable"
+
+// Functions that became constexpr in C++17
 #if _HAS_CXX17
 #define _CONSTEXPR17 constexpr
-#else // ^^^ has C++17 constexpr additions / no C++17 constexpr additions vvv
+#else // ^^^ constexpr in C++17 and later / inline (not constexpr) in C++14 vvv
 #define _CONSTEXPR17 inline
-#endif // _HAS_CXX17
+#endif // ^^^ inline (not constexpr) in C++14 ^^^
+
+// Functions that became constexpr in C++20
+#if _HAS_CXX20
+#define _CONSTEXPR20 constexpr
+#else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
+#define _CONSTEXPR20 inline
+#endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -856,8 +912,87 @@
 #define _DEPRECATE_EXPERIMENTAL_ERASE
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4027
+// P0768R1 [depr.relops]
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_REL_OPS                                                                                      \
+    [[deprecated("warning STL4027: "                                                                                  \
+                 "The namespace std::rel_ops and its contents are deprecated in C++20. "                              \
+                 "Their use is superseded by C++20's <=> operator and automatic rewrites of relational expressions. " \
+                 "You can define _SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING or "                                      \
+                 "_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_REL_OPS
+#endif // ^^^ warning disabled ^^^
 
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_ATOMIC_INIT                                                  \
+    [[deprecated("warning STL4028: "                                                  \
+                 "std::atomic_init() overloads are deprecated in C++20. "             \
+                 "The constructors of std::atomic provide equivalent functionality. " \
+                 "You can define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING "     \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_ATOMIC_INIT
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4029
+
+// P0619R4 Removing C++17-Deprecated Features
+#ifndef _HAS_FEATURES_REMOVED_IN_CXX20
+#define _HAS_FEATURES_REMOVED_IN_CXX20 (!_HAS_CXX20)
+#endif // _HAS_FEATURES_REMOVED_IN_CXX20
+
+#ifndef _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+#ifndef _HAS_DEPRECATED_IS_LITERAL_TYPE
+#define _HAS_DEPRECATED_IS_LITERAL_TYPE (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
+
+#ifndef _HAS_DEPRECATED_NEGATORS
+#define _HAS_DEPRECATED_NEGATORS (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_NEGATORS
+
+#ifndef _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
+#define _HAS_DEPRECATED_RAW_STORAGE_ITERATOR (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
+
+#ifndef _HAS_DEPRECATED_RESULT_OF
+#define _HAS_DEPRECATED_RESULT_OF (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_RESULT_OF
+
+#ifndef _HAS_DEPRECATED_SHARED_PTR_UNIQUE
+#define _HAS_DEPRECATED_SHARED_PTR_UNIQUE (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_SHARED_PTR_UNIQUE
+
+#ifndef _HAS_DEPRECATED_TEMPORARY_BUFFER
+#define _HAS_DEPRECATED_TEMPORARY_BUFFER (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
+
+#ifndef _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+#define _HAS_DEPRECATED_UNCAUGHT_EXCEPTION (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+
+#if _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+#define _ARGUMENT_TYPE_NAME        argument_type
+#define _FIRST_ARGUMENT_TYPE_NAME  first_argument_type
+#define _SECOND_ARGUMENT_TYPE_NAME second_argument_type
+#define _RESULT_TYPE_NAME          result_type
+#else // ^^^ _HAS_DEPRECATED_ADAPTOR_TYPEDEFS / !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS vvv
+#define _ARGUMENT_TYPE_NAME        _Unnameable_argument
+#define _FIRST_ARGUMENT_TYPE_NAME  _Unnameable_first_argument
+#define _SECOND_ARGUMENT_TYPE_NAME _Unnameable_second_argument
+#define _RESULT_TYPE_NAME          _Unnameable_result
+#endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+// P1423R3 char8_t Backward Compatibility Remediation
+// Controls whether we allow the stream insertions this proposal forbids
+#ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
+#define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
 // LIBRARY FEATURE-TEST MACROS
 
@@ -895,20 +1030,17 @@
 #define __cpp_lib_logical_traits                   201510L
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
-#ifndef _USING_V110_SDK71_
-#define __cpp_lib_shared_mutex 201505L
-#endif // _USING_V110_SDK71_
-#define __cpp_lib_shared_ptr_arrays             201611L
-#define __cpp_lib_transparent_operators         201510L
-#define __cpp_lib_type_trait_variable_templates 201510L
-#define __cpp_lib_uncaught_exceptions           201411L
-#define __cpp_lib_unordered_map_try_emplace     201411L
-#define __cpp_lib_void_t                        201411L
+#define __cpp_lib_shared_mutex                     201505L
+#define __cpp_lib_shared_ptr_arrays                201611L
+#define __cpp_lib_transparent_operators            201510L
+#define __cpp_lib_type_trait_variable_templates    201510L
+#define __cpp_lib_uncaught_exceptions              201411L
+#define __cpp_lib_unordered_map_try_emplace        201411L
+#define __cpp_lib_void_t                           201411L
 
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
 #define __cpp_lib_apply                      201603L
-#define __cpp_lib_array_constexpr            201603L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
 #if _HAS_STD_BYTE
@@ -941,7 +1073,7 @@
 #define __cpp_lib_sample                201603L
 #define __cpp_lib_scoped_lock           201703L
 #define __cpp_lib_shared_ptr_weak_type  201606L
-#define __cpp_lib_string_view           201606L
+#define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 #define __cpp_lib_variant               201606L
 #else // _HAS_CXX17
@@ -949,40 +1081,64 @@
 #endif // _HAS_CXX17
 
 // C++20
+#define __cpp_lib_atomic_value_initialization 201911L
+
 #if _HAS_CXX20
-#define __cpp_lib_bind_front 201907L
+#define __cpp_lib_atomic_float 201711L
+#define __cpp_lib_bind_front   201907L
+
+#ifndef __EDG__ // TRANSITION, VSO-1041044
+#define __cpp_lib_bit_cast 201806L
+#endif // __EDG__
+
 #if defined(__clang__) || defined(__EDG__)
 #define __cpp_lib_bitops 201907L
 #else // ^^^ Clang and EDG / MSVC vvv
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
 // TRANSITION, VSO-1020212
 #endif // defined(__clang__) || defined(__EDG__)
+
 #define __cpp_lib_bounded_array_traits 201902L
+
 #ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201811L
+#define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
 #if defined(__cpp_concepts) && __cpp_concepts > 201507L
 #define __cpp_lib_concepts 201907L
-
-// P0898R3 (as modified by P1754R1) std::boolean
-#ifndef _HAS_STD_BOOLEAN
-#define _HAS_STD_BOOLEAN 1
-#endif // _HAS_STD_BOOLEAN
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
+#define __cpp_lib_constexpr_algorithms     201806L
+#define __cpp_lib_constexpr_memory         201811L
+#define __cpp_lib_constexpr_numeric        201911L
 #define __cpp_lib_endian                   201907L
-#define __cpp_lib_erase_if                 201811L
+#define __cpp_lib_erase_if                 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
+#define __cpp_lib_int_pow2                 202002L
+#define __cpp_lib_is_constant_evaluated    201811L
+#define __cpp_lib_is_nothrow_convertible   201806L
 #define __cpp_lib_list_remove_return_type  201806L
 #define __cpp_lib_math_constants           201907L
+#define __cpp_lib_remove_cvref             201711L
+#define __cpp_lib_shift                    201806L
+#define __cpp_lib_span                     202002L
+#define __cpp_lib_ssize                    201902L
+#define __cpp_lib_starts_ends_with         201711L
+#define __cpp_lib_to_address               201711L
 #define __cpp_lib_to_array                 201907L
+#define __cpp_lib_type_identity            201806L
+#define __cpp_lib_unwrap_ref               201811L
 #endif // _HAS_CXX20
+
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_array_constexpr 201803L
+#endif // _HAS_CXX17
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
-
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
@@ -1007,6 +1163,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::
+#define _RANGES    ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
 #define _STDEXT_BEGIN namespace stdext {
@@ -1028,11 +1185,9 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #ifdef _M_CEE_PURE
 #define _EXTERN_C_UNLESS_PURE
 #define _END_EXTERN_C_UNLESS_PURE
-#define _STATIC_UNLESS_PURE // Avoid warning C4640: construction of local static object is not thread-safe (/Wall)
 #else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
 #define _EXTERN_C_UNLESS_PURE     _EXTERN_C
 #define _END_EXTERN_C_UNLESS_PURE _END_EXTERN_C
-#define _STATIC_UNLESS_PURE       static
 #endif // _M_CEE_PURE
 
 #if defined(MRTDLL) && !defined(_CRTBLD)

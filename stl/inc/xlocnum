@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <iterator>
 #include <streambuf>
 
 #pragma pack(push, _CRT_PACKING)
@@ -669,9 +670,9 @@ private:
         const string _Grouping  = _Punct_fac.grouping();
         const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
 
-        constexpr int _Numget_signoff             = 22;
-        constexpr int _Numget_xoff                = 24;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789ABCDEFabcdef-+Xx";
+        constexpr int _Numget_signoff = 22;
+        constexpr int _Numget_xoff    = 24;
+        static constexpr char _Src[]  = "0123456789ABCDEFabcdef-+Xx";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Loc);
         _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
@@ -782,9 +783,9 @@ private:
         bool _Bad              = false;
         bool _Sticky           = false;
 
-        constexpr int _Numget_signoff             = 10;
-        constexpr int _Numget_eoff                = 12;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789-+Ee";
+        constexpr int _Numget_signoff = 10;
+        constexpr int _Numget_eoff    = 12;
+        static constexpr char _Src[]  = "0123456789-+Ee";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
@@ -963,10 +964,10 @@ private:
         const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping = _Punct_fac.grouping();
 
-        constexpr int _Numget_signoff             = 22;
-        constexpr int _Numget_xoff                = 24;
-        constexpr int _Numget_poff                = 26;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789ABCDEFabcdef-+XxPp";
+        constexpr int _Numget_signoff = 22;
+        constexpr int _Numget_xoff    = 24;
+        constexpr int _Numget_poff    = 26;
+        static constexpr char _Src[]  = "0123456789ABCDEFabcdef-+XxPp";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);

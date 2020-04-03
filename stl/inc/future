@@ -152,12 +152,9 @@ private:
     error_code _Mycode; // the stored error code
 };
 
-// CLASS _Future_error_category
-class _Future_error_category : public _Generic_error_category { // categorize a future error
+class _Future_error_category2 : public error_category { // categorize a future error
 public:
-    _Future_error_category() {
-        _Addr = _Future_addr;
-    }
+    constexpr _Future_error_category2() noexcept : error_category(_Future_addr) {}
 
     virtual const char* name() const noexcept override {
         return "future";
@@ -169,12 +166,12 @@ public:
             return _Name;
         }
 
-        return _Generic_error_category::message(_Errcode);
+        return _Syserror_map(_Errcode);
     }
 };
 
 _NODISCARD inline const error_category& future_category() noexcept {
-    return _Immortalize<_Future_error_category>();
+    return _Immortalize_memcpy_image<_Future_error_category2>();
 }
 
 // STRUCT TEMPLATE _State_deleter
@@ -1238,11 +1235,11 @@ public:
     }
 
     void set_value(_Ty& _Val) {
-        _MyPromise._Get_state_for_set()._Set_value(&_Val, false);
+        _MyPromise._Get_state_for_set()._Set_value(_STD addressof(_Val), false);
     }
 
     void set_value_at_thread_exit(_Ty& _Val) {
-        _MyPromise._Get_state_for_set()._Set_value(&_Val, true);
+        _MyPromise._Get_state_for_set()._Set_value(_STD addressof(_Val), true);
     }
 
     void set_exception(exception_ptr _Exc) {
@@ -1566,7 +1563,7 @@ namespace experimental {
 
         void await_suspend(experimental::coroutine_handle<> _ResumeCb) {
             // TRANSITION, change to .then if and when future gets .then
-            thread _WaitingThread([& _Fut = _Fut, _ResumeCb]() mutable {
+            thread _WaitingThread([&_Fut = _Fut, _ResumeCb]() mutable {
                 _Fut.wait();
                 _ResumeCb();
             });

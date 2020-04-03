@@ -197,14 +197,14 @@ namespace filesystem {
     inline constexpr bool _Is_EcharT<char32_t> = true;
 
     template <class _Ty, class = void>
-    inline constexpr bool _Is_Source2 = false;
+    inline constexpr bool _Is_Source_impl = false;
 
     template <class _Ty>
-    inline constexpr bool _Is_Source2<_Ty, void_t<_Iter_value_t<decay_t<_Ty>>>> =
-        _Is_EcharT<_Iter_value_t<decay_t<_Ty>>>;
+    inline constexpr bool _Is_Source_impl<_Ty, void_t<typename iterator_traits<_Ty>::value_type>> =
+        _Is_EcharT<typename iterator_traits<_Ty>::value_type>;
 
     template <class _Ty>
-    inline constexpr bool _Is_Source = _Is_Source2<_Ty>;
+    inline constexpr bool _Is_Source = _Is_Source_impl<decay_t<_Ty>>;
 
     class path;
 
@@ -279,9 +279,9 @@ namespace filesystem {
     template <class _Src>
     _NODISCARD auto _Stringoid_from_Source(const _Src& _Source) {
         using _EcharT = _Iter_value_t<decay_t<_Src>>;
-        if constexpr (is_pointer_v<_Unwrapped_unverified_t<_Src>>) {
+        if constexpr (is_pointer_v<_Unwrapped_unverified_t<const _Src&>>) {
             return basic_string_view<_EcharT>(_Get_unwrapped_unverified(_Source));
-        } else if constexpr (is_pointer_v<_Unwrapped_t<_Src>>) {
+        } else if constexpr (is_pointer_v<_Unwrapped_t<const _Src&>>) {
             const auto _Data = _Get_unwrapped(_Source);
             auto _Next       = _Source;
             while (*_Next != _EcharT{}) {
@@ -1582,8 +1582,8 @@ namespace filesystem {
 
         using _Prevent_inheriting_unwrap = _Path_iterator;
 
-        template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
-        _NODISCARD _Path_iterator<_Unwrapped_t<_Base_iter>> _Unwrapped() const {
+        template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
+        _NODISCARD _Path_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const {
             return {_Position._Unwrapped(), _Element.native(), _Mypath};
         }
 
@@ -1592,7 +1592,7 @@ namespace filesystem {
         template <class _Other>
         friend class _Path_iterator;
 
-        template <class _Other, enable_if_t<_Wrapped_seekable_v<_Base_iter, _Other>, int> = 0>
+        template <class _Other, enable_if_t<_Wrapped_seekable_v<_Base_iter, const _Other&>, int> = 0>
         constexpr void _Seek_to(const _Path_iterator<_Other>& _It) {
             _Position._Seek_to(_It._Position);
             _Element = _It._Element;
@@ -1826,12 +1826,6 @@ namespace filesystem {
         _THROW(filesystem_error(_Op, _Path1, _Path2, _Error));
     }
 
-    // FUNCTION _Is_file_not_found
-    _NODISCARD inline bool _Is_file_not_found(const __std_win_error _Error) noexcept {
-        return _Error == __std_win_error::_File_not_found || _Error == __std_win_error::_Path_not_found
-               || _Error == __std_win_error::_Invalid_name;
-    }
-
     // ENUM CLASS file_type
     enum class file_type {
         none,
@@ -1975,7 +1969,7 @@ namespace filesystem {
             }
 
             this->permissions(perms::unknown);
-            this->type(_Is_file_not_found(_Error) ? file_type::not_found : file_type::none);
+            this->type(__std_is_file_not_found(_Error) ? file_type::not_found : file_type::none);
         }
 
     private:
@@ -2167,7 +2161,7 @@ namespace filesystem {
             return _Path;
         }
 
-        operator const filesystem::path&() const noexcept {
+        operator const filesystem::path &() const noexcept {
             return _Path;
         }
 
@@ -2489,15 +2483,19 @@ namespace filesystem {
         _NODISCARD static __std_win_error _Advance_and_reset_if_no_more_files(shared_ptr<_Dir_enum_impl>& _Ptr) {
             auto& _Impl = *_Ptr;
             __std_fs_find_data _Data;
-            const auto _Error = __std_fs_directory_iterator_advance(_Impl._Dir._Handle, &_Data);
-            if (_Error == __std_win_error::_Success) {
-                _Impl._Refresh(_Data); // can throw
-            } else if (_Error == __std_win_error::_No_more_files) {
-                _Ptr.reset();
-                return __std_win_error::_Success;
-            }
+            do {
+                const auto _Error = __std_fs_directory_iterator_advance(_Impl._Dir._Handle, &_Data);
+                if (_Error == __std_win_error::_No_more_files) {
+                    _Ptr.reset();
+                    return __std_win_error::_Success;
+                }
 
-            return _Error;
+                if (_Error != __std_win_error::_Success) {
+                    return _Error;
+                }
+            } while (_Is_dot_or_dotdot(_Data));
+            _Impl._Refresh(_Data); // can throw
+            return __std_win_error::_Success;
         }
 
         _NODISCARD static __std_win_error _Skip_dots(
@@ -2720,7 +2718,7 @@ namespace filesystem {
                         if (_Error == __std_win_error::_Success) {
                             _Should_recurse =
                                 _Bitmask_includes(_Target_stats._Attributes, __std_fs_file_attr::_Directory);
-                        } else if (_Is_file_not_found(_Error)
+                        } else if (__std_is_file_not_found(_Error)
                                    || (_Error == __std_win_error::_Access_denied
                                        && _Bitmask_includes(_Options, directory_options::skip_permission_denied))) {
                             // skip broken symlinks and permission denied (when configured)
@@ -3286,8 +3284,8 @@ namespace filesystem {
     }
 
     // FUNCTION copy_file
-    inline bool copy_file(
-        const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept /* strengthened */ {
+    inline bool copy_file(const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept
+    /* strengthened */ {
         // copy a file _From -> _To according to _Options
         const auto _Result =
             __std_fs_copy_file(_From.c_str(), _To.c_str(), static_cast<__std_fs_copy_options>(_Options));
@@ -3753,7 +3751,7 @@ namespace filesystem {
             _Error                    = _Create_result._Error;
             _Created_last             = _Create_result._Created;
             _Error                    = _Create_result._Error;
-            if (_Error != __std_win_error::_Success && !_Is_file_not_found(_Error)) {
+            if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
                 _Most_recent_not_file_not_found = _Error;
             }
 
@@ -3786,7 +3784,7 @@ namespace filesystem {
         for (directory_iterator _It(_Path, _Ec);; _It.increment(_Ec)) { // remove nonempty directory contents
             if (_Ec) {
                 if (_Ec.category() != _STD system_category()
-                    || !_Is_file_not_found(static_cast<__std_win_error>(_Ec.value()))) {
+                    || !__std_is_file_not_found(static_cast<__std_win_error>(_Ec.value()))) {
                     return;
                 }
 
@@ -4038,7 +4036,7 @@ namespace filesystem {
                 return _Temp;
             }
 
-            if (!_Is_file_not_found(_Err)) {
+            if (!__std_is_file_not_found(_Err)) {
                 _Ec = _Make_ec(_Err);
                 return path();
             }
@@ -4062,7 +4060,7 @@ namespace filesystem {
 
                 if (_Err == __std_win_error::_Success) {
                     _Result = _STD move(_Temp);
-                } else if (_Is_file_not_found(_Err)) {
+                } else if (__std_is_file_not_found(_Err)) {
                     _Call_canonical = false;
                 } else {
                     _Ec = _Make_ec(_Err);

@@ -8,6 +8,7 @@
 #define _XLOCMON_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <iterator>
 #include <xlocnum>
 
 #pragma pack(push, _CRT_PACKING)
@@ -430,8 +431,8 @@ private:
         const money_base::pattern _Pattern = _Ppunct_fac->neg_format();
         string _Val;
         size_t _Idx;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789-";
-        const ctype<_Elem>& _Ctype_fac            = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
+        static constexpr char _Src[]   = "0123456789-";
+        const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
 
         for (size_t _Off = 0; !_Bad && _Off < 4; ++_Off) {
@@ -696,7 +697,7 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, bool _Intl, ios_base& _Iosbase, _Elem _Fill,
         const string_type& _Val) const { // put string_type to _Dest
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789-";
+        static constexpr char _Src[] = "0123456789-";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);

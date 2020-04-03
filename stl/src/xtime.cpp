@@ -4,23 +4,23 @@
 // xtime functions
 
 #include "awint.h"
+#include <atomic>
 #include <stdlib.h>
 #include <time.h>
 #include <xtimec.h>
 
-#define NSEC_PER_SEC  1000000000L
-#define NSEC_PER_MSEC 1000000L
-#define NSEC_PER_USEC 1000L
-#define MSEC_PER_SEC  1000
+constexpr long _Nsec_per_sec  = 1000000000L;
+constexpr long _Nsec_per_msec = 1000000L;
+constexpr int _Msec_per_sec   = 1000;
 
 static void xtime_normalize(xtime* xt) { // adjust so that 0 <= nsec < 1 000 000 000
     while (xt->nsec < 0) { // normalize target time
         xt->sec -= 1;
-        xt->nsec += NSEC_PER_SEC;
+        xt->nsec += _Nsec_per_sec;
     }
-    while (NSEC_PER_SEC <= xt->nsec) { // normalize target time
+    while (_Nsec_per_sec <= xt->nsec) { // normalize target time
         xt->sec += 1;
-        xt->nsec -= NSEC_PER_SEC;
+        xt->nsec -= _Nsec_per_sec;
     }
 }
 
@@ -30,7 +30,7 @@ static xtime xtime_diff(const xtime* xt,
     xtime_normalize(&diff);
     if (diff.nsec < now->nsec) { // avoid underflow
         diff.sec -= now->sec + 1;
-        diff.nsec += NSEC_PER_SEC - now->nsec;
+        diff.nsec += _Nsec_per_sec - now->nsec;
     } else { // no underflow
         diff.sec -= now->sec;
         diff.nsec -= now->nsec;
@@ -43,28 +43,26 @@ static xtime xtime_diff(const xtime* xt,
 }
 
 
-#define EPOCH 0x19DB1DED53E8000i64
-
-#define NSEC100_PER_SEC  (NSEC_PER_SEC / 100)
-#define NSEC100_PER_MSEC (NSEC_PER_MSEC / 100)
+constexpr long long _Epoch      = 0x19DB1DED53E8000LL;
+constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
 _EXTERN_C
 
 long long _Xtime_get_ticks() { // get system time in 100-nanosecond intervals since the epoch
     FILETIME ft;
     __crtGetSystemTimePreciseAsFileTime(&ft);
-    return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - EPOCH;
+    return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - _Epoch;
 }
 
 static void sys_get_time(xtime* xt) { // get system time with nanosecond resolution
     unsigned long long now = _Xtime_get_ticks();
-    xt->sec                = static_cast<__time64_t>(now / NSEC100_PER_SEC);
-    xt->nsec               = static_cast<long>(now % NSEC100_PER_SEC) * 100;
+    xt->sec                = static_cast<__time64_t>(now / _Nsec100_per_sec);
+    xt->nsec               = static_cast<long>(now % _Nsec100_per_sec) * 100;
 }
 
 long _Xtime_diff_to_millis2(const xtime* xt1, const xtime* xt2) { // convert time to milliseconds
     xtime diff = xtime_diff(xt1, xt2);
-    return static_cast<long>(diff.sec * MSEC_PER_SEC + (diff.nsec + NSEC_PER_MSEC - 1) / NSEC_PER_MSEC);
+    return static_cast<long>(diff.sec * _Msec_per_sec + (diff.nsec + _Nsec_per_msec - 1) / _Nsec_per_msec);
 }
 
 long _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
@@ -90,9 +88,15 @@ _CRTIMP2_PURE long long __cdecl _Query_perf_counter() { // get current value of 
 }
 
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency() { // get frequency of performance counter
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li); // always succeeds
-    return li.QuadPart;
+    static std::atomic<long long> freq_cached{0};
+    long long freq = freq_cached.load(std::memory_order_relaxed);
+    if (freq == 0) {
+        LARGE_INTEGER li;
+        QueryPerformanceFrequency(&li); // always succeeds
+        freq = li.QuadPart; // doesn't change after system boot
+        freq_cached.store(freq, std::memory_order_relaxed);
+    }
+    return freq;
 }
 
 _END_EXTERN_C

@@ -256,11 +256,11 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<_NoThrowFwdIt>, _Tval>) {
+        if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
             _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), _Count);
             _UFirst += _Count;
         } else {
-            _Uninitialized_backout<_Unwrapped_n_t<_NoThrowFwdIt>> _Backout{_UFirst};
+            _Uninitialized_backout<_Unwrapped_n_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
             for (; 0 < _Count; --_Count) {
                 _Backout._Emplace_back(_Val);
             }
@@ -299,8 +299,8 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     // copy _Count copies of _Val to raw _First
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
-        const auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        _Seek_wrapped(_First, _Uninitialized_fill_n_unchecked1(_UFirst, _Count, _Val,
+        auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+        _Seek_wrapped(_First, _Uninitialized_fill_n_unchecked1(_STD move(_UFirst), _Count, _Val,
                                   bool_constant<_Fill_memset_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{}));
     }
 
@@ -308,10 +308,24 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#if _HAS_CXX20
+template <class _Ty, class... _Types>
+auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(noexcept(::new (const_cast<void*>(
+    static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...))) // strengthened
+    -> decltype(
+        ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...)) {
+    return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...);
+}
+
+namespace ranges {
+    using _STD construct_at;
+} // namespace ranges
+#endif // _HAS_CXX20
+
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy_at
 template <class _Ty>
-void destroy_at(_Ty* const _Location) { // destroy _Ty at memory address _Location
+void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
     _Location->~_Ty();
 }
 
@@ -391,7 +405,7 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
-    if constexpr (_Use_memset_value_construct_v<_Unwrapped_t<_NoThrowFwdIt>>) {
+    if constexpr (_Use_memset_value_construct_v<_Unwrapped_t<const _NoThrowFwdIt&>>) {
         _Zero_range(_UFirst, _ULast);
     } else {
         _Uninitialized_backout _Backout{_UFirst};
@@ -418,6 +432,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
 #endif // _HAS_CXX17
 
 
+#if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 // CLASS TEMPLATE raw_storage_iterator
 template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
@@ -462,6 +477,7 @@ public:
 private:
     _OutIt _Next;
 };
+#endif // _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 
 
 #if _HAS_AUTO_PTR_ETC
@@ -688,7 +704,7 @@ template <class _Resource, class _Dx>
 class _Ref_count_resource : public _Ref_count_base { // handle reference counting for object with deleter
 public:
     _Ref_count_resource(_Resource _Px, _Dx _Dt)
-        : _Ref_count_base(), _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _Px) {}
+        : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -721,7 +737,7 @@ class _Ref_count_resource_alloc : public _Ref_count_base {
 public:
     _Ref_count_resource_alloc(_Resource _Px, _Dx _Dt, const _Alloc& _Ax)
         : _Ref_count_base(),
-          _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _One_then_variadic_args_t(), _Ax, _Px) {}
+          _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
 
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -1009,7 +1025,7 @@ public:
     using weak_type = weak_ptr<_Ty>;
 #endif // _HAS_CXX17
 
-    constexpr shared_ptr() noexcept {} // construct empty shared_ptr
+    constexpr shared_ptr() noexcept = default;
 
     constexpr shared_ptr(nullptr_t) noexcept {} // construct empty shared_ptr
 
@@ -1205,10 +1221,12 @@ public:
         return get()[_Idx];
     }
 
-    _NODISCARD _CXX17_DEPRECATE_SHARED_PTR_UNIQUE bool unique() const noexcept {
+#if _HAS_DEPRECATED_SHARED_PTR_UNIQUE
+    _CXX17_DEPRECATE_SHARED_PTR_UNIQUE _NODISCARD bool unique() const noexcept {
         // return true if no other shared_ptr object owns this resource
         return this->use_count() == 1;
     }
+#endif // _HAS_DEPRECATED_SHARED_PTR_UNIQUE
 
     explicit operator bool() const noexcept {
         return get() != nullptr;
@@ -1282,10 +1300,10 @@ private:
 
 #if _HAS_CXX17
 template <class _Ty>
-shared_ptr(weak_ptr<_Ty>)->shared_ptr<_Ty>;
+shared_ptr(weak_ptr<_Ty>) -> shared_ptr<_Ty>;
 
 template <class _Ty, class _Dx>
-shared_ptr(unique_ptr<_Ty, _Dx>)->shared_ptr<_Ty>;
+shared_ptr(unique_ptr<_Ty, _Dx>) -> shared_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty1, class _Ty2>
@@ -1687,7 +1705,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Ty>
-weak_ptr(shared_ptr<_Ty>)->weak_ptr<_Ty>;
+weak_ptr(shared_ptr<_Ty>) -> weak_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
@@ -1797,10 +1815,10 @@ public:
     using deleter_type = _Dx;
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     unique_ptr& operator=(nullptr_t) noexcept {
         reset();
@@ -1808,25 +1826,22 @@ public:
     }
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Ptr) {}
+    explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0>
-    unique_ptr(pointer _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _Dt, _Ptr) {}
+    unique_ptr(pointer _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Dx2                                                                            = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0>
-    unique_ptr(pointer _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _Ptr) {}
+    unique_ptr(pointer _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Dx2                                                                                      = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(pointer, remove_reference_t<_Dx>&&) = delete;
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Ty2, class _Dx2,
         enable_if_t<
@@ -1834,12 +1849,12 @@ public:
                 conditional_t<is_reference_v<_Dx>, is_same<_Dx2, _Dx>, is_convertible<_Dx2, _Dx>>>,
             int> = 0>
     unique_ptr(unique_ptr<_Ty2, _Dx2>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx2>(_Right.get_deleter()), _Right.release()) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx2>(_Right.get_deleter()), _Right.release()) {}
 
 #if _HAS_AUTO_PTR_ETC
     template <class _Ty2,
         enable_if_t<conjunction_v<is_convertible<_Ty2*, _Ty*>, is_same<_Dx, default_delete<_Ty>>>, int> = 0>
-    unique_ptr(auto_ptr<_Ty2>&& _Right) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Right.release()) {}
+    unique_ptr(auto_ptr<_Ty2>&& _Right) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Right.release()) {}
 #endif // _HAS_AUTO_PTR_ETC
 
     template <class _Ty2, class _Dx2,
@@ -1852,9 +1867,7 @@ public:
         return *this;
     }
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
@@ -1928,7 +1941,7 @@ public:
     using deleter_type = _Dx;
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
     using _Enable_ctor_reset =
@@ -1939,31 +1952,26 @@ public:
                         && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>)>; // TRANSITION, GH-248
 
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
-    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t(), _Ptr) {}
+    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _Dt, _Ptr) {}
+    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t(), _STD move(_Dt), _Ptr) {}
+    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(_Uty, remove_reference_t<_Dx>&&) = delete;
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr(unique_ptr&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {
-    }
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
-#ifndef _M_CEE // TRANSITION, VSO-1006185
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
-#endif // _M_CEE
     unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
@@ -1983,7 +1991,7 @@ public:
         class = _Enable_conversion<_Uty, _Ex,
             conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>>>
     unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t(), _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Uty, class _Ex, class = _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>>>
     unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
@@ -1993,7 +2001,7 @@ public:
     }
 
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t()) {}
+    constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
     unique_ptr& operator=(nullptr_t) noexcept {
         reset();
@@ -2211,9 +2219,9 @@ struct owner_less; // not defined
 
 template <class _Ty>
 struct owner_less<shared_ptr<_Ty>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2230,9 +2238,9 @@ struct owner_less<shared_ptr<_Ty>> {
 
 template <class _Ty>
 struct owner_less<weak_ptr<_Ty>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> first_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> second_argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> _SECOND_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2249,8 +2257,6 @@ struct owner_less<weak_ptr<_Ty>> {
 
 template <>
 struct owner_less<void> {
-    using is_transparent = int;
-
     template <class _Ty, class _Uty>
     _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
@@ -2270,6 +2276,8 @@ struct owner_less<void> {
     _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
+
+    using is_transparent = int;
 };
 
 // STRUCT TEMPLATE SPECIALIZATION hash
@@ -2284,8 +2292,8 @@ struct hash<unique_ptr<_Ty, _Dx>> : _Conditionally_enabled_hash<unique_ptr<_Ty, 
 
 template <class _Ty>
 struct hash<shared_ptr<_Ty>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const shared_ptr<_Ty>& _Keyval) const noexcept {
         return hash<typename shared_ptr<_Ty>::element_type*>()(_Keyval.get());

@@ -52,6 +52,88 @@ private:
     void* _Timeptr; // pointer to time information
 };
 
+// CLASS TEMPLATE _Yarn
+template <class _Elem>
+class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
+public:
+    __CLR_OR_THIS_CALL _Yarn() noexcept : _Myptr(nullptr), _Nul(0) {}
+
+    __CLR_OR_THIS_CALL _Yarn(const _Yarn& _Right) noexcept : _Myptr(nullptr), _Nul(0) {
+        *this = _Right;
+    }
+
+    __CLR_OR_THIS_CALL _Yarn(const _Elem* _Right) noexcept : _Myptr(nullptr), _Nul(0) {
+        *this = _Right;
+    }
+
+    _Yarn& __CLR_OR_THIS_CALL operator=(const _Yarn& _Right) noexcept {
+        return *this = _Right._Myptr;
+    }
+
+    _Yarn& __CLR_OR_THIS_CALL operator=(const _Elem* _Right) noexcept {
+        if (_Myptr != _Right) { // new value, discard old and copy new
+            _Tidy();
+
+            if (_Right) { // new is not empty, copy it
+                const _Elem* _Ptr = _Right;
+                while (*_Ptr != _Elem{}) {
+                    ++_Ptr;
+                }
+
+                const auto _Count = (++_Ptr - _Right) * sizeof(_Elem);
+
+#ifdef _DEBUG
+                _Myptr = static_cast<_Elem*>(_malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
+#else // _DEBUG
+                _Myptr = static_cast<_Elem*>(_CSTD malloc(_Count));
+#endif // _DEBUG
+
+                if (_Myptr) {
+                    _CSTD memcpy(_Myptr, _Right, _Count);
+                }
+            }
+        }
+
+        return *this;
+    }
+
+    __CLR_OR_THIS_CALL ~_Yarn() noexcept {
+        _Tidy();
+    }
+
+    _NODISCARD bool __CLR_OR_THIS_CALL empty() const noexcept {
+        return _Myptr == nullptr;
+    }
+
+    _Ret_z_ const _Elem* __CLR_OR_THIS_CALL c_str() const noexcept {
+        return _Myptr ? _Myptr : &_Nul;
+    }
+
+    _NODISCARD bool __CLR_OR_THIS_CALL _Empty() const noexcept {
+        return _Myptr == nullptr;
+    }
+
+    _Ret_z_ const _Elem* __CLR_OR_THIS_CALL _C_str() const noexcept {
+        return _Myptr ? _Myptr : &_Nul;
+    }
+
+private:
+    void __CLR_OR_THIS_CALL _Tidy() noexcept {
+        if (_Myptr) {
+#ifdef _DEBUG
+            _free_dbg(_Myptr, _CRT_BLOCK);
+#else // _DEBUG
+            _CSTD free(_Myptr);
+#endif // _DEBUG
+        }
+
+        _Myptr = nullptr;
+    }
+
+    _Elem* _Myptr; // pointer to allocated string
+    _Elem _Nul; // nul terminator for unallocated string
+};
+
 // CLASS _Locinfo
 class _CRTIMP2_PURE_IMPORT _Locinfo { // summary of all stuff specific to a locale used by standard facets
 public:

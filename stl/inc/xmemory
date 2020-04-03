@@ -23,25 +23,51 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+// STRUCT TEMPLATE _Tidy_guard
+template <class _Ty>
+struct _Tidy_guard { // class with destructor that calls _Tidy
+    _Ty* _Target;
+    ~_Tidy_guard() {
+        if (_Target) {
+            _Target->_Tidy();
+        }
+    }
+};
+
+// STRUCT TEMPLATE _Tidy_deallocate_guard
+template <class _Ty>
+struct _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
+    _Ty* _Target;
+    ~_Tidy_deallocate_guard() {
+        if (_Target) {
+            _Target->_Tidy_deallocate();
+        }
+    }
+};
+
+// VARIABLE TEMPLATE _Nothrow_compare
+template <class _Keycmp, class _Lhs, class _Rhs>
+_INLINE_VAR constexpr bool _Nothrow_compare = noexcept(
+    static_cast<bool>(_STD declval<const _Keycmp&>()(_STD declval<const _Lhs&>(), _STD declval<const _Rhs&>())));
+
 // FUNCTION TEMPLATE _Get_size_of_n
 template <size_t _Ty_size>
 _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
     constexpr bool _Overflow_is_possible = _Ty_size > 1;
 
-    if
-        _CONSTEXPR_IF(_Overflow_is_possible) {
-            constexpr size_t _Max_possible = static_cast<size_t>(-1) / _Ty_size;
-            if (_Count > _Max_possible) {
-                _Throw_bad_array_new_length(); // multiply overflow
-            }
+    if _CONSTEXPR_IF (_Overflow_is_possible) {
+        constexpr size_t _Max_possible = static_cast<size_t>(-1) / _Ty_size;
+        if (_Count > _Max_possible) {
+            _Throw_bad_array_new_length(); // multiply overflow
         }
+    }
 
     return _Count * _Ty_size;
 }
 
 // VARIABLE TEMPLATE _New_alignof
 template <class _Ty>
-_INLINE_VAR constexpr size_t _New_alignof = _Max_value(alignof(_Ty),
+_INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
     static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
 );
 
@@ -141,7 +167,7 @@ _DECLSPEC_ALLOCATOR void* _Allocate(const size_t _Bytes) {
 #if defined(_M_IX86) || defined(_M_X64)
     if (_Bytes >= _Big_allocation_threshold) {
         // boost the alignment of big allocations to help autovectorization
-        _Passed_align = _Max_value(_Align, _Big_allocation_alignment);
+        _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
     }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
@@ -154,7 +180,7 @@ void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
     size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
     if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
-        _Passed_align = _Max_value(_Align, _Big_allocation_alignment);
+        _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
     }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
@@ -761,11 +787,11 @@ public:
         using other = allocator<_Other>;
     };
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _Ty* address(_Ty& _Val) const noexcept {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD _Ty* address(_Ty& _Val) const noexcept {
         return _STD addressof(_Val);
     }
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS const _Ty* address(const _Ty& _Val) const noexcept {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD const _Ty* address(const _Ty& _Val) const noexcept {
         return _STD addressof(_Val);
     }
 
@@ -784,7 +810,7 @@ public:
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _DECLSPEC_ALLOCATOR _Ty* allocate(
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD _DECLSPEC_ALLOCATOR _Ty* allocate(
         _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
     }
@@ -799,7 +825,7 @@ public:
         _Ptr->~_Uty();
     }
 
-    _NODISCARD _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS size_t max_size() const noexcept {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD size_t max_size() const noexcept {
         return static_cast<size_t>(-1) / sizeof(_Ty);
     }
 };
@@ -940,13 +966,11 @@ template <class _Alloc>
 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
-    if
-        _CONSTEXPR_IF(conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
-            (void) _First;
-            (void) _Last;
-            (void) _Al;
-        }
-    else {
+    if _CONSTEXPR_IF (conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
+        (void) _First;
+        (void) _Last;
+        (void) _Al;
+    } else {
         for (; _First != _Last; ++_First) {
             allocator_traits<_Alloc>::destroy(_Al, _Unfancy(_First));
         }
@@ -958,12 +982,10 @@ void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Las
 template <class _NoThrowFwdIt>
 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
-    if
-        _CONSTEXPR_IF(is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
-            (void) _First;
-            (void) _Last;
-        }
-    else {
+    if _CONSTEXPR_IF (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+        (void) _First;
+        (void) _Last;
+    } else {
         for (; _First != _Last; ++_First) {
             _Destroy_in_place(*_First);
         }
@@ -1241,8 +1263,9 @@ using _Iterator_base = _Iterator_base12;
 
 
 // ALIAS TEMPLATE _Container_proxy_ptr AND SUPPORTING MACHINERY
-struct _Leave_proxy_unbound {}; // tag to indicate that a proxy is being allocated before it is safe to bind to a
-                                // _Container_base12
+struct _Leave_proxy_unbound {
+    explicit _Leave_proxy_unbound() = default;
+}; // tag to indicate that a proxy is being allocated before it is safe to bind to a _Container_base12
 
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
@@ -1310,9 +1333,12 @@ using _Container_proxy_ptr = _Container_proxy_ptr12<_Rebind_alloc_t<_Alloc, _Con
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
 // CLASS TEMPLATE _Compressed_pair
-struct _Zero_then_variadic_args_t {}; // tag type for value-initializing first, constructing second from remaining args
+struct _Zero_then_variadic_args_t {
+    explicit _Zero_then_variadic_args_t() = default;
+}; // tag type for value-initializing first, constructing second from remaining args
 
 struct _One_then_variadic_args_t {
+    explicit _One_then_variadic_args_t() = default;
 }; // tag type for constructing first from one arg, constructing second from remaining args
 
 template <class _Ty1, class _Ty2, bool = is_empty_v<_Ty1> && !is_final_v<_Ty1>>
@@ -1366,7 +1392,9 @@ public:
     }
 };
 
-struct _Move_allocator_tag {};
+struct _Move_allocator_tag {
+    explicit _Move_allocator_tag() = default;
+};
 
 // FUNCTION TEMPLATE _Get_temporary_buffer
 template <class _Ty>
@@ -1764,10 +1792,10 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Fill_memset_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>) {
+    if constexpr (_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
         _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
     } else {
-        _Uninitialized_backout<_Unwrapped_t<_NoThrowFwdIt>> _Backout{_UFirst};
+        _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
         while (_Backout._Last != _ULast) {
             _Backout._Emplace_back(_Val);
         }
@@ -1801,7 +1829,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     _Uninitialized_fill_unchecked(_UFirst, _Get_unwrapped(_Last), _Val,
-        bool_constant<_Fill_memset_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{});
+        bool_constant<_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1908,9 +1936,10 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#if _HAS_DEPRECATED_TEMPORARY_BUFFER
 // FUNCTION TEMPLATE get_temporary_buffer
 template <class _Ty>
-_NODISCARD _CXX17_DEPRECATE_TEMPORARY_BUFFER pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
+_CXX17_DEPRECATE_TEMPORARY_BUFFER _NODISCARD pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
     return _Get_temporary_buffer<_Ty>(_Count);
 }
 
@@ -1919,6 +1948,7 @@ template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
     _Return_temporary_buffer(_Pbuf);
 }
+#endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
 
 // STRUCT TEMPLATE _In_place_key_extract_set
 // assumes _Args have already been _Remove_cvref_t'd
@@ -1995,9 +2025,21 @@ struct _Alloc_temporary {
     }
 };
 
+template <class _Alloc>
+_NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _Rhs) noexcept {
+    if _CONSTEXPR_IF (allocator_traits<_Alloc>::is_always_equal::value) {
+        (void) _Lhs;
+        (void) _Rhs;
+        return true;
+    } else {
+        return _Lhs == _Rhs;
+    }
+}
+
 // FUNCTION TEMPLATE remove
 template <class _FwdIt, class _Ty>
-_NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { // remove each matching _Val
+_NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
+    // remove each matching _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -2018,7 +2060,8 @@ _NODISCARD _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) { /
 
 // FUNCTION TEMPLATE remove_if
 template <class _FwdIt, class _Pr>
-_NODISCARD _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) { // remove each satisfying _Pred
+_NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
+    // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
@@ -2039,27 +2082,32 @@ _NODISCARD _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) { // r
 
 // FUNCTION TEMPLATE _Erase_remove
 template <class _Container, class _Uty>
-void _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
+    return _Old_size - _Cont.size();
 }
 
 // FUNCTION TEMPLATE _Erase_remove_if
 template <class _Container, class _Pr>
-void _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
+    return _Old_size - _Cont.size();
 }
 
 // FUNCTION TEMPLATE _Erase_nodes_if
 template <class _Container, class _Pr>
-void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
-    auto _First      = _Cont.begin();
-    const auto _Last = _Cont.end();
+typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+    auto _First          = _Cont.begin();
+    const auto _Last     = _Cont.end();
+    const auto _Old_size = _Cont.size();
     while (_First != _Last) {
         if (_Pred(*_First)) {
             _First = _Cont.erase(_First);
@@ -2067,6 +2115,7 @@ void _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satis
             ++_First;
         }
     }
+    return _Old_size - _Cont.size();
 }
 _STD_END
 

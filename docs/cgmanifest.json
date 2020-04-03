@@ -4,8 +4,8 @@
             "component": {
                 "type": "git",
                 "git": {
-                    "repositoryUrl": "https://github.com/ulfjack/ryu.git",
-                    "commitHash": "59661c3f883dfd39cef6dc8eaf2fcbaae53597e8"
+                    "repositoryUrl": "https://github.com/llvm/llvm-project.git",
+                    "commitHash": "fc2a5ef9c8754fe3fbdf96483901ca3f13406b35"
                 }
             }
         },
@@ -14,7 +14,16 @@
                 "type": "git",
                 "git": {
                     "repositoryUrl": "https://github.com/microsoft/STL.git",
-                    "commitHash": "447f879b136950baf3ca35dfb54c359494fa2a77"
+                    "commitHash": "2849d9c39f10379c7725b99011d03469dc59a280"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/ulfjack/ryu.git",
+                    "commitHash": "59661c3f883dfd39cef6dc8eaf2fcbaae53597e8"
                 }
             }
         }

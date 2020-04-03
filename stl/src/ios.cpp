@@ -7,7 +7,7 @@
 #include <xiosbase>
 _STD_BEGIN
 
-#define NSTDSTR 8 // cin, wcin, cout, wcout, cerr, wcerr, clog, wclog
+constexpr int _Nstdstr = 8; // cin, wcin, cout, wcout, cerr, wcerr, clog, wclog
 
 // TRANSITION, ABI: _BADOFF is preserved for binary compatibility
 #if defined(_M_CEE_PURE)
@@ -22,8 +22,8 @@ __PURE_APPDOMAIN_GLOBAL int ios_base::_Index = 0; // initialize source of unique
 __PURE_APPDOMAIN_GLOBAL bool ios_base::_Sync = true; // initialize synchronization flag
 
 
-__PURE_APPDOMAIN_GLOBAL static ios_base* stdstr[NSTDSTR + 2] = {0}; // [1, NSTDSTR] hold pointers to standard streams
-__PURE_APPDOMAIN_GLOBAL static char stdopens[NSTDSTR + 2] = {0}; // [1, NSTDSTR] hold open counts for standard streams
+__PURE_APPDOMAIN_GLOBAL static ios_base* stdstr[_Nstdstr + 2] = {0}; // [1, _Nstdstr] hold pointers to standard streams
+__PURE_APPDOMAIN_GLOBAL static char stdopens[_Nstdstr + 2] = {0}; // [1, _Nstdstr] hold open counts for standard streams
 
 // void __CLR_OR_THIS_CALL ios_base::clear(iostate state, bool reraise) { // set state, possibly reraise exception
 //     _Mystate = (iostate)(state & _Statmask);
@@ -74,7 +74,7 @@ void __CLRCALL_PURE_OR_CDECL ios_base::_Ios_base_dtor(ios_base* _This) { // dest
 
 void __CLRCALL_PURE_OR_CDECL ios_base::_Addstd(ios_base* _This) { // add standard stream to destructor list
     _BEGIN_LOCK(_LOCK_STREAM)
-    for (_This->_Stdstr = 0; ++_This->_Stdstr < NSTDSTR;) {
+    for (_This->_Stdstr = 0; ++_This->_Stdstr < _Nstdstr;) {
         if (stdstr[_This->_Stdstr] == 0 || stdstr[_This->_Stdstr] == _This) {
             break; // found a candidate
         }

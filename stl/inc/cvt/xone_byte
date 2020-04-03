@@ -108,8 +108,8 @@ namespace stdext {
                 return _Mybase::ok;
             }
 
-            virtual int do_length(_Statype&, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
-                noexcept override {
+            virtual int do_length(
+                _Statype&, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 const auto _Wchars = static_cast<size_t>(_Last1 - _First1);
 

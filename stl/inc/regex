@@ -309,8 +309,9 @@ public:
     template <class _Iter>
     char_class_type lookup_classname(_Iter _First, _Iter _Last, bool _Icase = false) const {
         // map [_First, _Last) to character class mask value
-#define _REGEX_CHAR_CLASS_NAME(n, c) {n, L##n, sizeof(n) / sizeof(n[0]) - 1, c}
-        _STATIC_UNLESS_PURE constexpr _Cl_names _Names[] = {
+#define _REGEX_CHAR_CLASS_NAME(n, c) \
+    { n, L##n, sizeof(n) / sizeof(n[0]) - 1, c }
+        static constexpr _Cl_names _Names[] = {
             // map class names to numeric constants
             _REGEX_CHAR_CLASS_NAME("alnum", _Ch_alnum),
             _REGEX_CHAR_CLASS_NAME("alpha", _Ch_alpha),
@@ -563,7 +564,7 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
 // FUNCTION TEMPLATE _Is_word
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
-    _STATIC_UNLESS_PURE constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
+    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
         //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -936,13 +937,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 // FORWARD DECLARATIONS
 template <class _BidIt, class _Allocator = allocator<sub_match<_BidIt>>>
 class match_results;
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _BidIt, class _Allocator>
-    inline constexpr bool enable_view<match_results<_BidIt, _Allocator>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
@@ -1823,13 +1817,13 @@ public:
     basic_regex() : _Rep(nullptr) {} // construct empty object
 
     explicit basic_regex(_In_z_ const _Elem* _Ptr, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
-        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags, random_access_iterator_tag());
+        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags, random_access_iterator_tag{});
     }
 
     basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript)
         : _Rep(nullptr) {
         if (_Ptr) {
-            _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag());
+            _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag{});
             return;
         }
 
@@ -1840,7 +1834,7 @@ public:
     explicit basic_regex(
         const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript)
         : _Rep(nullptr) {
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag());
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag{});
     }
 
     template <class _InIt>
@@ -1866,7 +1860,7 @@ public:
     }
 
     basic_regex(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
-        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag());
+        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag{});
     }
 
     basic_regex& operator=(initializer_list<_Elem> _Ilist) { // replace with regular expression in initializer_list
@@ -1875,7 +1869,7 @@ public:
 
     basic_regex& assign(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) {
         // replace with regular expression in initializer_list
-        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag());
+        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag{});
         return *this;
     }
 
@@ -1915,14 +1909,14 @@ public:
     }
 
     basic_regex& operator=(_In_z_ const _Elem* _Ptr) {
-        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), ECMAScript, random_access_iterator_tag());
+        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), ECMAScript, random_access_iterator_tag{});
         return *this;
     }
 
     template <class _STtraits, class _STalloc>
     basic_regex& operator=(const basic_string<_Elem, _STtraits, _STalloc>& _Str) {
         _Reset(
-            _Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), ECMAScript, random_access_iterator_tag());
+            _Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), ECMAScript, random_access_iterator_tag{});
         return *this;
     }
 
@@ -1949,14 +1943,14 @@ public:
 
     basic_regex& assign(
         _In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
-        _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag());
+        _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag{});
         return *this;
     }
 
     template <class _STtraits, class _STalloc>
     basic_regex& assign(
         const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript) {
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag());
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag{});
         return *this;
     }
 
@@ -2021,7 +2015,7 @@ private:
         // build regular expression from input iterators
         basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
 
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, forward_iterator_tag());
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, forward_iterator_tag{});
     }
 
     template <class _FwdIt>
@@ -2049,7 +2043,7 @@ private:
 #if _HAS_CXX17
 template <class _FwdIt>
 basic_regex(_FwdIt, _FwdIt, regex_constants::syntax_option_type = regex_constants::ECMAScript)
-    ->basic_regex<typename iterator_traits<_FwdIt>::value_type>;
+    -> basic_regex<typename iterator_traits<_FwdIt>::value_type>;
 #endif // _HAS_CXX17
 
 template <class _Elem, class _RxTraits>
@@ -2173,7 +2167,8 @@ _NODISCARD bool regex_match(_BidIt _First, _BidIt _Last, const basic_regex<_Elem
     // try to match regular expression to target text
     _Adl_verify_range(_First, _Last);
     return _Regex_match1(_Get_unwrapped(_First), _Get_unwrapped(_Last),
-        static_cast<match_results<_Unwrapped_t<_BidIt>>*>(nullptr), _Re, _Flgs | regex_constants::match_any, true);
+        static_cast<match_results<_Unwrapped_t<const _BidIt&>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
+        true);
 }
 
 template <class _Elem, class _RxTraits>
@@ -2272,7 +2267,7 @@ _NODISCARD bool regex_search(_BidIt _First, _BidIt _Last, const basic_regex<_Ele
     // search for regular expression match in target text
     _Adl_verify_range(_First, _Last);
     return _Regex_search2(_Get_unwrapped(_First), _Get_unwrapped(_Last),
-        static_cast<match_results<_Unwrapped_t<_BidIt>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
+        static_cast<match_results<_Unwrapped_t<const _BidIt&>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
         _Get_unwrapped(_First));
 }
 
@@ -3827,10 +3822,9 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _En
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
-    _STATIC_UNLESS_PURE constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot,
-        _Meta_star, _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr,
-        _Meta_rbr, _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp,
-        0}; // array of meta chars
+    static constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot, _Meta_star,
+        _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr, _Meta_rbr,
+        _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp, 0}; // array of meta chars
 
     if (_Pat == _End) {
         _Mchar = _Meta_eos;

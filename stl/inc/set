@@ -161,17 +161,17 @@ public:
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-set(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc())->set<_Iter_value_t<_Iter>, _Pr, _Alloc>;
+set(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_Iter_value_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-set(initializer_list<_Kty>, _Pr = _Pr(), _Alloc = _Alloc())->set<_Kty, _Pr, _Alloc>;
+set(initializer_list<_Kty>, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_Kty, _Pr, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-set(_Iter, _Iter, _Alloc)->set<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>>, _Alloc>;
+set(_Iter, _Iter, _Alloc) -> set<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-set(initializer_list<_Kty>, _Alloc)->set<_Kty, less<_Kty>, _Alloc>;
+set(initializer_list<_Kty>, _Alloc) -> set<_Kty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Pr, class _Alloc>
@@ -181,8 +181,8 @@ void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcep
 
 #if _HAS_CXX20
 template <class _Kty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -301,17 +301,17 @@ public:
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-multiset(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc())->multiset<_Iter_value_t<_Iter>, _Pr, _Alloc>;
+multiset(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_Iter_value_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-multiset(initializer_list<_Kty>, _Pr = _Pr(), _Alloc = _Alloc())->multiset<_Kty, _Pr, _Alloc>;
+multiset(initializer_list<_Kty>, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_Kty, _Pr, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-multiset(_Iter, _Iter, _Alloc)->multiset<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>>, _Alloc>;
+multiset(_Iter, _Iter, _Alloc) -> multiset<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-multiset(initializer_list<_Kty>, _Alloc)->multiset<_Kty, less<_Kty>, _Alloc>;
+multiset(initializer_list<_Kty>, _Alloc) -> multiset<_Kty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Pr, class _Alloc>
@@ -322,8 +322,8 @@ void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Righ
 
 #if _HAS_CXX20
 template <class _Kty, class _Keylt, class _Alloc, class _Pr>
-void erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename multiset<_Kty, _Keylt, _Alloc>::size_type erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -336,16 +336,6 @@ namespace pmr {
     using multiset = _STD multiset<_Kty, _Pr, polymorphic_allocator<_Kty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _Kty, class _Pr, class _Alloc>
-    inline constexpr bool enable_view<set<_Kty, _Pr, _Alloc>> = false;
-
-    template <class _Kty, class _Pr, class _Alloc>
-    inline constexpr bool enable_view<multiset<_Kty, _Pr, _Alloc>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

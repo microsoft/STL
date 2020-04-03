@@ -8,9 +8,7 @@
 #define _ARRAY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <algorithm>
-#include <iterator>
-#include <tuple>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -152,8 +150,8 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept
+    /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -202,7 +200,7 @@ struct _Enforce_same {
 };
 
 template <class _First, class... _Rest>
-array(_First, _Rest...)->array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
+array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
@@ -382,32 +380,32 @@ void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator>(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator>(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator<=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator<=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Right < _Left);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
 
