@@ -2281,7 +2281,7 @@ using atomic_uintmax_t = atomic<uintmax_t>;
 
 #if _HAS_CXX20
 // Though there are CMPXCHG8B and CMPXCHG16B,
-// Largest atomics with full set of efficient operations are pointer-sized
+// the largest atomics with a full set of efficient operations are pointer-sized.
 using atomic_signed_lock_free   = atomic_intptr_t;
 using atomic_unsigned_lock_free = atomic_uintptr_t;
 #endif // _HAS_CXX20
