@@ -4,21 +4,25 @@
 # Build STL targeting x86, x64, arm, arm64
 
 stages:
+  variables:
+    agentPool: StlBuild-2020-03-28
+    vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+
   - stage: Code_Format_Validation
     displayName: "Code Format Validation"
     jobs:
       - job: Run_Code_Format_Validation
         timeoutInMinutes: 90
-        displayName: "Run Code Format Validation"
+        displayName: "Run"
         pool:
-          name: StlBuild-2020-03-28
+          name: $(agentPool)
 
-        variables:
-          vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
         steps:
           - checkout: self
             clean: true
             submodules: true
+          # TRANSITION: Once issue #19 or #33 is resolved on https://github.com/lukka/CppBuildTasks we can drop
+          # building boost-build here.
           - task: run-vcpkg@0
             displayName: 'Setup environment variables for run-cmake'
             timeoutInMinutes: 10

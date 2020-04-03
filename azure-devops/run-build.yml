@@ -5,7 +5,7 @@ jobs:
 - job: ${{ parameters.targetPlatform }}
   timeoutInMinutes: 360
   pool:
-    name: StlBuild-2020-03-28
+    name: $(agentPool)
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
