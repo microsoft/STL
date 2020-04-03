@@ -134,7 +134,7 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #if _HAS_CXX20
 _EXTERN_C
 void __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* _Comparand, const size_t _Size, unsigned long long& _Wait_context)noexcept;
+    const void* _Storage, const void* _Comparand, const size_t _Size, unsigned long long& _Wait_context) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* _Storage) noexcept;
 void __stdcall __std_atomic_unwait_direct(const void* _Storage, unsigned long long& _Wait_context) noexcept;
