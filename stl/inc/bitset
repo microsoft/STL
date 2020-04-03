@@ -411,6 +411,7 @@ public:
                 return false;
             }
         }
+
         return _No_padding || _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
