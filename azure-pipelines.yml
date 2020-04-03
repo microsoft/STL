@@ -3,12 +3,11 @@
 
 # Build STL targeting x86, x64, arm, arm64
 
-stages:
-  variables: {
-    agentPool: 'StlBuild-2020-03-28'
-    vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
-  }
+variables:
+  agentPool: 'StlBuild-2020-03-28'
+  vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
 
+stages:
   - stage: Code_Format_Validation
     displayName: "Code Format Validation"
     jobs:
