@@ -103,16 +103,16 @@ namespace {
     }
 
     struct _Wait_on_address_functions {
-        std::atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress;
-        std::atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle;
-        std::atomic<decltype(&::WakeByAddressAll)> _Pfn_WakeByAddressAll;
-        std::atomic<bool> _Initialized;
+        std::atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
+        std::atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle{nullptr};
+        std::atomic<decltype(&::WakeByAddressAll)> _Pfn_WakeByAddressAll{nullptr};
+        std::atomic<bool> _Initialized{false};
     };
 
     const _Wait_on_address_functions& _Get_wait_functions() {
         static _Wait_on_address_functions functions;
         if (!functions._Initialized.load(std::memory_order_acquire)) {
-            HMODULE sync_api_module        = ::GetModuleHandle(TEXT("API-MS-WIN-CORE-SYNCH-L1-2-0.DLL"));
+            HMODULE sync_api_module        = ::GetModuleHandle(TEXT("api-ms-win-core-synch-l1-2-0.dll"));
             FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
             FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
             FARPROC wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
