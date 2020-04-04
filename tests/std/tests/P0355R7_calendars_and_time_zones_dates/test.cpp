@@ -14,18 +14,18 @@ constexpr void day_test() {
 
     day d1{0u};
     assert(static_cast<unsigned>(d1) == 0);
-    assert(static_cast<unsigned>(++d1) == 1);
-    assert(static_cast<unsigned>(d1++) == 1);
-    assert(static_cast<unsigned>(d1) == 2);
+    assert(++d1 == day{1});
+    assert(d1++ == day{1});
+    assert(d1 == day{2});
 
-    assert(static_cast<unsigned>(--d1) == 1);
-    assert(static_cast<unsigned>(d1--) == 1);
-    assert(static_cast<unsigned>(d1) == 0);
+    assert(--d1 == day{1});
+    assert(d1-- == day{1});
+    assert(d1 == day{0});
 
     d1 += days{2};
-    assert(static_cast<unsigned>(d1) == 2);
+    assert(d1 == day{2});
     d1 -= days{2};
-    assert(static_cast<unsigned>(d1) == 0);
+    assert(d1 == day{0});
 
     day d2{0u};
     assert(d1 == d2++);
@@ -43,7 +43,7 @@ constexpr void day_test() {
     const day d4{2};
     const day d5{10};
     const days diff = d5 - d4;
-    assert(diff.count() == 8);
+    assert(diff == days{8});
 
     const auto d6 = 0d;
     assert(d1 == d6);
@@ -57,18 +57,18 @@ constexpr void month_test() {
 
     month m1{1u};
     assert(static_cast<unsigned>(m1) == 1);
-    assert(static_cast<unsigned>(++m1) == 2);
-    assert(static_cast<unsigned>(m1++) == 2);
-    assert(static_cast<unsigned>(m1) == 3);
+    assert(++m1 == month{2});
+    assert(m1++ == month{2});
+    assert(m1 == month{3});
 
-    assert(static_cast<unsigned>(--m1) == 2);
-    assert(static_cast<unsigned>(m1--) == 2);
-    assert(static_cast<unsigned>(m1) == 1);
+    assert(--m1 == month{2});
+    assert(m1-- == month{2});
+    assert(m1 ==   month{1});
 
     m1 += months{2};
-    assert(static_cast<unsigned>(m1) == 3);
+    assert(m1 == month{3});
     m1 -= months{2};
-    assert(static_cast<unsigned>(m1) == 1);
+    assert(m1 == month{1});
 
     for (unsigned i = 0; i <= 255; ++i) {
         if (i >= 1 && i <= 12) {
@@ -84,9 +84,9 @@ constexpr void month_test() {
     assert(m1 < m2);
 
     month m3 = m2 + months{11};
-    assert(static_cast<unsigned>(m3) == 1);
+    assert(m3 == month{1});
     m3 = months{11} + m2;
-    assert(static_cast<unsigned>(m3) == 1);
+    assert(m3 == month{1});
     month m4 = m2 - months{2};
     assert(m4 == month{12});
 
