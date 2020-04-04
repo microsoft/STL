@@ -1230,8 +1230,8 @@ namespace chrono {
     }
     constexpr days operator-(const weekday& _Left, const weekday& _Right) noexcept {
         const auto _Wd = _Left.c_encoding() - _Right.c_encoding();
-        const auto _Wk = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
-        return days{_Wd - _Wk * 7};
+        const auto _Wk = _Wd <= 6 ? _Wd : _Wd + 7;
+        return days{_Wk};
     }
 
     constexpr weekday& weekday::operator++() noexcept {

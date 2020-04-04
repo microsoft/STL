@@ -209,7 +209,7 @@ constexpr void weekday_test() {
     static_assert(is_same_v<weekday_last, decltype(wd[last])>);
 
     assert(weekday{1} + days{6} == weekday{0});
-    // assert(weekday{0} - weekday{1} == days{6});
+    assert(weekday{0} - weekday{1} == days{6});
 
     static_assert(is_same_v<const weekday, decltype(Sunday)>);
     static_assert(is_same_v<const weekday, decltype(Monday)>);
