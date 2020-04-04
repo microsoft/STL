@@ -112,7 +112,7 @@ namespace {
     const _Wait_on_address_functions& _Get_wait_functions() {
         static _Wait_on_address_functions functions;
         if (!functions._Initialized.load(std::memory_order_acquire)) {
-            HMODULE sync_api_module        = ::GetModuleHandle(TEXT("api-ms-win-core-synch-l1-2-0.dll"));
+            HMODULE sync_api_module        = ::GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
             FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
             FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
             FARPROC wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
