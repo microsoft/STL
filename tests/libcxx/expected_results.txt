@@ -189,10 +189,8 @@ std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align_
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size.sh.cpp SKIP
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align_nothrow.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.sh.cpp SKIP
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp SKIP
 std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp SKIP
 
 # These tests set an allocator with a max_size() too small to default construct an unordered container
@@ -547,9 +545,9 @@ std/containers/views/span.iterators/rend.pass.cpp SKIP
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.pass.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp SKIP
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.pass.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14.pass.cpp SKIP
 
 # Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
@@ -1033,6 +1031,9 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
 
 # Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
+
+# Not yet analyzed. Frequent timeouts
+containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp SKIP
 
 
 # *** XFAILs WHICH PASS ***
