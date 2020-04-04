@@ -131,7 +131,7 @@ constexpr void year_test() {
 
     assert(--y1 == year{2});
     assert(y1-- == year{2});
-    assert(y1 ==   year{1});
+    assert(y1 == year{1});
 
     y1 += years{2};
     assert(y1 == year{3});
@@ -166,16 +166,72 @@ constexpr void year_test() {
 
     year y3 = y2 - years{4};
     assert(y3 == year{1});
-    
+
     const auto y4 = 2020y;
     static_assert(is_same_v<year, decltype(0y)>, "0y is not chrono::year");
     static_assert(is_same_v<const year, decltype(y4)>, "y4 is not chrono::year");
+}
+
+constexpr void weekday_test() {
+    static_assert(is_trivially_copyable_v<weekday>, "chrono::weekday is not trivially copyable");
+    static_assert(is_standard_layout_v<weekday>, "chrono::weekday is not standard layout");
+
+    assert(weekday{7} == weekday{0});
+    assert(weekday{sys_days{}} == weekday{4});
+    assert(weekday{local_days{}} == sys_days{local_days{}.time_since_epoch()});
+
+    weekday wd{0u};
+    assert(wd == weekday{0});
+    assert(++wd == weekday{1});
+    assert(wd++ == weekday{1});
+    assert(wd == weekday{2});
+
+    assert(--wd == weekday{1});
+    assert(wd-- == weekday{1});
+    assert(wd == weekday{0});
+
+    wd += days{2};
+    assert(wd == weekday{2});
+    wd -= days{3};
+    assert(wd == weekday{6});
+
+    assert(weekday{0}.c_encoding() == 0u);
+    assert(weekday{0}.iso_encoding() == 7u);
+
+    for (unsigned i = 0; i <= 255; ++i) {
+        if (i <= 7) {
+            assert(weekday{i}.ok());
+        } else {
+            assert(!weekday{i}.ok());
+        }
+    }
+    static_assert(is_same_v<weekday_indexed, decltype(wd[1])>);
+    static_assert(is_same_v<weekday_last, decltype(wd[last])>);
+
+    assert(weekday{1} + days{6} == weekday{0});
+    // assert(weekday{0} - weekday{1} == days{6});
+
+    static_assert(is_same_v<const weekday, decltype(Sunday)>);
+    static_assert(is_same_v<const weekday, decltype(Monday)>);
+    static_assert(is_same_v<const weekday, decltype(Tuesday)>);
+    static_assert(is_same_v<const weekday, decltype(Wednesday)>);
+    static_assert(is_same_v<const weekday, decltype(Thursday)>);
+    static_assert(is_same_v<const weekday, decltype(Friday)>);
+    static_assert(is_same_v<const weekday, decltype(Saturday)>);
+    assert(weekday{0} == Sunday);
+    assert(weekday{1} == Monday);
+    assert(weekday{2} == Tuesday);
+    assert(weekday{3} == Wednesday);
+    assert(weekday{4} == Thursday);
+    assert(weekday{5} == Friday);
+    assert(weekday{6} == Saturday);
 }
 
 constexpr bool test() {
     day_test();
     month_test();
     year_test();
+    weekday_test();
     return true;
 }
 
