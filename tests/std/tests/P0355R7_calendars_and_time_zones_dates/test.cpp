@@ -227,15 +227,43 @@ constexpr void weekday_test() {
     assert(weekday{6} == Saturday);
 }
 
+constexpr void weekday_indexed_test() {
+    static_assert(is_trivially_copyable_v<weekday_indexed>, "chrono::weekday_indexed is not trivially copyable");
+    static_assert(is_standard_layout_v<weekday_indexed>, "chrono::weekday_indexed is not standard layout");
+
+    weekday_indexed wdi1{Monday, 2};
+    assert(wdi1.weekday() == Monday);
+    assert(wdi1.index() == 2);
+
+    weekday_indexed wdi2 = Monday[2];
+    assert(wdi2.weekday() == Monday);
+    assert(wdi2.index() == 2);
+
+    assert(wdi1 == wdi2);
+
+    assert(!weekday_indexed(Sunday, 0).ok());
+    for (unsigned i = 1; i <= 5; i++) {
+        assert(weekday_indexed(Sunday, i).ok());
+        assert(weekday_indexed(Monday, i).ok());
+        assert(weekday_indexed(Tuesday, i).ok());
+        assert(weekday_indexed(Wednesday, i).ok());
+        assert(weekday_indexed(Thursday, i).ok());
+        assert(weekday_indexed(Friday, i).ok());
+        assert(weekday_indexed(Saturday, i).ok());
+    }
+    assert(!weekday_indexed(Sunday, 6).ok());
+}
+
 constexpr bool test() {
     day_test();
     month_test();
     year_test();
     weekday_test();
+    weekday_indexed_test();
     return true;
 }
 
 int main() {
     test();
-    // static_assert(test());
+    static_assert(test());
 }
