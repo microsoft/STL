@@ -2166,7 +2166,7 @@ _INLINE_VAR constexpr size_t _FNV_offset_basis = 2166136261U;
 _INLINE_VAR constexpr size_t _FNV_prime        = 16777619U;
 #endif // defined(_WIN64)
 
-_NODISCARD inline size_t _Fnv1a_append_bytes(size_t _Val, const unsigned char* const _First,
+_NODISCARD constexpr inline size_t _Fnv1a_append_bytes(size_t _Val, const unsigned char* const _First,
     const size_t _Count) noexcept { // accumulate range [_First, _First + _Count) into partial FNV-1a hash _Val
     for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
         _Val ^= static_cast<size_t>(_First[_Idx]);
@@ -2177,7 +2177,7 @@ _NODISCARD inline size_t _Fnv1a_append_bytes(size_t _Val, const unsigned char* c
 }
 
 template <class _Ty>
-_NODISCARD size_t _Fnv1a_append_range(const size_t _Val, const _Ty* const _First,
+_NODISCARD constexpr size_t _Fnv1a_append_range(const size_t _Val, const _Ty* const _First,
     const _Ty* const _Last) noexcept { // accumulate range [_First, _Last) into partial FNV-1a hash _Val
     static_assert(is_trivial_v<_Ty>, "Only trivial types can be directly hashed.");
     const auto _Firstb = reinterpret_cast<const unsigned char*>(_First);
@@ -2186,7 +2186,7 @@ _NODISCARD size_t _Fnv1a_append_range(const size_t _Val, const _Ty* const _First
 }
 
 template <class _Kty>
-_NODISCARD size_t _Fnv1a_append_value(
+_NODISCARD constexpr size_t _Fnv1a_append_value(
     const size_t _Val, const _Kty& _Keyval) noexcept { // accumulate _Keyval into partial FNV-1a hash _Val
     static_assert(is_trivial_v<_Kty>, "Only trivial types can be directly hashed.");
     return _Fnv1a_append_bytes(_Val, &reinterpret_cast<const unsigned char&>(_Keyval), sizeof(_Kty));
@@ -2194,13 +2194,13 @@ _NODISCARD size_t _Fnv1a_append_value(
 
 // FUNCTION TEMPLATE _Hash_representation
 template <class _Kty>
-_NODISCARD size_t _Hash_representation(const _Kty& _Keyval) noexcept { // bitwise hashes the representation of a key
+_NODISCARD constexpr size_t _Hash_representation(const _Kty& _Keyval) noexcept { // bitwise hashes the representation of a key
     return _Fnv1a_append_value(_FNV_offset_basis, _Keyval);
 }
 
 // FUNCTION TEMPLATE _Hash_array_representation
 template <class _Kty>
-_NODISCARD size_t _Hash_array_representation(
+_NODISCARD constexpr size_t _Hash_array_representation(
     const _Kty* const _First, const size_t _Count) noexcept { // bitwise hashes the representation of an array
     static_assert(is_trivial_v<_Kty>, "Only trivial types can be directly hashed.");
     return _Fnv1a_append_bytes(
@@ -2216,7 +2216,7 @@ struct _Conditionally_enabled_hash { // conditionally enabled hash base
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Kty _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
-    _NODISCARD size_t operator()(const _Kty& _Keyval) const
+    _NODISCARD constexpr size_t operator()(const _Kty& _Keyval) const
         noexcept(noexcept(hash<_Kty>::_Do_hash(_Keyval))) /* strengthened */ {
         return hash<_Kty>::_Do_hash(_Keyval);
     }
@@ -2237,7 +2237,7 @@ struct hash
     : _Conditionally_enabled_hash<_Kty,
           !is_const_v<_Kty> && !is_volatile_v<_Kty> && (is_enum_v<_Kty> || is_integral_v<_Kty> || is_pointer_v<_Kty>)> {
     // hash functor primary template (handles enums, integrals, and pointers)
-    static size_t _Do_hash(const _Kty& _Keyval) noexcept {
+    static constexpr size_t _Do_hash(const _Kty& _Keyval) noexcept {
         return _Hash_representation(_Keyval);
     }
 };
@@ -2246,7 +2246,7 @@ template <>
 struct hash<float> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef float _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
-    _NODISCARD size_t operator()(const float _Keyval) const noexcept {
+    _NODISCARD constexpr size_t operator()(const float _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0F ? 0.0F : _Keyval); // map -0 to 0
     }
 };
@@ -2255,7 +2255,7 @@ template <>
 struct hash<double> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef double _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
-    _NODISCARD size_t operator()(const double _Keyval) const noexcept {
+    _NODISCARD constexpr size_t operator()(const double _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0 ? 0.0 : _Keyval); // map -0 to 0
     }
 };
@@ -2264,7 +2264,7 @@ template <>
 struct hash<long double> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef long double _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
-    _NODISCARD size_t operator()(const long double _Keyval) const noexcept {
+    _NODISCARD constexpr size_t operator()(const long double _Keyval) const noexcept {
         return _Hash_representation(_Keyval == 0.0L ? 0.0L : _Keyval); // map -0 to 0
     }
 };
@@ -2273,7 +2273,7 @@ template <>
 struct hash<nullptr_t> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef nullptr_t _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
-    _NODISCARD size_t operator()(nullptr_t) const noexcept {
+    _NODISCARD constexpr size_t operator()(nullptr_t) const noexcept {
         void* _Null{};
         return _Hash_representation(_Null);
     }

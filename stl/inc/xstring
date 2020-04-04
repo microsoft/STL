@@ -1718,7 +1718,7 @@ struct hash<basic_string_view<_Elem, _Traits>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string_view<_Elem, _Traits> _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
-    _NODISCARD size_t operator()(const basic_string_view<_Elem, _Traits> _Keyval) const noexcept {
+    _NODISCARD constexpr size_t operator()(const basic_string_view<_Elem, _Traits> _Keyval) const noexcept {
         return _Hash_array_representation(_Keyval.data(), _Keyval.size());
     }
 };
