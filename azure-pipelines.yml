@@ -4,7 +4,7 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  agentPool: 'StlBuild-2020-04-03-2'
+  agentPool: 'StlBuild-2020-04-04-2'
 
 stages:
   - stage: Code_Format
@@ -23,6 +23,12 @@ stages:
           - script: |
               call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
               -arch=amd64 -host_arch=amd64 -no_logo
+              set
+              where cpfe.dll
+              dir "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7"
+              dir "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\IDE"
+              dir "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\IDE\VC"
+              dir "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\IDE\VC\VCPackages"
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
               -S $(Build.SourcesDirectory)\tools -B $(Build.ArtifactStagingDirectory)\tools
               cd $(Build.ArtifactStagingDirectory)\tools

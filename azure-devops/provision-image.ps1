@@ -50,10 +50,11 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
 
 $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
-  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64 ',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM ',
-  'Microsoft.VisualStudio.Component.Windows10SDK.18362 '
+  'Microsoft.VisualStudio.Component.VC.CoreIde',
+  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM',
+  'Microsoft.VisualStudio.Component.Windows10SDK.18362'
 )
 
 $ReleaseInPath = 'Preview'
