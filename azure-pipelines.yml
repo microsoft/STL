@@ -4,15 +4,15 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  agentPool: 'StlBuild-2020-03-28'
+  agentPool: 'StlBuild-2020-04-03-2'
 
 stages:
-  - stage: Code_Format_Validation
-    displayName: 'Code Format Validation'
+  - stage: Code_Format
+    displayName: 'Code Format'
     jobs:
-      - job: Run_Code_Format_Validation
+      - job: Code_Format_Validation
         timeoutInMinutes: 90
-        displayName: 'Run Validation'
+        displayName: 'Validation'
         pool:
           name: $(agentPool)
 
