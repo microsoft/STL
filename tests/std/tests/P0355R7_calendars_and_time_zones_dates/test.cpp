@@ -254,12 +254,24 @@ constexpr void weekday_indexed_test() {
     assert(!weekday_indexed(Sunday, 6).ok());
 }
 
+constexpr void weekday_last_test() {
+    static_assert(is_trivially_copyable_v<weekday_last>, "chrono::weekday_last is not trivially copyable");
+    static_assert(is_standard_layout_v<weekday_last>, "chrono::weekday_last is not standard layout");
+
+    assert(weekday_last{Monday}.ok());
+    assert(Monday[last].ok());
+    assert(Monday[last].weekday() == Monday);
+    assert(weekday_last{Monday}.weekday() == Monday);
+    assert(weekday_last{Monday} == weekday_last{Monday});
+}
+
 constexpr bool test() {
     day_test();
     month_test();
     year_test();
     weekday_test();
     weekday_indexed_test();
+    weekday_last_test();
     return true;
 }
 
