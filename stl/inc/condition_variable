@@ -72,6 +72,7 @@ public:
     cv_status wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
         // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
+            _Unlock_relock(_Lck);
             return cv_status::timeout;
         }
 
@@ -99,6 +100,7 @@ public:
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
+                _Unlock_relock(_Lck);
                 return cv_status::timeout;
             }
 
@@ -155,6 +157,18 @@ private:
     _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
     }
+
+    template <class _Lock>
+    void _Unlock_relock(_Lock& _Lck) noexcept /* terminates */ {
+        {
+            shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+            lock_guard<mutex> _Lckguard(*_Ptr);
+            _Lck.unlock(); // could throw
+        } // unlock
+
+        _Lck.lock();
+    }
+
 
     template <class _Mutex>
     static void _Relock(_Mutex& _Xtrnl) noexcept /* terminates */ {
