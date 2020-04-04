@@ -64,6 +64,13 @@ $LlvmUrl = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.
 $NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
 $PythonUrl = 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe'
 
+$CudaUrl = 'https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.96_win10.exe'
+$CudaFeatures = 'nvcc_10.1 cuobjdump_10.1 nvprune_10.1 cupti_10.1 gpu_library_advisor_10.1 memcheck_10.1 ' + `
+  'nvdisasm_10.1 nvprof_10.1 visual_profiler_10.1 visual_studio_integration_10.1 cublas_10.1 cublas_dev_10.1 ' + `
+  'cudart_10.1 cufft_10.1 cufft_dev_10.1 curand_10.1 curand_dev_10.1 cusolver_10.1 cusolver_dev_10.1 cusparse_10.1 ' + `
+  'cusparse_dev_10.1 nvgraph_10.1 nvgraph_dev_10.1 npp_10.1 npp_dev_10.1 nvrtc_10.1 nvrtc_dev_10.1 nvml_dev_10.1 ' + `
+  'occupancy_calculator_10.1 fortran_examples_10.1'
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
@@ -204,6 +211,34 @@ Function InstallPython {
   }
 }
 
+Function InstallCuda {
+  Param(
+    [String]$Url,
+    [String]$Features
+  )
+
+  try {
+    Write-Output 'Downloading CUDA...'
+    [string]$installerPath = Get-TempFilePath -Extension 'exe'
+    curl.exe -L -o $installerPath -s -S $Url
+    Write-Output 'Installing CUDA...'
+    $proc = Start-Process -FilePath $installerPath -ArgumentList @('-s ' + $Features) -Wait -PassThru
+    $exitCode = $proc.ExitCode
+    if ($exitCode -eq 0) {
+      Write-Output 'Installation successful!'
+    }
+    else {
+      Write-Output "Installation failed! Exited with $exitCode."
+      exit $exitCode
+    }
+  }
+  catch {
+    Write-Output "Failed to install CUDA!"
+    Write-Output $_.Exception.Message
+    exit -1
+  }
+}
+
 
 Write-Output "AdminUser password not supplied; assuming already running as AdminUser"
 
@@ -221,11 +256,9 @@ InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
 InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
+InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Output 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `
   -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
-
-Write-Output 'Running sysprep'
-& C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /shutdown
