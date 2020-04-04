@@ -40,10 +40,15 @@ constexpr void day_test() {
     }
     assert(!d3.ok());
 
-    const auto d4 = 0d;
-    assert(d1 == d4);
+    const day d4{2};
+    const day d5{10};
+    const days diff = d5 - d4;
+    assert(diff.count() == 8);
+
+    const auto d6 = 0d;
+    assert(d1 == d6);
     static_assert(is_same_v<day, decltype(0d)>, "0d is not chrono::day");
-    // static_assert(is_same_v<day, decltype(d4)>, "d4 is not chrono::day");
+    // static_assert(is_same_v<day, decltype(d6)>, "d6 is not chrono::day");
 }
 
 constexpr bool test() {
