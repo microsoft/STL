@@ -5,15 +5,14 @@
 
 variables:
   agentPool: 'StlBuild-2020-03-28'
-  vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
 
 stages:
   - stage: Code_Format_Validation
-    displayName: "Code Format Validation"
+    displayName: 'Code Format Validation'
     jobs:
       - job: Run_Code_Format_Validation
         timeoutInMinutes: 90
-        displayName: "Run Validation"
+        displayName: 'Run Validation'
         pool:
           name: $(agentPool)
 
@@ -21,24 +20,14 @@ stages:
           - checkout: self
             clean: true
             submodules: true
-          # TRANSITION: Once issue #19 or #33 is resolved on https://github.com/lukka/CppBuildTasks we can drop
-          # building boost-build here.
-          - task: run-vcpkg@0
-            displayName: 'Setup environment variables for run-cmake'
-            timeoutInMinutes: 10
-            inputs:
-              setupOnly: true
-              vcpkgArguments: 'boost-build'
-              vcpkgDirectory: '$(vcpkgLocation)'
-              vcpkgTriplet: 'x64-windows'
-          - task: run-cmake@0
+          - script: |
+              call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+              -arch=amd64 -host_arch=amd64 -no_logo
+              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
+              -S $(Build.SourcesDirectory)\tools -B $(Build.ArtifactStagingDirectory)\tools
+              cd $(Build.ArtifactStagingDirectory)\tools
+              cmake --build .
             displayName: 'Build Support Tools'
-            timeoutInMinutes: 2
-            inputs:
-              cmakeListsTxtPath: 'tools/CMakeSettings.json'
-              useVcpkgToolchainFile: true
-              configurationRegexFilter: '.*x64-Release.*'
-              buildDirectory: $(Build.ArtifactStagingDirectory)/tools
           - task: BatchScript@1
             displayName: 'Enforce clang-format'
             timeoutInMinutes: 60
@@ -54,20 +43,24 @@ stages:
               failOnStandardError: true
               arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
   - stage: Build_And_Test
-    displayName: "Build and Test the STL"
+    displayName: 'Build and Test'
     jobs:
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x86
+          vsDevCmdArch: x86
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x64
+          vsDevCmdArch: amd64
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm
+          vsDevCmdArch: arm
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm64
+          vsDevCmdArch: arm64

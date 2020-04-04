@@ -53,20 +53,16 @@ jobs:
         useVcpkgToolchainFile: true
         cmakeAppendedArgs: |
           -G Ninja -DBUILD_TESTING=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
-    - task: PowerShell@2
+    - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
-        targetType: inline
         script: |
-          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command ctest).source);%PATH%"
-          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command clang-cl).source);%PATH%"
-          $currentDir = "$((Get-Item -Path "./").FullName)"
-          Add-Content -Path ./run-tests.cmd -Value "cd $currentDir"
-          Add-Content -Path ./run-tests.cmd -Value "ctest -V"
-          $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
+          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+          -arch=${{ parameters.vsDevCmdArch }} -host_arch=${{ parameters.vsDevCmdArch }} -no_logo
+          ctest -V
     - task: PublishTestResults@2
       displayName: 'Publish libcxx Tests'
       timeoutInMinutes: 10
