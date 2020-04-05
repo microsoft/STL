@@ -265,6 +265,34 @@ constexpr void weekday_last_test() {
 
 constexpr void month_day_test() {
     TRIVIAL_COPY_STANDARD_LAYOUT(month_day)
+
+    month_day md{January, 1d};
+    assert(md.month() == January);
+    assert(md.day() == 1d);
+
+    assert(md < month_day(January, 2d));
+    assert(month_day(January, 2d) > md);
+    assert(md < month_day(December, 25d));
+    assert(month_day(December, 25d) > md);
+    assert(md == month_day(January, 1d));
+
+    for (unsigned i = 1; i <= 12; ++i) {
+        month m{i};
+        for (unsigned d = 0; d <= 32; ++d) {
+            if (d == 0) {
+                assert(!month_day(m, day{d}).ok());
+            } else if (d == 30 && m == February) {
+                assert(!month_day(m, day{d}).ok());
+                break;
+            } else if (d == 31 && (m == April || m == June || m == September || m == November)) {
+                assert(!month_day(m, day{d}).ok());
+            } else if (d == 32) {
+                assert(!month_day(m, day{d}).ok());
+            } else {
+                assert(month_day(m, day{d}).ok());
+            }
+        }
+    }
 }
 
 constexpr bool test() {
