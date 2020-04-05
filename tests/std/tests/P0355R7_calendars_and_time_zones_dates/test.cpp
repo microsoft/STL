@@ -8,9 +8,12 @@
 using namespace std;
 using namespace std::chrono;
 
+#define TRIVIAL_COPY_STANDARD_LAYOUT(TYPE)                                                       \
+    static_assert(is_trivially_copyable_v<TYPE>, "chrono::" #TYPE " is not trivially copyable"); \
+    static_assert(is_standard_layout_v<TYPE>, "chrono::" #TYPE " is not standard layout");
+
 constexpr void day_test() {
-    static_assert(is_trivially_copyable_v<day>, "chrono::day is not trivially copyable");
-    static_assert(is_standard_layout_v<day>, "chrono::day is not standard layout");
+    TRIVIAL_COPY_STANDARD_LAYOUT(day)
 
     day d1{0u};
     assert(static_cast<unsigned>(d1) == 0);
@@ -52,8 +55,7 @@ constexpr void day_test() {
 }
 
 constexpr void month_test() {
-    static_assert(is_trivially_copyable_v<month>, "chrono::month is not trivially copyable");
-    static_assert(is_standard_layout_v<month>, "chrono::month is not standard layout");
+    TRIVIAL_COPY_STANDARD_LAYOUT(month)
 
     month m1{1u};
     assert(static_cast<unsigned>(m1) == 1);
@@ -120,8 +122,7 @@ constexpr void month_test() {
 }
 
 constexpr void year_test() {
-    static_assert(is_trivially_copyable_v<year>, "chrono::year is not trivially copyable");
-    static_assert(is_standard_layout_v<year>, "chrono::year is not standard layout");
+    TRIVIAL_COPY_STANDARD_LAYOUT(year)
 
     year y1{1};
     assert(static_cast<int>(y1) == 1);
@@ -173,8 +174,7 @@ constexpr void year_test() {
 }
 
 constexpr void weekday_test() {
-    static_assert(is_trivially_copyable_v<weekday>, "chrono::weekday is not trivially copyable");
-    static_assert(is_standard_layout_v<weekday>, "chrono::weekday is not standard layout");
+    TRIVIAL_COPY_STANDARD_LAYOUT(weekday)
 
     assert(weekday{7} == weekday{0});
     assert(weekday{sys_days{}} == weekday{4});
@@ -228,8 +228,7 @@ constexpr void weekday_test() {
 }
 
 constexpr void weekday_indexed_test() {
-    static_assert(is_trivially_copyable_v<weekday_indexed>, "chrono::weekday_indexed is not trivially copyable");
-    static_assert(is_standard_layout_v<weekday_indexed>, "chrono::weekday_indexed is not standard layout");
+    TRIVIAL_COPY_STANDARD_LAYOUT(weekday_indexed)
 
     weekday_indexed wdi1{Monday, 2};
     assert(wdi1.weekday() == Monday);
@@ -255,14 +254,17 @@ constexpr void weekday_indexed_test() {
 }
 
 constexpr void weekday_last_test() {
-    static_assert(is_trivially_copyable_v<weekday_last>, "chrono::weekday_last is not trivially copyable");
-    static_assert(is_standard_layout_v<weekday_last>, "chrono::weekday_last is not standard layout");
+    TRIVIAL_COPY_STANDARD_LAYOUT(weekday_last)
 
     assert(weekday_last{Monday}.ok());
     assert(Monday[last].ok());
     assert(Monday[last].weekday() == Monday);
     assert(weekday_last{Monday}.weekday() == Monday);
     assert(weekday_last{Monday} == weekday_last{Monday});
+}
+
+constexpr void month_day_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(month_day)
 }
 
 constexpr bool test() {
@@ -272,6 +274,7 @@ constexpr bool test() {
     weekday_test();
     weekday_indexed_test();
     weekday_last_test();
+    month_day_test();
     return true;
 }
 
