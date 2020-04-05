@@ -1,4 +1,4 @@
-{
+﻿{
   "configurations": [
     {
       "name": "x86",
@@ -22,7 +22,13 @@
       "generator": "Ninja",
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "variables": []
+      "variables": [
+        {
+          "name": "BUILD_TESTING",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
     },
     {
       "name": "ARM",
