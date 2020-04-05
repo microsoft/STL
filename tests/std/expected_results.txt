@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# TRANSITION: This test causes the compiler to either hang forever or ICE
+# TRANSITION: These tests cause the compiler to either hang forever or ICE
+tests/GH_000545_include_compare:15 SKIP
 tests/GH_000545_include_compare:16 SKIP
