@@ -19,7 +19,7 @@ stages:
         steps:
           - checkout: self
             clean: true
-            submodules: true
+            submodules: false
           - script: |
               call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
               -arch=amd64 -host_arch=amd64 -no_logo
