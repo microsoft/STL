@@ -491,8 +491,8 @@ constexpr void year_month_day_test() {
     assert((ymd5 == year_month_day{2022y, January, 1d}));
     assert((years{2} + year_month_day{2020y, January, 1d} == ymd5));
 
-    const auto ymd8 = year_month_day{2020y, January, 1d} - years{2};
-    assert((ymd8 == year_month_day{2018y, January, 1d}));
+    const auto ymd6 = year_month_day{2020y, January, 1d} - years{2};
+    assert((ymd6 == year_month_day{2018y, January, 1d}));
 }
 
 
