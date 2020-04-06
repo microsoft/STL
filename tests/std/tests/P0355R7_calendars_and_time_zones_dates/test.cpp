@@ -514,5 +514,5 @@ constexpr bool test() {
 
 int main() {
     test();
-    // static_assert(test());
+    static_assert(test());
 }

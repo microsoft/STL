@@ -1458,7 +1458,7 @@ namespace chrono {
         const unsigned _Doy = _Doe - (365 * _Yoe + _Yoe / 4 - _Yoe / 100);
         const unsigned _Mp  = (5 * _Doy + 2) / 153;
         const unsigned _D   = _Doy - (153 * _Mp + 2) / 5 + 1;
-        const unsigned _M   = _Mp + (_Mp < 10 ? 3 : -9);
+        const unsigned _M   = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned>(-9));
         return year_month_day(chrono::year{_Y + (_M <= 2)}, chrono::month{_M}, chrono::day{_D});
     }
     constexpr days year_month_day::_Days_from_civil() const noexcept {
