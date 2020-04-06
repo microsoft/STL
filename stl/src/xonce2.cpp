@@ -3,8 +3,8 @@
 
 // __std_execute_once_begin & __std_execute_once_end functions
 
-#include <synchapi.h>
 #include "xcall_once.h"
+#include <synchapi.h>
 
 // This must be as small as possible, because its contents are
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
