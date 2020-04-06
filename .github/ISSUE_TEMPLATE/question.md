@@ -27,7 +27,7 @@ the Windows API, the Visual Studio IDE, etc.
 * Questions about how to use the STL or C++ in general. For such questions,
 consider https://stackoverflow.com or https://www.reddit.com/r/cpp_questions/ .
 * Questions about whether you've encountered a bug in the STL. Instead of this
-Question issue template, please use the Bug Report issue template, because
-we'll need a command-line test case and the other information requested there.
+Question template, please use the Bug Report template, because we'll need
+a command-line test case and the other information requested there.
 
 If you aren't sure whether a question is on-topic, just go ahead and ask! :-)
