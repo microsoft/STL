@@ -314,6 +314,60 @@ constexpr void month_day_last_test() {
     assert(month_day_last{December} > month_day_last{February});
 }
 
+constexpr void year_month_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(year_month)
+
+    year_month ym{2020y, January};
+    assert(ym.year() == 2020y);
+    assert(ym.month() == January);
+
+    ym += months{2};
+    assert(ym.year() == 2020y);
+    assert(ym.month() == March);
+    ym -= months{2};
+    assert(ym.year() == 2020y);
+    assert(ym.month() == January);
+
+    ym += years{2};
+    assert(ym.year() == 2022y);
+    assert(ym.month() == January);
+    ym -= years{2};
+    assert(ym.year() == 2020y);
+    assert(ym.month() == January);
+
+    // error C2131: expression did not evaluate to a constant
+    // failure was caused by evaluation exceeding step limit of 1048576
+    // for (int i = static_cast<int>(year::min()); i <= static_cast<int>(year::max()); i++) {
+    //    for (unsigned j = 0; j <= 255; ++j) {
+    //        const year_month ym_is{year{i}, month{j}};
+    //        if (j >= 1 && j <= 12) {
+    //            assert(ym_is.ok());
+    //        } else {
+    //            assert(!ym_is.ok());
+    //        }
+    //    }
+    //}
+
+    assert((year_month{2020y, April} == year_month{2020y, April}));
+    assert((year_month{2019y, April} < year_month{2020y, April}));
+    assert((year_month{2020y, March} < year_month{2020y, April}));
+    assert((year_month{2020y, April} > year_month{2019y, April}));
+    assert((year_month{2020y, April} > year_month{2020y, March}));
+
+    assert((ym + months{2} == year_month{2020y, March}));
+    assert((year_month{2020y, March} == ym + months{2}));
+
+    assert((ym - months{2} == year_month{2019y, November}));
+
+    assert((ym - year_month{2019y, January} == months{12}));
+
+    assert((ym + years{2} == year_month{2022y, January}));
+    assert((year_month{2022y, January} == ym + years{2}));
+
+
+    assert((ym - years{2} == year_month{2018y, January}));
+}
+
 constexpr bool test() {
     day_test();
     month_test();
@@ -323,6 +377,7 @@ constexpr bool test() {
     weekday_last_test();
     month_day_test();
     month_day_last_test();
+    year_month_test();
     return true;
 }
 
