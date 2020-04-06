@@ -21,7 +21,7 @@ _STD_BEGIN
 int __CLRCALL_PURE_OR_CDECL __std_execute_once_begin(
     once_flag& _Once_flag, int& _Pending, bool& fallback) noexcept { // wrap Win32 InitOnceBeginInitialize()
     static_assert(sizeof(_Once_flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
-
+    (void) fallback;
     return ::InitOnceBeginInitialize(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), 0, &_Pending, nullptr);
 }
 
@@ -35,8 +35,7 @@ _STD_END
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _WIN32_WINNT_VISTA vvv
 
-namespace 
-{
+namespace {
     struct _Init_once_vista_functions_t {
         std::atomic<decltype(&::InitOnceBeginInitialize)> _Pfn_InitOnceBeginInitialize{};
         std::atomic<decltype(&::InitOnceComplete)> _Pfn_InitOnceComplete{};
@@ -54,8 +53,7 @@ namespace
                     reinterpret_cast<decltype(&::InitOnceBeginInitialize)>(init_once_begin_initialize),
                     std::memory_order_relaxed);
                 functions._Pfn_InitOnceComplete.store(
-                    reinterpret_cast<decltype(&::InitOnceComplete)>(init_once_complete),
-                    std::memory_order_relaxed);
+                    reinterpret_cast<decltype(&::InitOnceComplete)>(init_once_complete), std::memory_order_relaxed);
             }
             functions._Initialized.store(true, std::memory_order_release);
         }
@@ -87,5 +85,3 @@ int __CLRCALL_PURE_OR_CDECL __std_execute_once_complete(
 _STD_END
 
 #endif //  _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-
-
