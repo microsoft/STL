@@ -295,6 +295,25 @@ constexpr void month_day_test() {
     }
 }
 
+constexpr void month_day_last_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(month_day_last)
+
+    assert(month_day_last{February}.month() == February);
+    const auto mdl = January / last;
+    static_assert(is_same_v<const month_day_last, decltype(mdl)>, "mdl is not const chrono::month_day_last");
+
+    unsigned i = 0;
+    assert(!month_day_last{month{i++}}.ok());
+    for (; i <= 12; ++i) {
+        assert(month_day_last{month{i}}.ok());
+    }
+    assert(!month_day_last{month{i}}.ok());
+
+    assert(month_day_last{January} == month_day_last{January});
+    assert(month_day_last{January} < month_day_last{February});
+    assert(month_day_last{December} > month_day_last{February});
+}
+
 constexpr bool test() {
     day_test();
     month_test();
@@ -303,6 +322,7 @@ constexpr bool test() {
     weekday_indexed_test();
     weekday_last_test();
     month_day_test();
+    month_day_last_test();
     return true;
 }
 
