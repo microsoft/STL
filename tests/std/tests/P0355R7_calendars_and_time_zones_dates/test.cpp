@@ -314,6 +314,41 @@ constexpr void month_day_last_test() {
     assert(month_day_last{December} > month_day_last{February});
 }
 
+constexpr void month_weekday_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(month_weekday)
+
+    const month_weekday mwd1{January, Monday[2]};
+    assert(mwd1.month() == January);
+    assert(mwd1.weekday_indexed().weekday() == Monday);
+    assert(mwd1.weekday_indexed().index() == 2);
+
+    // error C2131: expression did not evaluate to a constant
+    // failure was caused by evaluation exceeding step limit of 1048576
+    // for (unsigned m = 0; m <= 255; ++m) {
+    //    for (unsigned wd = 0; wd <= 255; ++wd) {
+    //        for (unsigned wdi = 0; wdi <= 6; ++wdi) {
+    //            const month_weekday mwd2{month{m}, weekday_indexed{weekday{wd}, wdi}};
+    //            if (m >= 1 && m <= 12 && wd <= 7 && wdi >= 1 && wdi <= 5) {
+    //                assert(mwd2.ok());
+    //            } else {
+    //                assert(!mwd2.ok());
+    //            }
+    //        }
+    //    }
+    //}
+
+    assert((month_weekday{January, Monday[2]} == month_weekday{January, Monday[2]}));
+}
+
+constexpr void month_weekday_last_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(month_weekday_last)
+
+    month_weekday_last mwdl{January, Monday[last]};
+    assert(mwdl.month() == January);
+    assert(mwdl.weekday_last().weekday() == Monday);
+    assert((mwdl == month_weekday_last{January, Monday[last]}));
+}
+
 constexpr void year_month_test() {
     TRIVIAL_COPY_STANDARD_LAYOUT(year_month)
 
@@ -377,6 +412,8 @@ constexpr bool test() {
     weekday_last_test();
     month_day_test();
     month_day_last_test();
+    month_weekday_test();
+    month_weekday_last_test();
     year_month_test();
     return true;
 }
