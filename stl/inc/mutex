@@ -509,13 +509,62 @@ public:
 };
 #endif // _HAS_CXX17
 
+// FUNCTION TEMPLATE _Invoke_stored_explicit
+template <class... _Types, size_t... _Indices>
+auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(
+    _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
+    return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
+}
+
+// FUNCTION TEMPLATE _Invoke_stored
+template <class... _Types>
+auto _Invoke_stored(tuple<_Types...>&& _Tuple)
+    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>())) { // invoke() a tuple
+    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>());
+}
+
 // FUNCTION TEMPLATE call_once
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
+
+template <class _Tuple, class _Seq, size_t _Idx>
+int __stdcall _Callback_once(void*, void* _Pv, void**) { // adapt call_once() to callback API
+    _Tuple* _Ptup = static_cast<_Tuple*>(_Pv);
+
+    _TRY_BEGIN
+    // Note explicit _Seq() selects every element from *_Ptup except the last,
+    // which contains call_once's exception_ptr.
+    _Invoke_stored_explicit(_STD move(*_Ptup), _Seq());
+    _CATCH_ALL
+    auto& _Ref = _STD get<_Idx>(*_Ptup);
+    _Ref       = _STD current_exception();
+    return 0;
+    _CATCH_END
+
+    return 1;
+}
 
 template <class _Fn, class... _Args>
 void(call_once)(once_flag& _Flag, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax...) once
     int pending;
-    if (!__std_execute_once_begin(_Flag, pending)) {
+    bool fallback = false;
+    if (!__std_execute_once_begin(_Flag, pending, fallback)) {
+        if (fallback) {
+            using _Tuple = tuple<_Fn&&, _Args&&..., exception_ptr&>;
+            using _Seq   = make_index_sequence<1 + sizeof...(_Args)>;
+
+            exception_ptr _Exc;
+            _Tuple _Tup(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)..., _Exc);
+
+            _Execute_once_fp_t _Fp = &_Callback_once<_Tuple, _Seq, 1 + sizeof...(_Args)>;
+
+            if (_Execute_once(_Flag, _Fp, _STD addressof(_Tup)) != 0) {
+                return;
+            }
+
+            if (_Exc) {
+                _STD rethrow_exception(_Exc);
+            }
+        }
         _XGetLastError();
     }
     if (!pending) {
