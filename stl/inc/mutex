@@ -583,7 +583,7 @@ void(call_once)(once_flag& _Flag, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax..
         unsigned long _Flags;
     } _Execute_once_scope = {_Flag, 0x4 /*INIT_ONCE_INIT_FAILED*/};
 
-    _STD forward<_Fn>(_Fx)(_STD forward<_Args>(_Ax)...);
+    _STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
 
     _Execute_once_scope._Flags = 0; // succeeded
 }
