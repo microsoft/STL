@@ -495,6 +495,76 @@ constexpr void year_month_day_test() {
     assert((ymd6 == year_month_day{2018y, January, 1d}));
 }
 
+constexpr void year_month_day_last_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(year_month_day_last)
+
+    year_month_day_last ymdl{2020y, month_day_last{February}};
+    assert(ymdl.year() == 2020y);
+    assert(ymdl.month() == February);
+    assert((ymdl.month_day_last() == month_day_last{February}));
+    assert(ymdl.day() == 29d);
+
+    ymdl += months{2};
+    assert(ymdl.year() == 2020y);
+    assert(ymdl.month() == April);
+    assert((ymdl.month_day_last() == month_day_last{April}));
+    assert(ymdl.day() == 30d);
+
+    ymdl -= months{2};
+    assert(ymdl.year() == 2020y);
+    assert(ymdl.month() == February);
+    assert((ymdl.month_day_last() == month_day_last{February}));
+    assert(ymdl.day() == 29d);
+
+    ymdl += years{2};
+    assert(ymdl.year() == 2022y);
+    assert(ymdl.month() == February);
+    assert((ymdl.month_day_last() == month_day_last{February}));
+    assert(ymdl.day() == 28d);
+
+    ymdl -= years{2};
+    assert(ymdl.year() == 2020y);
+    assert(ymdl.month() == February);
+    assert((ymdl.month_day_last() == month_day_last{February}));
+    assert(ymdl.day() == 29d);
+
+    assert((year_month_day_last{2020y, month_day_last{April}} == sys_days{days{18'382}}));
+    assert(static_cast<local_days>(ymdl) == local_days{ymdl});
+
+    constexpr int y_min = static_cast<int>(year::min());
+    constexpr int y_max = static_cast<int>(year::max());
+    for (int iy = y_min; iy <= y_max; ++iy) {
+        for (unsigned m = 0; m <= 255; ++m) {
+            year y{iy};
+            month_day_last mdl{month{m}};
+            if (y.ok() && mdl.ok()) {
+                assert((year_month_day_last{y, mdl}.ok()));
+            } else {
+                assert((!year_month_day_last{y, mdl}.ok()));
+            }
+        }
+    }
+
+    assert((ymdl == year_month_day_last{2020y, February / last}));
+    assert((ymdl < year_month_day_last{2021y, February / last}));
+    assert((ymdl < year_month_day_last{2020y, March / last}));
+    assert((year_month_day_last{2021y, February / last} > ymdl));
+    assert((year_month_day_last{2020y, March / last} > ymdl));
+
+    const auto ymdl2 = ymdl + months{2};
+    assert((ymdl2 == year_month_day_last{2020y, April / last}));
+    assert((ymdl2 == months{2} + ymdl));
+
+    const auto ymdl3 = ymdl - months{2};
+    assert((ymdl3 == year_month_day_last{2019y, December / last}));
+
+    const auto ymdl4 = ymdl + years{2};
+    assert((ymdl4 == year_month_day_last{2022y, February / last}));
+    assert((ymdl4 == years{2} + ymdl));
+
+    const auto ymdl5 = ymdl - years{2};
+    assert((ymdl5 == year_month_day_last{2018y, February / last}));
+}
 
 constexpr bool test() {
     day_test();
@@ -509,6 +579,7 @@ constexpr bool test() {
     month_weekday_last_test();
     year_month_test();
     year_month_day_test();
+    year_month_day_last_test();
     return true;
 }
 
