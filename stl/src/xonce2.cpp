@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// __std_execute_once_begin & __std_execute_once_end functions
+// __std_execute_once_begin and __std_execute_once_complete functions
 
 #include <atomic>
 #include <libloaderapi.h>
@@ -27,7 +27,7 @@ int __CLRCALL_PURE_OR_CDECL __std_execute_once_begin(
 }
 
 int __CLRCALL_PURE_OR_CDECL __std_execute_once_complete(
-    once_flag& _Once_flag, unsigned long _Completion_flags) noexcept { // wrap Win32 InitOnceComplete()
+    once_flag& _Once_flag, const unsigned long _Completion_flags) noexcept { // wrap Win32 InitOnceComplete()
     return ::InitOnceComplete(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), _Completion_flags, nullptr);
 }
 _STD_END
@@ -73,7 +73,7 @@ int __CLRCALL_PURE_OR_CDECL _Execute_once_begin(
 }
 
 int __CLRCALL_PURE_OR_CDECL _Execute_once_complete(
-    once_flag& _Once_flag, bool _Succeeded) noexcept { // wrap Win32 InitOnceComplete()
+    once_flag& _Once_flag, const bool _Succeeded) noexcept { // wrap Win32 InitOnceComplete()
     const auto init_once_complete =
         _Get_init_once_vista_functions()._Pfn_InitOnceComplete.load(std::memory_order_relaxed);
     return init_once_complete(

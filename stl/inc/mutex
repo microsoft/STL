@@ -574,13 +574,13 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax..
 
     struct _Execute_once_scope_t {
         ~_Execute_once_scope_t() {
-            if (!_Execute_once_complete(_Once, _Succeeded)) {
-                terminate(); // Cannot strongly-exception-safely throw, even if moved out of 
-                // destructor, since callback already executed (and might have thrown itself)
+            if (!_Execute_once_complete(_Once_flag, _Succeeded)) {
+                _STD terminate(); // Cannot strongly-exception-safely throw,
+                // callback already executed (and might have thrown itself)
             }
         }
 
-        once_flag& _Once;
+        once_flag& _Once_flag;
         bool _Succeeded;
     } _Execute_once_scope = {_Once, false};
 
