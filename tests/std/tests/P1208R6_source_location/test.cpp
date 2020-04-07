@@ -114,14 +114,6 @@ constexpr void function_template_test() {
     assert(string_view{x1.file_name()} == string_view{x2.file_name()});
 }
 
-// template <source_location x = source_location::current>
-// constexpr void nttp_test(unsigned line, unsigned column) {
-//    assert(x.line() == line);
-//    assert(x.column() == column);
-//    assert(x.function_name() == "test"sv);
-//    assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
-//}
-
 constexpr bool test() {
     copy_test();
     // tab_test();
@@ -134,7 +126,6 @@ constexpr bool test() {
     sub_member_test();
     lambda_test();
     function_template_test();
-    // nttp_test(__LINE__, 5);
     header_test();
     return true;
 }
