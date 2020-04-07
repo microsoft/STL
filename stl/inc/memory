@@ -1809,9 +1809,10 @@ template <class _Ty>
 class _Ref_count_bounded_array : public _Ref_count_base {
     // handle reference counting for bounded array in control block, no allocator
 public:
-    _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {}
+    _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {} // value-initializing _Storage is necessary here
 
-    explicit _Ref_count_bounded_array(const remove_extent_t<_Ty>& _Val) : _Ref_count_base() {
+    explicit _Ref_count_bounded_array(const remove_extent_t<_Ty>& _Val)
+        : _Ref_count_base() { // don't value-initialize _Storage
         _Uninitialized_fill_multidimensional_n(_Storage._Value, extent_v<_Ty>, _Val);
     }
 
@@ -2118,12 +2119,13 @@ private:
     using _Rebound = _Rebind_alloc_t<_Alloc, _Item>;
 
 public:
-    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg) : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
+    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() { // don't value-initialize _Storage
         _Uninitialized_value_construct_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
     }
 
     explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg, const remove_extent_t<_Ty>& _Val)
-        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() { // don't value-initialize _Storage
         _Uninitialized_fill_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Val, this->_Get_val());
     }
 
@@ -2172,6 +2174,9 @@ struct _Global_delete_guard {
     void* _Target;
 
     ~_Global_delete_guard() {
+        // While this branch is technically unnecessary because N4849 [new.delete.single]/17 requires
+        // `::operator delete(nullptr)` to be a no-op, it's here to help optimizers see that after
+        // `_Guard._Target = nullptr;`, this destructor can be eliminated.
         if (_Target) {
             ::operator delete(_Target);
         }

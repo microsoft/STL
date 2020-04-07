@@ -21,7 +21,7 @@ struct ReportAddress;
 vector<ReportAddress*> ascendingAddressBuffer;
 vector<ReportAddress*> descendingAddressBuffer;
 
-// According to N4849, the default behaviour of new[](size) is to return
+// According to N4849, the default behavior of new[](size) is to return
 // new(size), so only the latter needs to be redefined.
 void* operator new(size_t size) {
     void* const p = ::operator new(size, nothrow);
