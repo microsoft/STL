@@ -50,25 +50,28 @@ namespace {
 
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-    constexpr bool _May_need_wait_functions_fallback = false;
-
     constexpr bool _Have_wait_functions() {
         return true;
     }
-
-    void _Atomic_wait_fallback(const void* _Storage, unsigned long long& _Wait_context) noexcept = delete;
-    void _Atomic_notify_fallback(const void* _Storage) noexcept = delete;
-    void _Atomic_unwait_fallback(const void* _Storage, unsigned long long& _Wait_context) noexcept = delete;
-
 #define __crtWaitOnAddress       WaitOnAddress
 #define __crtWakeByAddressSingle WakeByAddressSingle
 #define __crtWakeByAddressAll    WakeByAddressAll
 
 #pragma comment(lib, "Synchronization.lib")
 
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
-    constexpr bool _May_need_wait_functions_fallback = true;
+    [[noreturn]] void _Atomic_wait_fallback(
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {
+        std::terminate();
+    }
 
+    [[noreturn]] void _Atomic_notify_fallback([[maybe_unused]] const void* const _Storage) noexcept {
+        std::terminate();
+    }
+
+    void _Atomic_unwait_fallback(
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {}
+
+#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     void _Atomic_wait_fallback(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
         auto& _Entry = _Atomic_wait_table_entry(_Storage);
         switch (_Wait_context & _Atomic_wait_phase_mask) {
@@ -157,7 +160,7 @@ void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
     unsigned long long& _Wait_context) noexcept {
     if (_Have_wait_functions()) {
         __crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, INFINITE);
-    } else if constexpr (_May_need_wait_functions_fallback) {
+    } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
 }
@@ -165,7 +168,7 @@ void __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressSingle(const_cast<void*>(_Storage));
-    } else if constexpr (_May_need_wait_functions_fallback) {
+    } else {
         _Atomic_notify_fallback(_Storage);
     }
 }
@@ -173,7 +176,7 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
     if (_Have_wait_functions()) {
         __crtWakeByAddressAll(const_cast<void*>(_Storage));
-    } else if constexpr (_May_need_wait_functions_fallback) {
+    } else {
         _Atomic_notify_fallback(_Storage);
     }
 }
@@ -198,7 +201,7 @@ void __stdcall __std_atomic_wait_indirect(const void* const _Storage, unsigned l
             break;
         }
         }
-    } else if constexpr (_May_need_wait_functions_fallback) {
+    } else {
         _Atomic_wait_fallback(_Storage, _Wait_context);
     }
 }
@@ -213,21 +216,17 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
         _Entry._Counter.fetch_add(_Atomic_counter_value_step, std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);
         __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
-    } else if constexpr (_May_need_wait_functions_fallback) {
+    } else {
         _Atomic_notify_fallback(_Storage);
     }
 }
 
 void __stdcall __std_atomic_unwait_direct(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
-    if constexpr (_May_need_wait_functions_fallback) {
-        _Atomic_unwait_fallback(_Storage, _Wait_context);
-    }
+    _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
 void __stdcall __std_atomic_unwait_indirect(const void* const _Storage, unsigned long long& _Wait_context) noexcept {
-    if constexpr (_May_need_wait_functions_fallback) {
-        _Atomic_unwait_fallback(_Storage, _Wait_context);
-    }
+    _Atomic_unwait_fallback(_Storage, _Wait_context);
 }
 
 size_t __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
