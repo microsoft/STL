@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstdlib>
 #include <memory>
+#include <new>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -22,7 +25,7 @@ vector<ReportAddress*> ascendingAddressBuffer;
 vector<ReportAddress*> descendingAddressBuffer;
 
 // According to N4849, the default behavior of new[](size) is to return
-// new(size), so only the latter needs to be redefined.
+// new(size), so only the latter needs to be replaced.
 void* operator new(size_t size) {
     void* const p = ::operator new(size, nothrow);
 
@@ -73,7 +76,7 @@ struct ReportAddress {
 };
 
 void assert_ascending_init() {
-    for (unsigned i = 1; i < ascendingAddressBuffer.size(); ++i) {
+    for (size_t i = 1; i < ascendingAddressBuffer.size(); ++i) {
         assert(ascendingAddressBuffer[i - 1] < ascendingAddressBuffer[i]);
     }
 
@@ -81,7 +84,7 @@ void assert_ascending_init() {
 }
 
 void assert_descending_destruct() {
-    for (unsigned i = 1; i < descendingAddressBuffer.size(); ++i) {
+    for (size_t i = 1; i < descendingAddressBuffer.size(); ++i) {
         assert(descendingAddressBuffer[i - 1] > descendingAddressBuffer[i]);
     }
 
@@ -115,15 +118,13 @@ shared_ptr<T> make_shared_init_assert(size_t size, const remove_extent_t<T>& val
 
 template <class T, class... Args>
 void test_make_init_destruct_order(Args&&... vals) {
-    {
-        try {
-            shared_ptr<T> sp = make_shared<T>(forward<Args>(vals)...);
-            assert_shared_use_get(sp);
-        } catch (const runtime_error& exc) {
-            string err = "Can't create more ReportAddress objects.";
-            assert(err.compare(exc.what()) == 0);
-        }
+    try {
+        shared_ptr<T> sp = make_shared<T>(forward<Args>(vals)...);
+        assert_shared_use_get(sp);
+    } catch (const runtime_error& exc) {
+        assert(exc.what() == "Can't create more ReportAddress objects."sv);
     }
+
     assert_ascending_init();
     assert_descending_destruct();
 }
@@ -258,7 +259,7 @@ struct ConstructConstrainingAllocator {
         allocator<Other> a;
         static_assert(is_same_v<Other, value_type> && is_same_v<ConstructAssert, Other>, "incorrect construct call");
         allocator_traits<allocator<Other>>::construct(a, p, forward<Args>(vals)...);
-        constructCount++;
+        ++constructCount;
     }
 
     template <class Other>
@@ -266,7 +267,7 @@ struct ConstructConstrainingAllocator {
         allocator<Other> a;
         static_assert(is_same_v<Other, value_type> && is_same_v<ConstructAssert, Other>, "incorrect destroy call");
         allocator_traits<allocator<Other>>::destroy(a, p);
-        destroyCount++;
+        ++destroyCount;
     }
 };
 
@@ -297,15 +298,14 @@ shared_ptr<T> allocate_shared_init_assert(int elemCount, const A& a, size_t size
 template <class T, class... Args>
 void test_allocate_init_destruct_order(Args&&... vals) {
     CustomAlloc<remove_all_extents_t<T>> a{};
-    {
-        try {
-            shared_ptr<T> sp = allocate_shared<T>(a, forward<Args>(vals)...);
-            assert_shared_use_get(sp);
-        } catch (const runtime_error& exc) {
-            string err = "Can't create more ReportAddress objects.";
-            assert(err.compare(exc.what()) == 0);
-        }
+
+    try {
+        shared_ptr<T> sp = allocate_shared<T>(a, forward<Args>(vals)...);
+        assert_shared_use_get(sp);
+    } catch (const runtime_error& exc) {
+        assert(exc.what() == "Can't create more ReportAddress objects."sv);
     }
+
     assert_construct_destruct_equal();
     assert_ascending_init();
     assert_descending_destruct();
