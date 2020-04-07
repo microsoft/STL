@@ -12,7 +12,7 @@ Instructions
 Here, you can ask a question about this STL implementation, and a maintainer
 will answer. Please read the examples below, then delete all of this text and
 replace it with your question. If you aren't sure whether a question is
-on-topic, just go ahead and ask! :-)
+on-topic, just go ahead and ask it! :-)
 
 On-Topic Examples
 -----------------
