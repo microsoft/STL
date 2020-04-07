@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// __std_execute_once_begin & __std_execute_once_end functions
+// __std_execute_once_begin and __std_execute_once_complete functions
 
 #include "xcall_once.h"
 #include <atomic>
