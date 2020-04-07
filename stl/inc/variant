@@ -966,11 +966,23 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
     _Variant_base<_Types...>, _Variant_destroy_layer_<_Types...>>;
 
 // CLASS TEMPLATE variant
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#else // ^^^ Clang / not Clang vvv
+#pragma warning(push)
+#pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
+#endif // __clang__
 template <size_t _Idx, class _Ty>
 struct _Variant_init_single_overload {
     using _FTy = _Meta_list<integral_constant<size_t, _Idx>, _Ty> (*)(_Ty);
     operator _FTy();
 };
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ Clang / not Clang vvv
+#pragma warning(pop)
+#endif // __clang__
 
 template <class _Indices, class... _Types>
 struct _Variant_init_overload_set_;

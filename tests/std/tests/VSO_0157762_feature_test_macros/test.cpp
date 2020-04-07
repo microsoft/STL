@@ -718,7 +718,15 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_array_constexpr
+#error __cpp_lib_array_constexpr is not defined
+#elif __cpp_lib_array_constexpr != 201806L
+#error __cpp_lib_array_constexpr is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
 #elif __cpp_lib_array_constexpr != 201803L

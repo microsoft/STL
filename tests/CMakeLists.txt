@@ -31,8 +31,9 @@ set(LLVM_LIT_LOCATION "${LIT_BASE_DIR}/${LIT_FILE_NAME}")
 set(Python_FIND_STRATEGY VERSION)
 find_package(Python3)
 
-add_subdirectory(std)
 add_subdirectory(libcxx)
+add_subdirectory(std)
+add_subdirectory(tr1)
 
 # Add the llvm-lit subdirectory last so all the test directories have had a
 # chance to add to the config map.
