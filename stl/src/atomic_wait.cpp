@@ -59,14 +59,9 @@ namespace {
 
 #pragma comment(lib, "Synchronization.lib")
 
-    [[noreturn]] void _Atomic_wait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {
-        std::terminate();
-    }
+    void _Atomic_wait_fallback(void* const _Storage, unsigned long long& _Wait_context) noexcept = delete;
 
-    [[noreturn]] void _Atomic_notify_fallback([[maybe_unused]] const void* const _Storage) noexcept {
-        std::terminate();
-    }
+    void _Atomic_notify_fallback(void* const _Storage) noexcept = delete;
 
     void _Atomic_unwait_fallback(
         [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {}
