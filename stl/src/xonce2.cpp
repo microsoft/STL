@@ -3,15 +3,17 @@
 
 // __std_execute_once_begin & __std_execute_once_end functions
 
-#include "xcall_once.h"
 #include <atomic>
 #include <libloaderapi.h>
 #include <synchapi.h>
+#include <xcall_once.h>
 
 // This must be as small as possible, because its contents are
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
+
+static_assert(sizeof(std::once_flag::_Opaque) == sizeof(INIT_ONCE), "invalid size");
 
 // these declarations must be in sync with those in xcall_once.h
 
@@ -19,17 +21,14 @@
 
 _STD_BEGIN
 int __CLRCALL_PURE_OR_CDECL __std_execute_once_begin(
-    once_flag& _Once_flag, int& _Pending, bool& fallback) noexcept { // wrap Win32 InitOnceBeginInitialize()
-    static_assert(sizeof(_Once_flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
-    (void) fallback;
+    once_flag& _Once_flag, int& _Pending, bool& _Fallback) noexcept { // wrap Win32 InitOnceBeginInitialize()
+    (void) _Fallback;
     return ::InitOnceBeginInitialize(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), 0, &_Pending, nullptr);
 }
 
 int __CLRCALL_PURE_OR_CDECL __std_execute_once_complete(
-    once_flag& _Once_flag, unsigned long _Flags) noexcept { // wrap Win32 InitOnceComplete()
-    static_assert(sizeof(_Once_flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
-
-    return ::InitOnceComplete(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), _Flags, nullptr);
+    once_flag& _Once_flag, unsigned long _Completion_flags) noexcept { // wrap Win32 InitOnceComplete()
+    return ::InitOnceComplete(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), _Completion_flags, nullptr);
 }
 _STD_END
 
@@ -42,7 +41,7 @@ namespace {
         std::atomic<bool> _Initialized{};
     };
 
-    _Init_once_vista_functions_t& _Get_init_once_vista_functions() {
+    const _Init_once_vista_functions_t& _Get_init_once_vista_functions() noexcept {
         static _Init_once_vista_functions_t functions;
         if (!functions._Initialized.load(std::memory_order_acquire)) {
             HMODULE kernel_module              = ::GetModuleHandleW(L"Kernel32.dll");
@@ -59,28 +58,26 @@ namespace {
         }
         return functions;
     }
-
 } // unnamed namespace
 
 _STD_BEGIN
-int __CLRCALL_PURE_OR_CDECL __std_execute_once_begin(
-    once_flag& _Once_flag, int& _Pending, bool& fallback) noexcept { // wrap Win32 InitOnceBeginInitialize()
-    static_assert(sizeof(_Once_flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
+int __CLRCALL_PURE_OR_CDECL _Execute_once_begin(
+    once_flag& _Once_flag, int& _Pending, bool& _Fallback) noexcept { // wrap Win32 InitOnceBeginInitialize()
     const auto init_once_begin_initialize =
         _Get_init_once_vista_functions()._Pfn_InitOnceBeginInitialize.load(std::memory_order_relaxed);
     if (init_once_begin_initialize == nullptr) {
-        fallback = true;
+        _Fallback = true;
         return false;
     }
     return init_once_begin_initialize(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), 0, &_Pending, nullptr);
 }
 
-int __CLRCALL_PURE_OR_CDECL __std_execute_once_complete(
-    once_flag& _Once_flag, unsigned long _Flags) noexcept { // wrap Win32 InitOnceComplete()
-    static_assert(sizeof(_Once_flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
+int __CLRCALL_PURE_OR_CDECL _Execute_once_complete(
+    once_flag& _Once_flag, bool _Succeeded) noexcept { // wrap Win32 InitOnceComplete()
     const auto init_once_complete =
         _Get_init_once_vista_functions()._Pfn_InitOnceComplete.load(std::memory_order_relaxed);
-    return init_once_complete(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), _Flags, nullptr);
+    return init_once_complete(
+        reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), _Succeeded ? 0 : INIT_ONCE_INIT_FAILED, nullptr);
 }
 _STD_END
 

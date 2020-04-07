@@ -544,11 +544,11 @@ int __stdcall _Callback_once(void*, void* _Pv, void**) { // adapt call_once() to
 }
 
 template <class _Fn, class... _Args>
-void(call_once)(once_flag& _Flag, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax...) once
-    int pending;
-    bool fallback = false;
-    if (!__std_execute_once_begin(_Flag, pending, fallback)) {
-        if (fallback) {
+void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax...) once
+    int _Pending;
+    bool _Fallback = false;
+    if (_Execute_once_begin(_Once, _Pending, _Fallback) == 0) {
+        if (_Fallback) {
             using _Tuple = tuple<_Fn&&, _Args&&..., exception_ptr&>;
             using _Seq   = make_index_sequence<1 + sizeof...(_Args)>;
 
@@ -557,7 +557,7 @@ void(call_once)(once_flag& _Flag, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax..
 
             _Execute_once_fp_t _Fp = &_Callback_once<_Tuple, _Seq, 1 + sizeof...(_Args)>;
 
-            if (_Execute_once(_Flag, _Fp, _STD addressof(_Tup)) != 0) {
+            if (_Execute_once(_Once, _Fp, _STD addressof(_Tup)) != 0) {
                 return;
             }
 
@@ -567,25 +567,26 @@ void(call_once)(once_flag& _Flag, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax..
         }
         _XGetLastError();
     }
-    if (!pending) {
+
+    if (_Pending == 0) {
         return; // already initialized (won the race otherwise)
     }
 
     struct _Execute_once_scope_t {
         ~_Execute_once_scope_t() {
-            if (!__std_execute_once_complete(_Once_flag, _Flags)) {
-                terminate(); // Cannot strongly-exception-safely throw,
-                // callback already executed (and might have thrown itself)
+            if (!_Execute_once_complete(_Once, _Succeeded)) {
+                terminate(); // Cannot strongly-exception-safely throw, even if moved out of 
+                // destructor, since callback already executed (and might have thrown itself)
             }
         }
 
-        once_flag& _Once_flag;
-        unsigned long _Flags;
-    } _Execute_once_scope = {_Flag, 0x4 /*INIT_ONCE_INIT_FAILED*/};
+        once_flag& _Once;
+        bool _Succeeded;
+    } _Execute_once_scope = {_Once, false};
 
     _STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
 
-    _Execute_once_scope._Flags = 0; // succeeded
+    _Execute_once_scope._Succeeded = true;
 }
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr

@@ -31,8 +31,8 @@ using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept;
-int __CLRCALL_PURE_OR_CDECL __std_execute_once_begin(once_flag& _Once_flag, int& _Pending, bool& fallback) noexcept;
-int __CLRCALL_PURE_OR_CDECL __std_execute_once_complete(once_flag& _Once_flag, unsigned long _Flags) noexcept;
+int __CLRCALL_PURE_OR_CDECL _Execute_once_begin(once_flag& _Once_flag, int& _Pending, bool& _Fallback) noexcept;
+int __CLRCALL_PURE_OR_CDECL _Execute_once_complete(once_flag& _Once_flag, bool _Succeeded) noexcept;
 
 template <class _Ty>
 union _Immortalizer_impl { // constructs _Ty, never destroys
