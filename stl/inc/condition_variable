@@ -70,22 +70,7 @@ public:
 
     template <class _Lock, class _Rep, class _Period>
     cv_status wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
-        // wait for duration
-        if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
-            _Unlock_relock(_Lck);
-            return cv_status::timeout;
-        }
-
-        // TRANSITION, ABI: The standard says that we should use a steady clock,
-        // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
-        _CSTD xtime _Tgt;
-        const bool _Clamped     = _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-        const cv_status _Result = wait_until(_Lck, &_Tgt);
-        if (_Clamped) {
-            return cv_status::no_timeout;
-        }
-
-        return _Result;
+        return wait_until(_Lck, chrono::steady_clock::now() + _Rel_time);
     }
 
     template <class _Lock, class _Rep, class _Period, class _Predicate>
@@ -97,20 +82,10 @@ public:
     template <class _Lock, class _Clock, class _Duration>
     cv_status wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // wait until time point
-        for (;;) {
-            const auto _Now = _Clock::now();
-            if (_Abs_time <= _Now) {
-                _Unlock_relock(_Lck);
-                return cv_status::timeout;
-            }
-
-            _CSTD xtime _Tgt;
-            (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
-            const cv_status _Result = wait_until(_Lck, &_Tgt);
-            if (_Result == cv_status::no_timeout) {
-                return cv_status::no_timeout;
-            }
-        }
+        const auto _Now = _Clock::now();
+        _CSTD xtime _Tgt;
+        (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
+        return wait_until(_Lck, &_Tgt);
     }
 
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
@@ -158,18 +133,6 @@ private:
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
     }
 
-    template <class _Lock>
-    void _Unlock_relock(_Lock& _Lck) noexcept /* terminates */ {
-        {
-            shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-            lock_guard<mutex> _Lckguard(*_Ptr);
-            _Lck.unlock(); // could throw
-        } // unlock
-
-        _Lck.lock();
-    }
-
-
     template <class _Mutex>
     static void _Relock(_Mutex& _Xtrnl) noexcept /* terminates */ {
         // relocks external mutex, terminate() on failure
@@ -192,20 +155,10 @@ private:
 
     template <class _Mutex, class _Clock, class _Duration, class _Predicate>
     bool _Wait_until1(_Mutex& _Xtrnl, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate& _Pred) {
-        while (!_Pred()) {
-            const auto _Now = _Clock::now();
-            if (_Abs_time <= _Now) {
-                return false;
-            }
-
-            _CSTD xtime _Tgt;
-            const bool _Clamped = _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
-            if (wait_until(_Xtrnl, &_Tgt) == cv_status::timeout && !_Clamped) {
-                return _Pred();
-            }
-        }
-
-        return true;
+        const auto _Now = _Clock::now();
+        _CSTD xtime _Tgt;
+        (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
+        return _Wait_until1(_Xtrnl, &_Tgt, _Pred);
     }
 };
 
