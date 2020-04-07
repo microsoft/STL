@@ -76,7 +76,7 @@ int __CLRCALL_PURE_OR_CDECL __std_execute_once_begin(
 }
 
 int __CLRCALL_PURE_OR_CDECL __std_execute_once_complete(
-    once_flag& _Once_flag, unsigned long _Flags) noexcept { // wrap Win32 InitOnceComplete()
+    once_flag& _Once_flag, const unsigned long _Flags) noexcept { // wrap Win32 InitOnceComplete()
     static_assert(sizeof(_Once_flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
     const auto init_once_complete =
         _Get_init_once_vista_functions()._Pfn_InitOnceComplete.load(std::memory_order_relaxed);
