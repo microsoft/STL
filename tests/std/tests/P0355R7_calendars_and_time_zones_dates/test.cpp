@@ -626,12 +626,12 @@ constexpr void year_month_weekday_test() {
     assert((!year_month_weekday{2020y / April / Tuesday[5]}.ok()));
 
     assert((ymwd == year_month_weekday{2020y, April, Tuesday[2]}));
-    
+
     const auto ymwd2 = ymwd + months{2};
     assert((ymwd2 == year_month_weekday{2020y, June, Tuesday[2]}));
     const auto ymwd3 = months{2} + ymwd;
     assert(ymwd2 == ymwd3);
-    
+
     const auto ymwd4 = ymwd - months{2};
     assert((ymwd4 == year_month_weekday{2020y, February, Tuesday[2]}));
 
@@ -642,6 +642,58 @@ constexpr void year_month_weekday_test() {
 
     const auto ymwd7 = ymwd - years{2};
     assert((ymwd7 == year_month_weekday{2018y, April, Tuesday[2]}));
+}
+
+constexpr void year_month_weekday_last_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(year_month_weekday_last)
+
+    year_month_weekday_last ymwdl{2020y, January, Monday[last]};
+    assert(ymwdl.year() == 2020y);
+    assert(ymwdl.month() == January);
+    assert(ymwdl.weekday() == Monday);
+    assert(ymwdl.weekday_last() == Monday[last]);
+
+    ymwdl += months{2};
+    assert(ymwdl.year() == 2020y);
+    assert(ymwdl.month() == March);
+    assert(ymwdl.weekday() == Monday);
+    assert(ymwdl.weekday_last() == Monday[last]);
+
+    ymwdl -= months{2};
+    assert(ymwdl.year() == 2020y);
+    assert(ymwdl.month() == January);
+    assert(ymwdl.weekday() == Monday);
+    assert(ymwdl.weekday_last() == Monday[last]);
+
+    ymwdl += years{2};
+    assert(ymwdl.year() == 2022y);
+    assert(ymwdl.month() == January);
+    assert(ymwdl.weekday() == Monday);
+    assert(ymwdl.weekday_last() == Monday[last]);
+
+    ymwdl -= years{2};
+    assert(ymwdl.year() == 2020y);
+    assert(ymwdl.month() == January);
+    assert(ymwdl.weekday() == Monday);
+    assert(ymwdl.weekday_last() == Monday[last]);
+
+    assert((static_cast<sys_days>(ymwdl) == sys_days{days{18'288}}));
+    assert((static_cast<local_days>(ymwdl) == local_days{ymwdl}));
+
+    const auto ymwdl2 = ymwdl + months{2};
+    assert((ymwdl2 == 2020y / March / Monday[last]));
+    const auto ymwdl3 = months{2} + ymwdl;
+    assert(ymwdl3 == ymwdl2);
+
+    const auto ymwdl4 = ymwdl - months{2};
+    assert(ymwdl4 == 2019y / November / Monday[last]);
+
+    const auto ymwdl5 = ymwdl + years{2};
+    assert(ymwdl5 == 2022y / January / Monday[last]);
+    const auto ymwdl6 = years{2} + ymwdl;
+    assert(ymwdl6 == ymwdl5);
+    const auto ymwdl7 = ymwdl - years{2};
+    assert(ymwdl7 == 2018y / January / Monday[last]);
 }
 
 constexpr bool test() {
@@ -659,6 +711,7 @@ constexpr bool test() {
     year_month_day_test();
     year_month_day_last_test();
     year_month_weekday_test();
+    year_month_weekday_last_test();
     return true;
 }
 
