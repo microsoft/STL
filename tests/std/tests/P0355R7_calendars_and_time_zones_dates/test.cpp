@@ -453,8 +453,8 @@ constexpr void year_month_day_test() {
 
     assert(static_cast<local_days>(ymld) == local_days{});
 
-     constexpr int y_min = static_cast<int>(year::min());
-     constexpr int y_max = static_cast<int>(year::max());
+    constexpr int y_min = static_cast<int>(year::min());
+    constexpr int y_max = static_cast<int>(year::max());
 
     // for (int iy = y_min; iy <= y_max; ++iy) {
     //    for (auto um = 0u; um <= 255u; ++um) {
@@ -531,19 +531,19 @@ constexpr void year_month_day_last_test() {
     assert((year_month_day_last{2020y, month_day_last{April}} == sys_days{days{18'382}}));
     assert(static_cast<local_days>(ymdl) == local_days{ymdl});
 
-    constexpr int y_min = static_cast<int>(year::min());
-    constexpr int y_max = static_cast<int>(year::max());
-    for (int iy = y_min; iy <= y_max; ++iy) {
-        for (unsigned m = 0; m <= 255; ++m) {
-            year y{iy};
-            month_day_last mdl{month{m}};
-            if (y.ok() && mdl.ok()) {
-                assert((year_month_day_last{y, mdl}.ok()));
-            } else {
-                assert((!year_month_day_last{y, mdl}.ok()));
-            }
-        }
-    }
+    // constexpr int y_min = static_cast<int>(year::min());
+    // constexpr int y_max = static_cast<int>(year::max());
+    // for (int iy = y_min; iy <= y_max; ++iy) {
+    //    for (unsigned m = 0; m <= 255; ++m) {
+    //        year y{iy};
+    //        month_day_last mdl{month{m}};
+    //        if (y.ok() && mdl.ok()) {
+    //            assert((year_month_day_last{y, mdl}.ok()));
+    //        } else {
+    //            assert((!year_month_day_last{y, mdl}.ok()));
+    //        }
+    //    }
+    //}
 
     assert((ymdl == year_month_day_last{2020y, February / last}));
     assert((ymdl < year_month_day_last{2021y, February / last}));
@@ -566,6 +566,84 @@ constexpr void year_month_day_last_test() {
     assert((ymdl5 == year_month_day_last{2018y, February / last}));
 }
 
+constexpr void year_month_weekday_test() {
+    TRIVIAL_COPY_STANDARD_LAYOUT(year_month_weekday)
+
+    year_month_weekday ymwd{2020y, April, Tuesday[2]};
+    assert(ymwd.year() == 2020y);
+    assert(ymwd.month() == April);
+    assert(ymwd.weekday() == Tuesday);
+    assert(ymwd.index() == 2u);
+    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+
+    const year_month_weekday epoch{sys_days{}};
+    assert(epoch.year() == 1970y);
+    assert(epoch.month() == January);
+    assert(epoch.weekday() == Thursday);
+    assert(epoch.index() == 1u);
+    assert((epoch.weekday_indexed() == weekday_indexed{Thursday, 1}));
+
+    local_days ldp;
+    sys_days sys{ldp.time_since_epoch()};
+    year_month_weekday ymlwd{ldp};
+    assert((ymlwd == year_month_weekday{sys}));
+
+    ymwd += months{2};
+    assert(ymwd.year() == 2020y);
+    assert(ymwd.month() == June);
+    assert(ymwd.weekday() == Tuesday);
+    assert(ymwd.index() == 2u);
+    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+
+    ymwd -= months{2};
+    assert(ymwd.year() == 2020y);
+    assert(ymwd.month() == April);
+    assert(ymwd.weekday() == Tuesday);
+    assert(ymwd.index() == 2u);
+    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+
+    ymwd += years{2};
+    assert(ymwd.year() == 2022y);
+    assert(ymwd.month() == April);
+    assert(ymwd.weekday() == Tuesday);
+    assert(ymwd.index() == 2u);
+    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+
+    ymwd -= years{2};
+    assert(ymwd.year() == 2020y);
+    assert(ymwd.month() == April);
+    assert(ymwd.weekday() == Tuesday);
+    assert(ymwd.index() == 2u);
+    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+
+    assert(static_cast<sys_days>(epoch) == sys_days{});
+    year_month_weekday prev{1970y / January / Thursday[0]};
+    assert(static_cast<sys_days>(prev) == (sys_days{} - days{7}));
+    assert(static_cast<local_days>(ymwd) == local_days{ymwd});
+
+
+    assert((year_month_weekday{2020y / April / Wednesday[5]}.ok()));
+    assert((!year_month_weekday{2020y / April / Tuesday[5]}.ok()));
+
+    assert((ymwd == year_month_weekday{2020y, April, Tuesday[2]}));
+    
+    const auto ymwd2 = ymwd + months{2};
+    assert((ymwd2 == year_month_weekday{2020y, June, Tuesday[2]}));
+    const auto ymwd3 = months{2} + ymwd;
+    assert(ymwd2 == ymwd3);
+    
+    const auto ymwd4 = ymwd - months{2};
+    assert((ymwd4 == year_month_weekday{2020y, February, Tuesday[2]}));
+
+    const auto ymwd5 = ymwd + years{2};
+    assert((ymwd5 == year_month_weekday{2022y, April, Tuesday[2]}));
+    const auto ymwd6 = years{2} + ymwd;
+    assert(ymwd5 == ymwd6);
+
+    const auto ymwd7 = ymwd - years{2};
+    assert((ymwd7 == year_month_weekday{2018y, April, Tuesday[2]}));
+}
+
 constexpr bool test() {
     day_test();
     month_test();
@@ -580,6 +658,7 @@ constexpr bool test() {
     year_month_test();
     year_month_day_test();
     year_month_day_last_test();
+    year_month_weekday_test();
     return true;
 }
 
