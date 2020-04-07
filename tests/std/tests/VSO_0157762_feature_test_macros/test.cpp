@@ -318,7 +318,7 @@ STATIC_ASSERT(__cpp_if_constexpr == 201606L);
 #endif
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VS 2019 16.7p1
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG
+#if defined(__clang__) || _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG
 #ifndef __cpp_impl_destroying_delete
 #error __cpp_impl_destroying_delete is not defined
 #elif __cpp_impl_destroying_delete != 201806L
