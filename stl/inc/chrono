@@ -1468,7 +1468,7 @@ namespace chrono {
         const unsigned _M   = static_cast<unsigned>(_Month);
         const int _Era      = (_Y >= 0 ? _Y : _Y - 399) / 400;
         const unsigned _Yoe = static_cast<unsigned>(_Y - _Era * 400);
-        const unsigned _Doy = (153 * (_M + (_M > 2 ? -3 : 9)) + 2) / 5 + static_cast<unsigned>(_Day) - 1;
+        const unsigned _Doy = (153 * (_M + (_M > 2 ? static_cast<unsigned>(-3) : 9)) + 2) / 5 + static_cast<unsigned>(_Day) - 1;
         const unsigned _Doe = _Yoe * 365 + _Yoe / 4 - _Yoe / 100 + _Doy;
         return days{_Era * 146097 + static_cast<int>(_Doe) - 719468};
     }
