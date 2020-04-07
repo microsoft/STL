@@ -21,9 +21,11 @@ struct s {
     source_location loc = source_location::current();
 };
 
-constexpr int s2_line = __LINE__ + 2;
+constexpr int s2_int_line = __LINE__ + 3;
 struct s2 {
-    s x;
+    s2(source_location l = source_location::current()) : x{l} {}
+    constexpr s2([[maybe_unused]] int i) {}
+    s x = source_location::current();
 };
 
 constexpr void copy_test() {
@@ -72,10 +74,16 @@ constexpr void different_constructor_test() {
 
 constexpr void sub_member_test() {
     s2 s;
-    assert(s.x.loc.line() == s2_line);
-    assert(s.x.loc.column() == 7);
-    assert(s.x.loc.function_name() == "s2"sv);
+    assert(s.x.loc.line() == __LINE__ - 1);
+    assert(s.x.loc.column() == 8);
+    assert(s.x.loc.function_name() == "sub_member_test"sv);
     assert(string_view{s.x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
+
+    s2 s_i{1};
+    assert(s_i.x.loc.line() == s2_int_line);
+    assert(s_i.x.loc.column() == 5);
+    assert(s_i.x.loc.function_name() == "s2"sv);
+    assert(string_view{s_i.x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
 
 constexpr void lambda_test() {
@@ -106,13 +114,13 @@ constexpr void function_template_test() {
     assert(string_view{x1.file_name()} == string_view{x2.file_name()});
 }
 
- template <source_location x = source_location::current>
- constexpr void nttp_test(unsigned line, unsigned column) {
-    assert(x.line() == line);
-    assert(x.column() == column);
-    assert(x.function_name() == "test"sv);
-    assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
-}
+// template <source_location x = source_location::current>
+// constexpr void nttp_test(unsigned line, unsigned column) {
+//    assert(x.line() == line);
+//    assert(x.column() == column);
+//    assert(x.function_name() == "test"sv);
+//    assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
+//}
 
 constexpr bool test() {
     copy_test();
@@ -123,7 +131,7 @@ constexpr bool test() {
     argument_test(__LINE__ - 1, 38, loc);
     sloc_constructor_test();
     different_constructor_test();
-    // sub_member_test();
+    sub_member_test();
     lambda_test();
     function_template_test();
     // nttp_test(__LINE__, 5);
