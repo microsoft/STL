@@ -12,6 +12,9 @@ using namespace std::chrono;
     static_assert(is_trivially_copyable_v<TYPE>, "chrono::" #TYPE " is not trivially copyable"); \
     static_assert(is_standard_layout_v<TYPE>, "chrono::" #TYPE " is not standard layout");
 
+#define SYNTAX_ASSERT(TYPE, EXPR) \
+static_assert(is_same_v<TYPE, decltype(EXPR)>, "\""#EXPR "\" is not chrono::"#TYPE);
+
 constexpr void day_test() {
     TRIVIAL_COPY_STANDARD_LAYOUT(day)
 
@@ -695,6 +698,72 @@ constexpr void year_month_weekday_last_test() {
     const auto ymwdl7 = ymwdl - years{2};
     assert(ymwdl7 == 2018y / January / Monday[last]);
 }
+constexpr void syntax_test() {
+    SYNTAX_ASSERT(year_month, 2020y / January)
+    SYNTAX_ASSERT(year_month, 2020y / 1)
+
+    SYNTAX_ASSERT(month_day, January / 1d)
+    SYNTAX_ASSERT(month_day, January / 1)
+    SYNTAX_ASSERT(month_day, 1 / 1d)
+    SYNTAX_ASSERT(month_day, 1d / January)
+    SYNTAX_ASSERT(month_day, 1d / 1)
+
+    SYNTAX_ASSERT(month_day_last, January / last)
+    SYNTAX_ASSERT(month_day_last, 1 / last)
+    SYNTAX_ASSERT(month_day_last, last / January)
+    SYNTAX_ASSERT(month_day_last, last / 1)
+
+    SYNTAX_ASSERT(month_weekday, January / Monday[1])
+    SYNTAX_ASSERT(month_weekday, 1 / Monday[1])
+    SYNTAX_ASSERT(month_weekday, Monday[1] / January)
+    SYNTAX_ASSERT(month_weekday, Monday[1] / 1)
+
+    SYNTAX_ASSERT(month_weekday_last, January / Monday[last])
+    SYNTAX_ASSERT(month_weekday_last, 1 / Monday[last])
+    SYNTAX_ASSERT(month_weekday_last, Monday[last] / 1)
+    SYNTAX_ASSERT(month_weekday_last, Monday[last] / January)
+
+    SYNTAX_ASSERT(year_month_day, 2020y / January / 1d)
+    SYNTAX_ASSERT(year_month_day, 2020y / January / 1)
+    constexpr auto md = January / 1;
+    SYNTAX_ASSERT(year_month_day, 2020y / md)
+    SYNTAX_ASSERT(year_month_day, 2020 / md)
+    SYNTAX_ASSERT(year_month_day, January / 1 / 2020y)
+    SYNTAX_ASSERT(year_month_day, January / 1 / 2020)
+    SYNTAX_ASSERT(year_month_day, 1d / January / 2020y)
+    SYNTAX_ASSERT(year_month_day, 1d / January / 2020)
+    SYNTAX_ASSERT(year_month_day, 1d / 1 / 2020)
+    SYNTAX_ASSERT(year_month_day, 1d / 1 / 2020y)
+
+    SYNTAX_ASSERT(year_month_day_last, 2020y / January / last)
+    constexpr auto mdl = January / last;
+    SYNTAX_ASSERT(year_month_day_last, 2020y / mdl)
+    SYNTAX_ASSERT(year_month_day_last, 2020 / mdl)
+    SYNTAX_ASSERT(year_month_day_last, last / January / 2020y)
+    SYNTAX_ASSERT(year_month_day_last, January / last / 2020)
+
+    SYNTAX_ASSERT(year_month_weekday, 2020y / January / Monday[1])
+    constexpr auto mwd = January / Monday[1];
+    SYNTAX_ASSERT(year_month_weekday, 2020y / mwd)
+    SYNTAX_ASSERT(year_month_weekday, 2020 / mwd)
+    SYNTAX_ASSERT(year_month_weekday, January / Monday[1] / 2020y)
+    SYNTAX_ASSERT(year_month_weekday, January / Monday[1] / 2020)
+    SYNTAX_ASSERT(year_month_weekday, Monday[1] / January / 2020y)
+    SYNTAX_ASSERT(year_month_weekday, Monday[1] / January / 2020)
+
+    SYNTAX_ASSERT(year_month_weekday_last, 2020y / January / Monday[last])
+    constexpr auto mwdl = January / Monday[last];
+    SYNTAX_ASSERT(year_month_weekday_last, 2020y / mwdl)
+    SYNTAX_ASSERT(year_month_weekday_last, 2020 / mwdl)
+    SYNTAX_ASSERT(year_month_weekday_last, January / Monday[last] / 2020y)
+    SYNTAX_ASSERT(year_month_weekday_last, January / Monday[last] / 2020)
+    SYNTAX_ASSERT(year_month_weekday_last, 1 / Monday[last] / 2020)
+    SYNTAX_ASSERT(year_month_weekday_last, 1 / Monday[last] / 2020y)
+    SYNTAX_ASSERT(year_month_weekday_last, Monday[last] / 1  / 2020y)
+    SYNTAX_ASSERT(year_month_weekday_last, Monday[last] / 1  / 2020)
+    SYNTAX_ASSERT(year_month_weekday_last, Monday[last] / January  / 2020)
+    SYNTAX_ASSERT(year_month_weekday_last, Monday[last] / January  / 2020y)
+}
 
 constexpr bool test() {
     day_test();
@@ -712,6 +781,7 @@ constexpr bool test() {
     year_month_day_last_test();
     year_month_weekday_test();
     year_month_weekday_last_test();
+    syntax_test();
     return true;
 }
 
