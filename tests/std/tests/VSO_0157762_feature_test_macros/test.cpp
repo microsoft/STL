@@ -51,7 +51,7 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
-#if defined(__clang__) && __clang_major__ < 10 // Clang 9 doesn't yet implement P1771R1
+#if defined(__EDG__) || (defined(__clang__) && __clang_major__ < 10) // Clang 9 and EDG don't yet implement P1771R1
 #if __has_cpp_attribute(nodiscard) != 201603L
 #error __has_cpp_attribute(nodiscard) is not 201603L
 #endif
@@ -160,8 +160,7 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
-#elif _HAS_CXX20 \
-    && ((defined(__clang__) && __clang_major__ >= 10) || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
+#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and VSO-951142
 #if __cpp_constexpr != 201907L
 #error __cpp_constexpr is not 201907L
 #else
@@ -264,7 +263,7 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 
 #ifndef __cpp_generic_lambdas
 #error __cpp_generic_lambdas is not defined
-#elif _HAS_CXX20 && ((defined(__clang__) && __clang_major__ >= 10) || defined(__EDG__)) // TRANSITION, VSO-951133
+#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and EDG
 #if __cpp_generic_lambdas != 201707L
 #error __cpp_generic_lambdas is not 201707L
 #else
@@ -334,9 +333,31 @@ STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20 && ((!defined(__clang__) || __clang_major__ >= 10) || defined(__EDG__))
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VS 2019 16.7p1
+#if defined(__clang__) || _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG
+#ifndef __cpp_impl_destroying_delete
+#error __cpp_impl_destroying_delete is not defined
+#elif __cpp_impl_destroying_delete != 201806L
+#error __cpp_impl_destroying_delete is not 201806L
+#else
+STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
+#endif
+#else
+#ifdef __cpp_impl_destroying_delete
+#error __cpp_impl_destroying_delete is defined
+#endif
+#endif
+#endif
+
+#if _HAS_CXX20 && (!defined(__clang__) || __clang_major__ >= 10)
 #ifndef __cpp_impl_three_way_comparison
 #error __cpp_impl_three_way_comparison is not defined
+#elif defined(__EDG__) // EDG does not yet implement P1630R1 or P1186R3 so they still report the old value.
+#if __cpp_impl_three_way_comparison != 201711L
+#error __cpp_impl_three_way_comparison is not 201711L
+#else
+STATIC_ASSERT(__cpp_impl_three_way_comparison == 201711L);
+#endif
 #else
 #if __cpp_impl_three_way_comparison != 201907L
 #error __cpp_impl_three_way_comparison is not 201907L
@@ -729,7 +750,7 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__)
+#if _HAS_CXX20
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
 #elif __cpp_lib_array_constexpr != 201806L
@@ -1017,6 +1038,20 @@ STATIC_ASSERT(__cpp_lib_destroying_delete == 201806L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_impl_destroying_delete) // TRANSITION, EDG and VS 2019 16.7p1
+#ifndef __cpp_lib_destroying_delete
+#error __cpp_lib_destroying_delete is not defined
+#elif __cpp_lib_destroying_delete != 201806L
+#error __cpp_lib_destroying_delete is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_destroying_delete == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_destroying_delete
+#error __cpp_lib_destroying_delete is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_enable_shared_from_this
 #error __cpp_lib_enable_shared_from_this is not defined
 #elif __cpp_lib_enable_shared_from_this != 201603L
@@ -1040,22 +1075,12 @@ STATIC_ASSERT(__cpp_lib_endian == 201907L);
 #endif
 
 #if _HAS_CXX20
-#ifdef __EDG__
-#ifndef __cpp_lib_erase_if
-#error __cpp_lib_erase_if is not defined
-#elif __cpp_lib_erase_if != 201811L
-#error __cpp_lib_erase_if is not 201811L
-#else
-STATIC_ASSERT(__cpp_lib_erase_if == 201811L);
-#endif
-#else // ^^^ EDG / Clang and MSVC vvv
 #ifndef __cpp_lib_erase_if
 #error __cpp_lib_erase_if is not defined
 #elif __cpp_lib_erase_if != 202002L
 #error __cpp_lib_erase_if is not 202002L
 #else
 STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
-#endif
 #endif
 #else
 #ifdef __cpp_lib_erase_if
@@ -1202,22 +1227,12 @@ STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 #endif
 
 #if _HAS_CXX20
-#ifdef __EDG__
-#ifndef __cpp_lib_int_pow2
-#error __cpp_lib_int_pow2 is not defined
-#elif __cpp_lib_int_pow2 != 201806L
-#error __cpp_lib_int_pow2 is not 201806L
-#else
-STATIC_ASSERT(__cpp_lib_int_pow2 == 201806L);
-#endif
-#else // ^^^ EDG / Clang and MSVC vvv
 #ifndef __cpp_lib_int_pow2
 #error __cpp_lib_int_pow2 is not defined
 #elif __cpp_lib_int_pow2 != 202002L
 #error __cpp_lib_int_pow2 is not 202002L
 #else
 STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
-#endif
 #endif
 #else
 #ifdef __cpp_lib_int_pow2
@@ -1670,22 +1685,12 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #endif
 
 #if _HAS_CXX20
-#ifdef __EDG__
-#ifndef __cpp_lib_span
-#error __cpp_lib_span is not defined
-#elif __cpp_lib_span != 201902L
-#error __cpp_lib_span is not 201902L
-#else
-STATIC_ASSERT(__cpp_lib_span == 201902L);
-#endif
-#else // ^^^ EDG / Clang and MSVC vvv
 #ifndef __cpp_lib_span
 #error __cpp_lib_span is not defined
 #elif __cpp_lib_span != 202002L
 #error __cpp_lib_span is not 202002L
 #else
 STATIC_ASSERT(__cpp_lib_span == 202002L);
-#endif
 #endif
 #else
 #ifdef __cpp_lib_span
