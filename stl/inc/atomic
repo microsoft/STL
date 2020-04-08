@@ -641,9 +641,23 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
 #ifdef _M_IX86
     void store(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
-        // store with (effectively) sequential consistency
-        _Check_store_memory_order(_Order);
-        (void) exchange(_Value, _Order);
+        switch (_Order) {
+        case memory_order_release:
+            _Compiler_barrier();
+            [[fallthrough]];
+        case memory_order_relaxed:
+            __iso_volatile_store64(_Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Value));
+            break;
+        case memory_order_consume:
+        case memory_order_acquire:
+        case memory_order_acq_rel:
+        default:
+            _INVALID_MEMORY_ORDER;
+            [[fallthrough]];
+        case memory_order_seq_cst:
+            (void) exchange(_Value, _Order);
+            break;
+        }
     }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
 
