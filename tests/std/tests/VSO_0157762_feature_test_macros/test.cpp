@@ -1598,10 +1598,18 @@ STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
 
 #ifndef __cpp_lib_shared_ptr_arrays
 #error __cpp_lib_shared_ptr_arrays is not defined
-#elif __cpp_lib_shared_ptr_arrays != 201611L
+#elif _HAS_CXX20
+#if __cpp_lib_shared_ptr_arrays != 201707L
+#error __cpp_lib_shared_ptr_arrays is not 201707L
+#else
+STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201707L);
+#endif
+#else
+#if __cpp_lib_shared_ptr_arrays != 201611L
 #error __cpp_lib_shared_ptr_arrays is not 201611L
 #else
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
+#endif
 #endif
 
 #if _HAS_CXX17

@@ -155,6 +155,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0674R1 make_shared() For Arrays
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 //     (partially implemented)
@@ -1029,7 +1030,6 @@
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
 #define __cpp_lib_shared_mutex                     201505L
-#define __cpp_lib_shared_ptr_arrays                201611L
 #define __cpp_lib_transparent_operators            201510L
 #define __cpp_lib_type_trait_variable_templates    201510L
 #define __cpp_lib_uncaught_exceptions              201411L
@@ -1044,8 +1044,7 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_chrono 201611L
-#define __cpp_lib_clamp  201603L
+#define __cpp_lib_clamp 201603L
 #ifndef _M_CEE
 #define __cpp_lib_execution 201603L
 #endif // _M_CEE
@@ -1074,8 +1073,12 @@
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 #define __cpp_lib_variant               201606L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
 
 // C++20
@@ -1138,6 +1141,12 @@
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
+#else // _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
