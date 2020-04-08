@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <new>
@@ -24,8 +25,8 @@ struct ReportAddress;
 vector<ReportAddress*> ascendingAddressBuffer;
 vector<ReportAddress*> descendingAddressBuffer;
 
-// According to N4849, the default behavior of new[](size) is to return
-// new(size), so only the latter needs to be replaced.
+// According to N4849, the default behavior of operator new[](size) is to return
+// operator new(size), so only the latter needs to be replaced.
 void* operator new(size_t size) {
     void* const p = ::operator new(size, nothrow);
 
@@ -46,7 +47,7 @@ void* operator new(size_t size, const nothrow_t&) noexcept {
 struct InitialValue {
     int value = 106;
 
-    InitialValue() {}
+    InitialValue() = default;
 
     InitialValue(int a, int b) : value(a + b) {}
 };
@@ -55,6 +56,13 @@ struct ThreeIntWrap {
     int v1;
     int v2;
     int v3;
+};
+
+struct alignas(32) HighlyAligned {
+    uint64_t a;
+    uint64_t b;
+    uint64_t c;
+    uint64_t d;
 };
 
 struct ReportAddress {
@@ -145,6 +153,11 @@ void test_make_shared_not_array() {
     shared_ptr<int> p4 = make_shared<int>();
     assert_shared_use_get(p4);
     assert(*p4 == 0);
+
+    shared_ptr<HighlyAligned> p5 = make_shared<HighlyAligned>();
+    assert_shared_use_get(p5);
+    assert(reinterpret_cast<uintptr_t>(p5.get()) % alignof(HighlyAligned) == 0);
+    assert(p5->a == 0 && p5->b == 0 && p5->c == 0 && p5->d == 0);
 }
 
 void test_make_shared_array_known_bounds() {
@@ -173,6 +186,7 @@ void test_make_shared_array_known_bounds() {
     shared_ptr<vector<int>[3]> p3 = make_shared<vector<int>[3]>({9, 9, 9});
     assert_shared_use_get(p3);
     for (int i = 0; i < 3; ++i) {
+        assert(p3[i].size() == 3);
         for (const auto& val : p3[i]) {
             assert(val == 9);
         }
@@ -191,6 +205,13 @@ void test_make_shared_array_known_bounds() {
                 assert(p5[0][i][j][k] == 0);
             }
         }
+    }
+
+    shared_ptr<HighlyAligned[6]> p6 = make_shared<HighlyAligned[6]>();
+    assert_shared_use_get(p6);
+    assert(reinterpret_cast<uintptr_t>(p6.get()) % alignof(HighlyAligned) == 0);
+    for (int i = 0; i < 6; ++i) {
+        assert(p6[i].a == 0 && p6[i].b == 0 && p6[i].c == 0 && p6[i].d == 0);
     }
 
     test_make_init_destruct_order<ReportAddress[5]>(); // success one dimensional
@@ -228,6 +249,7 @@ void test_make_shared_array_unknown_bounds() {
     shared_ptr<vector<int>[]> p3 = make_shared<vector<int>[]>(3, {9, 9, 9});
     assert_shared_use_get(p3);
     for (int i = 0; i < 3; ++i) {
+        assert(p3[i].size() == 3);
         for (const auto& val : p3[i]) {
             assert(val == 9);
         }
@@ -248,6 +270,13 @@ void test_make_shared_array_unknown_bounds() {
                 assert(p6[i][j][k] == 0);
             }
         }
+    }
+
+    shared_ptr<HighlyAligned[]> p7 = make_shared<HighlyAligned[]>(7u);
+    assert_shared_use_get(p7);
+    assert(reinterpret_cast<uintptr_t>(p7.get()) % alignof(HighlyAligned) == 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p7[i].a == 0 && p7[i].b == 0 && p7[i].c == 0 && p7[i].d == 0);
     }
 
     test_make_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
@@ -378,6 +407,15 @@ void test_allocate_shared_not_array() {
         assert(*p4 == 0);
     }
     assert_construct_destruct_equal();
+
+    CustomAlloc<HighlyAligned> a5{};
+    {
+        shared_ptr<HighlyAligned> p5 = allocate_shared<HighlyAligned>(a5);
+        assert_shared_use_get(p5);
+        assert(reinterpret_cast<uintptr_t>(p5.get()) % alignof(HighlyAligned) == 0);
+        assert(p5->a == 0 && p5->b == 0 && p5->c == 0 && p5->d == 0);
+    }
+    assert_construct_destruct_equal();
 }
 
 void test_allocate_shared_array_known_bounds() {
@@ -419,6 +457,7 @@ void test_allocate_shared_array_known_bounds() {
         shared_ptr<vector<int>[3]> p3 = allocate_shared<vector<int>[3]>(a3, {9, 9, 9});
         assert_shared_use_get(p3);
         for (int i = 0; i < 3; ++i) {
+            assert(p3[i].size() == 3);
             for (const auto& val : p3[i]) {
                 assert(val == 9);
             }
@@ -445,6 +484,17 @@ void test_allocate_shared_array_known_bounds() {
                     assert(p5[0][i][j][k] == 0);
                 }
             }
+        }
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<HighlyAligned> a6{};
+    {
+        shared_ptr<HighlyAligned[6]> p6 = allocate_shared<HighlyAligned[6]>(a6);
+        assert_shared_use_get(p6);
+        assert(reinterpret_cast<uintptr_t>(p6.get()) % alignof(HighlyAligned) == 0);
+        for (int i = 0; i < 6; ++i) {
+            assert(p6[i].a == 0 && p6[i].b == 0 && p6[i].c == 0 && p6[i].d == 0);
         }
     }
     assert_construct_destruct_equal();
@@ -497,6 +547,7 @@ void test_allocate_shared_array_unknown_bounds() {
         shared_ptr<vector<int>[]> p3 = allocate_shared<vector<int>[]>(a3, 3, {9, 9, 9});
         assert_shared_use_get(p3);
         for (int i = 0; i < 3; ++i) {
+            assert(p3[i].size() == 3);
             for (const auto& val : p3[i]) {
                 assert(val == 9);
             }
@@ -526,6 +577,17 @@ void test_allocate_shared_array_unknown_bounds() {
                     assert(p6[i][j][k] == 0);
                 }
             }
+        }
+    }
+    assert_construct_destruct_equal();
+
+    CustomAlloc<HighlyAligned> a7{};
+    {
+        shared_ptr<HighlyAligned[]> p7 = allocate_shared<HighlyAligned[]>(a7, 7u);
+        assert_shared_use_get(p7);
+        assert(reinterpret_cast<uintptr_t>(p7.get()) % alignof(HighlyAligned) == 0);
+        for (int i = 0; i < 7; ++i) {
+            assert(p7[i].a == 0 && p7[i].b == 0 && p7[i].c == 0 && p7[i].d == 0);
         }
     }
     assert_construct_destruct_equal();

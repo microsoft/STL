@@ -1273,32 +1273,32 @@ private:
     template <class _Ty0, class... _Types>
     friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(_Types&&... _Args);
 
-    template <class _Ty0>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(size_t _Count);
-
-    template <class _Ty0>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(
-        size_t _Count, const remove_extent_t<_Ty0>& _Val);
-
-    template <class _Ty0>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
-
-    template <class _Ty0>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const remove_extent_t<_Ty0>& _Val);
-
     template <class _Ty0, class _Alloc, class... _Types>
     friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+
+    template <class _Ty0>
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(size_t _Count);
 
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
         const _Alloc& _Al_arg, size_t _Count);
 
+    template <class _Ty0>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
+
+    template <class _Ty0, class _Alloc>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
+
+    template <class _Ty0>
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(
+        size_t _Count, const remove_extent_t<_Ty0>& _Val);
+
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
         const _Alloc& _Al_arg, size_t _Count, const remove_extent_t<_Ty0>& _Val);
 
-    template <class _Ty0, class _Alloc>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
+    template <class _Ty0>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
@@ -1577,18 +1577,18 @@ _NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexc
     size_t _Bytes = sizeof(_Refc); // contains storage for one element
 
     if (_Count > 1) {
-        using _Element_type = typename _Refc::_Element_type;
+        constexpr size_t _Element_size = sizeof(typename _Refc::_Element_type);
 
         size_t _Extra_bytes;
 
         if constexpr (_Check == _Check_overflow::_Yes) {
-            _Extra_bytes = _Get_size_of_n<sizeof(_Element_type)>(_Count - 1); // check multiplication overflow
+            _Extra_bytes = _Get_size_of_n<_Element_size>(_Count - 1); // check multiplication overflow
 
             if (_Extra_bytes > static_cast<size_t>(-1) - _Bytes - (_Align - 1)) { // assume worst case adjustment
                 _Throw_bad_array_new_length(); // addition overflow
             }
         } else {
-            _Extra_bytes = sizeof(_Element_type) * (_Count - 1);
+            _Extra_bytes = _Element_size * (_Count - 1);
         }
 
         _Bytes += _Extra_bytes;
@@ -1606,8 +1606,23 @@ _NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexc
 
 template <class _Refc>
 _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
-    const size_t _Bytes = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
-    return static_cast<_Refc*>(::operator new(_Bytes));
+    const size_t _Bytes     = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
+    constexpr size_t _Align = alignof(_Refc);
+    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+        return static_cast<_Refc*>(::operator new(_Bytes));
+    } else {
+        return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
+    }
+}
+
+template <class _Refc>
+void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
+    constexpr size_t _Align = alignof(_Refc);
+    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+        ::operator delete(static_cast<void*>(_Ptr));
+    } else {
+        ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
+    }
 }
 
 template <class _NoThrowIt>
@@ -1616,7 +1631,8 @@ struct _Uninitialized_rev_destroying_backout {
     _NoThrowIt _First;
     _NoThrowIt _Last;
 
-    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept : _First(_Dest), _Last(_Dest) {}
+    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept
+        : _First(_Dest), _Last(_Dest) {} // TRANSITION, P1771R1 [[nodiscard]] For Constructors
 
     _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
@@ -1624,7 +1640,7 @@ struct _Uninitialized_rev_destroying_backout {
     ~_Uninitialized_rev_destroying_backout() {
         while (_Last != _First) {
             --_Last;
-            _STD destroy_at(_Last);
+            _STD destroy_at(_STD addressof(*_Last));
         }
     }
 
@@ -1727,6 +1743,8 @@ template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
 class _Ref_count_unbounded_array : public _Ref_count_base {
     // handle reference counting for unbounded array with trivial destruction in control block, no allocator
 public:
+    static_assert(is_unbounded_array_v<_Ty>);
+
     using _Element_type = remove_extent_t<_Ty>;
 
     explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base() {
@@ -1758,7 +1776,7 @@ private:
 
     virtual void _Delete_this() noexcept override { // destroy self
         this->~_Ref_count_unbounded_array();
-        ::operator delete(static_cast<void*>(this));
+        _Deallocate_flexible_array(this);
     }
 };
 
@@ -1766,6 +1784,8 @@ template <class _Ty>
 class _Ref_count_unbounded_array<_Ty, false> : public _Ref_count_base {
     // handle reference counting for unbounded array with non-trivial destruction in control block, no allocator
 public:
+    static_assert(is_unbounded_array_v<_Ty>);
+
     using _Element_type = remove_extent_t<_Ty>;
 
     explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base(), _Size(_Count) {
@@ -1800,7 +1820,7 @@ private:
 
     virtual void _Delete_this() noexcept override { // destroy self
         this->~_Ref_count_unbounded_array();
-        ::operator delete(static_cast<void*>(this));
+        _Deallocate_flexible_array(this);
     }
 };
 
@@ -1809,6 +1829,8 @@ template <class _Ty>
 class _Ref_count_bounded_array : public _Ref_count_base {
     // handle reference counting for bounded array in control block, no allocator
 public:
+    static_assert(is_bounded_array_v<_Ty>);
+
     _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {} // value-initializing _Storage is necessary here
 
     explicit _Ref_count_bounded_array(const remove_extent_t<_Ty>& _Val)
@@ -1927,7 +1949,7 @@ private:
 
 public:
     _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) noexcept
-        : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
+        : _First(_Dest), _Last(_Dest), _Al(_Al_) {} // TRANSITION, P1771R1 [[nodiscard]] For Constructors
 
     _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&) = delete;
     _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
@@ -2050,6 +2072,7 @@ class __declspec(empty_bases) _Ref_count_unbounded_array_alloc
       public _Ref_count_base {
     // handle reference counting for unbounded array in control block, allocator
 private:
+    static_assert(is_unbounded_array_v<_Ty>);
     static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
 
     using _Item    = remove_all_extents_t<_Ty>;
@@ -2113,6 +2136,7 @@ class __declspec(empty_bases) _Ref_count_bounded_array_alloc
       public _Ref_count_base {
     // handle reference counting for bounded array in control block, allocator
 private:
+    static_assert(is_bounded_array_v<_Ty>);
     static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
 
     using _Item    = remove_all_extents_t<_Ty>;
@@ -2170,15 +2194,16 @@ _NODISCARD
 }
 
 #if _HAS_CXX20
+template <class _Refc>
 struct _Global_delete_guard {
-    void* _Target;
+    _Refc* _Target;
 
     ~_Global_delete_guard() {
         // While this branch is technically unnecessary because N4849 [new.delete.single]/17 requires
         // `::operator delete(nullptr)` to be a no-op, it's here to help optimizers see that after
         // `_Guard._Target = nullptr;`, this destructor can be eliminated.
         if (_Target) {
-            ::operator delete(_Target);
+            _Deallocate_flexible_array(_Target);
         }
     }
 };
@@ -2188,7 +2213,7 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(c
     // make a shared_ptr to an unbounded array
     using _Refc    = _Ref_count_unbounded_array<_Ty>;
     const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
-    _Global_delete_guard _Guard{_Rx};
+    _Global_delete_guard<_Refc> _Guard{_Rx};
     ::new (static_cast<void*>(_Rx)) _Refc(_Count);
     _Guard._Target = nullptr;
     shared_ptr<_Ty> _Ret;
@@ -2202,7 +2227,7 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     // make a shared_ptr to an unbounded array
     using _Refc    = _Ref_count_unbounded_array<_Ty>;
     const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
-    _Global_delete_guard _Guard{_Rx};
+    _Global_delete_guard<_Refc> _Guard{_Rx};
     ::new (static_cast<void*>(_Rx)) _Refc(_Count, _Val);
     _Guard._Target = nullptr;
     shared_ptr<_Ty> _Ret;
