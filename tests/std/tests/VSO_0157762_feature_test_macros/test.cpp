@@ -160,7 +160,8 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
-#elif _HAS_CXX20 && (defined(__clang__) && __clang_major__ >= 10 || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
+#elif _HAS_CXX20 \
+    && (defined(__clang__) && __clang_major__ >= 10 || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
 #if __cpp_constexpr != 201907L
 #error __cpp_constexpr is not 201907L
 #else
