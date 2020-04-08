@@ -736,9 +736,7 @@ namespace chrono {
 
     class weekday {
         unsigned char _Weekday;
-        static constexpr unsigned _Weekday_from_days(int _Tp) noexcept;
-        friend constexpr bool operator==(const weekday& _Left, const weekday& _Right) noexcept;
-        friend constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept;
+        _NODISCARD static constexpr unsigned _Weekday_from_days(int _Tp) noexcept;
 
     public:
         weekday() = default;
@@ -856,8 +854,8 @@ namespace chrono {
         chrono::year _Year;
         chrono::month _Month;
         chrono::day _Day;
-        static constexpr year_month_day _Civil_from_days(int _Tp) noexcept;
-        constexpr days _Days_from_civil() const noexcept;
+        _NODISCARD static constexpr year_month_day _Civil_from_days(int _Tp) noexcept;
+        _NODISCARD constexpr days _Days_from_civil() const noexcept;
 
     public:
         year_month_day() = default;
@@ -906,7 +904,7 @@ namespace chrono {
         chrono::year _Year;
         chrono::month _Month;
         chrono::weekday_indexed _Weekday_index;
-        static constexpr year_month_weekday _Ymwd_from_days(days _Dp) noexcept;
+        _NODISCARD static constexpr year_month_weekday _Ymwd_from_days(days _Dp) noexcept;
 
     public:
         year_month_weekday() = default;
@@ -1213,11 +1211,11 @@ namespace chrono {
     }
 
     constexpr bool operator==(const weekday& _Left, const weekday& _Right) noexcept {
-        return _Left._Weekday == _Right._Weekday;
+        return _Left.c_encoding() == _Right.c_encoding();
     }
 
     constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept {
-        const auto _Wd  = static_cast<long long>(_Left._Weekday) + _Right.count();
+        const auto _Wd  = static_cast<long long>(_Left.c_encoding()) + _Right.count();
         const auto _Div = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
         return weekday{static_cast<unsigned>(_Wd - _Div * 7)};
     }
