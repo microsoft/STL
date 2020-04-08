@@ -1106,9 +1106,14 @@
 #define __cpp_lib_concepts 201907L
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
-#define __cpp_lib_constexpr_algorithms     201806L
-#define __cpp_lib_constexpr_memory         201811L
-#define __cpp_lib_constexpr_numeric        201911L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_memory     201811L
+#define __cpp_lib_constexpr_numeric    201911L
+
+#ifdef __cpp_impl_destroying_delete
+#define __cpp_lib_destroying_delete 201806L
+#endif // __cpp_impl_destroying_delete
+
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
