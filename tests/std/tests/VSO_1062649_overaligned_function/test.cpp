@@ -23,7 +23,7 @@ struct alignas(16) overaligned_t {
         for (std::size_t i = 0; i < storage_size; i++) {
             assert(storage_bytes + i != this_bytes);
         }
-        assert(static_cast<std::size_t>(reinterpret_cast<std::uintptr_t>(this) % alignof(overaligned_t)) == 0);
+        assert(reinterpret_cast<std::uintptr_t>(this) % alignof(overaligned_t) == 0);
     }
 };
 
