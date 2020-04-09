@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// this test is only valid if over-aligned allocation is supported
-#ifdef __cpp_aligned_new
-
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+
+#ifndef __cpp_aligned_new
+#pragma error("This test is only valid when C++17 over-aligned allication is supported")
+#endif
 
 #pragma warning(disable : 4324) // "was padded due to alignment specifier", thanks, Captain
 
@@ -46,11 +47,3 @@ int main() {
     functions.third(&functions.third, sizeof(functions.third));
     return 0;
 }
-
-#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
-
-int main() {
-    return 0;
-}
-
-#endif // __cpp_aligned_new
