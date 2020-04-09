@@ -3206,7 +3206,7 @@ protected:
     _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
         constexpr uintptr_t _Low_bit = 1;
         uintptr_t _Rep               = _Repptr.load(memory_order::acquire) & ~_Low_bit;
-        while (!_Repptr.compare_exchange_weak(_Rep, _Rep | _Low_bit, memory_order::acquire)) {
+        while (!_Repptr.compare_exchange_weak(_Rep, _Rep | _Low_bit)) {
             _Rep &= ~_Low_bit;
             _YIELD_PROCESSOR();
         }
@@ -3214,7 +3214,7 @@ protected:
     }
 
     void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
-        _Repptr.store(reinterpret_cast<uintptr_t>(_Value), memory_order::release);
+        _Repptr.store(reinterpret_cast<uintptr_t>(_Value));
     }
 
     _Ty* _Ptr = nullptr;
