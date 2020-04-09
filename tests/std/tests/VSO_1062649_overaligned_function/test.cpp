@@ -12,7 +12,6 @@
 
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
-
 struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
     char non_empty;
 
@@ -21,12 +20,12 @@ struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
         const unsigned char* this_bytes    = reinterpret_cast<const unsigned char*>(this);
 
         // platform-specific behavior not covered by Standard C++, but fine for such test
-        assert(this_bytes < storage_bytes || this_bytes > storage_bytes + storage_size);
+        assert(this_bytes < storage_bytes || this_bytes >= storage_bytes + storage_size);
         assert(reinterpret_cast<std::uintptr_t>(this) % alignof(overaligned_t) == 0);
     }
 };
 
-static_assert(alignof(overaligned_t) < sizeof(std::function<void()>), "overaligned_t is not aligned as expected");
+static_assert(sizeof(overaligned_t) < sizeof(std::function<void()>), "overaligned_t is not aligned as expected");
 static_assert(alignof(overaligned_t) > alignof(std::max_align_t), "overaligned_t is not overaligned");
 
 struct functions_t {
