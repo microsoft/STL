@@ -340,3 +340,4 @@ tests\VSO_0849827_multicontainer_emplace_hint_position
 tests\VSO_0938757_attribute_order
 tests\VSO_0961751_hash_range_erase
 tests\VSO_0971246_legacy_await_headers
+tests\VSO_1062649_overaligned_function

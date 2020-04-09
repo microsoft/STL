@@ -2,8 +2,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <stdint.h>
-#include <stdio.h>
 
 #pragma warning(disable : 4324) // "was padded due to alignment specifier", thanks, Captain
 
