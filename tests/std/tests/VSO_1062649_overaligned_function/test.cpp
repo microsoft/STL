@@ -16,9 +16,8 @@ struct alignas(16) overaligned_t {
     }
 };
 
-static_assert(alignof(overaligned_t) == 16);
-static_assert(alignof(overaligned_t) > alignof(std::max_align_t));
-
+static_assert(alignof(overaligned_t) == 16, "overaligned_t is not aligned as expected");
+static_assert(alignof(overaligned_t) > alignof(std::max_align_t), "overaligned_t is not overaligned");
 static_assert(alignof(std::max_align_t) == 8, "max_align_t has changed, the whole stuff should be revised");
 
 struct functions_t {
