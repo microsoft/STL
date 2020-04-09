@@ -11,7 +11,15 @@
 struct alignas(16) overaligned_t {
     char non_empty;
 
-    void operator()() const {
+    void operator()(const void* storage, std::size_t storage_size) const {
+        const unsigned char* storage_bytes = reinterpret_cast<const unsigned char*>(storage);
+        const unsigned char* this_bytes    = reinterpret_cast<const unsigned char*>(this);
+
+        // loop instead of range comparison to avoid UB when not in range
+        for (std::size_t i = 0; i < storage_size; i++) {
+            assert(storage_bytes + i != this_bytes);
+        }
+
         assert(static_cast<std::size_t>(reinterpret_cast<std::uintptr_t>(this) % alignof(overaligned_t)) == 0);
     }
 };
@@ -21,7 +29,7 @@ static_assert(alignof(overaligned_t) > alignof(std::max_align_t), "overaligned_t
 static_assert(alignof(std::max_align_t) == 8, "max_align_t has changed, the whole stuff should be revised");
 
 struct functions_t {
-    using function_t = std::function<void()>;
+    using function_t = std::function<void(const void* storage, std::size_t storage_size)>;
 
     function_t first{overaligned_t{}};
     char smallest_pad;
@@ -31,8 +39,9 @@ struct functions_t {
 
 int main() {
     functions_t functions;
-    functions.first();
-    functions.second();
-    functions.third();
+    functions.first(&functions.first, sizeof(functions.first));
+    functions.second(&functions.second, sizeof(functions.second));
+    functions.third(&functions.third, sizeof(functions.third));
     return 0;
 }
+
