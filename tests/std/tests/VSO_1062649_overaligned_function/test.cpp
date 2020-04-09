@@ -10,7 +10,8 @@
 #error This test is only valid when C++17 over-aligned allocation is supported
 #endif
 
-#pragma warning(disable : 4324) // "was padded due to alignment specifier", thanks, Captain
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+
 
 struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
     char non_empty;
