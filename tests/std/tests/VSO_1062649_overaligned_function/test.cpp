@@ -12,7 +12,7 @@
 
 #pragma warning(disable : 4324) // "was padded due to alignment specifier", thanks, Captain
 
-struct alignas(16) overaligned_t {
+struct alignas(4 * alignof(std::max_align_t)) overaligned_t {
     char non_empty;
 
     void operator()(const void* storage, std::size_t storage_size) const {
