@@ -545,6 +545,7 @@ int __stdcall _Callback_once(void*, void* _Pv, void**) { // adapt call_once() to
 
 template <class _Fn, class... _Args>
 void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax...) once
+    // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
     int _Pending;
     bool _Fallback = false;
     if (_Execute_once_begin(_Once, _Pending, _Fallback) == 0) {
