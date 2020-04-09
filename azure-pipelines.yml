@@ -22,7 +22,7 @@ stages:
             submodules: false
           - script: |
               call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-              -arch=amd64 -host_arch=amd64 -no_logo
+              -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
               -S $(Build.SourcesDirectory)\tools -B $(Build.ArtifactStagingDirectory)\tools
               cd $(Build.ArtifactStagingDirectory)\tools

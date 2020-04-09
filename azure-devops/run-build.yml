@@ -61,7 +61,7 @@ jobs:
         workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         script: |
           call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-          -arch=${{ parameters.vsDevCmdArch }} -host_arch=${{ parameters.vsDevCmdArch }} -no_logo
+          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
           ctest -V
     - task: PublishTestResults@2
       displayName: 'Publish libcxx Tests'
