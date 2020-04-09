@@ -16,12 +16,12 @@ struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
     char non_empty;
 
     void operator()(const void* const storage, const std::size_t storage_size) const {
-        const unsigned char* storage_bytes = reinterpret_cast<const unsigned char*>(storage);
-        const unsigned char* this_bytes    = reinterpret_cast<const unsigned char*>(this);
+        const std::uintptr_t storage_ptr_value = reinterpret_cast<std::uintptr_t>(storage);
+        const std::uintptr_t this_ptr_value    = reinterpret_cast<std::uintptr_t>(this);
 
         // platform-specific behavior not covered by Standard C++, but fine for such test
-        assert(this_bytes < storage_bytes || this_bytes >= storage_bytes + storage_size);
-        assert(reinterpret_cast<std::uintptr_t>(this) % alignof(overaligned_t) == 0);
+        assert(this_ptr_value < storage_ptr_value || this_ptr_value >= storage_ptr_value + storage_size);
+        assert(this_ptr_value % alignof(overaligned_t) == 0);
     }
 };
 
