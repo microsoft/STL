@@ -15,7 +15,7 @@
 struct alignas(4 * alignof(std::max_align_t)) overaligned_t {
     char non_empty;
 
-    void operator()(const void* storage, std::size_t storage_size) const {
+    void operator()(const void* const storage, const std::size_t storage_size) const {
         const unsigned char* storage_bytes = reinterpret_cast<const unsigned char*>(storage);
         const unsigned char* this_bytes    = reinterpret_cast<const unsigned char*>(this);
 
