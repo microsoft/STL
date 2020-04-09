@@ -76,7 +76,8 @@ jobs:
         cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)'
+        cmakeAppendedArgs: |
+          -G Ninja -DBUILD_TESTING=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
     - task: PowerShell@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120

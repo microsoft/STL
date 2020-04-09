@@ -400,7 +400,19 @@ public:
     }
 
     _NODISCARD bool all() const noexcept {
-        return count() == size();
+        constexpr bool _Zero_length = _Bits == 0;
+        if _CONSTEXPR_IF (_Zero_length) { // must test for this, otherwise would count one full word
+            return true;
+        }
+
+        constexpr bool _No_padding = _Bits % _Bitsperword == 0;
+        for (size_t _Wpos = 0; _Wpos < _Words + _No_padding; ++_Wpos) {
+            if (_Array[_Wpos] != ~static_cast<_Ty>(0)) {
+                return false;
+            }
+        }
+
+        return _No_padding || _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {

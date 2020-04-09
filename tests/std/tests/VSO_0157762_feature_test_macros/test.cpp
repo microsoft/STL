@@ -317,6 +317,22 @@ STATIC_ASSERT(__cpp_if_constexpr == 201606L);
 #endif
 #endif
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VS 2019 16.7p1
+#if defined(__clang__) || _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG
+#ifndef __cpp_impl_destroying_delete
+#error __cpp_impl_destroying_delete is not defined
+#elif __cpp_impl_destroying_delete != 201806L
+#error __cpp_impl_destroying_delete is not 201806L
+#else
+STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
+#endif
+#else
+#ifdef __cpp_impl_destroying_delete
+#error __cpp_impl_destroying_delete is defined
+#endif
+#endif
+#endif
+
 #if _HAS_CXX20 && (!defined(__clang__) || __clang_major__ >= 10)
 #ifndef __cpp_impl_three_way_comparison
 #error __cpp_impl_three_way_comparison is not defined
@@ -718,7 +734,15 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_array_constexpr
+#error __cpp_lib_array_constexpr is not defined
+#elif __cpp_lib_array_constexpr != 201806L
+#error __cpp_lib_array_constexpr is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
 #elif __cpp_lib_array_constexpr != 201803L
@@ -995,6 +1019,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #else
 #ifdef __cpp_lib_constexpr_numeric
 #error __cpp_lib_constexpr_numeric is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_impl_destroying_delete) // TRANSITION, EDG and VS 2019 16.7p1
+#ifndef __cpp_lib_destroying_delete
+#error __cpp_lib_destroying_delete is not defined
+#elif __cpp_lib_destroying_delete != 201806L
+#error __cpp_lib_destroying_delete is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_destroying_delete == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_destroying_delete
+#error __cpp_lib_destroying_delete is defined
 #endif
 #endif
 
@@ -1574,10 +1612,18 @@ STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
 
 #ifndef __cpp_lib_shared_ptr_arrays
 #error __cpp_lib_shared_ptr_arrays is not defined
-#elif __cpp_lib_shared_ptr_arrays != 201611L
+#elif _HAS_CXX20
+#if __cpp_lib_shared_ptr_arrays != 201707L
+#error __cpp_lib_shared_ptr_arrays is not 201707L
+#else
+STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201707L);
+#endif
+#else
+#if __cpp_lib_shared_ptr_arrays != 201611L
 #error __cpp_lib_shared_ptr_arrays is not 201611L
 #else
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
+#endif
 #endif
 
 #if _HAS_CXX17
