@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// this test is only valid if over-aligned allocation is supported
+#ifdef __cpp_aligned_new
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -19,7 +22,6 @@ struct alignas(16) overaligned_t {
         for (std::size_t i = 0; i < storage_size; i++) {
             assert(storage_bytes + i != this_bytes);
         }
-
         assert(static_cast<std::size_t>(reinterpret_cast<std::uintptr_t>(this) % alignof(overaligned_t)) == 0);
     }
 };
@@ -45,3 +47,10 @@ int main() {
     return 0;
 }
 
+#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+
+int main() {
+    return 0;
+}
+
+#endif // __cpp_aligned_new
