@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -24,13 +27,13 @@ struct functions_t {
     function_t first{overaligned_t{}};
     char smallest_pad;
     function_t second{overaligned_t{}};
+    function_t third{overaligned_t{}};
 };
-
-
 
 int main() {
     functions_t functions;
     functions.first();
     functions.second();
+    functions.third();
     return 0;
 }
