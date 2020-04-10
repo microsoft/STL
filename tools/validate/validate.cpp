@@ -153,23 +153,23 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
 
 int main() {
     static constexpr array skipped_directories{
-        ".git"sv,
-        ".vs"sv,
-        ".vscode"sv,
-        "__pycache__"sv,
-        "llvm-project"sv,
-        "out"sv,
-        "vcpkg"sv,
+        L".git"sv,
+        L".vs"sv,
+        L".vscode"sv,
+        L"__pycache__"sv,
+        L"llvm-project"sv,
+        L"out"sv,
+        L"vcpkg"sv,
     };
 
     static constexpr array skipped_extensions{
-        ".dll"sv,
-        ".exe"sv,
-        ".obj"sv,
+        L".dll"sv,
+        L".exe"sv,
+        L".obj"sv,
     };
 
     static constexpr array tabby_filenames{
-        ".gitmodules"sv,
+        L".gitmodules"sv,
     };
 
     static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
@@ -179,7 +179,9 @@ int main() {
     vector<unsigned char> buffer; // reused for performance
 
     for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
-        const string filename = rdi->path().filename().string();
+        const filesystem::path& filepath = rdi->path();
+
+        const wstring filename = filepath.filename().wstring();
 
         if (!rdi->is_regular_file()) {
             if (rdi->is_directory()) {
@@ -191,19 +193,19 @@ int main() {
             continue;
         }
 
-        const string relative_path = rdi->path().string();
+        const wstring& relative_path = filepath.native();
 
         constexpr size_t maximum_relative_path_length = 120;
         if (relative_path.size() > maximum_relative_path_length) {
             fwprintf(stderr, L"Validation failed: the path \"%s\" is too long (%zu characters; the limit is %zu).\n",
-                rdi->path().c_str(), relative_path.size(), maximum_relative_path_length);
+                filepath.c_str(), relative_path.size(), maximum_relative_path_length);
         }
 
-        if (relative_path.find(' ') != string::npos) {
-            fwprintf(stderr, L"Validation failed: the path \"%s\" contains spaces.\n", rdi->path().c_str());
+        if (relative_path.find(L' ') != wstring::npos) {
+            fwprintf(stderr, L"Validation failed: the path \"%s\" contains spaces.\n", filepath.c_str());
         }
 
-        const string extension = rdi->path().extension().string();
+        const wstring extension = filepath.extension().wstring();
 
         if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
             continue;
@@ -213,6 +215,6 @@ int main() {
                                          ? TabPolicy::Allowed
                                          : TabPolicy::Forbidden;
 
-        scan_file(rdi->path(), tab_policy, buffer);
+        scan_file(filepath, tab_policy, buffer);
     }
 }
