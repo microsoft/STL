@@ -3212,12 +3212,13 @@ protected:
                 return reinterpret_cast<_Ref_count_base*>(_Rep);
             }
 
-            _YIELD_PROCESSOR();
+            _Repptr.wait(_Rep);
         }
     }
 
     void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
         _Repptr.store(reinterpret_cast<uintptr_t>(_Value));
+        _Repptr.notify_one();
     }
 
     _Ty* _Ptr = nullptr;
