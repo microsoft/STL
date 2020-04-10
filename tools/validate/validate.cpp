@@ -191,6 +191,18 @@ int main() {
             continue;
         }
 
+        const string relative_path = rdi->path().string();
+
+        constexpr size_t maximum_relative_path_length = 120;
+        if (relative_path.size() > maximum_relative_path_length) {
+            fwprintf(stderr, L"Validation failed: the path \"%s\" is too long (%zu characters; the limit is %zu).\n",
+                rdi->path().c_str(), relative_path.size(), maximum_relative_path_length);
+        }
+
+        if (relative_path.find(' ') != string::npos) {
+            fwprintf(stderr, L"Validation failed: the path \"%s\" contains spaces.\n", rdi->path().c_str());
+        }
+
         const string extension = rdi->path().extension().string();
 
         if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
