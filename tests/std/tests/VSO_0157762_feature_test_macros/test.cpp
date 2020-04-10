@@ -51,7 +51,7 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
-#if defined(__EDG__) || (defined(__clang__) && __clang_major__ < 10) // Clang 9 and EDG don't yet implement P1771R1
+#if defined(__clang__) && __clang_major__ < 10 // Clang 9 doesn't yet implement P1771R1
 #if __has_cpp_attribute(nodiscard) != 201603L
 #error __has_cpp_attribute(nodiscard) is not 201603L
 #endif
@@ -160,7 +160,8 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
-#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and VSO-951142
+#elif _HAS_CXX20 \
+    && (defined(__clang__) && __clang_major__ >= 10 || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
 #if __cpp_constexpr != 201907L
 #error __cpp_constexpr is not 201907L
 #else
@@ -263,7 +264,7 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 
 #ifndef __cpp_generic_lambdas
 #error __cpp_generic_lambdas is not defined
-#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and EDG
+#elif _HAS_CXX20 && ((defined(__clang__) && __clang_major__ >= 10) || defined(__EDG__)) // TRANSITION, VSO-951133
 #if __cpp_generic_lambdas != 201707L
 #error __cpp_generic_lambdas is not 201707L
 #else
@@ -336,12 +337,6 @@ STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
 #if _HAS_CXX20 && (!defined(__clang__) || __clang_major__ >= 10)
 #ifndef __cpp_impl_three_way_comparison
 #error __cpp_impl_three_way_comparison is not defined
-#elif defined(__EDG__) // EDG does not yet implement P1630R1 or P1186R3 so they still report the old value.
-#if __cpp_impl_three_way_comparison != 201711L
-#error __cpp_impl_three_way_comparison is not 201711L
-#else
-STATIC_ASSERT(__cpp_impl_three_way_comparison == 201711L);
-#endif
 #else
 #if __cpp_impl_three_way_comparison != 201907L
 #error __cpp_impl_three_way_comparison is not 201907L
