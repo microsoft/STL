@@ -10,26 +10,27 @@ using namespace std::chrono;
 
 constexpr void day_test() {
     day d1{0u};
-    assert(static_cast<unsigned>(d1) == 0);
-    assert(++d1 == day{1});
-    assert(d1++ == day{1});
-    assert(d1 == day{2});
+    assert(static_cast<unsigned>(d1) == 0u);
+    assert(d1 == 0d);
+    assert(++d1 == 1d);
+    assert(d1++ == 1d);
+    assert(d1 == 2d);
 
-    assert(--d1 == day{1});
-    assert(d1-- == day{1});
-    assert(d1 == day{0});
+    assert(--d1 == 1d);
+    assert(d1-- == 1d);
+    assert(d1 == 0d);
 
     d1 += days{2};
-    assert(d1 == day{2});
+    assert(d1 == 2d);
     d1 -= days{2};
-    assert(d1 == day{0});
+    assert(d1 == 0d);
 
     day d2{0u};
     assert(d1 == d2++);
     assert(d1 < d2);
     assert(d2 > d1);
 
-    day d3{0};
+    day d3{0u};
     assert(!d3.ok());
     ++d3;
     for (int i = 1; i <= 31; ++i, ++d3) {
@@ -37,31 +38,27 @@ constexpr void day_test() {
     }
     assert(!d3.ok());
 
-    const day d4{2};
-    const day d5{10};
-    const days diff = d5 - d4;
+    const days diff = 10d - 2d;
     assert(diff == days{8});
-
-    const auto d6 = 0d;
-    assert(d1 == d6);
 }
 
 constexpr void month_test() {
 
     month m1{1u};
-    assert(static_cast<unsigned>(m1) == 1);
-    assert(++m1 == month{2});
-    assert(m1++ == month{2});
-    assert(m1 == month{3});
+    assert(static_cast<unsigned>(m1) == 1u);
+    assert(m1 == January);
+    assert(++m1 == February);
+    assert(m1++ == February);
+    assert(m1 == March);
 
-    assert(--m1 == month{2});
-    assert(m1-- == month{2});
-    assert(m1 == month{1});
+    assert(--m1 == February);
+    assert(m1-- == February);
+    assert(m1 == January);
 
     m1 += months{2};
-    assert(m1 == month{3});
+    assert(m1 == March);
     m1 -= months{2};
-    assert(m1 == month{1});
+    assert(m1 == January);
 
     for (unsigned i = 0; i <= 255; ++i) {
         if (i >= 1 && i <= 12) {
@@ -71,46 +68,47 @@ constexpr void month_test() {
         }
     }
 
-    month m2{1u};
-    assert(m1 == m2++);
-    assert(m2 > m1);
-    assert(m1 < m2);
+    assert(February > m1);
+    assert(m1 < February);
 
-    month m3 = m2 + months{11};
-    assert(m3 == month{1});
-    m3 = months{11} + m2;
-    assert(m3 == month{1});
-    month m4 = m2 - months{2};
-    assert(m4 == month{12});
+    month m2 = February + months{11};
+    assert(m2 == January);
+    m2 = months{11} + February;
+    assert(m2 == January);
+    month m3 = February - months{2};
+    assert(m3 == December);
 
-    months diff = m1 - m2;
+    months diff = January - February;
     assert(diff == months{11});
 }
 
 constexpr void year_test() {
     year y1{1};
     assert(static_cast<int>(y1) == 1);
-    assert(++y1 == year{2});
-    assert(y1++ == year{2});
-    assert(y1 == year{3});
+    assert(y1 == 1y);
+    assert(++y1 == 2y);
+    assert(y1++ == 2y);
+    assert(y1 == 3y);
 
-    assert(--y1 == year{2});
-    assert(y1-- == year{2});
-    assert(y1 == year{1});
+    assert(--y1 == 2y);
+    assert(y1-- == 2y);
+    assert(y1 == 1y);
 
     y1 += years{2};
-    assert(y1 == year{3});
+    assert(y1 == 3y);
     y1 -= years{2};
-    assert(y1 == year{1});
+    assert(y1 == 1y);
 
-    assert(+y1 == year{1});
-    assert(-y1 == year{-1});
+    assert(+y1 == 1y);
+    assert(-y1 == -1y);
 
     constexpr int y_min = -32767;
     constexpr int y_max = 32767;
     assert(year::min() == year{y_min});
     assert(year::max() == year{y_max});
 
+    assert(!year{y_min - 1}.ok());
+    assert(!year{y_max + 1}.ok());
     for (int i = y_min; i <= y_max; i++) {
         assert(year{i}.ok());
         if (i % 4 == 0 && (i % 100 != 0 || i % 400 == 0)) {
@@ -119,42 +117,40 @@ constexpr void year_test() {
             assert(!year{i}.is_leap());
         }
     }
-    year y2{1};
-    assert(y1 == y2++);
-    assert(y1 < y2);
-    assert(y2 > y1);
+    assert(y1 < 2y);
+    assert(2y > y1);
 
-    y2 = y1 + years{4};
-    assert(y2 == year{5});
+    year y2 = y1 + years{4};
+    assert(y2 == 5y);
     y2 = years{4} + y1;
-    assert(y2 == year{5});
+    assert(y2 == 5y);
 
     year y3 = y2 - years{4};
-    assert(y3 == year{1});
+    assert(y3 == 1y);
 }
 
 constexpr void weekday_test() {
-    assert(weekday{7} == weekday{0});
-    assert(weekday{sys_days{}} == weekday{4});
+    assert(weekday{7} == Sunday);
+    assert(weekday{sys_days{}} == Thursday);
     assert(weekday{local_days{}} == sys_days{local_days{}.time_since_epoch()});
 
     weekday wd{0u};
-    assert(wd == weekday{0});
-    assert(++wd == weekday{1});
-    assert(wd++ == weekday{1});
-    assert(wd == weekday{2});
+    assert(wd == Sunday);
+    assert(++wd == Monday);
+    assert(wd++ == Monday);
+    assert(wd == Tuesday);
 
-    assert(--wd == weekday{1});
-    assert(wd-- == weekday{1});
-    assert(wd == weekday{0});
+    assert(--wd == Monday);
+    assert(wd-- == Monday);
+    assert(wd == Sunday);
 
     wd += days{2};
-    assert(wd == weekday{2});
+    assert(wd == Tuesday);
     wd -= days{3};
-    assert(wd == weekday{6});
+    assert(wd == Saturday);
 
-    assert(weekday{0}.c_encoding() == 0u);
-    assert(weekday{0}.iso_encoding() == 7u);
+    assert(Sunday.c_encoding() == 0u);
+    assert(Sunday.iso_encoding() == 7u);
 
     for (unsigned i = 0; i <= 255; ++i) {
         if (i <= 7) {
@@ -163,8 +159,8 @@ constexpr void weekday_test() {
             assert(!weekday{i}.ok());
         }
     }
-    assert(weekday{1} + days{6} == weekday{0});
-    assert(weekday{0} - weekday{1} == days{6});
+    assert(Monday + days{6} == Sunday);
+    assert(Sunday - Monday == days{6});
 }
 
 constexpr void weekday_indexed_test() {
@@ -230,22 +226,22 @@ constexpr void month_day_test() {
 }
 
 constexpr void month_day_last_test() {
-    assert(month_day_last{February}.month() == February);
+    assert((February / last).month() == February);
 
     unsigned i = 0;
-    assert(!month_day_last{month{i++}}.ok());
+    assert(!(month{i++} / last).ok());
     for (; i <= 12; ++i) {
-        assert(month_day_last{month{i}}.ok());
+        assert((month{i} / last).ok());
     }
-    assert(!month_day_last{month{i}}.ok());
+    assert(!(month{i} / last).ok());
 
-    assert(month_day_last{January} == month_day_last{January});
-    assert(month_day_last{January} < month_day_last{February});
-    assert(month_day_last{December} > month_day_last{February});
+    assert(January / last == January / last);
+    assert(January / last < February / last);
+    assert(December / last > February / last);
 }
 
 constexpr void month_weekday_test() {
-    const month_weekday mwd1{January, Monday[2]};
+    const auto mwd1 = January / Monday[2];
     assert(mwd1.month() == January);
     assert(mwd1.weekday_indexed().weekday() == Monday);
     assert(mwd1.weekday_indexed().index() == 2);
@@ -265,18 +261,18 @@ constexpr void month_weekday_test() {
     //    }
     //}
 
-    assert((month_weekday{January, Monday[2]} == month_weekday{January, Monday[2]}));
+    assert(January / Monday[2] == January / Monday[2]);
 }
 
 constexpr void month_weekday_last_test() {
-    month_weekday_last mwdl{January, Monday[last]};
+    const auto mwdl = January / Monday[last];
     assert(mwdl.month() == January);
     assert(mwdl.weekday_last().weekday() == Monday);
-    assert((mwdl == month_weekday_last{January, Monday[last]}));
+    assert(mwdl == January / Monday[last]);
 }
 
 constexpr void year_month_test() {
-    year_month ym{2020y, January};
+    auto ym = 2020y / January;
     assert(ym.year() == 2020y);
     assert(ym.month() == January);
 
@@ -307,24 +303,23 @@ constexpr void year_month_test() {
     //    }
     //}
 
-    assert((year_month{2020y, April} == year_month{2020y, April}));
-    assert((year_month{2019y, April} < year_month{2020y, April}));
-    assert((year_month{2020y, March} < year_month{2020y, April}));
-    assert((year_month{2020y, April} > year_month{2019y, April}));
-    assert((year_month{2020y, April} > year_month{2020y, March}));
+    assert(2020y / April == 2020y / April);
+    assert(2019y / April < 2020y / April);
+    assert(2020y / March < 2020y / April);
+    assert(2020y / April > 2019y / April);
+    assert(2020y / April > 2020y / March);
 
-    assert((ym + months{2} == year_month{2020y, March}));
-    assert((year_month{2020y, March} == ym + months{2}));
+    assert(ym + months{2} == 2020y / March);
+    assert(months{2} + ym == 2020y / March);
 
-    assert((ym - months{2} == year_month{2019y, November}));
+    assert(ym - months{2} == 2019y / November);
 
-    assert((ym - year_month{2019y, January} == months{12}));
+    assert(ym - 2019y / January == months{12});
 
-    assert((ym + years{2} == year_month{2022y, January}));
-    assert((year_month{2022y, January} == ym + years{2}));
+    assert(ym + years{2} == 2022y / January);
+    assert(years{2} + ym == 2022y / January);
 
-
-    assert((ym - years{2} == year_month{2018y, January}));
+    assert(ym - years{2} == 2018y / January);
 }
 
 constexpr void year_month_day_test() {
