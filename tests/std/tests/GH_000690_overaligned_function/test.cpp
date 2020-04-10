@@ -12,7 +12,7 @@
 
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
-// SFO should not happen
+// SFO (Small Functor Optimization) should not happen
 struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
     char non_empty;
 
