@@ -5,14 +5,14 @@ jobs:
 - job: ${{ parameters.targetPlatform }}
   timeoutInMinutes: 360
   pool:
-    name: StlBuild-2020-03-28
+    name: $(agentPool)
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - checkout: self
       clean: true
-      submodules: recursive
+      submodules: true
     - task: Cache@2
       displayName: Cache vcpkg
       timeoutInMinutes: 10
@@ -35,31 +35,6 @@ jobs:
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
-    - task: run-cmake@0
-      displayName: 'Build Support Tools'
-      timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        cmakeListsTxtPath: 'tools/CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*x64-Release.*'
-        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
-    - task: BatchScript@1
-      displayName: 'Enforce clang-format'
-      timeoutInMinutes: 60
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/enforce-clang-format.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
-    - task: BatchScript@1
-      displayName: 'Validate Files'
-      timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/validate-files.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
     - task: PowerShell@2
       displayName: 'Get Test Parallelism'
       timeoutInMinutes: 2
@@ -76,21 +51,18 @@ jobs:
         cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)'
-    - task: PowerShell@2
+        cmakeAppendedArgs: |
+          -G Ninja -DBUILD_TESTING=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
+    - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
-        targetType: inline
         script: |
-          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command ctest).source);%PATH%"
-          Add-Content -Path ./run-tests.cmd -Value "set PATH=$(split-path (get-command clang-cl).source);%PATH%"
-          $currentDir = "$((Get-Item -Path "./").FullName)"
-          Add-Content -Path ./run-tests.cmd -Value "cd $currentDir"
-          Add-Content -Path ./run-tests.cmd -Value "ctest -V"
-          $(vcpkgLocation)/vcpkg.exe env --triplet ${{ parameters.targetPlatform }}-windows "$currentDir/run-tests.cmd"
+          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          ctest -V
     - task: PublishTestResults@2
       displayName: 'Publish libcxx Tests'
       timeoutInMinutes: 10

@@ -254,8 +254,11 @@ class STLTestFormat:
 
     def getTestSteps(self, test, lit_config, shared):
         if shared.exec_file is not None:
+            exec_env = test.cxx.compile_env
+            exec_env['TMP'] = str(shared.exec_dir)
+
             yield TestStep([str(shared.exec_file)], shared.exec_dir,
-                           [shared.exec_file], test.cxx.compile_env)
+                           [shared.exec_file], exec_env)
         elif test.path_in_suite[-1].endswith('.fail.cpp'):
             exec_dir = test.getExecDir()
             source_path = Path(test.getSourcePath())
@@ -283,3 +286,9 @@ class LibcxxTestFormat(STLTestFormat):
                             litConfig, localConfig, test_class=LibcxxTest):
         return super().getTestsInDirectory(testSuite, path_in_suite, litConfig,
                                            localConfig, test_class)
+
+    def addCompileFlags(self, *args):
+        # For now, this is necessary to discard the value of
+        # `LIBCXX_FILESYSTEM_STATIC_TEST_ROOT` which we don't care about;
+        # eventually it will probably need to be made meaningful.
+        pass

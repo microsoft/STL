@@ -156,6 +156,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0674R1 make_shared() For Arrays
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 //     (partially implemented)
@@ -170,6 +171,7 @@
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
@@ -400,6 +402,7 @@
 // warning C4625: copy constructor was implicitly defined as deleted (/Wall)
 // warning C4626: assignment operator was implicitly defined as deleted (/Wall)
 // warning C4643: Forward declaring 'meow' in namespace std is not permitted by the C++ Standard. (/Wall)
+// warning C4648: standard attribute 'meow' is ignored
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
@@ -412,8 +415,8 @@
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4702 4793 4820 \
-    4988 5026 5027 5045                               \
+    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
+    4820 4988 5026 5027 5045                          \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -470,7 +473,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202003L
+#define _MSVC_STL_UPDATE  202004L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -1028,7 +1031,6 @@
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
 #define __cpp_lib_shared_mutex                     201505L
-#define __cpp_lib_shared_ptr_arrays                201611L
 #define __cpp_lib_transparent_operators            201510L
 #define __cpp_lib_type_trait_variable_templates    201510L
 #define __cpp_lib_uncaught_exceptions              201411L
@@ -1038,14 +1040,12 @@
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
 #define __cpp_lib_apply                      201603L
-#define __cpp_lib_array_constexpr            201803L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_chrono 201611L
-#define __cpp_lib_clamp  201603L
+#define __cpp_lib_clamp 201603L
 #ifndef _M_CEE
 #define __cpp_lib_execution 201603L
 #endif // _M_CEE
@@ -1074,8 +1074,12 @@
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 #define __cpp_lib_variant               201606L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
 
 // C++20
@@ -1110,6 +1114,11 @@
 #define __cpp_lib_constexpr_complex        201711L
 #define __cpp_lib_constexpr_memory         201811L
 #define __cpp_lib_constexpr_numeric        201911L
+
+#ifdef __cpp_impl_destroying_delete
+#define __cpp_lib_destroying_delete 201806L
+#endif // __cpp_impl_destroying_delete
+
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
@@ -1127,6 +1136,18 @@
 #define __cpp_lib_to_array                 201907L
 #define __cpp_lib_type_identity            201806L
 #define __cpp_lib_unwrap_ref               201811L
+#endif // _HAS_CXX20
+
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_array_constexpr 201803L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
+#else // _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL

@@ -1269,11 +1269,47 @@ private:
         _Owner._Call_deleter = false;
     }
 
+#if _HAS_CXX20
+    template <class _Ty0, class... _Types>
+    friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(_Types&&... _Args);
+
+    template <class _Ty0, class _Alloc, class... _Types>
+    friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+
+    template <class _Ty0>
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(size_t _Count);
+
+    template <class _Ty0, class _Alloc>
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
+        const _Alloc& _Al_arg, size_t _Count);
+
+    template <class _Ty0>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
+
+    template <class _Ty0, class _Alloc>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
+
+    template <class _Ty0>
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(
+        size_t _Count, const remove_extent_t<_Ty0>& _Val);
+
+    template <class _Ty0, class _Alloc>
+    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
+        const _Alloc& _Al_arg, size_t _Count, const remove_extent_t<_Ty0>& _Val);
+
+    template <class _Ty0>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const remove_extent_t<_Ty0>& _Val);
+
+    template <class _Ty0, class _Alloc>
+    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
+        const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Ty0, class... _Types>
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
 
     template <class _Ty0, class _Alloc, class... _Types>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+#endif // !_HAS_CXX20
 
     template <class _Ux>
     void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
@@ -1506,6 +1542,10 @@ public:
 
     ~_Ref_count_obj2() {
         // nothing to do, _Storage._Value was already destroyed in _Destroy
+
+        // N4849 [class.dtor]/7:
+        // "A defaulted destructor for a class X is defined as deleted if:
+        // X is a union-like class that has a variant member with a non-trivial destructor"
     }
 
     union {
@@ -1521,6 +1561,303 @@ private:
         delete this;
     }
 };
+
+#if _HAS_CXX20
+template <size_t _Align>
+struct _Alignas_storage_unit {
+    alignas(_Align) char _Space[_Align];
+};
+
+enum class _Check_overflow : bool { _No, _Yes };
+
+template <class _Refc, _Check_overflow _Check>
+_NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexcept(_Check == _Check_overflow::_No) {
+    constexpr size_t _Align = alignof(_Refc);
+
+    size_t _Bytes = sizeof(_Refc); // contains storage for one element
+
+    if (_Count > 1) {
+        constexpr size_t _Element_size = sizeof(typename _Refc::_Element_type);
+
+        size_t _Extra_bytes;
+
+        if constexpr (_Check == _Check_overflow::_Yes) {
+            _Extra_bytes = _Get_size_of_n<_Element_size>(_Count - 1); // check multiplication overflow
+
+            if (_Extra_bytes > static_cast<size_t>(-1) - _Bytes - (_Align - 1)) { // assume worst case adjustment
+                _Throw_bad_array_new_length(); // addition overflow
+            }
+        } else {
+            _Extra_bytes = _Element_size * (_Count - 1);
+        }
+
+        _Bytes += _Extra_bytes;
+
+        _Bytes = (_Bytes + _Align - 1) & ~(_Align - 1);
+    }
+
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+    using _Storage = _Alignas_storage_unit<_Align>;
+    _STL_INTERNAL_CHECK(_Bytes % sizeof(_Storage) == 0);
+#endif // _ENABLE_STL_INTERNAL_CHECK
+
+    return _Bytes;
+}
+
+template <class _Refc>
+_NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
+    const size_t _Bytes     = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
+    constexpr size_t _Align = alignof(_Refc);
+    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+        return static_cast<_Refc*>(::operator new(_Bytes));
+    } else {
+        return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
+    }
+}
+
+template <class _Refc>
+void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
+    constexpr size_t _Align = alignof(_Refc);
+    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+        ::operator delete(static_cast<void*>(_Ptr));
+    } else {
+        ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
+    }
+}
+
+template <class _NoThrowIt>
+struct _Uninitialized_rev_destroying_backout {
+    // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
+    _NoThrowIt _First;
+    _NoThrowIt _Last;
+
+    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept
+        : _First(_Dest), _Last(_Dest) {} // TRANSITION, P1771R1 [[nodiscard]] For Constructors
+
+    _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
+    _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
+
+    ~_Uninitialized_rev_destroying_backout() {
+        while (_Last != _First) {
+            --_Last;
+            _STD destroy_at(_STD addressof(*_Last));
+        }
+    }
+
+    template <class... _Types>
+    void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
+        _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
+        ++_Last;
+    }
+
+    _NoThrowIt _Release() noexcept { // suppress any exception handling backout and return _Last
+        _First = _Last;
+        return _Last;
+    }
+};
+
+template <class _Ty>
+void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) noexcept {
+    while (_Size > 0) {
+        --_Size;
+        if constexpr (is_array_v<_Ty>) {
+            _Reverse_destroy_multidimensional_n(_Arr[_Size], extent_v<_Ty>);
+        } else {
+            _Destroy_in_place(_Arr[_Size]);
+        }
+    }
+}
+
+template <class _Ty>
+struct _Reverse_destroy_multidimensional_n_guard {
+    _Ty* _Target;
+    size_t _Index;
+
+    ~_Reverse_destroy_multidimensional_n_guard() {
+        if (_Target) {
+            _Reverse_destroy_multidimensional_n(_Target, _Index);
+        }
+    }
+};
+
+template <class _Ty, size_t _Size>
+void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
+    if constexpr (is_trivial_v<_Ty>) {
+        _Copy_memmove(_In, _In + _Size, _Out);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional(_In[_Idx], _Out[_Idx]);
+        }
+        _Guard._Target = nullptr;
+    } else {
+        _Uninitialized_rev_destroying_backout _Backout{_Out};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back(_In[_Idx]);
+        }
+        _Backout._Release();
+    }
+}
+
+template <class _Ty>
+void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const size_t _Size) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (_Use_memset_value_construct_v<_Item*>) {
+        _Zero_range(_Out, _Out + _Size);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_value_construct_multidimensional_n(_Out[_Idx], extent_v<_Ty>);
+        }
+        _Guard._Target = nullptr;
+    } else {
+        _Uninitialized_rev_destroying_backout _Backout{_Out};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back();
+        }
+        _Backout._Release();
+    }
+}
+
+template <class _Ty>
+void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size, const _Ty& _Val) {
+    if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional(_Val, _Out[_Idx]); // intentionally copy, not fill
+        }
+        _Guard._Target = nullptr;
+    } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
+        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+    } else {
+        _Uninitialized_rev_destroying_backout _Backout{_Out};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back(_Val);
+        }
+        _Backout._Release();
+    }
+}
+
+// CLASS TEMPLATE _Ref_count_unbounded_array
+template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
+class _Ref_count_unbounded_array : public _Ref_count_base {
+    // handle reference counting for unbounded array with trivial destruction in control block, no allocator
+public:
+    static_assert(is_unbounded_array_v<_Ty>);
+
+    using _Element_type = remove_extent_t<_Ty>;
+
+    explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base() {
+        _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Count);
+    }
+
+    explicit _Ref_count_unbounded_array(const size_t _Count, const _Element_type& _Val) : _Ref_count_base() {
+        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
+    }
+
+    _NODISCARD auto _Get_ptr() noexcept {
+        return _STD addressof(_Storage._Value);
+    }
+
+private:
+    union {
+        _Wrap<_Element_type> _Storage; // flexible array must be last member
+    };
+
+    ~_Ref_count_unbounded_array() {
+        // nothing to do, _Ty is trivially destructible
+
+        // See N4849 [class.dtor]/7.
+    }
+
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        // nothing to do, _Ty is trivially destructible
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        this->~_Ref_count_unbounded_array();
+        _Deallocate_flexible_array(this);
+    }
+};
+
+template <class _Ty>
+class _Ref_count_unbounded_array<_Ty, false> : public _Ref_count_base {
+    // handle reference counting for unbounded array with non-trivial destruction in control block, no allocator
+public:
+    static_assert(is_unbounded_array_v<_Ty>);
+
+    using _Element_type = remove_extent_t<_Ty>;
+
+    explicit _Ref_count_unbounded_array(const size_t _Count) : _Ref_count_base(), _Size(_Count) {
+        _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Size);
+    }
+
+    explicit _Ref_count_unbounded_array(const size_t _Count, const _Element_type& _Val)
+        : _Ref_count_base(), _Size(_Count) {
+        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Size, _Val);
+    }
+
+    _NODISCARD auto _Get_ptr() noexcept {
+        return _STD addressof(_Storage._Value);
+    }
+
+private:
+    size_t _Size;
+
+    union {
+        _Wrap<_Element_type> _Storage; // flexible array must be last member
+    };
+
+    ~_Ref_count_unbounded_array() {
+        // nothing to do, _Storage was already destroyed in _Destroy
+
+        // See N4849 [class.dtor]/7.
+    }
+
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        this->~_Ref_count_unbounded_array();
+        _Deallocate_flexible_array(this);
+    }
+};
+
+// CLASS TEMPLATE _Ref_count_bounded_array
+template <class _Ty>
+class _Ref_count_bounded_array : public _Ref_count_base {
+    // handle reference counting for bounded array in control block, no allocator
+public:
+    static_assert(is_bounded_array_v<_Ty>);
+
+    _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {} // value-initializing _Storage is necessary here
+
+    explicit _Ref_count_bounded_array(const remove_extent_t<_Ty>& _Val)
+        : _Ref_count_base() { // don't value-initialize _Storage
+        _Uninitialized_fill_multidimensional_n(_Storage._Value, extent_v<_Ty>, _Val);
+    }
+
+    union {
+        _Wrap<_Ty> _Storage;
+    };
+
+private:
+    ~_Ref_count_bounded_array() {
+        // nothing to do, _Storage was already destroyed in _Destroy
+
+        // See N4849 [class.dtor]/7.
+    }
+
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        _Destroy_in_place(_Storage); // not _Storage._Value, see N4849 [expr.prim.id.dtor]
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        delete this;
+    }
+};
+#endif // _HAS_CXX20
 
 // CLASS TEMPLATE _Ebco_base
 template <class _Ty,
@@ -1562,17 +1899,22 @@ protected:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_obj_alloc2
+// CLASS TEMPLATE _Ref_count_obj_alloc3
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_obj_alloc2 : public _Ebco_base<_Alloc>, public _Ref_count_base {
+class __declspec(empty_bases) _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>,
+                                                      public _Ref_count_base {
     // handle reference counting for object in control block, allocator
+private:
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
+
+    using _Rebound = _Rebind_alloc_t<_Alloc, _Ty>;
+
 public:
     template <class... _Types>
-    explicit _Ref_count_obj_alloc2(const _Alloc& _Al_arg, _Types&&... _Args)
-        : _Ebco_base<_Alloc>(_Al_arg), _Ref_count_base() {
-        _Maybe_rebind_alloc_t<_Alloc, _Ty> _Alty(this->_Get_val());
-        allocator_traits<_Rebind_alloc_t<_Alloc, _Ty>>::construct(
-            _Alty, _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
+    explicit _Ref_count_obj_alloc3(const _Alloc& _Al_arg, _Types&&... _Args)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
+        allocator_traits<_Rebound>::construct(
+            this->_Get_val(), _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
     }
 
     union {
@@ -1580,37 +1922,350 @@ public:
     };
 
 private:
-    ~_Ref_count_obj_alloc2() {
+    ~_Ref_count_obj_alloc3() {
         // nothing to do; _Storage._Value already destroyed by _Destroy()
+
+        // See N4849 [class.dtor]/7.
     }
 
     virtual void _Destroy() noexcept override { // destroy managed resource
-        _Maybe_rebind_alloc_t<_Alloc, _Ty> _Alty(this->_Get_val());
-        allocator_traits<_Rebind_alloc_t<_Alloc, _Ty>>::destroy(_Alty, _STD addressof(_Storage._Value));
+        allocator_traits<_Rebound>::destroy(this->_Get_val(), _STD addressof(_Storage._Value));
     }
 
     virtual void _Delete_this() noexcept override { // destroy self
-        _Rebind_alloc_t<_Alloc, _Ref_count_obj_alloc2> _Al(this->_Get_val());
-        this->~_Ref_count_obj_alloc2();
+        _Rebind_alloc_t<_Alloc, _Ref_count_obj_alloc3> _Al(this->_Get_val());
+        this->~_Ref_count_obj_alloc3();
         _Deallocate_plain(_Al, this);
     }
 };
 
+#if _HAS_CXX20
+template <class _Alloc>
+class _Uninitialized_rev_destroying_backout_al {
+    // class to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
+
+private:
+    using pointer = _Alloc_ptr_t<_Alloc>;
+
+public:
+    _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) noexcept
+        : _First(_Dest), _Last(_Dest), _Al(_Al_) {} // TRANSITION, P1771R1 [[nodiscard]] For Constructors
+
+    _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&) = delete;
+    _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
+
+    ~_Uninitialized_rev_destroying_backout_al() {
+        while (_Last != _First) {
+            --_Last;
+            allocator_traits<_Alloc>::destroy(_Al, _Last);
+        }
+    }
+
+    template <class... _Types>
+    void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
+        allocator_traits<_Alloc>::construct(_Al, _Unfancy(_Last), _STD forward<_Types>(_Vals)...);
+        ++_Last;
+    }
+
+    pointer _Release() noexcept { // suppress any exception handling backout and return _Last
+        _First = _Last;
+        return _Last;
+    }
+
+private:
+    pointer _First;
+    pointer _Last;
+    _Alloc& _Al;
+};
+
+template <class _Ty, class _Alloc>
+void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Alloc& _Al) noexcept {
+    while (_Size > 0) {
+        --_Size;
+        if constexpr (is_array_v<_Ty>) {
+            _Reverse_destroy_multidimensional_n_al(_Arr[_Size], extent_v<_Ty>, _Al);
+        } else {
+            allocator_traits<_Alloc>::destroy(_Al, _Arr + _Size);
+        }
+    }
+}
+
+template <class _Ty, class _Alloc>
+struct _Reverse_destroy_multidimensional_n_al_guard {
+    _Ty* _Target;
+    size_t _Index;
+    _Alloc& _Al;
+
+    ~_Reverse_destroy_multidimensional_n_al_guard() {
+        if (_Target) {
+            _Reverse_destroy_multidimensional_n_al(_Target, _Index, _Al);
+        }
+    }
+};
+
+template <class _Ty, size_t _Size, class _Alloc>
+void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
+        (void) _Al;
+        _Copy_memmove(_In, _In + _Size, _Out);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional_al(_In[_Idx], _Out[_Idx], _Al);
+        }
+        _Guard._Target = nullptr;
+    } else {
+        _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back(_In[_Idx]);
+        }
+        _Backout._Release();
+    }
+}
+
+template <class _Ty, class _Alloc>
+void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const size_t _Size, _Alloc& _Al) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (_Use_memset_value_construct_v<_Item*> && _Uses_default_construct<_Alloc, _Item*>::value) {
+        (void) _Al;
+        _Zero_range(_Out, _Out + _Size);
+    } else if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_value_construct_multidimensional_n_al(_Out[_Idx], extent_v<_Ty>, _Al);
+        }
+        _Guard._Target = nullptr;
+    } else {
+        _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back();
+        }
+        _Backout._Release();
+    }
+}
+
+template <class _Ty, class _Alloc>
+void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Size, const _Ty& _Val, _Alloc& _Al) {
+    if constexpr (is_array_v<_Ty>) {
+        _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
+        for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+            _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al); // intentionally copy, not fill
+        }
+        _Guard._Target = nullptr;
+    } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
+        (void) _Al;
+        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+    } else {
+        _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Backout._Emplace_back(_Val);
+        }
+        _Backout._Release();
+    }
+}
+
+// CLASS TEMPLATE _Ref_count_unbounded_array_alloc
+template <class _Ty, class _Alloc>
+class __declspec(empty_bases) _Ref_count_unbounded_array_alloc
+    : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
+      public _Ref_count_base {
+    // handle reference counting for unbounded array in control block, allocator
+private:
+    static_assert(is_unbounded_array_v<_Ty>);
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
+
+    using _Item    = remove_all_extents_t<_Ty>;
+    using _Rebound = _Rebind_alloc_t<_Alloc, _Item>;
+
+public:
+    using _Element_type = remove_extent_t<_Ty>;
+
+    explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base(), _Size(_Count) {
+        _Uninitialized_value_construct_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
+    }
+
+    explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count, const _Element_type& _Val)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base(), _Size(_Count) {
+        _Uninitialized_fill_multidimensional_n_al(_Get_ptr(), _Size, _Val, this->_Get_val());
+    }
+
+    _NODISCARD auto _Get_ptr() noexcept {
+        return _STD addressof(_Storage._Value);
+    }
+
+private:
+    size_t _Size;
+
+    union {
+        _Wrap<_Element_type> _Storage; // flexible array must be last member
+    };
+
+    ~_Ref_count_unbounded_array_alloc() {
+        // nothing to do; _Storage._Value already destroyed by _Destroy()
+
+        // See N4849 [class.dtor]/7.
+    }
+
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
+            _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
+        }
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        constexpr size_t _Align = alignof(_Ref_count_unbounded_array_alloc);
+        using _Storage          = _Alignas_storage_unit<_Align>;
+
+        _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
+        const size_t _Bytes =
+            _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_No>(_Size);
+        const size_t _Storage_units = _Bytes / sizeof(_Storage);
+
+        this->~_Ref_count_unbounded_array_alloc();
+
+        _Al.deallocate(reinterpret_cast<_Storage*>(this), _Storage_units);
+    }
+};
+
+// CLASS TEMPLATE _Ref_count_bounded_array_alloc
+template <class _Ty, class _Alloc>
+class __declspec(empty_bases) _Ref_count_bounded_array_alloc
+    : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
+      public _Ref_count_base {
+    // handle reference counting for bounded array in control block, allocator
+private:
+    static_assert(is_bounded_array_v<_Ty>);
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
+
+    using _Item    = remove_all_extents_t<_Ty>;
+    using _Rebound = _Rebind_alloc_t<_Alloc, _Item>;
+
+public:
+    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() { // don't value-initialize _Storage
+        _Uninitialized_value_construct_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
+    }
+
+    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg, const remove_extent_t<_Ty>& _Val)
+        : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() { // don't value-initialize _Storage
+        _Uninitialized_fill_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Val, this->_Get_val());
+    }
+
+    union {
+        _Wrap<_Ty> _Storage;
+    };
+
+private:
+    ~_Ref_count_bounded_array_alloc() {
+        // nothing to do; _Storage._Value already destroyed by _Destroy()
+
+        // See N4849 [class.dtor]/7.
+    }
+
+    virtual void _Destroy() noexcept override { // destroy managed resource
+        if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
+            _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
+        }
+    }
+
+    virtual void _Delete_this() noexcept override { // destroy self
+        _Rebind_alloc_t<_Alloc, _Ref_count_bounded_array_alloc> _Al(this->_Get_val());
+        this->~_Ref_count_bounded_array_alloc();
+        _Deallocate_plain(_Al, this);
+    }
+};
+#endif // _HAS_CXX20
+
 // FUNCTION TEMPLATE make_shared
 template <class _Ty, class... _Types>
-_NODISCARD shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr
+_NODISCARD
+#if _HAS_CXX20
+    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
+#else // _HAS_CXX20
+    shared_ptr<_Ty>
+#endif // _HAS_CXX20
+    make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
     return _Ret;
 }
 
+#if _HAS_CXX20
+template <class _Refc>
+struct _Global_delete_guard {
+    _Refc* _Target;
+
+    ~_Global_delete_guard() {
+        // While this branch is technically unnecessary because N4849 [new.delete.single]/17 requires
+        // `::operator delete(nullptr)` to be a no-op, it's here to help optimizers see that after
+        // `_Guard._Target = nullptr;`, this destructor can be eliminated.
+        if (_Target) {
+            _Deallocate_flexible_array(_Target);
+        }
+    }
+};
+
+template <class _Ty>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+    // make a shared_ptr to an unbounded array
+    using _Refc    = _Ref_count_unbounded_array<_Ty>;
+    const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
+    _Global_delete_guard<_Refc> _Guard{_Rx};
+    ::new (static_cast<void*>(_Rx)) _Refc(_Count);
+    _Guard._Target = nullptr;
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
+    return _Ret;
+}
+
+template <class _Ty>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
+    const size_t _Count, const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to an unbounded array
+    using _Refc    = _Ref_count_unbounded_array<_Ty>;
+    const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
+    _Global_delete_guard<_Refc> _Guard{_Rx};
+    ::new (static_cast<void*>(_Rx)) _Refc(_Count, _Val);
+    _Guard._Target = nullptr;
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
+    return _Ret;
+}
+
+template <class _Ty>
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
+    // make a shared_ptr to a bounded array
+    const auto _Rx = new _Ref_count_bounded_array<_Ty>();
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
+    return _Ret;
+}
+
+template <class _Ty>
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to a bounded array
+    const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
+    return _Ret;
+}
+#endif // _HAS_CXX20
+
 // FUNCTION TEMPLATE allocate_shared
 template <class _Ty, class _Alloc, class... _Types>
-_NODISCARD shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr
+_NODISCARD
+#if _HAS_CXX20
+    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
+#else // _HAS_CXX20
+    shared_ptr<_Ty>
+#endif // _HAS_CXX20
+    allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
-    using _Refoa   = _Ref_count_obj_alloc2<remove_cv_t<_Ty>, _Alloc>;
+    using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
@@ -1621,6 +2276,95 @@ _NODISCARD shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, _Types&&... _Args)
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
     return _Ret;
 }
+
+#if _HAS_CXX20
+template <class _Alloc>
+struct _Allocate_n_ptr {
+    _Alloc& _Al;
+    _Alloc_ptr_t<_Alloc> _Ptr;
+    size_t _Nx;
+
+    _Allocate_n_ptr(_Alloc& _Al_, const size_t _Nx_) : _Al(_Al_), _Ptr(_Al_.allocate(_Nx_)), _Nx(_Nx_) {}
+
+    ~_Allocate_n_ptr() {
+        if (_Ptr) {
+            _Al.deallocate(_Ptr, _Nx);
+        }
+    }
+
+    _Allocate_n_ptr(const _Allocate_n_ptr&) = delete;
+    _Allocate_n_ptr& operator=(const _Allocate_n_ptr&) = delete;
+};
+
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+    const _Alloc& _Al, const size_t _Count) {
+    // make a shared_ptr to an unbounded array
+    using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+    constexpr size_t _Align = alignof(_Refc);
+    using _Storage          = _Alignas_storage_unit<_Align>;
+    _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
+    const size_t _Bytes         = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
+    const size_t _Storage_units = _Bytes / sizeof(_Storage);
+    _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
+    const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
+    ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count);
+    _Guard._Ptr = nullptr;
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
+    return _Ret;
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+    const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to an unbounded array
+    using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+    constexpr size_t _Align = alignof(_Refc);
+    using _Storage          = _Alignas_storage_unit<_Align>;
+    _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
+    const size_t _Bytes         = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
+    const size_t _Storage_units = _Bytes / sizeof(_Storage);
+    _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
+    const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
+    ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count, _Val);
+    _Guard._Ptr = nullptr;
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
+    return _Ret;
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
+    // make a shared_ptr to a bounded array
+    using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+    using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
+    _Alblock _Rebound(_Al);
+    _Alloc_construct_ptr _Constructor{_Rebound};
+    _Constructor._Allocate();
+    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al);
+    shared_ptr<_Ty> _Ret;
+    const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
+    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    return _Ret;
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+    const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) {
+    // make a shared_ptr to a bounded array
+    using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+    using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
+    _Alblock _Rebound(_Al);
+    _Alloc_construct_ptr _Constructor{_Rebound};
+    _Constructor._Allocate();
+    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al, _Val);
+    shared_ptr<_Ty> _Ret;
+    const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
+    _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    return _Ret;
+}
+#endif // _HAS_CXX20
 
 // CLASS TEMPLATE weak_ptr
 template <class _Ty>
