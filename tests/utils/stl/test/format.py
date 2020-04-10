@@ -121,7 +121,7 @@ class STLTestFormat:
         # on the .dat files the test requires.
         for path in source_dir.iterdir():
             if path.is_file() and path.name.endswith('.dat'):
-                os.link(path, exec_dir / path.name)
+                shutil.copy2(path, exec_dir / path.name)
 
     def cleanup(self, test):
         shutil.rmtree(test.getExecDir(), ignore_errors=True)
