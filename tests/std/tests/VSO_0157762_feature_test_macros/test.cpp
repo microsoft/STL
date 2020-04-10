@@ -787,6 +787,20 @@ STATIC_ASSERT(__cpp_lib_atomic_is_always_lock_free == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_shared_ptr
+#error __cpp_lib_atomic_shared_ptr is not defined
+#elif __cpp_lib_atomic_shared_ptr != 201711L
+#error __cpp_lib_atomic_shared_ptr is not 201711L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_shared_ptr == 201711L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_shared_ptr
+#error __cpp_lib_atomic_shared_ptr is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_atomic_value_initialization
 #error __cpp_lib_atomic_value_initialization is not defined
 #elif __cpp_lib_atomic_value_initialization != 201911L

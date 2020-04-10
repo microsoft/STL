@@ -156,6 +156,7 @@
 // P0653R2 to_address()
 // P0655R1 visit<R>()
 // P0674R1 make_shared() For Arrays
+// P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 //     (partially implemented)
@@ -936,7 +937,19 @@
 #define _CXX20_DEPRECATE_ATOMIC_INIT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4029
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT                                              \
+    [[deprecated("warning STL4029: "                                                                \
+                 "std::atomic_*() overloads for shared_ptr are deprecated in C++20. "               \
+                 "The shared_ptr specialization of std::atomic provides superior functionality. "   \
+                 "You can define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4030
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1085,8 +1098,9 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
-#define __cpp_lib_atomic_float 201711L
-#define __cpp_lib_bind_front   201907L
+#define __cpp_lib_atomic_float      201711L
+#define __cpp_lib_atomic_shared_ptr 201711L
+#define __cpp_lib_bind_front        201907L
 
 #ifndef __EDG__ // TRANSITION, VSO-1041044
 #define __cpp_lib_bit_cast 201806L
