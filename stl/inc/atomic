@@ -1898,7 +1898,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Ty>
-atomic(_Ty) -> atomic<_Ty>;
+atomic(_Ty)->atomic<_Ty>;
 #endif // _HAS_CXX17
 
 // NONMEMBER OPERATIONS ON ATOMIC TYPES
