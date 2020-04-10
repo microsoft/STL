@@ -506,14 +506,14 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
-        const auto _Mem = _Atomic_address_as<char>(_Storage);
+        const auto _Mem = _Atomic_address_as<short>(_Storage);
         short _As_bytes = __iso_volatile_load16(_Mem);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<char>(_Storage);
+        const auto _Mem = _Atomic_address_as<short>(_Storage);
         short _As_bytes = __iso_volatile_load16(_Mem);
         _Load_barrier(_Order);
         return reinterpret_cast<_Ty&>(_As_bytes);
