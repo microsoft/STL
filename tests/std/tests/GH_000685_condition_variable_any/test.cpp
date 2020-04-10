@@ -21,7 +21,7 @@ namespace { // anonymous namespace
             mtx.unlock();
         }
 
-        inline int num_locks(){
+        inline int num_locks() {
             return num_lock;
         }
 
@@ -38,7 +38,7 @@ namespace { // anonymous namespace
         {
             my_mutex mtx;
             unique_lock<my_mutex> guard{mtx};
-            
+
             cnd.wait_for(mtx, zero_dur);
             assert(mtx.num_locks() == 2);
 
@@ -47,7 +47,7 @@ namespace { // anonymous namespace
 
             cnd.wait_until(mtx, chrono::steady_clock::now());
             assert(mtx.num_locks() == 4);
-        
+
             cnd.wait_until(mtx, chrono::steady_clock::now() + interval);
             assert(mtx.num_locks() == 5);
         }
