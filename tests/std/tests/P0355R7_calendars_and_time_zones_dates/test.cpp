@@ -231,8 +231,6 @@ constexpr void month_day_test() {
 
 constexpr void month_day_last_test() {
     assert(month_day_last{February}.month() == February);
-    const auto mdl = January / last;
-    static_assert(is_same_v<const month_day_last, decltype(mdl)>, "mdl is not const chrono::month_day_last");
 
     unsigned i = 0;
     assert(!month_day_last{month{i++}}.ok());
