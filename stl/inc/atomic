@@ -556,7 +556,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         const auto _Mem = _Atomic_address_as<long>(_Storage);
 #if defined(_M_ARM) || defined(_M_ARM64)
         _Memory_barrier();
-        __iso_volatile_store32(_Mem, _Atomic_reinterpret_as<int>(_Mem));
+        __iso_volatile_store32(_Mem, _Atomic_reinterpret_as<int>(_Value));
         _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
         (void) _InterlockedExchange(_Mem, _Atomic_reinterpret_as<long>(_Value));
