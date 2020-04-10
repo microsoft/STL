@@ -483,7 +483,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
     void store(const _Ty _Value, const memory_order _Order) noexcept { // store with given memory order
-        const auto _Mem       = _Atomic_address_as<char>(_Storage);
+        const auto _Mem       = _Atomic_address_as<short>(_Storage);
         const short _As_bytes = _Atomic_reinterpret_as<short>(_Value);
         switch (_Order) {
         case memory_order_relaxed:
