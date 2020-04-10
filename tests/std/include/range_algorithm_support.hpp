@@ -48,11 +48,17 @@ struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
 template <>
 inline constexpr bool std::ranges::enable_borrowed_range<borrowed<true>> = true;
 
-inline constexpr auto get_first = [](auto&& x) -> auto&& {
+#ifndef __clang__ // TRANSITION, LLVM-45213
+inline
+#endif
+    constexpr auto get_first = [](auto&& x) -> auto&& {
     return static_cast<decltype(x)>(x).first;
 };
 
-inline constexpr auto get_second = [](auto&& x) -> auto&& {
+#ifndef __clang__ // TRANSITION, LLVM-45213
+inline
+#endif
+    constexpr auto get_second = [](auto&& x) -> auto&& {
     return static_cast<decltype(x)>(x).second;
 };
 
