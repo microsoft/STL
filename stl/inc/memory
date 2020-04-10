@@ -1883,14 +1883,14 @@ private:
 
 protected:
     template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
-    explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
+    explicit constexpr _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
         : _Ty(_STD forward<_Other>(_Val)) {}
 
-    _Ty& _Get_val() noexcept {
+    constexpr _Ty& _Get_val() noexcept {
         return *this;
     }
 
-    const _Ty& _Get_val() const noexcept {
+    constexpr const _Ty& _Get_val() const noexcept {
         return *this;
     }
 };
@@ -1902,14 +1902,14 @@ private:
 
 protected:
     template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
-    explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
+    explicit constexpr _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
         : _Myval(_STD forward<_Other>(_Val)) {}
 
-    _Ty& _Get_val() noexcept {
+    constexpr _Ty& _Get_val() noexcept {
         return _Myval;
     }
 
-    const _Ty& _Get_val() const noexcept {
+    constexpr const _Ty& _Get_val() const noexcept {
         return _Myval;
     }
 };
