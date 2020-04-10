@@ -4,7 +4,7 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  agentPool: 'StlBuild-2020-04-04-3'
+  agentPool: 'StlBuild-2020-04-09'
 
 stages:
   - stage: Code_Format
