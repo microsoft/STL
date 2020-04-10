@@ -30,9 +30,25 @@ _STL_DISABLE_CLANG_WARNINGS
 #if defined(_M_ARM) || defined(_M_ARM64)
 #define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
 #define _Compiler_or_memory_barrier() _Memory_barrier()
+
+#define _ISO_VOLATILE_STORE8(_Storage, _Value)  __iso_volatile_store8(_Atomic_address_as<char>(_Storage), _Value)
+#define _ISO_VOLATILE_STORE16(_Storage, _Value) __iso_volatile_store16(_Atomic_address_as<short>(_Storage), _Value)
+#define _ISO_VOLATILE_STORE32(_Storage, _Value) __iso_volatile_store32(_Atomic_address_as<int>(_Storage), _Value)
+#define _ISO_VOLATILE_STORE64(_Storage, _Value) __iso_volatile_store64(_Atomic_address_as<long long>(_Storage), _Value)
+#define _ISO_VOLATILE_LOAD8(_Storage)           __iso_volatile_load8(_Atomic_address_as<const char>(_Storage))
+#define _ISO_VOLATILE_LOAD16(_Storage)          __iso_volatile_load16(_Atomic_address_as<const short>(_Storage))
+
 #elif defined(_M_IX86) || defined(_M_X64)
 // x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
 #define _Compiler_or_memory_barrier() _Compiler_barrier()
+
+#define _ISO_VOLATILE_STORE8(_Storage, _Value)  (*_Atomic_address_as<char>(_Storage) = _Value)
+#define _ISO_VOLATILE_STORE16(_Storage, _Value) (*_Atomic_address_as<short>(_Storage) = _Value)
+#define _ISO_VOLATILE_STORE32(_Storage, _Value) (*_Atomic_address_as<long>(_Storage) = _Value)
+#define _ISO_VOLATILE_STORE64(_Storage, _Value) (*_Atomic_address_as<long long>(_Storage) = _Value)
+#define _ISO_VOLATILE_LOAD8(_Storage)           (*_Atomic_address_as<const char>(_Storage))
+#define _ISO_VOLATILE_LOAD16(_Storage)          (*_Atomic_address_as<const short>(_Storage))
+
 #else // ^^^ x86/x64 / unsupported hardware vvv
 #error Unsupported hardware
 #endif // hardware
@@ -401,15 +417,14 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     }
 
     void store(const _Ty _Value, const memory_order _Order) noexcept { // store with given memory order
-        const auto _Mem      = _Atomic_address_as<char>(_Storage);
         const char _As_bytes = _Atomic_reinterpret_as<char>(_Value);
         switch (_Order) {
         case memory_order_relaxed:
-            __iso_volatile_store8(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE8(_Storage, _As_bytes);
             return;
         case memory_order_release:
             _Compiler_or_memory_barrier();
-            __iso_volatile_store8(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE8(_Storage, _As_bytes);
             return;
         default:
         case memory_order_consume:
@@ -424,15 +439,13 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     }
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
-        const auto _Mem = _Atomic_address_as<char>(_Storage);
-        char _As_bytes  = __iso_volatile_load8(_Mem);
+        char _As_bytes = _ISO_VOLATILE_LOAD8(_Storage);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<char>(_Storage);
-        char _As_bytes  = __iso_volatile_load8(_Mem);
+        char _As_bytes = _ISO_VOLATILE_LOAD8(_Storage);
         _Load_barrier(_Order);
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
@@ -483,15 +496,14 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
     void store(const _Ty _Value, const memory_order _Order) noexcept { // store with given memory order
-        const auto _Mem       = _Atomic_address_as<char>(_Storage);
         const short _As_bytes = _Atomic_reinterpret_as<short>(_Value);
         switch (_Order) {
         case memory_order_relaxed:
-            __iso_volatile_store16(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE16(_Storage, _As_bytes);
             return;
         case memory_order_release:
             _Compiler_or_memory_barrier();
-            __iso_volatile_store16(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE16(_Storage, _As_bytes);
             return;
         default:
         case memory_order_consume:
@@ -506,15 +518,13 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
-        const auto _Mem = _Atomic_address_as<char>(_Storage);
-        short _As_bytes = __iso_volatile_load16(_Mem);
+        short _As_bytes = _ISO_VOLATILE_LOAD16(_Storage);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<char>(_Storage);
-        short _As_bytes = __iso_volatile_load16(_Mem);
+        short _As_bytes = _ISO_VOLATILE_LOAD16(_Storage);
         _Load_barrier(_Order);
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
@@ -553,26 +563,24 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
     void store(const _Ty _Value) noexcept { // store with sequential consistency
-        const auto _Mem = _Atomic_address_as<long>(_Storage);
 #if defined(_M_ARM) || defined(_M_ARM64)
         _Memory_barrier();
-        __iso_volatile_store32(_Mem, _Atomic_reinterpret_as<int>(_Value));
+        _ISO_VOLATILE_STORE32(_Storage, _Atomic_reinterpret_as<int>(_Value));
         _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        (void) _InterlockedExchange(_Mem, _Atomic_reinterpret_as<long>(_Value));
+        (void) _InterlockedExchange(_Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Value));
 #endif // hardware
     }
 
     void store(const _Ty _Value, const memory_order _Order) noexcept { // store with given memory order
-        const auto _Mem     = _Atomic_address_as<int>(_Storage);
         const int _As_bytes = _Atomic_reinterpret_as<int>(_Value);
         switch (_Order) {
         case memory_order_relaxed:
-            __iso_volatile_store32(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE32(_Storage, _As_bytes);
             return;
         case memory_order_release:
             _Compiler_or_memory_barrier();
-            __iso_volatile_store32(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE32(_Storage, _As_bytes);
             return;
         default:
         case memory_order_consume:
@@ -587,15 +595,13 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
-        const auto _Mem = _Atomic_address_as<int>(_Storage);
-        auto _As_bytes  = __iso_volatile_load32(_Mem);
+        auto _As_bytes = _ISO_VOLATILE_LOAD32(_Storage);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<int>(_Storage);
-        auto _As_bytes  = __iso_volatile_load32(_Mem);
+        auto _As_bytes = _ISO_VOLATILE_LOAD32(_Storage);
         _Load_barrier(_Order);
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
@@ -633,36 +639,35 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         // non-atomically initialize this atomic
     }
 
+#ifdef _M_IX86
+    void store(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
+        // store with (effectively) sequential consistency
+        _Check_store_memory_order(_Order);
+        (void) exchange(_Value, _Order);
+    }
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+
     void store(const _Ty _Value) noexcept { // store with sequential consistency
         const auto _Mem           = _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _Atomic_reinterpret_as<long long>(_Value);
-#if defined(_M_IX86)
-        auto _Comparand = __iso_volatile_load64(_Mem);
-        for (;;) {
-            auto _Result = _InterlockedCompareExchange64(_Mem, _As_bytes, _Comparand);
-            if (_Result == _Comparand)
-                break;
-            _Comparand = _Result;
-        }
-#elif defined(_M_ARM64)
+#ifdef _M_ARM64
         _Memory_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
         _Memory_barrier();
-#else // ^^^ _M_ARM64 / ARM32, x64 
+#else // ^^^ _M_ARM64 / ARM32, x64 vvv
         (void) _InterlockedExchange64(_Mem, _As_bytes);
 #endif // _M_ARM64
     }
 
     void store(const _Ty _Value, const memory_order _Order) noexcept { // store with given memory order
-        const auto _Mem           = _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _Atomic_reinterpret_as<long long>(_Value);
         switch (_Order) {
         case memory_order_relaxed:
-            __iso_volatile_store64(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE64(_Storage, _As_bytes);
             return;
         case memory_order_release:
             _Compiler_or_memory_barrier();
-            __iso_volatile_store64(_Mem, _As_bytes);
+            _ISO_VOLATILE_STORE64(_Storage, _As_bytes);
             return;
         default:
         case memory_order_consume:
@@ -675,7 +680,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             return;
         }
     }
-
+#endif // _M_IX86
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<const long long>(_Storage);
@@ -683,9 +688,12 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if defined(_M_ARM)
         _As_bytes = __ldrexd(_Mem);
         _Memory_barrier();
-#else // _M_X86/_M_X64/_M_ARM64
+#elif defined(_M_IX86) || defined(_M_ARM64)
         _As_bytes = __iso_volatile_load64(_Mem);
         _Compiler_or_memory_barrier();
+#else // _M_X64
+        _As_bytes = *_Mem;
+        _Compiler_barrier();
 #endif // hardware
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
@@ -2030,7 +2038,13 @@ _STD_END
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
 #undef _ATOMIC_HAS_DCAS
-
+#undef _ISO_VOLATILE_LOAD8
+#undef _ISO_VOLATILE_LOAD16
+// #undef _ISO_VOLATILE_LOAD32 // Used in <memory>
+#undef _ISO_VOLATILE_STORE8
+#undef _ISO_VOLATILE_STORE16
+#undef _ISO_VOLATILE_STORE32
+#undef _ISO_VOLATILE_STORE64
 #undef _STD_COMPARE_EXCHANGE_128
 #undef _INVALID_MEMORY_ORDER
 #undef _Compiler_or_memory_barrier
