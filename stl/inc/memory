@@ -637,7 +637,7 @@ public:
 
     bool _Incref_nz() noexcept { // increment use count if not zero, return true if successful
         auto& _Volatile_uses = reinterpret_cast<volatile long&>(_Uses);
-        long _Count          = _ISO_VOLATILE_LOAD32(_Volatile_uses);
+        long _Count          = __iso_volatile_load32(reinterpret_cast<volatile int*>(&_Volatile_uses));
 
         while (_Count != 0) {
             const long _Old_value = _INTRIN_RELAXED(_InterlockedCompareExchange)(&_Volatile_uses, _Count + 1, _Count);
