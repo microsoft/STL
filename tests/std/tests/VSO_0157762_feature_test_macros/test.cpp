@@ -823,7 +823,7 @@ STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
+#if _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1020212
 #ifndef __cpp_lib_bitops
 #error __cpp_lib_bitops is not defined
 #elif __cpp_lib_bitops != 201907L
@@ -1191,7 +1191,7 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1020212
 #ifndef __cpp_lib_int_pow2
 #error __cpp_lib_int_pow2 is not defined
 #elif __cpp_lib_int_pow2 != 202002L
