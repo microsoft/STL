@@ -671,7 +671,8 @@ private:
 
 public:
     template <class _Callable, class _Tag, enable_if_t<is_same_v<_Tag, _Not_fn_tag>, int> = 0>
-    explicit constexpr _Not_fn(_Callable&& _Obj, _Tag) noexcept(is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
+    explicit constexpr _Not_fn(_Callable&& _Obj, _Tag) noexcept(
+        is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
         : _Mybase(_STD forward<_Callable>(_Obj)) { // store a callable object
     }
 
