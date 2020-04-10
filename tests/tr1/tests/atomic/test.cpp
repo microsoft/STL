@@ -263,17 +263,29 @@ static void test_atomic_flag_cxx20() { // test properties of atomic_flag
     flag.clear(STD memory_order_relaxed);
     value = flag.test_and_set();
     CHECK_INT(value, false);
+    value = flag.test(STD memory_order_acquire);
+    CHECK_INT(value, true);
 
+    value = STD atomic_flag_test(&flag);
+    CHECK_INT(value, true);
     value = STD atomic_flag_test_and_set(&flag);
+    CHECK_INT(value, true);
+    value = STD atomic_flag_test(&flag);
     CHECK_INT(value, true);
     STD atomic_flag_clear(&flag);
     value = STD atomic_flag_test_and_set_explicit(&flag, STD memory_order_relaxed);
     CHECK_INT(value, false);
+    value = STD atomic_flag_test_explicit(&flag, STD memory_order_relaxed);
+    CHECK_INT(value, true);
     value = STD atomic_flag_test_and_set_explicit(&flag, STD memory_order_release);
+    CHECK_INT(value, true);
+    value = STD atomic_flag_test_explicit(&flag, STD memory_order_relaxed);
     CHECK_INT(value, true);
     STD atomic_flag_clear_explicit(&flag, STD memory_order_release);
     value = STD atomic_flag_test_and_set(&flag);
     CHECK_INT(value, false);
+    value = STD atomic_flag_test_explicit(&flag, STD memory_order_acquire);
+    CHECK_INT(value, true);
 }
 #endif // _HAS_CXX20
 
