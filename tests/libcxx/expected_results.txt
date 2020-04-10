@@ -497,9 +497,9 @@ std/thread/thread.semaphore/version.pass.cpp SKIP
 
 
 # *** MISSING COMPILER FEATURES ***
-# C++20 P0722R3 "Efficient sized delete for variable sized classes"
-std/language.support/support.dynamic/destroying_delete_t_declaration.pass.cpp SKIP
-std/language.support/support.dynamic/destroying_delete_t.pass.cpp SKIP
+# C++20 P0722R3 "Efficient sized delete for variable sized classes" // TRANSITION, VS2019 16.7p1
+std/language.support/support.dynamic/destroying_delete_t_declaration.pass.cpp:0 SKIP
+std/language.support/support.dynamic/destroying_delete_t.pass.cpp:0 SKIP
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***

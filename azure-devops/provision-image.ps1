@@ -7,9 +7,23 @@ param(
   [string]$AdminUserPassword = $null
 )
 
+Function Get-TempFilePath {
+  Param(
+    [String]$Extension
+  )
+
+  if ([String]::IsNullOrWhiteSpace($Extension)) {
+    throw 'Missing Extension'
+  }
+
+  $tempPath = [System.IO.Path]::GetTempPath()
+  $tempName = [System.IO.Path]::GetRandomFileName() + '.' + $Extension
+  return Join-Path $tempPath $tempName
+}
+
 if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
   Write-Output "AdminUser password supplied; switching to AdminUser"
-  $PsExecPath = $env:TEMP + "\psexec.exe"
+  $PsExecPath = Get-TempFilePath -Extension 'exe'
   Write-Output "Downloading psexec to $PsExecPath"
   & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
   $PsExecArgs = @(
@@ -25,16 +39,23 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
     '-File',
     $PSCommandPath
   )
-  Write-Output "Executing $PsExecPath @PsExecArgs"
-  & $PsExecPath @PsExecArgs
-  exit $?
+
+  Write-Output "Executing $PsExecPath " + @PsExecArgs
+
+  $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
+  Write-Output 'Cleaning up...'
+  Remove-Item $PsExecPath
+  exit $proc.ExitCode
 }
 
-$WorkLoads = '--add Microsoft.VisualStudio.Component.VC.CLI.Support ' + `
-  '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + `
-  '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 ' + `
-  '--add Microsoft.VisualStudio.Component.VC.Tools.ARM ' + `
-  '--add Microsoft.VisualStudio.Component.Windows10SDK.18362 '
+$Workloads = @(
+  'Microsoft.VisualStudio.Component.VC.CLI.Support',
+  'Microsoft.VisualStudio.Component.VC.CoreIde',
+  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM',
+  'Microsoft.VisualStudio.Component.Windows10SDK.18362'
+)
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
@@ -43,6 +64,13 @@ $CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.
 $LlvmUrl = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe'
 $NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
 $PythonUrl = 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe'
+
+$CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
+$CudaFeatures = 'nvcc_10.1 cuobjdump_10.1 nvprune_10.1 cupti_10.1 gpu_library_advisor_10.1 memcheck_10.1 ' + `
+  'nvdisasm_10.1 nvprof_10.1 visual_profiler_10.1 visual_studio_integration_10.1 cublas_10.1 cublas_dev_10.1 ' + `
+  'cudart_10.1 cufft_10.1 cufft_dev_10.1 curand_10.1 curand_dev_10.1 cusolver_10.1 cusolver_dev_10.1 cusparse_10.1 ' + `
+  'cusparse_dev_10.1 nvgraph_10.1 nvgraph_dev_10.1 npp_10.1 npp_dev_10.1 nvrtc_10.1 nvrtc_dev_10.1 nvml_dev_10.1 ' + `
+  'occupancy_calculator_10.1 fortran_examples_10.1'
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -63,19 +91,33 @@ Function PrintMsiExitCodeMessage {
 
 Function InstallVisualStudio {
   Param(
-    [String]$WorkLoads,
-    [String]$Sku,
-    [String]$BootstrapperUrl
+    [String[]]$Workloads,
+    [String]$BootstrapperUrl,
+    [String]$InstallPath = $null,
+    [String]$Nickname = $null
   )
 
   try {
     Write-Output 'Downloading Visual Studio...'
-    [string]$bootstrapperExe = Join-Path ([System.IO.Path]::GetTempPath()) `
-    ([System.IO.Path]::GetRandomFileName() + '.exe')
-    curl.exe -L -o $bootstrapperExe $BootstrapperUrl
-
+    [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
+    curl.exe -L -o $bootstrapperExe -s -S $BootstrapperUrl
     Write-Output "Installing Visual Studio..."
-    $args = ('/c', $bootstrapperExe, $WorkLoads, '--quiet', '--norestart', '--wait', '--nocache')
+    $args = @('/c', $bootstrapperExe, '--quiet', '--norestart', '--wait', '--nocache')
+    foreach ($workload in $Workloads) {
+      $args += '--add'
+      $args += $workload
+    }
+
+    if (-not ([String]::IsNullOrWhiteSpace($InstallPath))) {
+      $args += '--installpath'
+      $args += $InstallPath
+    }
+
+    if (-not ([String]::IsNullOrWhiteSpace($Nickname))) {
+      $args += '--nickname'
+      $args += $Nickname
+    }
+
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
   }
@@ -94,10 +136,8 @@ Function InstallMSI {
 
   try {
     Write-Output "Downloading $Name..."
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$msiPath = $randomRoot + '.msi'
-    curl.exe -L -o $msiPath $Url
-
+    [string]$msiPath = Get-TempFilePath -Extension 'msi'
+    curl.exe -L -o $msiPath -s -S $Url
     Write-Output "Installing $Name..."
     $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
     $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList $args -Wait -PassThru
@@ -119,10 +159,8 @@ Function InstallZip {
 
   try {
     Write-Output "Downloading $Name..."
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$zipPath = $randomRoot + '.zip'
-    curl.exe -L -o $zipPath $Url
-
+    [string]$zipPath = Get-TempFilePath -Extension 'zip'
+    curl.exe -L -o $zipPath -s -S $Url
     Write-Output "Installing $Name..."
     Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
   }
@@ -140,10 +178,8 @@ Function InstallLLVM {
 
   try {
     Write-Output 'Downloading LLVM...'
-    [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    [string]$installerPath = $randomRoot + '.exe'
-    curl.exe -L -o $installerPath $Url
-
+    [string]$installerPath = Get-TempFilePath -Extension 'exe'
+    curl.exe -L -o $installerPath -s -S $Url
     Write-Output 'Installing LLVM...'
     $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
@@ -161,10 +197,8 @@ Function InstallPython {
   )
 
   Write-Output 'Downloading Python...'
-  [string]$randomRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-  [string]$installerPath = $randomRoot + '.exe'
-  curl.exe -L -o $installerPath $Url
-
+  [string]$installerPath = Get-TempFilePath -Extension 'exe'
+  curl.exe -L -o $installerPath -s -S $Url
   Write-Output 'Installing Python...'
   $proc = Start-Process -FilePath $installerPath -ArgumentList `
   @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
@@ -178,19 +212,38 @@ Function InstallPython {
   }
 }
 
+Function InstallCuda {
+  Param(
+    [String]$Url,
+    [String]$Features
+  )
+
+  try {
+    Write-Output 'Downloading CUDA...'
+    [string]$installerPath = Get-TempFilePath -Extension 'exe'
+    curl.exe -L -o $installerPath -s -S $Url
+    Write-Output 'Installing CUDA...'
+    $proc = Start-Process -FilePath $installerPath -ArgumentList @('-s ' + $Features) -Wait -PassThru
+    $exitCode = $proc.ExitCode
+    if ($exitCode -eq 0) {
+      Write-Output 'Installation successful!'
+    }
+    else {
+      Write-Output "Installation failed! Exited with $exitCode."
+      exit $exitCode
+    }
+  }
+  catch {
+    Write-Output "Failed to install CUDA!"
+    Write-Output $_.Exception.Message
+    exit -1
+  }
+}
+
 
 Write-Output "AdminUser password not supplied; assuming already running as AdminUser"
-InstallMSI 'CMake' $CMakeUrl
-InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
-InstallLLVM $LlvmUrl
-InstallPython $PythonUrl
-InstallVisualStudio -WorkLoads $WorkLoads -Sku $Sku -BootstrapperUrl $VisualStudioBootstrapperUrl
-Write-Output 'Updating PATH...'
-$environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
-  -Name Path `
-  -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
 
+Write-Host 'Configuring AntiVirus exclusions...'
 Add-MPPreference -ExclusionPath C:\agent
 Add-MPPreference -ExclusionPath D:\
 Add-MPPreference -ExclusionProcess ninja.exe
@@ -199,4 +252,14 @@ Add-MPPreference -ExclusionProcess cl.exe
 Add-MPPreference -ExclusionProcess link.exe
 Add-MPPreference -ExclusionProcess python.exe
 
-C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /shutdown
+InstallMSI 'CMake' $CMakeUrl
+InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
+InstallLLVM $LlvmUrl
+InstallPython $PythonUrl
+InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
+InstallCuda -Url $CudaUrl -Features $CudaFeatures
+Write-Output 'Updating PATH...'
+$environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
+  -Name Path `
+  -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
