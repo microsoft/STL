@@ -155,6 +155,8 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0674R1 make_shared() For Arrays
+// P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 //     (partially implemented)
@@ -935,7 +937,19 @@
 #define _CXX20_DEPRECATE_ATOMIC_INIT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4029
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT                                              \
+    [[deprecated("warning STL4029: "                                                                \
+                 "std::atomic_*() overloads for shared_ptr are deprecated in C++20. "               \
+                 "The shared_ptr specialization of std::atomic provides superior functionality. "   \
+                 "You can define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4030
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1029,7 +1043,6 @@
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
 #define __cpp_lib_shared_mutex                     201505L
-#define __cpp_lib_shared_ptr_arrays                201611L
 #define __cpp_lib_transparent_operators            201510L
 #define __cpp_lib_type_trait_variable_templates    201510L
 #define __cpp_lib_uncaught_exceptions              201411L
@@ -1044,8 +1057,7 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_chrono 201611L
-#define __cpp_lib_clamp  201603L
+#define __cpp_lib_clamp 201603L
 #ifndef _M_CEE
 #define __cpp_lib_execution 201603L
 #endif // _M_CEE
@@ -1074,28 +1086,31 @@
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 #define __cpp_lib_variant               201606L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
 
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
-#define __cpp_lib_atomic_float 201711L
-#define __cpp_lib_atomic_wait  201907L
-#define __cpp_lib_bind_front   201907L
+#define __cpp_lib_atomic_float      201711L
+#define __cpp_lib_atomic_shared_ptr 201711L
+#define __cpp_lib_atomic_wait       201907L
+#define __cpp_lib_bind_front        201907L
 
 #ifndef __EDG__ // TRANSITION, VSO-1041044
 #define __cpp_lib_bit_cast 201806L
 #endif // __EDG__
 
-#if defined(__clang__) || defined(__EDG__)
-#define __cpp_lib_bitops 201907L
-#else // ^^^ Clang and EDG / MSVC vvv
+#ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
-// TRANSITION, VSO-1020212
-#endif // defined(__clang__) || defined(__EDG__)
+#define __cpp_lib_bitops 201907L
+#endif // __clang__
 
 #define __cpp_lib_bounded_array_traits 201902L
 
@@ -1107,26 +1122,35 @@
 #define __cpp_lib_concepts 201907L
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
-#define __cpp_lib_constexpr_algorithms     201806L
-#define __cpp_lib_constexpr_memory         201811L
-#define __cpp_lib_constexpr_numeric        201911L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_memory     201811L
+#define __cpp_lib_constexpr_numeric    201911L
+
+#ifdef __cpp_impl_destroying_delete
+#define __cpp_lib_destroying_delete 201806L
+#endif // __cpp_impl_destroying_delete
+
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
-#define __cpp_lib_int_pow2                 202002L
-#define __cpp_lib_is_constant_evaluated    201811L
-#define __cpp_lib_is_nothrow_convertible   201806L
-#define __cpp_lib_list_remove_return_type  201806L
-#define __cpp_lib_math_constants           201907L
-#define __cpp_lib_remove_cvref             201711L
-#define __cpp_lib_shift                    201806L
-#define __cpp_lib_span                     202002L
-#define __cpp_lib_ssize                    201902L
-#define __cpp_lib_starts_ends_with         201711L
-#define __cpp_lib_to_address               201711L
-#define __cpp_lib_to_array                 201907L
-#define __cpp_lib_type_identity            201806L
-#define __cpp_lib_unwrap_ref               201811L
+
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+#define __cpp_lib_int_pow2 202002L
+#endif
+
+#define __cpp_lib_is_constant_evaluated   201811L
+#define __cpp_lib_is_nothrow_convertible  201806L
+#define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_math_constants          201907L
+#define __cpp_lib_remove_cvref            201711L
+#define __cpp_lib_shift                   201806L
+#define __cpp_lib_span                    202002L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
+#define __cpp_lib_to_address              201711L
+#define __cpp_lib_to_array                201907L
+#define __cpp_lib_type_identity           201806L
+#define __cpp_lib_unwrap_ref              201811L
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
@@ -1134,6 +1158,12 @@
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
+#else // _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
