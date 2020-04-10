@@ -815,6 +815,7 @@ STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_shared_ptr
 #error __cpp_lib_atomic_shared_ptr is not defined
 #elif __cpp_lib_atomic_shared_ptr != 201711L
