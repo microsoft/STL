@@ -6,10 +6,6 @@
 #include <cstdint>
 #include <functional>
 
-#ifndef __cpp_aligned_new
-#error This test is only valid when C++17 over-aligned allocation is supported
-#endif
-
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
 // SFO (Small Functor Optimization) should not happen
@@ -20,9 +16,13 @@ struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
         const auto storage_ptr_value = reinterpret_cast<std::uintptr_t>(storage);
         const auto this_ptr_value    = reinterpret_cast<std::uintptr_t>(this);
 
-        // platform-specific behavior not covered by Standard C++, but fine for such test
+        // Platform-specific behavior not covered by Standard C++, but fine for such test
         assert(this_ptr_value < storage_ptr_value || this_ptr_value >= storage_ptr_value + storage_size);
+
+        // Before C++17. alignas isn't helpful for aligning allocations via "new"
+#ifndef __cpp_aligned_new
         assert(this_ptr_value % alignof(overaligned_t) == 0);
+#endif
     }
 };
 
