@@ -24,8 +24,8 @@ stages:
               call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
               -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
-              -S $(Build.SourcesDirectory)\tools -B $(Build.ArtifactStagingDirectory)\tools
-              cd $(Build.ArtifactStagingDirectory)\tools
+              -S $(Build.SourcesDirectory)\tools -B D:\build\tools
+              cd D:\build\tools
               cmake --build .
             displayName: 'Build Support Tools'
           - task: BatchScript@1
@@ -34,14 +34,14 @@ stages:
             inputs:
               filename: 'azure-devops/enforce-clang-format.cmd'
               failOnStandardError: true
-              arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+              arguments: 'D:/build/tools/parallelize/parallelize.exe'
           - task: BatchScript@1
             displayName: 'Validate Files'
             timeoutInMinutes: 2
             inputs:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
-              arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+              arguments: 'D:/build/tools/validate/validate.exe'
   - stage: Build_And_Test
     displayName: 'Build and Test'
     jobs:
