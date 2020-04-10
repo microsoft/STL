@@ -3211,8 +3211,9 @@ protected:
             if (_Repptr.compare_exchange_weak(_Rep, _Rep | _Low_bit)) {
                 return reinterpret_cast<_Ref_count_base*>(_Rep);
             }
-
-            _Repptr.wait(_Rep);
+            if ((_Rep & _Low_bit) != 0) {
+                _Repptr.wait(_Rep);
+            }
         }
     }
 
