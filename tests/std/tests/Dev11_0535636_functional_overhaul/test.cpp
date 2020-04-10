@@ -18,7 +18,7 @@
 #if _HAS_CXX17
 #include <string_view>
 #else
-#define string_view string
+using string_view = std::string;
 #endif
 
 using namespace std;
