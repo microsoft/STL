@@ -11,10 +11,15 @@
 #include <memory>
 #include <stdlib.h>
 #include <string>
-#include <string_view>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+
+#if _HAS_CXX17
+#include <string_view>
+#else
+#define string_view string
+#endif
 
 using namespace std;
 using namespace std::placeholders;
