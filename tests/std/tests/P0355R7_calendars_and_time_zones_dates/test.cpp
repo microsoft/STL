@@ -9,56 +9,53 @@ using namespace std;
 using namespace std::chrono;
 
 constexpr void day_test() {
-    day d1{0u};
-    assert(static_cast<unsigned>(d1) == 0u);
-    assert(d1 == 0d);
-    assert(++d1 == 1d);
-    assert(d1++ == 1d);
-    assert(d1 == 2d);
+    day d{0u};
+    assert(static_cast<unsigned>(d) == 0u);
+    assert(d == 0d);
+    assert(++d == 1d);
+    assert(d++ == 1d);
+    assert(d == 2d);
 
-    assert(--d1 == 1d);
-    assert(d1-- == 1d);
-    assert(d1 == 0d);
+    assert(--d == 1d);
+    assert(d-- == 1d);
+    assert(d == 0d);
 
-    d1 += days{2};
-    assert(d1 == 2d);
-    d1 -= days{2};
-    assert(d1 == 0d);
+    d += days{2};
+    assert(d == 2d);
+    d -= days{2};
+    assert(d == 0d);
+
+    assert(d < 2d);
+    assert(2d > d);
 
     day d2{0u};
-    assert(d1 == d2++);
-    assert(d1 < d2);
-    assert(d2 > d1);
-
-    day d3{0u};
-    assert(!d3.ok());
-    ++d3;
-    for (int i = 1; i <= 31; ++i, ++d3) {
-        assert(d3.ok());
+    assert(!d2.ok());
+    ++d2;
+    for (int i = 1; i <= 31; ++i, ++d2) {
+        assert(d2.ok());
     }
-    assert(!d3.ok());
+    assert(!d2.ok());
 
-    const days diff = 10d - 2d;
-    assert(diff == days{8});
+    assert(10d - 2d == days{8});
 }
 
 constexpr void month_test() {
 
-    month m1{1u};
-    assert(static_cast<unsigned>(m1) == 1u);
-    assert(m1 == January);
-    assert(++m1 == February);
-    assert(m1++ == February);
-    assert(m1 == March);
+    month m{1u};
+    assert(static_cast<unsigned>(m) == 1u);
+    assert(m == January);
+    assert(++m == February);
+    assert(m++ == February);
+    assert(m == March);
 
-    assert(--m1 == February);
-    assert(m1-- == February);
-    assert(m1 == January);
+    assert(--m == February);
+    assert(m-- == February);
+    assert(m == January);
 
-    m1 += months{2};
-    assert(m1 == March);
-    m1 -= months{2};
-    assert(m1 == January);
+    m += months{2};
+    assert(m == March);
+    m -= months{2};
+    assert(m == January);
 
     for (unsigned i = 0; i <= 255; ++i) {
         if (i >= 1 && i <= 12) {
@@ -68,39 +65,35 @@ constexpr void month_test() {
         }
     }
 
-    assert(February > m1);
-    assert(m1 < February);
+    assert(February > m);
+    assert(m < February);
 
-    month m2 = February + months{11};
-    assert(m2 == January);
-    m2 = months{11} + February;
-    assert(m2 == January);
-    month m3 = February - months{2};
-    assert(m3 == December);
+    assert(February + months{11} == January);
+    assert(months{11} + February == January);
+    assert(February - months{2} == December);
 
-    months diff = January - February;
-    assert(diff == months{11});
+    assert(January - February == months{11});
 }
 
 constexpr void year_test() {
-    year y1{1};
-    assert(static_cast<int>(y1) == 1);
-    assert(y1 == 1y);
-    assert(++y1 == 2y);
-    assert(y1++ == 2y);
-    assert(y1 == 3y);
+    year y{1};
+    assert(static_cast<int>(y) == 1);
+    assert(y == 1y);
+    assert(++y == 2y);
+    assert(y++ == 2y);
+    assert(y == 3y);
 
-    assert(--y1 == 2y);
-    assert(y1-- == 2y);
-    assert(y1 == 1y);
+    assert(--y == 2y);
+    assert(y-- == 2y);
+    assert(y == 1y);
 
-    y1 += years{2};
-    assert(y1 == 3y);
-    y1 -= years{2};
-    assert(y1 == 1y);
+    y += years{2};
+    assert(y == 3y);
+    y -= years{2};
+    assert(y == 1y);
 
-    assert(+y1 == 1y);
-    assert(-y1 == -1y);
+    assert(+y == 1y);
+    assert(-y == -1y);
 
     constexpr int y_min = -32767;
     constexpr int y_max = 32767;
@@ -117,16 +110,13 @@ constexpr void year_test() {
             assert(!year{i}.is_leap());
         }
     }
-    assert(y1 < 2y);
-    assert(2y > y1);
+    assert(y < 2y);
+    assert(2y > y);
 
-    year y2 = y1 + years{4};
-    assert(y2 == 5y);
-    y2 = years{4} + y1;
-    assert(y2 == 5y);
+    assert(y + years{4} == 5y);
+    assert(years{4} + y == 5y);
 
-    year y3 = y2 - years{4};
-    assert(y3 == 1y);
+    assert(y - years{4} == -3y);
 }
 
 constexpr void weekday_test() {
@@ -534,7 +524,7 @@ constexpr void year_month_weekday_last_test() {
 
     assert(ymwdl + months{2} == 2020y / March / Monday[last]);
     assert(months{2} + ymwdl == 2020y / March / Monday[last]);
-    
+
     assert(ymwdl - months{2} == 2019y / November / Monday[last]);
 
     assert(ymwdl + years{2} == 2022y / January / Monday[last]);
