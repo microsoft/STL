@@ -323,7 +323,7 @@ constexpr void year_month_test() {
 }
 
 constexpr void year_month_day_test() {
-    year_month_day ymd1{year{2020}, month{1}, day{1}};
+    year_month_day ymd1{2020y / January / 1d};
     assert(ymd1.year() == 2020y);
     assert(ymd1.month() == January);
     assert(ymd1.day() == 1d);
@@ -363,10 +363,10 @@ constexpr void year_month_day_test() {
     assert(ymd1.month() == January);
     assert(ymd1.day() == 1d);
 
-    assert((year_month_day{2020y, April, 06d} == sys_days{days{18'358}}));
-    assert(year_month_day{sys_days{2017y / January / 0}} == 2016y / December / 31);
-    assert(year_month_day{sys_days{2017y / January / 31}} == 2017y / January / 31);
-    assert(year_month_day{sys_days{2017y / January / 32}} == 2017y / February / 1);
+    assert(2020y / April / 06d == sys_days{days{18'358}});
+    assert(sys_days{2017y / January / 0} == 2016y / December / 31);
+    assert(sys_days{2017y / January / 31} == 2017y / January / 31);
+    assert(sys_days{2017y / January / 32} == 2017y / February / 1);
 
     assert(static_cast<local_days>(ymld) == local_days{});
 
@@ -388,62 +388,50 @@ constexpr void year_month_day_test() {
     //    }
     //}
 
-    assert((year_month_day{2020y, January, 1d} == year_month_day{2020y, January, 1d}));
-    assert((year_month_day{2019y, January, 1d} < year_month_day{2020y, January, 1d}));
-    assert((year_month_day{2020y, January, 1d} < year_month_day{2020y, February, 1d}));
-    assert((year_month_day{2020y, January, 1d} < year_month_day{2020y, January, 2d}));
-    assert((year_month_day{2020y, January, 1d} > year_month_day{2019y, January, 1d}));
-    assert((year_month_day{2020y, February, 1d} > year_month_day{2020y, January, 1d}));
-    assert((year_month_day{2020y, January, 2d} > year_month_day{2020y, January, 1d}));
+    assert(2020y / January / 1d == 2020y / January / 1d);
+    assert(2019y / January / 1d < 2020y / January / 1d);
+    assert(2020y / January / 1d < 2020y / February / 1d);
+    assert(2020y / January / 1d < 2020y / January / 2d);
+    assert(2020y / January / 1d > 2019y / January / 1d);
+    assert(2020y / February / 1d > 2020y / January / 1d);
+    assert(2020y / January / 2d > 2020y / January / 1d);
 
-    const auto ymd3 = year_month_day{2019y, December, 31d} + months{2};
-    assert((ymd3 == year_month_day{2020y, February, 31d}));
+    const auto ymd3 = 2019y / December / 31d + months{2};
+    assert(ymd3 == 2020y / February / 31d);
     assert(!ymd3.ok());
-    assert((months{2} + year_month_day{2019y, December, 31d} == ymd3));
+    assert(months{2} + 2019y / December / 31d == ymd3);
 
-    const auto ymd4 = year_month_day{2020y, January, 1d} - months{2};
-    assert((ymd4 == year_month_day{2019y, November, 1d}));
 
-    const auto ymd5 = year_month_day{2020y, January, 1d} + years{2};
-    assert((ymd5 == year_month_day{2022y, January, 1d}));
-    assert((years{2} + year_month_day{2020y, January, 1d} == ymd5));
+    assert(2020y / January / 1d - months{2} == 2019y / November / 1d);
 
-    const auto ymd6 = year_month_day{2020y, January, 1d} - years{2};
-    assert((ymd6 == year_month_day{2018y, January, 1d}));
+    assert(2020y / January / 1d + years{2} == 2022y / January / 1d);
+    assert(years{2} + 2020y / January / 1d == 2022y / January / 1d);
+
+    assert(2020y / January / 1d - years{2} == 2018y / January / 1d);
 }
 
 constexpr void year_month_day_last_test() {
-    year_month_day_last ymdl{2020y, month_day_last{February}};
+    auto ymdl = 2020y / February / last;
+    assert(ymdl == 2020y / February / last);
+    assert(ymdl == 2020y / February / 29d);
     assert(ymdl.year() == 2020y);
     assert(ymdl.month() == February);
-    assert((ymdl.month_day_last() == month_day_last{February}));
+    assert(ymdl.month_day_last() == February / last);
     assert(ymdl.day() == 29d);
 
     ymdl += months{2};
-    assert(ymdl.year() == 2020y);
-    assert(ymdl.month() == April);
-    assert((ymdl.month_day_last() == month_day_last{April}));
-    assert(ymdl.day() == 30d);
+    assert(ymdl == 2020y / April / 30d);
 
     ymdl -= months{2};
-    assert(ymdl.year() == 2020y);
-    assert(ymdl.month() == February);
-    assert((ymdl.month_day_last() == month_day_last{February}));
-    assert(ymdl.day() == 29d);
+    assert(ymdl == 2020y / February / 29d);
 
     ymdl += years{2};
-    assert(ymdl.year() == 2022y);
-    assert(ymdl.month() == February);
-    assert((ymdl.month_day_last() == month_day_last{February}));
-    assert(ymdl.day() == 28d);
+    assert(ymdl == 2022y / February / 28d);
 
     ymdl -= years{2};
-    assert(ymdl.year() == 2020y);
-    assert(ymdl.month() == February);
-    assert((ymdl.month_day_last() == month_day_last{February}));
-    assert(ymdl.day() == 29d);
+    assert(ymdl == 2020y / February / 29d);
 
-    assert((year_month_day_last{2020y, month_day_last{April}} == sys_days{days{18'382}}));
+    assert(2020y / April / last == sys_days{days{18'382}});
     assert(static_cast<local_days>(ymdl) == local_days{ymdl});
 
     // constexpr int y_min = static_cast<int>(year::min());
@@ -460,41 +448,33 @@ constexpr void year_month_day_last_test() {
     //    }
     //}
 
-    assert((ymdl == year_month_day_last{2020y, February / last}));
-    assert((ymdl < year_month_day_last{2021y, February / last}));
-    assert((ymdl < year_month_day_last{2020y, March / last}));
-    assert((year_month_day_last{2021y, February / last} > ymdl));
-    assert((year_month_day_last{2020y, March / last} > ymdl));
+    assert(ymdl < 2021y / February / last);
+    assert(ymdl < 2020y / March / last);
+    assert(2021y / February / last > ymdl);
+    assert(2020y / March / last > ymdl);
 
-    const auto ymdl2 = ymdl + months{2};
-    assert((ymdl2 == year_month_day_last{2020y, April / last}));
-    assert((ymdl2 == months{2} + ymdl));
+    assert(ymdl + months{2} == 2020y / April / last);
+    assert(months{2} + ymdl == 2020y / April / last);
 
-    const auto ymdl3 = ymdl - months{2};
-    assert((ymdl3 == year_month_day_last{2019y, December / last}));
+    assert(ymdl - months{2} == 2019y / December / last);
 
-    const auto ymdl4 = ymdl + years{2};
-    assert((ymdl4 == year_month_day_last{2022y, February / last}));
-    assert((ymdl4 == years{2} + ymdl));
+    assert(ymdl + years{2} == 2022y / February / last);
+    assert(years{2} + ymdl == 2022y / February / last);
 
-    const auto ymdl5 = ymdl - years{2};
-    assert((ymdl5 == year_month_day_last{2018y, February / last}));
+    assert(ymdl - years{2} == 2018y / February / last);
 }
 
 constexpr void year_month_weekday_test() {
-    year_month_weekday ymwd{2020y, April, Tuesday[2]};
+    auto ymwd = 2020y / April / Tuesday[2];
+    assert(ymwd == 2020y / April / Tuesday[2]);
     assert(ymwd.year() == 2020y);
     assert(ymwd.month() == April);
     assert(ymwd.weekday() == Tuesday);
     assert(ymwd.index() == 2u);
-    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+    assert(ymwd.weekday_indexed() == Tuesday[2]);
 
     const year_month_weekday epoch{sys_days{}};
-    assert(epoch.year() == 1970y);
-    assert(epoch.month() == January);
-    assert(epoch.weekday() == Thursday);
-    assert(epoch.index() == 1u);
-    assert((epoch.weekday_indexed() == weekday_indexed{Thursday, 1}));
+    assert(epoch == 1970y / January / Thursday[1]);
 
     local_days ldp;
     sys_days sys{ldp.time_since_epoch()};
@@ -502,109 +482,65 @@ constexpr void year_month_weekday_test() {
     assert((ymlwd == year_month_weekday{sys}));
 
     ymwd += months{2};
-    assert(ymwd.year() == 2020y);
-    assert(ymwd.month() == June);
-    assert(ymwd.weekday() == Tuesday);
-    assert(ymwd.index() == 2u);
-    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
-
+    assert(ymwd == 2020y / June / Tuesday[2]);
     ymwd -= months{2};
-    assert(ymwd.year() == 2020y);
-    assert(ymwd.month() == April);
-    assert(ymwd.weekday() == Tuesday);
-    assert(ymwd.index() == 2u);
-    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+    assert(ymwd == 2020y / April / Tuesday[2]);
 
     ymwd += years{2};
-    assert(ymwd.year() == 2022y);
-    assert(ymwd.month() == April);
-    assert(ymwd.weekday() == Tuesday);
-    assert(ymwd.index() == 2u);
-    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
-
+    assert(ymwd == 2022y / April / Tuesday[2]);
     ymwd -= years{2};
-    assert(ymwd.year() == 2020y);
-    assert(ymwd.month() == April);
-    assert(ymwd.weekday() == Tuesday);
-    assert(ymwd.index() == 2u);
-    assert((ymwd.weekday_indexed() == weekday_indexed{Tuesday, 2}));
+    assert(ymwd == 2020y / April / Tuesday[2]);
 
     assert(static_cast<sys_days>(epoch) == sys_days{});
-    year_month_weekday prev{1970y / January / Thursday[0]};
+    const auto prev = 1970y / January / Thursday[0];
     assert(static_cast<sys_days>(prev) == (sys_days{} - days{7}));
     assert(static_cast<local_days>(ymwd) == local_days{ymwd});
 
 
-    assert((year_month_weekday{2020y / April / Wednesday[5]}.ok()));
-    assert((!year_month_weekday{2020y / April / Tuesday[5]}.ok()));
+    assert((2020y / April / Wednesday[5]).ok());
+    assert(!(2020y / April / Tuesday[5]).ok());
 
-    assert((ymwd == year_month_weekday{2020y, April, Tuesday[2]}));
+    assert(ymwd + months{2} == 2020y / June / Tuesday[2]);
+    assert(months{2} + ymwd == 2020y / June / Tuesday[2]);
 
-    const auto ymwd2 = ymwd + months{2};
-    assert((ymwd2 == year_month_weekday{2020y, June, Tuesday[2]}));
-    const auto ymwd3 = months{2} + ymwd;
-    assert(ymwd2 == ymwd3);
+    assert(ymwd - months{2} == 2020y / February / Tuesday[2]);
 
-    const auto ymwd4 = ymwd - months{2};
-    assert((ymwd4 == year_month_weekday{2020y, February, Tuesday[2]}));
+    assert(ymwd + years{2} == 2022y / April / Tuesday[2]);
+    assert(years{2} + ymwd == 2022y / April / Tuesday[2]);
 
-    const auto ymwd5 = ymwd + years{2};
-    assert((ymwd5 == year_month_weekday{2022y, April, Tuesday[2]}));
-    const auto ymwd6 = years{2} + ymwd;
-    assert(ymwd5 == ymwd6);
-
-    const auto ymwd7 = ymwd - years{2};
-    assert((ymwd7 == year_month_weekday{2018y, April, Tuesday[2]}));
+    assert(ymwd - years{2} == 2018y / April / Tuesday[2]);
 }
 
 constexpr void year_month_weekday_last_test() {
-    year_month_weekday_last ymwdl{2020y, January, Monday[last]};
+    auto ymwdl = 2020y / January / Monday[last];
+    assert(ymwdl == 2020y / January / Monday[last]);
     assert(ymwdl.year() == 2020y);
     assert(ymwdl.month() == January);
     assert(ymwdl.weekday() == Monday);
     assert(ymwdl.weekday_last() == Monday[last]);
 
     ymwdl += months{2};
-    assert(ymwdl.year() == 2020y);
-    assert(ymwdl.month() == March);
-    assert(ymwdl.weekday() == Monday);
-    assert(ymwdl.weekday_last() == Monday[last]);
-
+    assert(ymwdl == 2020y / March / Monday[last]);
     ymwdl -= months{2};
-    assert(ymwdl.year() == 2020y);
-    assert(ymwdl.month() == January);
-    assert(ymwdl.weekday() == Monday);
-    assert(ymwdl.weekday_last() == Monday[last]);
+    assert(ymwdl == 2020y / January / Monday[last]);
 
     ymwdl += years{2};
-    assert(ymwdl.year() == 2022y);
-    assert(ymwdl.month() == January);
-    assert(ymwdl.weekday() == Monday);
-    assert(ymwdl.weekday_last() == Monday[last]);
-
+    assert(ymwdl == 2022y / January / Monday[last]);
     ymwdl -= years{2};
-    assert(ymwdl.year() == 2020y);
-    assert(ymwdl.month() == January);
-    assert(ymwdl.weekday() == Monday);
-    assert(ymwdl.weekday_last() == Monday[last]);
+    assert(ymwdl == 2020y / January / Monday[last]);
 
     assert((static_cast<sys_days>(ymwdl) == sys_days{days{18'288}}));
     assert((static_cast<local_days>(ymwdl) == local_days{ymwdl}));
 
-    const auto ymwdl2 = ymwdl + months{2};
-    assert((ymwdl2 == 2020y / March / Monday[last]));
-    const auto ymwdl3 = months{2} + ymwdl;
-    assert(ymwdl3 == ymwdl2);
+    assert(ymwdl + months{2} == 2020y / March / Monday[last]);
+    assert(months{2} + ymwdl == 2020y / March / Monday[last]);
+    
+    assert(ymwdl - months{2} == 2019y / November / Monday[last]);
 
-    const auto ymwdl4 = ymwdl - months{2};
-    assert(ymwdl4 == 2019y / November / Monday[last]);
+    assert(ymwdl + years{2} == 2022y / January / Monday[last]);
+    assert(years{2} + ymwdl == 2022y / January / Monday[last]);
 
-    const auto ymwdl5 = ymwdl + years{2};
-    assert(ymwdl5 == 2022y / January / Monday[last]);
-    const auto ymwdl6 = years{2} + ymwdl;
-    assert(ymwdl6 == ymwdl5);
-    const auto ymwdl7 = ymwdl - years{2};
-    assert(ymwdl7 == 2018y / January / Monday[last]);
+    assert(ymwdl - years{2} == 2018y / January / Monday[last]);
 }
 
 constexpr bool test() {
