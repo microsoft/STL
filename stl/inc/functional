@@ -676,8 +676,8 @@ public:
         : _Mybase(_STD forward<_Callable>(_Obj)) { // store a callable object
     }
 
-    _CONSTEXPR20 _Not_fn(const _Not_fn&) noexcept = default;
-    _CONSTEXPR20 _Not_fn(_Not_fn&&) noexcept      = default;
+    _CONSTEXPR20 _Not_fn(const _Not_fn&) = default;
+    _CONSTEXPR20 _Not_fn(_Not_fn&&)      = default;
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) & noexcept(
