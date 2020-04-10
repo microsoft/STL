@@ -23,7 +23,7 @@ struct s {
 
 constexpr int s2_int_line = __LINE__ + 3;
 struct s2 {
-    s2(source_location l = source_location::current()) : x{l} {}
+    constexpr s2(source_location l = source_location::current()) : x{l} {}
     constexpr s2([[maybe_unused]] int i) {}
     s x = source_location::current();
 };
