@@ -52,7 +52,7 @@ namespace std {
         using pointer           = int*;
         using reference         = int&;
     };
-}
+} // namespace std
 
 // Also test that forming iterator_traits<void *> does not cause a hard, not SFINAE-able, error
 template <class Ty, enable_if_t<is_same_v<Ty, void*>, int> = 0>

@@ -57,7 +57,7 @@ namespace {
     };
 
     typedef Microsoft::WRL::Wrappers::HandleT<HMODULETraits> HMODULEHandle;
-}
+} // unnamed namespace
 
 extern "C" int __crt_IsPackagedAppHelper() {
     static wchar_t const* const possible_apisets[] = {

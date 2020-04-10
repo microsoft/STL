@@ -7029,7 +7029,7 @@ namespace msvc {
             static_assert(sizeof(S::member) == sizeof(std::variant<std::function<S()>>));
             static_assert(sizeof(S) >= sizeof(S::member));
         }
-    }
+    } // namespace vso468746
 
     namespace vso492097 {
         // Defend against regression of VSO-492097
@@ -7066,7 +7066,7 @@ namespace msvc {
             static_assert(!std::is_copy_constructible_v<std::variant<volatile S>>);
         }
     } // namespace vso508126
-} // unnamed namespace
+} // namespace msvc
 
 int main() {
     bad_variant_access::run_test();

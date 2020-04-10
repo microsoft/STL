@@ -36,7 +36,7 @@ namespace detail {
             return permissive();
         }
     };
-}
+} // namespace detail
 constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <bool>
