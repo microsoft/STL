@@ -4,6 +4,8 @@
 // test atomic operations on shared_ptr objects
 #define TEST_NAME "atomic shared_ptr operations"
 
+#define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING
+
 #include "tdefs.h"
 #include <assert.h>
 #include <atomic>
