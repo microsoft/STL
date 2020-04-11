@@ -2162,16 +2162,36 @@ _CONSTEXPR20 bool test_more_bind() {
 
 #if _HAS_CXX20
     struct NothrowInvocable {
-        void operator()([[maybe_unused]] int i) noexcept {}
+        int operator()(int i) noexcept {
+            return i;
+        }
     };
     struct NotNothrowInvocable {
-        void operator()([[maybe_unused]] int i) {}
+        int operator()(int i) {
+            return i;
+        }
+    };
+    struct PossiblyThrowingInt {
+        int i;
+        PossiblyThrowingInt() = default;
+        PossiblyThrowingInt(int j) : i(j) {}
+        operator int() {
+            return i;
+        }
     };
 
     static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, 0))>);
     static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), int>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, PossiblyThrowingInt{}))>);
     static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, 0))>);
     static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, _1)), int>);
 #endif // _HAS_CXX20
 
     return true;
