@@ -629,16 +629,16 @@ namespace chrono {
                 volatile long long _Ctr_base    = LLONG_MAX;
                 volatile long long _Result_base = LLONG_MAX;
             } _Cached;
-            long long _Freq              = _Atomic_load_ll_relaxed(&_Cached._Freq);
-            const long long _Ctr_base    = _Atomic_load_ll_relaxed(&_Cached._Ctr_base);
-            const long long _Result_base = _Atomic_load_ll_relaxed(&_Cached._Result_base);
-            if (_Freq != LLONG_MAX && _Ctr_base != LLONG_MAX && _Result_base != LLONG_MAX) {
+            const long long _Freq_from_cache = _Atomic_load_ll_relaxed(&_Cached._Freq);
+            const long long _Ctr_base        = _Atomic_load_ll_relaxed(&_Cached._Ctr_base);
+            const long long _Result_base     = _Atomic_load_ll_relaxed(&_Cached._Result_base);
+            if (_Freq_from_cache != LLONG_MAX && _Ctr_base != LLONG_MAX && _Result_base != LLONG_MAX) {
                 // Fast path
                 const long long _Ctr = _Query_perf_counter();
-                return time_point(duration((_Ctr - _Ctr_base) * period::den / _Freq + _Result_base));
+                return time_point(duration((_Ctr - _Ctr_base) * period::den / _Freq_from_cache + _Result_base));
             }
             // Caclulate with two divisions to prevent overflow
-            _Freq                   = _Query_perf_frequency();
+            const long long _Freq   = _Query_perf_frequency();
             const long long _Ctr    = _Query_perf_counter();
             const long long _Result = _Scale_large_counter(_Ctr, _Freq);
             if (_Atomic_compare_exchange_strong_ll_cst_seq(&_Cached._Freq, _Freq, LLONG_MAX)) {
