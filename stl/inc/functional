@@ -681,7 +681,7 @@ public:
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) & noexcept(
-        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...))) // strengthened
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<_Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
