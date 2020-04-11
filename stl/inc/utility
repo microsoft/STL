@@ -270,7 +270,7 @@ struct pair { // store a pair of values
     template <class... _Types1, class... _Types2>
     _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2);
 
-    _CONSTEXPR20 pair& operator=(const volatile pair&) = delete;
+    pair& operator=(const volatile pair&) = delete;
 
     template <class _Myself = pair,
         enable_if_t<conjunction_v<_Is_copy_assignable_no_precondition_check<typename _Myself::first_type>,
