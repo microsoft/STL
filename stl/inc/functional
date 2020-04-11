@@ -643,12 +643,12 @@ private:
     _Memptr _Pm;
 
 public:
-    explicit constexpr _Mem_fn(_Memptr _Val) noexcept : _Pm(_Val) {}
+    constexpr explicit _Mem_fn(_Memptr _Val) noexcept : _Pm(_Val) {}
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
         noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)))
-        -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
+            -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
         return _STD invoke(_Pm, _STD forward<_Types>(_Args)...);
     }
 };
@@ -671,13 +671,13 @@ private:
 
 public:
     template <class _Callable, class _Tag, enable_if_t<is_same_v<_Tag, _Not_fn_tag>, int> = 0>
-    explicit constexpr _Not_fn(_Callable&& _Obj, _Tag) noexcept(
+    constexpr explicit _Not_fn(_Callable&& _Obj, _Tag) noexcept(
         is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
         : _Mybase(_STD forward<_Callable>(_Obj)) { // store a callable object
     }
 
-    _CONSTEXPR20 _Not_fn(const _Not_fn&) = default;
-    _CONSTEXPR20 _Not_fn(_Not_fn&&)      = default;
+    constexpr _Not_fn(const _Not_fn&) = default;
+    constexpr _Not_fn(_Not_fn&&)      = default;
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) & noexcept(
@@ -687,22 +687,22 @@ public:
     }
 
     template <class... _Types>
-    _CONSTEXPR20 auto operator()(_Types&&... _Args) const& noexcept(noexcept(!_STD invoke(this->_Get_val(),
-        _STD forward<_Types>(_Args)...)))
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) const& noexcept(
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<const _Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
-    _CONSTEXPR20 auto operator()(_Types&&... _Args) && noexcept(noexcept(!_STD invoke(_STD move(this->_Get_val()),
-        _STD forward<_Types>(_Args)...)))
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) && noexcept(
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<_Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
-    _CONSTEXPR20 auto operator()(_Types&&... _Args) const&& noexcept(noexcept(!_STD invoke(_STD move(this->_Get_val()),
-        _STD forward<_Types>(_Args)...)))
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) const&& noexcept(
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<const _Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
@@ -1434,7 +1434,7 @@ private:
     _Compressed_pair<_First, _Second> _Mypair;
 
 public:
-    explicit constexpr _Binder(_Fx&& _Func, _Types&&... _Args)
+    constexpr explicit _Binder(_Fx&& _Func, _Types&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                                   \

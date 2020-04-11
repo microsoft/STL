@@ -1636,7 +1636,7 @@ struct _Unforced {
 template <class _Cv_void>
 struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
     template <class... _Valtys>
-    static _CONSTEXPR17 void _Call(_Valtys&&... _Vals) { // INVOKE, "implicitly" converted to void
+    static _CONSTEXPR20 void _Call(_Valtys&&... _Vals) { // INVOKE, "implicitly" converted to void
         _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
@@ -1644,7 +1644,7 @@ struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
 template <class _Rx>
 struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
     template <class... _Valtys>
-    static _CONSTEXPR17 _Rx _Call(_Valtys&&... _Vals) { // INVOKE, implicitly converted to _Rx
+    static _CONSTEXPR20 _Rx _Call(_Valtys&&... _Vals) { // INVOKE, implicitly converted to _Rx
         return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
 };
@@ -1652,7 +1652,7 @@ struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and
 template <>
 struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     template <class... _Valtys>
-    static _CONSTEXPR17 auto _Call(_Valtys&&... _Vals)
+    static _CONSTEXPR20 auto _Call(_Valtys&&... _Vals)
         -> decltype(_STD invoke(static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
         return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
     }
@@ -1910,8 +1910,10 @@ public:
     template <class _Uty, enable_if_t<conjunction_v<negation<is_same<_Remove_cvref_t<_Uty>, reference_wrapper>>,
                                           _Refwrap_has_ctor_from<_Ty, _Uty>>,
                               int> = 0>
-    _CONSTEXPR20 reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>())))
-        : _Ptr(_STD addressof(static_cast<_Uty&&>(_Val))) {}
+    _CONSTEXPR20 reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) {
+        _Ty& _Ref = static_cast<_Uty&&>(_Val);
+        _Ptr      = _STD addressof(_Ref);
+    }
 
     _CONSTEXPR20 operator _Ty&() const noexcept {
         return *_Ptr;
@@ -1922,7 +1924,7 @@ public:
     }
 
 private:
-    _Ty* _Ptr;
+    _Ty* _Ptr{};
 
 public:
     template <class... _Types>

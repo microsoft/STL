@@ -17,8 +17,9 @@
 
 #if _HAS_CXX17
 #include <string_view>
+using string_or_view = std::string_view;
 #else
-using string_view = std::string;
+using string_or_view = std::string;
 #endif
 
 using namespace std;
@@ -881,6 +882,18 @@ _CONSTEXPR20 bool test_more_reference_wrapper() {
     auto crw3 = cref(crw);
     STATIC_ASSERT(is_same_v<decltype(crw3), reference_wrapper<const int>>);
     assert(&crw3.get() == &x);
+
+    struct Cat {};
+    struct Dog {
+        Cat cat;
+        constexpr operator Cat&() {
+            return cat;
+        }
+    };
+
+    Dog dog;
+    reference_wrapper<Cat> catref(dog);
+    assert(&catref.get() == &dog.cat);
 
     return true;
 }
@@ -2111,12 +2124,12 @@ _CONSTEXPR20 bool test_more_bind() {
         return p + i;
     };
 
-    const string_view s("cute fluffy kittens");
+    const string_or_view s("cute fluffy kittens");
 
     assert(bind<const char*>(lambda2, s.data(), _1)(2) == s.data() + 2);
     assert(calls == 1);
 
-    assert(bind<string_view>(lambda2, s.data(), _1)(3).size() == 16);
+    assert(bind<string_or_view>(lambda2, s.data(), _1)(3).size() == 16);
     assert(calls == 2);
 
     bind<void>(lambda2, s.data(), _1)(4);
