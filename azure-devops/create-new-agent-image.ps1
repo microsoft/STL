@@ -14,7 +14,7 @@ $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 8
+$TotalProgress = 10
 $CurrentProgress = 1
 
 function Find-ResourceGroupNameCollision {
@@ -190,17 +190,35 @@ New-AzVm `
 ####################################################################################################
 Write-Progress `
   -Activity $ProgressActivity `
-  -Status 'Running provisioning script in VM' `
+  -Status 'Running provisioning script provision-image.ps1 in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
-$PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
   -Parameter @{AdminUserPassword = $AdminPW }
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Restarting VM' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Running provisioning script sysprep.ps1 in VM' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Invoke-AzVMRunCommand `
+  -ResourceGroupName $ResourceGroupName `
+  -VMName $ProtoVMName `
+  -CommandId 'RunPowerShellScript' `
+  -ScriptPath "$PSScriptRoot\sysprep.ps1"
 
 ####################################################################################################
 Write-Progress `
@@ -226,6 +244,8 @@ Set-AzVM `
   -Name $ProtoVMName `
   -Generalized
 
+$VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+$PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 $ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
@@ -278,8 +298,7 @@ $Vmss = Set-AzVmssStorageProfile `
   -VirtualMachineScaleSet $Vmss `
   -OsDiskCreateOption 'FromImage' `
   -OsDiskCaching ReadWrite `
-  -ImageReferenceId $Image.Id `
-  -ManagedDisk Premium_LRS
+  -ImageReferenceId $Image.Id
 
 New-AzVmss `
   -ResourceGroupName $ResourceGroupName `

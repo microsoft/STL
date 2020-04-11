@@ -9,8 +9,8 @@
 //
 #include <range_algorithm_support.hpp>
 
-inline constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };
-inline constexpr auto is_odd  = [](auto const& x) { return x % 2 != 0; };
+constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };
+constexpr auto is_odd  = [](auto const& x) { return x % 2 != 0; };
 
 using R = std::array<std::pair<int, int>, 3>;
 
