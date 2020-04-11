@@ -2160,6 +2160,20 @@ _CONSTEXPR20 bool test_more_bind() {
         is_same_v<decltype(p11), Pack<const Typewriter&, const bool&,
                                      Pack<const Typewriter&, Z&, const Z&, Z&&, const Z&&>&&, Z&, const double&>>);
 
+#if _HAS_CXX20
+    struct NothrowInvocable {
+        void operator()([[maybe_unused]] int i) noexcept {}
+    };
+    struct NotNothrowInvocable {
+        void operator()([[maybe_unused]] int i) {}
+    };
+
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, _1)), int>);
+#endif // _HAS_CXX20
+
     return true;
 }
 
