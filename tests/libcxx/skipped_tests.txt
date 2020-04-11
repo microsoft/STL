@@ -482,12 +482,6 @@ language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
 # C++20 P1032R1 "Miscellaneous constexpr"
-language.support\support.limits\support.limits.general\array.version.pass.cpp
-language.support\support.limits\support.limits.general\functional.version.pass.cpp
-language.support\support.limits\support.limits.general\iterator.version.pass.cpp
-language.support\support.limits\support.limits.general\string_view.version.pass.cpp
-language.support\support.limits\support.limits.general\tuple.version.pass.cpp
-language.support\support.limits\support.limits.general\utility.version.pass.cpp
 strings\char.traits\char.traits.specializations\char.traits.specializations.char\assign3.pass.cpp
 strings\char.traits\char.traits.specializations\char.traits.specializations.char\copy.pass.cpp
 strings\char.traits\char.traits.specializations\char.traits.specializations.char\move.pass.cpp

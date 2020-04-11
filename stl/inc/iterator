@@ -38,7 +38,7 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    explicit _CONSTEXPR20 back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
+    _CONSTEXPR20 explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
         : container(_STD addressof(_Cont)) {}
 
     _CONSTEXPR20 back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
@@ -93,7 +93,7 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    explicit _CONSTEXPR20 front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
+    _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
     _CONSTEXPR20 front_insert_iterator& operator=(
         const typename _Container::value_type& _Val) { // push value into container
