@@ -1371,7 +1371,7 @@ struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
     static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
         noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>())))
         -> decltype(_Apply(_Tid, _STD move(_Ut),
-        make_index_sequence<tuple_size_v<_Untuple>>())) { // call a nested bind expression
+            make_index_sequence<tuple_size_v<_Untuple>>())) { // call a nested bind expression
         return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>());
     }
 };
@@ -1379,7 +1379,8 @@ struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, false, 0> { // identity fixer
     template <class _Untuple>
-    static constexpr _Cv_TiD& _Fix(_Cv_TiD& _Tid, _Untuple&&) noexcept { // pass a bound argument as an lvalue (important!)
+    static constexpr _Cv_TiD& _Fix(
+        _Cv_TiD& _Tid, _Untuple&&) noexcept { // pass a bound argument as an lvalue (important!)
         return _Tid;
     }
 };
