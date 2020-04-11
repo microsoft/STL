@@ -23,8 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum class endian { little = 0, big = 1, native = little };
-
 #ifdef __cpp_lib_bit_cast // TRANSITION, VSO-1041044
 template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
@@ -37,9 +35,7 @@ _NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
 
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int countl_zero(_Ty _Val) noexcept {
-    return _Countl_zero(_Val);
-}
+_NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
@@ -52,7 +48,7 @@ _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
         return 1;
     }
 
-    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - _Countl_zero(static_cast<_Ty>(_Val - 1))));
+    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - _STD countl_zero(static_cast<_Ty>(_Val - 1))));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
@@ -61,12 +57,12 @@ _NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
         return 0;
     }
 
-    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - 1 - _Countl_zero(_Val)));
+    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - 1 - _STD countl_zero(_Val)));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr _Ty bit_width(const _Ty _Val) noexcept {
-    return static_cast<_Ty>(numeric_limits<_Ty>::digits - _Countl_zero(_Val));
+    return static_cast<_Ty>(numeric_limits<_Ty>::digits - _STD countl_zero(_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
@@ -100,27 +96,33 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
+_NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    if (_Val == 0) {
+        return _Digits;
+    }
+
+    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
+        return __builtin_clz(_Val) - (numeric_limits<unsigned int>::digits - _Digits);
+    } else {
+        return __builtin_clzll(_Val) - (numeric_limits<unsigned long long>::digits - _Digits);
+    }
+}
+
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
-    return _Countl_zero(static_cast<_Ty>(~_Val));
+    return _STD countl_zero(static_cast<_Ty>(~_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countr_zero(const _Ty _Val) noexcept {
-    if (_Val == 0) {
-        return numeric_limits<_Ty>::digits;
-    }
-
-    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
-        return __builtin_ctz(_Val);
-    } else {
-        return __builtin_ctzll(_Val);
-    }
+    return _Countr_zero(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
-    return _STD countr_zero(static_cast<_Ty>(~_Val));
+    return _Countr_zero(static_cast<_Ty>(~_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
@@ -133,6 +135,7 @@ _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
 }
 #endif // __cpp_lib_bitops
 
+enum class endian { little = 0, big = 1, native = little };
 _STD_END
 
 #pragma pop_macro("new")
