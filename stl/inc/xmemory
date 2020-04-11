@@ -522,8 +522,8 @@ struct _Normal_allocator_traits { // defines traits for allocators
     }
 
 #if _HAS_IF_CONSTEXPR
-    _NODISCARD static __declspec(allocator) pointer allocate(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
+    _NODISCARD static __declspec(allocator) pointer
+        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         if constexpr (_Has_allocate_hint<_Alloc, size_type, const_void_pointer>::value) {
             return _Al.allocate(_Count, _Hint);
         } else {
@@ -532,18 +532,18 @@ struct _Normal_allocator_traits { // defines traits for allocators
         }
     }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-    static __declspec(allocator) pointer _Allocate1(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint, true_type) {
+    static __declspec(allocator) pointer
+        _Allocate1(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint, true_type) {
         return _Al.allocate(_Count, _Hint);
     }
 
-    static __declspec(allocator) pointer _Allocate1(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer, false_type) {
+    static __declspec(allocator) pointer
+        _Allocate1(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer, false_type) {
         return _Al.allocate(_Count);
     }
 
-    _NODISCARD static __declspec(allocator) pointer allocate(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
+    _NODISCARD static __declspec(allocator) pointer
+        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         return _Allocate1(_Al, _Count, _Hint, _Has_allocate_hint<_Alloc, size_type, const_void_pointer>{});
     }
 #endif // _HAS_IF_CONSTEXPR
@@ -682,8 +682,8 @@ struct _Default_allocator_traits { // traits for std::allocator
         return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
     }
 
-    _NODISCARD static __declspec(allocator) pointer allocate(
-        _Alloc&, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
+    _NODISCARD static __declspec(allocator) pointer
+        allocate(_Alloc&, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
         return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
     }
 
