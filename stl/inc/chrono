@@ -638,8 +638,8 @@ namespace chrono {
                 return time_point(duration((_Ctr - _Ctr_base) * period::den / _Freq + _Result_base));
             }
             // Caclulate with two divisions to prevent overflow
-            _Freq                = _Query_perf_frequency();
-            const long long _Ctr = _Query_perf_counter();
+            _Freq                   = _Query_perf_frequency();
+            const long long _Ctr    = _Query_perf_counter();
             const long long _Result = _Scale_large_counter(_Ctr, _Freq);
             if (_Atomic_compare_exchange_strong_ll_cst_seq(&_Cached._Freq, _Freq, LLONG_MAX)) {
                 // This is the first result, save current result as base for fast path
