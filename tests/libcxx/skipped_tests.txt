@@ -532,16 +532,6 @@ containers\views\span.cons\ptr_ptr.pass.cpp
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 thread\macro.pass.cpp
 
-# <concepts> hasn't been enabled for Clang yet.
-iterators\iterator.primitives\iterator.traits\pointer.pass.cpp
-iterators\iterator.primitives\std.iterator.tags\contiguous_iterator_tag.pass.cpp
-
-# Clang 9 doesn't support comparison rewriting; implemented in Clang 10.
-containers\views\span.iterators\begin.pass.cpp
-containers\views\span.iterators\end.pass.cpp
-containers\views\span.iterators\rbegin.pass.cpp
-containers\views\span.iterators\rend.pass.cpp
-
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?

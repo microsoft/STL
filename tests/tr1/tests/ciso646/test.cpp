@@ -15,10 +15,7 @@ void test_cpp() { // test C++ header
     CHECK(i == 0 or not(j == 0));
     i or_eq j;
     CHECK(i == 13);
-    // clang-format off
-    // TRANSITION, LLVM-43531
     j and_eq compl 4;
-    // clang-format on
     CHECK(j == 8);
     i xor_eq j xor 9;
     CHECK(i == 12);
