@@ -85,7 +85,7 @@ constexpr bool run_tests() {
         allocator<int> alloc;
         tuple<> tuple_alloc{allocator_arg, alloc};
         tuple<> tuple_alloc_copy{allocator_arg, alloc, tuple_alloc};
-        tuple<> tuple_alloc_value{_Alloc_exact_args_t{}, alloc};
+        [[maybe_unused]] tuple<> tuple_alloc_value{_Alloc_exact_args_t{}, alloc};
 
         swap(tuple_alloc, tuple_alloc_copy);
         tuple_alloc.swap(tuple_alloc_copy);
@@ -100,14 +100,16 @@ constexpr bool run_tests() {
         const pair<short, int> constConversionInputPair{static_cast<short>(1), 1};
 
         tuple<int, double> tuple_alloc{allocator_arg, alloc};
-        tuple<int, double> tuple_alloc_value{allocator_arg, alloc, 1, 2.0};
-        tuple<int, double> tuple_alloc_conversion{allocator_arg, alloc, static_cast<short>(1), 1};
-        tuple<int, double> tuple_alloc_conversion_tuple{allocator_arg, alloc, conversionInput};
-        tuple<int, double> tuple_alloc_conversion_const_tuple{allocator_arg, alloc, constConversionInput};
-        tuple<int, double> tuple_alloc_conversion_pair{allocator_arg, alloc, conversionInputPair};
-        tuple<int, double> tuple_alloc_conversion_const_pair{allocator_arg, alloc, constConversionInputPair};
         tuple<int, double> tuple_alloc_copy{allocator_arg, alloc, tuple_alloc};
-        tuple<int, double> tuple_alloc_move{allocator_arg, alloc, move(tuple_alloc)};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_value{allocator_arg, alloc, 1, 2.0};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion{allocator_arg, alloc, static_cast<short>(1), 1};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_tuple{allocator_arg, alloc, conversionInput};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_const_tuple{
+            allocator_arg, alloc, constConversionInput};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_pair{allocator_arg, alloc, conversionInputPair};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_const_pair{
+            allocator_arg, alloc, constConversionInputPair};
+        [[maybe_unused]] tuple<int, double> tuple_alloc_move{allocator_arg, alloc, move(tuple_alloc)};
 
         swap(tuple_alloc, tuple_alloc_copy);
         tuple_alloc.swap(tuple_alloc_copy);
@@ -191,7 +193,7 @@ constexpr bool run_tests() {
         string_view in     = "This is some string";
         string_view needle = "some";
         default_searcher meow{needle.begin(), needle.end()};
-        auto [first, second] = meow(in.begin(), in.end());
+        [[maybe_unused]] auto [first, second] = meow(in.begin(), in.end());
     }
 
     return true;
