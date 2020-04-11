@@ -1810,30 +1810,29 @@ struct _Unforced {
 
 template <class _Cv_void>
 struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
-    template <class... _Valtys>
-    static _CONSTEXPR20 void _Call(_Valtys&&... _Vals) noexcept(
-        _Select_invoke_traits<_Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
-        _STD invoke(static_cast<_Valtys&&>(_Vals)...);
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 void _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
+        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
+        _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
 template <class _Rx>
 struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
-    template <class... _Valtys>
-    static _CONSTEXPR20 _Rx _Call(_Valtys&&... _Vals) noexcept(
-        _Select_invoke_traits<_Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly
-                                                                                           // converted to _Rx
-        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
+        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted to _Rx
+        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
 template <>
 struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
-    template <class... _Valtys>
-    static _CONSTEXPR20 auto _Call(_Valtys&&... _Vals) noexcept(
-        _Select_invoke_traits<_Valtys...>::_Is_nothrow_invocable::value)
-        -> decltype(_STD invoke(static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
-        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
+        _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
+        -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
