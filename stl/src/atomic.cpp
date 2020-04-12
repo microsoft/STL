@@ -29,7 +29,6 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
     __dmb(_ARM_BARRIER_ISH);
 #endif // defined(_M_ARM) || defined(_M_ARM64)
     __iso_volatile_store32(reinterpret_cast<volatile int*>(&_Shared_ptr_flag), 0);
-
 }
 
 _END_EXTERN_C
