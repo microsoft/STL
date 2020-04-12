@@ -5,8 +5,8 @@
 
 #include <yvals.h>
 
-#include <xatomic_wait.h>
 #include <intrin.h>
+#include <xatomic_wait.h>
 #pragma warning(disable : 4793)
 
 _EXTERN_C
