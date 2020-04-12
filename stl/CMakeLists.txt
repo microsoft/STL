@@ -195,6 +195,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/vector
     ${CMAKE_CURRENT_LIST_DIR}/inc/version
     ${CMAKE_CURRENT_LIST_DIR}/inc/xatomic.h
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xatomic_wait.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xbit_ops.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcall_once.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv.h
