@@ -94,7 +94,7 @@ namespace {
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
-    template<class _Function_pointer>
+    template <class _Function_pointer>
     inline void _Save_function_pointer_relaxed(std::atomic<_Function_pointer>& _Dest, FARPROC _Src) {
         _Dest.store(reinterpret_cast<_Function_pointer>(_Src), std::memory_order_relaxed);
     }
@@ -135,7 +135,7 @@ namespace {
                 _Save_function_pointer_relaxed(functions._Pfn_SleepConditionVariableSRW, sleep_condition_variable_srw);
                 _Save_function_pointer_relaxed(functions._Pfn_WakeAllConditionVariable, wake_all_condition_variable);
             }
-            
+
             functions._Initialized.store(true, std::memory_order_release);
         }
         return functions;
@@ -160,8 +160,7 @@ namespace {
         return fn(_Condition_variable, _Lock, _Milliseconds, _Flags);
     }
 
-    inline void __crtWakeAllConditionVariable(
-        PCONDITION_VARIABLE _Condition_variable) {
+    inline void __crtWakeAllConditionVariable(PCONDITION_VARIABLE _Condition_variable) {
         auto fn = _Get_Condition_variable_functions()._Pfn_WakeAllConditionVariable.load(std::memory_order_relaxed);
         fn(_Condition_variable);
     }
@@ -214,7 +213,7 @@ namespace {
 
                 ::Sleep(std::min<DWORD>(sleep_value, remaining_waiting_time));
 
-                auto next_sleep_value = std::min<DWORD>(sleep_value + sleep_value/2, 4000);
+                auto next_sleep_value = std::min<DWORD>(sleep_value + sleep_value / 2, 4000);
 
                 _Wait_context._Wait_phase_and_spin_count =
                     _Atomic_wait_phase_sleep | next_sleep_value * _Atomic_spin_value_step;
