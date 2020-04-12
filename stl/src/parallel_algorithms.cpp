@@ -6,15 +6,12 @@
 #include <corecrt_terminate.h>
 #include <internal_shared.h>
 #include <intrin0.h>
+#include <xatomic_wait.h>
 
 // This must be as small as possible, because its contents are
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
-
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-#pragma comment(lib, "synchronization") // for WaitOnAddress family
-#endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 namespace {
@@ -25,13 +22,7 @@ namespace {
         decltype(SubmitThreadpoolWork)* _Pfn_SubmitThreadpoolWork;
         decltype(CloseThreadpoolWork)* _Pfn_CloseThreadpoolWork;
         decltype(WaitForThreadpoolWorkCallbacks)* _Pfn_WaitForThreadpoolWorkCallbacks;
-        decltype(AcquireSRWLockExclusive)* _Pfn_AcquireSRWLockExclusive; // nullptr if _Pfn_WaitOnAddress is non-nullptr
-        decltype(ReleaseSRWLockExclusive)* _Pfn_ReleaseSRWLockExclusive; // ditto
-        decltype(SleepConditionVariableSRW)* _Pfn_SleepConditionVariableSRW; // ditto
-        decltype(WakeAllConditionVariable)* _Pfn_WakeAllConditionVariable; // ditto
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-        decltype(WaitOnAddress)* _Pfn_WaitOnAddress;
-        decltype(WakeByAddressAll)* _Pfn_WakeByAddressAll;
     };
 
     _Parallel_init_info _Parallel_info;
@@ -92,9 +83,8 @@ namespace {
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64))
 #error Check hardware assumption: Assumes that write races of identical values to pointer-sized variables are benign
 #endif // !(defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64))
-
-        HMODULE _Kernel32 = GetModuleHandleW(L"kernel32.dll");
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+        HMODULE _Kernel32 = GetModuleHandleW(L"kernel32.dll");
         _Parallel_info._Pfn_CreateThreadpoolWork =
             reinterpret_cast<decltype(CreateThreadpoolWork)*>(GetProcAddress(_Kernel32, "CreateThreadpoolWork"));
         _Parallel_info._Pfn_SubmitThreadpoolWork =
@@ -110,42 +100,6 @@ namespace {
             return false;
         }
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-        HMODULE _KernelBase = GetModuleHandleW(L"kernelbase.dll");
-        if (_KernelBase) {
-            _Parallel_info._Pfn_WaitOnAddress =
-                reinterpret_cast<decltype(WaitOnAddress)*>(GetProcAddress(_KernelBase, "WaitOnAddress"));
-            _Parallel_info._Pfn_WakeByAddressAll =
-                reinterpret_cast<decltype(WakeByAddressAll)*>(GetProcAddress(_KernelBase, "WakeByAddressAll"));
-            if ((_Parallel_info._Pfn_WaitOnAddress == nullptr) != (_Parallel_info._Pfn_WakeByAddressAll == nullptr)) {
-                // if we don't have both we can use neither
-                _Parallel_info._Pfn_WaitOnAddress    = nullptr;
-                _Parallel_info._Pfn_WakeByAddressAll = nullptr;
-            }
-        }
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-        if (_Parallel_info._Pfn_WaitOnAddress) { // no need for SRWLOCK or CONDITION_VARIABLE if we have WaitOnAddress
-            return true;
-        }
-
-        _Parallel_info._Pfn_AcquireSRWLockExclusive =
-            reinterpret_cast<decltype(AcquireSRWLockExclusive)*>(GetProcAddress(_Kernel32, "AcquireSRWLockExclusive"));
-        _Parallel_info._Pfn_ReleaseSRWLockExclusive =
-            reinterpret_cast<decltype(ReleaseSRWLockExclusive)*>(GetProcAddress(_Kernel32, "ReleaseSRWLockExclusive"));
-        _Parallel_info._Pfn_SleepConditionVariableSRW = reinterpret_cast<decltype(SleepConditionVariableSRW)*>(
-            GetProcAddress(_Kernel32, "SleepConditionVariableSRW"));
-        _Parallel_info._Pfn_WakeAllConditionVariable = reinterpret_cast<decltype(WakeAllConditionVariable)*>(
-            GetProcAddress(_Kernel32, "WakeAllConditionVariable"));
-
-        if (!_Parallel_info._Pfn_AcquireSRWLockExclusive || !_Parallel_info._Pfn_ReleaseSRWLockExclusive
-            || !_Parallel_info._Pfn_SleepConditionVariableSRW || !_Parallel_info._Pfn_WakeAllConditionVariable) {
-            // no fallback for WaitOnAddress; shouldn't be possible as these
-            // APIs were added at the same time as the Windows Vista threadpool API
-            return false;
-        }
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
         return true;
     }
 } // unnamed namespace
@@ -230,70 +184,24 @@ void __stdcall __std_wait_for_threadpool_work_callbacks(PTP_WORK _Work, BOOL _Ca
 }
 
 void __stdcall __std_execution_wait_on_uchar(const volatile unsigned char* _Address, unsigned char _Compare) noexcept {
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-    if (WaitOnAddress(const_cast<volatile unsigned char*>(_Address), &_Compare, 1, INFINITE) == FALSE) {
-        // this API failing should only be possible with a timeout, and we asked for INFINITE
-        ::terminate();
-    }
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 ^^^ / vvv _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
-    if (_Parallel_info._Pfn_WaitOnAddress) {
-        if (_Parallel_info._Pfn_WaitOnAddress(const_cast<volatile unsigned char*>(_Address), &_Compare, 1, INFINITE)
-            == FALSE) {
-            ::terminate();
-        }
+    _Atomic_wait_context_t _Wait_context;
 
-        return;
-    }
-
-    // fake WaitOnAddress via SRWLOCK and CONDITION_VARIABLE
-    for (int _Idx = 0; _Idx < 4096; ++_Idx) { // optimistic non-backoff spin
-        if (_Atomic_load_uchar(_Address) == _Compare) {
+#if defined(_M_IX86) || defined(_M_X64)
+    while (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
+        if (_Atomic_load_uchar(_Address) != _Compare) {
             return;
         }
     }
 
-    auto& _Wait_entry = _Wait_table[_Choose_wait_entry(_Address)];
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    _Parallel_info._Pfn_AcquireSRWLockExclusive(&_Wait_entry._Mtx);
-    while (_Atomic_load_uchar(_Address) == _Compare) {
-        if (_Parallel_info._Pfn_SleepConditionVariableSRW(&_Wait_entry._Cv, &_Wait_entry._Mtx, INFINITE, 0) == 0) {
-            ::terminate();
+    for (;;) {
+        __std_atomic_wait_direct(const_cast<const unsigned char*>(_Address), &_Compare, 1, _Wait_context);
+        if (_Atomic_load_uchar(_Address) != _Compare) {
+            break;
         }
     }
-
-    _Parallel_info._Pfn_ReleaseSRWLockExclusive(&_Wait_entry._Mtx);
-#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ / vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
-    AcquireSRWLockExclusive(&_Wait_entry._Mtx);
-    while (_Atomic_load_uchar(_Address) == _Compare) {
-        if (SleepConditionVariableSRW(&_Wait_entry._Cv, &_Wait_entry._Mtx, INFINITE, 0) == 0) {
-            ::terminate();
-        }
-    }
-
-    ReleaseSRWLockExclusive(&_Wait_entry._Mtx);
-#endif // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA ^^^
-#endif // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 ^^^
-}
-
-void __stdcall __std_execution_wake_by_address_all(const volatile void* _Address) noexcept {
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-    WakeByAddressAll(const_cast<void*>(_Address));
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 ^^^ / vvv _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
-    if (_Parallel_info._Pfn_WakeByAddressAll) {
-        _Parallel_info._Pfn_WakeByAddressAll(const_cast<void*>(_Address));
-    } else {
-        auto& _Wait_entry = _Wait_table[_Choose_wait_entry(_Address)];
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-        _Parallel_info._Pfn_AcquireSRWLockExclusive(&_Wait_entry._Mtx);
-        _Parallel_info._Pfn_ReleaseSRWLockExclusive(&_Wait_entry._Mtx);
-        _Parallel_info._Pfn_WakeAllConditionVariable(&_Wait_entry._Cv);
-#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ / vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
-        AcquireSRWLockExclusive(&_Wait_entry._Mtx);
-        ReleaseSRWLockExclusive(&_Wait_entry._Mtx);
-        WakeAllConditionVariable(&_Wait_entry._Cv);
-#endif // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA ^^^
-    }
-#endif // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 ^^^
+#else // ^^^ x86/x64 / ARM/ARM64 vvv
+    __std_atomic_wait_direct(const_cast<const unsigned char*>(_Address), &_Compare, 1, _Wait_context);
+#endif // architecture
 }
 
 } // extern "C"
