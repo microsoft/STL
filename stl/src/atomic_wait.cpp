@@ -105,6 +105,8 @@ namespace {
             if (!::SleepConditionVariableSRW(
                     &_Entry._Condition, &_Entry._Lock, _Get_remaining_waiting_time(_Wait_context), 0)) {
                 _Assume_timeout();
+                ::ReleaseSRWLockExclusive(&_Entry._Lock);
+                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
                 return false;
             }
             // re-check, and still in _Atomic_wait_phase_wait_locked
