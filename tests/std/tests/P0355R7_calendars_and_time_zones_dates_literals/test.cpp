@@ -53,6 +53,7 @@ TYPE_ASSERT(weekday, Wednesday)
 TYPE_ASSERT(weekday, Thursday)
 TYPE_ASSERT(weekday, Friday)
 TYPE_ASSERT(weekday, Saturday)
+TYPE_ASSERT(last_spec, last)
 TYPE_ASSERT(weekday_indexed, declval<weekday>()[1])
 TYPE_ASSERT(weekday_last, declval<weekday>()[last])
 
