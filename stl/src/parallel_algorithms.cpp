@@ -27,25 +27,6 @@ namespace {
 
     _Parallel_init_info _Parallel_info;
 
-    struct _Wait_semaphore {
-        SRWLOCK _Mtx;
-        CONDITION_VARIABLE _Cv;
-    };
-
-    constexpr int _Wait_table_size      = 256; // one 4k page
-    constexpr int _Wait_table_max_index = _Wait_table_size - 1;
-    _Wait_semaphore _Wait_table[_Wait_table_size]{};
-    size_t _Choose_wait_entry(const volatile void* _Target) noexcept {
-        auto _Num = reinterpret_cast<uintptr_t>(_Target);
-#ifdef _WIN64
-        _Num = (_Num & ((1ull << 32) - 1ull)) ^ (_Num >> 32); // down to 32 bits
-#endif // _WIN64
-        _Num = (_Num & ((1u << 16) - 1u)) ^ (_Num >> 16); // to 16 bits
-        _Num = (_Num & ((1u << 8) - 1u)) ^ (_Num >> 8); // to 8 bits
-        static_assert(_Wait_table_max_index == (1 << 8) - 1, "Bad wait table size assumption");
-        return _Num;
-    }
-
     unsigned char _Atomic_load_uchar(const volatile unsigned char* _Ptr) noexcept {
         // atomic load of unsigned char, copied from <atomic> except ARM and ARM64 bits
         unsigned char _Value;
