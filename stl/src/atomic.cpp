@@ -18,7 +18,7 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_
     _Atomic_wait_context_t _Wait_context;
 #ifdef _M_ARM
     while (_InterlockedExchange_acq(&_Shared_ptr_flag, 1)) {
-        _Atomic_wait_direct_timed_for_internal_spinlock(&_Shared_ptr_flag, 1L, _Context);
+        _Atomic_wait_direct_for_internal_spinlock(&_Shared_ptr_flag, 1L, _Wait_context);
     }
 #else // _M_ARM
     while (_interlockedbittestandset(&_Shared_ptr_flag, 0)) { // set bit 0
