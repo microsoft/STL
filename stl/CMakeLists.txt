@@ -261,6 +261,7 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/_tolower.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/_toupper.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/atomic.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/atomic_wait.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cerr.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cin.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/clog.cpp

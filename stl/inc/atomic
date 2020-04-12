@@ -416,8 +416,9 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
+        _Atomic_wait_context_t _Wait_context;
         while (_InterlockedExchange(&_Spinlock, 1)) {
-            _YIELD_PROCESSOR();
+            _Atomic_wait_direct_for_internal_spinlock(&_Spinlock, 1L, _Wait_context);
         }
     }
 
@@ -429,6 +430,7 @@ struct _Atomic_storage {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
         _InterlockedExchange(&_Spinlock, 0);
 #endif // hardware
+        __std_atomic_notify_one_direct(&_Spinlock);
     }
 
 private:
@@ -439,8 +441,9 @@ public:
 
 #else // ^^^ don't break ABI / break ABI vvv
     void _Lock() const noexcept { // lock the spinlock
+        _Atomic_wait_context_t _Wait_context;
         while (_InterlockedExchange8(&_Spinlock, 1)) {
-            _YIELD_PROCESSOR();
+            _Atomic_wait_direct_for_internal_spinlock(&_Spinlock, '\1', _Wait_context);
         }
     }
 
@@ -452,6 +455,7 @@ public:
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
         _InterlockedExchange8(&_Spinlock, 0);
 #endif // hardware
+        __std_atomic_notify_one_direct(&_Spinlock);
     }
 
     _Ty _Storage;
