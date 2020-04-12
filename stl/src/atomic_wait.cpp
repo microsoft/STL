@@ -73,14 +73,15 @@ namespace {
     constexpr bool _Have_wait_functions() {
         return true;
     }
+
 #define __crtWaitOnAddress       WaitOnAddress
 #define __crtWakeByAddressSingle WakeByAddressSingle
 #define __crtWakeByAddressAll    WakeByAddressAll
 
 #pragma comment(lib, "Synchronization.lib")
 
-    [[noreturn]] void _Atomic_wait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {
+    [[noreturn]] bool _Atomic_wait_fallback(
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
         std::terminate();
     }
 
@@ -89,7 +90,7 @@ namespace {
     }
 
     void _Atomic_unwait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] unsigned long long& _Wait_context) noexcept {}
+        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {}
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
     bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
