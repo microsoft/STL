@@ -5,6 +5,8 @@
 
 
 EXPORTS
+    __std_atomic_get_spin_count
+    __std_atomic_wait_get_current_time
     __std_atomic_wait_direct
     __std_atomic_notify_one_direct
     __std_atomic_notify_all_direct
@@ -13,4 +15,3 @@ EXPORTS
     __std_atomic_notify_one_indirect
     __std_atomic_notify_all_indirect
     __std_atomic_unwait_indirect
-    __std_atomic_get_spin_count
