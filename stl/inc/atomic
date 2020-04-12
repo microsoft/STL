@@ -178,7 +178,9 @@ _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_cou
     switch (_Wait_phase_and_spin_count & _Atomic_wait_phase_mask) {
     case _Atomic_wait_phase_init_spin_count:
         _Wait_phase_and_spin_count = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
+#if _HAS_CXX17
         [[fallthrough]];
+#endif
 
     case _Atomic_wait_phase_spin:
         if ((_Wait_phase_and_spin_count & _Atomic_spin_value_mask) != 0) {
