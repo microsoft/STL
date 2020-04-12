@@ -211,6 +211,7 @@
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
+// P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
 // Parallel Algorithms Notes
@@ -951,10 +952,10 @@
 
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
-#define _CXX20_DEPRECATE_VOLATILE                                                \
-    [[deprecated("warning STL4030: "                                             \
-                 "The volatile keyword has been partially deprecated in C++20. " \
-                 "You can define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING "   \
+#define _CXX20_DEPRECATE_VOLATILE                                                                   \
+    [[deprecated("warning STL4030: "                                                                \
+                 "Some operations on volatile-qualified types in the STL are deprecated in C++20. " \
+                 "You can define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING "                      \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX20_DEPRECATE_VOLATILE
