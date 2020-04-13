@@ -988,11 +988,11 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday operator/(int _Year, const month_weekday& _Mwd) noexcept;
     _NODISCARD constexpr year_month_weekday operator/(const month_weekday& _Mwd, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday operator/(const month_weekday& _Mwd, int _Year) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const year_month& ym, const weekday_last& _Wdl) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const year& _Year, const month_weekday_last& mwdl) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& mwdl) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& mwdl, const year& _Year) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& mwdl, int _Year) noexcept;
+    _NODISCARD constexpr year_month_weekday_last operator/(const year_month& _Ym, const weekday_last& _Wdl) noexcept;
+    _NODISCARD constexpr year_month_weekday_last operator/(const year& _Year, const month_weekday_last& _Mwdl) noexcept;
+    _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept;
+    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
+    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
 
     // day
     constexpr day::day(unsigned _Val) noexcept : _Day{static_cast<unsigned char>(_Val)} {}
