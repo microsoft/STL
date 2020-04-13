@@ -151,9 +151,7 @@ acquire this dependency.
    done this before, you may be prompted to elevate.
 7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
    repository, typically `https://github.com/microsoft/STL`
-8. Optional: If you wish to enable tests add `-DBUILD_TESTING=TRUE` under "CMake command arguments" in the CMake
-   settings editor.
-9. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
 
 # How To Build With A Native Tools Command Prompt
@@ -171,9 +169,8 @@ architectures.
 8. Invoke `git clone https://github.com/microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--S . -B {wherever you want binaries}` to configure the project. Optionally add `-DBUILD_TESTING=TRUE` in order to
-enable local testing. For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
--DBUILD_TESTING=TRUE -S . -B build.x64`
+-S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja
+-DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
 11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
 # How To Consume
@@ -225,12 +222,12 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 # How To Run The Tests With A Native Tools Command Prompt
 
-1. Follow [How To Build With A Native Tools Command Prompt][] adding the optional `-DBUILD_TESTING=TRUE` flag.
-2. Invoke `git submodule update --init llvm-project`
-
-In addition to following the above steps you must also have [Python][] 3.8 or newer, and have LLVM's `bin` directory on
-the PATH. Simply using [LLVM's installer][] and choosing to add LLVM to your path during installation is the easiest
-way to get LLVM's `bin` directory on you PATH.
+1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
+2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
+3. Acquire [Python][] 3.8 or newer.
+4. Have LLVM's bin directory on the PATH. Simply using [LLVM's installer][] and choosing to add LLVM to your path
+during installation is the easiest way to get LLVM's `bin` directory on you PATH.
+5. Follow the instructions below.
 
 ## Running All The Tests
 
@@ -247,18 +244,6 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 ## Examples
 
 ```
-:: This command configures the project with tests enabled. It assumes you are using the vcpkg submodule and have
-:: already installed boost. It also assumes you have inited and updated the llvm-project submodule.
-
-C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ^
--DBUILD_TESTING=TRUE ..
-
-:: As stated above, this step is only strictly necessary if you have yet to build the STL or if you have changed the
-:: output directory of the binaries. Any changes or additions in any of the existing testsuites do not require
-:: recompilation or reconfiguration to take effect when running the tests.
-
-C:\STL\build>ninja
-
 :: This command will run all of the testsuites with verbose output.
 
 C:\STL\build>ctest -V
@@ -408,6 +393,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
+[How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
 [LICENSE.txt]: LICENSE.txt
 [LLVM's installer]: https://releases.llvm.org/download.html
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
