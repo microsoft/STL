@@ -185,4 +185,8 @@ void __stdcall __std_execution_wait_on_uchar(const volatile unsigned char* _Addr
 #endif // architecture
 }
 
+void __stdcall __std_execution_wake_by_address_all(const volatile void* _Address) noexcept {
+    __std_atomic_notify_all_direct(const_cast<const void*>(_Address));
+}
+
 } // extern "C"
