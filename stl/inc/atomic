@@ -1551,7 +1551,6 @@ public:
 #endif // _HAS_CXX17
 
 #if 1 // TRANSITION, ABI
-
     _NODISCARD bool is_lock_free() const volatile noexcept {
         constexpr bool _Result = sizeof(_Ty) <= 8 && (sizeof(_Ty) & sizeof(_Ty) - 1) == 0;
         return _Result;
