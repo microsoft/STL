@@ -129,7 +129,7 @@ class STLTestFormat:
 
     def getIntegratedScriptResult(self, test, lit_config):
         if test.skipped:
-            return (lit.test.SKIPPED, "Test was marked as skipped")
+            return (lit.Test.SKIPPED, "Test was marked as skipped")
 
         name = test.path_in_suite[-1]
         name_root, name_ext = os.path.splitext(name)
