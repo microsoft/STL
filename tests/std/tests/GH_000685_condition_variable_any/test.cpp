@@ -17,7 +17,7 @@ namespace { // anonymous namespace
             mtx.lock();
             ++num_lock;
         }
-        
+
         void unlock() {
             mtx.unlock();
         }
