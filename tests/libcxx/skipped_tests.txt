@@ -179,7 +179,6 @@ utilities\function.objects\negators\binary_negate.depr_in_cxx17.fail.cpp
 utilities\function.objects\negators\unary_negate.depr_in_cxx17.fail.cpp
 
 # generate_feature_test_macro_components.py needs to learn about C1XX
-language.support\support.limits\support.limits.general\new.version.pass.cpp
 language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
 language.support\support.limits\support.limits.general\version.version.pass.cpp
 
