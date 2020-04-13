@@ -11,7 +11,9 @@ jobs:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
-        rmdir /S /Q $(tmpDir)
+        if exist "$(tmpDir)" (
+          rmdir /S /Q $(tmpDir)
+        )
         mkdir $(tmpDir)
       displayName: 'Setup TMP Directory'
     - checkout: self
