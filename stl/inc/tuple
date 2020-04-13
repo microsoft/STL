@@ -163,20 +163,20 @@ struct _Tuple_val { // stores each value in a tuple
     constexpr _Tuple_val(_Other&& _Arg) : _Val(_STD forward<_Other>(_Arg)) {}
 
     template <class _Alloc, class... _Other, enable_if_t<!uses_allocator_v<_Ty, _Alloc>, int> = 0>
-    _CONSTEXPR20 _Tuple_val(const _Alloc&, allocator_arg_t, _Other&&... _Arg) : _Val(_STD forward<_Other>(_Arg)...) {}
+    constexpr _Tuple_val(const _Alloc&, allocator_arg_t, _Other&&... _Arg) : _Val(_STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
         enable_if_t<conjunction_v<uses_allocator<_Ty, _Alloc>,
                         is_constructible<_Ty, allocator_arg_t, const _Alloc&, _Other...>>,
             int> = 0>
-    _CONSTEXPR20 _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
+    constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
         : _Val(allocator_arg, _Al, _STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
         enable_if_t<conjunction_v<uses_allocator<_Ty, _Alloc>,
                         negation<is_constructible<_Ty, allocator_arg_t, const _Alloc&, _Other...>>>,
             int> = 0>
-    _CONSTEXPR20 _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
+    constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
         : _Val(_STD forward<_Other>(_Arg)..., _Al) {}
 
     _Ty _Val;
@@ -219,7 +219,7 @@ public:
     constexpr tuple(_Tag) noexcept /* strengthened */ {}
 
     template <class _Tag, class _Alloc, enable_if_t<is_same_v<_Tag, _Alloc_exact_args_t>, int> = 0>
-    _CONSTEXPR20 tuple(_Tag, const _Alloc&) noexcept /* strengthened */ {}
+    constexpr tuple(_Tag, const _Alloc&) noexcept /* strengthened */ {}
 
     constexpr tuple& operator=(const tuple&) = default;
 
@@ -254,16 +254,16 @@ public:
 
     template <class _Tag, class _Alloc, class _This2, class... _Rest2,
         enable_if_t<is_same_v<_Tag, _Alloc_exact_args_t>, int> = 0>
-    _CONSTEXPR20 tuple(_Tag, const _Alloc& _Al, _This2&& _This_arg, _Rest2&&... _Rest_arg)
+    constexpr tuple(_Tag, const _Alloc& _Al, _This2&& _This_arg, _Rest2&&... _Rest_arg)
         : _Mybase(_Alloc_exact_args_t{}, _Al, _STD forward<_Rest2>(_Rest_arg)...),
           _Myfirst(_Al, allocator_arg, _STD forward<_This2>(_This_arg)) {}
 
     template <class _Tag, class _Alloc, class _Tpl, size_t... _Indices,
         enable_if_t<is_same_v<_Tag, _Alloc_unpack_tuple_t>, int> = 0>
-    _CONSTEXPR20 tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>);
+    constexpr tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>);
 
     template <class _Tag, class _Alloc, class _Tpl, enable_if_t<is_same_v<_Tag, _Alloc_unpack_tuple_t>, int> = 0>
-    _CONSTEXPR20 tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right)
+    constexpr tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Tpl>(_Right),
             make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
 
@@ -654,7 +654,7 @@ public:
         _Mybase::swap(_Right._Get_rest());
     }
 
-    _CONSTEXPR20 _Mybase& _Get_rest() noexcept { // get reference to rest of elements
+    constexpr _Mybase& _Get_rest() noexcept { // get reference to rest of elements
         return *this;
     }
 
@@ -832,7 +832,7 @@ constexpr tuple<_This, _Rest...>::tuple(_Tag, _Tpl&& _Right, index_sequence<_Ind
 template <class _This, class... _Rest>
 template <class _Tag, class _Alloc, class _Tpl, size_t... _Indices,
     enable_if_t<is_same_v<_Tag, _Alloc_unpack_tuple_t>, int>>
-_CONSTEXPR20 tuple<_This, _Rest...>::tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>)
+constexpr tuple<_This, _Rest...>::tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>)
     : tuple(_Alloc_exact_args_t{}, _Al, _STD get<_Indices>(_STD forward<_Tpl>(_Right))...) {}
 
 // FUNCTION TEMPLATE make_tuple
@@ -977,7 +977,7 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from 
 // TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
 template <class _Ty1, class _Ty2>
 template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-_CONSTEXPR20 pair<_Ty1, _Ty2>::pair(
+constexpr pair<_Ty1, _Ty2>::pair(
     _Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
     : first(_STD get<_Indexes1>(_STD move(_Val1))...), second(_STD get<_Indexes2>(_STD move(_Val2))...) {}
 
