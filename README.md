@@ -151,7 +151,9 @@ acquire this dependency.
    done this before, you may be prompted to elevate.
 7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
    repository, typically `https://github.com/microsoft/STL`
-8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+8. Optional: If you wish to enable tests add `-DBUILD_TESTING=TRUE` under "CMake command arguments" in the CMake
+   settings editor.
+9. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json` and `vcpkg integrate`
 
 # How To Build With A Native Tools Command Prompt
@@ -169,8 +171,9 @@ architectures.
 8. Invoke `git clone https://github.com/microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--S . -B {wherever you want binaries}` to configure the project. For example,
-`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
+-S . -B {wherever you want binaries}` to configure the project. Optionally add `-DBUILD_TESTING=TRUE` in order to
+enable local testing. For example, `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake
+-DBUILD_TESTING=TRUE -S . -B build.x64`
 11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
 # How To Consume
@@ -220,18 +223,14 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
-# How To Run The Tests From The Developer Command Prompt For VS
+# How To Run The Tests With A Native Tools Command Prompt
 
-1. Follow steps 1-9 of [How To Build With A Native Tools Command Prompt][].
+1. Follow [How To Build With A Native Tools Command Prompt][] adding the optional `-DBUILD_TESTING=TRUE` flag.
 2. Invoke `git submodule update --init llvm-project`
-3. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--DBUILD_TESTING=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DBUILD_TESTING=TRUE`.
-4. If you have already followed the steps from [How To Build With A Native Tools Command Prompt][], and have not
-changed the value of `{wherever you want binaries}` in step 4, then there is no need to rebuild to run the tests.
-Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
 
 In addition to following the above steps you must also have [Python][] 3.8 or newer, and have LLVM's `bin` directory on
-the PATH.
+the PATH. Simply using [LLVM's installer][] and choosing to add LLVM to your path during installation is the easiest
+way to get LLVM's `bin` directory on you PATH.
 
 ## Running All The Tests
 
@@ -241,9 +240,9 @@ CTest will only display the standard error output of tests that failed. In order
 
 ## Running A Subset Of The Tests
 
-`${PROJECT_BINARY_DIR}\tests\llvm-lit\llvm-lit.py` can be invoked on a subdirectory of a testsuite and will execute all
-the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests under
-a category in libcxx, or running a single test in `std` and `tr1`.
+`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a testsuite and will execute
+all the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests
+under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
@@ -270,17 +269,17 @@ C:\STL\build>ctest -R std
 
 :: This command will also run all of the std testsuite.
 
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std
 
 :: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
 :: will run the single test found under VSO_0000000_any_calling_conventions.
 
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
 
-:: You can invoke llvm-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
+:: You can invoke stl-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
 :: control over what category of tests you would like to run. The following will run all the libcxx map tests.
 
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
 ```
 
 ## Interpreting The Results Of Tests
@@ -304,9 +303,9 @@ CTest will output everything that was sent to stderr for each of the failed test
 which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
 order to see the stdout of the tests.
 
-### llvm-lit
+### stl-lit
 
-When running the tests directly via the generated `llvm-lit.py` script the result of each test will be printed. The
+When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
 format of each result is `{Result Code}: {Testsuite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
@@ -410,6 +409,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
 [LICENSE.txt]: LICENSE.txt
+[LLVM's installer]: https://releases.llvm.org/download.html
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
