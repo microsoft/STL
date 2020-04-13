@@ -193,7 +193,9 @@ constexpr bool run_tests() {
         string_view in     = "This is some string";
         string_view needle = "some";
         default_searcher meow{needle.begin(), needle.end()};
-        [[maybe_unused]] auto [first, second] = meow(in.begin(), in.end());
+        auto [first, last] = meow(in.begin(), in.end());
+        assert(first - in.begin() == 8);
+        assert(last - first == static_cast<ptrdiff_t>(needle.size()));
     }
 
     return true;
