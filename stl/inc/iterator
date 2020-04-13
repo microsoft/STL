@@ -95,8 +95,8 @@ public:
 
     _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
-    _CONSTEXPR20 front_insert_iterator& operator=(
-        const typename _Container::value_type& _Val) { // push value into container
+    _CONSTEXPR20 front_insert_iterator& operator=(const typename _Container::value_type& _Val) {
+        // push value into container
         container->push_front(_Val);
         return *this;
     }
