@@ -334,8 +334,8 @@ In the above example we see that 23 tests succeeded and 5 were unsupported.
 
 ### Result Code Values
 
-Our tests use the standard [lit result codes][], and a non-standard result code: `SKIP`. For our tests, only the
-`PASS`, `XFAIL`, `XPASS`, `FAIL`, and `UNSUPPORTED` standard result codes are relevant.
+Our tests use the standard [lit result codes][], and an undocumented result code: `SKIPPED`. For our tests, only the
+`PASS`, `XFAIL`, `XPASS`, `FAIL`, `UNSUPPORTED`, and `SKIPPED` result codes are relevant.
 
 The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `PASS` and not `FAIL`.
 
@@ -351,7 +351,7 @@ this it is necessary to add a `PASS` entry to the `expected_results.txt` of the 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
 all tests which use the `/BE` or `/clr:pure` options are unsupported.
 
-The `SKIP` result code indicates that a given test was explicitly skipped by adding a `SKIP` entry to the
+The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
 `expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
 * being an incorrect test
 * taking a very long time to run
