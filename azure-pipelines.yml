@@ -5,6 +5,7 @@
 
 variables:
   agentPool: 'StlBuild-2020-04-04-3'
+  tmpDir: 'D:\Temp'
 
 stages:
   - stage: Code_Format
@@ -17,6 +18,10 @@ stages:
           name: $(agentPool)
 
         steps:
+          - script: |
+              rmdir /S /Q $(tmpDir)
+              mkdir $(tmpDir)
+            displayName: 'Setup TMP Directory'
           - checkout: self
             clean: true
             submodules: false
@@ -28,6 +33,7 @@ stages:
               cd $(Build.ArtifactStagingDirectory)\tools
               cmake --build .
             displayName: 'Build Support Tools'
+            env: { TMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Enforce clang-format'
             timeoutInMinutes: 60
@@ -35,6 +41,7 @@ stages:
               filename: 'azure-devops/enforce-clang-format.cmd'
               failOnStandardError: true
               arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+            env: { TMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Validate Files'
             timeoutInMinutes: 2
@@ -42,6 +49,7 @@ stages:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
               arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+            env: { TMP: $(tmpDir) }
   - stage: Build_And_Test
     displayName: 'Build and Test'
     jobs:
