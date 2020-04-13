@@ -21,10 +21,12 @@ namespace {
     struct alignas(std::hardware_destructive_interference_size) _Wait_table_entry {
         // Arbitrary variable to wait/notify on if target variable is not proper atomic for that
         // Size is largest of lock-free to make aliasing problem into hypothetical
-        std::atomic<unsigned long long> _Counter;
+        std::atomic<unsigned long long> _Counter{};
 
         CONDITION_VARIABLE _Condition = CONDITION_VARIABLE_INIT;
         SRWLOCK _Lock                 = SRWLOCK_INIT;
+
+        constexpr _Wait_table_entry() noexcept = default;
     };
 #pragma warning(pop)
 
