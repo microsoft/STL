@@ -678,19 +678,59 @@ namespace chrono {
 
     public:
         day() = default;
-        constexpr explicit day(unsigned _Val) noexcept;
+        constexpr explicit day(unsigned _Val) noexcept : _Day{static_cast<unsigned char>(_Val)} {}
+        
+        constexpr day& operator++() noexcept {
+            ++_Day;
+            return *this;
+        }
+        constexpr day operator++(int) noexcept {
+            return day{_Day++};
+        }
+        constexpr day& operator--() noexcept {
+            --_Day;
+            return *this;
+        }
+        constexpr day operator--(int) noexcept {
+            return day{_Day--};
+        }
 
-        constexpr day& operator++() noexcept;
-        constexpr day operator++(int) noexcept;
-        constexpr day& operator--() noexcept;
-        constexpr day operator--(int) noexcept;
+        constexpr day& operator+=(const days& _Days) noexcept {
+            _Day += static_cast<unsigned char>(_Days.count());
+            return *this;
+        }
+        constexpr day& operator-=(const days& _Days) noexcept {
+            _Day -= static_cast<unsigned char>(_Days.count());
+            return *this;
+        }
 
-        constexpr day& operator+=(const days& _Days) noexcept;
-        constexpr day& operator-=(const days& _Days) noexcept;
-
-        _NODISCARD constexpr explicit operator unsigned() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr explicit operator unsigned() const noexcept {
+            return _Day;
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Day >= 1 && _Day <= 31;
+        }
     };
+
+    constexpr bool operator==(const day& _Left, const day& _Right) noexcept {
+        return static_cast<unsigned>(_Left) == static_cast<unsigned>(_Right);
+    }
+    constexpr strong_ordering operator<=>(const day& _Left, const day& _Right) noexcept {
+        return static_cast<unsigned>(_Left) <=> static_cast<unsigned>(_Right);
+    }
+
+    constexpr day operator+(const day& _Left, const days& _Right) noexcept {
+        return day{static_cast<unsigned>(_Left) + _Right.count()};
+    }
+    constexpr day operator+(const days& _Left, const day& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr day operator-(const day& _Left, const days& _Right) noexcept {
+        return day{static_cast<unsigned>(_Left) - _Right.count()};
+    }
+    constexpr days operator-(const day& _Left, const day& _Right) noexcept {
+        return days{static_cast<int>(static_cast<unsigned>(_Left)) - static_cast<int>(static_cast<unsigned>(_Right))};
+    }
 
     class month {
         unsigned char _Month;
@@ -998,60 +1038,6 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
-
-    // day
-    constexpr day::day(unsigned _Val) noexcept : _Day{static_cast<unsigned char>(_Val)} {}
-
-    constexpr day& day::operator++() noexcept {
-        ++_Day;
-        return *this;
-    }
-    constexpr day day::operator++(int) noexcept {
-        return day{_Day++};
-    }
-    constexpr day& day::operator--() noexcept {
-        --_Day;
-        return *this;
-    }
-    constexpr day day::operator--(int) noexcept {
-        return day{_Day--};
-    }
-
-    constexpr day::operator unsigned() const noexcept {
-        return _Day;
-    }
-    constexpr bool day::ok() const noexcept {
-        return _Day >= 1 && _Day <= 31;
-    }
-
-    constexpr bool operator==(const day& _Left, const day& _Right) noexcept {
-        return static_cast<unsigned>(_Left) == static_cast<unsigned>(_Right);
-    }
-    constexpr strong_ordering operator<=>(const day& _Left, const day& _Right) noexcept {
-        return static_cast<unsigned>(_Left) <=> static_cast<unsigned>(_Right);
-    }
-
-    constexpr day operator+(const day& _Left, const days& _Right) noexcept {
-        return day{static_cast<unsigned>(_Left) + _Right.count()};
-    }
-    constexpr day operator+(const days& _Left, const day& _Right) noexcept {
-        return _Right + _Left;
-    }
-    constexpr day operator-(const day& _Left, const days& _Right) noexcept {
-        return day{static_cast<unsigned>(_Left) - _Right.count()};
-    }
-    constexpr days operator-(const day& _Left, const day& _Right) noexcept {
-        return days{static_cast<int>(static_cast<unsigned>(_Left)) - static_cast<int>(static_cast<unsigned>(_Right))};
-    }
-
-    constexpr day& day::operator+=(const days& _Days) noexcept {
-        *this = *this + _Days;
-        return *this;
-    }
-    constexpr day& day::operator-=(const days& _Days) noexcept {
-        *this = *this - _Days;
-        return *this;
-    }
 
     // month
     constexpr month::month(unsigned _Val) noexcept : _Month{static_cast<unsigned char>(_Val)} {}
