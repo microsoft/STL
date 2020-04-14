@@ -646,8 +646,8 @@ inline constexpr in_place_index_t<_Idx> in_place_index{};
 
 #if _HAS_CXX20
 template <class _Ty>
-inline constexpr bool _Is_integral_not_bool_char = is_integral_v<_Ty>
-    && !_Is_any_of_v<_Ty, bool, char,
+inline constexpr bool _Is_standard_integer = is_integral_v<remove_cv_t<_Ty>>
+    && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
 #ifdef _NATIVE_WCHAR_T_DEFINED
         wchar_t,
 #endif // _NATIVE_WCHAR_T_DEFINED
@@ -659,7 +659,7 @@ inline constexpr bool _Is_integral_not_bool_char = is_integral_v<_Ty>
 // FUNCTION TEMPLATE cmp_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>,
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return _Left == _Right;
@@ -679,7 +679,7 @@ _NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noe
 // FUNCTION TEMPLATE cmp_less
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>,
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return _Left < _Right;
@@ -711,7 +711,7 @@ _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right)
 // FUNCTION TEMPLATE in_range
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool in_range(const _Ty2 _Value) noexcept {
-    static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>,
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     using _UTy1 = make_unsigned_t<_Ty1>;
     // _U_max is numeric_limits<_Ty1>::max() converted to _UTy1
