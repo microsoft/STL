@@ -51,7 +51,7 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
     thd.join();
 
     add_seq('\0');
-    assert(strcmp(seq, "123456") == 0 || !is_precise && strcmp(seq, "123456"));
+    assert(strcmp(seq, "123456") == 0 || !is_precise && (strcmp(seq, "123465") == 0));
 }
 
 inline void test_atomic_wait(const bool is_precise) {
