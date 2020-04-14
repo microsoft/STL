@@ -658,7 +658,7 @@ inline constexpr bool _Is_integral_not_bool_char = is_integral_v<_Ty>
 
 // FUNCTION TEMPLATE cmp_equal
 template <class _Ty1, class _Ty2>
-constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+_NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
@@ -672,13 +672,13 @@ constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
 
 // FUNCTION TEMPLATE cmp_not_equal
 template <class _Ty1, class _Ty2>
-constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+_NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return !cmp_equal(_Left, _Right);
 }
 
 // FUNCTION TEMPLATE cmp_less
 template <class _Ty1, class _Ty2>
-constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+_NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
@@ -692,25 +692,25 @@ constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
 
 // FUNCTION TEMPLATE cmp_greater
 template <class _Ty1, class _Ty2>
-constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+_NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return cmp_less(_Right, _Left);
 }
 
 // FUNCTION TEMPLATE cmp_less_equal
 template <class _Ty1, class _Ty2>
-constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+_NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return !cmp_less(_Right, _Left);
 }
 
 // FUNCTION TEMPLATE cmp_greater_equal
 template <class _Ty1, class _Ty2>
-constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+_NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return !cmp_less(_Left, _Right);
 }
 
 // FUNCTION TEMPLATE in_range
 template <class _Ty1, class _Ty2>
-constexpr bool in_range(const _Ty2 _Value) noexcept {
+_NODISCARD constexpr bool in_range(const _Ty2 _Value) noexcept {
     static_assert(_Is_integral_not_bool_char<_Ty1> && _Is_integral_not_bool_char<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     using _UTy1 = make_unsigned_t<_Ty1>;
