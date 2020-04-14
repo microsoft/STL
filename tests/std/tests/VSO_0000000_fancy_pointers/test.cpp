@@ -273,7 +273,7 @@ namespace std {
         typedef Val& reference;
         typedef fancy_pointer<Val> pointer;
     };
-}
+} // namespace std
 
 template <typename T>
 struct always_false : std::false_type {};

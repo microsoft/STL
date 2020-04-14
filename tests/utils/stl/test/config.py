@@ -126,6 +126,12 @@ class Configuration:
         self.config.available_features.add('msvc')
         self.config.available_features.update(self.target_info.features)
 
+        if self.target_arch is None:
+            self.configure_target_architecture()
+
+        if self.target_arch == 'x86':
+            self.config.available_features.add('edg')
+
     def configure_test_source_root(self):
         test_source_root = self.get_lit_conf('test_source_root', None)
 

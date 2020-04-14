@@ -3,19 +3,64 @@
 
 # Build STL targeting x86, x64, arm, arm64
 
-jobs:
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: x86
+variables:
+  agentPool: 'StlBuild-2020-04-04-3'
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: x64
+stages:
+  - stage: Code_Format
+    displayName: 'Code Format'
+    jobs:
+      - job: Code_Format_Validation
+        timeoutInMinutes: 90
+        displayName: 'Validation'
+        pool:
+          name: $(agentPool)
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: arm
+        steps:
+          - checkout: self
+            clean: true
+            submodules: false
+          - script: |
+              call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+              -host_arch=amd64 -arch=amd64 -no_logo
+              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
+              -S $(Build.SourcesDirectory)\tools -B $(Build.ArtifactStagingDirectory)\tools
+              cd $(Build.ArtifactStagingDirectory)\tools
+              cmake --build .
+            displayName: 'Build Support Tools'
+          - task: BatchScript@1
+            displayName: 'Enforce clang-format'
+            timeoutInMinutes: 60
+            inputs:
+              filename: 'azure-devops/enforce-clang-format.cmd'
+              failOnStandardError: true
+              arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+          - task: BatchScript@1
+            displayName: 'Validate Files'
+            timeoutInMinutes: 2
+            inputs:
+              filename: 'azure-devops/validate-files.cmd'
+              failOnStandardError: true
+              arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+  - stage: Build_And_Test
+    displayName: 'Build and Test'
+    jobs:
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: arm64
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64

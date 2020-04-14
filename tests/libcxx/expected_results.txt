@@ -179,7 +179,6 @@ std/utilities/function.objects/negators/binary_negate.depr_in_cxx17.fail.cpp SKI
 std/utilities/function.objects/negators/unary_negate.depr_in_cxx17.fail.cpp SKIP
 
 # generate_feature_test_macro_components.py needs to learn about C1XX
-std/language.support/support.limits/support.limits.general/new.version.pass.cpp SKIP
 std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp SKIP
 std/language.support/support.limits/support.limits.general/version.version.pass.cpp SKIP
 
@@ -189,10 +188,8 @@ std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align_
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size.sh.cpp SKIP
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align_nothrow.sh.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.sh.cpp SKIP
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp SKIP
 std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp SKIP
 
 # These tests set an allocator with a max_size() too small to default construct an unordered container
@@ -499,9 +496,9 @@ std/thread/thread.semaphore/version.pass.cpp SKIP
 
 
 # *** MISSING COMPILER FEATURES ***
-# C++20 P0722R3 "Efficient sized delete for variable sized classes"
-std/language.support/support.dynamic/destroying_delete_t_declaration.pass.cpp SKIP
-std/language.support/support.dynamic/destroying_delete_t.pass.cpp SKIP
+# C++20 P0722R3 "Efficient sized delete for variable sized classes" // TRANSITION, VS2019 16.7p1
+std/language.support/support.dynamic/destroying_delete_t_declaration.pass.cpp:0 SKIP
+std/language.support/support.dynamic/destroying_delete_t.pass.cpp:0 SKIP
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -534,22 +531,12 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 SKIP
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 std/thread/macro.pass.cpp:1 SKIP
 
-# <concepts> hasn't been enabled for Clang yet.
-std/iterators/iterator.primitives/iterator.traits/pointer.pass.cpp:1 SKIP
-std/iterators/iterator.primitives/std.iterator.tags/contiguous_iterator_tag.pass.cpp:1 SKIP
-
-# Clang 9 doesn't support comparison rewriting; implemented in Clang 10.
-std/containers/views/span.iterators/begin.pass.cpp SKIP
-std/containers/views/span.iterators/end.pass.cpp SKIP
-std/containers/views/span.iterators/rbegin.pass.cpp SKIP
-std/containers/views/span.iterators/rend.pass.cpp SKIP
-
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.pass.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp SKIP
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp SKIP
+std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.pass.cpp SKIP
 std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14.pass.cpp SKIP
 
 # Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
@@ -1033,6 +1020,9 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
 
 # Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
+
+# Not yet analyzed. Frequent timeouts
+containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp SKIP
 
 
 # *** XFAILs WHICH PASS ***
