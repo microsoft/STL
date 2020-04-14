@@ -72,27 +72,14 @@ namespace {
     }
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-    constexpr bool _Have_wait_functions() noexcept {
-        return true;
-    }
+
+#define _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
 
 #define __crtWaitOnAddress       WaitOnAddress
 #define __crtWakeByAddressSingle WakeByAddressSingle
 #define __crtWakeByAddressAll    WakeByAddressAll
 
 #pragma comment(lib, "Synchronization.lib")
-
-    [[noreturn]] bool _Atomic_wait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
-        std::terminate();
-    }
-
-    [[noreturn]] void _Atomic_notify_fallback([[maybe_unused]] const void* const _Storage) noexcept {
-        std::terminate();
-    }
-
-    void _Atomic_unwait_fallback(
-        [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {}
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
@@ -112,7 +99,8 @@ namespace {
 #define __crtSleepConditionVariableSRW SleepConditionVariableSRW
 #define __crtWakeAllConditionVariable  WakeAllConditionVariable
 
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _WIN32_WINNT_VISTA vvv
+
     struct _Condition_variable_functions {
         std::atomic<decltype(&::AcquireSRWLockExclusive)> _Pfn_AcquireSRWLockExclusive{nullptr};
         std::atomic<decltype(&::ReleaseSRWLockExclusive)> _Pfn_ReleaseSRWLockExclusive{nullptr};
@@ -167,7 +155,6 @@ namespace {
         fn(_Condition_variable);
     }
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-
 
     bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
         DWORD remaining_waiting_time = _Get_remaining_waiting_time(_Wait_context);
@@ -293,58 +280,66 @@ namespace {
 _EXTERN_C
 bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const size_t _Size,
     _Atomic_wait_context_t& _Wait_context) noexcept {
-    if (_Have_wait_functions()) {
-        if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    if (!_Have_wait_functions()) {
+        return _Atomic_wait_fallback(_Storage, _Wait_context);
+    }
+#endif
+    if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
+            _Get_remaining_waiting_time(_Wait_context))) {
+        _Assume_timeout();
+        return false;
+    }
+    return true;
+}
+
+void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    if (!_Have_wait_functions()) {
+        _Atomic_notify_fallback(_Storage);
+        return;
+    }
+#endif
+    __crtWakeByAddressSingle(const_cast<void*>(_Storage));
+}
+
+void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    if (!_Have_wait_functions()) {
+        _Atomic_notify_fallback(_Storage);
+        return;
+    }
+#endif
+    __crtWakeByAddressAll(const_cast<void*>(_Storage));
+}
+
+bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    if (!_Have_wait_functions()) {
+        return _Atomic_wait_fallback(_Storage, _Wait_context);
+    }
+#endif
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+    switch (_Wait_context._Wait_phase_and_spin_count) {
+    case _Atomic_wait_phase_wait_none:
+        std::atomic_thread_fence(std::memory_order_seq_cst);
+        _Wait_context._Counter = _Entry._Counter.load(std::memory_order_relaxed);
+        // Save counter in context and check again
+        _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_counter;
+        break;
+
+    case _Atomic_wait_phase_wait_counter:
+        if (!__crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&_Entry._Counter._Storage._Value),
+                &_Wait_context._Counter, sizeof(_Entry._Counter._Storage._Value),
                 _Get_remaining_waiting_time(_Wait_context))) {
             _Assume_timeout();
             return false;
         }
-        return true;
+        // Lock on new counter value if coming back
+        _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
+        break;
     }
-    return _Atomic_wait_fallback(_Storage, _Wait_context);
-}
-
-void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
-    if (_Have_wait_functions()) {
-        __crtWakeByAddressSingle(const_cast<void*>(_Storage));
-    } else {
-        _Atomic_notify_fallback(_Storage);
-    }
-}
-
-void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
-    if (_Have_wait_functions()) {
-        __crtWakeByAddressAll(const_cast<void*>(_Storage));
-    } else {
-        _Atomic_notify_fallback(_Storage);
-    }
-}
-
-bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-    if (_Have_wait_functions()) {
-        auto& _Entry = _Atomic_wait_table_entry(_Storage);
-        switch (_Wait_context._Wait_phase_and_spin_count) {
-        case _Atomic_wait_phase_wait_none:
-            std::atomic_thread_fence(std::memory_order_seq_cst);
-            _Wait_context._Counter = _Entry._Counter.load(std::memory_order_relaxed);
-            // Save counter in context and check again
-            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_counter;
-            break;
-
-        case _Atomic_wait_phase_wait_counter:
-            if (!__crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&_Entry._Counter._Storage._Value),
-                    &_Wait_context._Counter, sizeof(_Entry._Counter._Storage._Value),
-                    _Get_remaining_waiting_time(_Wait_context))) {
-                _Assume_timeout();
-                return false;
-            }
-            // Lock on new counter value if coming back
-            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-            break;
-        }
-        return true;
-    }
-    return _Atomic_wait_fallback(_Storage, _Wait_context);
+    return true;
 }
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
@@ -352,30 +347,46 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
 }
 
 void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
-    if (_Have_wait_functions()) {
-        auto& _Entry = _Atomic_wait_table_entry(_Storage);
-        _Entry._Counter.fetch_add(1, std::memory_order_relaxed);
-        std::atomic_thread_fence(std::memory_order_seq_cst);
-        __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
-    } else {
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    if (!_Have_wait_functions()) {
         _Atomic_notify_fallback(_Storage);
+        return;
     }
+#endif
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+    _Entry._Counter.fetch_add(1, std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
 }
 
 void __stdcall __std_atomic_unwait_direct(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
+#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    (void) _Storage, _Wait_context;
+#else
     _Atomic_unwait_fallback(_Storage, _Wait_context);
+#endif
 }
 
 void __stdcall __std_atomic_unwait_indirect(
     const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
+#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    (void) _Storage, _Wait_context;
+#else
     _Atomic_unwait_fallback(_Storage, _Wait_context);
+#endif
 }
 
 unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
-    if (_Is_direct && _Have_wait_functions()) {
+    if (_Is_direct) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
+#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
         return 0;
+#else
+        if (_Have_wait_functions()) {
+            return 0;
+        }
+#endif
     }
     const unsigned long result = _Atomic_spin_count.load(std::memory_order_relaxed);
     if (result != _Uninitialized_spin_count) {
