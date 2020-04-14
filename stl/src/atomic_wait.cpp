@@ -109,9 +109,10 @@ namespace {
         std::atomic<bool> _Initialized{false};
     };
 
+    _Condition_variable_functions _Cv_fcns;
+
     _Condition_variable_functions& _Get_Condition_variable_functions() {
-        static _Condition_variable_functions functions;
-        if (!functions._Initialized.load(std::memory_order_acquire)) {
+        if (!_Cv_fcns._Initialized.load(std::memory_order_acquire)) {
             HMODULE kernel_module                = ::GetModuleHandleW(L"Kernel32.dll");
             FARPROC acquire_srw_lock_exclusive   = ::GetProcAddress(kernel_module, "AcquireSRWLockExclusive");
             FARPROC release_srw_lock_exclusive   = ::GetProcAddress(kernel_module, "ReleaseSRWLockExclusive");
@@ -120,15 +121,16 @@ namespace {
 
             if (acquire_srw_lock_exclusive != nullptr && release_srw_lock_exclusive != nullptr
                 && sleep_condition_variable_srw != nullptr && wake_all_condition_variable != nullptr) {
-                _Save_function_pointer_relaxed(functions._Pfn_AcquireSRWLockExclusive, acquire_srw_lock_exclusive);
-                _Save_function_pointer_relaxed(functions._Pfn_ReleaseSRWLockExclusive, release_srw_lock_exclusive);
-                _Save_function_pointer_relaxed(functions._Pfn_SleepConditionVariableSRW, sleep_condition_variable_srw);
-                _Save_function_pointer_relaxed(functions._Pfn_WakeAllConditionVariable, wake_all_condition_variable);
+                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_AcquireSRWLockExclusive, acquire_srw_lock_exclusive);
+                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_ReleaseSRWLockExclusive, release_srw_lock_exclusive);
+                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_SleepConditionVariableSRW, sleep_condition_variable_srw);
+                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_WakeAllConditionVariable, wake_all_condition_variable);
             }
 
-            functions._Initialized.store(true, std::memory_order_release);
+            bool expected = false;
+            _Cv_fcns._Initialized.compare_exchange_strong(expected, true, std::memory_order_release);
         }
-        return functions;
+        return _Cv_fcns;
     }
 
     bool _Have_condition_variable_functions() noexcept {
@@ -236,21 +238,23 @@ namespace {
         std::atomic<bool> _Initialized{false};
     };
 
+    _Wait_on_address_functions _Wait_on_addr_fcns;
+
     const _Wait_on_address_functions& _Get_wait_functions() {
-        static _Wait_on_address_functions functions;
-        if (!functions._Initialized.load(std::memory_order_acquire)) {
+        if (!_Wait_on_addr_fcns._Initialized.load(std::memory_order_acquire)) {
             HMODULE sync_api_module        = ::GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
             FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
             FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
             FARPROC wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
             if (wait_on_address != nullptr && wake_by_address_single != nullptr && wake_by_address_all != nullptr) {
-                _Save_function_pointer_relaxed(functions._Pfn_WaitOnAddress, wait_on_address);
-                _Save_function_pointer_relaxed(functions._Pfn_WakeByAddressSingle, wake_by_address_single);
-                _Save_function_pointer_relaxed(functions._Pfn_WakeByAddressAll, wake_by_address_all);
+                _Save_function_pointer_relaxed(_Wait_on_addr_fcns._Pfn_WaitOnAddress, wait_on_address);
+                _Save_function_pointer_relaxed(_Wait_on_addr_fcns._Pfn_WakeByAddressSingle, wake_by_address_single);
+                _Save_function_pointer_relaxed(_Wait_on_addr_fcns._Pfn_WakeByAddressAll, wake_by_address_all);
             }
-            functions._Initialized.store(true, std::memory_order_release);
+            bool expected = false;
+            _Wait_on_addr_fcns._Initialized.compare_exchange_strong(expected, true, std::memory_order_release);
         }
-        return functions;
+        return _Wait_on_addr_fcns;
     }
 
     bool _Have_wait_functions() noexcept {
@@ -397,5 +401,25 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
 
 _NODISCARD unsigned long long __cdecl __std_atomic_wait_get_current_time() noexcept {
     return ::GetTickCount64();
+}
+
+bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept {
+#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+    if (_Api_level < _WIN32_WINNT_VISTA) {
+        bool _Expected = false;
+        if (!_Cv_fcns._Initialized.compare_exchange_strong(_Expected, true, std::memory_order_relaxed)) {
+            return false; // It is too late
+        }
+    }
+#endif
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+    if (_Api_level < _WIN32_WINNT_WIN8) {
+        bool _Expected = false;
+        if (!_Wait_on_addr_fcns._Initialized.compare_exchange_strong(_Expected, true, std::memory_order_relaxed)) {
+            return false; // It is too late
+        }
+    }
+#endif
+    return true;
 }
 _END_EXTERN_C

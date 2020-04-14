@@ -7,5 +7,6 @@
 #include "test_atomic_wait.hpp"
 
 int main() {
+    __std_atomic_set_api_level(0x0600);
     test_atomic_wait();
 }
