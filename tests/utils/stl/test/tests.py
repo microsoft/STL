@@ -13,13 +13,11 @@ from xml.sax.saxutils import quoteattr
 import os
 import shutil
 
-from lit.Test import FAIL, PASS, ResultCode, Test, UNSUPPORTED, XPASS, XFAIL
+from lit.Test import FAIL, PASS, SKIPPED, Test, UNSUPPORTED, XPASS, XFAIL
 
 from stl.compiler import CXXCompiler
 
 _compiler_path_cache = dict()
-
-SKIP = ResultCode('SKIP', False)
 
 
 class STLTest(Test):
@@ -105,7 +103,7 @@ class STLTest(Test):
             self.expected_result = lit_config.expected_results[test_name]
 
         if self.expected_result is not None:
-            if self.expected_result == SKIP:
+            if self.expected_result == SKIPPED:
                 self.skipped = True
             elif self.expected_result.isFailure:
                 self.xfails = ['*']
@@ -184,7 +182,7 @@ class STLTest(Test):
             fil.write(
                 ">\n\t<skipped message={} />\n</testcase>".format(
                     skip_message))
-        elif self.result.code == SKIP:
+        elif self.result.code == SKIPPED:
             message = quoteattr('Test is explicitly marked as skipped')
             fil.write(">\n\t<skipped message={} />\n</testcase>".format(
                 message))

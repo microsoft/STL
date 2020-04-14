@@ -9,6 +9,7 @@ jobs:
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+    buildOutputLocation: 'D:/build'
   steps:
     - script: |
         if exist "$(tmpDir)" (
@@ -57,17 +58,17 @@ jobs:
       inputs:
         cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
         cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
-        buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        buildDirectory: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
         cmakeAppendedArgs: |
-          -G Ninja -DBUILD_TESTING=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
+          -G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        workingDirectory: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         script: |
           call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
@@ -78,7 +79,7 @@ jobs:
       timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         testResultsFormat: JUnit
         testResultsFiles: '**/libcxx.test.xml'
         testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
@@ -87,7 +88,7 @@ jobs:
       timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         testResultsFormat: JUnit
         testResultsFiles: '**/std.test.xml'
         testRunTitle: 'std-${{ parameters.targetPlatform }}'
@@ -96,7 +97,7 @@ jobs:
       timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         testResultsFormat: JUnit
         testResultsFiles: '**/tr1.test.xml'
         testRunTitle: 'tr1-${{ parameters.targetPlatform }}'
