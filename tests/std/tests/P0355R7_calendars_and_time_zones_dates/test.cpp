@@ -102,6 +102,7 @@ constexpr void year_test() {
 
     assert(!year{y_min - 1}.ok());
     assert(!year{y_max + 1}.ok());
+
     for (int i = y_min; i <= y_max; i++) {
         assert(year{i}.ok());
         if (i % 4 == 0 && (i % 100 != 0 || i % 400 == 0)) {
@@ -110,6 +111,7 @@ constexpr void year_test() {
             assert(!year{i}.is_leap());
         }
     }
+
     assert(y < 2y);
     assert(2y > y);
 
