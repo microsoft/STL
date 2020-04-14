@@ -35,7 +35,7 @@ stages:
               cd $(Build.ArtifactStagingDirectory)\tools
               cmake --build .
             displayName: 'Build Support Tools'
-            env: { TMP: $(tmpDir) }
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Enforce clang-format'
             timeoutInMinutes: 60
@@ -43,7 +43,7 @@ stages:
               filename: 'azure-devops/enforce-clang-format.cmd'
               failOnStandardError: true
               arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
-            env: { TMP: $(tmpDir) }
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Validate Files'
             timeoutInMinutes: 2
@@ -51,7 +51,7 @@ stages:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
               arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
-            env: { TMP: $(tmpDir) }
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   - stage: Build_And_Test
     displayName: 'Build and Test'
     jobs:

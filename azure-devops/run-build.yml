@@ -34,7 +34,7 @@ jobs:
         vcpkgArguments: 'boost-build'
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: 'x86-windows'
-      env: { TMP: $(tmpDir) }
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: run-vcpkg@0
       displayName: 'Run vcpkg'
       timeoutInMinutes: 10
@@ -42,7 +42,7 @@ jobs:
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
         vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
-      env: { TMP: $(tmpDir) }
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PowerShell@2
       displayName: 'Get Test Parallelism'
       timeoutInMinutes: 2
@@ -61,7 +61,7 @@ jobs:
         useVcpkgToolchainFile: true
         cmakeAppendedArgs: |
           -G Ninja -DBUILD_TESTING=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
-      env: { TMP: $(tmpDir) }
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
@@ -72,7 +72,7 @@ jobs:
           call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
           ctest -V
-      env: { TMP: $(tmpDir) }
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PublishTestResults@2
       displayName: 'Publish libcxx Tests'
       timeoutInMinutes: 10
