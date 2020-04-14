@@ -7,6 +7,6 @@
 #include "test_atomic_wait.hpp"
 
 int main() {
-    assert(__std_atomic_set_api_level(0x0602));
-    test_atomic_wait(true);
+    __std_atomic_set_api_level(0x0502);
+    test_atomic_wait(false);
 }

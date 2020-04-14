@@ -11,7 +11,7 @@
 
 template <class UnderlyingType>
 void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
-    const std::chrono::steady_clock::duration waiting_duration) {
+    const std::chrono::steady_clock::duration waiting_duration, const bool is_precise) {
 
     constexpr int seq_max_size = 10;
     char seq[seq_max_size + 1];
@@ -51,27 +51,27 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
     thd.join();
 
     add_seq('\0');
-    assert(strcmp(seq, "123456") == 0);
+    assert(strcmp(seq, "123456") == 0 || !is_precise && strcmp(seq, "123456"));
 }
 
-void test_atomic_wait() {
+inline void test_atomic_wait(const bool is_precise) {
     constexpr std::chrono::milliseconds waiting_duration{50};
-    test_atomic_wait_func<char>(1, 2, waiting_duration);
-    test_atomic_wait_func<signed char>(1, 2, waiting_duration);
-    test_atomic_wait_func<unsigned char>(1, 2, waiting_duration);
-    test_atomic_wait_func<short>(1, 2, waiting_duration);
-    test_atomic_wait_func<unsigned short>(1, 2, waiting_duration);
-    test_atomic_wait_func<int>(1, 2, waiting_duration);
-    test_atomic_wait_func<unsigned int>(1, 2, waiting_duration);
-    test_atomic_wait_func<long>(1, 2, waiting_duration);
-    test_atomic_wait_func<unsigned long>(1, 2, waiting_duration);
-    test_atomic_wait_func<long long>(1, 2, waiting_duration);
-    test_atomic_wait_func<unsigned long long>(1, 2, waiting_duration);
-    test_atomic_wait_func<float>(1, 2, waiting_duration);
-    test_atomic_wait_func<double>(1, 2, waiting_duration);
-    test_atomic_wait_func<long double>(1, 2, waiting_duration);
+    test_atomic_wait_func<char>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<signed char>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned char>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<short>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned short>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<int>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned int>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<long long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned long long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<float>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<double>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<long double>(1, 2, waiting_duration, is_precise);
 
-    test_atomic_wait_func<const void*>("1", "2", waiting_duration);
+    test_atomic_wait_func<const void*>("1", "2", waiting_duration, is_precise);
 
     struct two_shorts {
         short a;
@@ -82,7 +82,7 @@ void test_atomic_wait() {
         }
     };
 
-    test_atomic_wait_func<two_shorts>({1, 1}, {1, 2}, waiting_duration);
+    test_atomic_wait_func<two_shorts>({1, 1}, {1, 2}, waiting_duration, is_precise);
 
     struct three_chars {
         char a;
@@ -94,5 +94,5 @@ void test_atomic_wait() {
         }
     };
 
-    test_atomic_wait_func<three_chars>({1, 1, 3}, {1, 2, 3}, waiting_duration);
+    test_atomic_wait_func<three_chars>({1, 1, 3}, {1, 2, 3}, waiting_duration, is_precise);
 }

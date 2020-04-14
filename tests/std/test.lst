@@ -253,6 +253,7 @@ tests\P0966R1_string_reserve_should_not_shrink
 tests\P1023R0_constexpr_for_array_comparisons
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista
+tests\P1135R6_atomic_wait_xp
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric
