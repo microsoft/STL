@@ -673,7 +673,7 @@ _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcep
 // FUNCTION TEMPLATE cmp_not_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return !cmp_equal(_Left, _Right);
+    return !_STD cmp_equal(_Left, _Right);
 }
 
 // FUNCTION TEMPLATE cmp_less
@@ -693,19 +693,19 @@ _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept
 // FUNCTION TEMPLATE cmp_greater
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return cmp_less(_Right, _Left);
+    return _STD cmp_less(_Right, _Left);
 }
 
 // FUNCTION TEMPLATE cmp_less_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return !cmp_less(_Right, _Left);
+    return !_STD cmp_less(_Right, _Left);
 }
 
 // FUNCTION TEMPLATE cmp_greater_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return !cmp_less(_Left, _Right);
+    return !_STD cmp_less(_Left, _Right);
 }
 
 // FUNCTION TEMPLATE in_range
