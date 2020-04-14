@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Test GH#685 "wait_for in condition_variable_any should unlock and lock"
+// Test GH-685 "wait_for in condition_variable_any should unlock and lock"
 
 #include <cassert>
 #include <chrono>
@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace { // anonymous namespace
+namespace {
     class my_mutex { // user-defined mutex type
     public:
         void lock() {
@@ -22,7 +22,7 @@ namespace { // anonymous namespace
             mtx.unlock();
         }
 
-        inline int num_locks() {
+        int num_locks() const {
             return num_lock;
         }
 
@@ -53,7 +53,7 @@ namespace { // anonymous namespace
             assert(mtx.num_locks() == 5);
         }
     }
-} // anonymous namespace
+} // unnamed namespace
 
 int main() {
     test_condition_variable_any();
