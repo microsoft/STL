@@ -3,13 +3,13 @@
 
 // implement atomic wait / notify_one / notify_all
 
+#include <VersionHelpers.h>
 #include <atomic>
 #include <cstdint>
 #include <new>
 #include <thread>
 
 #include <Windows.h>
-#include <VersionHelpers.h>
 
 namespace {
 
