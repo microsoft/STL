@@ -1091,6 +1091,20 @@ STATIC_ASSERT(__cpp_lib_generic_unordered_lookup == 201811L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is not defined
+#elif __cpp_lib_integer_comparison_functions != 202002L
+#error __cpp_lib_integer_comparison_functions is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_integer_comparison_functions == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_hardware_interference_size
 #error __cpp_lib_hardware_interference_size is not defined
