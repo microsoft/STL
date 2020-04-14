@@ -9,6 +9,7 @@
 #include <thread>
 
 #include <Windows.h>
+#include <VersionHelpers.h>
 
 namespace {
 
@@ -423,7 +424,9 @@ _NODISCARD unsigned long long __cdecl __std_atomic_wait_get_current_time() noexc
 }
 
 bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept {
-    (void) _Api_level; // Win8+ unused
+    if (!IsWindowsVersionOrGreater(HIBYTE(LOWORD(_Api_level)), LOBYTE(LOWORD(_Api_level)), 0)) {
+        return false;
+    }
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
     if (_Api_level < _WIN32_WINNT_VISTA) {
         _Api_initialized expected = _Not_initalized;
