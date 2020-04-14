@@ -737,47 +737,147 @@ namespace chrono {
 
     public:
         month() = default;
-        constexpr explicit month(unsigned _Val) noexcept;
+        constexpr explicit month(unsigned _Val) noexcept : _Month{static_cast<unsigned char>(_Val)} {}
 
-        constexpr month& operator++() noexcept;
-        constexpr month operator++(int) noexcept;
-        constexpr month& operator--() noexcept;
-        constexpr month operator--(int) noexcept;
+        constexpr month& operator++() noexcept {
+            *this += months{1};
+            return *this;
+        }
+        constexpr month operator++(int) noexcept {
+            month _Temp{*this};
+            ++(*this);
+            return _Temp;
+        }
+        constexpr month& operator--() noexcept {
+            *this -= months{1};
+            return *this;
+        }
+        constexpr month operator--(int) noexcept {
+            month _Temp{*this};
+            --(*this);
+            return _Temp;
+        }
 
         constexpr month& operator+=(const months& _Months) noexcept;
         constexpr month& operator-=(const months& _Months) noexcept;
 
-        _NODISCARD constexpr explicit operator unsigned() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr explicit operator unsigned() const noexcept {
+            return static_cast<unsigned>(_Month);
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Month >= 1 && _Month <= 12;
+        }
     };
+
+    constexpr bool operator==(const month& _Left, const month& _Right) noexcept {
+        return static_cast<unsigned>(_Left) == static_cast<unsigned>(_Right);
+    }
+    constexpr strong_ordering operator<=>(const month& _Left, const month& _Right) noexcept {
+        return static_cast<unsigned>(_Left) <=> static_cast<unsigned>(_Right);
+    }
+
+    constexpr month operator+(const month& _Left, const months& _Right) noexcept {
+        const auto _M   = static_cast<long long>(static_cast<unsigned>(_Left)) + (_Right.count() - 1);
+        const auto _Div = (_M >= 0 ? _M : _M - 11) / 12;
+        return month{static_cast<unsigned>(_M - _Div * 12 + 1)};
+    }
+    constexpr month operator+(const months& _Left, const month& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr month operator-(const month& _Left, const months& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr months operator-(const month& _Left, const month& _Right) noexcept {
+        const auto _M = static_cast<unsigned>(_Left) - static_cast<unsigned>(_Right);
+        return months{_M <= 11 ? _M : _M + 12};
+    }
+
+    constexpr month& month::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr month& month::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
 
     class year {
         short _Year;
 
     public:
         year() = default;
-        constexpr explicit year(int _Val) noexcept;
+        constexpr explicit year(int _Val) noexcept : _Year{static_cast<short>(_Val)} {}
 
-        constexpr year& operator++() noexcept;
-        constexpr year operator++(int) noexcept;
-        constexpr year& operator--() noexcept;
-        constexpr year operator--(int) noexcept;
+        constexpr year& operator++() noexcept {
+            ++_Year;
+            return *this;
+        }
+        constexpr year operator++(int) noexcept {
+            return year{_Year++};
+        }
+        constexpr year& operator--() noexcept {
+            --_Year;
+            return *this;
+        }
+        constexpr year operator--(int) noexcept {
+            return year{_Year--};
+        }
 
-        constexpr year& operator+=(const years& _Years) noexcept;
-        constexpr year& operator-=(const years& _Years) noexcept;
+        constexpr year& operator+=(const years& _Years) noexcept {
+            _Year += static_cast<short>(_Years.count());
+            return *this;
+        }
+        constexpr year& operator-=(const years& _Years) noexcept {
+            _Year -= static_cast<short>(_Years.count());
+            return *this;
+        }
 
-        constexpr year operator+() const noexcept;
-        constexpr year operator-() const noexcept;
+        constexpr year operator+() const noexcept {
+            return *this;
+        }
+        constexpr year operator-() const noexcept {
+            return year{-_Year};
+        }
 
-        _NODISCARD constexpr bool is_leap() const noexcept;
+        _NODISCARD constexpr bool is_leap() const noexcept {
+            return _Year % 4 == 0 && (_Year % 100 != 0 || _Year % 400 == 0);
+        }
 
-        _NODISCARD constexpr explicit operator int() const noexcept;
+        _NODISCARD constexpr explicit operator int() const noexcept {
+            return static_cast<int>(_Year);
+        }
 
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr bool ok() const noexcept {
+            return (min)()._Year <= _Year && _Year <= (max)()._Year;
+        }
 
-        _NODISCARD static constexpr year(min)() noexcept;
-        _NODISCARD static constexpr year(max)() noexcept;
-    };
+        _NODISCARD static constexpr year(min)() noexcept {
+            return year{-32767};
+        }
+        _NODISCARD static constexpr year(max)() noexcept {
+            return year{32767};
+        }
+    };    
+
+    constexpr bool operator==(const year& _Left, const year& _Right) noexcept {
+        return static_cast<int>(_Left) == static_cast<int>(_Right);
+    }
+    constexpr strong_ordering operator<=>(const year& _Left, const year& _Right) noexcept {
+        return static_cast<int>(_Left) <=> static_cast<int>(_Right);
+    }
+
+    constexpr year operator+(const year& _Left, const years& _Right) noexcept {
+        return year{static_cast<int>(_Left) + _Right.count()};
+    }
+    constexpr year operator+(const years& _Left, const year& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr year operator-(const year& _Left, const years& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr years operator-(const year& _Left, const year& _Right) noexcept {
+        return years{static_cast<int>(_Left) - static_cast<int>(_Right)};
+    }
 
     class weekday {
         unsigned char _Weekday;
@@ -1039,138 +1139,7 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
 
-    // month
-    constexpr month::month(unsigned _Val) noexcept : _Month{static_cast<unsigned char>(_Val)} {}
-
-    constexpr month& month::operator++() noexcept {
-        *this += months{1};
-        return *this;
-    }
-    constexpr month month::operator++(int) noexcept {
-        month _Temp{*this};
-        ++(*this);
-        return _Temp;
-    }
-    constexpr month& month::operator--() noexcept {
-        *this -= months{1};
-        return *this;
-    }
-    constexpr month month::operator--(int) noexcept {
-        month _Temp{*this};
-        --(*this);
-        return _Temp;
-    }
-    constexpr month::operator unsigned() const noexcept {
-        return static_cast<unsigned>(_Month);
-    }
-    constexpr bool month::ok() const noexcept {
-        return _Month >= 1 && _Month <= 12;
-    }
-
-    constexpr bool operator==(const month& _Left, const month& _Right) noexcept {
-        return static_cast<unsigned>(_Left) == static_cast<unsigned>(_Right);
-    }
-    constexpr strong_ordering operator<=>(const month& _Left, const month& _Right) noexcept {
-        return static_cast<unsigned>(_Left) <=> static_cast<unsigned>(_Right);
-    }
-
-    constexpr month operator+(const month& _Left, const months& _Right) noexcept {
-        const auto _M   = static_cast<long long>(static_cast<unsigned>(_Left)) + (_Right.count() - 1);
-        const auto _Div = (_M >= 0 ? _M : _M - 11) / 12;
-        return month{static_cast<unsigned>(_M - _Div * 12 + 1)};
-    }
-    constexpr month operator+(const months& _Left, const month& _Right) noexcept {
-        return _Right + _Left;
-    }
-    constexpr month operator-(const month& _Left, const months& _Right) noexcept {
-        return _Left + -_Right;
-    }
-    constexpr months operator-(const month& _Left, const month& _Right) noexcept {
-        const auto _M = static_cast<unsigned>(_Left) - static_cast<unsigned>(_Right);
-        return months{_M <= 11 ? _M : _M + 12};
-    }
-
-    constexpr month& month::operator+=(const months& _Months) noexcept {
-        *this = *this + _Months;
-        return *this;
-    }
-    constexpr month& month::operator-=(const months& _Months) noexcept {
-        *this = *this - _Months;
-        return *this;
-    }
-
-    // year
-    constexpr year::year(int _Val) noexcept : _Year{static_cast<short>(_Val)} {}
-
-    constexpr year& year::operator++() noexcept {
-        ++_Year;
-        return *this;
-    }
-    constexpr year year::operator++(int) noexcept {
-        return year{_Year++};
-    }
-    constexpr year& year::operator--() noexcept {
-        --_Year;
-        return *this;
-    }
-    constexpr year year::operator--(int) noexcept {
-        return year{_Year--};
-    }
-
-    constexpr year year::operator+() const noexcept {
-        return *this;
-    }
-    constexpr year year::operator-() const noexcept {
-        return year{-_Year};
-    }
-
-    constexpr bool year::is_leap() const noexcept {
-        return _Year % 4 == 0 && (_Year % 100 != 0 || _Year % 400 == 0);
-    }
-
-    constexpr year::operator int() const noexcept {
-        return static_cast<int>(_Year);
-    }
-    constexpr bool year::ok() const noexcept {
-        return (min)()._Year <= _Year && _Year <= (max)()._Year;
-    }
-
-    constexpr year(year::min)() noexcept {
-        return year{-32767};
-    }
-    constexpr year(year::max)() noexcept {
-        return year{32767};
-    }
-
-    constexpr bool operator==(const year& _Left, const year& _Right) noexcept {
-        return static_cast<int>(_Left) == static_cast<int>(_Right);
-    }
-    constexpr strong_ordering operator<=>(const year& _Left, const year& _Right) noexcept {
-        return static_cast<int>(_Left) <=> static_cast<int>(_Right);
-    }
-
-    constexpr year operator+(const year& _Left, const years& _Right) noexcept {
-        return year{static_cast<int>(_Left) + _Right.count()};
-    }
-    constexpr year operator+(const years& _Left, const year& _Right) noexcept {
-        return _Right + _Left;
-    }
-    constexpr year operator-(const year& _Left, const years& _Right) noexcept {
-        return _Left + -_Right;
-    }
-    constexpr years operator-(const year& _Left, const year& _Right) noexcept {
-        return years{static_cast<int>(_Left) - static_cast<int>(_Right)};
-    }
-
-    constexpr year& year::operator+=(const years& _Years) noexcept {
-        *this = *this + _Years;
-        return *this;
-    }
-    constexpr year& year::operator-=(const years& _Years) noexcept {
-        *this = *this - _Years;
-        return *this;
-    }
-
+   
     // weekday
     // courtesy of Howard Hinnant
     // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
