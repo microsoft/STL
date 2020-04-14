@@ -73,12 +73,12 @@ _INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
 
 // STRUCT _Default_allocate_traits
 struct _Default_allocate_traits {
-    _DECLSPEC_ALLOCATOR static void* _Allocate(const size_t _Bytes) {
+    __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
 
 #ifdef __cpp_aligned_new
-    _DECLSPEC_ALLOCATOR static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+    __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
         return ::operator new (_Bytes, align_val_t{_Align});
     }
 #endif // __cpp_aligned_new
@@ -110,7 +110,7 @@ constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 
 // FUNCTION _Allocate_manually_vector_aligned
 template <class _Traits>
-_DECLSPEC_ALLOCATOR void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
+__declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
     // allocate _Bytes manually aligned to at least _Big_allocation_alignment
     const size_t _Block_size = _Non_user_size + _Bytes;
     if (_Block_size <= _Bytes) {
@@ -157,7 +157,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
 #ifdef __cpp_aligned_new
 template <size_t _Align, class _Traits = _Default_allocate_traits,
     enable_if_t<(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-_DECLSPEC_ALLOCATOR void* _Allocate(const size_t _Bytes) {
+__declspec(allocator) void* _Allocate(const size_t _Bytes) {
     // allocate _Bytes when __cpp_aligned_new && _Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__
     if (_Bytes == 0) {
         return nullptr;
@@ -194,7 +194,7 @@ void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
 
 template <size_t _Align, class _Traits = _Default_allocate_traits,
     enable_if_t<(!_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-_DECLSPEC_ALLOCATOR void* _Allocate(const size_t _Bytes) {
+__declspec(allocator) void* _Allocate(const size_t _Bytes) {
     // allocate _Bytes when !_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
 #if defined(_M_IX86) || defined(_M_X64)
     if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
@@ -517,13 +517,13 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Other>
     using rebind_traits = allocator_traits<rebind_alloc<_Other>>;
 
-    _NODISCARD static _DECLSPEC_ALLOCATOR pointer allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
+    _NODISCARD static __declspec(allocator) pointer allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
         return _Al.allocate(_Count);
     }
 
 #if _HAS_IF_CONSTEXPR
-    _NODISCARD static _DECLSPEC_ALLOCATOR pointer allocate(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
+    _NODISCARD static __declspec(allocator) pointer
+        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         if constexpr (_Has_allocate_hint<_Alloc, size_type, const_void_pointer>::value) {
             return _Al.allocate(_Count, _Hint);
         } else {
@@ -532,18 +532,18 @@ struct _Normal_allocator_traits { // defines traits for allocators
         }
     }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-    static _DECLSPEC_ALLOCATOR pointer _Allocate1(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint, true_type) {
+    static __declspec(allocator) pointer
+        _Allocate1(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint, true_type) {
         return _Al.allocate(_Count, _Hint);
     }
 
-    static _DECLSPEC_ALLOCATOR pointer _Allocate1(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer, false_type) {
+    static __declspec(allocator) pointer
+        _Allocate1(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer, false_type) {
         return _Al.allocate(_Count);
     }
 
-    _NODISCARD static _DECLSPEC_ALLOCATOR pointer allocate(
-        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
+    _NODISCARD static __declspec(allocator) pointer
+        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         return _Allocate1(_Al, _Count, _Hint, _Has_allocate_hint<_Alloc, size_type, const_void_pointer>{});
     }
 #endif // _HAS_IF_CONSTEXPR
@@ -678,12 +678,12 @@ struct _Default_allocator_traits { // traits for std::allocator
     template <class _Other>
     using rebind_traits = allocator_traits<allocator<_Other>>;
 
-    _NODISCARD static _DECLSPEC_ALLOCATOR pointer allocate(_Alloc&, _CRT_GUARDOVERFLOW const size_type _Count) {
+    _NODISCARD static __declspec(allocator) pointer allocate(_Alloc&, _CRT_GUARDOVERFLOW const size_type _Count) {
         return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
     }
 
-    _NODISCARD static _DECLSPEC_ALLOCATOR pointer allocate(
-        _Alloc&, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
+    _NODISCARD static __declspec(allocator) pointer
+        allocate(_Alloc&, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
         return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
     }
 
@@ -806,11 +806,11 @@ public:
         _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
     }
 
-    _NODISCARD _DECLSPEC_ALLOCATOR _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+    _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD _DECLSPEC_ALLOCATOR _Ty* allocate(
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD __declspec(allocator) _Ty* allocate(
         _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
     }

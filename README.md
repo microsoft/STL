@@ -169,8 +169,8 @@ architectures.
 8. Invoke `git clone https://github.com/microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--S . -B {wherever you want binaries}` to configure the project. For example,
-`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
+-S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja
+-DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
 11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
 # How To Consume
@@ -220,18 +220,14 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
-# How To Run The Tests From The Developer Command Prompt For VS
+# How To Run The Tests With A Native Tools Command Prompt
 
-1. Follow steps 1-9 of [How To Build With A Native Tools Command Prompt][].
-2. Invoke `git submodule update --init llvm-project`
-3. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--DBUILD_TESTING=TRUE -S . -B {wherever you want binaries}`. This differs from above only in `-DBUILD_TESTING=TRUE`.
-4. If you have already followed the steps from [How To Build With A Native Tools Command Prompt][], and have not
-changed the value of `{wherever you want binaries}` in step 4, then there is no need to rebuild to run the tests.
-Otherwise, invoke `ninja -C {wherever you want binaries}` to build the project.
-
-In addition to following the above steps you must also have [Python][] 3.8 or newer, and have LLVM's `bin` directory on
-the PATH.
+1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
+2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
+3. Acquire [Python][] 3.8 or newer.
+4. Have LLVM's `bin` directory on the `PATH`. Simply using [LLVM's installer][] and choosing to add LLVM to your `PATH`
+during installation is the easiest way to get LLVM's `bin` directory on your `PATH`.
+5. Follow the instructions below.
 
 ## Running All The Tests
 
@@ -241,25 +237,13 @@ CTest will only display the standard error output of tests that failed. In order
 
 ## Running A Subset Of The Tests
 
-`${PROJECT_BINARY_DIR}\tests\llvm-lit\llvm-lit.py` can be invoked on a subdirectory of a testsuite and will execute all
-the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests under
-a category in libcxx, or running a single test in `std` and `tr1`.
+`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a testsuite and will execute
+all the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests
+under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
 ```
-:: This command configures the project with tests enabled. It assumes you are using the vcpkg submodule and have
-:: already installed boost. It also assumes you have inited and updated the llvm-project submodule.
-
-C:\STL\build>cmake -GNinja -DCMAKE_CXX_COMPILER=cl -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake ^
--DBUILD_TESTING=TRUE ..
-
-:: As stated above, this step is only strictly necessary if you have yet to build the STL or if you have changed the
-:: output directory of the binaries. Any changes or additions in any of the existing testsuites do not require
-:: recompilation or reconfiguration to take effect when running the tests.
-
-C:\STL\build>ninja
-
 :: This command will run all of the testsuites with verbose output.
 
 C:\STL\build>ctest -V
@@ -270,17 +254,17 @@ C:\STL\build>ctest -R std
 
 :: This command will also run all of the std testsuite.
 
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std
 
 :: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
 :: will run the single test found under VSO_0000000_any_calling_conventions.
 
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
 
-:: You can invoke llvm-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
+:: You can invoke stl-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
 :: control over what category of tests you would like to run. The following will run all the libcxx map tests.
 
-C:\STL\build>python tests\llvm-lit\llvm-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
 ```
 
 ## Interpreting The Results Of Tests
@@ -304,9 +288,9 @@ CTest will output everything that was sent to stderr for each of the failed test
 which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
 order to see the stdout of the tests.
 
-### llvm-lit
+### stl-lit
 
-When running the tests directly via the generated `llvm-lit.py` script the result of each test will be printed. The
+When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
 format of each result is `{Result Code}: {Testsuite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
@@ -350,8 +334,8 @@ In the above example we see that 23 tests succeeded and 5 were unsupported.
 
 ### Result Code Values
 
-Our tests use the standard [lit result codes][], and a non-standard result code: `SKIP`. For our tests, only the
-`PASS`, `XFAIL`, `XPASS`, `FAIL`, and `UNSUPPORTED` standard result codes are relevant.
+Our tests use the standard [lit result codes][], and an undocumented result code: `SKIPPED`. For our tests, only the
+`PASS`, `XFAIL`, `XPASS`, `FAIL`, `UNSUPPORTED`, and `SKIPPED` result codes are relevant.
 
 The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `PASS` and not `FAIL`.
 
@@ -367,7 +351,7 @@ this it is necessary to add a `PASS` entry to the `expected_results.txt` of the 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
 all tests which use the `/BE` or `/clr:pure` options are unsupported.
 
-The `SKIP` result code indicates that a given test was explicitly skipped by adding a `SKIP` entry to the
+The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
 `expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
 * being an incorrect test
 * taking a very long time to run
@@ -409,7 +393,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
+[How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
 [LICENSE.txt]: LICENSE.txt
+[LLVM's installer]: https://releases.llvm.org/download.html
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/

@@ -2595,7 +2595,7 @@ namespace msvc {
                 any a{std::in_place_type<bad_new_type>};
             }
         } // namespace value
-    } // namespace cons
+    } // namespace ctor
 
     namespace assign {
         namespace emplace {
@@ -2606,7 +2606,7 @@ namespace msvc {
 
                 std::any{}.emplace<S>({1, 2, 3});
             }
-        } // namespace in_place
+        } // namespace emplace
 
         namespace move {
 #ifdef __clang__

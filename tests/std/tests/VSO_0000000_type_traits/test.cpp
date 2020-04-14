@@ -842,7 +842,7 @@ struct Immovable {
 namespace std {
     template <>
     void swap(Immovable&, Immovable&) {}
-}
+} // namespace std
 
 #endif // _HAS_CXX17
 
@@ -1270,7 +1270,7 @@ namespace {
                 return permissive();
             }
         };
-    }
+    } // namespace detail
     constexpr bool is_permissive = detail::Derived<int>::test();
 
     struct move_only {

@@ -201,6 +201,6 @@ namespace std_testing {
 
         std::vector<impl_value> m_val;
     };
-}
+} // namespace std_testing
 
 #undef STATIC_ASSERT

@@ -243,7 +243,7 @@ constexpr size_t _Get_least2_chunked_work_chunk_count(const size_t _Hw_threads, 
 
 // STRUCT TEMPLATE _Parallelism_allocator
 struct _Parallelism_allocate_traits {
-    _DECLSPEC_ALLOCATOR static void* _Allocate(const size_t _Bytes) {
+    __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
         void* _Result = ::operator new(_Bytes, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
@@ -253,7 +253,7 @@ struct _Parallelism_allocate_traits {
     }
 
 #ifdef __cpp_aligned_new
-    _DECLSPEC_ALLOCATOR static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+    __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
         void* _Result = ::operator new (_Bytes, align_val_t{_Align}, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
