@@ -360,8 +360,8 @@ constexpr void year_month_day_test() {
 
     assert(static_cast<local_days>(ymld) == local_days{});
 
-    constexpr int y_min = static_cast<int>(year::min());
-    constexpr int y_max = static_cast<int>(year::max());
+    // constexpr int y_min = static_cast<int>(year::min());
+    // constexpr int y_max = static_cast<int>(year::max());
 
     // for (int iy = y_min; iy <= y_max; ++iy) {
     //    for (auto um = 0u; um <= 255u; ++um) {
