@@ -679,7 +679,7 @@ namespace chrono {
     public:
         day() = default;
         constexpr explicit day(unsigned _Val) noexcept : _Day{static_cast<unsigned char>(_Val)} {}
-        
+
         constexpr day& operator++() noexcept {
             ++_Day;
             return *this;
@@ -857,7 +857,7 @@ namespace chrono {
         _NODISCARD static constexpr year(max)() noexcept {
             return year{32767};
         }
-    };    
+    };
 
     constexpr bool operator==(const year& _Left, const year& _Right) noexcept {
         return static_cast<int>(_Left) == static_cast<int>(_Right);
@@ -881,29 +881,83 @@ namespace chrono {
 
     class weekday {
         unsigned char _Weekday;
-        _NODISCARD static constexpr unsigned _Weekday_from_days(int _Tp) noexcept;
+
+        // courtesy of Howard Hinnant
+        // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
+        _NODISCARD static constexpr unsigned _Weekday_from_days(int _Tp) noexcept {
+            return static_cast<unsigned>(_Tp >= -4 ? (_Tp + 4) % 7 : (_Tp + 5) % 7 + 6);
+        }
 
     public:
         weekday() = default;
-        constexpr explicit weekday(unsigned _Val) noexcept;
-        constexpr weekday(const sys_days& _Sys_day) noexcept;
-        constexpr explicit weekday(const local_days& _Local_day) noexcept;
+        constexpr explicit weekday(unsigned _Val) noexcept
+            : _Weekday{static_cast<unsigned char>(_Val == 7 ? 0 : _Val)} {}
+        constexpr weekday(const sys_days& _Sys_day) noexcept
+            : _Weekday{static_cast<unsigned char>(_Weekday_from_days(_Sys_day.time_since_epoch().count()))} {}
+        constexpr explicit weekday(const local_days& _Local_day) noexcept
+            : _Weekday{static_cast<unsigned char>(_Weekday_from_days(_Local_day.time_since_epoch().count()))} {}
 
-        constexpr weekday& operator++() noexcept;
-        constexpr weekday operator++(int) noexcept;
-        constexpr weekday& operator--() noexcept;
-        constexpr weekday operator--(int) noexcept;
+        constexpr weekday& operator++() noexcept {
+            return *this += days{1};
+        }
+        constexpr weekday operator++(int) noexcept {
+            weekday _Temp{*this};
+            ++(*this);
+            return _Temp;
+        }
+        constexpr weekday& operator--() noexcept {
+            return *this -= days{1};
+        }
+        constexpr weekday operator--(int) noexcept {
+            weekday _Temp{*this};
+            --(*this);
+            return _Temp;
+        }
 
         constexpr weekday& operator+=(const days& _Days) noexcept;
         constexpr weekday& operator-=(const days& _Days) noexcept;
 
-        _NODISCARD constexpr unsigned c_encoding() const noexcept;
-        _NODISCARD constexpr unsigned iso_encoding() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr unsigned c_encoding() const noexcept {
+            return _Weekday;
+        }
+        _NODISCARD constexpr unsigned iso_encoding() const noexcept {
+            return _Weekday == 0u ? 7u : _Weekday;
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Weekday <= 6;
+        }
 
         _NODISCARD constexpr class weekday_indexed operator[](unsigned _Index) const noexcept;
         _NODISCARD constexpr class weekday_last operator[](last_spec) const noexcept;
     };
+
+    constexpr bool operator==(const weekday& _Left, const weekday& _Right) noexcept {
+        return _Left.c_encoding() == _Right.c_encoding();
+    }
+
+    constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept {
+        const auto _Wd  = static_cast<long long>(_Left.c_encoding()) + _Right.count();
+        const auto _Div = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
+        return weekday{static_cast<unsigned>(_Wd - _Div * 7)};
+    }
+    constexpr weekday operator+(const days& _Left, const weekday& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr weekday operator-(const weekday& _Left, const days& _Right) noexcept {
+        return _Left + -_Right;
+    }
+    constexpr days operator-(const weekday& _Left, const weekday& _Right) noexcept {
+        const auto _Wd = _Left.c_encoding() - _Right.c_encoding();
+        const auto _Wk = _Wd <= 6 ? _Wd : _Wd + 7;
+        return days{_Wk};
+    }
+
+    constexpr weekday& weekday::operator+=(const days& _Days) noexcept {
+        return *this = *this + _Days;
+    }
+    constexpr weekday& weekday::operator-=(const days& _Days) noexcept {
+        return *this = *this - _Days;
+    }
 
     class weekday_indexed {
         chrono::weekday _Weekday;
@@ -911,22 +965,49 @@ namespace chrono {
 
     public:
         weekday_indexed() = default;
-        constexpr weekday_indexed(const chrono::weekday& _Wd, unsigned _Idx) noexcept;
+        constexpr weekday_indexed(const chrono::weekday& _Wd, unsigned _Idx) noexcept
+            : _Weekday{_Wd}, _Index{static_cast<unsigned char>(_Idx)} {}
 
-        _NODISCARD constexpr chrono::weekday weekday() const noexcept;
-        _NODISCARD constexpr unsigned index() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr chrono::weekday weekday() const noexcept {
+            return _Weekday;
+        }
+        _NODISCARD constexpr unsigned index() const noexcept {
+            return _Index;
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Weekday.ok() && 1 <= _Index && _Index <= 5;
+        }
     };
+
+    constexpr bool operator==(const weekday_indexed& _Left, const weekday_indexed& _Right) noexcept {
+        return _Left.weekday() == _Right.weekday() && _Left.index() == _Right.index();
+    }
 
     class weekday_last {
         chrono::weekday _Weekday;
 
     public:
-        constexpr explicit weekday_last(const chrono::weekday& _Wd) noexcept;
+        constexpr explicit weekday_last(const chrono::weekday& _Wd) noexcept : _Weekday{_Wd} {}
 
-        _NODISCARD constexpr chrono::weekday weekday() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr chrono::weekday weekday() const noexcept {
+            return _Weekday;
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Weekday.ok();
+        }
     };
+
+    constexpr bool operator==(const weekday_last& _Left, const weekday_last& _Right) noexcept {
+        return _Left.weekday() == _Right.weekday();
+    }
+
+    // weekday
+    constexpr weekday_indexed weekday::operator[](unsigned _Index) const noexcept {
+        return {*this, _Index};
+    }
+    constexpr weekday_last weekday::operator[](last_spec) const noexcept {
+        return weekday_last{*this};
+    }
 
     class month_day {
         chrono::month _Month;
@@ -1138,113 +1219,6 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
-
-   
-    // weekday
-    // courtesy of Howard Hinnant
-    // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
-    constexpr unsigned weekday::_Weekday_from_days(int _Tp) noexcept {
-        return static_cast<unsigned>(_Tp >= -4 ? (_Tp + 4) % 7 : (_Tp + 5) % 7 + 6);
-    }
-    constexpr weekday::weekday(unsigned _Val) noexcept : _Weekday{static_cast<unsigned char>(_Val == 7 ? 0 : _Val)} {}
-    constexpr weekday::weekday(const sys_days& _Sys_day) noexcept
-        : _Weekday{static_cast<unsigned char>(_Weekday_from_days(_Sys_day.time_since_epoch().count()))} {}
-    constexpr weekday::weekday(const local_days& _Local_day) noexcept
-        : _Weekday{static_cast<unsigned char>(_Weekday_from_days(_Local_day.time_since_epoch().count()))} {}
-
-
-    constexpr unsigned weekday::c_encoding() const noexcept {
-        return _Weekday;
-    }
-    constexpr unsigned weekday::iso_encoding() const noexcept {
-        return _Weekday == 0u ? 7u : _Weekday;
-    }
-    constexpr bool weekday::ok() const noexcept {
-        return _Weekday <= 6;
-    }
-
-    constexpr weekday_indexed weekday::operator[](unsigned _Index) const noexcept {
-        return {*this, _Index};
-    }
-    constexpr weekday_last weekday::operator[](last_spec) const noexcept {
-        return weekday_last{*this};
-    }
-
-    constexpr bool operator==(const weekday& _Left, const weekday& _Right) noexcept {
-        return _Left.c_encoding() == _Right.c_encoding();
-    }
-
-    constexpr weekday operator+(const weekday& _Left, const days& _Right) noexcept {
-        const auto _Wd  = static_cast<long long>(_Left.c_encoding()) + _Right.count();
-        const auto _Div = (_Wd >= 0 ? _Wd : _Wd - 6) / 7;
-        return weekday{static_cast<unsigned>(_Wd - _Div * 7)};
-    }
-    constexpr weekday operator+(const days& _Left, const weekday& _Right) noexcept {
-        return _Right + _Left;
-    }
-    constexpr weekday operator-(const weekday& _Left, const days& _Right) noexcept {
-        return _Left + -_Right;
-    }
-    constexpr days operator-(const weekday& _Left, const weekday& _Right) noexcept {
-        const auto _Wd = _Left.c_encoding() - _Right.c_encoding();
-        const auto _Wk = _Wd <= 6 ? _Wd : _Wd + 7;
-        return days{_Wk};
-    }
-
-    constexpr weekday& weekday::operator++() noexcept {
-        return *this += days{1};
-    }
-    constexpr weekday weekday::operator++(int) noexcept {
-        weekday _Temp{*this};
-        ++(*this);
-        return _Temp;
-    }
-    constexpr weekday& weekday::operator--() noexcept {
-        return *this -= days{1};
-    }
-    constexpr weekday weekday::operator--(int) noexcept {
-        weekday _Temp{*this};
-        --(*this);
-        return _Temp;
-    }
-
-    constexpr weekday& weekday::operator+=(const days& _Days) noexcept {
-        return *this = *this + _Days;
-    }
-    constexpr weekday& weekday::operator-=(const days& _Days) noexcept {
-        return *this = *this - _Days;
-    }
-
-    // weekday_indexed
-    constexpr weekday_indexed::weekday_indexed(const chrono::weekday& _Wd, unsigned _Idx) noexcept
-        : _Weekday{_Wd}, _Index{static_cast<unsigned char>(_Idx)} {}
-
-    constexpr chrono::weekday weekday_indexed::weekday() const noexcept {
-        return _Weekday;
-    }
-    constexpr unsigned weekday_indexed::index() const noexcept {
-        return _Index;
-    }
-    constexpr bool weekday_indexed::ok() const noexcept {
-        return _Weekday.ok() && 1 <= _Index && _Index <= 5;
-    }
-    constexpr bool operator==(const weekday_indexed& _Left, const weekday_indexed& _Right) noexcept {
-        return _Left.weekday() == _Right.weekday() && _Left.index() == _Right.index();
-    }
-
-    // weekday_last
-    constexpr weekday_last::weekday_last(const chrono::weekday& _Wd) noexcept : _Weekday{_Wd} {}
-
-    constexpr chrono::weekday weekday_last::weekday() const noexcept {
-        return _Weekday;
-    }
-    constexpr bool weekday_last::ok() const noexcept {
-        return _Weekday.ok();
-    }
-
-    constexpr bool operator==(const weekday_last& _Left, const weekday_last& _Right) noexcept {
-        return _Left.weekday() == _Right.weekday();
-    }
 
     // month_day
     constexpr month_day::month_day(const chrono::month& _M, const chrono::day& _D) noexcept : _Month{_M}, _Day{_D} {}
