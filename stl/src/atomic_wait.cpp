@@ -88,6 +88,12 @@ namespace {
         _Dest.store(reinterpret_cast<_Function_pointer>(_Src), std::memory_order_relaxed);
     }
 
+    enum _Api_initialized : int {
+        _Not_initalized,
+        _Initalized,
+        _In_progress,
+    };
+
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
 
     constexpr bool _Have_condition_variable_functions() noexcept {
@@ -106,13 +112,19 @@ namespace {
         std::atomic<decltype(&::ReleaseSRWLockExclusive)> _Pfn_ReleaseSRWLockExclusive{nullptr};
         std::atomic<decltype(&::SleepConditionVariableSRW)> _Pfn_SleepConditionVariableSRW{nullptr};
         std::atomic<decltype(&::WakeAllConditionVariable)> _Pfn_WakeAllConditionVariable{nullptr};
-        std::atomic<bool> _Initialized{false};
+        std::atomic<_Api_initialized> _Initialized{_Not_initalized};
     };
 
     _Condition_variable_functions _Cv_fcns;
 
     _Condition_variable_functions& _Get_Condition_variable_functions() {
-        if (!_Cv_fcns._Initialized.load(std::memory_order_acquire)) {
+        if (_Cv_fcns._Initialized.load(std::memory_order_acquire) != _Initalized) {
+            _Api_initialized expected = _Not_initalized;
+            if (!_Cv_fcns._Initialized.compare_exchange_strong(expected, _In_progress, std::memory_order_acquire)) {
+                if (expected == _Initalized) {
+                    return _Cv_fcns;
+                }
+            }
             HMODULE kernel_module                = ::GetModuleHandleW(L"Kernel32.dll");
             FARPROC acquire_srw_lock_exclusive   = ::GetProcAddress(kernel_module, "AcquireSRWLockExclusive");
             FARPROC release_srw_lock_exclusive   = ::GetProcAddress(kernel_module, "ReleaseSRWLockExclusive");
@@ -127,8 +139,8 @@ namespace {
                 _Save_function_pointer_relaxed(_Cv_fcns._Pfn_WakeAllConditionVariable, wake_all_condition_variable);
             }
 
-            bool expected = false;
-            _Cv_fcns._Initialized.compare_exchange_strong(expected, true, std::memory_order_release);
+            expected = _In_progress;
+            _Cv_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_release);
         }
         return _Cv_fcns;
     }
@@ -235,26 +247,33 @@ namespace {
         std::atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
         std::atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle{nullptr};
         std::atomic<decltype(&::WakeByAddressAll)> _Pfn_WakeByAddressAll{nullptr};
-        std::atomic<bool> _Initialized{false};
+        std::atomic<_Api_initialized> _Initialized{_Not_initalized};
     };
 
-    _Wait_on_address_functions _Wait_on_addr_fcns;
+    _Wait_on_address_functions _Wait_fcns;
 
     const _Wait_on_address_functions& _Get_wait_functions() {
-        if (!_Wait_on_addr_fcns._Initialized.load(std::memory_order_acquire)) {
+        if (!_Wait_fcns._Initialized.load(std::memory_order_acquire) != _Initalized) {
+            _Api_initialized expected = _Not_initalized;
+            if (!_Wait_fcns._Initialized.compare_exchange_strong(expected, _In_progress, std::memory_order_acquire)) {
+                if (expected == _Initalized) {
+                    return _Wait_fcns;
+                }
+            }
             HMODULE sync_api_module        = ::GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
             FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
             FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
             FARPROC wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
             if (wait_on_address != nullptr && wake_by_address_single != nullptr && wake_by_address_all != nullptr) {
-                _Save_function_pointer_relaxed(_Wait_on_addr_fcns._Pfn_WaitOnAddress, wait_on_address);
-                _Save_function_pointer_relaxed(_Wait_on_addr_fcns._Pfn_WakeByAddressSingle, wake_by_address_single);
-                _Save_function_pointer_relaxed(_Wait_on_addr_fcns._Pfn_WakeByAddressAll, wake_by_address_all);
+                _Save_function_pointer_relaxed(_Wait_fcns._Pfn_WaitOnAddress, wait_on_address);
+                _Save_function_pointer_relaxed(_Wait_fcns._Pfn_WakeByAddressSingle, wake_by_address_single);
+                _Save_function_pointer_relaxed(_Wait_fcns._Pfn_WakeByAddressAll, wake_by_address_all);
             }
-            bool expected = false;
-            _Wait_on_addr_fcns._Initialized.compare_exchange_strong(expected, true, std::memory_order_release);
+
+            expected = _In_progress;
+            _Wait_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_release);
         }
-        return _Wait_on_addr_fcns;
+        return _Wait_fcns;
     }
 
     bool _Have_wait_functions() noexcept {
@@ -404,18 +423,19 @@ _NODISCARD unsigned long long __cdecl __std_atomic_wait_get_current_time() noexc
 }
 
 bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept {
+    (void) _Api_level; // Win8+ unused
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
     if (_Api_level < _WIN32_WINNT_VISTA) {
-        bool _Expected = false;
-        if (!_Cv_fcns._Initialized.compare_exchange_strong(_Expected, true, std::memory_order_relaxed)) {
+        _Api_initialized expected = _Not_initalized;
+        if (!_Cv_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_relaxed)) {
             return false; // It is too late
         }
     }
 #endif
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
     if (_Api_level < _WIN32_WINNT_WIN8) {
-        bool _Expected = false;
-        if (!_Wait_on_addr_fcns._Initialized.compare_exchange_strong(_Expected, true, std::memory_order_relaxed)) {
+        _Api_initialized expected = _Not_initalized;
+        if (!_Wait_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_relaxed)) {
             return false; // It is too late
         }
     }
