@@ -207,7 +207,7 @@ namespace {
                     _Wait_context._Wait_phase_and_spin_count -= _Atomic_spin_value_step;
                     break;
                 }
-                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_sleep | 1 * _Atomic_spin_value_step;
+                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_sleep | 2 * _Atomic_spin_value_step;
                 [[fallthrough]];
 
             case _Atomic_wait_phase_sleep:
