@@ -217,12 +217,12 @@ public:
         return static_cast<const _Outer&>(*this);
     }
 
-    _NODISCARD _DECLSPEC_ALLOCATOR pointer allocate(
-        _CRT_GUARDOVERFLOW size_type _Count) { // allocate array of _Count elements, ignore hint
+    _NODISCARD __declspec(allocator) pointer
+        allocate(_CRT_GUARDOVERFLOW size_type _Count) { // allocate array of _Count elements, ignore hint
         return _Outer_traits::allocate(outer_allocator(), _Count);
     }
 
-    _NODISCARD _DECLSPEC_ALLOCATOR pointer allocate(
+    _NODISCARD __declspec(allocator) pointer allocate(
         _CRT_GUARDOVERFLOW size_type _Count, const_void_pointer _Hint) { // allocate array of _Count elements, with hint
         return _Outer_traits::allocate(outer_allocator(), _Count, _Hint);
     }
@@ -250,7 +250,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Outer, class... _Inner>
-scoped_allocator_adaptor(_Outer, _Inner...)->scoped_allocator_adaptor<_Outer, _Inner...>;
+scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
 template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>

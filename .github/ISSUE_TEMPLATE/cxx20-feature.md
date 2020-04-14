@@ -9,7 +9,7 @@ assignees: ''
 
 **NOTE**
 This issue template is for STL maintainers only.
-Please use the Bug Report issue template instead.
+Please use the Bug Report template instead.
 
 
 [PAPER_NUMBER](https://wg21.link/PAPER_NUMBER) PAPER_TITLE

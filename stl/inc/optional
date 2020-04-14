@@ -394,10 +394,10 @@ public:
     }
 
     template <class _Ty2>
-    _NODISCARD constexpr _Ty value_or(_Ty2&& _Right) const& {
-        static_assert(is_copy_constructible_v<_Ty>,
-            "The const overload of optional<T>::value_or requires T to be copy constructible "
-            "(N4828 [optional.observe]/18).");
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) const& {
+        static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
+            "The const overload of optional<T>::value_or requires const T& to be convertible to remove_cv_t<T> "
+            "([optional.observe]/18 as modified by LWG-XXXX).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
             "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/18).");
 
@@ -405,13 +405,13 @@ public:
             return this->_Value;
         }
 
-        return static_cast<_Ty>(_STD forward<_Ty2>(_Right));
+        return static_cast<remove_cv_t<_Ty>>(_STD forward<_Ty2>(_Right));
     }
     template <class _Ty2>
-    _NODISCARD constexpr _Ty value_or(_Ty2&& _Right) && {
-        static_assert(is_move_constructible_v<_Ty>,
-            "The rvalue overload of optional<T>::value_or requires T to be move constructible "
-            "(N4828 [optional.observe]/20).");
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) && {
+        static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
+            "The rvalue overload of optional<T>::value_or requires T to be convertible to remove_cv_t<T> "
+            "([optional.observe]/20 as modified by LWG-XXXX).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
             "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/20).");
 
@@ -419,7 +419,7 @@ public:
             return _STD move(this->_Value);
         }
 
-        return static_cast<_Ty>(_STD forward<_Ty2>(_Right));
+        return static_cast<remove_cv_t<_Ty>>(_STD forward<_Ty2>(_Right));
     }
 
     // modifiers [optional.object.mod]
@@ -427,7 +427,7 @@ public:
 };
 
 template <class _Ty>
-optional(_Ty)->optional<_Ty>;
+optional(_Ty) -> optional<_Ty>;
 
 // RELATIONAL OPERATORS [optional.relops]
 template <class _Ty1, class _Ty2>

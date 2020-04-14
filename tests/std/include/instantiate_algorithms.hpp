@@ -127,7 +127,7 @@ namespace std_testing {
         // Check for op,()
         template <typename T, typename U>
         void operator,(const T&, const U&) = delete;
-    }
+    } // namespace dummy_functors
 
 
     template <typename ValueType, typename InIt, typename FwdIt, typename BidIt, typename RanIt, typename OutIt,

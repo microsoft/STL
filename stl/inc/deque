@@ -710,16 +710,15 @@ public:
 
     deque(deque&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
-        if
-            _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-                    _Construct(_STD make_move_iterator(_Right._Unchecked_begin()),
-                        _STD make_move_iterator(_Right._Unchecked_end()));
-                    _Proxy._Release();
-                    return;
-                }
+        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
+                _Construct(_STD make_move_iterator(_Right._Unchecked_begin()),
+                    _STD make_move_iterator(_Right._Unchecked_end()));
+                _Proxy._Release();
+                return;
             }
+        }
 
         _Get_data()._Alloc_proxy(_Alproxy);
         _Take_contents(_Right);
@@ -1568,7 +1567,7 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-deque(_Iter, _Iter, _Alloc = _Alloc())->deque<_Iter_value_t<_Iter>, _Alloc>;
+deque(_Iter, _Iter, _Alloc = _Alloc()) -> deque<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Alloc>

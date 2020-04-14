@@ -3,15 +3,16 @@
 
 jobs:
 - job: ${{ parameters.targetPlatform }}
+  timeoutInMinutes: 360
   pool:
-    name: STL
+    name: $(agentPool)
 
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - checkout: self
       clean: true
-      submodules: recursive
+      submodules: true
     - task: Cache@2
       displayName: Cache vcpkg
       timeoutInMinutes: 10
@@ -24,45 +25,68 @@ jobs:
       condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
       timeoutInMinutes: 10
       inputs:
-        vcpkgArguments: 'boost-build:x86-windows'
+        vcpkgArguments: 'boost-build'
         vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
     - task: run-vcpkg@0
       displayName: 'Run vcpkg'
       timeoutInMinutes: 10
       inputs:
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
-        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
-    - task: run-cmake@0
-      displayName: 'Build Support Tools'
+        vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
+    - task: PowerShell@2
+      displayName: 'Get Test Parallelism'
       timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
-        cmakeListsTxtPath: 'tools/CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*x64-Release.*'
-        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
-    - task: BatchScript@1
-      displayName: 'Enforce clang-format'
-      timeoutInMinutes: 60
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/enforce-clang-format.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
-    - task: BatchScript@1
-      displayName: 'Validate Files'
-      timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/validate-files.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+        targetType: inline
+        script: |
+          $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+          Write-Output "##vso[task.setvariable variable=testParallelism;]$testParallelism"
     - task: run-cmake@0
       displayName: 'Build the STL'
       timeoutInMinutes: 10
       inputs:
-        cmakeListsTxtPath: 'CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
+        cmakeListsOrSettingsJson: 'CMakeListsTxtAdvanced'
+        cmakeListsTxtPath: '$(Build.SourcesDirectory)/CMakeLists.txt'
         buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        useVcpkgToolchainFile: true
+        cmakeAppendedArgs: |
+          -G Ninja -DBUILD_TESTING=TRUE -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
+    - task: CmdLine@2
+      displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        workingDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        script: |
+          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          ctest -V
+    - task: PublishTestResults@2
+      displayName: 'Publish libcxx Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/libcxx.test.xml'
+        testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish std Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/std.test.xml'
+        testRunTitle: 'std-${{ parameters.targetPlatform }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish tr1 Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        testResultsFormat: JUnit
+        testResultsFiles: '**/tr1.test.xml'
+        testRunTitle: 'tr1-${{ parameters.targetPlatform }}'

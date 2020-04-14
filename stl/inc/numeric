@@ -116,8 +116,8 @@ _NODISCARD _Ty reduce(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _T
 }
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _Iter_value_t<_FwdIt> reduce(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept /* terminates */ {
+_NODISCARD _Iter_value_t<_FwdIt> reduce(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept
+/* terminates */ {
     // return commutative and associative reduction of
     // iterator_traits<_FwdIt>::value_type{} and [_First, _Last)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
@@ -283,8 +283,8 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fwd
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _Ty transform_reduce(
-    _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val) noexcept /* terminates */ {
+_NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val) noexcept
+/* terminates */ {
     // return commutative and associative transform-reduction of sequences
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -431,8 +431,8 @@ _DestTy* exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 exclusive_scan(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest, _Ty _Val) noexcept /* terminates */ {
+_FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest, _Ty _Val) noexcept
+/* terminates */ {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus<>{});
 }
@@ -561,16 +561,16 @@ _DestTy* inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 inclusive_scan(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept /* terminates */ {
+_FwdIt2 inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
+/* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest
     return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>());
 }
 
 #if _ITERATOR_DEBUG_ARRAY_OVERLOADS
 template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* inclusive_scan(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
+_DestTy* inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept
+/* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest
     return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>());
 }
@@ -803,8 +803,8 @@ _DestTy* adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 
 #endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 adjacent_difference(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept /* terminates */ {
+_FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
+/* terminates */ {
     // compute adjacent differences into _Dest
     return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>());
 }
@@ -859,7 +859,10 @@ _NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
 
 // FUNCTION TEMPLATE _Stl_bitscan_forward
 template <class _Unsigned>
-constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
+_NODISCARD constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+    return static_cast<unsigned long>(_Countr_zero(_Mask));
+#else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
     // find the index of the least significant set bit (_BitScanForward isn't constexpr... yet :))
     static_assert(is_unsigned_v<_Unsigned>, "Bitscan only works on bits");
     unsigned long _Count = 0;
@@ -871,6 +874,7 @@ constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
     }
 
     return _Count;
+#endif // !__cpp_lib_bitops
 }
 
 // FUNCTION TEMPLATE gcd

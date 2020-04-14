@@ -36,7 +36,7 @@ namespace detail {
             return permissive();
         }
     };
-}
+} // namespace detail
 constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <bool>
@@ -48,11 +48,17 @@ struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
 template <>
 inline constexpr bool std::ranges::enable_borrowed_range<borrowed<true>> = true;
 
-inline constexpr auto get_first = [](auto&& x) -> auto&& {
+#ifndef __clang__ // TRANSITION, LLVM-45213
+inline
+#endif
+    constexpr auto get_first = [](auto&& x) -> auto&& {
     return static_cast<decltype(x)>(x).first;
 };
 
-inline constexpr auto get_second = [](auto&& x) -> auto&& {
+#ifndef __clang__ // TRANSITION, LLVM-45213
+inline
+#endif
+    constexpr auto get_second = [](auto&& x) -> auto&& {
     return static_cast<decltype(x)>(x).second;
 };
 
@@ -90,7 +96,7 @@ public:
 };
 
 template <ranges::contiguous_range R>
-move_only_range(R&)->move_only_range<std::remove_reference_t<ranges::range_reference_t<R>>>;
+move_only_range(R&) -> move_only_range<std::remove_reference_t<ranges::range_reference_t<R>>>;
 
 template <class T>
 class move_only_range<T>::iterator {

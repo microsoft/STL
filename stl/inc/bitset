@@ -286,23 +286,18 @@ public:
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_small = _Bits <= 32;
         constexpr bool _Bits_large = _Bits > 64;
-        if
-            _CONSTEXPR_IF(_Bits_zero) {
-                return 0;
-            }
-        else if
-            _CONSTEXPR_IF(_Bits_small) {
-                return static_cast<unsigned long>(_Array[0]);
-            }
-        else {
-            if
-                _CONSTEXPR_IF(_Bits_large) {
-                    for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
-                        if (_Array[_Idx] != 0) {
-                            _Xoflo(); // fail if any high-order words are nonzero
-                        }
+        if _CONSTEXPR_IF (_Bits_zero) {
+            return 0;
+        } else if _CONSTEXPR_IF (_Bits_small) {
+            return static_cast<unsigned long>(_Array[0]);
+        } else {
+            if _CONSTEXPR_IF (_Bits_large) {
+                for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
+                    if (_Array[_Idx] != 0) {
+                        _Xoflo(); // fail if any high-order words are nonzero
                     }
                 }
+            }
 
             if (_Array[0] > ULONG_MAX) {
                 _Xoflo();
@@ -315,19 +310,16 @@ public:
     _NODISCARD unsigned long long to_ullong() const {
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_large = _Bits > 64;
-        if
-            _CONSTEXPR_IF(_Bits_zero) {
-                return 0;
-            }
-        else {
-            if
-                _CONSTEXPR_IF(_Bits_large) {
-                    for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
-                        if (_Array[_Idx] != 0) {
-                            _Xoflo(); // fail if any high-order words are nonzero
-                        }
+        if _CONSTEXPR_IF (_Bits_zero) {
+            return 0;
+        } else {
+            if _CONSTEXPR_IF (_Bits_large) {
+                for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
+                    if (_Array[_Idx] != 0) {
+                        _Xoflo(); // fail if any high-order words are nonzero
                     }
                 }
+            }
 
             return _Array[0];
         }
@@ -408,7 +400,19 @@ public:
     }
 
     _NODISCARD bool all() const noexcept {
-        return count() == size();
+        constexpr bool _Zero_length = _Bits == 0;
+        if _CONSTEXPR_IF (_Zero_length) { // must test for this, otherwise would count one full word
+            return true;
+        }
+
+        constexpr bool _No_padding = _Bits % _Bitsperword == 0;
+        for (size_t _Wpos = 0; _Wpos < _Words + _No_padding; ++_Wpos) {
+            if (_Array[_Wpos] != ~static_cast<_Ty>(0)) {
+                return false;
+            }
+        }
+
+        return _No_padding || _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
@@ -431,10 +435,9 @@ private:
 
     void _Trim() noexcept { // clear any trailing bits in last word
         constexpr bool _Work_to_do = _Bits == 0 || _Bits % _Bitsperword != 0;
-        if
-            _CONSTEXPR_IF(_Work_to_do) {
-                _Array[_Words] &= (_Ty{1} << _Bits % _Bitsperword) - 1;
-            }
+        if _CONSTEXPR_IF (_Work_to_do) {
+            _Array[_Words] &= (_Ty{1} << _Bits % _Bitsperword) - 1;
+        }
     }
 
     bitset& _Set_unchecked(size_t _Pos, bool _Val) noexcept { // set bit at _Pos to _Val, no checking
@@ -534,12 +537,11 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
 
     constexpr bool _Has_bits = _Bits > 0;
 
-    if
-        _CONSTEXPR_IF(_Has_bits) {
-            if (!_Changed) {
-                _State |= _Istr_t::failbit;
-            }
+    if _CONSTEXPR_IF (_Has_bits) {
+        if (!_Changed) {
+            _State |= _Istr_t::failbit;
         }
+    }
 
     _Istr.setstate(_State);
     _Right = bitset<_Bits>(_Str); // convert string and store

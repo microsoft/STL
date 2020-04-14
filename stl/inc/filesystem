@@ -197,14 +197,14 @@ namespace filesystem {
     inline constexpr bool _Is_EcharT<char32_t> = true;
 
     template <class _Ty, class = void>
-    inline constexpr bool _Is_Source2 = false;
+    inline constexpr bool _Is_Source_impl = false;
 
     template <class _Ty>
-    inline constexpr bool _Is_Source2<_Ty, void_t<_Iter_value_t<decay_t<_Ty>>>> =
-        _Is_EcharT<_Iter_value_t<decay_t<_Ty>>>;
+    inline constexpr bool _Is_Source_impl<_Ty, void_t<typename iterator_traits<_Ty>::value_type>> =
+        _Is_EcharT<typename iterator_traits<_Ty>::value_type>;
 
     template <class _Ty>
-    inline constexpr bool _Is_Source = _Is_Source2<_Ty>;
+    inline constexpr bool _Is_Source = _Is_Source_impl<decay_t<_Ty>>;
 
     class path;
 
@@ -2161,7 +2161,7 @@ namespace filesystem {
             return _Path;
         }
 
-        operator const filesystem::path&() const noexcept {
+        operator const filesystem::path &() const noexcept {
             return _Path;
         }
 
@@ -3284,8 +3284,8 @@ namespace filesystem {
     }
 
     // FUNCTION copy_file
-    inline bool copy_file(
-        const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept /* strengthened */ {
+    inline bool copy_file(const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept
+    /* strengthened */ {
         // copy a file _From -> _To according to _Options
         const auto _Result =
             __std_fs_copy_file(_From.c_str(), _To.c_str(), static_cast<__std_fs_copy_options>(_Options));

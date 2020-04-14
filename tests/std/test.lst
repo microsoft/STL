@@ -220,6 +220,7 @@ tests\P0607R0_inline_variables
 tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
 tests\P0674R1_make_shared_for_arrays
+tests\P0718R2_atomic_smart_ptrs
 tests\P0758R1_is_nothrow_convertible
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
@@ -249,6 +250,7 @@ tests\P0898R3_concepts
 tests\P0898R3_identity
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
+tests\P1023R0_constexpr_for_array_comparisons
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric

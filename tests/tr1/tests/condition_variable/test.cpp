@@ -48,8 +48,6 @@ namespace { // anonymous namespace
     public:
         waiter(Cond& c, Mutex& m, int& r) : cnd(c), mtx(m), result(r) {}
 
-        waiter& operator=(const waiter&); // not defined
-
         void operator()(int flags) const { // launch thread and synchronize with main thread
             try { // make sure exceptions don't escape
                 bool res = false;

@@ -50,7 +50,7 @@ namespace detail {
             return permissive();
         }
     };
-}
+} // namespace detail
 constexpr bool is_permissive = detail::Derived<int>::test();
 
 struct IncompleteClass;
@@ -821,7 +821,7 @@ namespace test_integral_concepts {
             return true;
         }
         STATIC_ASSERT(test_subsumption());
-    }
+    } // namespace subsumption
 
 #pragma warning(push)
 #pragma warning(disable : 4180) // qualifier applied to function type has no meaning; ignored
@@ -1487,68 +1487,83 @@ namespace test_constructible_from {
 namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
-#pragma warning(push)
-#pragma warning(disable : 4180) // qualifier applied to function type has no meaning; ignored
-    template <class T>
-    constexpr bool test() {
-        constexpr bool result = default_initializable<T>;
-        STATIC_ASSERT(default_initializable<T const> == result);
-        STATIC_ASSERT(default_initializable<T volatile> == result);
-        STATIC_ASSERT(default_initializable<T const volatile> == result);
-        return result;
-    }
-#pragma warning(pop)
+    STATIC_ASSERT(default_initializable<int>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+    STATIC_ASSERT(!default_initializable<int const>);
+#else // ^^^ no workaround / workaround vvv
+    STATIC_ASSERT(default_initializable<int const>);
+#endif // TRANSITION, VSO-1084668
+    STATIC_ASSERT(default_initializable<int volatile>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+    STATIC_ASSERT(!default_initializable<int const volatile>);
+#else // ^^^ no workaround / workaround vvv
+    STATIC_ASSERT(default_initializable<int const volatile>);
+#endif // TRANSITION, VSO-1084668
+    STATIC_ASSERT(default_initializable<double>);
+    STATIC_ASSERT(!default_initializable<void>);
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<int const>());
-    STATIC_ASSERT(test<double>());
-    STATIC_ASSERT(!test<void>());
+    STATIC_ASSERT(default_initializable<int*>);
+    STATIC_ASSERT(default_initializable<int const*>);
 
-    STATIC_ASSERT(test<int*>());
-    STATIC_ASSERT(test<int const*>());
+    STATIC_ASSERT(default_initializable<int[2]>);
+    STATIC_ASSERT(default_initializable<char[3]>);
+    STATIC_ASSERT(default_initializable<char[5][3]>);
+    STATIC_ASSERT(!default_initializable<int[]>);
+    STATIC_ASSERT(!default_initializable<char[]>);
+    STATIC_ASSERT(!default_initializable<char[][3]>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+    STATIC_ASSERT(!default_initializable<int const[2]>);
+#else // ^^^ no workaround / workaround vvv
+    STATIC_ASSERT(default_initializable<int const[2]>);
+#endif // TRANSITION, VSO-1084668
 
-    STATIC_ASSERT(test<int[2]>());
-    STATIC_ASSERT(test<char[3]>());
-    STATIC_ASSERT(test<char[5][3]>());
-    STATIC_ASSERT(!test<int[]>());
-    STATIC_ASSERT(!test<char[]>());
-    STATIC_ASSERT(!test<char[][3]>());
+    STATIC_ASSERT(!default_initializable<int&>);
+    STATIC_ASSERT(!default_initializable<int const&>);
+    STATIC_ASSERT(!default_initializable<int&&>);
 
-    STATIC_ASSERT(!test<int&>());
-    STATIC_ASSERT(!test<int const&>());
-    STATIC_ASSERT(!test<int&&>());
+    STATIC_ASSERT(!default_initializable<int()>);
+    STATIC_ASSERT(!default_initializable<int (&)()>);
 
-    STATIC_ASSERT(!test<int()>());
-    STATIC_ASSERT(!test<int (&)()>());
+    STATIC_ASSERT(!default_initializable<void()>);
+    STATIC_ASSERT(!default_initializable<void() const>);
+    STATIC_ASSERT(!default_initializable<void() volatile>);
+    STATIC_ASSERT(!default_initializable<void() &>);
+    STATIC_ASSERT(!default_initializable<void() &&>);
 
-    STATIC_ASSERT(!test<void()>());
-    STATIC_ASSERT(!test<void() const>());
-    STATIC_ASSERT(!test<void() volatile>());
-    STATIC_ASSERT(!test<void() &>());
-    STATIC_ASSERT(!test<void() &&>());
+    STATIC_ASSERT(default_initializable<EmptyClass>);
+    STATIC_ASSERT(default_initializable<EmptyClass const>);
+    STATIC_ASSERT(default_initializable<EmptyUnion>);
+    STATIC_ASSERT(default_initializable<EmptyUnion const>);
 
-    STATIC_ASSERT(test<EmptyClass>());
-    STATIC_ASSERT(test<EmptyUnion>());
+    STATIC_ASSERT(default_initializable<std::initializer_list<int>>);
 
-    STATIC_ASSERT(test<std::initializer_list<int>>());
+    STATIC_ASSERT(default_initializable<NotEmpty>);
+    STATIC_ASSERT(default_initializable<BitZero>);
 
-    STATIC_ASSERT(test<NotEmpty>());
-    STATIC_ASSERT(test<BitZero>());
+    STATIC_ASSERT(default_initializable<ExplicitDefault>);
+    STATIC_ASSERT(default_initializable<ExplicitMoveAbomination>);
+    STATIC_ASSERT(default_initializable<ExplicitCopyAbomination>);
 
-    STATIC_ASSERT(test<ExplicitDefault>());
-    STATIC_ASSERT(test<ExplicitMoveAbomination>());
-    STATIC_ASSERT(test<ExplicitCopyAbomination>());
+    STATIC_ASSERT(!default_initializable<NotDefaultConstructible>);
+    STATIC_ASSERT(!default_initializable<DeletedDefault>);
 
-    STATIC_ASSERT(!test<NotDefaultConstructible>());
-    STATIC_ASSERT(!test<DeletedDefault>());
-
-    STATIC_ASSERT(!test<PurePublicDestructor>());
-    STATIC_ASSERT(!test<NotDefaultConstructible>());
+    STATIC_ASSERT(!default_initializable<PurePublicDestructor>);
+    STATIC_ASSERT(!default_initializable<NotDefaultConstructible>);
 
     class PrivateDefault {
         PrivateDefault();
     };
-    STATIC_ASSERT(!test<PrivateDefault>());
+    STATIC_ASSERT(!default_initializable<PrivateDefault>);
+
+    struct S {
+        int x;
+    };
+    STATIC_ASSERT(default_initializable<S>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+    STATIC_ASSERT(!default_initializable<S const>);
+#else // ^^^ no workaround / workaround vvv
+    STATIC_ASSERT(default_initializable<S const>);
+#endif // TRANSITION, VSO-1084668
 } // namespace test_default_initializable
 
 namespace test_move_constructible {
@@ -2994,7 +3009,7 @@ namespace test_predicate {
         STATIC_ASSERT(predicate<Fn, tag>);
         STATIC_ASSERT(!predicate<Fn, int>);
     }
-}
+} // namespace test_predicate
 
 { // function object
     STATIC_ASSERT(predicate<S, int>);
@@ -3347,10 +3362,8 @@ namespace test_relation {
 
     STATIC_ASSERT(!test<Equivalent, A<0>, B<0>>());
     STATIC_ASSERT(!test<Equivalent, A<1>, B<1>>());
-#ifndef __clang__ // TRANSITION, LLVM-44627
     STATIC_ASSERT(test<Equivalent, A<2>, B<2>>());
     STATIC_ASSERT(test<Equivalent, A<3>, B<3>>());
-#endif // TRANSITION, LLVM-44627
     STATIC_ASSERT(test<Equivalent, A<4>, B<4>>());
 
     template <unsigned I>

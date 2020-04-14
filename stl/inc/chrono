@@ -612,6 +612,11 @@ namespace chrono {
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
+            // Instead of just having "(_Ctr * period::den) / _Freq",
+            // the algorithm below prevents overflow when _Ctr is sufficiently large.
+            // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
+            // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
+            // but the initial value of _Ctr could be large.
             const long long _Whole = (_Ctr / _Freq) * period::den;
             const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
             return time_point(duration(_Whole + _Part));
@@ -653,8 +658,8 @@ inline namespace literals {
             return chrono::hours(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, ratio<3600>> operator"" h(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, ratio<3600>>(_Val);
         }
 
@@ -662,8 +667,8 @@ inline namespace literals {
             return chrono::minutes(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, ratio<60>>(operator"" min)(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, ratio<60>>(_Val);
         }
 
@@ -679,8 +684,8 @@ inline namespace literals {
             return chrono::milliseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, milli> operator"" ms(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, milli> operator"" ms(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, milli>(_Val);
         }
 
@@ -688,8 +693,8 @@ inline namespace literals {
             return chrono::microseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, micro> operator"" us(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, micro> operator"" us(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, micro>(_Val);
         }
 
@@ -697,8 +702,8 @@ inline namespace literals {
             return chrono::nanoseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, nano> operator"" ns(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, nano> operator"" ns(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, nano>(_Val);
         }
     } // namespace chrono_literals

@@ -333,7 +333,7 @@ struct pair { // store a pair of values
 
 #if _HAS_CXX17
 template <class _Ty1, class _Ty2>
-pair(_Ty1, _Ty2)->pair<_Ty1, _Ty2>;
+pair(_Ty1, _Ty2) -> pair<_Ty1, _Ty2>;
 #endif // _HAS_CXX17
 
 template <class _Ty1, class _Ty2, enable_if_t<_Is_swappable<_Ty1>::value && _Is_swappable<_Ty2>::value, int> = 0>

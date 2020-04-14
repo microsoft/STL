@@ -179,7 +179,10 @@ tests\string1
 tests\string2
 tests\strstream
 tests\system_error
-tests\thread
+
+# TRANSITION, flaky test
+# tests\thread
+
 tests\tuple
 tests\type_traits1
 tests\type_traits2

@@ -51,14 +51,8 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
-#if defined(__clang__) || defined(__EDG__) // Clang and EDG don't yet implement P1771R1
-#if __has_cpp_attribute(nodiscard) != 201603L
-#error __has_cpp_attribute(nodiscard) is not 201603L
-#endif
-#else
 #if __has_cpp_attribute(nodiscard) != 201907L
 #error __has_cpp_attribute(nodiscard) is not 201907L
-#endif
 #endif
 
 #if __has_cpp_attribute(noreturn) != 200809L
@@ -160,6 +154,12 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
+#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
+#if __cpp_constexpr != 201907L
+#error __cpp_constexpr is not 201907L
+#else
+STATIC_ASSERT(__cpp_constexpr == 201907L);
+#endif
 #elif _HAS_CXX17
 #if __cpp_constexpr != 201603L
 #error __cpp_constexpr is not 201603L
@@ -257,6 +257,12 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 
 #ifndef __cpp_generic_lambdas
 #error __cpp_generic_lambdas is not defined
+#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133
+#if __cpp_generic_lambdas != 201707L
+#error __cpp_generic_lambdas is not 201707L
+#else
+STATIC_ASSERT(__cpp_generic_lambdas == 201707L);
+#endif
 #elif __cpp_generic_lambdas != 201304L
 #error __cpp_generic_lambdas is not 201304L
 #else
@@ -305,16 +311,25 @@ STATIC_ASSERT(__cpp_if_constexpr == 201606L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__)
-// Clang only has partial support for <=> but that does not include the feature test macro.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VS 2019 16.7p1
+#if defined(__clang__) || _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG
+#ifndef __cpp_impl_destroying_delete
+#error __cpp_impl_destroying_delete is not defined
+#elif __cpp_impl_destroying_delete != 201806L
+#error __cpp_impl_destroying_delete is not 201806L
+#else
+STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
+#endif
+#else
+#ifdef __cpp_impl_destroying_delete
+#error __cpp_impl_destroying_delete is defined
+#endif
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_impl_three_way_comparison
 #error __cpp_impl_three_way_comparison is not defined
-#elif defined(__EDG__) // EDG does not yet implement P1630R1 or P1186R3 so they still report the old value.
-#if __cpp_impl_three_way_comparison != 201711L
-#error __cpp_impl_three_way_comparison is not 201711L
-#else
-STATIC_ASSERT(__cpp_impl_three_way_comparison == 201711L);
-#endif
 #else
 #if __cpp_impl_three_way_comparison != 201907L
 #error __cpp_impl_three_way_comparison is not 201907L
@@ -347,6 +362,12 @@ STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
 
 #ifndef __cpp_init_captures
 #error __cpp_init_captures is not defined
+#elif _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-951133 and EDG
+#if __cpp_init_captures != 201803L
+#error __cpp_init_captures is not 201803L
+#else
+STATIC_ASSERT(__cpp_init_captures == 201803L);
+#endif
 #elif __cpp_init_captures != 201304L
 #error __cpp_init_captures is not 201304L
 #else
@@ -701,7 +722,15 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_array_constexpr
+#error __cpp_lib_array_constexpr is not defined
+#elif __cpp_lib_array_constexpr != 201806L
+#error __cpp_lib_array_constexpr is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
 #elif __cpp_lib_array_constexpr != 201803L
@@ -751,6 +780,20 @@ STATIC_ASSERT(__cpp_lib_atomic_is_always_lock_free == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_shared_ptr
+#error __cpp_lib_atomic_shared_ptr is not defined
+#elif __cpp_lib_atomic_shared_ptr != 201711L
+#error __cpp_lib_atomic_shared_ptr is not 201711L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_shared_ptr == 201711L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_shared_ptr
+#error __cpp_lib_atomic_shared_ptr is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_atomic_value_initialization
 #error __cpp_lib_atomic_value_initialization is not defined
 #elif __cpp_lib_atomic_value_initialization != 201911L
@@ -787,7 +830,7 @@ STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1020212
+#if _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1020212
 #ifndef __cpp_lib_bitops
 #error __cpp_lib_bitops is not defined
 #elif __cpp_lib_bitops != 201907L
@@ -964,6 +1007,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #else
 #ifdef __cpp_lib_constexpr_numeric
 #error __cpp_lib_constexpr_numeric is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_impl_destroying_delete) // TRANSITION, EDG and VS 2019 16.7p1
+#ifndef __cpp_lib_destroying_delete
+#error __cpp_lib_destroying_delete is not defined
+#elif __cpp_lib_destroying_delete != 201806L
+#error __cpp_lib_destroying_delete is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_destroying_delete == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_destroying_delete
+#error __cpp_lib_destroying_delete is defined
 #endif
 #endif
 
@@ -1155,7 +1212,7 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1020212
 #ifndef __cpp_lib_int_pow2
 #error __cpp_lib_int_pow2 is not defined
 #elif __cpp_lib_int_pow2 != 202002L
@@ -1557,10 +1614,18 @@ STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
 
 #ifndef __cpp_lib_shared_ptr_arrays
 #error __cpp_lib_shared_ptr_arrays is not defined
-#elif __cpp_lib_shared_ptr_arrays != 201611L
+#elif _HAS_CXX20
+#if __cpp_lib_shared_ptr_arrays != 201707L
+#error __cpp_lib_shared_ptr_arrays is not 201707L
+#else
+STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201707L);
+#endif
+#else
+#if __cpp_lib_shared_ptr_arrays != 201611L
 #error __cpp_lib_shared_ptr_arrays is not 201611L
 #else
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
+#endif
 #endif
 
 #if _HAS_CXX17
