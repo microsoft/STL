@@ -1119,18 +1119,81 @@ namespace chrono {
 
     public:
         year_month() = default;
-        constexpr year_month(const chrono::year& _Y, const chrono::month& _M) noexcept;
+        constexpr year_month(const chrono::year& _Y, const chrono::month& _M) noexcept : _Year{_Y}, _Month{_M} {}
 
-        _NODISCARD constexpr chrono::year year() const noexcept;
-        _NODISCARD constexpr chrono::month month() const noexcept;
+        _NODISCARD constexpr chrono::year year() const noexcept {
+            return _Year;
+        }
+        _NODISCARD constexpr chrono::month month() const noexcept {
+            return _Month;
+        }
 
         constexpr year_month& operator+=(const months& _Months) noexcept;
         constexpr year_month& operator-=(const months& _Months) noexcept;
         constexpr year_month& operator+=(const years& _Years) noexcept;
         constexpr year_month& operator-=(const years& _Years) noexcept;
 
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Year.ok() && _Month.ok();
+        }
     };
+
+    constexpr bool operator==(const year_month& _Left, const year_month& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month() == _Right.month();
+    }
+    constexpr strong_ordering operator<=>(const year_month& _Left, const year_month& _Right) noexcept {
+        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
+            return _Comp;
+        return _Left.month() <=> _Right.month();
+    }
+
+    constexpr year_month operator+(const year_month& _Left, const months& _Right) noexcept {
+        const auto _M   = static_cast<long long>(static_cast<unsigned>(_Left.month())) + (_Right.count() - 1);
+        const auto _Div = (_M >= 0 ? _M : _M - 11) / 12;
+        return year_month{_Left.year() + years{_Div}, month{static_cast<unsigned>(_M - _Div * 12 + 1)}};
+    }
+    constexpr year_month operator+(const months& _Left, const year_month& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month operator-(const year_month& _Left, const months& _Right) noexcept {
+        return _Left + -_Right;
+    }
+
+    constexpr months operator-(const year_month& _Left, const year_month& _Right) noexcept {
+        return _Left.year() - _Right.year()
+               + months{static_cast<int>(static_cast<unsigned>(_Left.month()))
+                        - static_cast<int>(static_cast<unsigned>(_Right.month()))};
+    }
+
+    constexpr year_month operator+(const year_month& _Left, const years& _Right) noexcept {
+        return {year{_Left.year() + _Right}, _Left.month()};
+    }
+
+    constexpr year_month operator+(const years& _Left, const year_month& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month operator-(const year_month& _Left, const years& _Right) noexcept {
+        return _Left + -_Right;
+    }
+
+    constexpr year_month& year_month::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month& year_month::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month& year_month::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month& year_month::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
 
     class year_month_day {
         chrono::year _Year;
@@ -1275,78 +1338,6 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
-
-    // year_month
-    constexpr year_month::year_month(const chrono::year& _Y, const chrono::month& _M) noexcept
-        : _Year{_Y}, _Month{_M} {}
-
-    constexpr chrono::year year_month::year() const noexcept {
-        return _Year;
-    }
-    constexpr chrono::month year_month::month() const noexcept {
-        return _Month;
-    }
-
-    constexpr bool year_month::ok() const noexcept {
-        return _Year.ok() && _Month.ok();
-    }
-
-    constexpr bool operator==(const year_month& _Left, const year_month& _Right) noexcept {
-        return _Left.year() == _Right.year() && _Left.month() == _Right.month();
-    }
-    constexpr strong_ordering operator<=>(const year_month& _Left, const year_month& _Right) noexcept {
-        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
-            return _Comp;
-        return _Left.month() <=> _Right.month();
-    }
-
-    constexpr year_month operator+(const year_month& _Left, const months& _Right) noexcept {
-        const auto _M   = static_cast<long long>(static_cast<unsigned>(_Left.month())) + (_Right.count() - 1);
-        const auto _Div = (_M >= 0 ? _M : _M - 11) / 12;
-        return year_month{_Left.year() + years{_Div}, month{static_cast<unsigned>(_M - _Div * 12 + 1)}};
-    }
-    constexpr year_month operator+(const months& _Left, const year_month& _Right) noexcept {
-        return _Right + _Left;
-    }
-
-    constexpr year_month operator-(const year_month& _Left, const months& _Right) noexcept {
-        return _Left + -_Right;
-    }
-
-    constexpr months operator-(const year_month& _Left, const year_month& _Right) noexcept {
-        return _Left.year() - _Right.year()
-               + months{static_cast<int>(static_cast<unsigned>(_Left.month()))
-                        - static_cast<int>(static_cast<unsigned>(_Right.month()))};
-    }
-
-    constexpr year_month operator+(const year_month& _Left, const years& _Right) noexcept {
-        return (_Left.year() + _Right) / _Left.month();
-    }
-
-    constexpr year_month operator+(const years& _Left, const year_month& _Right) noexcept {
-        return _Right + _Left;
-    }
-
-    constexpr year_month operator-(const year_month& _Left, const years& _Right) noexcept {
-        return _Left + -_Right;
-    }
-
-    constexpr year_month& year_month::operator+=(const months& _Months) noexcept {
-        *this = *this + _Months;
-        return *this;
-    }
-    constexpr year_month& year_month::operator-=(const months& _Months) noexcept {
-        *this = *this - _Months;
-        return *this;
-    }
-    constexpr year_month& year_month::operator+=(const years& _Years) noexcept {
-        *this = *this + _Years;
-        return *this;
-    }
-    constexpr year_month& year_month::operator-=(const years& _Years) noexcept {
-        *this = *this - _Years;
-        return *this;
-    }
 
     // year_month_day
     // Thanks again to Howard https://howardhinnant.github.io/date_algorithms.html#civil_from_days
