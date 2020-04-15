@@ -1608,166 +1608,127 @@ namespace chrono {
         return *this;
     }
 
-    _NODISCARD constexpr year_month operator/(const year& _Year, const month& _Month) noexcept;
-    _NODISCARD constexpr year_month operator/(const year& _Year, int _Month) noexcept;
-    _NODISCARD constexpr month_day operator/(const month& _Month, const day& _Day) noexcept;
-    _NODISCARD constexpr month_day operator/(const month& _Month, int _Day) noexcept;
-    _NODISCARD constexpr month_day operator/(int _Month, const day& _Day) noexcept;
-    _NODISCARD constexpr month_day operator/(const day& _Day, const month& _Month) noexcept;
-    _NODISCARD constexpr month_day operator/(const day& _Day, int _Month) noexcept;
-    _NODISCARD constexpr month_day_last operator/(const month& _Month, last_spec) noexcept;
-    _NODISCARD constexpr month_day_last operator/(int _Month, last_spec) noexcept;
-    _NODISCARD constexpr month_day_last operator/(last_spec, const month& _Month) noexcept;
-    _NODISCARD constexpr month_day_last operator/(last_spec, int _Month) noexcept;
-    _NODISCARD constexpr month_weekday operator/(const month& _Month, const weekday_indexed& _Wdi) noexcept;
-    _NODISCARD constexpr month_weekday operator/(int _Month, const weekday_indexed& _Wdi) noexcept;
-    _NODISCARD constexpr month_weekday operator/(const weekday_indexed& _Wdi, const month& _Month) noexcept;
-    _NODISCARD constexpr month_weekday operator/(const weekday_indexed& _Wdi, int _Month) noexcept;
-    _NODISCARD constexpr month_weekday_last operator/(const month& _Month, const weekday_last& _Wdl) noexcept;
-    _NODISCARD constexpr month_weekday_last operator/(int _Month, const weekday_last& _Wdl) noexcept;
-    _NODISCARD constexpr month_weekday_last operator/(const weekday_last& _Wdl, const month& _Month) noexcept;
-    _NODISCARD constexpr month_weekday_last operator/(const weekday_last& _Wdl, int _Month) noexcept;
-    _NODISCARD constexpr year_month_day operator/(const year_month& _Ym, const day& _Day) noexcept;
-    _NODISCARD constexpr year_month_day operator/(const year_month& _Ym, int _Day) noexcept;
-    _NODISCARD constexpr year_month_day operator/(const year& _Year, const month_day& _Md) noexcept;
-    _NODISCARD constexpr year_month_day operator/(int _Year, const month_day& _Md) noexcept;
-    _NODISCARD constexpr year_month_day operator/(const month_day& _Md, const year& _Year) noexcept;
-    _NODISCARD constexpr year_month_day operator/(const month_day& _Md, int _Year) noexcept;
-    _NODISCARD constexpr year_month_day_last operator/(const year_month& _Ym, last_spec) noexcept;
-    _NODISCARD constexpr year_month_day_last operator/(const year& _Year, const month_day_last& _Mdl) noexcept;
-    _NODISCARD constexpr year_month_day_last operator/(int _Year, const month_day_last& _Mdl) noexcept;
-    _NODISCARD constexpr year_month_day_last operator/(const month_day_last& _Mdl, const year& _Year) noexcept;
-    _NODISCARD constexpr year_month_day_last operator/(const month_day_last& _Mdl, int _Year) noexcept;
-    _NODISCARD constexpr year_month_weekday operator/(const year_month& _Ym, const weekday_indexed& _Wdi) noexcept;
-    _NODISCARD constexpr year_month_weekday operator/(const year& _Year, const month_weekday& _Mwd) noexcept;
-    _NODISCARD constexpr year_month_weekday operator/(int _Year, const month_weekday& _Mwd) noexcept;
-    _NODISCARD constexpr year_month_weekday operator/(const month_weekday& _Mwd, const year& _Year) noexcept;
-    _NODISCARD constexpr year_month_weekday operator/(const month_weekday& _Mwd, int _Year) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const year_month& _Ym, const weekday_last& _Wdl) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const year& _Year, const month_weekday_last& _Mwdl) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
-    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
-
     // Civil calendar conventional syntax operators
-    constexpr year_month operator/(const year& _Year, const month& _Month) noexcept {
+    _NODISCARD constexpr year_month operator/(const year& _Year, const month& _Month) noexcept {
         return {_Year, _Month};
     }
-    constexpr year_month operator/(const year& _Year, int _Month) noexcept {
+    _NODISCARD constexpr year_month operator/(const year& _Year, int _Month) noexcept {
         return _Year / month{static_cast<unsigned>(_Month)};
     }
-    constexpr month_day operator/(const month& _Month, const day& _Day) noexcept {
+    _NODISCARD constexpr month_day operator/(const month& _Month, const day& _Day) noexcept {
         return {_Month, _Day};
     }
-    constexpr month_day operator/(const month& _Month, int _Day) noexcept {
+    _NODISCARD constexpr month_day operator/(const month& _Month, int _Day) noexcept {
         return _Month / day{static_cast<unsigned>(_Day)};
     }
-    constexpr month_day operator/(int _Month, const day& _Day) noexcept {
+    _NODISCARD constexpr month_day operator/(int _Month, const day& _Day) noexcept {
         return month{static_cast<unsigned>(_Month)} / _Day;
     }
-    constexpr month_day operator/(const day& _Day, const month& _Month) noexcept {
+    _NODISCARD constexpr month_day operator/(const day& _Day, const month& _Month) noexcept {
         return _Month / _Day;
     }
-    constexpr month_day operator/(const day& _Day, int _Month) noexcept {
+    _NODISCARD constexpr month_day operator/(const day& _Day, int _Month) noexcept {
         return month{static_cast<unsigned>(_Month)} / _Day;
     }
-    constexpr month_day_last operator/(const month& _Month, last_spec) noexcept {
+    _NODISCARD constexpr month_day_last operator/(const month& _Month, last_spec) noexcept {
         return month_day_last{_Month};
     }
-    constexpr month_day_last operator/(int _Month, last_spec) noexcept {
+    _NODISCARD constexpr month_day_last operator/(int _Month, last_spec) noexcept {
         return month{static_cast<unsigned>(_Month)} / last;
     }
-    constexpr month_day_last operator/(last_spec, const month& _Month) noexcept {
+    _NODISCARD constexpr month_day_last operator/(last_spec, const month& _Month) noexcept {
         return _Month / last;
     }
-    constexpr month_day_last operator/(last_spec, int _Month) noexcept {
+    _NODISCARD constexpr month_day_last operator/(last_spec, int _Month) noexcept {
         return month{static_cast<unsigned>(_Month)} / last;
     }
-    constexpr month_weekday operator/(const month& _Month, const weekday_indexed& _Wdi) noexcept {
+    _NODISCARD constexpr month_weekday operator/(const month& _Month, const weekday_indexed& _Wdi) noexcept {
         return {_Month, _Wdi};
     }
-    constexpr month_weekday operator/(int _Month, const weekday_indexed& _Wdi) noexcept {
+    _NODISCARD constexpr month_weekday operator/(int _Month, const weekday_indexed& _Wdi) noexcept {
         return month{static_cast<unsigned>(_Month)} / _Wdi;
     }
-    constexpr month_weekday operator/(const weekday_indexed& _Wdi, const month& _Month) noexcept {
+    _NODISCARD constexpr month_weekday operator/(const weekday_indexed& _Wdi, const month& _Month) noexcept {
         return _Month / _Wdi;
     }
-    constexpr month_weekday operator/(const weekday_indexed& _Wdi, int _Month) noexcept {
+    _NODISCARD constexpr month_weekday operator/(const weekday_indexed& _Wdi, int _Month) noexcept {
         return month{static_cast<unsigned>(_Month)} / _Wdi;
     }
-    constexpr month_weekday_last operator/(const month& _Month, const weekday_last& _Wdl) noexcept {
+    _NODISCARD constexpr month_weekday_last operator/(const month& _Month, const weekday_last& _Wdl) noexcept {
         return {_Month, _Wdl};
     }
-    constexpr month_weekday_last operator/(int _Month, const weekday_last& _Wdl) noexcept {
+    _NODISCARD constexpr month_weekday_last operator/(int _Month, const weekday_last& _Wdl) noexcept {
         return month{static_cast<unsigned>(_Month)} / _Wdl;
     }
-    constexpr month_weekday_last operator/(const weekday_last& _Wdl, const month& _Month) noexcept {
+    _NODISCARD constexpr month_weekday_last operator/(const weekday_last& _Wdl, const month& _Month) noexcept {
         return _Month / _Wdl;
     }
-    constexpr month_weekday_last operator/(const weekday_last& _Wdl, int _Month) noexcept {
+    _NODISCARD constexpr month_weekday_last operator/(const weekday_last& _Wdl, int _Month) noexcept {
         return month{static_cast<unsigned>(_Month)} / _Wdl;
     }
-    constexpr year_month_day operator/(const year_month& _Ym, const day& _Day) noexcept {
+    _NODISCARD constexpr year_month_day operator/(const year_month& _Ym, const day& _Day) noexcept {
         return {_Ym.year(), _Ym.month(), _Day};
     }
-    constexpr year_month_day operator/(const year_month& _Ym, int _Day) noexcept {
+    _NODISCARD constexpr year_month_day operator/(const year_month& _Ym, int _Day) noexcept {
         return _Ym / day{static_cast<unsigned>(_Day)};
     }
-    constexpr year_month_day operator/(const year& _Year, const month_day& _Md) noexcept {
+    _NODISCARD constexpr year_month_day operator/(const year& _Year, const month_day& _Md) noexcept {
         return _Year / _Md.month() / _Md.day();
     }
-    constexpr year_month_day operator/(int _Year, const month_day& _Md) noexcept {
+    _NODISCARD constexpr year_month_day operator/(int _Year, const month_day& _Md) noexcept {
         return year{_Year} / _Md.month() / _Md.day();
     }
-    constexpr year_month_day operator/(const month_day& _Md, const year& _Year) noexcept {
+    _NODISCARD constexpr year_month_day operator/(const month_day& _Md, const year& _Year) noexcept {
         return _Year / _Md.month() / _Md.day();
     }
-    constexpr year_month_day operator/(const month_day& _Md, int _Year) noexcept {
+    _NODISCARD constexpr year_month_day operator/(const month_day& _Md, int _Year) noexcept {
         return year{_Year} / _Md.month() / _Md.day();
     }
-    constexpr year_month_day_last operator/(const year_month& _Ym, last_spec) noexcept {
+    _NODISCARD constexpr year_month_day_last operator/(const year_month& _Ym, last_spec) noexcept {
         return {_Ym.year(), month_day_last{_Ym.month()}};
     }
-    constexpr year_month_day_last operator/(const year& _Year, const month_day_last& _Mdl) noexcept {
+    _NODISCARD constexpr year_month_day_last operator/(const year& _Year, const month_day_last& _Mdl) noexcept {
         return {_Year, _Mdl};
     }
-    constexpr year_month_day_last operator/(int _Year, const month_day_last& _Mdl) noexcept {
+    _NODISCARD constexpr year_month_day_last operator/(int _Year, const month_day_last& _Mdl) noexcept {
         return year{_Year} / _Mdl;
     }
-    constexpr year_month_day_last operator/(const month_day_last& _Mdl, const year& _Year) noexcept {
+    _NODISCARD constexpr year_month_day_last operator/(const month_day_last& _Mdl, const year& _Year) noexcept {
         return _Year / _Mdl;
     }
-    constexpr year_month_day_last operator/(const month_day_last& _Mdl, int _Year) noexcept {
+    _NODISCARD constexpr year_month_day_last operator/(const month_day_last& _Mdl, int _Year) noexcept {
         return year{_Year} / _Mdl;
     }
-    constexpr year_month_weekday operator/(const year_month& _Ym, const weekday_indexed& _Wdi) noexcept {
+    _NODISCARD constexpr year_month_weekday operator/(const year_month& _Ym, const weekday_indexed& _Wdi) noexcept {
         return year_month_weekday{_Ym.year(), _Ym.month(), _Wdi};
     }
-    constexpr year_month_weekday operator/(const year& _Year, const month_weekday& _Mwd) noexcept {
+    _NODISCARD constexpr year_month_weekday operator/(const year& _Year, const month_weekday& _Mwd) noexcept {
         return year_month_weekday{_Year, _Mwd.month(), _Mwd.weekday_indexed()};
     }
-    constexpr year_month_weekday operator/(int _Year, const month_weekday& _Mwd) noexcept {
+    _NODISCARD constexpr year_month_weekday operator/(int _Year, const month_weekday& _Mwd) noexcept {
         return year{_Year} / _Mwd;
     }
-    constexpr year_month_weekday operator/(const month_weekday& _Mwd, const year& _Year) noexcept {
+    _NODISCARD constexpr year_month_weekday operator/(const month_weekday& _Mwd, const year& _Year) noexcept {
         return _Year / _Mwd;
     }
-    constexpr year_month_weekday operator/(const month_weekday& _Mwd, int _Year) noexcept {
+    _NODISCARD constexpr year_month_weekday operator/(const month_weekday& _Mwd, int _Year) noexcept {
         return year{_Year} / _Mwd;
     }
-    constexpr year_month_weekday_last operator/(const year_month& _Ym, const weekday_last& _Wdl) noexcept {
+    _NODISCARD constexpr year_month_weekday_last operator/(const year_month& _Ym, const weekday_last& _Wdl) noexcept {
         return {_Ym.year(), _Ym.month(), _Wdl};
     }
-    constexpr year_month_weekday_last operator/(const year& _Year, const month_weekday_last& _Mwdl) noexcept {
+    _NODISCARD constexpr year_month_weekday_last operator/(
+        const year& _Year, const month_weekday_last& _Mwdl) noexcept {
         return {_Year, _Mwdl.month(), _Mwdl.weekday_last()};
     }
-    constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept {
+    _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept {
         return year{_Year} / _Mwdl;
     }
-    constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept {
+    _NODISCARD constexpr year_month_weekday_last operator/(
+        const month_weekday_last& _Mwdl, const year& _Year) noexcept {
         return _Year / _Mwdl;
     }
-    constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept {
+    _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept {
         return year{_Year} / _Mwdl;
     }
 
