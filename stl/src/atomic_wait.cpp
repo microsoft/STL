@@ -257,7 +257,7 @@ namespace {
     _Wait_on_address_functions _Wait_fcns;
 
     const _Wait_on_address_functions& _Get_wait_functions() {
-        if (!_Wait_fcns._Initialized.load(std::memory_order_acquire) != _Initalized) {
+        if (_Wait_fcns._Initialized.load(std::memory_order_acquire) != _Initalized) {
             _Api_initialized expected = _Not_initalized;
             if (!_Wait_fcns._Initialized.compare_exchange_strong(expected, _In_progress, std::memory_order_acquire)) {
                 if (expected == _Initalized) {
