@@ -59,7 +59,7 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
 }
 
 inline void test_atomic_wait(const bool is_precise) {
-    constexpr std::chrono::milliseconds waiting_duration{50};
+    constexpr std::chrono::milliseconds waiting_duration{10};
     test_atomic_wait_func<char>(1, 2, waiting_duration, is_precise);
     test_atomic_wait_func<signed char>(1, 2, waiting_duration, is_precise);
     test_atomic_wait_func<unsigned char>(1, 2, waiting_duration, is_precise);
