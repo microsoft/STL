@@ -6,9 +6,9 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
+#include <future>
 #include <string.h>
 #include <thread>
-#include <future>
 
 template <class UnderlyingType>
 void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
