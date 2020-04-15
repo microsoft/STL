@@ -111,10 +111,6 @@ inline void _Atomic_wait_direct_for_internal_spinlock(
     }
     __std_atomic_wait_direct(_Spinlock, &_Locked_value, _Size, _Wait_context);
     // Don't check for spurious wakes, spinlock will do it
-
-    if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
-        __std_atomic_unwait_direct(_Spinlock, _Wait_context);
-    }
 #endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
 

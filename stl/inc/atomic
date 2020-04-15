@@ -443,6 +443,9 @@ public:
         while (_InterlockedExchange8(&_Spinlock, 1)) {
             _Atomic_wait_direct_for_internal_spinlock(&_Spinlock, '\1', _Wait_context);
         }
+        if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
+            __std_atomic_unwait_direct(const_cast<const long*>(&_Shared_ptr_flag), _Wait_context);
+        }
     }
 
     void _Unlock() const noexcept { // unlock the spinlock

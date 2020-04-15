@@ -24,6 +24,9 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_
     while (_interlockedbittestandset(&_Shared_ptr_flag, 0)) { // set bit 0
         _Atomic_wait_direct_for_internal_spinlock(&_Shared_ptr_flag, 1L, _Wait_context);
     }
+    if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
+        __std_atomic_unwait_direct(const_cast<const long*>(&_Shared_ptr_flag), _Wait_context);
+    }
 #endif // _M_ARM
 }
 

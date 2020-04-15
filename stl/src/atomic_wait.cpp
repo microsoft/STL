@@ -235,6 +235,8 @@ namespace {
         if (_Wait_context._Wait_phase_and_spin_count == _Atomic_wait_phase_wait_locked) {
             auto& _Entry = _Atomic_wait_table_entry(_Storage);
             __crtReleaseSRWLockExclusive(&_Entry._Lock);
+            // Superflous currently, but let's have it for robustness
+            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
         }
     }
 
