@@ -67,8 +67,14 @@ struct _Char_traits { // properties of a string or stream element
             return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem)));
         }
 
-        for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-            *(_First1 + _Idx) = *(_First2 + _Idx);
+        if (_First1 <= _First2) {
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx-- > 0;) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
         }
 
         return _First1;
@@ -103,8 +109,14 @@ struct _Char_traits { // properties of a string or stream element
             return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count * sizeof(_Elem)));
         }
 
-        for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-            *(_First1 + _Idx) = *(_First2 + _Idx);
+        if (_First1 <= _First2) {
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                *(_First1 + _Idx) = _STD move(*(_First2 + _Idx));
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx-- > 0;) {
+                *(_First1 + _Idx) = _STD move(*(_First2 + _Idx));
+            }
         }
 
         return _First1;
@@ -203,8 +215,14 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
                 _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
         }
 
-        for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-            *(_First1 + _Idx) = *(_First2 + _Idx);
+        if (_First1 <= _First2) {
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx-- > 0;) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
         }
 
         return _First1;
@@ -243,8 +261,14 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
                 _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
         }
 
-        for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-            *(_First1 + _Idx) = *(_First2 + _Idx);
+        if (_First1 <= _First2) {
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx-- > 0;) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
         }
 
         return _First1;
@@ -392,8 +416,14 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
             return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count));
         }
 
-        for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-            *(_First1 + _Idx) = *(_First2 + _Idx);
+        if (_First1 <= _First2) {
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx-- > 0;) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
         }
 
         return _First1;
@@ -438,8 +468,14 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
             return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count));
         }
 
-        for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-            *(_First1 + _Idx) = *(_First2 + _Idx);
+        if (_First1 <= _First2) {
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx-- > 0;) {
+                *(_First1 + _Idx) = *(_First2 + _Idx);
+            }
         }
 
         return _First1;
