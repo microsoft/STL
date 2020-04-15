@@ -1328,23 +1328,86 @@ namespace chrono {
         chrono::month_day_last _Month_day_last;
 
     public:
-        constexpr year_month_day_last(const chrono::year& _Y, const chrono::month_day_last& _Mdl) noexcept;
+        constexpr year_month_day_last(const chrono::year& _Y, const chrono::month_day_last& _Mdl) noexcept
+            : _Year{_Y}, _Month_day_last{_Mdl} {}
 
         constexpr year_month_day_last& operator+=(const months& _Months) noexcept;
         constexpr year_month_day_last& operator-=(const months& _Months) noexcept;
         constexpr year_month_day_last& operator+=(const years& _Years) noexcept;
         constexpr year_month_day_last& operator-=(const years& _Years) noexcept;
 
-        _NODISCARD constexpr chrono::year year() const noexcept;
-        _NODISCARD constexpr chrono::month month() const noexcept;
-        _NODISCARD constexpr chrono::month_day_last month_day_last() const noexcept;
-        _NODISCARD constexpr chrono::day day() const noexcept;
+        _NODISCARD constexpr chrono::year year() const noexcept {
+            return _Year;
+        }
+        _NODISCARD constexpr chrono::month month() const noexcept {
+            return _Month_day_last.month();
+        }
+        _NODISCARD constexpr chrono::month_day_last month_day_last() const noexcept {
+            return _Month_day_last;
+        }
+        _NODISCARD constexpr chrono::day day() const noexcept {
+            return _Last_day(year(), month());
+        }
 
-        _NODISCARD constexpr operator sys_days() const noexcept;
-        _NODISCARD constexpr explicit operator local_days() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr operator sys_days() const noexcept {
+            return sys_days{year_month_day{year(), month(), day()}};
+        }
+        _NODISCARD constexpr explicit operator local_days() const noexcept {
+            return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Year.ok() && _Month_day_last.ok();
+        }
     };
 
+    constexpr bool operator==(const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month_day_last() == _Right.month_day_last();
+    }
+    constexpr strong_ordering operator<=>(
+        const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
+        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
+            return _Comp;
+        return _Left.month_day_last() <=> _Right.month_day_last();
+    }
+
+    constexpr year_month_day_last operator+(const year_month_day_last& _Left, const months& _Right) noexcept {
+        const auto _Ym = year_month{_Left.year(), _Left.month()} + _Right;
+        return {_Ym.year(), month_day_last{_Ym.month()}};
+    }
+    constexpr year_month_day_last operator+(const months& _Left, const year_month_day_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_day_last operator-(const year_month_day_last& _Left, const months& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_day_last operator+(const year_month_day_last& _Left, const years& _Right) noexcept {
+        return {_Left.year() + _Right, _Left.month_day_last()};
+    }
+    constexpr year_month_day_last operator+(const years& _Left, const year_month_day_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+    constexpr year_month_day_last operator-(const year_month_day_last& _Left, const years& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_day_last& year_month_day_last::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month_day_last& year_month_day_last::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month_day_last& year_month_day_last::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month_day_last& year_month_day_last::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
     // year
     constexpr year_month_day::year_month_day(const year_month_day_last& _Ymdl) noexcept
         : _Year{_Ymdl.year()}, _Month{_Ymdl.month()}, _Day{_Ymdl.day()} {}
@@ -1443,90 +1506,6 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
 
-
-    // year_month_day_last
-    constexpr year_month_day_last::year_month_day_last(
-        const chrono::year& _Y, const chrono::month_day_last& _Mdl) noexcept
-        : _Year{_Y}, _Month_day_last{_Mdl} {}
-
-    constexpr chrono::year year_month_day_last::year() const noexcept {
-        return _Year;
-    }
-    constexpr chrono::month year_month_day_last::month() const noexcept {
-        return _Month_day_last.month();
-    }
-    constexpr chrono::month_day_last year_month_day_last::month_day_last() const noexcept {
-        return _Month_day_last;
-    }
-    constexpr chrono::day year_month_day_last::day() const noexcept {
-        // clang-format off
-        constexpr chrono::day _Days[] = {
-            chrono::day{31}, chrono::day{28}, chrono::day{31}, chrono::day{30},
-            chrono::day{31}, chrono::day{30}, chrono::day{31}, chrono::day{31},
-            chrono::day{30}, chrono::day{31}, chrono::day{30}, chrono::day{31}};
-        // clang-format on
-        return month() == chrono::month{2} && _Year.is_leap()
-                   ? _Days[static_cast<unsigned>(month()) - 1] + chrono::days{1}
-                   : _Days[static_cast<unsigned>(month()) - 1];
-    }
-
-    constexpr year_month_day_last::operator sys_days() const noexcept {
-        return sys_days{year() / month() / day()};
-    }
-    constexpr year_month_day_last::operator local_days() const noexcept {
-        return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
-    }
-    constexpr bool year_month_day_last::ok() const noexcept {
-        return _Year.ok() && _Month_day_last.ok();
-    }
-
-    constexpr bool operator==(const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
-        return _Left.year() == _Right.year() && _Left.month_day_last() == _Right.month_day_last();
-    }
-    constexpr strong_ordering operator<=>(
-        const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
-        if (auto _Comp = _Left.year() <=> _Right.year(); _Comp != 0)
-            return _Comp;
-        return _Left.month_day_last() <=> _Right.month_day_last();
-    }
-
-    constexpr year_month_day_last operator+(const year_month_day_last& _Left, const months& _Right) noexcept {
-        return (_Left.year() / _Left.month() + _Right) / last;
-    }
-    constexpr year_month_day_last operator+(const months& _Left, const year_month_day_last& _Right) noexcept {
-        return _Right + _Left;
-    }
-
-    constexpr year_month_day_last operator-(const year_month_day_last& _Left, const months& _Right) noexcept {
-        return _Left + (-_Right);
-    }
-
-    constexpr year_month_day_last operator+(const year_month_day_last& _Left, const years& _Right) noexcept {
-        return {_Left.year() + _Right, _Left.month_day_last()};
-    }
-    constexpr year_month_day_last operator+(const years& _Left, const year_month_day_last& _Right) noexcept {
-        return _Right + _Left;
-    }
-    constexpr year_month_day_last operator-(const year_month_day_last& _Left, const years& _Right) noexcept {
-        return _Left + (-_Right);
-    }
-
-    constexpr year_month_day_last& year_month_day_last::operator+=(const months& _Months) noexcept {
-        *this = *this + _Months;
-        return *this;
-    }
-    constexpr year_month_day_last& year_month_day_last::operator-=(const months& _Months) noexcept {
-        *this = *this - _Months;
-        return *this;
-    }
-    constexpr year_month_day_last& year_month_day_last::operator+=(const years& _Years) noexcept {
-        *this = *this + _Years;
-        return *this;
-    }
-    constexpr year_month_day_last& year_month_day_last::operator-=(const years& _Years) noexcept {
-        *this = *this - _Years;
-        return *this;
-    }
 
     // year_month_weekday
     constexpr year_month_weekday year_month_weekday::_Ymwd_from_days(days _Dp) noexcept {
