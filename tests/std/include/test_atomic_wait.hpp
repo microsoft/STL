@@ -6,15 +6,12 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
-#include <future>
 #include <string.h>
 #include <thread>
 
 template <class UnderlyingType>
 void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration, const bool is_precise) {
-    auto start_time = std::chrono::steady_clock::now();
-
     constexpr int seq_max_size = 10;
     char seq[seq_max_size + 1];
     std::atomic<char*> base = seq;
@@ -54,9 +51,6 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
 
     add_seq('\0');
     assert(strcmp(seq, "123456") == 0 || !is_precise && (strcmp(seq, "123465") == 0));
-
-    auto whole_duration = std::chrono::steady_clock::now() - start_time;
-    assert(whole_duration < waiting_duration * 10);
 }
 
 inline void test_atomic_wait(const bool is_precise) {
