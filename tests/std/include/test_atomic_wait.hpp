@@ -59,45 +59,45 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
     assert(whole_duration < waiting_duration * 10);
 }
 
-struct two_shorts {
-    short a;
-    short b;
-
-    _NODISCARD bool operator==(const two_shorts& other) const {
-        return a == other.a && b == other.b;
-    }
-};
-
-struct three_chars {
-    char a;
-    char b;
-    char c;
-
-    _NODISCARD bool operator==(const three_chars& other) const {
-        return a == other.a && b == other.b && c == other.c;
-    }
-};
-
 inline void test_atomic_wait(const bool is_precise) {
-    constexpr std::chrono::milliseconds waiting_duration{20};
-    auto asyncs = {std::async([=] { test_atomic_wait_func<signed char>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<unsigned char>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<short>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<unsigned short>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<int>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<unsigned int>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<long>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<unsigned long>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<long long>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<unsigned long long>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<float>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<double>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<long double>(1, 2, waiting_duration, is_precise); }),
-        std::async([=] { test_atomic_wait_func<const void*>("1", "2", waiting_duration, is_precise); }),
-        std::async([=] {
-            test_atomic_wait_func<two_shorts>({1, 1}, {1, 2}, waiting_duration, is_precise);
-        }),
-        std::async([=] {
-            test_atomic_wait_func<three_chars>({1, 1, 3}, {1, 2, 3}, waiting_duration, is_precise);
-        })};
+    constexpr std::chrono::milliseconds waiting_duration{10};
+    test_atomic_wait_func<char>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<signed char>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned char>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<short>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned short>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<int>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned int>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<long long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<unsigned long long>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<float>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<double>(1, 2, waiting_duration, is_precise);
+    test_atomic_wait_func<long double>(1, 2, waiting_duration, is_precise);
+
+    test_atomic_wait_func<const void*>("1", "2", waiting_duration, is_precise);
+
+    struct two_shorts {
+        short a;
+        short b;
+
+        _NODISCARD bool operator==(const two_shorts& other) const {
+            return a == other.a && b == other.b;
+        }
+    };
+
+    test_atomic_wait_func<two_shorts>({1, 1}, {1, 2}, waiting_duration, is_precise);
+
+    struct three_chars {
+        char a;
+        char b;
+        char c;
+
+        _NODISCARD bool operator==(const three_chars& other) const {
+            return a == other.a && b == other.b && c == other.c;
+        }
+    };
+
+    test_atomic_wait_func<three_chars>({1, 1, 3}, {1, 2, 3}, waiting_duration, is_precise);
 }
