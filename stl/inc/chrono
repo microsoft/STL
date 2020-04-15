@@ -803,6 +803,8 @@ namespace chrono {
 
     class year {
         short _Year;
+        constexpr static int _Ymin = -32767;
+        constexpr static int _Ymax = 32767;
 
     public:
         year() = default;
@@ -848,14 +850,14 @@ namespace chrono {
         }
 
         _NODISCARD constexpr bool ok() const noexcept {
-            return (min)()._Year <= _Year && _Year <= (max)()._Year;
+            return _Ymin <= _Year && _Year <= _Ymax;
         }
 
         _NODISCARD static constexpr year(min)() noexcept {
-            return year{-32767};
+            return year{_Ymin};
         }
         _NODISCARD static constexpr year(max)() noexcept {
-            return year{32767};
+            return year{_Ymax};
         }
     };
 
