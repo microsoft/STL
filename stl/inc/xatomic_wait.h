@@ -57,7 +57,7 @@ _END_EXTERN_C
 
 
 _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_count, const bool _Is_direct) noexcept {
-#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     if (_Is_direct) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
@@ -103,13 +103,15 @@ inline void _Atomic_wait_direct_for_internal_spinlock(
     static_assert(_Size == alignof(_Value_type), "Not proterly aligned");
     static_assert(_Size == 1 || _Size == 2 || _Size == 4 || _Size == 8, "bad size");
 
+#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+    __std_atomic_wait_direct(_Spinlock, &_Locked_value, _Size, _Wait_context);
+#else
     if (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
         return; // Keep spinning for now.
     }
     __std_atomic_wait_direct(_Spinlock, &_Locked_value, _Size, _Wait_context);
     // Don't check for spurious wakes, spinlock will do it
 
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
         __std_atomic_unwait_direct(_Spinlock, _Wait_context);
     }
