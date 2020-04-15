@@ -1528,22 +1528,85 @@ namespace chrono {
 
     public:
         constexpr year_month_weekday_last(
-            const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept;
+            const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept
+            : _Year{_Y}, _Month{_M}, _Weekday_last{_Wdl} {}
 
         constexpr year_month_weekday_last& operator+=(const months& _Months) noexcept;
         constexpr year_month_weekday_last& operator-=(const months& _Months) noexcept;
         constexpr year_month_weekday_last& operator+=(const years& _Years) noexcept;
         constexpr year_month_weekday_last& operator-=(const years& _Years) noexcept;
 
-        _NODISCARD constexpr chrono::year year() const noexcept;
-        _NODISCARD constexpr chrono::month month() const noexcept;
-        _NODISCARD constexpr chrono::weekday weekday() const noexcept;
-        _NODISCARD constexpr chrono::weekday_last weekday_last() const noexcept;
+        _NODISCARD constexpr chrono::year year() const noexcept {
+            return _Year;
+        }
+        _NODISCARD constexpr chrono::month month() const noexcept {
+            return _Month;
+        }
+        _NODISCARD constexpr chrono::weekday weekday() const noexcept {
+            return _Weekday_last.weekday();
+        }
 
-        _NODISCARD constexpr operator sys_days() const noexcept;
-        _NODISCARD constexpr explicit operator local_days() const noexcept;
-        _NODISCARD constexpr bool ok() const noexcept;
+        _NODISCARD constexpr chrono::weekday_last weekday_last() const noexcept {
+            return _Weekday_last;
+        }
+
+        _NODISCARD constexpr operator sys_days() const noexcept {
+            const sys_days _Last = year_month_day_last{_Year, month_day_last{_Month}};
+            const auto _Diff     = chrono::weekday{_Last} - weekday();
+            return _Last - _Diff;
+        }
+        _NODISCARD constexpr explicit operator local_days() const noexcept {
+            return chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
+        }
+        _NODISCARD constexpr bool ok() const noexcept {
+            return _Year.ok() && _Month.ok() && _Weekday_last.ok();
+        }
     };
+
+    constexpr bool operator==(const year_month_weekday_last& _Left, const year_month_weekday_last& _Right) noexcept {
+        return _Left.year() == _Right.year() && _Left.month() == _Right.month()
+               && _Left.weekday_last() == _Right.weekday_last();
+    }
+
+    constexpr year_month_weekday_last operator+(const year_month_weekday_last& _Left, const months& _Right) noexcept {
+        const auto _Ym = year_month{_Left.year(), _Left.month()} + _Right;
+        return {_Ym.year(), _Ym.month(), _Left.weekday_last()};
+    }
+    constexpr year_month_weekday_last operator+(const months& _Left, const year_month_weekday_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_weekday_last operator-(const year_month_weekday_last& _Left, const months& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_weekday_last operator+(const year_month_weekday_last& _Left, const years& _Right) noexcept {
+        return {_Left.year() + _Right, _Left.month(), _Left.weekday_last()};
+    }
+    constexpr year_month_weekday_last operator+(const years& _Left, const year_month_weekday_last& _Right) noexcept {
+        return _Right + _Left;
+    }
+
+    constexpr year_month_weekday_last operator-(const year_month_weekday_last& _Left, const years& _Right) noexcept {
+        return _Left + (-_Right);
+    }
+
+    constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const months& _Months) noexcept {
+        *this = *this + _Months;
+        return *this;
+    }
+    constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const months& _Months) noexcept {
+        *this = *this - _Months;
+        return *this;
+    }
+    constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const years& _Years) noexcept {
+        *this = *this + _Years;
+        return *this;
+    }
+    constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const years& _Years) noexcept {
+        *this = *this - _Years;
+        return *this;
+    }
 
     _NODISCARD constexpr year_month operator/(const year& _Year, const month& _Month) noexcept;
     _NODISCARD constexpr year_month operator/(const year& _Year, int _Month) noexcept;
@@ -1585,80 +1648,6 @@ namespace chrono {
     _NODISCARD constexpr year_month_weekday_last operator/(int _Year, const month_weekday_last& _Mwdl) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, const year& _Year) noexcept;
     _NODISCARD constexpr year_month_weekday_last operator/(const month_weekday_last& _Mwdl, int _Year) noexcept;
-
-    // year_month_weekday_last
-    constexpr year_month_weekday_last::year_month_weekday_last(
-        const chrono::year& _Y, const chrono::month& _M, const chrono::weekday_last& _Wdl) noexcept
-        : _Year{_Y}, _Month{_M}, _Weekday_last{_Wdl} {}
-
-    constexpr chrono::year year_month_weekday_last::year() const noexcept {
-        return _Year;
-    }
-    constexpr chrono::month year_month_weekday_last::month() const noexcept {
-        return _Month;
-    }
-    constexpr chrono::weekday year_month_weekday_last::weekday() const noexcept {
-        return _Weekday_last.weekday();
-    }
-    constexpr chrono::weekday_last year_month_weekday_last::weekday_last() const noexcept {
-        return _Weekday_last;
-    }
-
-    constexpr year_month_weekday_last::operator sys_days() const noexcept {
-        const sys_days _Last{_Year / _Month / last};
-        const auto _Diff = chrono::weekday{_Last} - weekday();
-        return _Last - _Diff;
-    }
-    constexpr year_month_weekday_last::operator local_days() const noexcept {
-        return _STD chrono::local_days{static_cast<sys_days>(*this).time_since_epoch()};
-    }
-    constexpr bool year_month_weekday_last::ok() const noexcept {
-        return _Year.ok() && _Month.ok() && _Weekday_last.ok();
-    }
-
-    constexpr bool operator==(const year_month_weekday_last& _Left, const year_month_weekday_last& _Right) noexcept {
-        return _Left.year() == _Right.year() && _Left.month() == _Right.month()
-               && _Left.weekday_last() == _Right.weekday_last();
-    }
-
-    constexpr year_month_weekday_last operator+(const year_month_weekday_last& _Left, const months& _Right) noexcept {
-        return (_Left.year() / _Left.month() + _Right) / _Left.weekday_last();
-    }
-    constexpr year_month_weekday_last operator+(const months& _Left, const year_month_weekday_last& _Right) noexcept {
-        return _Right + _Left;
-    }
-
-    constexpr year_month_weekday_last operator-(const year_month_weekday_last& _Left, const months& _Right) noexcept {
-        return _Left + (-_Right);
-    }
-
-    constexpr year_month_weekday_last operator+(const year_month_weekday_last& _Left, const years& _Right) noexcept {
-        return {_Left.year() + _Right, _Left.month(), _Left.weekday_last()};
-    }
-    constexpr year_month_weekday_last operator+(const years& _Left, const year_month_weekday_last& _Right) noexcept {
-        return _Right + _Left;
-    }
-
-    constexpr year_month_weekday_last operator-(const year_month_weekday_last& _Left, const years& _Right) noexcept {
-        return _Left + (-_Right);
-    }
-
-    constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const months& _Months) noexcept {
-        *this = *this + _Months;
-        return *this;
-    }
-    constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const months& _Months) noexcept {
-        *this = *this - _Months;
-        return *this;
-    }
-    constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const years& _Years) noexcept {
-        *this = *this + _Years;
-        return *this;
-    }
-    constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const years& _Years) noexcept {
-        *this = *this - _Years;
-        return *this;
-    }
 
     // Civil calendar conventional syntax operators
     constexpr year_month operator/(const year& _Year, const month& _Month) noexcept {
