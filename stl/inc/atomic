@@ -638,8 +638,13 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         auto _Comparand = __iso_volatile_load64(_Mem);
         for (;;) {
             auto _Result = _InterlockedCompareExchange64(_Mem, _As_bytes, _Comparand);
-            if (_Result == _Comparand)
-                break;
+            if (_Result == _Comparand) {
+                break; // Exchanged succesfully
+            }
+            if (_Result == _As_bytes) {
+                break; // Another thread did our job
+                // Can't move this before the first _InterlockedCompareExchange64 due to seq_cst
+            }
             _Comparand = _Result;
         }
 #elif defined(_M_ARM64)
