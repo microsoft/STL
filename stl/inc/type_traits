@@ -65,6 +65,26 @@ struct conjunction<_First, _Rest...> : _Conjunction<_First::value, _First, _Rest
 template <class... _Traits>
 _INLINE_VAR constexpr bool conjunction_v = conjunction<_Traits...>::value;
 
+// VARIABLE TEMPLATE _Conjunction_v
+template <bool _Arg, bool... _Args>
+_INLINE_VAR constexpr bool _Conjunction_v = _Arg&& _Conjunction_v<_Args...>;
+
+template <bool... _Args>
+_INLINE_VAR constexpr bool _Conjunction_v<false, _Args...> = false;
+
+template <>
+_INLINE_VAR constexpr bool _Conjunction_v<true> = true;
+
+// VARIABLE TEMPLATE _Disjunction_v
+template <bool _Arg, bool... _Args>
+_INLINE_VAR constexpr bool _Disjunction_v = _Arg || _Disjunction_v<_Args...>;
+
+template <bool... _Args>
+_INLINE_VAR constexpr bool _Disjunction_v<true, _Args...> = true;
+
+template <>
+_INLINE_VAR constexpr bool _Disjunction_v<false> = false;
+
 // STRUCT TEMPLATE negation
 template <class _Trait>
 struct negation : bool_constant<!static_cast<bool>(_Trait::value)> {}; // The negated result of _Trait
