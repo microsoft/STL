@@ -1768,31 +1768,57 @@ private:
 
 // FUNCTION TEMPLATE _Build_boyer_moore_delta_2_table
 template <class _RanItPat, class _Pred_eq>
-void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* _Shifts, const _RanItPat _Pat_first,
-    const _Iter_diff_t<_RanItPat> _Pat_size, _Pred_eq& _Eq) {
-    // builds Boyer-Moore's delta_2 table from a pattern [_Pat_first, _Pat_first + _Pat_size)
-    // pre: _Shifts is a pointer to _Pat_size _Iter_diff_t<_RanIt>s
-    if (_Pat_size == 0) {
+void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, const _RanItPat _Pat_first,
+    const _Iter_diff_t<_RanItPat> _Mx, _Pred_eq& _Eq) {
+    // Builds Boyer-Moore's delta_2 table from a pattern [_Pat_first, _Pat_first + _Mx).
+    // pre: _Shifts is a pointer to _Mx _Iter_diff_t<_RanItPat>s.
+    // This is the `dd'` algorithm from "Fast Pattern Matching In Strings" by Knuth, Morris, and Pratt (1977).
+    // Note that the published algorithm used 1-based indexing!
+    // This contains the "Rytter correction" from "Algorithms For String Searching: A Survey" by Baeza-Yates (1989),
+    // originally from "A Correct Preprocessing Algorithm For Boyer-Moore String-Searching" by Rytter (1980).
+
+    if (_Mx == 0) {
         return;
     }
 
     using _Diff = _Iter_diff_t<_RanItPat>;
-    unique_ptr<_Diff[]> _Suffix_fn{::new _Diff[static_cast<size_t>(_Pat_size)]};
-    for (_Diff _Idx = 0; _Idx < _Pat_size; ++_Idx) {
-        _Shifts[_Idx] = 2 * _Pat_size - _Idx - 1;
+
+    const unique_ptr<_Diff[]> _Fx{new _Diff[static_cast<size_t>(_Mx)]};
+
+    for (_Diff _Kx = 1; _Kx <= _Mx; ++_Kx) {
+        _Shifts[_Kx - 1] = 2 * _Mx - _Kx;
     }
 
-    _Diff _Suffix = _Pat_size;
-    for (_Diff _Idx = _Pat_size; _Idx > 0; --_Idx, (void) --_Suffix) {
-        _Suffix_fn[static_cast<size_t>(_Idx - 1)] = _Suffix;
-        while (_Suffix < _Pat_size && !_Eq(_Pat_first[_Idx - 1], _Pat_first[_Suffix])) {
-            _Shifts[_Suffix] = (_STD min)(_Shifts[_Suffix], _Pat_size - _Idx);
-            _Suffix          = _Suffix_fn[static_cast<size_t>(_Suffix)];
+    _Diff _Tx = _Mx + 1;
+    for (_Diff _Jx = _Mx; _Jx > 0; --_Jx, (void) --_Tx) {
+        _Fx[static_cast<size_t>(_Jx - 1)] = _Tx;
+        while (_Tx <= _Mx && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx - 1])) {
+            _Shifts[_Tx - 1] = (_STD min)(_Shifts[_Tx - 1], _Mx - _Jx);
+            _Tx              = _Fx[static_cast<size_t>(_Tx - 1)];
         }
     }
 
-    for (_Diff _Idx = 0; _Idx <= _Suffix; ++_Idx) {
-        _Shifts[_Idx] = (_STD min)(_Shifts[_Idx], _Pat_size + _Suffix - _Idx);
+    // Rytter correction
+    _Diff _Qx = _Tx;
+    _Tx       = _Mx + 1 - _Qx;
+    for (_Diff _Jx = 1, _Tx1 = 0; _Jx <= _Tx; ++_Tx1, (void) ++_Jx) {
+        _Fx[static_cast<size_t>(_Jx - 1)] = _Tx1;
+        while (_Tx1 >= 1 && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx1 - 1])) {
+            _Tx1 = _Fx[static_cast<size_t>(_Tx1 - 1)];
+        }
+    }
+
+    _Diff _Qx1 = 1;
+    while (_Qx < _Mx) {
+        for (_Diff _Kx = _Qx1; _Kx <= _Qx; ++_Kx) {
+            _Shifts[_Kx - 1] = (_STD min)(_Shifts[_Kx - 1], _Mx + _Qx - _Kx);
+        }
+        _Qx1 = _Qx + 1;
+
+        const _Diff _Temp = _Fx[static_cast<size_t>(_Tx - 1)];
+
+        _Qx = _Qx + _Tx - _Temp;
+        _Tx = _Temp;
     }
 }
 
