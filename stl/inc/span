@@ -257,14 +257,6 @@ class array;
 template <class _Ty, size_t _Extent>
 class span;
 
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _Ty, size_t _Extent>
-    inline constexpr bool enable_view<span<_Ty, _Extent>> = _Extent == 0 || _Extent == dynamic_extent;
-    template <class _Ty, size_t _Extent>
-    inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
-} // namespace ranges
-
 // VARIABLE TEMPLATE _Is_span_v
 template <class>
 inline constexpr bool _Is_span_v = false;
@@ -278,6 +270,14 @@ inline constexpr bool _Is_std_array_v = false;
 
 template <class _Ty, size_t _Size>
 inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <class _Ty, size_t _Extent>
+    inline constexpr bool enable_view<span<_Ty, _Extent>> = _Extent == 0 || _Extent == dynamic_extent;
+    template <class _Ty, size_t _Extent>
+    inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
+} // namespace ranges
 
 // clang-format off
 // CONCEPT _Span_compatible_iterator
@@ -302,41 +302,26 @@ concept _Span_compatible_range =
  && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>>(*)[], _Ty(*)[]>;
 // clang-format on
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-
-// STRUCT TEMPLATE _Is_span
-template <class>
-struct _Is_span : false_type {};
-
-template <class _Ty, size_t _Extent>
-struct _Is_span<span<_Ty, _Extent>> : true_type {};
-
-// STRUCT TEMPLATE _Is_std_array
-template <class>
-struct _Is_std_array : false_type {};
-
-template <class _Ty, size_t _Size>
-struct _Is_std_array<array<_Ty, _Size>> : true_type {};
-
 // STRUCT TEMPLATE _Is_span_convertible_range
 template <class _Rng, class _Ty>
-struct _Is_span_convertible_range
-    : bool_constant<is_convertible_v<remove_pointer_t<decltype(_STD data(_STD declval<_Rng&>()))> (*)[], _Ty (*)[]>> {};
+inline constexpr bool _Is_span_convertible_range_v =
+    is_convertible_v<remove_pointer_t<decltype(_STD data(_STD declval<_Rng&>()))> (*)[], _Ty (*)[]> > ;
 
 // STRUCT TEMPLATE _Has_container_interface
 template <class, class = void>
-struct _Has_container_interface : false_type {};
+inline constexpr bool _Has_container_interface_v = false;
 
 template <class _Rng>
-struct _Has_container_interface<_Rng,
-    void_t<decltype(_STD data(_STD declval<_Rng&>())), decltype(_STD size(_STD declval<_Rng&>()))>> : true_type {};
+inline constexpr bool _Has_container_interface_v<_Rng,
+    void_t<decltype(_STD data(_STD declval<_Rng&>())), decltype(_STD size(_STD declval<_Rng&>()))>> = true;
 
 // VARIABLE TEMPLATE _Is_span_compatible_range
 // clang-format off
 template <class _Rng, class _Ty>
-inline constexpr bool _Is_span_compatible_range = conjunction_v<
-    negation<is_array<_Rng>>,
-    negation<_Is_span<remove_const_t<_Rng>>>,
-    negation<_Is_std_array<remove_const_t<_Rng>>>,
+inline constexpr bool _Is_span_compatible_range = _Conjunction_v<
+    !is_array_v<_Rng>,
+    !_Is_span_v<remove_const_t<_Rng>>,
+    !_Is_std_array_v<remove_const_t<_Rng>>,
     _Has_container_interface<_Rng>,
     _Is_span_convertible_range<_Rng, _Ty>>;
 // clang-format on
@@ -461,14 +446,14 @@ public:
     constexpr span(element_type (&_Arr)[_Size]) noexcept : _Mybase(_Size), _Mydata(_Arr) {}
 
     template <class _OtherTy, size_t _Size,
-        enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _Size>,
-                        is_convertible<_OtherTy (*)[], element_type (*)[]>>,
+        enable_if_t<_Conjunction_v<_Extent == dynamic_extent || _Extent == _Size,
+                        is_convertible_v<_OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
     constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
     template <class _OtherTy, size_t _Size,
-        enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _Size>,
-                        is_convertible<const _OtherTy (*)[], element_type (*)[]>>,
+        enable_if_t<_Conjunction_v<_Extent == dynamic_extent || _Extent == _Size,
+                        is_convertible_v<const _OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
     constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
 
@@ -495,9 +480,9 @@ public:
     }
 
     template <class _OtherTy, size_t _OtherExtent,
-        enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _OtherExtent == dynamic_extent
-                                                || _Extent == _OtherExtent>,
-                        is_convertible<_OtherTy (*)[], element_type (*)[]>>,
+        enable_if_t<
+            _Conjunction_v<_Extent == dynamic_extent || _OtherExtent == dynamic_extent || _Extent == _OtherExtent,
+                is_convertible_v<_OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
     constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
         span(const span<_OtherTy, _OtherExtent>& _Other) noexcept

@@ -176,48 +176,48 @@ public:
         : _Mybase(in_place, _Ilist, _STD forward<_Types>(_Args)...) {}
 
     template <class _Ty2>
-    using _AllowDirectConversion = bool_constant<conjunction_v<negation<is_same<_Remove_cvref_t<_Ty2>, optional>>,
-        negation<is_same<_Remove_cvref_t<_Ty2>, in_place_t>>, is_constructible<_Ty, _Ty2>>>;
+    _INLINE_VAR constexpr bool _AllowDirectConversion_v = _Conjunction_v<!is_same_v<_Remove_cvref_t<_Ty2>, optional>,
+        !is_same_v<_Remove_cvref_t<_Ty2>, in_place_t>, is_constructible_v<_Ty, _Ty2>>;
 
 #if _HAS_CONDITIONAL_EXPLICIT
-    template <class _Ty2 = _Ty, enable_if_t<_AllowDirectConversion<_Ty2>::value, int> = 0>
+    template <class _Ty2 = _Ty, enable_if_t<_AllowDirectConversion_v<_Ty2>::value, int> = 0>
     constexpr explicit(!is_convertible_v<_Ty2, _Ty>) optional(_Ty2&& _Right)
         : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Ty2                                                                         = _Ty,
-        enable_if_t<conjunction_v<_AllowDirectConversion<_Ty2>, is_convertible<_Ty2, _Ty>>, int> = 0>
+    template <class _Ty2                                                                              = _Ty,
+        enable_if_t<_Conjunction_v<_AllowDirectConversion_v<_Ty2>, is_convertible_v<_Ty2, _Ty>>, int> = 0>
     constexpr optional(_Ty2&& _Right) : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
-    template <class _Ty2                                                                                   = _Ty,
-        enable_if_t<conjunction_v<_AllowDirectConversion<_Ty2>, negation<is_convertible<_Ty2, _Ty>>>, int> = 0>
+    template <class _Ty2                                                                               = _Ty,
+        enable_if_t<_Conjunction_v<_AllowDirectConversion_v<_Ty2>, !is_convertible_v<_Ty2, _Ty>>, int> = 0>
     constexpr explicit optional(_Ty2&& _Right) : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
     template <class _Ty2>
-    struct _AllowUnwrapping : bool_constant<!disjunction_v<is_same<_Ty, _Ty2>, is_constructible<_Ty, optional<_Ty2>&>,
-                                  is_constructible<_Ty, const optional<_Ty2>&>,
-                                  is_constructible<_Ty, const optional<_Ty2>>, is_constructible<_Ty, optional<_Ty2>>,
-                                  is_convertible<optional<_Ty2>&, _Ty>, is_convertible<const optional<_Ty2>&, _Ty>,
-                                  is_convertible<const optional<_Ty2>, _Ty>, is_convertible<optional<_Ty2>, _Ty>>> {};
+    _INLINE_VAR constexpr bool _AllowUnwrapping_v = !_Disjunction_v<is_same_v<_Ty, _Ty2>,
+        is_constructible_v<_Ty, optional<_Ty2>&>, is_constructible_v<_Ty, const optional<_Ty2>&>,
+        is_constructible_v<_Ty, const optional<_Ty2>>, is_constructible_v<_Ty, optional<_Ty2>>,
+        is_convertible_v<optional<_Ty2>&, _Ty>, is_convertible_v<const optional<_Ty2>&, _Ty>,
+        is_convertible_v<const optional<_Ty2>, _Ty>, is_convertible_v<optional<_Ty2>, _Ty>>;
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Ty2,
-        enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>>, int> = 0>
+        enable_if_t<_Conjunction_v<_AllowUnwrapping_v<_Ty2>, is_constructible_v<_Ty, const _Ty2&>>, int> = 0>
     explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right) {
         if (_Right) {
             this->_Construct(*_Right);
         }
     }
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>,
-                                          is_convertible<const _Ty2&, _Ty>>,
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrapping_v<_Ty2>, is_constructible_v<_Ty, const _Ty2&>,
+                                          is_convertible_v<const _Ty2&, _Ty>>,
                               int> = 0>
     optional(const optional<_Ty2>& _Right) {
         if (_Right) {
             this->_Construct(*_Right);
         }
     }
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>,
-                                          negation<is_convertible<const _Ty2&, _Ty>>>,
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrapping_v<_Ty2>, is_constructible_v<_Ty, const _Ty2&>,
+                                          !is_convertible_v<const _Ty2&, _Ty>>,
                               int> = 0>
     explicit optional(const optional<_Ty2>& _Right) {
         if (_Right) {
@@ -227,23 +227,23 @@ public:
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
 #if _HAS_CONDITIONAL_EXPLICIT
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>>, int> = 0>
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrapping_v<_Ty2>, is_constructible_v<_Ty, _Ty2>>, int> = 0>
     explicit(!is_convertible_v<_Ty2, _Ty>) optional(optional<_Ty2>&& _Right) {
         if (_Right) {
             this->_Construct(_STD move(*_Right));
         }
     }
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Ty2,
-        enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>, is_convertible<_Ty2, _Ty>>,
-            int> = 0>
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrapping_v<_Ty2>, is_constructible_v<_Ty, _Ty2>,
+                                          is_convertible_v<_Ty2, _Ty>>,
+                              int> = 0>
     optional(optional<_Ty2>&& _Right) {
         if (_Right) {
             this->_Construct(_STD move(*_Right));
         }
     }
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>,
-                                          negation<is_convertible<_Ty2, _Ty>>>,
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrapping_v<_Ty2>, is_constructible_v<_Ty, _Ty2>,
+                                          !is_convertible_v<_Ty2, _Ty>>,
                               int> = 0>
     explicit optional(optional<_Ty2>&& _Right) {
         if (_Right) {
@@ -258,9 +258,9 @@ public:
         return *this;
     }
 
-    template <class _Ty2 = _Ty, enable_if_t<conjunction_v<negation<is_same<optional, _Remove_cvref_t<_Ty2>>>,
-                                                negation<conjunction<is_scalar<_Ty>, is_same<_Ty, decay_t<_Ty2>>>>,
-                                                is_constructible<_Ty, _Ty2>, is_assignable<_Ty&, _Ty2>>,
+    template <class _Ty2 = _Ty, enable_if_t<_Conjunction_v<!is_same_v<optional, _Remove_cvref_t<_Ty2>>,
+                                                !_Conjunction_v<is_scalar_v<_Ty>, is_same_v<_Ty, decay_t<_Ty2>>>,
+                                                is_constructible_v<_Ty, _Ty2>, is_assignable_v<_Ty&, _Ty2>>,
                                     int> = 0>
     optional& operator=(_Ty2&& _Right) {
         this->_Assign(_STD forward<_Ty2>(_Right));
@@ -268,13 +268,12 @@ public:
     }
 
     template <class _Ty2>
-    struct _AllowUnwrappingAssignment
-        : bool_constant<!disjunction_v<is_same<_Ty, _Ty2>, is_assignable<_Ty&, optional<_Ty2>&>,
-              is_assignable<_Ty&, const optional<_Ty2>&>, is_assignable<_Ty&, const optional<_Ty2>>,
-              is_assignable<_Ty&, optional<_Ty2>>>> {};
+    using _AllowUnwrappingAssignment_v = !_Disjunction_v<is_same_v<_Ty, _Ty2>, is_assignable_v<_Ty&, optional<_Ty2>&>,
+        is_assignable_v<_Ty&, const optional<_Ty2>&>, is_assignable_v<_Ty&, const optional<_Ty2>>,
+        is_assignable_v<_Ty&, optional<_Ty2>>>;
 
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrappingAssignment<_Ty2>,
-                                          is_constructible<_Ty, const _Ty2&>, is_assignable<_Ty&, const _Ty2&>>,
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrappingAssignment_v<_Ty2>,
+                                          is_constructible_v<_Ty, const _Ty2&>, is_assignable_v<_Ty&, const _Ty2&>>,
                               int> = 0>
     optional& operator=(const optional<_Ty2>& _Right) {
         if (_Right) {
@@ -286,8 +285,8 @@ public:
         return *this;
     }
 
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrappingAssignment<_Ty2>, is_constructible<_Ty, _Ty2>,
-                                          is_assignable<_Ty&, _Ty2>>,
+    template <class _Ty2, enable_if_t<_Conjunction_v<_AllowUnwrappingAssignment_v<_Ty2>, is_constructible_v<_Ty, _Ty2>,
+                                          is_assignable_v<_Ty&, _Ty2>>,
                               int> = 0>
     optional& operator=(optional<_Ty2>&& _Right) {
         if (_Right) {

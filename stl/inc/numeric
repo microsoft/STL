@@ -49,7 +49,7 @@ _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _T
 #if _STD_VECTORIZE_WITH_FLOAT_CONTROL
 template <class _InIt, class _Ty, class _BinOp>
 inline constexpr bool _Plus_on_arithmetic_ranges_reduction_v =
-    conjunction_v<is_arithmetic<_Ty>, is_arithmetic<remove_pointer_t<_InIt>>, is_same<plus<>, _BinOp>>;
+    _Conjunction_v<is_arithmetic_v<_Ty>, is_arithmetic_v<remove_pointer_t<_InIt>>, is_same_v<plus<>, _BinOp>>;
 
 #pragma float_control(precise, off, push)
 template <class _InIt, class _Ty>
@@ -177,8 +177,8 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
 #if _STD_VECTORIZE_WITH_FLOAT_CONTROL
 template <class _InIt1, class _InIt2, class _Ty, class _BinOp1, class _BinOp2>
 inline constexpr bool _Default_ops_transform_reduce_v =
-    conjunction_v<is_arithmetic<_Ty>, is_arithmetic<remove_pointer_t<_InIt1>>, is_arithmetic<remove_pointer_t<_InIt2>>,
-        is_same<plus<>, _BinOp1>, is_same<multiplies<>, _BinOp2>>;
+    _Conjunction_v<is_arithmetic_<_Ty>, is_arithmetic_v<remove_pointer_t<_InIt1>>,
+        is_arithmetic_v<remove_pointer_t<_InIt2>>, is_same_v<plus<>, _BinOp1>, is_same_v<multiplies<>, _BinOp2>>;
 
 #pragma float_control(precise, off, push)
 template <class _InIt1, class _InIt2, class _Ty>
