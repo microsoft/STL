@@ -637,8 +637,11 @@ public:
 
     bool _Incref_nz() noexcept { // increment use count if not zero, return true if successful
         auto& _Volatile_uses = reinterpret_cast<volatile long&>(_Uses);
-        long _Count          = __iso_volatile_load32(reinterpret_cast<volatile int*>(&_Volatile_uses));
-
+#ifdef _M_CEE_PURE
+        long _Count = *_Atomic_address_as<const long>(&_Volatile_uses);
+#else
+        long _Count = __iso_volatile_load32(reinterpret_cast<volatile int*>(&_Volatile_uses));
+#endif
         while (_Count != 0) {
             const long _Old_value = _INTRIN_RELAXED(_InterlockedCompareExchange)(&_Volatile_uses, _Count + 1, _Count);
             if (_Old_value == _Count) {
