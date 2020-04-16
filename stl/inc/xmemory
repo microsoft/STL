@@ -864,7 +864,7 @@ _NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noex
 // ALIAS TEMPLATE _Guide_size_type_t FOR DEDUCTION GUIDES, N4687 26.5.4.1 [unord.map.overview]/4
 template <class _Alloc>
 using _Guide_size_type_t =
-    typename allocator_traits<conditional_t<_Is_allocator<_Alloc>::value, _Alloc, allocator<int>>>::size_type;
+    typename allocator_traits<conditional_t<_Is_allocator_v<_Alloc>, _Alloc, allocator<int>>>::size_type;
 #endif // _HAS_CXX17
 
 // ALIAS TEMPLATE _Alloc_ptr_t

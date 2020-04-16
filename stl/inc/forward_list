@@ -1509,7 +1509,7 @@ private:
 
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 

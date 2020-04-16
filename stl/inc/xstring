@@ -2346,7 +2346,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator_v<_Alloc2>, int> = 0>
 #endif // _HAS_CXX17
     basic_string(_In_z_ const _Elem* const _Ptr, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
@@ -2366,7 +2366,7 @@ public:
     }
 
 #if _HAS_CXX17
-    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator_v<_Alloc2>, int> = 0>
 #endif // _HAS_CXX17
     basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Count * _Ch with allocator
@@ -4341,17 +4341,15 @@ private:
 
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 basic_string(_Iter, _Iter, _Alloc = _Alloc())
     -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
 
-template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 explicit basic_string(basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc())
     -> basic_string<_Elem, _Traits, _Alloc>;
 
-template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>,
     const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
 #endif // _HAS_CXX17

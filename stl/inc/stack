@@ -145,12 +145,12 @@ protected:
 };
 
 #if _HAS_CXX17
-template <class _Container, enable_if_t<!_Is_allocator<_Container>::value, int> = 0>
+template <class _Container, enable_if_t<!_Is_allocator_v<_Container>, int> = 0>
 stack(_Container) -> stack<typename _Container::value_type, _Container>;
 
 template <class _Container, class _Alloc,
     enable_if_t<
-        conjunction_v<negation<_Is_allocator<_Container>>, _Is_allocator<_Alloc>, uses_allocator<_Container, _Alloc>>,
+        _Conjunction_v<!_Is_allocator_v<_Container>, _Is_allocator_v<_Alloc>, uses_allocator<_Container, _Alloc>>,
         int> = 0>
 stack(_Container, _Alloc) -> stack<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17

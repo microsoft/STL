@@ -349,17 +349,18 @@ public:
 
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Guide_key_t<_Iter>>, class _Alloc = allocator<_Guide_pair_t<_Iter>>,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, !_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 map(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc()) -> map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>,
-    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<!_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 map(initializer_list<pair<_Kty, _Ty>>, _Pr = _Pr(), _Alloc = _Alloc()) -> map<_Kty, _Ty, _Pr, _Alloc>;
 
-template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+template <class _Iter, class _Alloc,
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 map(_Iter, _Iter, _Alloc) -> map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, less<_Guide_key_t<_Iter>>, _Alloc>;
 
-template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 map(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> map<_Kty, _Ty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
@@ -503,18 +504,19 @@ public:
 
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Guide_key_t<_Iter>>, class _Alloc = allocator<_Guide_pair_t<_Iter>>,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, !_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 multimap(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc())
     -> multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>,
-    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<!_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 multimap(initializer_list<pair<_Kty, _Ty>>, _Pr = _Pr(), _Alloc = _Alloc()) -> multimap<_Kty, _Ty, _Pr, _Alloc>;
 
-template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+template <class _Iter, class _Alloc,
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 multimap(_Iter, _Iter, _Alloc) -> multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, less<_Guide_key_t<_Iter>>, _Alloc>;
 
-template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> multimap<_Kty, _Ty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 

@@ -1417,16 +1417,14 @@ constexpr void _Seek_wrapped(_Ty*& _It, _Ty* const _UIt) {
 #endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
-// STRUCT TEMPLATE _Is_allocator
+// VARIABLE TEMPLATE _Is_allocator_v
 template <class _Ty, class = void>
-struct _Is_allocator : false_type { // selected when _Ty can't possibly be an allocator
-};
+_INLINE_VAR constexpr bool _Is_allocator_v = false;
 
 template <class _Ty>
-struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval<_Ty&>().deallocate(
-                                                               _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
-    : true_type { // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
-};
+_INLINE_VAR constexpr bool _Is_allocator_v<_Ty,
+    void_t<typename _Ty::value_type,
+        decltype(_STD declval<_Ty&>().deallocate(_STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>> = true;
 
 // ALIAS TEMPLATES FOR DEDUCTION GUIDES, N4687 26.4.1 [associative.general]/2
 template <class _Iter>

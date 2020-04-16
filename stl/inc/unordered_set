@@ -273,31 +273,32 @@ public:
 template <class _Iter, class _Hasher = hash<_Iter_value_t<_Iter>>, class _Keyeq = equal_to<_Iter_value_t<_Iter>>,
     class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<
-        conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>,
+        _Conjunction_v<_Is_iterator_v<_Iter>, _Is_hasher_v<_Hasher>, !_Is_allocator_v<_Keyeq>, _Is_allocator_v<_Alloc>>,
         int> = 0>
 unordered_set(_Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
     -> unordered_set<_Iter_value_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_hasher_v<_Hasher>, !_Is_allocator_v<_Keyeq>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>;
 
-template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+template <class _Iter, class _Alloc,
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_set(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc)
     -> unordered_set<_Iter_value_t<_Iter>, hash<_Iter_value_t<_Iter>>, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Hasher, class _Alloc,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_hasher_v<_Hasher>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_set(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_set<_Iter_value_t<_Iter>, _Hasher, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
-template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Kty, class _Alloc, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Alloc)
     -> unordered_set<_Kty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Hasher, class _Alloc,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_hasher_v<_Hasher>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_set<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
@@ -535,31 +536,32 @@ public:
 template <class _Iter, class _Hasher = hash<_Iter_value_t<_Iter>>, class _Keyeq = equal_to<_Iter_value_t<_Iter>>,
     class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<
-        conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>,
+        _Conjunction_v<_Is_iterator_v<_Iter>, _Is_hasher_v<_Hasher>, !_Is_allocator_v<_Keyeq>, _Is_allocator_v<_Alloc>>,
         int> = 0>
 unordered_multiset(_Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_multiset<_Iter_value_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_hasher_v<_Hasher>, !_Is_allocator_v<_Keyeq>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>;
 
-template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+template <class _Iter, class _Alloc,
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_multiset(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc)
     -> unordered_multiset<_Iter_value_t<_Iter>, hash<_Iter_value_t<_Iter>>, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Hasher, class _Alloc,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_hasher_v<_Hasher>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_multiset(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_multiset<_Iter_value_t<_Iter>, _Hasher, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
-template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Kty, class _Alloc, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Alloc)
     -> unordered_multiset<_Kty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Hasher, class _Alloc,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_hasher_v<_Hasher>, _Is_allocator_v<_Alloc>>, int> = 0>
 unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_multiset<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17

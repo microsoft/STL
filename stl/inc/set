@@ -160,17 +160,18 @@ public:
 
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Alloc = allocator<_Iter_value_t<_Iter>>,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, !_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 set(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_Iter_value_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>,
-    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<!_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 set(initializer_list<_Kty>, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_Kty, _Pr, _Alloc>;
 
-template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+template <class _Iter, class _Alloc,
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 set(_Iter, _Iter, _Alloc) -> set<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>>, _Alloc>;
 
-template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Kty, class _Alloc, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 set(initializer_list<_Kty>, _Alloc) -> set<_Kty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
@@ -300,17 +301,18 @@ public:
 
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Alloc = allocator<_Iter_value_t<_Iter>>,
-    enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, !_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 multiset(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_Iter_value_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>,
-    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    enable_if_t<_Conjunction_v<_Is_allocator_v<_Pr>, _Is_allocator_v<_Alloc>>, int> = 0>
 multiset(initializer_list<_Kty>, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_Kty, _Pr, _Alloc>;
 
-template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
+template <class _Iter, class _Alloc,
+    enable_if_t<_Conjunction_v<_Is_iterator_v<_Iter>, _Is_allocator_v<_Alloc>>, int> = 0>
 multiset(_Iter, _Iter, _Alloc) -> multiset<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>>, _Alloc>;
 
-template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <class _Kty, class _Alloc, enable_if_t<_Is_allocator_v<_Alloc>, int> = 0>
 multiset(initializer_list<_Kty>, _Alloc) -> multiset<_Kty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
