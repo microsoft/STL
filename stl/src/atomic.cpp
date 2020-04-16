@@ -14,21 +14,23 @@ _EXTERN_C
 volatile long _Shared_ptr_flag;
 
 _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_ptr_flag successfully set
-#if defined(_M_ARM) || defined(_M_ARM64)
+#ifdef _M_ARM
     while (_InterlockedExchange_acq(&_Shared_ptr_flag, 1)) {
         __yield();
     }
-#else // defined(_M_ARM) || defined(_M_ARM64)
+#else // _M_ARM
     while (_interlockedbittestandset(&_Shared_ptr_flag, 0)) { // set bit 0
     }
-#endif // defined(_M_ARM) || defined(_M_ARM64)
+#endif // _M_ARM
 }
 
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previously obtained lock
-#if defined(_M_ARM) || defined(_M_ARM)
+#ifdef _M_ARM
     __dmb(_ARM_BARRIER_ISH);
-#endif // defined(_M_ARM) || defined(_M_ARM64)
-    __iso_volatile_store32(reinterpret_cast<volatile int*>(&_Shared_ptr_flag), 0);
+    __iso_volatile_store32((volatile int*) &_Shared_ptr_flag, 0);
+#else // _M_ARM
+    _interlockedbittestandreset(&_Shared_ptr_flag, 0); // reset bit 0
+#endif // _M_ARM
 }
 
 _END_EXTERN_C
