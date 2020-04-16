@@ -7,6 +7,8 @@ param(
   [string]$AdminUserPassword = $null
 )
 
+$ErrorActionPreference = 'Stop'
+
 Function Get-TempFilePath {
   Param(
     [String]$Extension
@@ -22,9 +24,9 @@ Function Get-TempFilePath {
 }
 
 if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
-  Write-Output "AdminUser password supplied; switching to AdminUser"
+  Write-Host "AdminUser password supplied; switching to AdminUser"
   $PsExecPath = Get-TempFilePath -Extension 'exe'
-  Write-Output "Downloading psexec to $PsExecPath"
+  Write-Host "Downloading psexec to $PsExecPath"
   & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
   $PsExecArgs = @(
     '-u',
@@ -40,10 +42,10 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
     $PSCommandPath
   )
 
-  Write-Output "Executing $PsExecPath " + @PsExecArgs
+  Write-Host "Executing $PsExecPath " + @PsExecArgs
 
   $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
-  Write-Output 'Cleaning up...'
+  Write-Host 'Cleaning up...'
   Remove-Item $PsExecPath
   exit $proc.ExitCode
 }
@@ -80,12 +82,12 @@ Function PrintMsiExitCodeMessage {
     $ExitCode
   )
 
+  # 3010 is probably ERROR_SUCCESS_REBOOT_REQUIRED
   if ($ExitCode -eq 0 -or $ExitCode -eq 3010) {
-    Write-Output "Installation successful! Exited with $ExitCode."
+    Write-Host "Installation successful! Exited with $ExitCode."
   }
   else {
-    Write-Output "Installation failed! Exited with $ExitCode."
-    exit $ExitCode
+    Write-Error "Installation failed! Exited with $ExitCode."
   }
 }
 
@@ -98,10 +100,10 @@ Function InstallVisualStudio {
   )
 
   try {
-    Write-Output 'Downloading Visual Studio...'
+    Write-Host 'Downloading Visual Studio...'
     [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $bootstrapperExe -s -S $BootstrapperUrl
-    Write-Output "Installing Visual Studio..."
+    Write-Host "Installing Visual Studio..."
     $args = @('/c', $bootstrapperExe, '--quiet', '--norestart', '--wait', '--nocache')
     foreach ($workload in $Workloads) {
       $args += '--add'
@@ -122,9 +124,7 @@ Function InstallVisualStudio {
     PrintMsiExitCodeMessage $proc.ExitCode
   }
   catch {
-    Write-Output 'Failed to install Visual Studio!'
-    Write-Output $_.Exception.Message
-    exit 1
+    Write-Error "Failed to install Visual Studio! $($_.Exception.Message)"
   }
 }
 
@@ -135,18 +135,16 @@ Function InstallMSI {
   )
 
   try {
-    Write-Output "Downloading $Name..."
+    Write-Host "Downloading $Name..."
     [string]$msiPath = Get-TempFilePath -Extension 'msi'
     curl.exe -L -o $msiPath -s -S $Url
-    Write-Output "Installing $Name..."
+    Write-Host "Installing $Name..."
     $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
     $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList $args -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
   }
   catch {
-    Write-Output "Failed to install $Name!"
-    Write-Output $_.Exception.Message
-    exit -1
+    Write-Error "Failed to install $Name! $($_.Exception.Message)"
   }
 }
 
@@ -158,16 +156,14 @@ Function InstallZip {
   )
 
   try {
-    Write-Output "Downloading $Name..."
+    Write-Host "Downloading $Name..."
     [string]$zipPath = Get-TempFilePath -Extension 'zip'
     curl.exe -L -o $zipPath -s -S $Url
-    Write-Output "Installing $Name..."
+    Write-Host "Installing $Name..."
     Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
   }
   catch {
-    Write-Output "Failed to install $Name!"
-    Write-Output $_.Exception.Message
-    exit -1
+    Write-Error "Failed to install $Name! $($_.Exception.Message)"
   }
 }
 
@@ -177,17 +173,15 @@ Function InstallLLVM {
   )
 
   try {
-    Write-Output 'Downloading LLVM...'
+    Write-Host 'Downloading LLVM...'
     [string]$installerPath = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $installerPath -s -S $Url
-    Write-Output 'Installing LLVM...'
+    Write-Host 'Installing LLVM...'
     $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
   }
   catch {
-    Write-Output "Failed to install LLVM!"
-    Write-Output $_.Exception.Message
-    exit -1
+    Write-Error "Failed to install LLVM! $($_.Exception.Message)"
   }
 }
 
@@ -196,19 +190,18 @@ Function InstallPython {
     [String]$Url
   )
 
-  Write-Output 'Downloading Python...'
+  Write-Host 'Downloading Python...'
   [string]$installerPath = Get-TempFilePath -Extension 'exe'
   curl.exe -L -o $installerPath -s -S $Url
-  Write-Output 'Installing Python...'
+  Write-Host 'Installing Python...'
   $proc = Start-Process -FilePath $installerPath -ArgumentList `
   @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
   $exitCode = $proc.ExitCode
   if ($exitCode -eq 0) {
-    Write-Output 'Installation successful!'
+    Write-Host 'Installation successful!'
   }
   else {
-    Write-Output "Installation failed! Exited with $exitCode."
-    exit $exitCode
+    Write-Error "Installation failed! Exited with $exitCode."
   }
 }
 
@@ -219,29 +212,28 @@ Function InstallCuda {
   )
 
   try {
-    Write-Output 'Downloading CUDA...'
+    Write-Host 'Downloading CUDA...'
     [string]$installerPath = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $installerPath -s -S $Url
-    Write-Output 'Installing CUDA...'
+    Write-Host 'Installing CUDA...'
     $proc = Start-Process -FilePath $installerPath -ArgumentList @('-s ' + $Features) -Wait -PassThru
     $exitCode = $proc.ExitCode
     if ($exitCode -eq 0) {
-      Write-Output 'Installation successful!'
+      Write-Host 'Installation successful!'
     }
     else {
-      Write-Output "Installation failed! Exited with $exitCode."
-      exit $exitCode
+      Write-Error "Installation failed! Exited with $exitCode."
     }
   }
   catch {
-    Write-Output "Failed to install CUDA!"
-    Write-Output $_.Exception.Message
+    Write-Host "Failed to install CUDA!"
+    Write-Host $_.Exception.Message
     exit -1
   }
 }
 
 
-Write-Output "AdminUser password not supplied; assuming already running as AdminUser"
+Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
 
 Write-Host 'Configuring AntiVirus exclusions...'
 Add-MPPreference -ExclusionPath C:\agent
@@ -258,7 +250,7 @@ InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
-Write-Output 'Updating PATH...'
+Write-Host 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `

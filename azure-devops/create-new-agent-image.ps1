@@ -8,16 +8,17 @@
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_F16s_v2'
+$VMSize = 'Standard_D16as_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 10
+$TotalProgress = 11
 $CurrentProgress = 1
 
 function Find-ResourceGroupNameCollision {
+  [CmdletBinding()]
   Param([string]$Test, $Resources)
 
   foreach ($resource in $Resources) {
@@ -30,6 +31,7 @@ function Find-ResourceGroupNameCollision {
 }
 
 function Find-ResourceGroupName {
+  [CmdletBinding()]
   Param([string] $Prefix)
 
   $resources = Get-AzResourceGroup
@@ -55,10 +57,11 @@ function New-Password {
   return $result
 }
 
-function Start-WaitForShutdown {
+function Wait-Shutdown {
+  [CmdletBinding()]
   Param([string]$ResourceGroupName, [string]$Name)
 
-  Write-Output "Waiting for $Name to stop..."
+  Write-Host "Waiting for $Name to stop..."
   while ($true) {
     $Vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status
     $highestStatus = $Vm.Statuses.Count
@@ -68,19 +71,11 @@ function Start-WaitForShutdown {
       }
     }
 
-    Write-Output "... not stopped yet, sleeping for 10 seconds"
+    Write-Host "... not stopped yet, sleeping for 10 seconds"
     Start-Sleep -Seconds 10
   }
 }
 
-function Write-Reminders {
-  Param([string]$AdminPW)
-
-  Write-Output "Location: $Location"
-  Write-Output "Resource group name: $ResourceGroupName"
-  Write-Output "User name: AdminUser"
-  Write-Output "Using generated password: $AdminPW"
-}
 
 ####################################################################################################
 Write-Progress `
@@ -90,14 +85,14 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-Write-Reminders $AdminPW
 New-AzResourceGroup -Name $ResourceGroupName -Location $Location
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ("AdminUser", $AdminPWSecure)
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Creating prototype VM' `
+  -Activity $ProgressActivity `
+  -Status 'Creating virtual network' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
@@ -157,6 +152,11 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -AddressPrefix "10.0.0.0/16" `
   -Subnet $Subnet
 
+####################################################################################################
+Write-Progress `
+  -Activity 'Creating prototype VM' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
 $NicName = $ResourceGroupName + 'NIC'
 $Nic = New-AzNetworkInterface `
   -Name $NicName `
@@ -182,7 +182,7 @@ $VM = Set-AzVMSourceImage `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
-New-AzVm `
+New-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM
@@ -226,7 +226,7 @@ Write-Progress `
   -Status 'Waiting for VM to shut down' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Start-WaitForShutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
 Write-Progress `
@@ -307,5 +307,8 @@ New-AzVmss `
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
-Write-Reminders $AdminPW
-Write-Output 'Finished!'
+Write-Host "Location: $Location"
+Write-Host "Resource group name: $ResourceGroupName"
+Write-Host "User name: AdminUser"
+Write-Host "Using generated password: $AdminPW"
+Write-Host 'Finished!'
