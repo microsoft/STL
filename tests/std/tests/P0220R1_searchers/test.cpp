@@ -366,12 +366,8 @@ void report_randomized_failure(const string_view searcher, const string_view nee
 }
 
 void initialize_randomness(mt19937& mt) {
-    constexpr size_t n = mt19937::state_size;
-    constexpr size_t w = mt19937::word_size;
-    static_assert(w % 32 == 0);
-    constexpr size_t k = w / 32;
-
-    vector<uint32_t> vec(n * k);
+    static_assert(mt19937::word_size == 32);
+    vector<uint32_t> vec(mt19937::state_size);
     random_device rd;
     generate(vec.begin(), vec.end(), ref(rd));
     seed_seq seq(vec.cbegin(), vec.cend());
@@ -379,7 +375,9 @@ void initialize_randomness(mt19937& mt) {
 }
 
 void test_case_randomized_cases() {
-    const auto start = chrono::steady_clock::now();
+    using namespace std::chrono;
+
+    const auto start = steady_clock::now();
 
     mt19937 mt;
     initialize_randomness(mt);
@@ -431,11 +429,10 @@ void test_case_randomized_cases() {
         }
     }
 
-    const auto finish = chrono::steady_clock::now();
-    const auto ms     = chrono::duration_cast<chrono::milliseconds>(finish - start);
+    const auto elapsed = steady_clock::now() - start;
 
-    if (ms.count() > 10'000) {
-        cout << "test_case_randomized_cases() took " << ms.count() << " ms.\n";
+    if (elapsed > 10s) {
+        cout << "test_case_randomized_cases() took " << duration_cast<milliseconds>(elapsed).count() << " ms.\n";
         cout << "Consider retuning Needles and Haystacks.\n";
     }
 }
