@@ -1061,10 +1061,10 @@ namespace chrono {
         }
     };
 
-    constexpr bool operator==(const month_day_last& _Left, const month_day_last& _Right) {
+    constexpr bool operator==(const month_day_last& _Left, const month_day_last& _Right) noexcept {
         return _Left.month() == _Right.month();
     }
-    constexpr strong_ordering operator<=>(const month_day_last& _Left, const month_day_last& _Right) {
+    constexpr strong_ordering operator<=>(const month_day_last& _Left, const month_day_last& _Right) noexcept {
         return _Left.month() <=> _Right.month();
     }
 
@@ -1088,7 +1088,7 @@ namespace chrono {
         }
     };
 
-    constexpr bool operator==(const month_weekday& _Left, const month_weekday& _Right) {
+    constexpr bool operator==(const month_weekday& _Left, const month_weekday& _Right) noexcept {
         return _Left.month() == _Right.month() && _Left.weekday_indexed() == _Right.weekday_indexed();
     }
 
