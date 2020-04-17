@@ -25,7 +25,7 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_
 }
 
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previously obtained lock
-#if defined(_M_ARM) || defined(_M_ARM)
+#if defined(_M_ARM) || defined(_M_ARM64)
     __dmb(_ARM_BARRIER_ISH);
 #else // defined(_M_ARM) || defined(_M_ARM64)
     _ReadWriteBarrier();
