@@ -359,20 +359,19 @@ public:
 
 #else // ^^^ don't break ABI / break ABI vvv
     void _Lock() const noexcept { // lock the spinlock
-#if defined(_M_IX86) || defined(_M_X64)
         while (_InterlockedExchange8(&_Spinlock, 1)) {
-#else // ^^^ x86/x64 hardware / ARM32/ARM64 hardware vvv
-        while (_InterlockedExchange8_acq(&_Spinlock, 1)) {
-#endif // hardware
             _YIELD_PROCESSOR();
         }
     }
-
     void _Unlock() const noexcept { // unlock the spinlock
-        _Compiler_or_memory_barrier();
+#if defined(_M_ARM) || defined(_M_ARM64)
+        _Memory_barrier();
         __iso_volatile_store8(&_Spinlock, 0);
+        _Memory_barrier();
+#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+        _InterlockedExchange8(&_Spinlock, 0);
+#endif // hardware
     }
-
     _Ty _Storage;
     mutable char _Spinlock = 0;
 #endif // TRANSITION, ABI
