@@ -552,7 +552,7 @@ void ok_test() {
             if (y.ok() && mdl.ok()) {
                 assert((y / mdl).ok());
             } else {
-                assert((!(y/ mdl).ok()));
+                assert((!(y / mdl).ok()));
             }
         }
     }
