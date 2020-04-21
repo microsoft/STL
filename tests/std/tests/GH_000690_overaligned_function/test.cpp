@@ -16,10 +16,10 @@ struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
         const auto storage_ptr_value = reinterpret_cast<std::uintptr_t>(storage);
         const auto this_ptr_value    = reinterpret_cast<std::uintptr_t>(this);
 
-        // Platform-specific behavior not covered by Standard C++, but fine for such test
+        // Platform-specific behavior not covered by Standard C++, but fine for this test
         assert(this_ptr_value < storage_ptr_value || this_ptr_value >= storage_ptr_value + storage_size);
 
-        // Before C++17. alignas isn't helpful for aligning allocations via "new"
+        // Before C++17, alignas isn't helpful for aligning allocations via "new"
 #ifdef __cpp_aligned_new
         assert(this_ptr_value % alignof(overaligned_t) == 0);
 #endif
@@ -34,7 +34,7 @@ struct not_overaligned_t {
         const auto storage_ptr_value = reinterpret_cast<std::uintptr_t>(storage);
         const auto this_ptr_value    = reinterpret_cast<std::uintptr_t>(this);
 
-        // platform-specific behavior not covered by Standard C++, but fine for such test
+        // Platform-specific behavior not covered by Standard C++, but fine for this test
         assert(this_ptr_value >= storage_ptr_value && this_ptr_value < storage_ptr_value + storage_size);
     }
 };
