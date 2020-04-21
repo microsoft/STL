@@ -816,7 +816,7 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
+#if _HAS_CXX20
 #ifndef __cpp_lib_bit_cast
 #error __cpp_lib_bit_cast is not defined
 #elif __cpp_lib_bit_cast != 201806L

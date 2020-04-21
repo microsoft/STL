@@ -1104,10 +1104,7 @@
 #define __cpp_lib_atomic_float      201711L
 #define __cpp_lib_atomic_shared_ptr 201711L
 #define __cpp_lib_bind_front        201907L
-
-#ifndef __EDG__ // TRANSITION, VSO-1041044
-#define __cpp_lib_bit_cast 201806L
-#endif // __EDG__
+#define __cpp_lib_bit_cast          201806L
 
 #ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
