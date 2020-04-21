@@ -8,10 +8,10 @@
 #include <utility>
 
 #pragma warning(push)
-#pragma warning(disable : 4244) // 'type cast': conversion from '%s' to '%s', possible loss of data
 #pragma warning(disable : 4619) // #pragma warning: there is no warning number '%d'
 #pragma warning(disable : 4643) // Forward declaring '%s' in namespace std is not permitted by the C++ Standard
 #pragma warning(disable : 4702) // unreachable code
+#pragma warning(disable : 5219) // implicit conversion from '%s' to '%s', possible loss of data
 
 #define BOOST_CHRONO_HEADER_ONLY
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE

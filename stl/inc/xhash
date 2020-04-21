@@ -1057,7 +1057,7 @@ public:
     }
 
     void reserve(size_type _Maxcount) { // rebuild table with room for _Maxcount elements
-        rehash(static_cast<size_type>(static_cast<float>(_Maxcount / max_load_factor() + 0.5F)));
+        rehash(static_cast<size_type>(static_cast<float>(_Maxcount) / max_load_factor() + 0.5F));
     }
 
     conditional_t<_Multi, iterator, pair<iterator, bool>> insert(const value_type& _Val) {
@@ -1768,7 +1768,7 @@ protected:
 
     _NODISCARD size_type _Min_load_factor_buckets(const size_type _For_size) const noexcept {
         // returns the minimum number of buckets necessary for the elements in _List
-        return static_cast<size_type>(_CSTD ceilf(_For_size / max_load_factor()));
+        return static_cast<size_type>(_CSTD ceilf(static_cast<float>(_For_size) / max_load_factor()));
     }
 
     _NODISCARD size_type _Desired_grow_bucket_count(const size_type _For_size) const noexcept {
