@@ -139,7 +139,7 @@ namespace test_std_equal {
         equal_should_respect_pred();
         test_all_numeric_types<test_equal_should_return_correct_numeric_result>();
     }
-}
+} // namespace test_std_equal
 
 namespace test_lexicographical_compare {
     // examples in sort order
@@ -341,7 +341,7 @@ namespace test_lexicographical_compare {
         test_changing_pred_does_not_change_length_behavior();
         test_all_numeric_types<test_lex_compare_should_return_correct_numeric_result>();
     }
-}
+} // namespace test_lexicographical_compare
 
 namespace test_std_copy {
     void test() {
@@ -350,7 +350,7 @@ namespace test_std_copy {
         copy(input.begin(), input.end(), target.begin() + 1);
         assert((target == array<int, 4>{{42, 1729, 1730, 45}}));
     }
-}
+} // namespace test_std_copy
 
 namespace test_std_move {
     void test() {
@@ -359,7 +359,7 @@ namespace test_std_move {
         move(input.begin(), input.end(), target.begin() + 1);
         assert((target == array<move_only, 4>{{{42}, {1729}, {1730}, {45}}}));
     }
-}
+} // namespace test_std_move
 
 namespace test_std_copy_backward {
     void test() {
@@ -368,7 +368,7 @@ namespace test_std_copy_backward {
         copy_backward(input.begin(), input.end(), target.end());
         assert((target == array<int, 4>{{42, 43, 1729, 1730}}));
     }
-}
+} // namespace test_std_copy_backward
 
 namespace test_std_move_backward {
     void test() {
@@ -377,7 +377,7 @@ namespace test_std_move_backward {
         move_backward(input.begin(), input.end(), target.end());
         assert((target == array<move_only, 4>{{{42}, {43}, {1729}, {1730}}}));
     }
-}
+} // namespace test_std_move_backward
 
 int main() {
     test_std_equal::test();

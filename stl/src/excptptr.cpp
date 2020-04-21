@@ -163,7 +163,7 @@ namespace {
 #endif // _M_CEE_PURE
         }
     }
-}
+} // unnamed namespace
 
 // All exception_ptr implementations are out-of-line because <memory> depends on <exception>,
 // which means <exception> cannot include <memory> -- and shared_ptr is defined in <memory>.
@@ -396,7 +396,7 @@ namespace {
             _Exception_ptr_access::_Set_ptr_rep(_Dest, &_Rx->_ExRecord, _Rx);
         }
     }
-}
+} // unnamed namespace
 
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(void* _Ptr) noexcept {
     ::new (_Ptr) shared_ptr<const _EXCEPTION_RECORD>();

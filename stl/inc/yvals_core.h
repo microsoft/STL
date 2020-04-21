@@ -350,11 +350,11 @@
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694/CUDA/ICC
-#else // vvv C1XX or IntelliSense vvv
+#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, CUDA/ICC
+#else // vvv C1XX or Clang or IntelliSense vvv
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or IntelliSense ^^^
+#endif // ^^^ C1XX or Clang or IntelliSense ^^^
 #endif // _HAS_CONDITIONAL_EXPLICIT
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
@@ -426,6 +426,8 @@
 #endif // _STL_DISABLED_WARNINGS
 
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
+// warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
+//     [-Wignored-attributes]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
@@ -434,6 +436,7 @@
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
@@ -480,12 +483,12 @@
 #ifdef __EDG__
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 9
-#error STL1000: Unexpected compiler version, expected Clang 9.0.0 or newer.
+#if __clang_major__ < 10
+#error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1925 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.25 or newer.
+#if _MSC_VER < 1926 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.26 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1186,14 +1189,6 @@
 compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have received this warning.
 #endif // _ALLOW_RTCc_IN_STL
 #endif // _RTC_CONVERSION_CHECKS_ENABLED
-
-#ifndef _DECLSPEC_ALLOCATOR
-#ifdef __clang__
-#define _DECLSPEC_ALLOCATOR
-#else // ^^^ Clang / non-Clang vvv
-#define _DECLSPEC_ALLOCATOR __declspec(allocator)
-#endif // ^^^ non-Clang ^^^
-#endif // _DECLSPEC_ALLOCATOR
 
 #define _STRINGIZEX(x)  #x
 #define _STRINGIZE(x)   _STRINGIZEX(x)
