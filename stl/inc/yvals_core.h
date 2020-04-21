@@ -952,7 +952,13 @@
 #define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4030
+#if defined(_ITERATOR_DEBUG_ARRAY_OVERLOADS) && !defined(_SILENCE_ITERATOR_DEBUG_ARRAY_OVERLOADS_DEPRECATION_WARNING)
+#pragma message("warning STL4030: _ITERATOR_DEBUG_ARRAY_OVERLOADS has been removed. "         \
+                "You can define _SILENCE_ITERATOR_DEBUG_ARRAY_OVERLOADS_DEPRECATION_WARNING " \
+                "to acknowledge that you have received this warning.")
+#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS & !defined(_SILENCE_ITERATOR_DEBUG_ARRAY_OVERLOADS_DEPRECATION_WARNING)
+
+// next warning number: STL4031
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20

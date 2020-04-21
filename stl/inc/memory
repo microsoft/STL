@@ -84,45 +84,6 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InTy, size_t _InSize, class _Diff, class _NoThrowFwdIt>
-_NoThrowFwdIt uninitialized_copy_n(_InTy (&_First)[_InSize], const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
-    // copy [_First, _First + _Count) to [_Dest, ...), array input
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-        return _STD uninitialized_copy_n(static_cast<_InTy*>(_First), _Count, _Dest);
-    }
-
-    return _Dest;
-}
-
-template <class _InIt, class _Diff, class _OutTy, size_t _OutSize>
-_OutTy* uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _OutTy (&_Dest)[_OutSize]) {
-    // copy [_First, _First + _Count) to [_Dest, ...), array dest
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-        return _STD uninitialized_copy_n(_Get_unwrapped_n(_First, _Count), _Count, static_cast<_OutTy*>(_Dest));
-    }
-
-    return _Dest;
-}
-
-template <class _InTy, size_t _InSize, class _Diff, class _OutTy, size_t _OutSize>
-_OutTy* uninitialized_copy_n(_InTy (&_First)[_InSize], const _Diff _Count_raw, _OutTy (&_Dest)[_OutSize]) {
-    // copy [_First, _First + _Count) to [_Dest, ...), array input/dest
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-        _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-        return _STD uninitialized_copy_n(static_cast<_InTy*>(_First), _Count, static_cast<_OutTy*>(_Dest));
-    }
-
-    return _Dest;
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 // FUNCTION TEMPLATE uninitialized_move
 template <class _InIt, class _NoThrowFwdIt>
@@ -135,14 +96,6 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
     _Seek_wrapped(_Dest, _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _OutTy, size_t _OutSize>
-_OutTy* uninitialized_move(const _InIt _First, const _InIt _Last, _OutTy (&_Dest)[_OutSize]) {
-    // move [_First, _Last) to raw [_Dest, ...)
-    return _STD uninitialized_move(_First, _Last, _Array_iterator<_OutTy, _OutSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 // FUNCTION TEMPLATE uninitialized_move_n
 #if _HAS_IF_CONSTEXPR
@@ -210,46 +163,6 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
     return {_First, _Dest};
 }
 #endif // _HAS_IF_CONSTEXPR
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InTy, size_t _InSize, class _Diff, class _NoThrowFwdIt>
-pair<_InTy*, _NoThrowFwdIt> uninitialized_move_n(_InTy (&_First)[_InSize], const _Diff _Count_raw,
-    _NoThrowFwdIt _Dest) { // move [_First, _First + _Count) to [_Dest, ...), array input
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-        return _STD uninitialized_move_n(static_cast<_InTy*>(_First), _Count, _Dest);
-    }
-
-    return {_First, _Dest};
-}
-
-template <class _InIt, class _Diff, class _OutTy, size_t _OutSize>
-pair<_InIt, _OutTy*> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _OutTy (&_Dest)[_OutSize]) {
-    // move [_First, _First + _Count) to [_Dest, ...), array dest
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-        return _STD uninitialized_move_n(_First, _Count, static_cast<_OutTy*>(_Dest));
-    }
-
-    return {_First, _Dest};
-}
-
-template <class _InTy, size_t _InSize, class _Diff, class _OutTy, size_t _OutSize>
-pair<_InTy*, _OutTy*> uninitialized_move_n(_InTy (&_First)[_InSize], const _Diff _Count_raw,
-    _OutTy (&_Dest)[_OutSize]) { // move [_First, _First + _Count) to [_Dest, ...), array input/dest
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-        _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-        return _STD uninitialized_move_n(static_cast<_InTy*>(_First), _Count, static_cast<_OutTy*>(_Dest));
-    }
-
-    return {_First, _Dest};
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE uninitialized_fill_n
