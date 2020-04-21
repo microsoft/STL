@@ -108,37 +108,6 @@ inline bool _Intel_is_lzcnt_supported() {
     return cpuinfo[2] & (1 << 5);
 }
 
-inline bool _Intel_is_tzcnt_supported() {
-    // tzcnt and lzcnt support are indicated with
-    // different cpuid flags.
-    int cpuinfo[4];
-    __cpuid(cpuinfo, 0x07);
-    return cpuinfo[1] & (1 << 3);
-}
-
-// see "Hacker's Delight" section 5-3
-template <typename T>
-constexpr int _Countl_zero_helper(T x) {
-    T y   = 0;
-    int n = numeric_limits<T>::digits;
-    int c = numeric_limits<T>::digits / 2;
-    do {
-        y = x >> c;
-        if (y != 0) {
-            n = n - c;
-            x = y;
-        }
-        c = c >> 1;
-    } while (c != 0);
-    return n - (int) x;
-}
-
-// see "Hacker's Delight" section 5-4
-template <typename T>
-constexpr int _Countr_zero_helper(T x) {
-    return numeric_limits<T>::digits - _Countl_zero_helper(~x & (x - 1));
-}
-
 template <typename T>
 constexpr int _Popcount_helper(T x) {
     constexpr int _Digits = numeric_limits<T>::digits;
@@ -189,31 +158,6 @@ inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
     }
     // note we don't need to call a fallback here because
     // all supported intel processors at least have bsr/bsf
-}
-
-template <typename _Ty>
-inline int _Checked_x86_x86_64_countr_zero(_Ty _Val) {
-    static bool _Have_tzcnt = _Intel_is_tzcnt_supported();
-    constexpr int _Digits   = numeric_limits<_Ty>::digits;
-    constexpr _Ty _Max      = (numeric_limits<_Ty>::max)();
-    if (!_Have_tzcnt && _Val == 0) {
-        return _Digits;
-    }
-    if (_Digits <= 32) {
-        // intended widening to int
-        return _tzcnt_u32(~_Max | _Val);
-    } else {
-#ifdef _M_IX86
-        unsigned int _High = _Val >> 32;
-        unsigned int _Low  = static_cast<unsigned int>(_Val);
-        int _Result        = 0;
-        _Result += _High ? _tzcnt_u32(_High) : 0;
-        _Result += _Low ? _tzcnt_u32(_Low) : 0;
-        return _Result;
-#else
-        return _tzcnt_u64(_Val);
-#endif
-    }
 }
 
 template <typename _Ty>
