@@ -669,7 +669,7 @@ namespace ranges {
             }
         };
         // clang-format on
-    }
+    } // namespace _Iter_move
 
     inline namespace _Cpos {
         inline constexpr _Iter_move::_Cpo iter_move;

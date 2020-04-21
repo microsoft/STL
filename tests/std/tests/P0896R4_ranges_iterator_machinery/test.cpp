@@ -1007,7 +1007,7 @@ namespace iterator_cust_swap_test {
         concept bullet1 = requires(T&& t, U&& u) {
             iter_swap(std::forward<T>(t), std::forward<U>(u));
         };
-    }
+    } // namespace adl_barrier
     using adl_barrier::bullet1;
 
     struct friend_hook {
@@ -1661,7 +1661,7 @@ namespace unreachable_sentinel_test {
 
         using std_type = std::default_sentinel_t;
         STATIC_ASSERT(evil<std_type>{} != evil<std_type>{});
-    } // regress_1029409
+    } // namespace regress_1029409
 } // namespace unreachable_sentinel_test
 
 namespace unwrap_move_only {
