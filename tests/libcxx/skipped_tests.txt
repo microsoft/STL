@@ -213,8 +213,6 @@ utilities\time\time.cal\time.cal.md\time.cal.md.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.mdlast\streaming.pass.cpp
 # --month{14} should be 1 not 13 as the test expects
 utilities\time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
-# C6294 Ill-defined for-loop: initial condition does not satisfy test
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\comparisons.pass.cpp
 utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\streaming.pass.cpp
 # test is broken due to month_weekday not being default constructible
 utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\month.pass.cpp
@@ -228,20 +226,10 @@ utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\streaming.p
 # C28301 No annotations for first declaration of 'printf'
 utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\minus.pass.cpp
 utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\streaming.pass.cpp
-# C6294 Ill-defined for-loop: initial condition does not satisfy test
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\comparisons.pass.cpp
 utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\streaming.pass.cpp
-# C6294 Ill-defined for-loop: initial condition does not satisfy test
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\comparisons.pass.cpp
 utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\streaming.pass.cpp
-# C6294 Ill-defined for-loop: initial condition does not satisfy test
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\comparisons.pass.cpp
 utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\streaming.pass.cpp
-# C6294 Ill-defined for-loop: initial condition does not satisfy test
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\comparisons.pass.cpp
 utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
-# C6294 Ill-defined for-loop: initial condition does not satisfy test
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\comparisons.pass.cpp
 utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\streaming.pass.cpp
 utilities\time\time.clock\time.clock.file\consistency.pass.cpp
 utilities\time\time.clock\time.clock.file\file_time.pass.cpp
