@@ -1191,17 +1191,17 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
 
+    // _Deprecate_non_lock_free_volatile is unnecessary here.
+
     // note: const_cast-ing away volatile is safe because all our intrinsics add volatile back on.
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
     // are far more common than volatile ones.
     using _Base::fetch_add;
     _Ty fetch_add(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand);
     }
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand, _Order);
     }
 
@@ -1214,7 +1214,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty fetch_sub(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(_Negate(_Operand));
     }
 
@@ -1223,62 +1222,51 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(_Negate(_Operand), _Order);
     }
 
     using _Base::fetch_and;
     _Ty fetch_and(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand);
     }
 
     _Ty fetch_and(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand, _Order);
     }
 
     using _Base::fetch_or;
     _Ty fetch_or(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand);
     }
 
     _Ty fetch_or(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand, _Order);
     }
 
     using _Base::fetch_xor;
     _Ty fetch_xor(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand);
     }
 
     _Ty fetch_xor(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand, _Order);
     }
 
     using _Base::operator++;
     _Ty operator++(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
     }
 
     _Ty operator++() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
     }
 
     using _Base::operator--;
     _Ty operator--(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
     }
 
     _Ty operator--() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
@@ -1287,7 +1275,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator+=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand) + _Operand);
     }
 
@@ -1296,7 +1283,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator-=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->fetch_sub(_Operand) - _Operand);
     }
 
@@ -1305,7 +1291,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator&=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand) & _Operand);
     }
 
@@ -1314,7 +1299,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator|=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand) | _Operand);
     }
 
@@ -1323,7 +1307,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator^=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand) ^ _Operand);
     }
 };
@@ -1350,11 +1333,12 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
         return _Temp;
     }
 
+    // _Deprecate_non_lock_free_volatile is unnecessary here.
+
     // note: const_cast-ing away volatile is safe because all our intrinsics add volatile back on.
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
     // are far more common than volatile ones.
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand, _Order);
     }
 
@@ -1367,7 +1351,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand, _Order);
     }
 
@@ -1376,7 +1359,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _Ty operator+=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand) + _Operand;
     }
 
@@ -1385,7 +1367,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _Ty operator-=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand) - _Operand;
     }
 };
@@ -1418,18 +1399,17 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
         return reinterpret_cast<_Ty>(_Result);
     }
 
+    // _Deprecate_non_lock_free_volatile is unnecessary here.
+
     _Ty fetch_add(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff);
     }
 
     _Ty fetch_add(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff, _Order);
     }
 
     _Ty fetch_sub(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
     }
 
@@ -1438,7 +1418,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
     }
 
@@ -1447,7 +1426,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator++(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(1);
     }
 
@@ -1456,7 +1434,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator++() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(1) + 1;
     }
 
@@ -1465,7 +1442,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator--(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(-1);
     }
 
@@ -1474,7 +1450,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator--() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(-1) - 1;
     }
 
@@ -1483,7 +1458,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator+=(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(_Diff) + _Diff;
     }
 
@@ -1492,7 +1466,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator-=(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 
