@@ -1171,11 +1171,11 @@ _INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= sizeof(void*);
 #endif // _ATOMIC_HAS_DCAS
 #endif // break ABI
 
-template <bool _Is_lock_free>
+template <class _Ty, bool _Is_lock_free = _Is_always_lock_free<sizeof(_Ty)>>
 _INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile = true;
 
-template <>
-_CXX20_DEPRECATE_VOLATILE _INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile<false> = true;
+template <class _Ty>
+_CXX20_DEPRECATE_VOLATILE _INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile<_Ty, false> = true;
 
 // STRUCT TEMPLATE _Atomic_integral_facade
 template <class _Ty>
@@ -1196,12 +1196,12 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // are far more common than volatile ones.
     using _Base::fetch_add;
     _Ty fetch_add(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand);
     }
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand, _Order);
     }
 
@@ -1214,7 +1214,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty fetch_sub(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(_Negate(_Operand));
     }
 
@@ -1223,62 +1223,62 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(_Negate(_Operand), _Order);
     }
 
     using _Base::fetch_and;
     _Ty fetch_and(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand);
     }
 
     _Ty fetch_and(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand, _Order);
     }
 
     using _Base::fetch_or;
     _Ty fetch_or(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand);
     }
 
     _Ty fetch_or(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand, _Order);
     }
 
     using _Base::fetch_xor;
     _Ty fetch_xor(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand);
     }
 
     _Ty fetch_xor(const _Ty _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand, _Order);
     }
 
     using _Base::operator++;
     _Ty operator++(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
     }
 
     _Ty operator++() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
     }
 
     using _Base::operator--;
     _Ty operator--(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
     }
 
     _Ty operator--() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
@@ -1287,7 +1287,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator+=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand) + _Operand);
     }
 
@@ -1296,7 +1296,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator-=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->fetch_sub(_Operand) - _Operand);
     }
 
@@ -1305,7 +1305,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator&=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand) & _Operand);
     }
 
@@ -1314,7 +1314,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator|=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand) | _Operand);
     }
 
@@ -1323,7 +1323,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _Ty operator^=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return static_cast<_Ty>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand) ^ _Operand);
     }
 };
@@ -1354,7 +1354,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
     // are far more common than volatile ones.
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand, _Order);
     }
 
@@ -1367,7 +1367,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand, _Order);
     }
 
@@ -1376,7 +1376,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _Ty operator+=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand) + _Operand;
     }
 
@@ -1385,7 +1385,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _Ty operator-=(const _Ty _Operand) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand) - _Operand;
     }
 };
@@ -1419,17 +1419,17 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty fetch_add(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff);
     }
 
     _Ty fetch_add(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff, _Order);
     }
 
     _Ty fetch_sub(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
     }
 
@@ -1438,7 +1438,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
     }
 
@@ -1447,7 +1447,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator++(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(1);
     }
 
@@ -1456,7 +1456,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator++() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(1) + 1;
     }
 
@@ -1465,7 +1465,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator--(int) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(-1);
     }
 
@@ -1474,7 +1474,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator--() volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(-1) - 1;
     }
 
@@ -1483,7 +1483,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator+=(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(_Diff) + _Diff;
     }
 
@@ -1492,7 +1492,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _Ty operator-=(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 
@@ -1582,7 +1582,7 @@ public:
     }
 
     _Ty operator=(const _Ty _Value) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         this->store(_Value);
         return _Value;
     }
@@ -1599,51 +1599,51 @@ public:
     // non-volatile should result in better debug codegen.
     using _Base::store;
     void store(const _Ty _Value) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<atomic*>(this)->_Base::store(_Value);
     }
 
     void store(const _Ty _Value, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<atomic*>(this)->_Base::store(_Value, _Order);
     }
 
     using _Base::load;
     _NODISCARD _Ty load() const volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<const atomic*>(this)->_Base::load();
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<const atomic*>(this)->_Base::load(_Order);
     }
 
     using _Base::exchange;
     _Ty exchange(const _Ty _Value) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::exchange(_Value);
     }
 
     _Ty exchange(const _Ty _Value, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::exchange(_Value, _Order);
     }
 
     using _Base::compare_exchange_strong;
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::compare_exchange_strong(_Expected, _Desired);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
         const memory_order _Failure) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
@@ -1654,7 +1654,7 @@ public:
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
         // we have no weak CAS intrinsics, even on ARM32/ARM64, so fall back to strong
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired);
     }
 
@@ -1663,7 +1663,7 @@ public:
     }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
@@ -1673,7 +1673,7 @@ public:
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
         const memory_order _Failure) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
@@ -1683,7 +1683,7 @@ public:
     }
 
     operator _Ty() const volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->load();
     }
 
@@ -1723,13 +1723,13 @@ template <class _Ty>
 _CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
     volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     // NB: respecting volatility here appears unimplementable
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _STD atomic_init(const_cast<atomic<_Ty>*>(_Mem), _Value);
 }
 
 template <class _Ty>
 void atomic_store(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value);
 }
 
@@ -1741,7 +1741,7 @@ void atomic_store(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexce
 template <class _Ty>
 void atomic_store_explicit(
     volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value, _Order);
 }
 
@@ -1752,7 +1752,7 @@ void atomic_store_explicit(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Valu
 
 template <class _Ty>
 _NODISCARD _Ty atomic_load(const volatile atomic<_Ty>* const _Mem) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load();
 }
 
@@ -1763,7 +1763,7 @@ _NODISCARD _Ty atomic_load(const atomic<_Ty>* const _Mem) noexcept {
 
 template <class _Ty>
 _NODISCARD _Ty atomic_load_explicit(const volatile atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load(_Order);
 }
 
@@ -1774,7 +1774,7 @@ _NODISCARD _Ty atomic_load_explicit(const atomic<_Ty>* const _Mem, const memory_
 
 template <class _Ty>
 _Ty atomic_exchange(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->exchange(_Value);
 }
 
@@ -1786,7 +1786,7 @@ _Ty atomic_exchange(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noex
 template <class _Ty>
 _Ty atomic_exchange_explicit(
     volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->exchange(_Value, _Order);
 }
 
@@ -1799,7 +1799,7 @@ _Ty atomic_exchange_explicit(
 template <class _Ty>
 bool atomic_compare_exchange_strong(
     volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
@@ -1812,7 +1812,7 @@ bool atomic_compare_exchange_strong(
 template <class _Ty>
 bool atomic_compare_exchange_strong_explicit(volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
@@ -1825,7 +1825,7 @@ bool atomic_compare_exchange_strong_explicit(atomic<_Ty>* const _Mem, _Identity_
 template <class _Ty>
 bool atomic_compare_exchange_weak(
     volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
@@ -1838,7 +1838,7 @@ bool atomic_compare_exchange_weak(
 template <class _Ty>
 bool atomic_compare_exchange_weak_explicit(volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
@@ -1850,7 +1850,7 @@ bool atomic_compare_exchange_weak_explicit(atomic<_Ty>* const _Mem, _Identity_t<
 
 template <class _Ty>
 _Ty atomic_fetch_add(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_add(_Value);
 }
 
@@ -1862,7 +1862,7 @@ _Ty atomic_fetch_add(atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_t
 template <class _Ty>
 _Ty atomic_fetch_add_explicit(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value,
     const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_add(_Value, _Order);
 }
 
@@ -1874,7 +1874,7 @@ _Ty atomic_fetch_add_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_sub(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_sub(_Value);
 }
 
@@ -1886,7 +1886,7 @@ _Ty atomic_fetch_sub(atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_t
 template <class _Ty>
 _Ty atomic_fetch_sub_explicit(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value,
     const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_sub(_Value, _Order);
 }
 
@@ -1898,7 +1898,7 @@ _Ty atomic_fetch_sub_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_and(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_and(_Value);
 }
 
@@ -1910,7 +1910,7 @@ _Ty atomic_fetch_and(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _
 template <class _Ty>
 _Ty atomic_fetch_and_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_and(_Value, _Order);
 }
 
@@ -1922,7 +1922,7 @@ _Ty atomic_fetch_and_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_or(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_or(_Value);
 }
 
@@ -1934,7 +1934,7 @@ _Ty atomic_fetch_or(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _V
 template <class _Ty>
 _Ty atomic_fetch_or_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_or(_Value, _Order);
 }
 
@@ -1946,7 +1946,7 @@ _Ty atomic_fetch_or_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_xor(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_xor(_Value);
 }
 
@@ -1958,7 +1958,7 @@ _Ty atomic_fetch_xor(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _
 template <class _Ty>
 _Ty atomic_fetch_xor_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
-    static_assert(_Deprecate_non_lock_free_volatile<_Is_always_lock_free<sizeof(_Ty)>>, "Never fails");
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_xor(_Value, _Order);
 }
 
