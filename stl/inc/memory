@@ -98,7 +98,6 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
 }
 
 // FUNCTION TEMPLATE uninitialized_move_n
-#if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // move [_First, _First + _Count) to [_Dest, ...)
@@ -124,45 +123,6 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
     return {_First, _Dest};
 }
-#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _InIt, class _Diff, class _NoThrowFwdIt>
-pair<_InIt, _NoThrowFwdIt> _Uninitialized_move_n_unchecked1(_InIt _First, _Diff _Count, const _NoThrowFwdIt _Dest,
-    false_type) { // move [_First, _First + _Count) to [_Dest, ...), no special optimization
-    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
-    for (; 0 < _Count; --_Count, (void) ++_First) {
-        _Backout._Emplace_back(_STD move(*_First));
-    }
-
-    return pair<_InIt, _NoThrowFwdIt>(_First, _Backout._Release());
-}
-
-template <class _InIt, class _Diff, class _NoThrowFwdIt>
-pair<_InIt, _NoThrowFwdIt> _Uninitialized_move_n_unchecked1(_InIt _First, _Diff _Count, _NoThrowFwdIt _Dest,
-    true_type) { // move [_First, _First + _Count) to [_Dest, ...), memmove optimization
-    if (0 < _Count) {
-        _Dest = _Copy_memmove(_First, _First + _Count, _Dest);
-        _First += _Count;
-    }
-
-    return pair<_InIt, _NoThrowFwdIt>(_First, _Dest);
-}
-
-template <class _InIt, class _Diff, class _NoThrowFwdIt>
-pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
-    // move [_First, _First + _Count) to [_Dest, ...)
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst       = _Get_unwrapped_n(_First, _Count);
-        auto _UDest        = _Get_unwrapped_n(_Dest, _Count);
-        const auto _Result = _Uninitialized_move_n_unchecked1(_UFirst, _Count, _UDest,
-            bool_constant<_Ptr_move_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial>{});
-        _Seek_wrapped(_Dest, _Result.second);
-        _Seek_wrapped(_First, _Result.first);
-    }
-
-    return {_First, _Dest};
-}
-#endif // _HAS_IF_CONSTEXPR
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE uninitialized_fill_n
