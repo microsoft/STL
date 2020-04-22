@@ -188,7 +188,14 @@ void helper2() {
 template <typename Obj>
 void helper1() {
     helper2<Obj, atomic<Obj>>();
-    helper2<Obj, volatile atomic<Obj>>();
+
+#if _HAS_CXX20
+    if constexpr (atomic<Obj>::is_always_lock_free) {
+#endif // _HAS_CXX20
+        helper2<Obj, volatile atomic<Obj>>();
+#if _HAS_CXX20
+    }
+#endif // _HAS_CXX20
 }
 
 template <int N>

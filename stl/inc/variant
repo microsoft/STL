@@ -381,9 +381,9 @@ struct variant_size; // undefined
 template <class _Ty>
 struct variant_size<const _Ty> : variant_size<_Ty>::type {};
 template <class _Ty>
-struct variant_size<volatile _Ty> : variant_size<_Ty>::type {};
+struct _CXX20_DEPRECATE_VOLATILE variant_size<volatile _Ty> : variant_size<_Ty>::type {};
 template <class _Ty>
-struct variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
+struct _CXX20_DEPRECATE_VOLATILE variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
 template <class _Ty>
 inline constexpr size_t variant_size_v = variant_size<_Ty>::value;
 
@@ -399,11 +399,11 @@ struct variant_alternative<_Idx, const _Ty> {
     using type = add_const_t<variant_alternative_t<_Idx, _Ty>>;
 };
 template <size_t _Idx, class _Ty>
-struct variant_alternative<_Idx, volatile _Ty> {
+struct _CXX20_DEPRECATE_VOLATILE variant_alternative<_Idx, volatile _Ty> {
     using type = add_volatile_t<variant_alternative_t<_Idx, _Ty>>;
 };
 template <size_t _Idx, class _Ty>
-struct variant_alternative<_Idx, const volatile _Ty> {
+struct _CXX20_DEPRECATE_VOLATILE variant_alternative<_Idx, const volatile _Ty> {
     using type = add_cv_t<variant_alternative_t<_Idx, _Ty>>;
 };
 template <size_t _Idx, class... _Types>
