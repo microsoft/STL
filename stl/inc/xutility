@@ -981,7 +981,7 @@ namespace ranges {
                 if constexpr (_Has_ADL<_Ty1, _Ty2>) {
                     return {_St::_Custom, noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
                 } else if constexpr (_Can_swap_references<_Ty1, _Ty2>) {
-                    return {_St::_Swap, noexcept(swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
+                    return {_St::_Swap, noexcept(_RANGES swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
                 } else if constexpr (indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
                     && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>) {
                     constexpr auto _Nothrow = noexcept(
@@ -1002,7 +1002,7 @@ namespace ranges {
                 if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Custom) {
                     iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Swap) {
-                    swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
+                    _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_exchange_move(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
