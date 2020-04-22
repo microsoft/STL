@@ -1529,16 +1529,6 @@ public:
         return _Result;
     }
 
-#ifndef _ENABLE_ATOMIC_ALIGNMENT_FIX
-    static_assert(alignof(_Ty) >= sizeof(_Ty) || (sizeof(_Ty) != 2 && sizeof(_Ty) != 4 && sizeof(_Ty) != 8),
-        "You've instantiated std::atomic<T> with sizeof(T) equal to 2/4/8 and alignof(T) < sizeof(T). "
-        "Before VS 2015 Update 2, this would have misbehaved at runtime. "
-        "VS 2015 Update 2 was fixed to handle this correctly, "
-        "but the fix inherently changes layout and breaks binary compatibility. "
-        "Please define _ENABLE_ATOMIC_ALIGNMENT_FIX to acknowledge that you understand this, "
-        "and that everything you're linking has been compiled with VS 2015 Update 2 (or later).");
-#endif // _ENABLE_ATOMIC_ALIGNMENT_FIX
-
 #else // ^^^ don't break ABI / break ABI vvv
 
     _NODISCARD bool is_lock_free() const volatile noexcept {

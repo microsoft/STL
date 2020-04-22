@@ -6,8 +6,6 @@
 // Regress\intrin\atomic.cpp
 //
 
-#define _ENABLE_ATOMIC_ALIGNMENT_FIX
-
 #include <assert.h>
 #include <atomic>
 #include <limits>
