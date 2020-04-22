@@ -411,13 +411,14 @@
 // warning C5026: move constructor was implicitly defined as deleted (/Wall)
 // warning C5027: move assignment operator was implicitly defined as deleted (/Wall)
 // warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified (/Wall)
+// warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
     4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
-    4820 4988 5026 5027 5045                          \
+    4820 4988 5026 5027 5045 6294                     \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
