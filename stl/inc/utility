@@ -509,15 +509,6 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
     : tuple_element<_Index - 1, tuple<_Rest...>> { // recursive tuple_element definition
 };
 
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept;
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept;
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
-
 // TUPLE INTERFACE TO pair
 template <class _Ty1, class _Ty2>
 struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> { // size of pair

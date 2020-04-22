@@ -41,6 +41,7 @@ namespace test_view_interface {
             STATIC_ASSERT(!CanViewInterface<T volatile>);
             STATIC_ASSERT(!CanViewInterface<T const volatile>);
         }
+
         if constexpr (!std::is_void_v<T>) {
             STATIC_ASSERT(!CanViewInterface<T&>);
             STATIC_ASSERT(!CanViewInterface<T&&>);
@@ -998,7 +999,7 @@ namespace test_subrange {
         template <bool IsConst>
         struct iterator {
             using iterator_concept  = input_iterator_tag;
-            using iterator_category = output_iterator_tag;
+            using iterator_category = void; // TRANSITION, LWG-3289
             using value_type        = int;
             using difference_type   = int;
             using pointer           = void;

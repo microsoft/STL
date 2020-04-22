@@ -106,7 +106,7 @@ private:
 
 public:
     using iterator_concept  = std::input_iterator_tag;
-    using iterator_category = std::output_iterator_tag;
+    using iterator_category = void; // TRANSITION, LWG-3289
     using value_type        = std::remove_cv_t<T>;
     using difference_type   = std::ptrdiff_t;
     using pointer           = void;
