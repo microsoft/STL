@@ -436,11 +436,12 @@ struct tuple_size<const _Tuple> : _Tuple_size_sfinae<_Tuple> { // size of const 
 };
 
 template <class _Tuple>
-struct tuple_size<volatile _Tuple> : _Tuple_size_sfinae<_Tuple> { // size of volatile tuple
+struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfinae<_Tuple> { // size of volatile tuple
 };
 
 template <class _Tuple>
-struct tuple_size<const volatile _Tuple> : _Tuple_size_sfinae<_Tuple> { // size of const volatile tuple
+struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple>
+    : _Tuple_size_sfinae<_Tuple> { // size of const volatile tuple
 };
 
 template <class _Ty>
@@ -456,13 +457,15 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const _Tuple> : tuple_element
 };
 
 template <size_t _Index, class _Tuple>
-struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> {
+struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, volatile _Tuple>
+    : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_volatile_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const volatile _Tuple> : tuple_element<_Index, _Tuple> {
+struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const volatile _Tuple>
+    : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };

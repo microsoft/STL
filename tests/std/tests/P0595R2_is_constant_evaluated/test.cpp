@@ -23,7 +23,6 @@ int cube(const int x) {
 
 #ifdef __clang__
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-warning-option" // TRANSITION, Clang 10
 #pragma clang diagnostic ignored "-Wconstant-evaluated"
 #else // ^^^ clang / other vvv
 #pragma warning(push)

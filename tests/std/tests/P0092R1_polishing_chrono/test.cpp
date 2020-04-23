@@ -28,7 +28,7 @@ namespace ties_to_even_towards_zero_positive {
     constexpr double_ms d2(2500.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == 2.5);
     STATIC_ASSERT(ceil<double_s>(d2).count() == 2.5);
-}
+} // namespace ties_to_even_towards_zero_positive
 
 namespace rounds_away_from_zero_positive {
     constexpr milliseconds d1(1729);
@@ -38,7 +38,7 @@ namespace rounds_away_from_zero_positive {
     constexpr double_ms d2(1875.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == 1.875);
     STATIC_ASSERT(ceil<double_s>(d2).count() == 1.875);
-}
+} // namespace rounds_away_from_zero_positive
 
 namespace ties_to_even_away_from_zero_positive {
     constexpr milliseconds d1(1500);
@@ -48,7 +48,7 @@ namespace ties_to_even_away_from_zero_positive {
     constexpr double_ms d2(1500.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == 1.5);
     STATIC_ASSERT(ceil<double_s>(d2).count() == 1.5);
-}
+} // namespace ties_to_even_away_from_zero_positive
 
 namespace rounds_toward_zero_positive {
     constexpr milliseconds d1(1229);
@@ -58,7 +58,7 @@ namespace rounds_toward_zero_positive {
     constexpr double_ms d2(1250.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == 1.250);
     STATIC_ASSERT(ceil<double_s>(d2).count() == 1.250);
-}
+} // namespace rounds_toward_zero_positive
 
 namespace exact_positive {
     constexpr milliseconds d1(1000);
@@ -68,7 +68,7 @@ namespace exact_positive {
     constexpr double_ms d2(1000.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == 1.0);
     STATIC_ASSERT(ceil<double_s>(d2).count() == 1.0);
-}
+} // namespace exact_positive
 
 namespace zero {
     constexpr milliseconds d1(0);
@@ -78,7 +78,7 @@ namespace zero {
     constexpr double_ms d2(0.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == 0.0);
     STATIC_ASSERT(ceil<double_s>(d2).count() == 0.0);
-}
+} // namespace zero
 
 namespace exact_negative {
     constexpr milliseconds d1(-1000);
@@ -88,7 +88,7 @@ namespace exact_negative {
     constexpr double_ms d2(-1000.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == -1.0);
     STATIC_ASSERT(ceil<double_s>(d2).count() == -1.0);
-}
+} // namespace exact_negative
 
 namespace rounds_toward_zero_negative {
     constexpr milliseconds d1(-1229);
@@ -98,7 +98,7 @@ namespace rounds_toward_zero_negative {
     constexpr double_ms d2(-1250.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == -1.250);
     STATIC_ASSERT(ceil<double_s>(d2).count() == -1.250);
-}
+} // namespace rounds_toward_zero_negative
 
 namespace ties_to_even_away_from_zero_negative {
     constexpr milliseconds d1(-1500);
@@ -108,7 +108,7 @@ namespace ties_to_even_away_from_zero_negative {
     constexpr double_ms d2(-1500.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == -1.5);
     STATIC_ASSERT(ceil<double_s>(d2).count() == -1.5);
-}
+} // namespace ties_to_even_away_from_zero_negative
 
 namespace rounds_away_from_zero_negative {
     constexpr milliseconds d1(-1729);
@@ -118,7 +118,7 @@ namespace rounds_away_from_zero_negative {
     constexpr double_ms d2(-1875.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == -1.875);
     STATIC_ASSERT(ceil<double_s>(d2).count() == -1.875);
-}
+} // namespace rounds_away_from_zero_negative
 
 namespace ties_to_even_towards_zero_negative {
     constexpr milliseconds d1(-2500);
@@ -128,7 +128,7 @@ namespace ties_to_even_towards_zero_negative {
     constexpr double_ms d2(-2500.0);
     STATIC_ASSERT(floor<double_s>(d2).count() == -2.5);
     STATIC_ASSERT(ceil<double_s>(d2).count() == -2.5);
-}
+} // namespace ties_to_even_towards_zero_negative
 
 namespace identical_types {
     constexpr milliseconds d1(-2500);
@@ -138,7 +138,7 @@ namespace identical_types {
     constexpr double_ms d2(-2500.0);
     STATIC_ASSERT(floor<double_ms>(d2).count() == -2500.0);
     STATIC_ASSERT(ceil<double_ms>(d2).count() == -2500.0);
-}
+} // namespace identical_types
 
 namespace increasing_precision {
     constexpr seconds d1(2);
@@ -148,7 +148,7 @@ namespace increasing_precision {
     constexpr double_s d2(2.0);
     STATIC_ASSERT(floor<double_ms>(d2).count() == 2000.0);
     STATIC_ASSERT(ceil<double_ms>(d2).count() == 2000.0);
-}
+} // namespace increasing_precision
 
 namespace floating_point_conversions {
     // double -> integral
@@ -161,7 +161,7 @@ namespace floating_point_conversions {
     STATIC_ASSERT(floor<seconds>(d2).count() == 1);
     STATIC_ASSERT(ceil<seconds>(d2).count() == 2);
     STATIC_ASSERT(round<seconds>(d2).count() == 1);
-}
+} // namespace floating_point_conversions
 
 // Make sure round() handles cases where taking half the divisor itself
 // truncates.

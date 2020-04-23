@@ -23,9 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum class endian { little = 0, big = 1, native = little };
-
-#ifdef __cpp_lib_bit_cast // TRANSITION, VSO-1041044
 template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
@@ -33,14 +30,8 @@ template <class _To, class _From,
 _NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
-#endif // TRANSITION, VSO-1041044
 
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
-template <class _Ty>
-inline constexpr bool _Is_standard_unsigned_integer =
-    _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
-
-
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
@@ -124,20 +115,12 @@ _NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countr_zero(const _Ty _Val) noexcept {
-    if (_Val == 0) {
-        return numeric_limits<_Ty>::digits;
-    }
-
-    if constexpr (sizeof(_Ty) <= sizeof(unsigned int)) {
-        return __builtin_ctz(_Val);
-    } else {
-        return __builtin_ctzll(_Val);
-    }
+    return _Countr_zero(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
-    return _STD countr_zero(static_cast<_Ty>(~_Val));
+    return _Countr_zero(static_cast<_Ty>(~_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
@@ -150,6 +133,7 @@ _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
 }
 #endif // __cpp_lib_bitops
 
+enum class endian { little = 0, big = 1, native = little };
 _STD_END
 
 #pragma pop_macro("new")
