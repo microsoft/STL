@@ -6,6 +6,11 @@
 #pragma warning(push)
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif
+
 struct funobj;
 static int f0();
 static int f1(const volatile funobj);
@@ -629,3 +634,7 @@ const T& fake_lvalue(const T&& t) { // C++11 12.2 [class.temporary]/5: "A tempor
 }
 
 #pragma warning(pop)
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
