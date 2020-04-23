@@ -58,7 +58,8 @@ namespace stdext {
                 _Mid1 = _First1;
                 _Mid2 = _First2;
 
-                while (_Bytes_per_word <= _Last1 - _Mid1 && _Mid2 != _Last2) { // convert a multibyte sequence
+                while (_Bytes_per_word <= static_cast<size_t>(_Last1 - _Mid1) && _Mid2 != _Last2) {
+                    // convert a multibyte sequence
                     const auto _Ptr   = reinterpret_cast<const unsigned char*>(_Mid1);
                     unsigned long _Ch = 0;
 
@@ -147,7 +148,8 @@ namespace stdext {
                     }
                 }
 
-                while (_Mid1 != _Last1 && _Bytes_per_word <= _Last2 - _Mid2) { // convert and put a wide char
+                while (_Mid1 != _Last1 && _Bytes_per_word <= static_cast<size_t>(_Last2 - _Mid2)) {
+                    // convert and put a wide char
                     unsigned long _Ch = static_cast<unsigned long>(*_Mid1++);
 
                     if (_Maxcode < _Ch) {
