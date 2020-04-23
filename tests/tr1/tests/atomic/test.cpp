@@ -4,7 +4,6 @@
 // test <atomic> C++11 header
 #define TEST_NAME "<atomic>"
 
-#define _ENABLE_ATOMIC_ALIGNMENT_FIX
 #define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING
 
 #include "tdefs.h"

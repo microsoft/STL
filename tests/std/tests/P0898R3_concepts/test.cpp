@@ -50,7 +50,7 @@ namespace detail {
             return permissive();
         }
     };
-}
+} // namespace detail
 constexpr bool is_permissive = detail::Derived<int>::test();
 
 struct IncompleteClass;
@@ -821,7 +821,7 @@ namespace test_integral_concepts {
             return true;
         }
         STATIC_ASSERT(test_subsumption());
-    }
+    } // namespace subsumption
 
 #pragma warning(push)
 #pragma warning(disable : 4180) // qualifier applied to function type has no meaning; ignored
@@ -3009,7 +3009,7 @@ namespace test_predicate {
         STATIC_ASSERT(predicate<Fn, tag>);
         STATIC_ASSERT(!predicate<Fn, int>);
     }
-}
+} // namespace test_predicate
 
 { // function object
     STATIC_ASSERT(predicate<S, int>);

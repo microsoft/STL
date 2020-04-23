@@ -142,7 +142,7 @@ namespace pmr {
     public:
         virtual ~memory_resource() noexcept {}
 
-        _NODISCARD _DECLSPEC_ALLOCATOR void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
+        _NODISCARD __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
             _STL_ASSERT(_Is_pow_2(_Align), "memory_resource::allocate(): Alignment must be a power of two.");
             return do_allocate(_Bytes, _Align);
@@ -211,7 +211,7 @@ namespace pmr {
 
         polymorphic_allocator& operator=(const polymorphic_allocator&) = delete;
 
-        _NODISCARD _DECLSPEC_ALLOCATOR _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
             // get space for _Count objects of type _Ty from _Resource
             void* const _Vp = _Resource->allocate(_Get_size_of_n<sizeof(_Ty)>(_Count), alignof(_Ty));
             return static_cast<_Ty*>(_Vp);
