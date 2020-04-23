@@ -823,6 +823,12 @@ struct is_trivially_destructible : bool_constant<__is_trivially_destructible(_Ty
 template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_destructible_v = __is_trivially_destructible(_Ty);
 
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif
+
 // NOTHROW TRAITS
 // STRUCT TEMPLATE is_nothrow_constructible
 template <class _Ty, class... _Args>
@@ -1665,6 +1671,12 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
 #pragma warning(disable : 4244) // 'argument': conversion from '_From' to '_To', possible loss of data
 #pragma warning(disable : 4365) // 'argument': conversion from '_From' to '_To', signed/unsigned mismatch (/Wall)
 #pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif
+
 template <class _To>
 void _Implicitly_convert_to(_To) noexcept; // not defined
 
@@ -2360,5 +2372,10 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _TYPE_TRAITS_
