@@ -1942,8 +1942,8 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
-        static long _Guard;
-        (void) _InterlockedCompareExchange(&_Guard, 0, 0);
+        volatile long _Guard;
+        (void) _InterlockedExchange(&_Guard, 0);
         _Compiler_barrier();
     }
 #endif // hardware
