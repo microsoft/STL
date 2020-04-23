@@ -46,7 +46,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
         }
 
         const pair<_Ty*, ptrdiff_t> _Raw = _Get_temporary_buffer<_Ty>(_Attempt);
-        if (_Raw.second > _Optimistic_count) { // engage heap space
+        if (static_cast<size_t>(_Raw.second) > _Optimistic_count) { // engage heap space
             _Data     = _Raw.first;
             _Capacity = _Raw.second;
             return;
@@ -62,7 +62,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
     _Optimistic_temporary_buffer& operator=(const _Optimistic_temporary_buffer&) = delete;
 
     ~_Optimistic_temporary_buffer() noexcept {
-        if (_Capacity > _Optimistic_count) {
+        if (static_cast<size_t>(_Capacity) > _Optimistic_count) {
             _Return_temporary_buffer(_Data);
         }
     }
