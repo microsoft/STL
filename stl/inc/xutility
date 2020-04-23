@@ -3074,7 +3074,7 @@ namespace ranges {
     private:
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument T must derive from view_interface<T> (N4849 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
             static_assert(view<_Derived>,
                 "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
             return static_cast<_Derived&>(*this);
@@ -3082,7 +3082,7 @@ namespace ranges {
 
         _NODISCARD constexpr const _Derived& _Cast() const noexcept {
             static_assert(derived_from<_Derived, view_interface>,
-                "view_interface's template argument T must derive from view_interface<T> (N4849 [view.interface]/2).");
+                "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
             static_assert(view<_Derived>,
                 "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
             return static_cast<const _Derived&>(*this);
@@ -3267,8 +3267,8 @@ namespace ranges {
     // clang-format on
 } // namespace ranges
 
-// These declarations must be visible to unqualified name lookup for _STD get in _Pair_like below, even if
-// <tuple> hasn't yet been included.
+// These declarations must be visible to qualified name lookup for _STD get in _Pair_like below, even if <tuple> hasn't
+// yet been included.
 template <size_t _Index, class... _Types>
 _NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
 template <size_t _Index, class... _Types>
@@ -3288,8 +3288,7 @@ namespace ranges {
             && _Not_same_as<remove_pointer_t<decay_t<_From>>, remove_pointer_t<decay_t<_To>>>);
 
     template <class _Ty>
-    concept _Pair_like =
-        !is_reference_v<_Ty> && requires(_Ty __t) {
+    concept _Pair_like = !is_reference_v<_Ty> && requires(_Ty __t) {
         typename tuple_size<_Ty>::type;
         requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
         typename tuple_element_t<0, remove_const_t<_Ty>>;
