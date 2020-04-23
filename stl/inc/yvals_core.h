@@ -1141,11 +1141,7 @@
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 
-#ifdef __clang__ // TRANSITION, VSO-1020212
-// a future MSVC update will embed CPU feature detection into <bit> intrinsics
-#define __cpp_lib_bitops 201907L
-#endif // __clang__
-
+#define __cpp_lib_bitops               201907L
 #define __cpp_lib_bounded_array_traits 201902L
 
 #ifdef __cpp_char8_t

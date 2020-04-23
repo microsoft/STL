@@ -96,13 +96,13 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
 }
 
 
-inline bool _Intel_is_popcnt_supported() {
+inline bool __Is_popcnt_supported() {
     int cpuinfo[4];
     __cpuid(cpuinfo, 0x01);
     return cpuinfo[2] & (1 << 23);
 }
 
-inline bool _Intel_is_lzcnt_supported() {
+inline bool _Is_lzcnt_supported() {
     int cpuinfo[4];
     __cpuid(cpuinfo, 0x80000001);
     return cpuinfo[2] & (1 << 5);
@@ -113,21 +113,21 @@ constexpr int _Popcount_helper(T x) {
     constexpr int _Digits = numeric_limits<T>::digits;
     // we static cast these bit patterns in order to truncate
     // them to the correct size
-    x = x - ((x >> 1) & static_cast<T>(0x5555555555555555ull));
-    x = (x & static_cast<T>(0x3333333333333333ull)) + ((x >> 2) & static_cast<T>(0x3333333333333333ull));
-    x = (x + (x >> 4)) & static_cast<T>(0x0F0F0F0F0F0F0F0Full);
+    x = static_cast<T>(x - ((x >> 1) & static_cast<T>(0x5555555555555555ull)));
+    x = static_cast<T>((x & static_cast<T>(0x3333333333333333ull)) + ((x >> 2) & static_cast<T>(0x3333333333333333ull)));
+    x = static_cast<T>((x + (x >> 4)) & static_cast<T>(0x0F0F0F0F0F0F0F0Full));
     for (int _ShiftDigits = numeric_limits<char>::digits; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
-        x = x + (x >> _ShiftDigits);
+        x = static_cast<T>(x + static_cast<T>(x >> _ShiftDigits));
     }
     // we want the bottom "slot" that's big enough to store _Digits
-    return x & (_Digits + _Digits - 1);
+    return static_cast<int>(x & (_Digits + _Digits - 1));
 }
 
 #if defined(_M_IX86) || defined(_M_X64)
 
 template <typename _Ty>
 inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
-    static bool _Have_lzcnt = _Intel_is_lzcnt_supported();
+    static bool _Have_lzcnt = _Is_lzcnt_supported();
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
     // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
     if (!_Have_lzcnt && _Val == 0) {
@@ -136,10 +136,10 @@ inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
     // we use lzcnt (actually bsr if lzcnt is not supported) for all cases now we know
     // we're not zero. We can do this because lzcnt and bsr share the same instruction
     // encoding.
-    if (_Digits <= 16) {
-        return __lzcnt16(_Val) - (16 - _Digits);
-    } else if (_Digits <= 32) {
-        return __lzcnt(_Val) - (32 - _Digits);
+    if constexpr (_Digits <= 16) {
+        return static_cast<int>(__lzcnt16(_Val) - (16 - _Digits));
+    } else if constexpr (_Digits <= 32) {
+        return static_cast<int>(__lzcnt(_Val) - (32 - _Digits));
     } else {
 #ifdef _M_IX86
         if (_Have_lzcnt) {
@@ -153,7 +153,7 @@ inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
             return result;
         }
 #else
-        return __lzcnt64(_Val) - (64 - _Digits);
+        return static_cast<int>(__lzcnt64(_Val) - (64 - _Digits));
 #endif
     }
     // note we don't need to call a fallback here because
@@ -162,18 +162,18 @@ inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
 
 template <typename _Ty>
 inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
-    static bool _Have_popcnt = _Intel_is_popcnt_supported();
+    static bool _Have_popcnt = __Is_popcnt_supported();
     constexpr int _Digits    = numeric_limits<_Ty>::digits;
     if (_Have_popcnt) {
         if constexpr (_Digits <= 16) {
-            return __popcnt16(_Val);
-        } else if (_Digits <= 32) {
-            return __popcnt(_Val);
+            return static_cast<int>(__popcnt16(_Val));
+        } else if constexpr (_Digits <= 32) {
+            return static_cast<int>(__popcnt(_Val));
         } else {
 #ifdef _M_IX86
-            return __popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val));
+            return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
 #else
-            return __popcnt64(_Val);
+            return static_cast<int>(__popcnt64(_Val));
 #endif
         }
     } else {

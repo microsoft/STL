@@ -11,6 +11,7 @@
 #include <cfloat>
 #include <climits>
 #include <cwchar>
+#include <intrin.h>
 #include <type_traits>
 #include <xstddef>
 
@@ -1012,7 +1013,7 @@ public:
 
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 
-inline bool _Intel_is_tzcnt_supported() {
+inline bool _Is_tzcnt_supported() {
     // tzcnt and lzcnt support are indicated with
     // different cpuid flags.
     int cpuinfo[4];
@@ -1023,11 +1024,12 @@ inline bool _Intel_is_tzcnt_supported() {
 // see "Hacker's Delight" section 5-3
 template <typename T>
 constexpr int _Countl_zero_helper(T x) {
-    T y   = 0;
-    int n = numeric_limits<T>::digits;
-    int c = numeric_limits<T>::digits / 2;
+    T y = 0;
+
+    unsigned int n = numeric_limits<T>::digits;
+    unsigned int c = numeric_limits<T>::digits / 2;
     do {
-        y = x >> c;
+        y = static_cast<T>(x >> c);
         if (y != 0) {
             n = n - c;
             x = y;
@@ -1046,13 +1048,13 @@ constexpr int _Countr_zero_helper(T x) {
 #if defined(_M_IX86) || defined(_M_X64)
 template <typename _Ty>
 inline int _Checked_x86_x86_64_countr_zero(_Ty _Val) {
-    static bool _Have_tzcnt = _Intel_is_tzcnt_supported();
+    static bool _Have_tzcnt = _Is_tzcnt_supported();
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max      = (numeric_limits<_Ty>::max)();
     if (!_Have_tzcnt && _Val == 0) {
         return _Digits;
     }
-    if (_Digits <= 32) {
+    if constexpr (_Digits <= 32) {
         // intended widening to int
         return _tzcnt_u32(~_Max | _Val);
     } else {
