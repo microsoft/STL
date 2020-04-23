@@ -208,6 +208,8 @@ public:
 
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 
+    constexpr tuple& operator=(const tuple&) = default;
+
     template <class _Alloc>
     tuple(allocator_arg_t, const _Alloc&) noexcept /* strengthened */ {}
 
