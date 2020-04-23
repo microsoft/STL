@@ -1942,7 +1942,15 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
-        volatile long _Guard;
+        volatile long _Guard; // Variable is not initialized to avoid unnecessary operation; the value does not matter
+
+        // Interlocked operation on a dummy variable to provide memory fence.
+        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
+        // The memory fence provided by interlocked operations has some exceptions, but this is fine:
+        // std::atomic_thread_fence works in respect to other atomics only, it may not be a full fence for all ops.
+#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
+                                  // usage which could be reconsidered.
+#pragma warning(suppress : 6001) // Using uninitialized memory '_Guard'
         (void) _InterlockedExchange(&_Guard, 0);
         _Compiler_barrier();
     }
