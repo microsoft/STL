@@ -60,9 +60,12 @@ namespace {
     }
 
     // XP fallback values must use the same values as in __crtInitOnceExecuteOnce from winapisupp.cpp
-    void* const PV_INITIAL = reinterpret_cast<void*>(static_cast<uintptr_t>(0));
-    void* const PV_WORKING = reinterpret_cast<void*>(static_cast<uintptr_t>(1));
-    void* const PV_SUCCESS = reinterpret_cast<void*>(static_cast<uintptr_t>(2));
+    constexpr uintptr_t PV_INITIAL = 0;
+    constexpr uintptr_t PV_WORKING = 1;
+    constexpr uintptr_t PV_SUCCESS = 2;
+
+    //uintptr_t _InterlockedCompareExchangePtrDestUintValues
+
 
     int _InitOnceBeginInitializeXpFallback(void** const flag, int& pending) {
         enum { Spin, Yield, Sleep } wait_phase = Spin;
@@ -70,7 +73,8 @@ namespace {
         int sleep_value                        = 2;
 
         for (;;) {
-            void* const previous = _InterlockedCompareExchangePointer(flag, PV_WORKING, PV_INITIAL);
+            const auto previous = reinterpret_cast<const uintptr_t>(
+                __crt_interlocked_compare_exchange_pointer(flag, PV_WORKING, PV_INITIAL));
 
             if (previous == PV_SUCCESS) {
                 pending = FALSE;
@@ -114,7 +118,10 @@ namespace {
 
     int _InitOnceInitOnceCompleteXpFallback(void** const flag, bool suceeded) {
         for (;;) {
-            if (_InterlockedExchangePointer(flag, suceeded ? PV_SUCCESS : PV_INITIAL) == PV_WORKING) {
+            const auto previous = reinterpret_cast<const uintptr_t>(
+                __crt_interlocked_exchange_pointer(flag, suceeded ? PV_SUCCESS : PV_INITIAL));
+
+            if (previous == PV_WORKING) {
                 return TRUE;
             } else {
                 SetLastError(ERROR_INVALID_DATA);
