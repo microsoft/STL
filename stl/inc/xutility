@@ -4941,7 +4941,8 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
 
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
-        return _Find_unchecked1(_First, _Last, _Val, false_type{});
+        using _Elem = remove_pointer_t<_InIt>;
+        return _Find_unchecked1(_First, _Last, static_cast<_Elem>(_Val), false_type{});
     }
 #endif // __cpp_lib_is_constant_evaluated
     _First =
