@@ -4,11 +4,9 @@
 // __std_execute_once_begin and __std_execute_once_complete functions
 
 #include <atomic>
-#include <libloaderapi.h>
 #include <internal_shared.h>
+#include <libloaderapi.h>
 #include <xcall_once.h>
-
-#include <Windows.h>
 
 // This must be as small as possible, because its contents are
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
