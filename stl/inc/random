@@ -312,7 +312,6 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
     if _CONSTEXPR_IF (_Ax == 0) { // degenerate case; avoid divide by 0
-        (void) _Prev;
         return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
     } else if _CONSTEXPR_IF (_Mx == 0) {
         // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m

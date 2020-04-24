@@ -3029,13 +3029,8 @@ _NODISCARD to_chars_result _Floating_to_chars(
     }
 
     if constexpr (_Overload == _Floating_to_chars_overload::_Plain) {
-        (void) _Fmt;
-        (void) _Precision;
-
         return _Floating_to_chars_ryu(_First, _Last, _Value, chars_format{});
     } else if constexpr (_Overload == _Floating_to_chars_overload::_Format_only) {
-        (void) _Precision;
-
         if (_Fmt == chars_format::hex) {
             return _Floating_to_chars_hex_shortest(_First, _Last, _Value);
         }

@@ -2022,7 +2022,6 @@ template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
-        (void) _Al;
         _Copy_memmove(_In, _In + _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
@@ -2043,7 +2042,6 @@ template <class _Ty, class _Alloc>
 void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const size_t _Size, _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (_Use_memset_value_construct_v<_Item*> && _Uses_default_construct<_Alloc, _Item*>::value) {
-        (void) _Al;
         _Zero_range(_Out, _Out + _Size);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
@@ -2069,7 +2067,6 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
-        (void) _Al;
         _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};

@@ -80,7 +80,6 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            (void) _Reduce_op; // TRANSITION, VSO-486357
             return _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
         }
     }
@@ -213,8 +212,6 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            (void) _Reduce_op; // TRANSITION, VSO-486357
-            (void) _Transform_op; // TRANSITION, VSO-486357
             return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
         }
     }
