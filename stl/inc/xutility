@@ -4046,7 +4046,9 @@ _CONSTEXPR20 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     const auto _UFirst = _Get_unwrapped(_First);
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
-    if constexpr (_Ptr_copy_cat<decltype(_ULast), decltype(_UDest)>::_Trivially_copyable) {
+    if constexpr (_Is_vb_iterator<_BidIt1> && _Is_vb_iterator<_BidIt2>) {
+        return _Copy_backward_vbool(_First, _Last, _Dest);
+    } else if constexpr (_Ptr_copy_cat<decltype(_ULast), decltype(_UDest)>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated

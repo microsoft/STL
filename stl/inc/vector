@@ -2942,6 +2942,60 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_InIt _First, _InIt _Last, _OutIt _Dest) {
 
     return _Dest + (_Last - _First);
 }
+
+template <class _BidIt1, class _BidIt2>
+_CONSTEXPR20 _BidIt2 _Copy_backward_vbool(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
+    // copy [_First, _Last) backwards to [..., _Dest)
+
+    // Slow path as _Last and _Dest are not aligned
+    if (_Last._Myoff != _Dest._Myoff) {
+        while (_First != _Last) {
+            *--_Dest = *--_Last;
+        }
+        return _Dest;
+    }
+
+    _Vbase* _UFirst = const_cast<_Vbase*>(_First._Myptr);
+    _Vbase* _UDest  = const_cast<_Vbase*>(_Dest._Myptr);
+    _Vbase* _ULast  = const_cast<_Vbase*>(_Last._Myptr);
+
+    // Fast path for less than _VBITS
+    const auto _LastShift = _VBITS - _Last._Myoff;
+    if (_UFirst == _ULast) {
+        const auto _SourceMask = (_Vbase(-1) << _First._Myoff) & (_Vbase(-1) >> _LastShift);
+        const auto _DestMask   = _Vbase(-1) ^ _SourceMask;
+        *_UDest                = (*_UDest & _DestMask) | (*_UFirst & _SourceMask);
+        return _Dest - (_Last - _First);
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastSourceMask = _Vbase(-1) >> _LastShift;
+        const auto _LastDestMask   = _Vbase(-1) ^ _LastSourceMask;
+        *_UDest                    = (*_UDest & _LastDestMask) | (*_ULast & _LastSourceMask);
+        --_ULast;
+        --_UDest;
+    }
+
+    if (true
+#ifdef __cpp_lib_is_constant_evaluated
+        && !_STD is_constant_evaluated()
+#endif // __cpp_lib_is_constant_evaluated
+    ) {
+        // Copy only to _UFirst to properly handle unaligned _First
+        _UDest = _Copy_backward_memmove(_UFirst + 1, _ULast, _UDest);
+        --_UDest;
+    } else {
+        for (; _UFirst != _ULast; --_UDest, (void) --_ULast) {
+            *_UDest = *_ULast;
+        }
+    }
+
+    const auto _FirstSourceMask = _Vbase(-1) << _First._Myoff;
+    const auto _FirstDestMask   = _Vbase(-1) ^ _FirstSourceMask;
+    *_UDest                     = (*_UDest & _FirstDestMask) | (*_UFirst & _FirstSourceMask);
+
+    return _Dest - (_Last - _First);
+}
 #endif // _HAS_IF_CONSTEXPR
 _STD_END
 
