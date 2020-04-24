@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <libloaderapi.h>
+#include <internal_shared.h>
 #include <xcall_once.h>
 
 #include <Windows.h>
