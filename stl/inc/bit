@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-#ifdef __cpp_lib_bit_cast // TRANSITION, VSO-1041044
 template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
@@ -31,7 +30,6 @@ template <class _To, class _From,
 _NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
-#endif // TRANSITION, VSO-1041044
 
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>

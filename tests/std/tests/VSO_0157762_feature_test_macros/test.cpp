@@ -51,14 +51,8 @@ int main() {} // COMPILE-ONLY
 #endif
 #endif
 
-#if defined(__clang__) && __clang_major__ < 10 // Clang 9 doesn't yet implement P1771R1
-#if __has_cpp_attribute(nodiscard) != 201603L
-#error __has_cpp_attribute(nodiscard) is not 201603L
-#endif
-#else
 #if __has_cpp_attribute(nodiscard) != 201907L
 #error __has_cpp_attribute(nodiscard) is not 201907L
-#endif
 #endif
 
 #if __has_cpp_attribute(noreturn) != 200809L
@@ -160,8 +154,7 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
-#elif _HAS_CXX20 \
-    && (defined(__clang__) && __clang_major__ >= 10 || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
+#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
 #if __cpp_constexpr != 201907L
 #error __cpp_constexpr is not 201907L
 #else
@@ -264,7 +257,7 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 
 #ifndef __cpp_generic_lambdas
 #error __cpp_generic_lambdas is not defined
-#elif _HAS_CXX20 && ((defined(__clang__) && __clang_major__ >= 10) || defined(__EDG__)) // TRANSITION, VSO-951133
+#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133
 #if __cpp_generic_lambdas != 201707L
 #error __cpp_generic_lambdas is not 201707L
 #else
@@ -334,7 +327,7 @@ STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20 && (!defined(__clang__) || __clang_major__ >= 10)
+#if _HAS_CXX20
 #ifndef __cpp_impl_three_way_comparison
 #error __cpp_impl_three_way_comparison is not defined
 #else
@@ -369,7 +362,7 @@ STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
 
 #ifndef __cpp_init_captures
 #error __cpp_init_captures is not defined
-#elif _HAS_CXX20 && defined(__clang__) && __clang_major__ >= 10 // TRANSITION, VSO-951133 and EDG
+#elif _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-951133 and EDG
 #if __cpp_init_captures != 201803L
 #error __cpp_init_captures is not 201803L
 #else
@@ -837,7 +830,7 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
+#if _HAS_CXX20
 #ifndef __cpp_lib_bit_cast
 #error __cpp_lib_bit_cast is not defined
 #elif __cpp_lib_bit_cast != 201806L
