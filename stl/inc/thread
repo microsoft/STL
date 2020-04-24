@@ -13,6 +13,9 @@
 #include <process.h>
 #include <tuple>
 #include <xthreads.h>
+#if _HAS_CXX20
+#include <stop_token>
+#endif // _HAS_CXX20
 
 #ifdef _M_CEE_PURE
 #error <thread> is not supported when compiling with /clr:pure.
@@ -139,6 +142,101 @@ public:
 private:
     _Thrd_t _Thr;
 };
+
+#if _HAS_CXX20
+class jthread { // class for self-joining threads
+public:
+    using id                 = thread::id;
+    using native_handle_type = thread::native_handle_type;
+
+    jthread() noexcept : _Stop_source{nostopstate}, _Thr{} {}
+
+    template <class _Fx, class... _Types, enable_if_t<!is_same_v<remove_cvref_t<_Fx>, jthread>, int> = 0>
+    explicit jthread(_Fx&& _Func, _Types&&... _Args)
+        : _Stop_source{}, _Thr{[](auto&& _Func2, auto&& _Token, auto&&... _Args2) {
+                                   if constexpr (is_invocable_v<_Fx, stop_token, _Types...>) {
+                                       _STD invoke(_STD forward<decltype(_Func2)>(_Func2),
+                                           _STD forward<decltype(_Token)>(_Token),
+                                           _STD forward<decltype(_Args2)>(_Args2)...);
+                                   } else {
+                                       _STD invoke(_STD forward<decltype(_Func2)>(_Func2),
+                                           _STD forward<decltype(_Args2)>(_Args2)...);
+                                   }
+                               },
+                              _STD forward<_Fx>(_Func), _Stop_source.get_token(), _STD forward<_Types>(_Args)...} {}
+
+    ~jthread() noexcept {
+        if (joinable()) {
+            request_stop();
+            join();
+        }
+    }
+
+    jthread(jthread&& _Other) noexcept = default;
+
+    jthread& operator=(jthread&& _Other) noexcept {
+        if (joinable()) {
+            request_stop();
+            join();
+        }
+        _Thr         = _STD move(_Other._Thr);
+        _Stop_source = _STD move(_Other._Stop_source);
+        return *this;
+    }
+
+    jthread(const jthread&) = delete;
+    jthread& operator=(const jthread&) = delete;
+
+    void swap(jthread& _Other) noexcept {
+        _Thr.swap(_Other._Thr);
+        _Stop_source.swap(_Other._Stop_source);
+    }
+
+    void detach() {
+        _Thr.detach();
+    }
+
+    id get_id() const noexcept {
+        return _Thr.get_id();
+    }
+
+    static auto hardware_concurrency() noexcept {
+        return thread::hardware_concurrency();
+    }
+
+    void join() {
+        _Thr.join();
+    }
+
+    bool joinable() const noexcept {
+        return _Thr.joinable();
+    }
+
+    native_handle_type native_handle() {
+        return _Thr.native_handle();
+    }
+
+    [[nodiscard]] stop_source get_stop_source() noexcept {
+        return _Stop_source;
+    }
+
+    [[nodiscard]] stop_token get_stop_token() const noexcept {
+        return _Stop_source.get_token();
+    }
+
+    bool request_stop() noexcept {
+        return _Stop_source.request_stop();
+    }
+
+private:
+    stop_source _Stop_source;
+    thread _Thr;
+};
+
+inline void swap(jthread& _Lhs, jthread& _Rhs) noexcept {
+    _Lhs.swap(_Rhs);
+}
+#endif // _HAS_CXX20
 
 namespace this_thread {
     _NODISCARD thread::id get_id() noexcept;

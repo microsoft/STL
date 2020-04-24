@@ -1,0 +1,450 @@
+// stop_token standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _STOP_TOKEN_
+#define _STOP_TOKEN_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#if !_HAS_CXX20
+#pragma message("The contents of <stop_token> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+#include <atomic>
+#include <thread>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+struct _Stop_callback_node { // stack of stop_callbacks
+    virtual void _Invoke_cb() noexcept = 0;
+    virtual ~_Stop_callback_node()     = default;
+
+    _Stop_callback_node* _Next  = nullptr;
+    _Stop_callback_node** _Prev = nullptr;
+    bool* _Is_being_removed     = nullptr;
+    atomic<bool> _Cb_completed{false};
+};
+
+class _Stop_state { // Concurrent handeling of stop_token/source/callback
+public:
+    void _Increment_token_count() noexcept {
+        _Status.fetch_add(_Stop_token_increment_amt, memory_order_relaxed);
+    }
+
+    void _Decrement_token_count() noexcept {
+        const auto _Past_status = _Status.fetch_sub(_Stop_token_increment_amt, memory_order_acq_rel);
+        if (_Past_status < (_Stop_token_increment_amt + _Stop_token_increment_amt)) {
+            delete this;
+        }
+    }
+
+    void _Increment_source_count() noexcept {
+        _Status.fetch_add(_Stop_source_increment_amt, memory_order_relaxed);
+    }
+
+    void _Decrement_source_count() noexcept {
+        const auto _Past_status = _Status.fetch_sub(_Stop_source_increment_amt, memory_order_acq_rel);
+        if (_Past_status < (_Stop_token_increment_amt + _Stop_source_increment_amt)) {
+            delete this;
+        }
+    }
+
+    bool _Request_stop() noexcept {
+
+        if (!_Try_request_stop_and_lock()) {
+            return false;
+        }
+
+        _Stopping_thread_id = this_thread::get_id();
+
+        while (_Top != nullptr) {
+            const auto _Node  = _Top;
+            _Top              = _Node->_Next;
+            const bool _Empty = (_Top == nullptr);
+            if (!_Empty) {
+                _Top->_Prev = _STD addressof(_Top);
+            }
+
+            _Node->_Prev = nullptr;
+            _Unlock();
+
+            bool _Is_being_removed   = false;
+            _Node->_Is_being_removed = _STD addressof(_Is_being_removed);
+            _Node->_Invoke_cb();
+
+            if (!_Is_being_removed) { // check if this thread is trying to remove node. If not, notify waiting thread cb
+                                      // is complete.
+                _Node->_Is_being_removed = nullptr;
+                _Node->_Cb_completed.store(true, memory_order_release);
+            }
+
+            if (_Empty) {
+                return true;
+            }
+
+            _Lock();
+        }
+
+        _Unlock();
+
+        return true;
+    }
+
+    bool _Stop_requested() const noexcept {
+        return _Stop_requested_impl(_Status.load(memory_order_acquire));
+    }
+
+    bool _Stop_possible() const noexcept {
+        return _Stop_possible_impl(_Status.load(memory_order_acquire));
+    }
+
+    bool _Try_push_callback_impl(_Stop_callback_node* const _Node) {
+        uint64_t _Past_status{};
+        do {
+            for (;;) {
+                _Past_status = _Status.load(memory_order_acquire);
+                if (_Stop_requested_impl(_Past_status)) { // stop already requested, invoke callback on this thread
+                    _Node->_Invoke_cb();
+                    return false;
+                }
+                if (!_Stop_possible_impl(_Past_status)) {
+                    return false;
+                }
+                if (!_Is_locked_impl(_Past_status)) { // attempt to lock
+                    break;
+                }
+                this_thread::yield();
+            }
+        } while (!_Status.compare_exchange_weak(_Past_status, _Past_status | _Lock_bit, memory_order_acquire));
+
+        _Node->_Next = _Top;
+        if (_Node->_Next != nullptr) {
+            _Node->_Next->_Prev = _STD addressof(_Node->_Next);
+        }
+        _Node->_Prev = _STD addressof(_Top);
+        _Top         = _Node;
+
+        return true;
+    }
+
+    bool _Try_push_callback_copy(_Stop_callback_node* const _Node) {
+        if (_Try_push_callback_impl(_Node)) {
+            _Unlock_and_increment_token_count();
+            return true;
+        }
+        return false;
+    }
+
+    bool _Try_push_callback_move(_Stop_callback_node* const _Node) {
+        if (_Try_push_callback_impl(_Node)) {
+            _Unlock();
+            return true;
+        }
+        return false;
+    }
+
+    void _Remove_callback_node(_Stop_callback_node* const _Node) noexcept {
+        _Lock();
+
+        if (_Node->_Prev != nullptr) { // check if node is already removed from stack
+            *_Node->_Prev = _Node->_Next;
+            if (_Node->_Next != nullptr) { // repair list
+                _Node->_Next->_Prev = _Node->_Prev;
+            }
+            _Unlock_and_decrement_token_count();
+            return;
+        }
+
+        _Unlock();
+
+        if (_Stopping_thread_id == this_thread::get_id()) { // callback is executing on this thread
+            if (_Node->_Is_being_removed != nullptr) { // synchronize with request_stop
+                *_Node->_Is_being_removed = true;
+            }
+        } else {
+            while (
+                !_Node->_Cb_completed.load(memory_order_acquire)) { // block to allow stopping thread to invoke callback
+                this_thread::yield();
+            }
+        }
+
+        _Decrement_token_count();
+    }
+
+private:
+    bool _Is_locked_impl(uint64_t const _Curr_status) const noexcept {
+        return (_Curr_status & _Lock_bit) != 0;
+    }
+
+    bool _Stop_requested_impl(uint64_t const _Curr_status) const noexcept {
+        return (_Curr_status & _Stop_request_bit) != 0;
+    }
+
+    bool _Stop_possible_impl(uint64_t const _Curr_status) const noexcept {
+        return _Stop_requested_impl(_Curr_status) || (_Curr_status >= _Stop_source_increment_amt);
+    }
+
+    bool _Try_request_stop_and_lock() noexcept {
+        auto _Past_status = _Status.load(memory_order_acquire);
+        do {
+            if (_Stop_requested_impl(_Past_status)) {
+                return false;
+            }
+            while (_Is_locked_impl(_Past_status)) {
+                this_thread::yield();
+                _Past_status = _Status.load(memory_order_acquire);
+                if (_Stop_requested_impl(_Past_status)) {
+                    return false;
+                }
+            }
+        } while (!_Status.compare_exchange_weak(
+            _Past_status, _Past_status | _Stop_request_bit | _Lock_bit, memory_order_acq_rel, memory_order_acquire));
+
+        return true;
+    }
+
+    void _Lock() noexcept { // test and test-and-set
+        auto _Past_status = _Status.load(memory_order_relaxed);
+        do {
+            while (_Is_locked_impl(_Past_status)) {
+                this_thread::yield();
+                _Past_status = _Status.load(memory_order_relaxed);
+            }
+        } while (!_Status.compare_exchange_weak(
+            _Past_status, _Past_status | _Lock_bit, memory_order_acquire, memory_order_relaxed));
+    }
+
+    void _Unlock() noexcept {
+        _Status.fetch_and(~_Lock_bit, memory_order_release);
+    }
+
+    void _Unlock_and_increment_token_count() noexcept {
+        _Status.fetch_sub(_Lock_bit - _Stop_token_increment_amt, memory_order_release);
+    }
+
+    void _Unlock_and_decrement_token_count() noexcept {
+        const auto _Past_status = _Status.fetch_sub(_Lock_bit + _Stop_token_increment_amt, memory_order_acq_rel);
+        if (_Past_status < (_Lock_bit + _Stop_token_increment_amt + _Stop_token_increment_amt)) {
+            delete this;
+        }
+    }
+
+    static constexpr uint64_t _Lock_bit                  = 0b1;
+    static constexpr uint64_t _Stop_request_bit          = 0b10;
+    static constexpr uint64_t _Stop_token_increment_amt  = 0b100;
+    static constexpr uint64_t _Stop_source_increment_amt = static_cast<uint64_t>(1) << 33;
+
+    atomic<uint64_t> _Status  = _Stop_source_increment_amt;
+    _Stop_callback_node* _Top = nullptr;
+    thread::id _Stopping_thread_id{};
+};
+
+// CLASS stop_token
+class stop_token {
+public:
+    stop_token() noexcept {}
+
+    ~stop_token() {
+        if (_State != nullptr) {
+            _State->_Decrement_token_count();
+        }
+    }
+
+    stop_token(stop_token&& _Other) noexcept : _State{_STD exchange(_Other._State, nullptr)} {}
+
+    stop_token& operator=(stop_token&& _Other) noexcept {
+        stop_token _Token{_STD move(_Other)};
+        swap(_Token);
+        return *this;
+    }
+
+    stop_token(const stop_token& _Other) noexcept : _State{_Other._State} {
+        if (_State != nullptr) {
+            _State->_Increment_token_count();
+        }
+    }
+
+    stop_token& operator=(const stop_token& _Other) noexcept {
+        if (_State != _Other._State) {
+            stop_token _Token{_Other};
+            swap(_Token);
+        }
+        return *this;
+    }
+
+    void swap(stop_token& _Other) noexcept {
+        _STD swap(_State, _Other._State);
+    }
+
+    _NODISCARD bool stop_requested() const noexcept {
+        return _State != nullptr && _State->_Stop_requested();
+    }
+
+    _NODISCARD bool stop_possible() const noexcept {
+        return _State != nullptr && _State->_Stop_possible();
+    }
+
+    _NODISCARD friend bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept {
+        return _Lhs._State == _Rhs._State;
+    }
+
+private:
+    friend class stop_source;
+    template <class>
+    friend class stop_callback;
+
+    explicit stop_token(_Stop_state* _Other_state) noexcept : _State{_Other_state} {
+        if (_State != nullptr) {
+            _State->_Increment_token_count();
+        }
+    }
+
+    _Stop_state* _State{nullptr};
+};
+
+inline void swap(stop_token& _Lhs, stop_token& _Rhs) noexcept {
+    _Lhs.swap(_Rhs);
+}
+
+struct nostopstate_t {
+    explicit nostopstate_t() = default;
+};
+
+inline constexpr nostopstate_t nostopstate{};
+
+// CLASS stop_source
+class stop_source {
+public:
+    stop_source() : _State{new _Stop_state} {}
+
+    explicit stop_source(nostopstate_t) noexcept : _State{nullptr} {}
+
+    ~stop_source() {
+        if (_State != nullptr) {
+            _State->_Decrement_source_count();
+        }
+    }
+
+    stop_source(stop_source&& _Other) noexcept : _State{_STD exchange(_Other._State, nullptr)} {}
+
+    stop_source& operator=(stop_source&& _Other) noexcept {
+        stop_source _Source{_STD move(_Other)};
+        swap(_Source);
+        return *this;
+    }
+
+    stop_source(const stop_source& _Other) noexcept : _State{_Other._State} {
+        if (_State != nullptr) {
+            _State->_Increment_source_count();
+        }
+    }
+
+    stop_source& operator=(const stop_source& _Other) noexcept {
+        if (_State != _Other._State) {
+            stop_source _Source{_Other};
+            swap(_Source);
+        }
+        return *this;
+    }
+
+    void swap(stop_source& _Other) noexcept {
+        _STD swap(_State, _Other._State);
+    }
+
+    _NODISCARD stop_token get_token() const noexcept {
+        return stop_token{_State};
+    }
+
+    _NODISCARD bool stop_possible() const noexcept {
+        return _State != nullptr;
+    }
+
+    _NODISCARD bool stop_requested() const noexcept {
+        return _State != nullptr && _State->_Stop_requested();
+    }
+
+    bool request_stop() noexcept {
+        if (_State != nullptr) {
+            return _State->_Request_stop();
+        }
+        return false;
+    }
+
+    _NODISCARD friend bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept {
+        return _Lhs._State == _Rhs._State;
+    }
+
+private:
+    _Stop_state* _State;
+};
+
+inline void swap(stop_source& _Lhs, stop_source& _Rhs) noexcept {
+    _Lhs.swap(_Rhs);
+}
+
+// CLASS TEMPLATE stop_callback
+template <typename _Callback>
+class stop_callback final : private _Stop_callback_node {
+    requires destructible<_Callback>&& invocable<_Callback> public : using callback_type = _Callback;
+
+    template <class _Fx, enable_if_t<is_constructible_v<_Callback, _Fx>, int> = 0>
+    requires constructible_from<_Callback, _Fx> explicit stop_callback(const stop_token& _Token, _Fx&& _Func) noexcept(
+        is_nothrow_constructible_v<_Callback, _Fx>)
+        : _Cb{static_cast<_Fx&&>(_Func)} {
+        if (_Token._State != nullptr && _Token._State->_Try_push_callback_copy(this)) {
+            _State = _Token._State;
+        }
+    }
+
+    template <class _Fx, enable_if_t<is_constructible_v<_Callback, _Fx>, int> = 0>
+    requires constructible_from<_Callback, _Fx> explicit stop_callback(stop_token&& _Token, _Fx&& _Func) noexcept(
+        is_nothrow_constructible_v<_Callback, _Fx>)
+        : _Cb{static_cast<_Fx&&>(_Func)} {
+        if (_Token._State != nullptr && _Token._State->_Try_push_callback_move(this)) {
+            _State = _STD exchange(_Token._State, nullptr);
+        }
+    }
+
+    ~stop_callback() {
+        if (_State != nullptr) {
+            _State->_Remove_callback_node(this);
+        }
+    }
+
+    stop_callback(stop_callback&&) = delete;
+    stop_callback& operator=(stop_callback&&) = delete;
+
+    stop_callback(const stop_callback&) = delete;
+    stop_callback& operator=(const stop_callback&) = delete;
+
+private:
+    friend class _Stop_state;
+    void _Invoke_cb() noexcept final {
+        _Cb();
+    }
+
+    _Stop_state* _State = nullptr;
+    _Callback _Cb;
+};
+
+template <class _Callback>
+stop_callback(stop_token, _Callback)->stop_callback<_Callback>;
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _HAS_CXX20
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _STOP_TOKEN_
