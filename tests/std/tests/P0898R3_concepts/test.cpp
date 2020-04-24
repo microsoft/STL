@@ -2352,7 +2352,7 @@ namespace test_object_concepts {
     STATIC_ASSERT(!test_semiregular<ExplicitMoveAbomination>());
     STATIC_ASSERT(!test_semiregular<ExplicitCopyAbomination>());
     STATIC_ASSERT(!test_semiregular<CopyOnlyAbomination>());
-    STATIC_ASSERT(test_semiregular<SemiregularType>()); // Who would have guessed?
+    STATIC_ASSERT(test_semiregular<SemiregularType>());
     STATIC_ASSERT(test_semiregular<RegularType>());
 
     STATIC_ASSERT(!test_regular<void>());
