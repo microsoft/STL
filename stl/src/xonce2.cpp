@@ -5,8 +5,9 @@
 
 #include <atomic>
 #include <libloaderapi.h>
-#include <synchapi.h>
 #include <xcall_once.h>
+
+#include <Windows.h>
 
 // This must be as small as possible, because its contents are
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
@@ -58,16 +59,80 @@ namespace {
         }
         return functions;
     }
+
+    // XP fallback values must use the same values as in __crtInitOnceExecuteOnce from winapisupp.cpp
+    void* const PV_INITIAL = reinterpret_cast<void*>(static_cast<uintptr_t>(0));
+    void* const PV_WORKING = reinterpret_cast<void*>(static_cast<uintptr_t>(1));
+    void* const PV_SUCCESS = reinterpret_cast<void*>(static_cast<uintptr_t>(2));
+
+    int _InitOnceBeginInitializeXpFallback(void** const flag, int& pending) {
+        enum { Spin, Yield, Sleep } wait_phase = Spin;
+        int spin_count = 10'000;
+        int sleep_value = 2;
+
+        for (;;) {
+            void* const previous = _InterlockedCompareExchangePointer(flag, PV_WORKING, PV_INITIAL);
+
+            if (previous == PV_SUCCESS) {
+                pending = FALSE;
+                return TRUE;
+            } else if (previous == PV_INITIAL) {
+                pending = TRUE;
+                return TRUE;
+            } else if (previous == PV_WORKING) {
+                switch (wait_phase) {
+                case Spin:
+                    if (spin_count != 0) {
+                        spin_count--;
+                        _YIELD_PROCESSOR();
+                        continue;
+                    }
+                    spin_count = 4;
+                    wait_phase = Yield;
+                    [[fallthrough]];
+                    
+                case Yield:
+                    if (spin_count != 0) {
+                        spin_count--;
+                        ::SwitchToThread();
+                        continue;
+                    }
+                    wait_phase  = Sleep;
+                    [[fallthrough]];
+
+                case Sleep:
+                    ::Sleep(sleep_value);
+                    sleep_value = min(sleep_value + sleep_value / 2, 4000);
+                    continue;
+                }
+            } else {
+                pending = FALSE;
+                ::SetLastError(ERROR_INVALID_DATA);
+                return FALSE;
+            }
+        }
+    }
+
+    int _InitOnceInitOnceCompleteXpFallback(void** const flag, bool suceeded) {
+        for (;;) {
+            if (_InterlockedExchangePointer(flag, suceeded ? PV_SUCCESS : PV_INITIAL) == PV_WORKING) {
+                return TRUE;
+            } else {
+                SetLastError(ERROR_INVALID_DATA);
+                return FALSE;
+            }
+        }
+    }
+
 } // unnamed namespace
 
 _STD_BEGIN
 int __CLRCALL_PURE_OR_CDECL _Execute_once_begin(
-    once_flag& _Once_flag, int& _Pending, bool& _Fallback) noexcept { // wrap Win32 InitOnceBeginInitialize()
+    once_flag& _Once_flag, int& _Pending) noexcept { // wrap Win32 InitOnceBeginInitialize()
     const auto init_once_begin_initialize =
         _Get_init_once_vista_functions()._Pfn_InitOnceBeginInitialize.load(std::memory_order_relaxed);
     if (init_once_begin_initialize == nullptr) {
-        _Fallback = true;
-        return false;
+        return _InitOnceInitOnceCompleteXpFallback(&_Once_flag._Opaque, _Pending);
     }
     return init_once_begin_initialize(reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), 0, &_Pending, nullptr);
 }
@@ -76,6 +141,9 @@ int __CLRCALL_PURE_OR_CDECL _Execute_once_complete(
     once_flag& _Once_flag, const bool _Succeeded) noexcept { // wrap Win32 InitOnceComplete()
     const auto init_once_complete =
         _Get_init_once_vista_functions()._Pfn_InitOnceComplete.load(std::memory_order_relaxed);
+    if (init_once_complete == nullptr) {
+        return _InitOnceInitOnceCompleteXpFallback(&_Once_flag._Opaque, _Succeeded);
+    }
     return init_once_complete(
         reinterpret_cast<PINIT_ONCE>(&_Once_flag._Opaque), _Succeeded ? 0 : INIT_ONCE_INIT_FAILED, nullptr);
 }
