@@ -2633,14 +2633,14 @@ namespace test_totally_ordered {
     void operator>=(Archetype<5> const&, Archetype<5> const&);
 
     template <std::size_t I>
-    constexpr void test_archeype_single() {
+    constexpr void test_archetype_single() {
         STATIC_ASSERT(!test<Archetype<I>>());
     }
 
     template <std::size_t... Is>
     constexpr bool test_Archetype(std::index_sequence<Is...>) {
         STATIC_ASSERT(std::is_same_v<std::index_sequence<Is...>, std::make_index_sequence<Archetype_max>>);
-        (test_archeype_single<Is>(), ...);
+        (test_archetype_single<Is>(), ...);
         STATIC_ASSERT(test<Archetype<Archetype_max>>());
         return true;
     }
