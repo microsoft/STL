@@ -699,7 +699,7 @@ namespace std {
     inline const T* cbegin(valarray<T>& arr) {
         return begin(arr); // unqualified
     }
-}
+} // namespace std
 
 void valarray_test() {
     valarray<int> value{};

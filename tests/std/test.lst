@@ -157,6 +157,7 @@ tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
 tests\GH_000457_system_error_message
 tests\GH_000545_include_compare
+tests\GH_000690_overaligned_function
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
 tests\P0024R2_parallel_algorithms_all_of
@@ -220,6 +221,7 @@ tests\P0607R0_inline_variables
 tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
 tests\P0674R1_make_shared_for_arrays
+tests\P0718R2_atomic_smart_ptrs
 tests\P0758R1_is_nothrow_convertible
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
