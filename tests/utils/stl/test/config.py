@@ -358,7 +358,7 @@ class Configuration:
         # Configure extra flags
         self.default_compiler.compile_flags += \
             self.get_lit_conf('compile_flags', [])
-        additional_flags_str = self.get_lit_conf('addtional_compiler_flags')
+        additional_flags_str = self.get_lit_conf('additional_compiler_flags')
         if additional_flags_str:
             self.default_compiler.compile_flags += \
                 shlex.split(additional_flags_str)
