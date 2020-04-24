@@ -983,6 +983,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_algorithms == 201806L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_complex
+#error __cpp_lib_constexpr_complex is not defined
+#elif __cpp_lib_constexpr_complex != 201711L
+#error __cpp_lib_constexpr_complex is not 201711L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_complex
+#error __cpp_lib_constexpr_complex is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
