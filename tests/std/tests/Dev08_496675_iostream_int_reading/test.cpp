@@ -14,7 +14,7 @@ int main() {
         // separator.
         ss << "2,";
 
-        // imbueing the "C" locale workaround the problem
+        // imbuing the "C" locale workaround the problem
         // ss.imbue(std::locale("C"));
 
         // reading from the stream should not fail
