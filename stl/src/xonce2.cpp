@@ -64,9 +64,6 @@ namespace {
     constexpr uintptr_t PV_WORKING = 1;
     constexpr uintptr_t PV_SUCCESS = 2;
 
-    //uintptr_t _InterlockedCompareExchangePtrDestUintValues
-
-
     int _InitOnceBeginInitializeXpFallback(void** const flag, int& pending) {
         enum { Spin, Yield, Sleep } wait_phase = Spin;
         int spin_count                         = 10'000;
