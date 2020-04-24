@@ -67,8 +67,8 @@ namespace {
 
     int _InitOnceBeginInitializeXpFallback(void** const flag, int& pending) {
         enum { Spin, Yield, Sleep } wait_phase = Spin;
-        int spin_count = 10'000;
-        int sleep_value = 2;
+        int spin_count                         = 10'000;
+        int sleep_value                        = 2;
 
         for (;;) {
             void* const previous = _InterlockedCompareExchangePointer(flag, PV_WORKING, PV_INITIAL);
@@ -90,14 +90,14 @@ namespace {
                     spin_count = 4;
                     wait_phase = Yield;
                     [[fallthrough]];
-                    
+
                 case Yield:
                     if (spin_count != 0) {
                         spin_count--;
                         ::SwitchToThread();
                         continue;
                     }
-                    wait_phase  = Sleep;
+                    wait_phase = Sleep;
                     [[fallthrough]];
 
                 case Sleep:
