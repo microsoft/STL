@@ -1951,7 +1951,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
 #pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
                                   // usage which could be reconsidered."
 #pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
-        (void) _InterlockedExchange(&_Guard, 0);
+        (void) _InterlockedXor(&_Guard, -1);
         _Compiler_barrier();
     }
 #endif // hardware
