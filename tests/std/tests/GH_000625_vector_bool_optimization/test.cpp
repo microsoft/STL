@@ -31,6 +31,11 @@ bool test_copy() {
         const auto res_copy = copy(source.begin(), next(source.begin(), 8), dest.begin());
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(8, false);
+        const auto res_copy_n = copy_n(source.begin(), 8, dest_n.begin());
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset source, less than blockSize
@@ -40,6 +45,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin()), next(source.begin(), 9), dest.begin());
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(8, false);
+        const auto res_copy_n = copy_n(next(source.begin()), 8, dest_n.begin());
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset dest, less than blockSize
@@ -49,6 +59,11 @@ bool test_copy() {
         const auto res_copy = copy(source.begin(), next(source.begin(), 7), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == prev(dest.end()));
+
+        vector<bool> dest_n(9, false);
+        const auto res_copy_n = copy_n(source.begin(), 7, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == prev(dest_n.end()));
     }
 
     // With offset match, less than blockSize
@@ -58,6 +73,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin(), 1), next(source.begin(), 8), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == prev(dest.end()));
+
+        vector<bool> dest_n(9, false);
+        const auto res_copy_n = copy_n(next(source.begin(), 1), 7, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == prev(dest_n.end()));
     }
 
     // With offset missmatch, less than blockSize
@@ -67,6 +87,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin(), 2), next(source.begin(), 10), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(9, false);
+        const auto res_copy_n = copy_n(next(source.begin(), 2), 8, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // No offset, exactly blockSize
@@ -81,6 +106,11 @@ bool test_copy() {
         const auto res_copy = copy(source.begin(), next(source.begin(), blockSize), dest.begin());
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(blockSize, false);
+        const auto res_copy_n = copy_n(source.begin(), blockSize, dest_n.begin());
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset, end on boundary
@@ -95,6 +125,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin()), next(source.begin(), blockSize), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(blockSize, false);
+        const auto res_copy_n = copy_n(next(source.begin()), blockSize - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset, exactly blockSize
@@ -109,6 +144,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin()), next(source.begin(), blockSize), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(blockSize, false);
+        const auto res_copy_n = copy_n(next(source.begin()), blockSize - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset missmatch
@@ -125,6 +165,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin()), next(source.begin(), blockSize + 2), next(dest.begin(), 2));
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(blockSize + 3, false);
+        const auto res_copy_n = copy_n(next(source.begin()), blockSize + 1, next(dest_n.begin(), 2));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // No offset, multiple blockSize
@@ -143,6 +188,11 @@ bool test_copy() {
         const auto res_copy = copy(source.begin(), next(source.begin(), 2 * blockSize), dest.begin());
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(2 * blockSize, false);
+        const auto res_copy_n = copy_n(source.begin(), 2 * blockSize, dest_n.begin());
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset, multiple blockSize
@@ -161,6 +211,11 @@ bool test_copy() {
         const auto res_copy = copy(next(source.begin()), next(source.begin(), 2 * blockSize), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(2 * blockSize, false);
+        const auto res_copy_n = copy_n(next(source.begin()), 2 * blockSize - 1, next(dest_n.begin()));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     // With offset missmatch, multiple blockSize
@@ -182,6 +237,11 @@ bool test_copy() {
             copy(next(source.begin()), next(source.begin(), 2 * blockSize + 2), next(dest.begin(), 2));
         assert(dest == result);
         assert(res_copy == dest.end());
+
+        vector<bool> dest_n(2 * blockSize + 3, false);
+        const auto res_copy_n = copy_n(next(source.begin()), 2 * blockSize + 1, next(dest_n.begin(), 2));
+        assert(dest_n == result);
+        assert(res_copy_n == dest_n.end());
     }
 
     return true;
