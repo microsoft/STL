@@ -2880,6 +2880,69 @@ namespace pmr {
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_IF_CONSTEXPR
+// VARIABLE TEMPLATE _Is_vb_iterator
+template <class _Alloc>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>> = true;
+
+template <class _Alloc>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>> = true;
+
+template <class _InIt, class _OutIt>
+_CONSTEXPR20 _OutIt _Copy_vbool(_InIt _First, _InIt _Last, _OutIt _Dest) {
+    // copy [_First, _Last) to [_Dest, ...)
+
+    // Slow path as _First and _Dest are not aligned
+    if (_First._Myoff != _Dest._Myoff) {
+        for (; _First != _Last; ++_Dest, (void) ++_First) {
+            *_Dest = *_First;
+        }
+
+        return _Dest;
+    }
+
+    _Vbase* _UFirst = const_cast<_Vbase*>(_First._Myptr);
+    _Vbase* _UDest  = const_cast<_Vbase*>(_Dest._Myptr);
+    _Vbase* _ULast  = const_cast<_Vbase*>(_Last._Myptr);
+
+    // Fast path for less than _VBITS
+    if (_UFirst == _ULast) {
+        const auto _SourceMask = (_Vbase(-1) << _First._Myoff) & (_Vbase(-1) >> (_VBITS - _Last._Myoff));
+        const auto _DestMask   = _Vbase(-1) ^ _SourceMask;
+        *_UDest                = (*_UDest & _DestMask) | (*_UFirst & _SourceMask);
+        return _Dest + (_Last - _First);
+    }
+
+    if (_First._Myoff != 0) {
+        const auto _FirstSourceMask = _Vbase(-1) << _First._Myoff;
+        const auto _FirstDestMask   = _Vbase(-1) ^ _FirstSourceMask;
+        *_UDest                     = (*_UDest & _FirstDestMask) | (*_UFirst & _FirstSourceMask);
+        ++_UFirst;
+        ++_UDest;
+    }
+
+    if (true
+#ifdef __cpp_lib_is_constant_evaluated
+        && !_STD is_constant_evaluated()
+#endif // __cpp_lib_is_constant_evaluated
+    ) {
+        _UDest = _Copy_memmove(_UFirst, _ULast, _UDest);
+    } else {
+        for (; _UFirst != _ULast; ++_UDest, (void) ++_UFirst) {
+            *_UDest = *_UFirst;
+        }
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastSourceMask = _Vbase(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastDestMask   = _Vbase(-1) ^ _LastSourceMask;
+        *_UDest                    = (*_UDest & _LastDestMask) | (*_ULast & _LastSourceMask);
+    }
+
+    return _Dest + (_Last - _First);
+}
+#endif // _HAS_IF_CONSTEXPR
 _STD_END
 
 #pragma pop_macro("new")

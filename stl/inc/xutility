@@ -3774,11 +3774,17 @@ _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _O
 }
 
 #if _HAS_IF_CONSTEXPR
+// VARIABLE TEMPLATE _Is_vb_iterator
+template <class _It>
+_INLINE_VAR constexpr bool _Is_vb_iterator = false;
+
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+        return _Copy_vbool(_First, _Last, _Dest);
+    } else if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
