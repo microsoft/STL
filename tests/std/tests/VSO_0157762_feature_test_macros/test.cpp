@@ -154,7 +154,9 @@ STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
 
 #ifndef __cpp_constexpr
 #error __cpp_constexpr is not defined
-#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
+#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-778926 (P1064R0) needed for 201806L
+                                                             // TRANSITION, VSO-778937 (P1327R1) needed for 201811L
+                                                             // TRANSITION, VSO-951142 (P1668R1) needed for 201907L
 #if __cpp_constexpr != 201907L
 #error __cpp_constexpr is not 201907L
 #else
@@ -257,7 +259,7 @@ STATIC_ASSERT(__cpp_fold_expressions == 201603L);
 
 #ifndef __cpp_generic_lambdas
 #error __cpp_generic_lambdas is not defined
-#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133
+#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-1060359 (P0428R2)
 #if __cpp_generic_lambdas != 201707L
 #error __cpp_generic_lambdas is not 201707L
 #else
@@ -362,7 +364,7 @@ STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
 
 #ifndef __cpp_init_captures
 #error __cpp_init_captures is not defined
-#elif _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-951133 and EDG
+#elif _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1060359 and EDG (P0780R2)
 #if __cpp_init_captures != 201803L
 #error __cpp_init_captures is not 201803L
 #else
