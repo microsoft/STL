@@ -385,7 +385,6 @@ struct _Atomic_storage {
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_context_t _Wait_context;
-        _Wait_context._Deadline  = _Atomic_wait_context_t::_No_deadline;
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         for (;;) {
@@ -991,7 +990,6 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_context_t _Wait_context;
-        _Wait_context._Deadline       = _Atomic_wait_context_t::_No_deadline;
         const auto _Storage_ptr       = _STD addressof(_Storage);
         const _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);
         for (;;) {
