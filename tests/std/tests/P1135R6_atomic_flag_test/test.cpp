@@ -45,7 +45,7 @@ void test_flags_members() {
 
 template <typename FlagType>
 void test_flags_members_x() {
-    constexpr auto mo = std::memory_order_relaxed;
+    constexpr auto mo = std::memory_order_seq_cst;
 
     const auto is_set       = [mo](const FlagType* f) { return f->test(mo); };
     const auto test_and_set = [mo](FlagType* f) { return f->test_and_set(mo); };
@@ -65,7 +65,7 @@ void test_flags_free() {
 
 template <typename FlagType>
 void test_flags_free_x() {
-    constexpr auto mo = std::memory_order_relaxed;
+    constexpr auto mo = std::memory_order_seq_cst;
 
     const auto is_set       = [mo](const FlagType* f) { return std::atomic_flag_test_explicit(f, mo); };
     const auto test_and_set = [mo](FlagType* f) { return std::atomic_flag_test_and_set_explicit(f, mo); };
