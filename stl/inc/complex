@@ -9,13 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cmath>
+#include <cstdint>
 #include <sstream>
 #include <ymath.h>
-
-#if _HAS_CXX20
-#include <bit>
-#include <cstdint>
-#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -87,17 +83,13 @@ public:
 
     static bool _Isinf(_Ty _Left) { // test for infinity
         double _Tmp = static_cast<double>(_Left);
-        return _CSTD _Dtest(&_Tmp) == _INFCODE;
+        return _CSTD _Dtest(&_Tmp) == _INFCODE; // TRANSITION, should use _Bit_cast
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
-        double _Tmp = static_cast<double>(_Left);
-#if _HAS_CXX20
-        const auto _Uint = _STD bit_cast<uint64_t>(_Tmp);
+        double _Tmp      = static_cast<double>(_Left);
+        const auto _Uint = _Bit_cast<uint64_t>(_Tmp);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
-#else // _HAS_CXX20
-        return _CSTD _Dtest(&_Tmp) == _NANCODE;
-#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -206,16 +198,12 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        return _CSTD _LDtest(&_Left) == _INFCODE;
+        return _CSTD _LDtest(&_Left) == _INFCODE; // TRANSITION, should use _Bit_cast
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
-#if _HAS_CXX20
-        const auto _Uint = _STD bit_cast<uint64_t>(_Left);
+        const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
-#else // _HAS_CXX20
-        return _CSTD _LDtest(&_Left) == _NANCODE;
-#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -324,16 +312,12 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        return _CSTD _Dtest(&_Left) == _INFCODE;
+        return _CSTD _Dtest(&_Left) == _INFCODE; // TRANSITION, should use _Bit_cast
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
-#if _HAS_CXX20
-        const auto _Uint = _STD bit_cast<uint64_t>(_Left);
+        const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
-#else // _HAS_CXX20
-        return _CSTD _Dtest(&_Left) == _NANCODE;
-#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -449,16 +433,12 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        return _CSTD _FDtest(&_Left) == _INFCODE;
+        return _CSTD _FDtest(&_Left) == _INFCODE; // TRANSITION, should use _Bit_cast
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
-#if _HAS_CXX20
-        const auto _Uint = _STD bit_cast<uint32_t>(_Left);
+        const auto _Uint = _Bit_cast<uint32_t>(_Left);
         return (_Uint & 0x7fffffffU) > 0x7f800000U;
-#else // _HAS_CXX20
-        return _CSTD _FDtest(&_Left) == _NANCODE;
-#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN

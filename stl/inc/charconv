@@ -193,17 +193,6 @@ inline to_chars_result to_chars(char* const _First, char* const _Last, const uns
 to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
 
 
-// FUNCTION TEMPLATE _Bit_cast
-template <class _To, class _From,
-    enable_if_t<sizeof(_To) == sizeof(_From) && is_trivially_copyable_v<_To> && is_trivially_copyable_v<_From>, int> =
-        0>
-_NODISCARD /*constexpr*/ _To _Bit_cast(const _From& _From_obj) noexcept {
-    _To _To_obj; // assumes default-init
-    _CSTD memcpy(_STD addressof(_To_obj), _STD addressof(_From_obj), sizeof(_To));
-    return _To_obj;
-}
-
-
 // STRUCT from_chars_result
 struct from_chars_result {
     const char* ptr;
