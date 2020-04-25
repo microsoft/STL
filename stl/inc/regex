@@ -1049,15 +1049,6 @@ public:
         return _Out;
     }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-    template <class _OutTy, size_t _OutSize>
-    _OutTy* format(_OutTy (&_Out)[_OutSize], const char_type* _Fmt_begin, const char_type* _Fmt_end,
-        regex_constants::match_flag_type _Flags = regex_constants::format_default) const {
-        // format text, replacing matches
-        return format(_Array_iterator<_OutTy, _OutSize>(_Out), _Fmt_begin, _Fmt_end, _Flags)._Unwrapped();
-    }
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
     template <class _OutIt, class _Traits1, class _Alloc1>
     _OutIt format(_OutIt _Out, const basic_string<char_type, _Traits1, _Alloc1>& _Fmt,
         regex_constants::match_flag_type _Flags = regex_constants::format_default) const {
@@ -1065,15 +1056,6 @@ public:
         _Seek_wrapped(_Out, _Format1(_Get_unwrapped_unverified(_Out), _Fmt.data(), _Fmt.data() + _Fmt.size(), _Flags));
         return _Out;
     }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-    template <class _OutTy, size_t _OutSize, class _Traits1, class _Alloc1>
-    _OutTy* format(_OutTy (&_Out)[_OutSize], const basic_string<char_type, _Traits1, _Alloc1>& _Fmt,
-        regex_constants::match_flag_type _Flags = regex_constants::format_default) const {
-        // format text, replacing matches
-        return format(_Array_iterator<_OutTy, _OutSize>(_Out), _Fmt, _Flags)._Unwrapped();
-    }
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
     template <class _Traits1, class _Alloc1>
     _NODISCARD basic_string<char_type, _Traits1, _Alloc1> format(const basic_string<char_type, _Traits1, _Alloc1>& _Fmt,
@@ -2357,16 +2339,6 @@ _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_re
     return _Result;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _OutTy, size_t _OutSize, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>
-_OutTy* regex_replace(_OutTy (&_Result)[_OutSize], _BidIt _First, _BidIt _Last,
-    const basic_regex<_Elem, _RxTraits>& _Re, const basic_string<_Elem, _Traits, _Alloc>& _Fmt,
-    regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
-    // search and replace, array result, string format
-    return _STD regex_replace(_Array_iterator<_OutTy, _OutSize>(_Result), _First, _Last, _Re, _Fmt, _Flgs)._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _OutIt, class _BidIt, class _RxTraits, class _Elem>
 _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     const _Elem* _Ptr, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2374,17 +2346,6 @@ _OutIt regex_replace(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_re
     const basic_string<_Elem> _Fmt(_Ptr);
     return _STD regex_replace(_Result, _First, _Last, _Re, _Fmt, _Flgs);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _OutTy, size_t _OutSize, class _BidIt, class _RxTraits, class _Elem>
-_OutTy* regex_replace(_OutTy (&_Result)[_OutSize], _BidIt _First, _BidIt _Last,
-    const basic_regex<_Elem, _RxTraits>& _Re, const _Elem* _Ptr,
-    regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
-    // search and replace, array result, NTBS format
-    const basic_string<_Elem> _Fmt(_Ptr);
-    return _STD regex_replace(_Result, _First, _Last, _Re, _Fmt, _Flgs);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _RxTraits, class _Elem, class _Traits1, class _Alloc1, class _Traits2, class _Alloc2>
 _NODISCARD basic_string<_Elem, _Traits1, _Alloc1> regex_replace(const basic_string<_Elem, _Traits1, _Alloc1>& _Str,

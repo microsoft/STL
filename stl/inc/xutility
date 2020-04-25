@@ -3078,408 +3078,8 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// MACRO _STL_VERIFY_ARRAY_SIZE
-#define _STL_VERIFY_ARRAY_SIZE(_Array, _Desired) \
-    _STL_VERIFY(                                 \
-        (_STD size(_Array) >= static_cast<common_type_t<size_t, decltype(_Desired)>>(_Desired)), "array too small")
-
 struct _Container_proxy;
 struct _Iterator_base12;
-
-// CLASS TEMPLATE _Array_const_iterator
-#if _ITERATOR_DEBUG_LEVEL != 0
-struct _Iterator_base12_compatible { // TRANSITION, for binary compatibility
-    _Container_proxy* _Myproxy{};
-    _Iterator_base12* _Mynextiter{};
-};
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-template <class _Ty, size_t _Size>
-class _Array_const_iterator
-#if _ITERATOR_DEBUG_LEVEL != 0
-    : private _Iterator_base12_compatible
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-{
-public:
-#ifdef __cpp_lib_concepts
-    using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
-    using iterator_category = random_access_iterator_tag;
-    using value_type        = _Ty;
-    using difference_type   = ptrdiff_t;
-    using pointer           = const _Ty*;
-    using reference         = const _Ty&;
-
-    enum { _EEN_SIZE = _Size }; // helper for expression evaluator
-
-#if _ITERATOR_DEBUG_LEVEL == 0
-    _CONSTEXPR17 _Array_const_iterator() noexcept : _Ptr() {}
-
-    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Ptr(_Parg + _Off) {}
-
-    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
-        return *_Ptr;
-    }
-
-    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
-        return _Ptr;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator++() noexcept {
-        ++_Ptr;
-        return *this;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator operator++(int) noexcept {
-        _Array_const_iterator _Tmp = *this;
-        ++_Ptr;
-        return _Tmp;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator--() noexcept {
-        --_Ptr;
-        return *this;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator operator--(int) noexcept {
-        _Array_const_iterator _Tmp = *this;
-        --_Ptr;
-        return _Tmp;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator+=(const ptrdiff_t _Off) noexcept {
-        _Ptr += _Off;
-        return *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
-        _Ptr -= _Off;
-        return *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
-    }
-
-    _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
-        return _Ptr - _Right._Ptr;
-    }
-
-    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
-        return _Ptr[_Off];
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator==(const _Array_const_iterator& _Right) const noexcept {
-        return _Ptr == _Right._Ptr;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
-        return _Ptr < _Right._Ptr;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this < _Right);
-    }
-
-    using _Prevent_inheriting_unwrap = _Array_const_iterator;
-
-    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
-        return _Ptr;
-    }
-
-    static constexpr bool _Unwrap_when_unverified = true;
-
-    constexpr void _Seek_to(pointer _It) noexcept {
-        _Ptr = _It;
-    }
-
-private:
-    pointer _Ptr; // beginning of array
-
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-    _CONSTEXPR17 _Array_const_iterator() noexcept : _Ptr(), _Idx(0) {}
-
-    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Ptr(_Parg), _Idx(_Off) {}
-
-    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
-        return *operator->();
-    }
-
-    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
-        _STL_VERIFY(_Ptr, "cannot dereference value-initialized array iterator");
-        _STL_VERIFY(_Idx < _Size, "cannot dereference out of range array iterator");
-        return _Ptr + _Idx;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator++() noexcept {
-        _STL_VERIFY(_Ptr, "cannot increment value-initialized array iterator");
-        _STL_VERIFY(_Idx < _Size, "cannot increment array iterator past end");
-        ++_Idx;
-        return *this;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator operator++(int) noexcept {
-        _Array_const_iterator _Tmp = *this;
-        ++*this;
-        return _Tmp;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator--() noexcept {
-        _STL_VERIFY(_Ptr, "cannot decrement value-initialized array iterator");
-        _STL_VERIFY(_Idx != 0, "cannot decrement array iterator before begin");
-        --_Idx;
-        return *this;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator operator--(int) noexcept {
-        _Array_const_iterator _Tmp = *this;
-        --*this;
-        return _Tmp;
-    }
-
-    constexpr void _Verify_offset(const ptrdiff_t _Off) const noexcept {
-        if (_Off != 0) {
-            _STL_VERIFY(_Ptr, "cannot seek value-initialized array iterator");
-        }
-
-        if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Idx >= -static_cast<size_t>(_Off), "cannot seek array iterator before begin");
-        }
-
-        if (_Off > 0) {
-            _STL_VERIFY(_Size - _Idx >= static_cast<size_t>(_Off), "cannot seek array iterator after end");
-        }
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator+=(const ptrdiff_t _Off) noexcept {
-        _Verify_offset(_Off);
-        _Idx += _Off;
-        return *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
-    }
-
-    _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
-        return *this += -_Off;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
-    }
-
-    _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
-        _Compat(_Right);
-        return static_cast<ptrdiff_t>(_Idx - _Right._Idx);
-    }
-
-    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
-        return *(*this + _Off);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator==(const _Array_const_iterator& _Right) const noexcept {
-        _Compat(_Right);
-        return _Idx == _Right._Idx;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
-        _Compat(_Right);
-        return _Idx < _Right._Idx;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this < _Right);
-    }
-
-    _CONSTEXPR17 void _Compat(const _Array_const_iterator& _Right) const noexcept { // test for compatible iterator pair
-        _STL_VERIFY(_Ptr == _Right._Ptr, "array iterators incompatible");
-    }
-
-    using _Prevent_inheriting_unwrap = _Array_const_iterator;
-
-    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
-        return _Ptr + _Idx;
-    }
-
-    constexpr void _Verify_with(const _Array_const_iterator& _Last) const noexcept {
-        // note _Compat check inside operator<=
-        _STL_VERIFY(*this <= _Last, "array iterator range transposed");
-    }
-
-    constexpr void _Seek_to(pointer _It) noexcept {
-        _Idx = static_cast<size_t>(_It - _Ptr);
-    }
-
-private:
-    pointer _Ptr; // beginning of array
-    size_t _Idx; // offset into array
-#endif // _ITERATOR_DEBUG_LEVEL == 0
-};
-
-#if _ITERATOR_DEBUG_LEVEL != 0
-template <class _Ty, size_t _Size>
-constexpr void _Verify_range(
-    const _Array_const_iterator<_Ty, _Size>& _First, const _Array_const_iterator<_Ty, _Size>& _Last) noexcept {
-    // TRANSITION, VSO-612785
-    _First._Verify_with(_Last);
-}
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR17 _Array_const_iterator<_Ty, _Size> operator+(
-    const ptrdiff_t _Off, _Array_const_iterator<_Ty, _Size> _Next) noexcept {
-    return _Next += _Off;
-}
-
-#if _HAS_CXX20
-template <class _Ty, size_t _Size>
-struct pointer_traits<_Array_const_iterator<_Ty, _Size>> {
-    using pointer         = _Array_const_iterator<_Ty, _Size>;
-    using element_type    = const _Ty;
-    using difference_type = ptrdiff_t;
-
-    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
-        return _Iter._Unwrapped();
-    }
-};
-#endif // _HAS_CXX20
-
-// CLASS TEMPLATE _Array_iterator
-template <class _Ty, size_t _Size>
-class _Array_iterator : public _Array_const_iterator<_Ty, _Size> {
-public:
-    using _Mybase = _Array_const_iterator<_Ty, _Size>;
-
-#ifdef __cpp_lib_concepts
-    using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
-    using iterator_category = random_access_iterator_tag;
-    using value_type        = _Ty;
-    using difference_type   = ptrdiff_t;
-    using pointer           = _Ty*;
-    using reference         = _Ty&;
-
-    enum { _EEN_SIZE = _Size }; // helper for expression evaluator
-
-    _CONSTEXPR17 _Array_iterator() noexcept {}
-
-    _CONSTEXPR17 explicit _Array_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Mybase(_Parg, _Off) {}
-
-    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
-        return const_cast<reference>(_Mybase::operator*());
-    }
-
-    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
-        return const_cast<pointer>(_Mybase::operator->());
-    }
-
-    _CONSTEXPR17 _Array_iterator& operator++() noexcept {
-        _Mybase::operator++();
-        return *this;
-    }
-
-    _CONSTEXPR17 _Array_iterator operator++(int) noexcept {
-        _Array_iterator _Tmp = *this;
-        _Mybase::operator++();
-        return _Tmp;
-    }
-
-    _CONSTEXPR17 _Array_iterator& operator--() noexcept {
-        _Mybase::operator--();
-        return *this;
-    }
-
-    _CONSTEXPR17 _Array_iterator operator--(int) noexcept {
-        _Array_iterator _Tmp = *this;
-        _Mybase::operator--();
-        return _Tmp;
-    }
-
-    _CONSTEXPR17 _Array_iterator& operator+=(const ptrdiff_t _Off) noexcept {
-        _Mybase::operator+=(_Off);
-        return *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off) const noexcept {
-        _Array_iterator _Tmp = *this;
-        return _Tmp += _Off;
-    }
-
-    _CONSTEXPR17 _Array_iterator& operator-=(const ptrdiff_t _Off) noexcept {
-        _Mybase::operator-=(_Off);
-        return *this;
-    }
-
-    using _Mybase::operator-;
-
-    _NODISCARD _CONSTEXPR17 _Array_iterator operator-(const ptrdiff_t _Off) const noexcept {
-        _Array_iterator _Tmp = *this;
-        return _Tmp -= _Off;
-    }
-
-    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
-        return const_cast<reference>(_Mybase::operator[](_Off));
-    }
-
-    using _Prevent_inheriting_unwrap = _Array_iterator;
-
-    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
-        return const_cast<pointer>(_Mybase::_Unwrapped());
-    }
-};
-
-template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR17 _Array_iterator<_Ty, _Size> operator+(
-    const ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) noexcept {
-    return _Next += _Off;
-}
-
-#if _HAS_CXX20
-template <class _Ty, size_t _Size>
-struct pointer_traits<_Array_iterator<_Ty, _Size>> {
-    using pointer         = _Array_iterator<_Ty, _Size>;
-    using element_type    = _Ty;
-    using difference_type = ptrdiff_t;
-
-    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
-        return _Iter._Unwrapped();
-    }
-};
-#endif // _HAS_CXX20
 
 // STRUCT _Default_sentinel
 struct _Default_sentinel {}; // empty struct to serve as the end of a range
@@ -3828,14 +3428,6 @@ _CONSTEXPR20 _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_Fi
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
-    // copy [_First, _Last) to [_Dest, ...)
-    return _STD copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
@@ -3845,16 +3437,6 @@ _FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* 
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD copy(_First, _Last, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // copy [_First, _Last) to [_Dest, ...)
-    // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD copy(_First, _Last, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE copy_n
@@ -3935,45 +3517,6 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _SourceTy, size_t _SourceSize, class _Diff, class _OutIt>
-_CONSTEXPR20 _OutIt copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _OutIt _Dest) {
-    // copy [_First, _First + _Count) to [_Dest, ...), array source
-    const _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-        _Seek_wrapped(_Dest, _STD copy_n(static_cast<_SourceTy*>(_First), _Count, _Get_unwrapped_n(_Dest, _Count)));
-    }
-
-    return _Dest;
-}
-
-template <class _InIt, class _Diff, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* copy_n(_InIt _First, _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
-    // copy [_First, _First + _Count) to [_Dest, ...), array dest
-    const _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-        return _STD copy_n(_First, _Count, static_cast<_DestTy*>(_Dest));
-    }
-
-    return _Dest;
-}
-
-template <class _SourceTy, size_t _SourceSize, class _Diff, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* copy_n(_SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) {
-    // copy [_First, _First + _Count) to [_Dest, ...), array source/dest
-    const _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-        _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-        return _STD copy_n(static_cast<_SourceTy*>(_First), _Count, static_cast<_DestTy*>(_Dest));
-    }
-
-    return _Dest;
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _Diff, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcept /* terminates */ {
@@ -3983,35 +3526,6 @@ _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcep
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD copy_n(_First, _Count_raw, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _FwdIt2,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 copy_n(_ExPo&&, _SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _FwdIt2 _Dest) noexcept /* terminates */ {
-    // copy [_First, _First + _Count) to [_Dest, ...), array source
-    // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD copy_n(_First, _Count_raw, _Dest);
-}
-
-template <class _ExPo, class _FwdIt1, class _Diff, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // copy [_First, _First + _Count) to [_Dest, ...), array dest
-    // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD copy_n(_First, _Count_raw, _Dest);
-}
-
-template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* copy_n(_ExPo&&, _SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _DestTy (&_Dest)[_DestSize]) noexcept
-/* terminates */ {
-    // copy [_First, _First + _Count) to [_Dest, ...), array source/dest
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD copy_n(_First, _Count_raw, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE copy_backward
@@ -4150,13 +3664,6 @@ _CONSTEXPR20 _OutIt move(_InIt _First, _InIt _Last, _OutIt _Dest) {
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize>
-_DestTy* move(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) { // move [_First, _Last) to [_Dest, ...)
-    return _STD move(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
@@ -4166,16 +3673,6 @@ _FwdIt2 move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* 
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD move(_First, _Last, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // move [_First, _Last) to [_Dest, ...)
-    // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD move(_First, _Last, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE move_backward
@@ -4526,32 +4023,10 @@ _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _Pr, enable_if_t<!is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD _CONSTEXPR20 bool equal(
-    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
-    return _STD equal(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     _Pr _Pred) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, class _Pr,
-    enable_if_t<is_execution_policy_v<decay_t<_ExPo>> && !is_same_v<_RightTy*, _Pr>, int> /* = 0 */>
-_NODISCARD bool equal(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _Pr _Pred) noexcept /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _Adl_verify_range(_First1, _Last1);
-    return _STD equal(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First1), _Get_unwrapped(_Last1),
-        _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2>
@@ -4560,14 +4035,6 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     return _STD equal(_First1, _Last1, _First2, equal_to<>());
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize>
-_NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
-    // compare [_First1, _Last1) to [_First2, ...)
-    return _STD equal(_First1, _Last1, _First2, equal_to<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept
@@ -4575,15 +4042,6 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
     // compare [_First1, _Last1) to [_First2, ...)
     return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1,
-    _RightTy (&_First2)[_RightSize]) noexcept /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, ...)
-    return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 #if _HAS_IF_CONSTEXPR
@@ -5104,29 +4562,11 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
     return _Is_permutation_unchecked(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _FwdIt1, class _RightTy, size_t _RightSize, class _Pr, enable_if_t<!is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD _CONSTEXPR20 bool is_permutation(
-    _FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
-    // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
-    return _STD is_permutation(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
     return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
 }
-
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _FwdIt1, class _RightTy, size_t _RightSize>
-_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
-    // test if [_First1, _Last1) == permuted [_First2, ...)
-    return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
