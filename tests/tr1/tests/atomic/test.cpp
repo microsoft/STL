@@ -225,7 +225,7 @@ static void test_atomic_flag() { // test properties of atomic_flag
 #if _HAS_CXX20
 // TEST C++20 SEMANTICS OF atomic_flag
 static void test_atomic_flag_cxx20() { // test properties of atomic_flag
-    STD atomic_flag flag = ATOMIC_FLAG_INIT;
+    STD atomic_flag flag;
     bool value           = flag.test();
     CHECK_INT(value, false);
     value = flag.test();
