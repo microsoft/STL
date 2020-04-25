@@ -222,72 +222,6 @@ static void test_atomic_flag() { // test properties of atomic_flag
     CHECK_INT(value, false);
 }
 
-#if _HAS_CXX20
-// TEST C++20 SEMANTICS OF atomic_flag
-static void test_atomic_flag_cxx20() { // test properties of atomic_flag
-    STD atomic_flag flag = ATOMIC_FLAG_INIT;
-    bool value           = flag.test();
-    CHECK_INT(value, false);
-    value = flag.test();
-    CHECK_INT(value, false);
-    value = flag.test_and_set(STD memory_order_acq_rel);
-    CHECK_INT(value, false);
-    value = flag.test(STD memory_order_acquire);
-    CHECK_INT(value, true);
-    flag.clear();
-    value = flag.test();
-    CHECK_INT(value, false);
-    value = flag.test_and_set();
-    CHECK_INT(value, false);
-    value = flag.test();
-    CHECK_INT(value, true);
-    flag.clear(STD memory_order_release);
-    value = flag.test_and_set();
-    CHECK_INT(value, false);
-    value = flag.test(STD memory_order_acquire);
-    CHECK_INT(value, true);
-
-    volatile STD atomic_flag vflag = ATOMIC_FLAG_INIT;
-    value                          = vflag.test(STD memory_order_relaxed);
-    CHECK_INT(value, false);
-    value = vflag.test_and_set(STD memory_order_release);
-    CHECK_INT(value, false);
-    value = vflag.test_and_set(STD memory_order_release);
-    CHECK_INT(value, true);
-    value = vflag.test(STD memory_order_acquire);
-    CHECK_INT(value, true);
-    vflag.clear();
-    value = vflag.test_and_set();
-    CHECK_INT(value, false);
-    flag.clear(STD memory_order_relaxed);
-    value = flag.test_and_set();
-    CHECK_INT(value, false);
-    value = flag.test(STD memory_order_acquire);
-    CHECK_INT(value, true);
-
-    value = STD atomic_flag_test(&flag);
-    CHECK_INT(value, true);
-    value = STD atomic_flag_test_and_set(&flag);
-    CHECK_INT(value, true);
-    value = STD atomic_flag_test(&flag);
-    CHECK_INT(value, true);
-    STD atomic_flag_clear(&flag);
-    value = STD atomic_flag_test_and_set_explicit(&flag, STD memory_order_relaxed);
-    CHECK_INT(value, false);
-    value = STD atomic_flag_test_explicit(&flag, STD memory_order_relaxed);
-    CHECK_INT(value, true);
-    value = STD atomic_flag_test_and_set_explicit(&flag, STD memory_order_release);
-    CHECK_INT(value, true);
-    value = STD atomic_flag_test_explicit(&flag, STD memory_order_relaxed);
-    CHECK_INT(value, true);
-    STD atomic_flag_clear_explicit(&flag, STD memory_order_release);
-    value = STD atomic_flag_test_and_set(&flag);
-    CHECK_INT(value, false);
-    value = STD atomic_flag_test_explicit(&flag, STD memory_order_acquire);
-    CHECK_INT(value, true);
-}
-#endif // _HAS_CXX20
-
 // TEST SEMANTICS OF ATOMIC TYPES
 template <class Mtype>
 struct values {
@@ -835,21 +769,6 @@ static void test_typedefs() { // test that atomic typedefs exist
     CHECK_TYPE(STD atomic_intmax_t, STD atomic<intmax_t>);
     CHECK_TYPE(STD atomic_uintmax_t, STD atomic<uintmax_t>);
 }
-
-#if _HAS_CXX20
-static void test_lock_free_types() {
-    STD atomic_signed_lock_free signed_lf;
-    CHECK_TYPE(signed_lf.is_lock_free(), true);
-    volatile STD atomic_signed_lock_free vsigned_lf;
-    CHECK_TYPE(vsigned_lf.is_lock_free(), true);
-    STD atomic_unsigned_lock_free unsigned_lf;
-    CHECK_TYPE(unsigned_lf.is_lock_free(), true);
-    volatile STD atomic_unsigned_lock_free vunsigned_lf;
-    CHECK_TYPE(vunsigned_lf.is_lock_free(), true);
-    static_assert(STD atomic_signed_lock_free::is_always_lock_free);
-    static_assert(STD atomic_unsigned_lock_free::is_always_lock_free);
-}
-#endif // _HAS_CXX20
 // RUN TESTS
 void test_main() { // test header <atomic>
     test_memory_order_enum();
@@ -875,8 +794,4 @@ void test_main() { // test header <atomic>
     test_atomic_udt();
     test_fences();
     test_typedefs();
-#if _HAS_CXX20
-    test_atomic_flag_cxx20();
-    test_lock_free_types();
-#endif
 }
