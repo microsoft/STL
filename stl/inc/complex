@@ -93,12 +93,11 @@ public:
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
         double _Tmp = static_cast<double>(_Left);
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            uint64_t _Uint = _STD bit_cast<uint64_t>(_Tmp);
-            return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
-        }
-#endif // _HAS_CXX20
+        const auto _Uint = _STD bit_cast<uint64_t>(_Tmp);
+        return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
+#else // _HAS_CXX20
         return _CSTD _Dtest(&_Tmp) == _NANCODE;
+#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -212,12 +211,11 @@ public:
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            uint64_t _Uint = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
-            return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
-        }
-#endif // _HAS_CXX20
+        const auto _Uint = _STD bit_cast<uint64_t>(_Left);
+        return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
+#else // _HAS_CXX20
         return _CSTD _LDtest(&_Left) == _NANCODE;
+#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -331,12 +329,11 @@ public:
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            uint64_t _Uint = _STD bit_cast<uint64_t>(static_cast<double>(_Left));
-            return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
-        }
-#endif // _HAS_CXX20
+        const auto _Uint = _STD bit_cast<uint64_t>(_Left);
+        return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
+#else // _HAS_CXX20
         return _CSTD _Dtest(&_Left) == _NANCODE;
+#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -457,11 +454,11 @@ public:
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return (_STD bit_cast<uint32_t>(_Left) & 0x7fffffffU) > 0x7f800000U;
-        }
-#endif // _HAS_CXX20
+        const auto _Uint = _STD bit_cast<uint32_t>(_Left);
+        return (_Uint & 0x7fffffffU) > 0x7f800000U;
+#else // _HAS_CXX20
         return _CSTD _FDtest(&_Left) == _NANCODE;
+#endif // _HAS_CXX20
     }
 
     static constexpr _Ty _Nanv() { // return NaN
