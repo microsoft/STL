@@ -4196,7 +4196,9 @@ template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
+    if constexpr (_Is_vb_iterator<_BidIt1> && _Is_vb_iterator<_BidIt2>) {
+        return _Copy_backward_vbool(_First, _Last, _Dest);
+    } else if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
