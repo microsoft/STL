@@ -56,15 +56,21 @@ namespace {
 
     unsigned long _Get_remaining_waiting_time(_Atomic_wait_context_t& _Wait_context) {
         const unsigned long long deadline = _Wait_context._Deadline;
-        if (deadline == _Atomic_wait_context_t::_No_deadline) {
+        if (deadline == _Atomic_wait_no_deadline) {
             return INFINITE;
         }
 
-        const unsigned long long current_time = __std_atomic_wait_get_current_time();
+        const unsigned long long current_time = ::GetTickCount64();
         if (current_time >= deadline) {
             return 0;
         }
-        return static_cast<unsigned long>(deadline - current_time);
+
+        unsigned long long remaining      = deadline - current_time;
+        constexpr unsigned long _Ten_days = 864'000'000;
+        if (remaining > _Ten_days) {
+            return _Ten_days;
+        }
+        return static_cast<unsigned long>(remaining);
     }
 
     void _Assume_timeout() noexcept {
@@ -424,8 +430,13 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
     return _Atomic_init_spin_count();
 }
 
-_NODISCARD unsigned long long __cdecl __std_atomic_wait_get_current_time() noexcept {
-    return ::GetTickCount64();
+void __stdcall __std_atomic_wait_get_deadline(
+    _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout, unsigned long timeout_pico) noexcept {
+    if (_Timeout == _Atomic_wait_no_timeout) {
+        _Wait_context._Deadline = _Atomic_wait_no_deadline;
+    } else {
+        _Wait_context._Deadline = ::GetTickCount64() + _Timeout + (timeout_pico ? 1 : 0);
+    }
 }
 
 bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept {

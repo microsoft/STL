@@ -30,10 +30,15 @@ enum _Atomic_spin_phase : unsigned long {
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
+
+static constexpr unsigned long long _Atomic_wait_no_timeout  = 0xFFFF'FFFF'FFFF'FFFF;
+static constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
+
+
 struct _Atomic_wait_context_t {
-    static constexpr unsigned long long _No_deadline = 0xFFFF'FFFF'FFFF'FFFF;
     unsigned long _Wait_phase_and_spin_count         = _Atomic_wait_phase_init_spin_count;
-    unsigned long long _Deadline                     = _No_deadline; // or GetTickCount64 plus duration
+    unsigned long _Deadline_picoseconds              = 0; // reserved for potential future precision improvement
+    unsigned long long _Deadline                     = _Atomic_wait_no_deadline; // or GetTickCount64 plus duration
     unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
 };
 
@@ -52,9 +57,9 @@ void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
 void __stdcall __std_atomic_unwait_indirect(const void* _Storage, _Atomic_wait_context_t& _Wait_context) noexcept;
 
 _NODISCARD unsigned long __stdcall __std_atomic_get_spin_count(bool _Is_direct) noexcept;
-_NODISCARD unsigned long long __cdecl __std_atomic_wait_get_current_time() noexcept;
+void __stdcall __std_atomic_wait_get_deadline(
+    _Atomic_wait_context_t& _Wait_context, unsigned long long timeout, unsigned long timeout_pico) noexcept;
 _END_EXTERN_C
-
 
 _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_count, const bool _Is_direct) noexcept {
 #ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
@@ -83,12 +88,12 @@ _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_cou
     return false;
 }
 
-_NODISCARD inline unsigned long long _Atomic_wait_get_deadline(const unsigned long _Timeout) noexcept {
-    if (_Timeout == 0xFFFF'FFFF) {
-        return _Atomic_wait_context_t::_No_deadline;
-    } else {
-        return __std_atomic_wait_get_current_time() + _Timeout;
+inline void _Atomic_wait_get_deadline(
+    _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout) noexcept {
+    if (_Timeout != _Atomic_wait_no_timeout) {
+        __std_atomic_wait_get_deadline(_Wait_context, _Timeout, 0);
     }
+    // Otherwise defaults to _Atomic_wait_no_deadline
 }
 
 // FUNCTION _Atomic_wait_direct_timed_for_internal_spinlock

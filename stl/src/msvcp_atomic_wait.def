@@ -7,7 +7,7 @@
 EXPORTS
     __std_atomic_set_api_level
     __std_atomic_get_spin_count
-    __std_atomic_wait_get_current_time
+    __std_atomic_wait_get_deadline
     __std_atomic_wait_direct
     __std_atomic_notify_one_direct
     __std_atomic_notify_all_direct
