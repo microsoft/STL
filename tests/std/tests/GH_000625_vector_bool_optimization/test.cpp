@@ -41,6 +41,11 @@ bool test_copy() {
         const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), 8), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == dest_backward.begin());
+
+        vector<bool> dest_move(8, false);
+        const auto res_move = move(source.begin(), next(source.begin(), 8), dest_move.begin());
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset source, less than blockSize
@@ -61,6 +66,11 @@ bool test_copy() {
             copy_backward(next(source.begin()), next(source.begin(), 9), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == dest_backward.begin());
+
+        vector<bool> dest_move(8, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), 9), dest_move.begin());
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset dest, less than blockSize
@@ -81,6 +91,11 @@ bool test_copy() {
             copy_backward(source.begin(), next(source.begin(), 7), prev(dest_backward.end()));
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
+
+        vector<bool> dest_move(9, false);
+        const auto res_move = move(source.begin(), next(source.begin(), 7), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == prev(dest_move.end()));
     }
 
     // With offset match, less than blockSize
@@ -101,6 +116,11 @@ bool test_copy() {
             copy_backward(next(source.begin(), 1), next(source.begin(), 8), prev(dest_backward.end()));
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
+
+        vector<bool> dest_move(9, false);
+        const auto res_move = move(next(source.begin(), 1), next(source.begin(), 8), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == prev(dest_move.end()));
     }
 
     // With offset missmatch, less than blockSize
@@ -121,6 +141,11 @@ bool test_copy() {
             copy_backward(next(source.begin(), 2), next(source.begin(), 10), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
+
+        vector<bool> dest_move(9, false);
+        const auto res_move = move(next(source.begin(), 2), next(source.begin(), 10), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // No offset, exactly blockSize
@@ -146,6 +171,11 @@ bool test_copy() {
             copy_backward(source.begin(), next(source.begin(), blockSize), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == dest_backward.begin());
+
+        vector<bool> dest_move(blockSize, false);
+        const auto res_move = move(source.begin(), next(source.begin(), blockSize), dest_move.begin());
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset, end on boundary
@@ -171,6 +201,11 @@ bool test_copy() {
             copy_backward(next(source.begin()), next(source.begin(), blockSize), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
+
+        vector<bool> dest_move(blockSize, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), blockSize), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset, exactly blockSize
@@ -196,6 +231,11 @@ bool test_copy() {
             copy_backward(next(source.begin()), next(source.begin(), blockSize), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
+
+        vector<bool> dest_move(blockSize, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), blockSize), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset missmatch
@@ -223,6 +263,12 @@ bool test_copy() {
             copy_backward(next(source.begin()), next(source.begin(), blockSize + 2), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin(), 2));
+
+        vector<bool> dest_move(blockSize + 3, false);
+        const auto res_move =
+            move(next(source.begin()), next(source.begin(), blockSize + 2), next(dest_move.begin(), 2));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // No offset, multiple blockSize
@@ -252,6 +298,11 @@ bool test_copy() {
             copy_backward(source.begin(), next(source.begin(), 2 * blockSize), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == dest_backward.begin());
+
+        vector<bool> dest_move(2 * blockSize, false);
+        const auto res_move = move(source.begin(), next(source.begin(), 2 * blockSize), dest_move.begin());
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset, multiple blockSize
@@ -281,6 +332,11 @@ bool test_copy() {
             copy_backward(next(source.begin()), next(source.begin(), 2 * blockSize), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
+
+        vector<bool> dest_move(2 * blockSize, false);
+        const auto res_move = move(next(source.begin()), next(source.begin(), 2 * blockSize), next(dest_move.begin()));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     // With offset missmatch, multiple blockSize
@@ -313,6 +369,12 @@ bool test_copy() {
             copy_backward(next(source.begin()), next(source.begin(), 2 * blockSize + 2), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin(), 2));
+
+        vector<bool> dest_move(2 * blockSize + 3, false);
+        const auto res_move =
+            move(next(source.begin()), next(source.begin(), 2 * blockSize + 2), next(dest_move.begin(), 2));
+        assert(dest_move == result);
+        assert(res_move == dest_move.end());
     }
 
     return true;
