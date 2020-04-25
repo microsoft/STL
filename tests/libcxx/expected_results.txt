@@ -519,7 +519,7 @@ std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp SKIPPED
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
 std/utilities/tuple/tuple.tuple/tuple.cnstr/test_lazy_sfinae.pass.cpp:0 SKIPPED
 
-# Compiler bug: VSO-752709 "[Feedback] Constructing rvalue reference from non-reference-related lvalue reference"
+# Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 SKIPPED
 
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
