@@ -4487,7 +4487,9 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-    if constexpr (decltype(_Equal_memcmp_is_safe(_UFirst1, _UFirst2, _Pred))::value) {
+    if constexpr (_Is_vb_iterator<_InIt1> && _Is_vb_iterator<_InIt2> && is_same_v<_Pr, equal_to<>>) {
+        return _Equal_vbool(_First1, _Last1, _First2, _Pred);
+    } else if constexpr (decltype(_Equal_memcmp_is_safe(_UFirst1, _UFirst2, _Pred))::value) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4617,7 +4619,12 @@ _NODISCARD _CONSTEXPR20 bool equal(
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped(_First2);
     const auto _ULast2 = _Get_unwrapped(_Last2);
-    if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
+    if constexpr (_Is_vb_iterator<_InIt1> && _Is_vb_iterator<_InIt2> && is_same_v<_Pr, equal_to<>>) {
+        if (_Last1 - _First1 != _Last2 - _First2) {
+            return false;
+        }
+        return _Equal_vbool(_First1, _Last1, _First2, _Pred);
+    } else if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
         if (_ULast1 - _UFirst1 != _ULast2 - _UFirst2) {
             return false;
         }

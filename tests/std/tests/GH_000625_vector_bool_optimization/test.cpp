@@ -647,7 +647,224 @@ bool test_fill() {
     return true;
 }
 
+bool test_equal() {
+    // No offset, less than blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), 8));
+        const vector<bool> valid = input;
+        assert(equal(input.begin(), input.end(), valid.begin()));
+        assert(equal(input.begin(), input.end(), valid.begin(), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(input.begin(), input.end(), missmatchFirst.begin()));
+        assert(!equal(input.begin(), input.end(), missmatchFirst.begin(), missmatchFirst.end()));
+    }
+
+    // With Offset input, less than blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), 8));
+        const vector<bool> valid(next(input.begin()), input.end());
+        assert(equal(next(input.begin()), input.end(), valid.begin()));
+        assert(equal(next(input.begin()), input.end(), valid.begin(), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(next(input.begin()), input.end(), missmatchFirst.begin()));
+        assert(!equal(next(input.begin()), input.end(), missmatchFirst.begin(), missmatchFirst.end()));
+    }
+
+    // With Offset valid, less than blockSize
+    {
+        const vector<bool> valid(source.begin(), next(source.begin(), 8));
+        const vector<bool> input(next(valid.begin()), valid.end());
+        assert(equal(input.begin(), input.end(), next(valid.begin())));
+        assert(equal(input.begin(), input.end(), next(valid.begin()), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(input.begin(), input.end(), next(missmatchFirst.begin())));
+        assert(!equal(input.begin(), input.end(), next(missmatchFirst.begin()), missmatchFirst.end()));
+    }
+
+    // With matching Offset, less than blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), 8));
+        const vector<bool> valid = input;
+        assert(equal(next(input.begin()), input.end(), next(valid.begin())));
+        assert(equal(next(input.begin()), input.end(), next(valid.begin()), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(next(input.begin()), input.end(), next(missmatchFirst.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchFirst.begin()), missmatchFirst.end()));
+    }
+
+    // No offset, exactly blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), blockSize));
+        const vector<bool> valid = input;
+        assert(equal(input.begin(), input.end(), valid.begin()));
+        assert(equal(input.begin(), input.end(), valid.begin(), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(input.begin(), input.end(), missmatchFirst.begin()));
+        assert(!equal(input.begin(), input.end(), missmatchFirst.begin(), missmatchFirst.end()));
+    }
+
+    // With Offset input, exactly blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), blockSize + 1));
+        const vector<bool> valid(next(input.begin()), input.end());
+        assert(equal(next(input.begin()), input.end(), valid.begin()));
+        assert(equal(next(input.begin()), input.end(), valid.begin(), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(next(input.begin()), input.end(), missmatchFirst.begin()));
+        assert(!equal(next(input.begin()), input.end(), missmatchFirst.begin(), missmatchFirst.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(next(input.begin()), input.end(), missmatchLast.begin()));
+        assert(!equal(next(input.begin()), input.end(), missmatchLast.begin(), missmatchLast.end()));
+    }
+
+    // With Offset valid, exactly blockSize
+    {
+        const vector<bool> valid(source.begin(), next(source.begin(), blockSize + 1));
+        const vector<bool> input(next(valid.begin()), valid.end());
+        assert(equal(input.begin(), input.end(), next(valid.begin())));
+        assert(equal(input.begin(), input.end(), next(valid.begin()), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(input.begin(), input.end(), next(missmatchFirst.begin())));
+        assert(!equal(input.begin(), input.end(), next(missmatchFirst.begin()), missmatchFirst.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(input.begin(), input.end(), next(missmatchLast.begin())));
+        assert(!equal(input.begin(), input.end(), next(missmatchLast.begin()), missmatchLast.end()));
+    }
+
+    // With matching Offset, exactly blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), blockSize + 1));
+        const vector<bool> valid = input;
+        assert(equal(next(input.begin()), input.end(), next(valid.begin())));
+        assert(equal(next(input.begin()), input.end(), next(valid.begin()), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(next(input.begin()), input.end(), next(missmatchFirst.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchFirst.begin()), missmatchFirst.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(next(input.begin()), input.end(), next(missmatchLast.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchLast.begin()), missmatchLast.end()));
+    }
+
+    // No offset, multiple blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), 2 * blockSize + 2));
+        const vector<bool> valid = input;
+        assert(equal(input.begin(), input.end(), valid.begin()));
+        assert(equal(input.begin(), input.end(), valid.begin(), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(input.begin(), input.end(), missmatchFirst.begin()));
+        assert(!equal(input.begin(), input.end(), missmatchFirst.begin(), missmatchFirst.end()));
+
+        vector<bool> missmatchMemCmp = valid;
+        missmatchMemCmp[40]          = !missmatchMemCmp[40];
+        assert(!equal(next(input.begin()), input.end(), next(missmatchMemCmp.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchMemCmp.begin()), missmatchMemCmp.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(next(input.begin()), input.end(), next(missmatchLast.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchLast.begin()), missmatchLast.end()));
+    }
+
+    // With Offset input, exactly blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), 2 * blockSize + 5));
+        const vector<bool> valid(next(input.begin()), input.end());
+        assert(equal(next(input.begin()), input.end(), valid.begin()));
+        assert(equal(next(input.begin()), input.end(), valid.begin(), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(next(input.begin()), input.end(), missmatchFirst.begin()));
+        assert(!equal(next(input.begin()), input.end(), missmatchFirst.begin(), missmatchFirst.end()));
+
+        vector<bool> missmatchMemCmp = valid;
+        missmatchMemCmp[40]          = !missmatchMemCmp[40];
+        assert(!equal(next(input.begin()), input.end(), missmatchMemCmp.begin()));
+        assert(!equal(next(input.begin()), input.end(), missmatchMemCmp.begin(), missmatchMemCmp.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(next(input.begin()), input.end(), missmatchLast.begin()));
+        assert(!equal(next(input.begin()), input.end(), missmatchLast.begin(), missmatchLast.end()));
+    }
+
+    // With Offset valid, exactly blockSize
+    {
+        const vector<bool> valid(source.begin(), next(source.begin(), 2 * blockSize + 5));
+        const vector<bool> input(next(valid.begin()), valid.end());
+        assert(equal(input.begin(), input.end(), next(valid.begin())));
+        assert(equal(input.begin(), input.end(), next(valid.begin()), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(input.begin(), input.end(), next(missmatchFirst.begin())));
+        assert(!equal(input.begin(), input.end(), next(missmatchFirst.begin()), missmatchFirst.end()));
+
+        vector<bool> missmatchMemCmp = valid;
+        missmatchMemCmp[40]          = !missmatchMemCmp[40];
+        assert(!equal(input.begin(), input.end(), next(missmatchMemCmp.begin())));
+        assert(!equal(input.begin(), input.end(), next(missmatchMemCmp.begin()), missmatchMemCmp.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(input.begin(), input.end(), next(missmatchLast.begin())));
+        assert(!equal(input.begin(), input.end(), next(missmatchLast.begin()), missmatchLast.end()));
+    }
+
+    // With matching Offset, exactly blockSize
+    {
+        const vector<bool> input(source.begin(), next(source.begin(), 2 * blockSize + 5));
+        const vector<bool> valid = input;
+        assert(equal(next(input.begin()), input.end(), next(valid.begin())));
+        assert(equal(next(input.begin()), input.end(), next(valid.begin()), valid.end()));
+
+        vector<bool> missmatchFirst = valid;
+        missmatchFirst[3]           = !missmatchFirst[3];
+        assert(!equal(next(input.begin()), input.end(), next(missmatchFirst.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchFirst.begin()), missmatchFirst.end()));
+
+
+        vector<bool> missmatchMemCmp = valid;
+        missmatchMemCmp[40]          = !missmatchMemCmp[40];
+        assert(!equal(next(input.begin()), input.end(), next(missmatchMemCmp.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchMemCmp.begin()), missmatchMemCmp.end()));
+
+        vector<bool> missmatchLast = valid;
+        missmatchLast.back()       = !missmatchLast.back();
+        assert(!equal(next(input.begin()), input.end(), next(missmatchLast.begin())));
+        assert(!equal(next(input.begin()), input.end(), next(missmatchLast.begin()), missmatchLast.end()));
+    }
+
+    return true;
+}
+
 int main() {
     test_copy();
     test_fill();
+    test_equal();
 }

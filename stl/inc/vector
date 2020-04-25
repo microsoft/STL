@@ -3043,6 +3043,69 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
         *_UFirst                   = _Val ? (*_UFirst & _LastDestMask) | _LastSourceMask : (*_UFirst & _LastDestMask);
     }
 }
+
+template <class _InIt1, class _InIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 bool _Equal_vbool(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Pr) {
+    // compare [_First1, _Last1) to [_First2, ...)
+
+    // Slow path as _First1 and _First2 are not aligned
+    if (_First1._Myoff != _First2._Myoff) {
+        for (; _First1 != _Last1; ++_First2, (void) ++_First1) {
+            if (*_First1 != *_First2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    _Vbase* _UFirst1            = const_cast<_Vbase*>(_First1._Myptr);
+    _Vbase* _UFirst2            = const_cast<_Vbase*>(_First2._Myptr);
+    const _Vbase* const _ULast1 = _Last1._Myptr;
+
+    // Fast path for less than _VBITS
+    const auto _LastShift = _VBITS - _Last1._Myoff;
+    if (_UFirst1 == _ULast1) {
+        const auto _Mask = (_Vbase(-1) << _First1._Myoff) & (_Vbase(-1) >> _LastShift);
+        return (*_UFirst1 & _Mask) == (*_UFirst2 & _Mask);
+    }
+
+    if (_First1._Myoff != 0) {
+        const auto _FirstMask = _Vbase(-1) << _First1._Myoff;
+        if ((*_UFirst1 & _FirstMask) != (*_UFirst2 & _FirstMask)) {
+            return false;
+        }
+        ++_UFirst1;
+        ++_UFirst2;
+    }
+
+    if (true
+#ifdef __cpp_lib_is_constant_evaluated
+        && !_STD is_constant_evaluated()
+#endif // __cpp_lib_is_constant_evaluated
+    ) {
+        const auto _First1_ch = reinterpret_cast<const char*>(_UFirst1);
+        const auto _First2_ch = reinterpret_cast<const char*>(_UFirst2);
+        const auto _Count_ch  = static_cast<size_t>(reinterpret_cast<const char*>(_ULast1) - _First1_ch);
+        if (_CSTD memcmp(_First1_ch, _First2_ch, _Count_ch) != 0) {
+            return false;
+        }
+        _UFirst1 += _Count_ch / sizeof(_Vbase);
+        _UFirst2 += _Count_ch / sizeof(_Vbase);
+    } else {
+        for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) {
+            if (*_UFirst1 != *_UFirst2) {
+                return false;
+            }
+        }
+    }
+
+    if (_Last1._Myoff != 0) {
+        const auto _LastMask = _Vbase(-1) >> _LastShift;
+        return (*_UFirst1 & _LastMask) == (*_UFirst2 & _LastMask);
+    }
+    return true;
+}
 #endif // _HAS_IF_CONSTEXPR
 _STD_END
 
