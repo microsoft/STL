@@ -6,7 +6,6 @@
 #include <yvals.h>
 
 #include <intrin.h>
-#include <xatomic_wait.h>
 #pragma warning(disable : 4793)
 
 _EXTERN_C
@@ -15,17 +14,12 @@ _EXTERN_C
 volatile long _Shared_ptr_flag;
 
 _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_ptr_flag successfully set
-    _Atomic_wait_context_t _Wait_context;
 #ifdef _M_ARM
     while (_InterlockedExchange_acq(&_Shared_ptr_flag, 1)) {
-        _Atomic_wait_direct_for_internal_spinlock(&_Shared_ptr_flag, 1L, _Wait_context);
+        __yield();
     }
 #else // _M_ARM
     while (_interlockedbittestandset(&_Shared_ptr_flag, 0)) { // set bit 0
-        _Atomic_wait_direct_for_internal_spinlock(&_Shared_ptr_flag, 1L, _Wait_context);
-    }
-    if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
-        __std_atomic_unwait_direct(const_cast<const long*>(&_Shared_ptr_flag), _Wait_context);
     }
 #endif // _M_ARM
 }
@@ -37,7 +31,6 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
 #else // _M_ARM
     _interlockedbittestandreset(&_Shared_ptr_flag, 0); // reset bit 0
 #endif // _M_ARM
-    __std_atomic_notify_one_direct(const_cast<const long*>(&_Shared_ptr_flag));
 }
 
 _END_EXTERN_C
