@@ -247,7 +247,7 @@ static void test_atomic_flag_cxx20() { // test properties of atomic_flag
     value = flag.test(STD memory_order_acquire);
     CHECK_INT(value, true);
 
-    volatile STD atomic_flag vflag = ATOMIC_FLAG_INIT;
+    volatile STD atomic_flag vflag;
     value                          = vflag.test(STD memory_order_relaxed);
     CHECK_INT(value, false);
     value = vflag.test_and_set(STD memory_order_release);
