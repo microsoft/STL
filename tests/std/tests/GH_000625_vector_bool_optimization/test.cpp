@@ -451,6 +451,154 @@ bool test_copy() {
     return true;
 }
 
+bool test_fill() {
+    // No offset, less than char size
+    {
+        vector<bool> result(3, true);
+        vector<bool> dest(3, false);
+        fill(dest.begin(), dest.end(), true);
+        assert(dest == result);
+
+        fill(dest.begin(), dest.end(), false);
+        assert(dest == vector<bool>(3, false));
+
+        const auto res_fill_n = fill_n(dest.begin(), 3, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(dest.begin(), 3, false);
+        assert(dest == vector<bool>(3, false));
+    }
+
+    // With Offset, less than blockSize
+    {
+        vector<bool> result(3, true);
+        result[0] = false;
+
+        vector<bool> dest(3, false);
+        fill(next(dest.begin()), dest.end(), true);
+        assert(dest == result);
+
+        fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(3, false));
+
+        const auto res_fill_n = fill_n(next(dest.begin()), 2, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(next(dest.begin()), 2, false);
+        assert(dest == vector<bool>(3, false));
+    }
+
+    // No offset, less than blockSize
+    {
+        vector<bool> result(8, true);
+        vector<bool> dest(8, false);
+        fill(dest.begin(), dest.end(), true);
+        assert(dest == result);
+
+        fill(dest.begin(), dest.end(), false);
+        assert(dest == vector<bool>(8, false));
+    }
+
+    // With Offset, less than blockSize
+    {
+        vector<bool> result(8, true);
+        result[0] = false;
+
+        vector<bool> dest(8, false);
+        fill(next(dest.begin()), dest.end(), true);
+        assert(dest == result);
+
+        fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(8, false));
+    }
+
+    // With offset, end at boundary
+    {
+        vector<bool> result(blockSize, true);
+        result[0] = false;
+
+        vector<bool> dest(blockSize, false);
+        fill(next(dest.begin()), dest.end(), true);
+        assert(dest == result);
+
+        fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(blockSize, false));
+
+        const auto res_fill_n = fill_n(next(dest.begin()), blockSize - 1, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(next(dest.begin()), blockSize - 1, false);
+        assert(dest == vector<bool>(blockSize, false));
+    }
+
+    // No offset, exactly blockSize
+    {
+        vector<bool> result(blockSize, true);
+        vector<bool> dest(blockSize, false);
+        fill(dest.begin(), dest.end(), true);
+        assert(dest == result);
+
+        fill(dest.begin(), dest.end(), false);
+        assert(dest == vector<bool>(blockSize, false));
+    }
+
+    // With offset, ends at boundary
+    {
+        vector<bool> result(blockSize, true);
+        result[0] = false;
+
+        vector<bool> dest(blockSize, false);
+        fill(next(dest.begin()), dest.end(), true);
+        assert(dest == result);
+
+        fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(blockSize, false));
+    }
+
+    // With offset, exactly blockSize
+    {
+        vector<bool> result(blockSize + 1, true);
+        result[0] = false;
+
+        vector<bool> dest(blockSize + 1, false);
+        fill(next(dest.begin()), dest.end(), true);
+        assert(dest == result);
+
+        fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(blockSize + 1, false));
+    }
+
+    // No offset, multiple blockSize
+    {
+        vector<bool> result(2 * blockSize, true);
+        vector<bool> dest(2 * blockSize, false);
+        fill(dest.begin(), dest.end(), true);
+        assert(dest == result);
+
+        fill(dest.begin(), dest.end(), false);
+        assert(dest == vector<bool>(2 * blockSize, false));
+    }
+
+    // With offset, multiple blockSize
+    {
+        vector<bool> result(2 * blockSize + 5, true);
+        result[0] = false;
+
+        vector<bool> dest(2 * blockSize + 5, false);
+        fill(next(dest.begin()), dest.end(), true);
+        assert(dest == result);
+
+        fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(2 * blockSize + 5, false));
+    }
+
+    return true;
+}
+
 int main() {
     test_copy();
+    test_fill();
 }
