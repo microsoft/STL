@@ -499,6 +499,13 @@ bool test_fill() {
 
         fill(dest.begin(), dest.end(), false);
         assert(dest == vector<bool>(8, false));
+
+        const auto res_fill_n = fill_n(dest.begin(), 8, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(dest.begin(), 8, false);
+        assert(dest == vector<bool>(8, false));
     }
 
     // With Offset, less than blockSize
@@ -511,6 +518,13 @@ bool test_fill() {
         assert(dest == result);
 
         fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(8, false));
+
+        const auto res_fill_n = fill_n(next(dest.begin()), 7, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(next(dest.begin()), 7, false);
         assert(dest == vector<bool>(8, false));
     }
 
@@ -543,6 +557,13 @@ bool test_fill() {
 
         fill(dest.begin(), dest.end(), false);
         assert(dest == vector<bool>(blockSize, false));
+
+        const auto res_fill_n = fill_n(dest.begin(), blockSize, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(dest.begin(), blockSize, false);
+        assert(dest == vector<bool>(blockSize, false));
     }
 
     // With offset, ends at boundary
@@ -555,6 +576,13 @@ bool test_fill() {
         assert(dest == result);
 
         fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(blockSize, false));
+
+        const auto res_fill_n = fill_n(next(dest.begin()), blockSize - 1, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(next(dest.begin()), blockSize - 1, false);
         assert(dest == vector<bool>(blockSize, false));
     }
 
@@ -569,6 +597,13 @@ bool test_fill() {
 
         fill(next(dest.begin()), dest.end(), false);
         assert(dest == vector<bool>(blockSize + 1, false));
+
+        const auto res_fill_n = fill_n(next(dest.begin()), blockSize, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(next(dest.begin()), blockSize, false);
+        assert(dest == vector<bool>(blockSize + 1, false));
     }
 
     // No offset, multiple blockSize
@@ -579,6 +614,13 @@ bool test_fill() {
         assert(dest == result);
 
         fill(dest.begin(), dest.end(), false);
+        assert(dest == vector<bool>(2 * blockSize, false));
+
+        const auto res_fill_n = fill_n(dest.begin(), 2 * blockSize, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(dest.begin(), 2 * blockSize, false);
         assert(dest == vector<bool>(2 * blockSize, false));
     }
 
@@ -592,6 +634,13 @@ bool test_fill() {
         assert(dest == result);
 
         fill(next(dest.begin()), dest.end(), false);
+        assert(dest == vector<bool>(2 * blockSize + 5, false));
+
+        const auto res_fill_n = fill_n(next(dest.begin()), 2 * blockSize + 4, true);
+        assert(dest == result);
+        assert(res_fill_n == dest.end());
+
+        fill_n(next(dest.begin()), 2 * blockSize + 4, false);
         assert(dest == vector<bool>(2 * blockSize + 5, false));
     }
 
