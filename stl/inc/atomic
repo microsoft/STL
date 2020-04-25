@@ -1942,7 +1942,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
-        volatile long _Guard; // Variable is not initialized to avoid unnecessary operation; the value does not matter
+        volatile long _Guard; // Not initialized to avoid unnecessary operation; the value does not matter
 
         // Interlocked operation on a dummy variable to provide memory fence.
         // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
