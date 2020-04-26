@@ -637,14 +637,13 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         const auto _Mem           = _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _Atomic_reinterpret_as<long long>(_Value);
 #if defined(_M_IX86)
-        const auto _Mem32 = _Atomic_address_as<long>(_Storage);
-        // False interlocked modification to provide seq cst fence
-        // The same variable is used as it is known to be cached anyway
-        _InterlockedXor(_Mem32, 0L);
-        // The actual store
+        _Compiler_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
-        // Another seq cast fence after actual store
-        _InterlockedXor(_Mem32, 0L);
+#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
+#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
+                                  // usage which could be reconsidered."
+        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
+        (void) _InterlockedIncrement(&_Guard);
 #elif defined(_M_ARM64)
         _Memory_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
