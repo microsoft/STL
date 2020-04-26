@@ -639,11 +639,11 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if defined(_M_IX86)
         const auto _Mem32 = _Atomic_address_as<long>(_Storage);
         // False interlocked modification to provide seq cst fence
-        // The same variable is used as it is known to be cached already
+        // The same variable is used as it is known to be cached anyway
         _InterlockedXor(_Mem32, 0L);
         // The actual store
         __iso_volatile_store64(_Mem, _As_bytes);
-        // Another seq cast fance after actual store
+        // Another seq cast fence after actual store
         _InterlockedXor(_Mem32, 0L);
 #elif defined(_M_ARM64)
         _Memory_barrier();
