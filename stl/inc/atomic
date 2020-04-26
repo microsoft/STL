@@ -337,11 +337,7 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-#if defined(_M_IX86) || defined(_M_X64)
         while (_InterlockedExchange(&_Spinlock, 1)) {
-#else // ^^^ x86/x64 hardware / ARM32/ARM64 hardware vvv
-        while (_InterlockedExchange_acq(&_Spinlock, 1)) {
-#endif // hardware
             _YIELD_PROCESSOR();
         }
     }
