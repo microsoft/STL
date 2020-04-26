@@ -8,6 +8,9 @@
 #include <numeric>
 #include <vector>
 
+constexpr auto mo = std::memory_order_seq_cst;
+
+
 template <typename FlagType, typename IsSet, typename TestAndSet, typename Clear>
 void test_flags(const IsSet is_set, const TestAndSet test_and_set, const Clear clear) {
     constexpr std::size_t unique      = 800;
@@ -23,14 +26,14 @@ void test_flags(const IsSet is_set, const TestAndSet test_and_set, const Clear c
         }
     }
 
-    auto pp = std::execution::parallel_policy{};
+    const auto& par = std::execution::par;
 
-    assert(std::transform_reduce(pp, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == 0);
-    assert(std::transform_reduce(pp, ptrs.begin(), ptrs.end(), 0, std::plus{}, test_and_set) == dups);
-    assert(std::transform_reduce(pp, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == total);
-    assert(std::transform_reduce(pp, ptrs.begin(), ptrs.end(), 0, std::plus{}, test_and_set) == total);
-    std::for_each(pp, ptrs.begin(), ptrs.end(), clear);
-    assert(std::transform_reduce(pp, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == 0);
+    assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == 0);
+    assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, test_and_set) == dups);
+    assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == total);
+    assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, test_and_set) == total);
+    std::for_each(par, ptrs.begin(), ptrs.end(), clear);
+    assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == 0);
 }
 
 template <typename FlagType>
@@ -45,11 +48,9 @@ void test_flags_members() {
 
 template <typename FlagType>
 void test_flags_members_x() {
-    constexpr auto mo = std::memory_order_seq_cst;
-
-    const auto is_set       = [mo](const FlagType* f) { return f->test(mo); };
-    const auto test_and_set = [mo](FlagType* f) { return f->test_and_set(mo); };
-    const auto clear        = [mo](FlagType* f) { f->clear(mo); };
+    const auto is_set       = [](const FlagType* f) { return f->test(mo); };
+    const auto test_and_set = [](FlagType* f) { return f->test_and_set(mo); };
+    const auto clear        = [](FlagType* f) { f->clear(mo); };
 
     test_flags<FlagType>(is_set, test_and_set, clear);
 }
@@ -65,11 +66,9 @@ void test_flags_free() {
 
 template <typename FlagType>
 void test_flags_free_x() {
-    constexpr auto mo = std::memory_order_seq_cst;
-
-    const auto is_set       = [mo](const FlagType* f) { return std::atomic_flag_test_explicit(f, mo); };
-    const auto test_and_set = [mo](FlagType* f) { return std::atomic_flag_test_and_set_explicit(f, mo); };
-    const auto clear        = [mo](FlagType* f) { std::atomic_flag_clear_explicit(f, mo); };
+    const auto is_set       = [](const FlagType* f) { return std::atomic_flag_test_explicit(f, mo); };
+    const auto test_and_set = [](FlagType* f) { return std::atomic_flag_test_and_set_explicit(f, mo); };
+    const auto clear        = [](FlagType* f) { std::atomic_flag_clear_explicit(f, mo); };
 
     test_flags<FlagType>(is_set, test_and_set, clear);
 }
