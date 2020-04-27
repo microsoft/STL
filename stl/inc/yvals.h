@@ -179,7 +179,8 @@ _STL_DISABLE_CLANG_WARNINGS
         }                                                                                  \
                                                                                            \
         _Analysis_assume_(cond);                                                           \
-    } while (false)                                                                          \
+    }                                                                                      \
+    while (false)                                                                          \
     _Pragma("clang diagnostic pop")
 #else // ^^^ clang // msvc vvv
 #define _STL_VERIFY(cond, mesg)                                     \
