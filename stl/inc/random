@@ -736,7 +736,7 @@ protected:
         this->_Idx = _Rx;
     }
 
-    void _Setx(unsigned size_t _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
+    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
         bool _Underflowed = false;
         _Ty _Newx         = _Xis;
         if (_Newx < _Xir) {
