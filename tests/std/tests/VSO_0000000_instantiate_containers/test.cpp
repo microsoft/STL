@@ -46,6 +46,20 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
+// FUNCTION TEMPLATE _For_each_tuple_element
+template <class _Tpl, class _Fx, size_t... _Indices>
+void _For_each_tuple_element_impl(
+    _Tpl&& _Tuple, _Fx _Func, index_sequence<_Indices...>) { // call _Func() on the _Indices elements of _Tuple
+    int _Ignored[] = {(static_cast<void>(_Func(_STD get<_Indices>(_STD forward<_Tpl>(_Tuple)))), 0)...};
+    (void) _Ignored;
+}
+
+template <class _Tpl, class _Fx>
+void _For_each_tuple_element(_Tpl&& _Tuple, _Fx _Func) { // call _Func() on each element in _Tuple
+    _For_each_tuple_element_impl(
+        _STD forward<_Tpl>(_Tuple), _Func, make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>());
+}
+
 // Use this type to ensure function templates are used instead
 // of regular member functions.
 template <typename T>
