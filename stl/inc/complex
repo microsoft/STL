@@ -82,12 +82,13 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        double _Tmp = static_cast<double>(_Left);
-        return _CSTD _Dtest(&_Tmp) == _INFCODE; // TRANSITION, should use _Bit_cast
+        const auto _Tmp  = static_cast<double>(_Left);
+        const auto _Uint = _Bit_cast<uint64_t>(_Tmp);
+        return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
-        double _Tmp      = static_cast<double>(_Left);
+        const auto _Tmp  = static_cast<double>(_Left);
         const auto _Uint = _Bit_cast<uint64_t>(_Tmp);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
     }
@@ -198,7 +199,8 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        return _CSTD _LDtest(&_Left) == _INFCODE; // TRANSITION, should use _Bit_cast
+        const auto _Uint = _Bit_cast<uint64_t>(_Left);
+        return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
@@ -312,7 +314,8 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        return _CSTD _Dtest(&_Left) == _INFCODE; // TRANSITION, should use _Bit_cast
+        const auto _Uint = _Bit_cast<uint64_t>(_Left);
+        return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
@@ -433,7 +436,8 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
-        return _CSTD _FDtest(&_Left) == _INFCODE; // TRANSITION, should use _Bit_cast
+        const auto _Uint = _Bit_cast<uint32_t>(_Left);
+        return (_Uint & 0x7fffffffU) == 0x7f800000U;
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
