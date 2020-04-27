@@ -1785,26 +1785,38 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
 }
 
 // CLASS TEMPLATE reverse_iterator
-template <class _Iterator>
-constexpr _Iterator _Operator_arrow(_Iterator _Target, true_type) { // return operator-> where _Iterator is a pointer
+#if !_HAS_IF_CONSTEXPR
+template <class _Iter>
+constexpr _Iter _Operator_arrow(true_type, _Iter _Target) {
     return _Target;
 }
 
-template <class _Iterator>
-constexpr decltype(auto) _Operator_arrow(_Iterator&& _Target, false_type) {
-    // return operator-> where _Iterator is a class type
-    return _STD forward<_Iterator>(_Target).operator->();
+template <class _Iter>
+constexpr decltype(auto) _Operator_arrow(false_type, _Iter& _Target) {
+    return _Target.operator->();
 }
+#endif // !_HAS_IF_CONSTEXPR
 
 template <class _BidIt>
-class reverse_iterator { // wrap iterator to run it backwards
+class reverse_iterator {
 public:
-    using iterator_type     = _BidIt;
-    using iterator_category = typename iterator_traits<_BidIt>::iterator_category;
-    using value_type        = typename iterator_traits<_BidIt>::value_type;
-    using difference_type   = typename iterator_traits<_BidIt>::difference_type;
-    using pointer           = typename iterator_traits<_BidIt>::pointer;
-    using reference         = typename iterator_traits<_BidIt>::reference;
+    using iterator_type = _BidIt;
+
+#ifdef __cpp_lib_concepts
+    using iterator_concept =
+        conditional_t<random_access_iterator<_BidIt>, random_access_iterator_tag, bidirectional_iterator_tag>;
+    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_BidIt>, random_access_iterator_tag>,
+        random_access_iterator_tag, _Iter_cat_t<_BidIt>>;
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using iterator_category = _Iter_cat_t<_BidIt>;
+#endif // __cpp_lib_concepts
+    using value_type      = _Iter_value_t<_BidIt>;
+    using difference_type = _Iter_diff_t<_BidIt>;
+    using pointer         = typename iterator_traits<_BidIt>::pointer;
+    using reference       = _Iter_ref_t<_BidIt>;
+
+    template <class>
+    friend class reverse_iterator;
 
     _CONSTEXPR17 reverse_iterator() = default;
 
@@ -1812,15 +1824,27 @@ public:
         is_nothrow_move_constructible_v<_BidIt>) // strengthened
         : current(_STD move(_Right)) {}
 
+    // clang-format off
     template <class _Other>
-    _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) : current(_Right.base()) {}
+#ifdef __cpp_lib_concepts
+        // Per LWG-3435
+        requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
+#endif // __cpp_lib_concepts
+    _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(
+        is_nothrow_constructible_v<_BidIt, const _Other&>) // strengthened
+        : current(_Right.current) {}
 
     template <class _Other>
+#ifdef __cpp_lib_concepts
+        // Per LWG-3435
+        requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
+            && assignable_from<_BidIt&, const _Other&>
+#endif // __cpp_lib_concepts
     _CONSTEXPR17 reverse_iterator& operator=(const reverse_iterator<_Other>& _Right) {
-
-        current = _Right.base();
+        current = _Right.current;
         return *this;
     }
+    // clang-format on
 
     _NODISCARD _CONSTEXPR17 _BidIt base() const {
         return current;
@@ -1831,11 +1855,32 @@ public:
         return *--_Tmp;
     }
 
+#ifdef __cpp_lib_concepts
+    _NODISCARD constexpr pointer operator->() const
+        requires(is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); }) {
+        _BidIt _Tmp = current;
+        --_Tmp;
+        if constexpr (is_pointer_v<_BidIt>) {
+            return _Tmp;
+        } else {
+            return _Tmp.operator->();
+        }
+    }
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     _NODISCARD _CONSTEXPR17 pointer operator->() const {
         _BidIt _Tmp = current;
         --_Tmp;
-        return _Operator_arrow(_Tmp, is_pointer<_BidIt>());
+#if _HAS_IF_CONSTEXPR
+        if constexpr (is_pointer_v<_BidIt>) {
+            return _Tmp;
+        } else {
+            return _Tmp.operator->();
+        }
+#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
+        return _Operator_arrow(is_pointer<_BidIt>(), _Tmp);
+#endif // _HAS_IF_CONSTEXPR
     }
+#endif // __cpp_lib_concepts
 
     _CONSTEXPR17 reverse_iterator& operator++() {
         --current;
@@ -1859,19 +1904,12 @@ public:
         return _Tmp;
     }
 
-    // N.B. functions valid for random-access iterators only beyond this point
-
-    _CONSTEXPR17 reverse_iterator& operator+=(const difference_type _Off) {
-        current -= _Off;
-        return *this;
-    }
-
     _NODISCARD _CONSTEXPR17 reverse_iterator operator+(const difference_type _Off) const {
         return reverse_iterator(current - _Off);
     }
 
-    _CONSTEXPR17 reverse_iterator& operator-=(const difference_type _Off) {
-        current += _Off;
+    _CONSTEXPR17 reverse_iterator& operator+=(const difference_type _Off) {
+        current -= _Off;
         return *this;
     }
 
@@ -1879,11 +1917,41 @@ public:
         return reverse_iterator(current + _Off);
     }
 
+    _CONSTEXPR17 reverse_iterator& operator-=(const difference_type _Off) {
+        current += _Off;
+        return *this;
+    }
+
     _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const {
         return current[static_cast<difference_type>(-_Off - 1)];
     }
 
+#ifdef __cpp_lib_concepts
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
+        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
+        auto _Tmp = _It.current;
+        --_Tmp;
+        return _RANGES iter_move(_Tmp);
+    }
+
+    template <indirectly_swappable<_BidIt> _BidIt2>
+    friend constexpr void iter_swap(const reverse_iterator& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        is_nothrow_copy_constructible_v<_BidIt>&& is_nothrow_copy_constructible_v<_BidIt2>&& noexcept(
+            _RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
+        auto _LTmp = _Left.current;
+        auto _RTmp = _Right.base();
+        --_LTmp;
+        --_RTmp;
+        _RANGES iter_swap(_LTmp, _RTmp);
+    }
+#endif // __cpp_lib_concepts
+
     using _Prevent_inheriting_unwrap = reverse_iterator;
+
+    template <class _BidIt2, enable_if_t<_Range_verifiable_v<_BidIt, _BidIt2>, int> = 0>
+    friend constexpr void _Verify_range(const reverse_iterator& _First, const reverse_iterator<_BidIt2>& _Last) {
+        _Verify_range(_Last._Get_current(), _First.current); // note reversed parameters
+    }
 
     template <class _BidIt2 = _BidIt, enable_if_t<_Offset_verifiable_v<_BidIt2>, int> = 0>
     constexpr void _Verify_offset(const difference_type _Off) const {
@@ -1898,19 +1966,102 @@ public:
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_BidIt>;
 
-    template <class _Src, enable_if_t<_Wrapped_seekable_v<_BidIt, _Src>, int> = 0>
+    template <class _Src, enable_if_t<_Wrapped_seekable_v<_BidIt, const _Src&>, int> = 0>
     constexpr void _Seek_to(const reverse_iterator<_Src>& _It) {
-        current._Seek_to(_It.base());
+        current._Seek_to(_It.current);
+    }
+
+    constexpr const _BidIt& _Get_current() const noexcept {
+        return current;
     }
 
 protected:
-    _BidIt current{}; // the wrapped iterator
+    _BidIt current{};
 };
 
-template <class _BidIt, class _BidIt2, enable_if_t<_Range_verifiable_v<_BidIt, _BidIt2>, int> = 0>
-constexpr void _Verify_range(const reverse_iterator<_BidIt>& _First, const reverse_iterator<_BidIt2>& _Last) {
-    // TRANSITION, VSO-612785
-    _Verify_range(_Last.base(), _First.base()); // note reversed parameters
+#ifdef __cpp_lib_concepts
+template <class _From, class _To>
+concept _Implicitly_convertible_to = is_convertible_v<_From, _To>;
+#endif // __cpp_lib_concepts
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 bool operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left._Get_current() == _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left._Get_current() == _Right._Get_current(); }
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 bool operator!=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left._Get_current() != _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left._Get_current() != _Right._Get_current(); }
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 bool operator<(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left._Get_current() > _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left._Get_current() > _Right._Get_current(); }
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 bool operator>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left._Get_current() < _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left._Get_current() < _Right._Get_current(); }
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 bool operator<=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left._Get_current() >= _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left._Get_current() >= _Right._Get_current(); }
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 bool operator>=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left._Get_current() <= _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left._Get_current() <= _Right._Get_current(); }
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+template <class _BidIt1, three_way_comparable_with<_BidIt1> _BidIt2>
+_NODISCARD constexpr compare_three_way_result_t<_BidIt1, _BidIt2> operator<=>(
+    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
+    return _Right._Get_current() <=> _Left._Get_current();
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+
+template <class _BidIt1, class _BidIt2>
+_NODISCARD _CONSTEXPR17 auto operator-(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
+    -> decltype(_Right._Get_current() - _Left._Get_current()) {
+    return _Right._Get_current() - _Left._Get_current();
 }
 
 template <class _BidIt>
@@ -1919,54 +2070,20 @@ _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> operator+(
     return _Right + _Off;
 }
 
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 auto operator-(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
-    -> decltype(_Right.base() - _Left.base()) {
-    return _Right.base() - _Left.base();
-}
-
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator==(
-    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
-    return _Left.base() == _Right.base();
-}
-
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator!=(
-    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator<(
-    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
-    return _Right.base() < _Left.base();
-}
-
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator>(
-    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
-    return _Right < _Left;
-}
-
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator<=(
-    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
-    return !(_Right < _Left);
-}
-
-template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator>=(
-    const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
-    return !(_Left < _Right);
-}
-
 // FUNCTION TEMPLATE make_reverse_iterator
 template <class _BidIt>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _Iter) noexcept(
     is_nothrow_move_constructible_v<_BidIt>) /* strengthened */ {
     return reverse_iterator<_BidIt>(_STD move(_Iter));
 }
+
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class _BidIt1, class _BidIt2>
+    requires (!sized_sentinel_for<_BidIt1, _BidIt2>)
+inline constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reverse_iterator<_BidIt2>> = true;
+// clang-format on
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATES begin AND end
 template <class _Container>
@@ -3464,7 +3581,7 @@ namespace ranges {
         }
 
         constexpr subrange& advance(const iter_difference_t<_It> _Count) {
-            // Per LWG issue submitted but not numbered as of 2020-04-21, this has defined behavior when _Count < 0.
+            // Per LWG-3413, this has defined behavior when _Count < 0.
             if constexpr (bidirectional_iterator<_It>) {
                 if (_Count < 0) {
                     _RANGES advance(_First, _Count);

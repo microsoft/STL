@@ -6,6 +6,7 @@
 #include <concepts>
 #include <iterator>
 #include <list>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -27,7 +28,7 @@ concept can_reference = requires {
 struct no_such_type; // not defined
 
 struct empty_type {
-    auto operator<=>(empty_type const&) const = default;
+    bool operator==(empty_type const&) const = default;
 };
 
 struct move_only {
@@ -88,6 +89,107 @@ concept has_iter_diff = requires {
     typename std::iter_difference_t<T>;
 };
 
+template <class T>
+struct arrow_base {
+    T operator->() const;
+    std::strong_ordering operator<=>(arrow_base const&) const = default;
+};
+
+struct simple_input_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    value_type operator*() const;
+    simple_input_iter& operator++();
+    simple_input_iter operator++(int);
+
+    bool operator==(simple_input_iter const&) const = default;
+};
+
+template <class Base = empty_type>
+struct simple_forward_iter : Base {
+    using value_type      = double;
+    using difference_type = long;
+
+    value_type const& operator*() const;
+    simple_forward_iter& operator++();
+    simple_forward_iter operator++(int);
+
+    bool operator==(simple_forward_iter const&) const = default;
+};
+
+template <class Base = empty_type>
+struct simple_bidi_iter : Base {
+    using value_type      = double;
+    using difference_type = long;
+    using reference       = value_type const&;
+
+    value_type& operator*() const;
+    simple_bidi_iter& operator++();
+    simple_bidi_iter operator++(int);
+
+    bool operator==(simple_bidi_iter const&) const = default;
+
+    simple_bidi_iter& operator--();
+    simple_bidi_iter operator--(int);
+};
+
+template <class Base = empty_type>
+struct simple_random_iter : Base {
+    using value_type = double;
+    using D          = long;
+
+    value_type const& operator*() const;
+    simple_random_iter& operator++();
+    simple_random_iter operator++(int);
+
+    simple_random_iter& operator--();
+    simple_random_iter operator--(int);
+
+    std::strong_ordering operator<=>(simple_random_iter const&) const;
+
+    value_type const& operator[](D) const;
+    simple_random_iter& operator-=(D);
+    simple_random_iter operator-(D) const;
+    D operator-(simple_random_iter const&) const;
+    simple_random_iter& operator+=(D);
+    simple_random_iter operator+(D) const;
+    friend simple_random_iter operator+(D, const simple_random_iter&);
+};
+
+template <class Base = empty_type>
+class simple_contiguous_iter : public Base {
+private:
+    using V = double;
+    using D = long;
+
+public:
+    using element_type = V const;
+
+    V const& operator*() const;
+    simple_contiguous_iter& operator++();
+    simple_contiguous_iter operator++(int);
+
+    simple_contiguous_iter& operator--();
+    simple_contiguous_iter operator--(int);
+
+    std::strong_ordering operator<=>(simple_contiguous_iter const&) const;
+
+    V const& operator[](D) const;
+    simple_contiguous_iter& operator-=(D);
+    simple_contiguous_iter operator-(D) const;
+    D operator-(simple_contiguous_iter const&) const;
+    simple_contiguous_iter& operator+=(D);
+    simple_contiguous_iter operator+(D) const;
+    friend simple_contiguous_iter operator+(D, const simple_contiguous_iter&);
+
+    static simple_contiguous_iter pointer_to(element_type&) noexcept;
+};
+
+template <class Base>
+struct std::indirectly_readable_traits<simple_contiguous_iter<Base>> {
+    using value_type = double;
+};
 
 #pragma warning(push)
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
@@ -666,39 +768,13 @@ namespace iterator_traits_test {
     }
 
     // N4820 [iterator.traits]/3.2: "Otherwise, if I satisfies the exposition-only concept cpp17-input-iterator..."
-    struct simple_input_iter {
-        using value_type      = double;
-        using difference_type = long;
 
-        value_type operator*() const;
-        simple_input_iter& operator++();
-        simple_input_iter operator++(int);
-
-        bool operator==(simple_input_iter const&) const = default;
-    };
     // N4820 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.4 "... Otherwise, iterator_category names... input_iterator_tag."
     STATIC_ASSERT(check<simple_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
 
-    template <class T>
-    struct arrow_base {
-        T operator->() const;
-        auto operator<=>(arrow_base const&) const = default;
-    };
-
-    template <class Base = empty_type>
-    struct simple_forward_iter : Base {
-        using value_type      = double;
-        using difference_type = long;
-
-        value_type const& operator*() const;
-        simple_forward_iter& operator++();
-        simple_forward_iter operator++(int);
-
-        bool operator==(simple_forward_iter const&) const = default;
-    };
     // N4820 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
@@ -716,21 +792,6 @@ namespace iterator_traits_test {
     STATIC_ASSERT(check<simple_forward_iter<with_iter_cat<input_iterator_tag>>, no_such_type, input_iterator_tag,
         double, long, void, double const&>());
 
-    template <class Base = empty_type>
-    struct simple_bidi_iter : Base {
-        using value_type      = double;
-        using difference_type = long;
-        using reference       = value_type const&;
-
-        value_type& operator*() const;
-        simple_bidi_iter& operator++();
-        simple_bidi_iter operator++(int);
-
-        bool operator==(simple_bidi_iter const&) const = default;
-
-        simple_bidi_iter& operator--();
-        simple_bidi_iter operator--(int);
-    };
     // N4820 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "If the qualified-id I::reference is valid and denotes a type, reference names that type."
@@ -751,65 +812,6 @@ namespace iterator_traits_test {
     STATIC_ASSERT(check<simple_bidi_iter<with_iter_cat<forward_iterator_tag>>, no_such_type, forward_iterator_tag,
         double, long, void, double const&>());
 
-    template <class Base = empty_type>
-    struct simple_random_iter : Base {
-        using value_type = double;
-        using D          = long;
-
-        value_type const& operator*() const;
-        simple_random_iter& operator++();
-        simple_random_iter operator++(int);
-
-        simple_random_iter& operator--();
-        simple_random_iter operator--(int);
-
-        auto operator<=>(simple_random_iter const&) const = default;
-
-        value_type const& operator[](D) const;
-        simple_random_iter& operator-=(D);
-        simple_random_iter operator-(D) const;
-        D operator-(simple_random_iter const&) const;
-        simple_random_iter& operator+=(D);
-        simple_random_iter operator+(D) const;
-        friend simple_random_iter operator+(D, const simple_random_iter&);
-    };
-
-    template <class Base = empty_type>
-    class simple_contiguous_iter : public Base {
-    private:
-        using V = double;
-        using D = long;
-
-    public:
-        using element_type = V const;
-
-        V const& operator*() const;
-        simple_contiguous_iter& operator++();
-        simple_contiguous_iter operator++(int);
-
-        simple_contiguous_iter& operator--();
-        simple_contiguous_iter operator--(int);
-
-        auto operator<=>(simple_contiguous_iter const&) const = default;
-
-        V const& operator[](D) const;
-        simple_contiguous_iter& operator-=(D);
-        simple_contiguous_iter operator-(D) const;
-        D operator-(simple_contiguous_iter const&) const;
-        simple_contiguous_iter& operator+=(D);
-        simple_contiguous_iter operator+(D) const;
-        friend simple_contiguous_iter operator+(D, const simple_contiguous_iter&);
-
-        static simple_contiguous_iter pointer_to(element_type&) noexcept;
-    };
-} // namespace iterator_traits_test
-
-template <class Base>
-struct std::indirectly_readable_traits<iterator_traits_test::simple_contiguous_iter<Base>> {
-    using value_type = double;
-};
-
-namespace iterator_traits_test {
     // N4820 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
@@ -2799,7 +2801,193 @@ namespace insert_iterators {
     STATIC_ASSERT(test<std::vector<int>>());
 } // namespace insert_iterators
 
+namespace reverse_iterator_test {
+    using std::bidirectional_iterator_tag, std::random_access_iterator_tag, std::reverse_iterator, std::same_as,
+        std::string, std::three_way_comparable, std::three_way_comparable_with;
+
+    // Validate the iterator_concept/iterator_category metaprogramming
+    STATIC_ASSERT(same_as<reverse_iterator<simple_contiguous_iter<>>::iterator_concept, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_contiguous_iter<>>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_random_iter<>>::iterator_concept, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_random_iter<>>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_bidi_iter<>>::iterator_concept, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_bidi_iter<>>::iterator_category, bidirectional_iterator_tag>);
+
+    // Validate operator-> for a pointer, and for non-pointers with and without operator->()
+    // clang-format off
+    template <class I, class P>
+    concept has_arrow = requires(I i) {
+        { i.operator->() } -> same_as<P>;
+    };
+
+    template <class I>
+    concept has_no_arrow = !requires(I i) {
+        i.operator->();
+    };
+    // clang-format on
+
+    STATIC_ASSERT(has_arrow<reverse_iterator<int*>, int*>);
+    STATIC_ASSERT(same_as<reverse_iterator<int*>::pointer, int*>);
+
+    using simple_arrow = simple_bidi_iter<arrow_base<double const*>>;
+    STATIC_ASSERT(has_arrow<reverse_iterator<simple_arrow>, double const*>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_arrow>::pointer, double const*>);
+
+    using simple_no_arrow = simple_bidi_iter<>;
+    STATIC_ASSERT(has_no_arrow<reverse_iterator<simple_no_arrow>>);
+    STATIC_ASSERT(same_as<reverse_iterator<simple_no_arrow>::pointer, void>);
+
+    // Validate comparison constraints
+    template <class T, class U = T>
+    concept has_eq = requires(T const& t, U const& u) {
+        t == u;
+    };
+
+    template <class T, class U = T>
+    concept has_neq = requires(T const& t, U const& u) {
+        t != u;
+    };
+
+    template <class T, class U = T>
+    concept has_less = requires(T const& t, U const& u) {
+        t < u;
+    };
+
+    template <class T, class U = T>
+    concept has_greater = requires(T const& t, U const& u) {
+        t > u;
+    };
+
+    template <class T, class U = T>
+    concept has_less_eq = requires(T const& t, U const& u) {
+        t <= u;
+    };
+
+    template <class T, class U = T>
+    concept has_greater_eq = requires(T const& t, U const& u) {
+        t >= u;
+    };
+
+    STATIC_ASSERT(has_eq<reverse_iterator<simple_bidi_iter<>>>);
+    STATIC_ASSERT(has_neq<reverse_iterator<simple_bidi_iter<>>>);
+    STATIC_ASSERT(!has_less<reverse_iterator<simple_bidi_iter<>>>);
+    STATIC_ASSERT(!has_greater<reverse_iterator<simple_bidi_iter<>>>);
+    STATIC_ASSERT(!has_less_eq<reverse_iterator<simple_bidi_iter<>>>);
+    STATIC_ASSERT(!has_greater_eq<reverse_iterator<simple_bidi_iter<>>>);
+    STATIC_ASSERT(!three_way_comparable<reverse_iterator<simple_bidi_iter<>>>);
+
+    STATIC_ASSERT(has_eq<reverse_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_neq<reverse_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less<reverse_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater<reverse_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less_eq<reverse_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<reverse_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<reverse_iterator<simple_random_iter<>>, std::strong_ordering>);
+
+    STATIC_ASSERT(has_eq<reverse_iterator<int*>, reverse_iterator<int const*>>);
+    STATIC_ASSERT(has_neq<reverse_iterator<int*>, reverse_iterator<int const*>>);
+    STATIC_ASSERT(has_less<reverse_iterator<int*>, reverse_iterator<int const*>>);
+    STATIC_ASSERT(has_greater<reverse_iterator<int*>, reverse_iterator<int const*>>);
+    STATIC_ASSERT(has_less_eq<reverse_iterator<int*>, reverse_iterator<int const*>>);
+    STATIC_ASSERT(has_greater_eq<reverse_iterator<int*>, reverse_iterator<int const*>>);
+    STATIC_ASSERT(
+        three_way_comparable_with<reverse_iterator<int*>, reverse_iterator<int const*>, std::strong_ordering>);
+
+    STATIC_ASSERT(!has_eq<reverse_iterator<int*>, reverse_iterator<string*>>);
+    STATIC_ASSERT(!has_neq<reverse_iterator<int*>, reverse_iterator<string*>>);
+    STATIC_ASSERT(!has_less<reverse_iterator<int*>, reverse_iterator<string*>>);
+    STATIC_ASSERT(!has_greater<reverse_iterator<int*>, reverse_iterator<string*>>);
+    STATIC_ASSERT(!has_less_eq<reverse_iterator<int*>, reverse_iterator<string*>>);
+    STATIC_ASSERT(!has_greater_eq<reverse_iterator<int*>, reverse_iterator<string*>>);
+    STATIC_ASSERT(!three_way_comparable_with<reverse_iterator<int*>, reverse_iterator<string*>>);
+
+    template <int I>
+    struct bidi_proxy_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        struct reference {
+            operator int() const;
+        };
+
+        bidi_proxy_iterator() = default;
+        constexpr explicit bidi_proxy_iterator(int* count) : pcount_{count} {}
+
+        constexpr auto operator*() const noexcept {
+            return reference{};
+        }
+
+        bool operator==(bidi_proxy_iterator) const;
+
+        bidi_proxy_iterator& operator++();
+        bidi_proxy_iterator operator++(int);
+
+        constexpr bidi_proxy_iterator& operator--() noexcept {
+            return *this;
+        }
+        bidi_proxy_iterator operator--(int);
+
+        friend constexpr int iter_move(bidi_proxy_iterator const& i) {
+            ++*i.pcount_;
+            return 42;
+        }
+
+        template <int J>
+        friend constexpr void iter_swap(bidi_proxy_iterator const& x, bidi_proxy_iterator<J> const& y) {
+            assert(x.pcount_ == y.pcount_);
+            *x.pcount_ -= J;
+        }
+
+        int* pcount_ = nullptr;
+    };
+    STATIC_ASSERT(std::bidirectional_iterator<bidi_proxy_iterator<0>>);
+    STATIC_ASSERT(std::indirectly_swappable<bidi_proxy_iterator<0>, bidi_proxy_iterator<1>>);
+
+    constexpr bool test() {
+        // Validate iter_move
+        int count = 0;
+        auto i    = reverse_iterator{bidi_proxy_iterator<0>{&count}};
+        assert(ranges::iter_move(i) == 42);
+        assert(count == 1);
+
+        // Validate iter_swap
+        ranges::iter_swap(i, reverse_iterator{bidi_proxy_iterator<2>{&count}});
+        assert(count == -1);
+
+        // Validate <=>
+        int some_ints[] = {3, 2, 1, 0};
+        reverse_iterator<int*> ri{&some_ints[1]};
+        reverse_iterator<int const*> ric{&some_ints[2]};
+        assert((ri <=> ric) == std::strong_ordering::greater);
+
+        return true;
+    }
+    STATIC_ASSERT(test());
+
+    // Validate disable_sized_sentinel_for partial specialization for reverse_iterator
+    struct weird_difference_base {
+        template <class T>
+        long operator-(T const&) const {
+            return 42;
+        }
+
+        bool operator==(weird_difference_base const&) const = default;
+    };
+    using simple_no_difference = simple_bidi_iter<weird_difference_base>;
+} // namespace reverse_iterator_test
+
+template <>
+inline constexpr bool std::disable_sized_sentinel_for<reverse_iterator_test::simple_no_difference,
+    reverse_iterator_test::simple_no_difference> = true;
+
+namespace reverse_iterator_test {
+    STATIC_ASSERT(!std::sized_sentinel_for<simple_no_difference, simple_no_difference>);
+    STATIC_ASSERT(
+        !std::sized_sentinel_for<reverse_iterator<simple_no_difference>, reverse_iterator<simple_no_difference>>);
+} // namespace reverse_iterator_test
+
 int main() {
     iterator_cust_swap_test::test();
     iter_ops::test();
+    reverse_iterator_test::test();
 }
