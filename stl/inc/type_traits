@@ -823,12 +823,6 @@ struct is_trivially_destructible : bool_constant<__is_trivially_destructible(_Ty
 template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_destructible_v = __is_trivially_destructible(_Ty);
 
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-volatile"
-#endif
-
 // NOTHROW TRAITS
 // STRUCT TEMPLATE is_nothrow_constructible
 template <class _Ty, class... _Args>
@@ -1675,7 +1669,7 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
-#endif
+#endif // __clang__
 
 template <class _To>
 void _Implicitly_convert_to(_To) noexcept; // not defined
@@ -2375,7 +2369,7 @@ _STL_RESTORE_CLANG_WARNINGS
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif
+#endif // __clang__
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _TYPE_TRAITS_

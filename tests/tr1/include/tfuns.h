@@ -9,7 +9,7 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
-#endif
+#endif // __clang__
 
 struct funobj;
 static int f0();
@@ -637,4 +637,4 @@ const T& fake_lvalue(const T&& t) { // C++11 12.2 [class.temporary]/5: "A tempor
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif
+#endif // __clang__

@@ -208,8 +208,6 @@ public:
 
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 
-    constexpr tuple& operator=(const tuple&) = default;
-
     template <class _Alloc>
     tuple(allocator_arg_t, const _Alloc&) noexcept /* strengthened */ {}
 
@@ -221,6 +219,8 @@ public:
 
     template <class _Tag, class _Alloc, enable_if_t<is_same_v<_Tag, _Alloc_exact_args_t>, int> = 0>
     tuple(_Tag, const _Alloc&) noexcept /* strengthened */ {}
+
+    constexpr tuple& operator=(const tuple&) = default;
 
     void swap(tuple&) noexcept {}
 
