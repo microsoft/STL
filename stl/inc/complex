@@ -1755,33 +1755,37 @@ _NODISCARD complex<_Ty> tan(const complex<_Ty>& _Left) {
 
 // ADDITIONAL OVERLOADS
 template <class _Ty>
-struct _Promote_to_float { // promote integral to double
-    using type = conditional_t<is_integral_v<_Ty>, double, _Ty>;
-};
+using _Upgrade_to_double = conditional_t<is_integral_v<_Ty>, double, _Ty>;
 
-#define _GENERIC_MATHC0X(FUN, VAL, ATTR)                                \
-    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>    \
-    ATTR typename _Promote_to_float<_Ty>::type FUN(_Ty) {               \
-        return static_cast<typename _Promote_to_float<_Ty>::type>(VAL); \
-    }
+template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
+_NODISCARD _Upgrade_to_double<_Ty> arg(_Ty) {
+    return 0;
+}
 
-#define _GENERIC_MATHC1X(FUN, VAL, ATTR)                                \
-    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>    \
-    ATTR typename _Promote_to_float<_Ty>::type FUN(_Ty _Left) {         \
-        return static_cast<typename _Promote_to_float<_Ty>::type>(VAL); \
-    }
+template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> imag(_Ty) {
+    return 0;
+}
 
-_GENERIC_MATHC0X(arg, 0, _NODISCARD)
-_GENERIC_MATHC0X(imag, 0, _NODISCARD _CONSTEXPR20)
-_GENERIC_MATHC1X(real, _Left, _NODISCARD _CONSTEXPR20)
+template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> real(_Ty _Left) {
+    return static_cast<_Upgrade_to_double<_Ty>>(_Left);
+}
 
-_GENERIC_MATHC1X(norm, (_Left * _Left), _NODISCARD _CONSTEXPR20)
+template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> norm(_Ty _Left) {
+    return static_cast<_Upgrade_to_double<_Ty>>(_Left * _Left);
+}
 
-_GENERIC_MATHC1X(conj, _Left, _NODISCARD _CONSTEXPR20)
-_GENERIC_MATHC1X(proj, _Left, _NODISCARD)
+template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> conj(_Ty _Left) {
+    return static_cast<_Upgrade_to_double<_Ty>>(_Left);
+}
 
-#undef _GENERIC_MATHC0X
-#undef _GENERIC_MATHC1X
+template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
+_NODISCARD _Upgrade_to_double<_Ty> proj(_Ty _Left) {
+    return static_cast<_Upgrade_to_double<_Ty>>(_Left);
+}
 
 // FUNCTION TEMPLATE pow
 template <class _Ty1, class _Ty2>
