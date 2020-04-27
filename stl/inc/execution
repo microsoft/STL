@@ -1277,19 +1277,6 @@ _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noe
     return _First;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_SourceTy* for_each_n(_ExPo&& _Exec, _SourceTy (&_First)[_SourceSize], const _Diff _Count_raw, _Fn _Func) noexcept
-/* terminates */ {
-    // perform function for each element [_First, _First + _Count)
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-    return _STD for_each_n(_STD forward<_ExPo>(_Exec), static_cast<_SourceTy*>(_First), _Count, _Pass_fn(_Func));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
-
 // PARALLEL FUNCTION TEMPLATE find
 template <class _FwdIt>
 using _Parallel_find_results = conditional_t<_Use_atomic_iterator<_FwdIt>, _Parallel_choose_min_result<_FwdIt>,
