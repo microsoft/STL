@@ -192,53 +192,53 @@ std/containers/unord/unord.set/max_size.pass.cpp SKIPPED
 std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIPPED
 
 # .verify.cpp tests use clang-verify to validate warnings
-containers\associative\map\map.access\empty.verify.cpp SKIPPED
-containers\associative\multimap\empty.verify.cpp SKIPPED
-containers\associative\multiset\empty.verify.cpp SKIPPED
-containers\associative\set\empty.verify.cpp SKIPPED
-containers\container.adaptors\priority.queue\priqueue.members\empty.verify.cpp SKIPPED
-containers\container.adaptors\queue\queue.defn\empty.verify.cpp SKIPPED
-containers\container.adaptors\stack\stack.defn\empty.verify.cpp SKIPPED
-containers\sequences\array\empty.verify.cpp SKIPPED
-containers\sequences\deque\deque.capacity\empty.verify.cpp SKIPPED
-containers\sequences\forwardlist\empty.verify.cpp SKIPPED
-containers\sequences\list\list.capacity\empty.verify.cpp SKIPPED
-containers\sequences\vector\vector.capacity\empty.verify.cpp SKIPPED
-containers\sequences\vector.bool\empty.verify.cpp SKIPPED
-containers\sequences\vector\vector.cons\copy.move_only.verify.cpp SKIPPED
-containers\unord\unord.map\empty.verify.cpp SKIPPED
-containers\unord\unord.multimap\empty.verify.cpp SKIPPED
-containers\unord\unord.multiset\empty.verify.cpp SKIPPED
-containers\unord\unord.set\empty.verify.cpp SKIPPED
-depr\depr.lib.binders\depr.lib.bind.1st\bind1st.depr_in_cxx11.verify.cpp SKIPPED
-depr\depr.lib.binders\depr.lib.bind.2nd\bind2nd.depr_in_cxx11.verify.cpp SKIPPED
-depr\depr.lib.binders\depr.lib.binder.1st\binder1st.depr_in_cxx11.verify.cpp SKIPPED
-depr\depr.lib.binders\depr.lib.binder.2nd\binder2nd.depr_in_cxx11.verify.cpp SKIPPED
-input.output\filesystems\class.path\path.member\path.decompose\empty.verify.cpp SKIPPED
-iterators\iterator.container\empty.array.verify.cpp SKIPPED
-iterators\iterator.container\empty.container.verify.cpp SKIPPED
-iterators\iterator.container\empty.initializer_list.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.array\new_size.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.array\new_size_align.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.array\new_size_align_nothrow.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.array\new_size_nothrow.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.placement\new_array_ptr.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.placement\new_ptr.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.single\new_size.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.single\new_size_align.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.single\new_size_align_nothrow.verify.cpp SKIPPED
-language.support\support.dynamic\new.delete\new.delete.single\new_size_nothrow.verify.cpp SKIPPED
-language.support\support.dynamic\ptr.launder\launder.nodiscard.verify.cpp SKIPPED
-re\re.results\re.results.size\empty.verify.cpp SKIPPED
-strings\basic.string\string.capacity\empty.verify.cpp SKIPPED
-strings\string.view\string.view.capacity\empty.verify.cpp SKIPPED
-thread\futures\futures.async\async.verify.cpp SKIPPED
-utilities\allocator.adaptor\allocator.adaptor.members\allocate_size.verify.cpp SKIPPED
-utilities\allocator.adaptor\allocator.adaptor.members\allocate_size_hint.verify.cpp SKIPPED
-utilities\function.objects\negators\not1.depr_in_cxx17.verify.cpp SKIPPED
-utilities\function.objects\negators\not2.depr_in_cxx17.verify.cpp SKIPPED
-utilities\memory\allocator.traits\allocator.traits.members\allocate.verify.cpp SKIPPED
-utilities\memory\default.allocator\allocator.members\allocate.verify.cpp SKIPPED
+std/containers/associative/map/map.access/empty.verify.cpp SKIPPED
+std/containers/associative/multimap/empty.verify.cpp SKIPPED
+std/containers/associative/multiset/empty.verify.cpp SKIPPED
+std/containers/associative/set/empty.verify.cpp SKIPPED
+std/containers/container.adaptors/priority.queue/priqueue.members/empty.verify.cpp SKIPPED
+std/containers/container.adaptors/queue/queue.defn/empty.verify.cpp SKIPPED
+std/containers/container.adaptors/stack/stack.defn/empty.verify.cpp SKIPPED
+std/containers/sequences/array/empty.verify.cpp SKIPPED
+std/containers/sequences/deque/deque.capacity/empty.verify.cpp SKIPPED
+std/containers/sequences/forwardlist/empty.verify.cpp SKIPPED
+std/containers/sequences/list/list.capacity/empty.verify.cpp SKIPPED
+std/containers/sequences/vector/vector.capacity/empty.verify.cpp SKIPPED
+std/containers/sequences/vector.bool/empty.verify.cpp SKIPPED
+std/containers/sequences/vector/vector.cons/copy.move_only.verify.cpp SKIPPED
+std/containers/unord/unord.map/empty.verify.cpp SKIPPED
+std/containers/unord/unord.multimap/empty.verify.cpp SKIPPED
+std/containers/unord/unord.multiset/empty.verify.cpp SKIPPED
+std/containers/unord/unord.set/empty.verify.cpp SKIPPED
+std/depr/depr.lib.binders/depr.lib.bind.1st/bind1st.depr_in_cxx11.verify.cpp SKIPPED
+std/depr/depr.lib.binders/depr.lib.bind.2nd/bind2nd.depr_in_cxx11.verify.cpp SKIPPED
+std/depr/depr.lib.binders/depr.lib.binder.1st/binder1st.depr_in_cxx11.verify.cpp SKIPPED
+std/depr/depr.lib.binders/depr.lib.binder.2nd/binder2nd.depr_in_cxx11.verify.cpp SKIPPED
+std/input.output/filesystems/class.path/path.member/path.decompose/empty.verify.cpp SKIPPED
+std/iterators/iterator.container/empty.array.verify.cpp SKIPPED
+std/iterators/iterator.container/empty.container.verify.cpp SKIPPED
+std/iterators/iterator.container/empty.initializer_list.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.placement/new_array_ptr.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.placement/new_ptr.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/ptr.launder/launder.nodiscard.verify.cpp SKIPPED
+std/re/re.results/re.results.size/empty.verify.cpp SKIPPED
+std/strings/basic.string/string.capacity/empty.verify.cpp SKIPPED
+std/strings/string.view/string.view.capacity/empty.verify.cpp SKIPPED
+std/thread/futures/futures.async/async.verify.cpp SKIPPED
+std/utilities/allocator.adaptor/allocator.adaptor.members/allocate_size.verify.cpp SKIPPED
+std/utilities/allocator.adaptor/allocator.adaptor.members/allocate_size_hint.verify.cpp SKIPPED
+std/utilities/function.objects/negators/not1.depr_in_cxx17.verify.cpp SKIPPED
+std/utilities/function.objects/negators/not2.depr_in_cxx17.verify.cpp SKIPPED
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate.verify.cpp SKIPPED
+std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKIPPED
 
 
 # *** MISSING STL FEATURES ***
@@ -593,9 +593,9 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 std/depr/depr.c.headers/tgmath_h.pass.cpp SKIPPED
 
 # STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
-numerics\complex.number\complex.special\double_long_double_implicit.compile.fail.cpp FAIL
-numerics\complex.number\complex.special\float_double_implicit.compile.fail.cpp FAIL
-numerics\complex.number\complex.special\float_long_double_implicit.compile.fail.cpp FAIL
+std/numerics/complex.number/complex.special/double_long_double_implicit.compile.fail.cpp FAIL
+std/numerics/complex.number/complex.special/float_double_implicit.compile.fail.cpp FAIL
+std/numerics/complex.number/complex.special/float_long_double_implicit.compile.fail.cpp FAIL
 
 # STL bug: regex_traits::transform() isn't following the Standard.
 std/re/re.traits/transform.pass.cpp FAIL
@@ -677,8 +677,8 @@ std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
 
 # STL bug: GH-757 <xstring>: Too many enabled hash specializations
-strings\basic.string.hash\char_type_hash.fail.cpp FAIL
-strings\string.view\string.view.hash\char_type.hash.fail.cpp FAIL
+strings/basic.string.hash/char_type_hash.fail.cpp FAIL
+strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
 
 
 # *** CRT BUGS ***
@@ -1064,7 +1064,7 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
 
 # Not yet analyzed. Frequent timeouts
-containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp SKIPPED
+std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
 
 # *** XFAILs WHICH PASS ***
