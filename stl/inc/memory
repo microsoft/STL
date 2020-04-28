@@ -3235,11 +3235,11 @@ protected:
                     _YIELD_PROCESSOR();
                     break;
                 }
-                _Repptr.wait(_Rep);
-                break;
+                [[fallthrough]];
 
             case _Locked_notify_needed: // "Notify needed" is alrady set, just wait
                 _Repptr.wait(_Rep);
+                _Rep = _Repptr.load(memory_order::relaxed);
                 break;
             }
 
