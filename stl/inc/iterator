@@ -186,6 +186,44 @@ _NODISCARD insert_iterator<_Container> inserter(_Container& _Cont, typename _Con
     return insert_iterator<_Container>(_Cont, _Where);
 }
 
+#ifdef __cpp_lib_concepts
+// CLASS TEMPLATE move_sentinel
+template <semiregular _Se>
+class move_sentinel {
+public:
+    constexpr move_sentinel() = default;
+
+    constexpr explicit move_sentinel(_Se _Val) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
+        : _Last(_STD move(_Val)) {}
+
+    // clang-format off
+    template <class _Se2>
+        requires convertible_to<const _Se2&, _Se>
+    constexpr move_sentinel(const move_sentinel<_Se2>& _Val)
+        noexcept(is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+        : _Last{_Val._Get_last()} {}
+
+    template <class _Se2>
+        requires assignable_from<_Se&, const _Se2&>
+    constexpr move_sentinel& operator=(const move_sentinel<_Se2>& _Val)
+        noexcept(is_nothrow_assignable_v<_Se&, const _Se2&>) /* strengthened */ {
+        _Last = _Val._Get_last();
+        return *this;
+    }
+    // clang-format on
+
+    constexpr _Se base() const noexcept(is_nothrow_copy_constructible_v<_Se>) /* strengthened */ {
+        return _Last;
+    }
+
+    constexpr const _Se& _Get_last() const noexcept {
+        return _Last;
+    }
+
+private:
+    _Se _Last{};
+};
+#endif // __cpp_lib_concepts
 
 // CLASS TEMPLATE istream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
