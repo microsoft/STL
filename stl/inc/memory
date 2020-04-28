@@ -3226,7 +3226,7 @@ protected:
 
             case _Locked_notify_not_supported: // Keep spinning
                 _YIELD_PROCESSOR();
-                _Rep = _Repptr.load(memory_order::relaxed); 
+                _Rep = _Repptr.load(memory_order::relaxed);
                 break;
 
             case _Locked_notify_not_needed: // Try to set "notify needed" and wait
