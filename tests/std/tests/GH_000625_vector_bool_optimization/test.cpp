@@ -945,9 +945,59 @@ bool test_find() {
     return true;
 }
 
+bool test_count() {
+    // Less than blockSize
+    {
+        const auto result_true = count(source.begin(), next(source.begin(), 8), true);
+        assert(result_true == 5);
+
+        const auto result_false = count(source.begin(), next(source.begin(), 8), false);
+        assert(result_false == 3);
+    }
+
+    // Exactly blockSize
+    {
+        const auto result_true = count(source.begin(), next(source.begin(), blockSize), true);
+        assert(result_true == 20);
+
+        const auto result_false = count(source.begin(), next(source.begin(), blockSize), false);
+        assert(result_false == 12);
+    }
+
+    // More than blockSize
+    {
+        const auto result_true = count(source.begin(), next(source.begin(), blockSize + 3), true);
+        assert(result_true == 22);
+
+        const auto result_false = count(source.begin(), next(source.begin(), blockSize + 3), false);
+        assert(result_false == 13);
+    }
+
+    // Multiple blockSize ends at boundary
+    {
+        const auto result_true = count(source.begin(), next(source.begin(), 2 * blockSize), true);
+        assert(result_true == 40);
+
+        const auto result_false = count(source.begin(), next(source.begin(), 2 * blockSize), false);
+        assert(result_false == 24);
+    }
+
+    // Multiple blockSize ends with offset
+    {
+        const auto result_true = count(source.begin(), next(source.begin(), 2 * blockSize + 5), true);
+        assert(result_true == 43);
+
+        const auto result_false = count(source.begin(), next(source.begin(), 2 * blockSize + 5), false);
+        assert(result_false == 26);
+    }
+
+    return true;
+}
+
 int main() {
     test_copy();
     test_fill();
     test_equal();
     test_find();
+    test_count();
 }

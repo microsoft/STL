@@ -3160,6 +3160,50 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_vbool(_InIt _First, const _InIt _Last, const
 
     return _Last;
 }
+
+template <class _InIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> _Count_vbool(_InIt _First, const _InIt _Last, const _Ty& _Val) {
+    _Iter_diff_t<_InIt> _Count = 0;
+
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+    _Vbase* _UFirst            = const_cast<_Vbase*>(_First._Myptr);
+    const _Vbase* const _ULast = _Last._Myptr;
+
+    // Fast path for less than _VBITS
+    const auto _LastShift = _VBITS - _Last._Myoff;
+    if (_UFirst == _ULast) {
+        const auto _Mask      = (_Vbase(-1) << _First._Myoff) & (_Vbase(-1) >> _LastShift);
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        return __builtin_popcount(_SelectVal & _Mask);
+    }
+
+    if (_First._Myoff != 0) {
+        const auto _FirstMask = _Vbase(-1) << _First._Myoff;
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        _Count += __builtin_popcount(_SelectVal & _FirstMask);
+        ++_UFirst;
+    }
+
+    for (; _UFirst != _ULast; ++_UFirst) {
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        _Count += __builtin_popcount(_SelectVal);
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastMask  = _Vbase(-1) >> _LastShift;
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        _Count += __builtin_popcount(_SelectVal & _LastMask);
+    }
+#else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
+    for (; _First != _Last; ++_First) {
+        if (*_First == _Val) {
+            ++_Count;
+        }
+    }
+#endif // !__cpp_lib_bitops
+
+    return _Count;
+}
 #endif // _HAS_IF_CONSTEXPR
 _STD_END
 
