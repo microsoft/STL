@@ -863,8 +863,91 @@ bool test_equal() {
     return true;
 }
 
+bool test_find() {
+    // Less than blockSize
+    {
+        vector<bool> input_true(blockSize, false);
+        input_true[5].flip();
+        const auto result_true = find(input_true.begin(), next(input_true.begin(), 8), true);
+        assert(result_true == next(input_true.begin(), 5));
+
+        vector<bool> input_false(blockSize, true);
+        input_false[6].flip();
+        const auto result_false = find(input_false.begin(), next(input_false.begin(), 8), false);
+        assert(result_false == next(input_false.begin(), 6));
+    }
+
+    // Exactly blockSize
+    {
+        vector<bool> input_true(blockSize, false);
+        input_true[24].flip();
+        const auto result_true = find(input_true.begin(), next(input_true.begin(), blockSize), true);
+        assert(result_true == next(input_true.begin(), 24));
+
+        vector<bool> input_false(blockSize, true);
+        input_false[27].flip();
+        const auto result_false = find(input_false.begin(), next(input_false.begin(), blockSize), false);
+        assert(result_false == next(input_false.begin(), 27));
+    }
+
+    // More than blockSize
+    {
+        vector<bool> input_true(blockSize + 5, false);
+        input_true[24].flip();
+        const auto result_true = find(input_true.begin(), next(input_true.begin(), blockSize), true);
+        assert(result_true == next(input_true.begin(), 24));
+
+        vector<bool> input_false(blockSize + 5, true);
+        input_false[27].flip();
+        const auto result_false = find(input_false.begin(), next(input_false.begin(), blockSize), false);
+        assert(result_false == next(input_false.begin(), 27));
+    }
+
+    // More than blockSize ends with offset
+    {
+        vector<bool> input_true(blockSize + 8, false);
+        input_true[33].flip();
+        const auto result_true = find(input_true.begin(), next(input_true.begin(), blockSize + 8), true);
+        assert(result_true == next(input_true.begin(), 33));
+
+        vector<bool> input_false(blockSize + 8, true);
+        input_false[35].flip();
+        const auto result_false = find(input_false.begin(), next(input_false.begin(), blockSize + 8), false);
+        assert(result_false == next(input_false.begin(), 35));
+    }
+
+    // Multiple blockSize
+    {
+        vector<bool> input_true(3 * blockSize, false);
+        input_true[33].flip();
+        const auto result_true = find(input_true.begin(), next(input_true.begin(), 3 * blockSize), true);
+        assert(result_true == next(input_true.begin(), 33));
+
+        vector<bool> input_false(3 * blockSize, true);
+        input_false[35].flip();
+        const auto result_false = find(input_false.begin(), next(input_false.begin(), 3 * blockSize), false);
+        assert(result_false == next(input_false.begin(), 35));
+    }
+
+    // Multiple blockSize, ends with offset
+    {
+        vector<bool> input_true(3 * blockSize + 5, false);
+        input_true[3 * blockSize + 3].flip();
+        const auto result_true = find(input_true.begin(), next(input_true.begin(), 3 * blockSize + 5), true);
+        assert(result_true == next(input_true.begin(), 3 * blockSize + 3));
+
+        vector<bool> input_false(3 * blockSize + 5, true);
+        input_false[3 * blockSize + 2].flip();
+        const auto result_false = find(input_false.begin(), next(input_false.begin(), 3 * blockSize + 5), false);
+        assert(result_false == next(input_false.begin(), 3 * blockSize + 2));
+    }
+
+    return true;
+}
+
 int main() {
     test_copy();
     test_fill();
     test_equal();
+    test_find();
 }

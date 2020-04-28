@@ -3106,6 +3106,60 @@ _NODISCARD _CONSTEXPR20 bool _Equal_vbool(_InIt1 _First1, _InIt1 _Last1, _InIt2 
     }
     return true;
 }
+
+template <class _InIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _InIt _Find_vbool(_InIt _First, const _InIt _Last, const _Ty& _Val) {
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+    _Vbase* _UFirst            = const_cast<_Vbase*>(_First._Myptr);
+    const _Vbase* const _ULast = _Last._Myptr;
+
+    // Fast path for less than _VBITS
+    const auto _LastShift = _VBITS - _Last._Myoff;
+    if (_UFirst == _ULast) {
+        const auto _Mask      = (_Vbase(-1) << _First._Myoff) & (_Vbase(-1) >> _LastShift);
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        const auto _Count     = _Countr_zero(_SelectVal & _Mask);
+        return _First + (_Count - _First._Myoff);
+    }
+
+    _Iter_diff_t<_InIt> _TotalCount = 0;
+    if (_First._Myoff != 0) {
+        const auto _FirstMask = _Vbase(-1) << _First._Myoff;
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        const auto _Count     = _Countr_zero(_SelectVal & _FirstMask);
+        if (_Count != _VBITS) {
+            return _First + (_Count - _First._Myoff);
+        }
+        _TotalCount += _Count - _First._Myoff;
+        ++_UFirst;
+    }
+
+    for (; _UFirst != _ULast; ++_UFirst, _TotalCount += _VBITS) {
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        const auto _Count     = _Countr_zero(_SelectVal);
+        if (_Count != _VBITS) {
+            return _First + (_TotalCount + _Count);
+        }
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastMask  = _Vbase(-1) >> _LastShift;
+        const auto _SelectVal = _Val ? *_UFirst : static_cast<_Vbase>(~*_UFirst);
+        const auto _Count     = _Countr_zero(_SelectVal & _LastMask);
+        if (_Count < static_cast<int>(_Last._Myoff)) {
+            return _First + (_TotalCount + _Count);
+        }
+    }
+#else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
+    for (; _First != _Last; ++_First) {
+        if (*_First == _Val) {
+            return _First;
+        }
+    }
+#endif // !__cpp_lib_bitops
+
+    return _Last;
+}
 #endif // _HAS_IF_CONSTEXPR
 _STD_END
 
