@@ -3249,7 +3249,8 @@ protected:
     void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
         uintptr_t _Rep = _Repptr.exchange(reinterpret_cast<uintptr_t>(_Value));
         if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
-            _Repptr.notify_all(); // As we don't count waiters, every is notified, and then some may re-request notificaiton
+            // As we don't count waiters, every is notified, and then some may re-request notificaiton
+            _Repptr.notify_all();
         }
     }
 
