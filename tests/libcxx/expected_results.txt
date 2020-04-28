@@ -677,8 +677,8 @@ std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
 
 # STL bug: GH-757 <xstring>: Too many enabled hash specializations
-strings/basic.string.hash/char_type_hash.fail.cpp FAIL
-strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
+std/strings/basic.string.hash/char_type_hash.fail.cpp FAIL
+std/strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
 
 
 # *** CRT BUGS ***
