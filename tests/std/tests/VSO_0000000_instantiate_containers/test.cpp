@@ -48,8 +48,8 @@ int main() {} // COMPILE-ONLY
 
 // FUNCTION TEMPLATE For_each_tuple_element
 template <class Tpl, class Fx, size_t... Indices>
-void for_each_tuple_element_impl(
-    Tpl&& Tuple, Fx Func, index_sequence<Indices...>) { // call Func() on the _Indices elements of _Tuple
+void for_each_tuple_element_impl(Tpl&& Tuple, Fx Func, index_sequence<Indices...>) {
+    // call Func() on the _Indices elements of _Tuple
     int ignored[] = {(static_cast<void>(Func(get<Indices>(forward<Tpl>(Tuple)))), 0)...};
     (void) ignored;
 }
