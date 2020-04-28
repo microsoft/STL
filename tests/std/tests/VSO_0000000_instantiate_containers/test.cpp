@@ -46,18 +46,17 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
-// FUNCTION TEMPLATE For_each_tuple_element
-template <class Tpl, class Fx, size_t... Indices>
+template <typename Tpl, typename Fx, size_t... Indices>
 void for_each_tuple_element_impl(Tpl&& Tuple, Fx Func, index_sequence<Indices...>) {
-    // call Func() on the _Indices elements of _Tuple
+    // call Func() on the Indices elements of Tuple
     int ignored[] = {(static_cast<void>(Func(get<Indices>(forward<Tpl>(Tuple)))), 0)...};
     (void) ignored;
 }
 
-template <class Tpl, class Fx>
-void for_each_tuple_element(Tpl&& Tuple, Fx Func) { // call Func() on each element in _Tuple
+template <typename Tpl, typename Fx>
+void for_each_tuple_element(Tpl&& Tuple, Fx Func) { // call Func() on each element in Tuple
     for_each_tuple_element_impl(
-        forward<Tpl>(Tuple), Func, make_index_sequence<tuple_size_v<remove_reference_t<Tpl>>>());
+        forward<Tpl>(Tuple), Func, make_index_sequence<tuple_size_v<remove_reference_t<Tpl>>>{});
 }
 
 // Use this type to ensure function templates are used instead
