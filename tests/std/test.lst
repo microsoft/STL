@@ -209,6 +209,7 @@ tests\P0325R4_to_array
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
 tests\P0414R2_shared_ptr_for_arrays
+tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
 tests\P0433R2_deduction_guides
 tests\P0476R2_bit_cast
