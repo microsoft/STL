@@ -100,11 +100,9 @@ namespace test_std_equal {
         // supplying a custom equal_to<string> compares the string contents, so the chars are equal
         assert(
             equal(begin(equal_chars1), end(equal_chars1), begin(equal_chars2), end(equal_chars2), equal_to<string>{}));
-        // the following tests that _ITERATOR_DEBUG_ARRAY_OVERLOADS works
         assert(equal(begin(equal_chars1), end(equal_chars1), equal_chars2, equal_to<string>{}));
         // but other comparisons compare the pointer addresses so they aren't equal
-        assert(!equal(begin(equal_chars1), end(equal_chars1),
-            equal_chars2)); // more _ITERATOR_DEBUG_ARRAY_OVERLOADS
+        assert(!equal(begin(equal_chars1), end(equal_chars1), equal_chars2));
         assert(!equal(begin(equal_chars1), end(equal_chars1), begin(equal_chars2), end(equal_chars2)));
         assert(!equal(begin(equal_chars1), end(equal_chars1), begin(equal_chars2), end(equal_chars2), equal_to<>{}));
         assert(!equal(

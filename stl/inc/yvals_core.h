@@ -428,6 +428,7 @@
 #endif // _STL_DISABLED_WARNINGS
 
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
+// warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
@@ -438,6 +439,7 @@
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
