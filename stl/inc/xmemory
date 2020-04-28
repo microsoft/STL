@@ -1640,14 +1640,6 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _OutTy, size_t _OutSize>
-_OutTy* uninitialized_copy(const _InIt _First, const _InIt _Last, _OutTy (&_Dest)[_OutSize]) {
-    // copy [_First, _Last) to raw [_Dest, ...)
-    return _STD uninitialized_copy(_First, _Last, _Array_iterator<_OutTy, _OutSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 // FUNCTION TEMPLATE _Uninitialized_move WITH ALLOCATOR
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Alloc>

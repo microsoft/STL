@@ -1503,9 +1503,7 @@ namespace borrowed_range_testing {
     STATIC_ASSERT(test_borrowed_range<std::wstring_view, std::wstring_view::iterator>());
     STATIC_ASSERT(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
     STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
-#if 0 // TRANSITION, subrange
     STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
-#endif // TRANSITION, subrange
 #if 0 // TRANSITION, future
     STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
     STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ...>());
