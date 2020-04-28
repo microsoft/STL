@@ -3235,9 +3235,10 @@ protected:
                     _YIELD_PROCESSOR();
                     break;
                 }
+                _Rep = _Rep & _Ptr_value_mask | _Locked_notify_needed;
                 [[fallthrough]];
 
-            case _Locked_notify_needed: // "Notify needed" is alrady set, just wait
+            case _Locked_notify_needed: // "Notify needed" is already set, just wait
                 _Repptr.wait(_Rep, memory_order::relaxed);
                 _Rep = _Repptr.load(memory_order::relaxed);
                 break;
