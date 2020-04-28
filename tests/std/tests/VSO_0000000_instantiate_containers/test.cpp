@@ -46,18 +46,18 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
-// FUNCTION TEMPLATE _For_each_tuple_element
-template <class _Tpl, class _Fx, size_t... _Indices>
-void _For_each_tuple_element_impl(
-    _Tpl&& _Tuple, _Fx _Func, index_sequence<_Indices...>) { // call _Func() on the _Indices elements of _Tuple
-    int _Ignored[] = {(static_cast<void>(_Func(_STD get<_Indices>(_STD forward<_Tpl>(_Tuple)))), 0)...};
-    (void) _Ignored;
+// FUNCTION TEMPLATE For_each_tuple_element
+template <class Tpl, class Fx, size_t... Indices>
+void for_each_tuple_element_impl(
+    Tpl&& Tuple, Fx Func, index_sequence<Indices...>) { // call Func() on the _Indices elements of _Tuple
+    int ignored[] = {(static_cast<void>(Func(get<Indices>(forward<Tpl>(Tuple)))), 0)...};
+    (void) ignored;
 }
 
-template <class _Tpl, class _Fx>
-void _For_each_tuple_element(_Tpl&& _Tuple, _Fx _Func) { // call _Func() on each element in _Tuple
-    _For_each_tuple_element_impl(
-        _STD forward<_Tpl>(_Tuple), _Func, make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>());
+template <class Tpl, class Fx>
+void for_each_tuple_element(Tpl&& Tuple, Fx Func) { // call Func() on each element in _Tuple
+    for_each_tuple_element_impl(
+        forward<Tpl>(Tuple), Func, make_index_sequence<tuple_size_v<remove_reference_t<Tpl>>>());
 }
 
 // Use this type to ensure function templates are used instead
@@ -135,7 +135,7 @@ template <typename T>
 void construct_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [](auto c) {
+    for_each_tuple_element(containers, [](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c));
     });
@@ -145,7 +145,7 @@ template <typename T>
 void construct_tree_containers_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [&](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.key_comp());
         T another3(begin(c), end(c), value.key_comp(), value.get_allocator());
@@ -156,7 +156,7 @@ template <typename T>
 void construct_hash_containers_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [&](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.bucket_count());
         T another3(begin(c), end(c), value.bucket_count(), value.hash_function());

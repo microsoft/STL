@@ -463,7 +463,7 @@ public:
     }
 
     ~scoped_lock() noexcept {
-        apply([](_Mutexes&... _Mtxes) { (..., void(_Mtxes.unlock())); }, _MyMutexes);
+        _STD apply([](_Mutexes&... _Mtxes) { (..., void(_Mtxes.unlock())); }, _MyMutexes);
     }
 
     scoped_lock(const scoped_lock&) = delete;
