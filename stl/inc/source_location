@@ -8,7 +8,7 @@
 #define _SOURCE_LOCATION_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if !_HAS_CXX20 || !defined(__clang__)
+#if !_HAS_CXX20 || !(defined(__cpp_consteval) || defined(__clang__)) // TRANSITION, LLVM-45745
 #pragma message("The contents of <source_location> are available only with C++20 consteval support.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
