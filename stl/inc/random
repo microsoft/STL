@@ -829,7 +829,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 
         for (int _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
             _Ax[_Ix] = _Gx();
-            for (int _Jx = 0; ++_Jx < _Kx;) {
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 _Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
             }
         }
@@ -934,7 +934,7 @@ public:
         int _Idx0 = 0;
         for (int _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
             this->_Ax[_Ix] = _Arr[_Idx0];
-            for (int _Jx = 0; ++_Jx < _Kx;) {
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 
@@ -1263,7 +1263,7 @@ public:
         _Ty _Sum  = 0;
         for (size_t _Ix = 0; _Ix < _Nx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
             this->_Ax[_Ix] = _Arr[_Idx0];
-            for (int _Jx = 0; ++_Jx < _Kx;) {
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 

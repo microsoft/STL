@@ -1989,7 +1989,7 @@ struct UserTwo {};
 namespace std {
     template <>
     struct is_placeholder<UserTwo> : integral_constant<int, 2> {};
-}
+} // namespace std
 
 struct UserBind {
     template <typename T>
@@ -2001,7 +2001,7 @@ struct UserBind {
 namespace std {
     template <>
     struct is_bind_expression<UserBind> : true_type {};
-}
+} // namespace std
 
 template <typename... Types>
 struct Pack {};

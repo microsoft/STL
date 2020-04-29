@@ -93,11 +93,7 @@ ColumnLimit:     120
 # DerivePointerAlignment: false
 # DisableFormat:   false
 # ExperimentalAutoDetectBinPacking: false
-
-# TRANSITION, LLVM-39247, fixed in clang-format 10.
 # FixNamespaceComments: true
-FixNamespaceComments: false
-
 # ForEachMacros:
 #   - foreach
 #   - Q_FOREACH

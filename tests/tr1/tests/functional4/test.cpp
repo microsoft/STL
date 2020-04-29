@@ -4,6 +4,8 @@
 // test <functional>, part 4
 #define TEST_NAME "<functional>, part 4"
 
+#pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+
 #include "tdefs.h"
 #include "tfuns.h"
 #include <functional>

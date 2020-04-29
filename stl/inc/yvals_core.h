@@ -155,6 +155,8 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0674R1 make_shared() For Arrays
+// P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 //     (partially implemented)
@@ -169,6 +171,7 @@
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
@@ -209,6 +212,7 @@
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
+// P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
 // Parallel Algorithms Notes
@@ -347,11 +351,11 @@
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, LLVM-42694/CUDA/ICC
-#else // vvv C1XX or IntelliSense vvv
+#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, CUDA/ICC
+#else // vvv C1XX or Clang or IntelliSense vvv
 #define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or IntelliSense ^^^
+#endif // ^^^ C1XX or Clang or IntelliSense ^^^
 #endif // _HAS_CONDITIONAL_EXPLICIT
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
@@ -400,6 +404,7 @@
 // warning C4625: copy constructor was implicitly defined as deleted (/Wall)
 // warning C4626: assignment operator was implicitly defined as deleted (/Wall)
 // warning C4643: Forward declaring 'meow' in namespace std is not permitted by the C++ Standard. (/Wall)
+// warning C4648: standard attribute 'meow' is ignored
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
@@ -407,13 +412,14 @@
 // warning C5026: move constructor was implicitly defined as deleted (/Wall)
 // warning C5027: move assignment operator was implicitly defined as deleted (/Wall)
 // warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified (/Wall)
+// warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4702 4793 4820 \
-    4988 5026 5027 5045                               \
+    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
+    4820 4988 5026 5027 5045 6294                     \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -422,6 +428,9 @@
 #endif // _STL_DISABLED_WARNINGS
 
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
+// warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
+// warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
+//     [-Wignored-attributes]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
@@ -430,6 +439,8 @@
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
@@ -470,18 +481,18 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202003L
+#define _MSVC_STL_UPDATE  202004L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 9
-#error STL1000: Unexpected compiler version, expected Clang 9.0.0 or newer.
+#if __clang_major__ < 10
+#error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1925 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.25 or newer.
+#if _MSC_VER < 1926 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.26 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -934,7 +945,30 @@
 #define _CXX20_DEPRECATE_ATOMIC_INIT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4029
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT                                              \
+    [[deprecated("warning STL4029: "                                                                \
+                 "std::atomic_*() overloads for shared_ptr are deprecated in C++20. "               \
+                 "The shared_ptr specialization of std::atomic provides superior functionality. "   \
+                 "You can define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT
+#endif // ^^^ warning disabled ^^^
+
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_VOLATILE                                                                   \
+    [[deprecated("warning STL4030: "                                                                \
+                 "Some operations on volatile-qualified types in the STL are deprecated in C++20. " \
+                 "You can define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING "                      \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_VOLATILE
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4031
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1028,7 +1062,6 @@
 #define __cpp_lib_map_try_emplace                  201411L
 #define __cpp_lib_nonmember_container_access       201411L
 #define __cpp_lib_shared_mutex                     201505L
-#define __cpp_lib_shared_ptr_arrays                201611L
 #define __cpp_lib_transparent_operators            201510L
 #define __cpp_lib_type_trait_variable_templates    201510L
 #define __cpp_lib_uncaught_exceptions              201411L
@@ -1038,14 +1071,12 @@
 #if _HAS_CXX17
 #define __cpp_lib_any                        201606L
 #define __cpp_lib_apply                      201603L
-#define __cpp_lib_array_constexpr            201803L
 #define __cpp_lib_atomic_is_always_lock_free 201603L
 #define __cpp_lib_boyer_moore_searcher       201603L
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_chrono 201611L
-#define __cpp_lib_clamp  201603L
+#define __cpp_lib_clamp 201603L
 #ifndef _M_CEE
 #define __cpp_lib_execution 201603L
 #endif // _M_CEE
@@ -1074,27 +1105,27 @@
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 #define __cpp_lib_variant               201606L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
 
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
-#define __cpp_lib_atomic_float 201711L
-#define __cpp_lib_bind_front   201907L
+#define __cpp_lib_atomic_float      201711L
+#define __cpp_lib_atomic_shared_ptr 201711L
+#define __cpp_lib_bind_front        201907L
+#define __cpp_lib_bit_cast          201806L
 
-#ifndef __EDG__ // TRANSITION, VSO-1041044
-#define __cpp_lib_bit_cast 201806L
-#endif // __EDG__
-
-#if defined(__clang__) || defined(__EDG__)
-#define __cpp_lib_bitops 201907L
-#else // ^^^ Clang and EDG / MSVC vvv
+#ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
-// TRANSITION, VSO-1020212
-#endif // defined(__clang__) || defined(__EDG__)
+#define __cpp_lib_bitops 201907L
+#endif // __clang__
 
 #define __cpp_lib_bounded_array_traits 201902L
 
@@ -1106,29 +1137,52 @@
 #define __cpp_lib_concepts 201907L
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
-#define __cpp_lib_constexpr_algorithms     201806L
-#define __cpp_lib_constexpr_memory         201811L
-#define __cpp_lib_constexpr_numeric        201911L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_memory     201811L
+#define __cpp_lib_constexpr_numeric    201911L
+
+#ifdef __cpp_impl_destroying_delete
+#define __cpp_lib_destroying_delete 201806L
+#endif // __cpp_impl_destroying_delete
+
 #define __cpp_lib_endian                   201907L
 #define __cpp_lib_erase_if                 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
-#define __cpp_lib_int_pow2                 202002L
-#define __cpp_lib_is_constant_evaluated    201811L
-#define __cpp_lib_is_nothrow_convertible   201806L
-#define __cpp_lib_list_remove_return_type  201806L
-#define __cpp_lib_math_constants           201907L
-#define __cpp_lib_remove_cvref             201711L
-#define __cpp_lib_shift                    201806L
-#define __cpp_lib_span                     202002L
-#define __cpp_lib_ssize                    201902L
-#define __cpp_lib_starts_ends_with         201711L
+
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+#define __cpp_lib_int_pow2 202002L
+#endif
+
+#define __cpp_lib_is_constant_evaluated   201811L
+#define __cpp_lib_is_nothrow_convertible  201806L
+#define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_math_constants          201907L
+#define __cpp_lib_remove_cvref            201711L
+#define __cpp_lib_shift                   201806L
+#define __cpp_lib_span                    202002L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
+
 #ifdef __clang__
 #define __cpp_lib_source_location 201907L
-#endif // defined(__clang__)
+#endif
+
 #define __cpp_lib_to_address    201711L
 #define __cpp_lib_to_array      201907L
 #define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref    201811L
+#endif // _HAS_CXX20
+
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_array_constexpr 201803L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
+#else // _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL
@@ -1141,14 +1195,6 @@
 compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have received this warning.
 #endif // _ALLOW_RTCc_IN_STL
 #endif // _RTC_CONVERSION_CHECKS_ENABLED
-
-#ifndef _DECLSPEC_ALLOCATOR
-#ifdef __clang__
-#define _DECLSPEC_ALLOCATOR
-#else // ^^^ Clang / non-Clang vvv
-#define _DECLSPEC_ALLOCATOR __declspec(allocator)
-#endif // ^^^ non-Clang ^^^
-#endif // _DECLSPEC_ALLOCATOR
 
 #define _STRINGIZEX(x)  #x
 #define _STRINGIZE(x)   _STRINGIZEX(x)

@@ -31,8 +31,8 @@ flavor of the STL (native desktop). We need to extend this to build all of the f
 because they need to be updated whenever source files are added/renamed/deleted. We'll delete the legacy machinery as
 soon as possible.)
 
-* Tests: **Coming soon.** We rely on three test suites: std, tr1, and [libcxx][]. We need to replace our current test
-harness, which extensively uses Microsoft-internal machinery.
+* Tests: **In progress.** We rely on three test suites: std, tr1, and [libcxx][]. We've partially ported std and tr1,
+and fully ported libcxx to run under [lit][] using the various configurations/compilers we test internally.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
 Currently, it builds the STL (native desktop for x86, x64, ARM, and ARM64). Also, it strictly verifies that all of our
@@ -169,8 +169,8 @@ architectures.
 8. Invoke `git clone https://github.com/microsoft/STL`
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--S . -B {wherever you want binaries}` to configure the project. For example,
-`cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
+-S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja
+-DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
 11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
 
 # How To Consume
@@ -220,6 +220,143 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
+# How To Run The Tests With A Native Tools Command Prompt
+
+1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
+2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
+3. Acquire [Python][] 3.8 or newer.
+4. Have LLVM's `bin` directory on the `PATH`. Simply using [LLVM's installer][] and choosing to add LLVM to your `PATH`
+during installation is the easiest way to get LLVM's `bin` directory on your `PATH`.
+5. Follow the instructions below.
+
+## Running All The Tests
+
+After configuring and building the project, running `ctest` from the build output directory will run all the tests.
+CTest will only display the standard error output of tests that failed. In order to get more details from CTest's
+`lit` invocations, run the tests with `ctest -V`.
+
+## Running A Subset Of The Tests
+
+`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a testsuite and will execute
+all the tests under that subdirectory. This can mean executing the entirety of a single testsuite, running all tests
+under a category in libcxx, or running a single test in `std` and `tr1`.
+
+## Examples
+
+```
+:: This command will run all of the testsuites with verbose output.
+
+C:\STL\build>ctest -V
+
+:: This command will run all of the std testsuite.
+
+C:\STL\build>ctest -R std
+
+:: This command will also run all of the std testsuite.
+
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std
+
+:: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
+:: will run the single test found under VSO_0000000_any_calling_conventions.
+
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+
+:: You can invoke stl-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
+:: control over what category of tests you would like to run. The following will run all the libcxx map tests.
+
+C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
+```
+
+## Interpreting The Results Of Tests
+
+### CTest
+
+When running the tests via CTest each of the testsuites is considered to be a single test. If any single test in a
+testsuite fails, CTest will report the test which represents that testsuite as failed.
+
+Example:
+```
+67% tests passed, 1 tests failed out of 3
+
+Total Test time (real) = 2441.55 sec
+
+The following tests FAILED:
+      1 - libcxx (Failed)
+```
+
+CTest will output everything that was sent to stderr for each of the failed testsuites, which can be used to identify
+which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
+order to see the stdout of the tests.
+
+### stl-lit
+
+When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
+format of each result is `{Result Code}: {Testsuite Name} :: {Test Name}:{Configuration Number}`.
+
+Example:
+```
+-- Testing: 28 tests, 12 workers --
+PASS: tr1 :: tests/cwchar1:01 (1 of 28)
+PASS: tr1 :: tests/cwchar1:11 (2 of 28)
+PASS: tr1 :: tests/cwchar1:02 (3 of 28)
+PASS: tr1 :: tests/cwchar1:03 (4 of 28)
+PASS: tr1 :: tests/cwchar1:00 (5 of 28)
+PASS: tr1 :: tests/cwchar1:04 (6 of 28)
+PASS: tr1 :: tests/cwchar1:05 (7 of 28)
+PASS: tr1 :: tests/cwchar1:09 (8 of 28)
+PASS: tr1 :: tests/cwchar1:06 (9 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:20 (10 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:21 (11 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:22 (12 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:23 (13 of 28)
+UNSUPPORTED: tr1 :: tests/cwchar1:24 (14 of 28)
+PASS: tr1 :: tests/cwchar1:07 (15 of 28)
+PASS: tr1 :: tests/cwchar1:08 (16 of 28)
+PASS: tr1 :: tests/cwchar1:10 (17 of 28)
+PASS: tr1 :: tests/cwchar1:16 (18 of 28)
+PASS: tr1 :: tests/cwchar1:17 (19 of 28)
+PASS: tr1 :: tests/cwchar1:14 (20 of 28)
+PASS: tr1 :: tests/cwchar1:12 (21 of 28)
+PASS: tr1 :: tests/cwchar1:13 (22 of 28)
+PASS: tr1 :: tests/cwchar1:19 (23 of 28)
+PASS: tr1 :: tests/cwchar1:18 (24 of 28)
+PASS: tr1 :: tests/cwchar1:15 (25 of 28)
+PASS: tr1 :: tests/cwchar1:25 (26 of 28)
+PASS: tr1 :: tests/cwchar1:26 (27 of 28)
+PASS: tr1 :: tests/cwchar1:27 (28 of 28)
+
+Testing Time: 3.96s
+  Expected Passes    : 23
+  Unsupported Tests  : 5
+```
+
+In the above example we see that 23 tests succeeded and 5 were unsupported.
+
+### Result Code Values
+
+Our tests use the standard [lit result codes][], and an undocumented result code: `SKIPPED`. For our tests, only the
+`PASS`, `XFAIL`, `XPASS`, `FAIL`, `UNSUPPORTED`, and `SKIPPED` result codes are relevant.
+
+The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `PASS` and not `FAIL`.
+
+The `XPASS` and `XFAIL` result codes are less obvious. `XPASS` is actually a failure result and indicates that we
+expected a test to fail but it passed. `XFAIL` is a successful result and indicates that we expected the test to fail
+and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
+modified. If the `XPASS` result is a test legitimately passing, the usual course of action would be to remove a `FAIL`
+entry from the `expected_results.txt`. However, some tests from `libcxx` mark themselves as `XFAIL` (meaning they
+expect to fail) for features they have added tests for but have yet to implement in `libcxx`. If the STL implements
+those features first the tests will begin passing unexpectedly for us and return `XPASS` results. In order to resolve
+this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
+
+The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
+all tests which use the `/BE` or `/clr:pure` options are unsupported.
+
+The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
+`expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
+* being an incorrect test
+* taking a very long time to run
+* failing or passing for the incorrect reason
+
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
@@ -255,7 +392,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
+[How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
 [LICENSE.txt]: LICENSE.txt
+[LLVM's installer]: https://releases.llvm.org/download.html
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
@@ -263,6 +403,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
+[Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Wandbox]: https://wandbox.org
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
@@ -270,6 +411,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
+[lit]: https://llvm.org/docs/CommandGuide/lit.html
+[lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg

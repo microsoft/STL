@@ -381,9 +381,9 @@ struct variant_size; // undefined
 template <class _Ty>
 struct variant_size<const _Ty> : variant_size<_Ty>::type {};
 template <class _Ty>
-struct variant_size<volatile _Ty> : variant_size<_Ty>::type {};
+struct _CXX20_DEPRECATE_VOLATILE variant_size<volatile _Ty> : variant_size<_Ty>::type {};
 template <class _Ty>
-struct variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
+struct _CXX20_DEPRECATE_VOLATILE variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
 template <class _Ty>
 inline constexpr size_t variant_size_v = variant_size<_Ty>::value;
 
@@ -399,11 +399,11 @@ struct variant_alternative<_Idx, const _Ty> {
     using type = add_const_t<variant_alternative_t<_Idx, _Ty>>;
 };
 template <size_t _Idx, class _Ty>
-struct variant_alternative<_Idx, volatile _Ty> {
+struct _CXX20_DEPRECATE_VOLATILE variant_alternative<_Idx, volatile _Ty> {
     using type = add_volatile_t<variant_alternative_t<_Idx, _Ty>>;
 };
 template <size_t _Idx, class _Ty>
-struct variant_alternative<_Idx, const volatile _Ty> {
+struct _CXX20_DEPRECATE_VOLATILE variant_alternative<_Idx, const volatile _Ty> {
     using type = add_cv_t<variant_alternative_t<_Idx, _Ty>>;
 };
 template <size_t _Idx, class... _Types>
@@ -966,11 +966,23 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
     _Variant_base<_Types...>, _Variant_destroy_layer_<_Types...>>;
 
 // CLASS TEMPLATE variant
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#else // ^^^ Clang / not Clang vvv
+#pragma warning(push)
+#pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
+#endif // __clang__
 template <size_t _Idx, class _Ty>
 struct _Variant_init_single_overload {
     using _FTy = _Meta_list<integral_constant<size_t, _Idx>, _Ty> (*)(_Ty);
     operator _FTy();
 };
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ Clang / not Clang vvv
+#pragma warning(pop)
+#endif // __clang__
 
 template <class _Indices, class... _Types>
 struct _Variant_init_overload_set_;

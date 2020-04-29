@@ -323,15 +323,14 @@ void test_VSO_177524_sub_match_compare_should_not_construct_unnecessary_basic_st
     }
 }
 
-void test_VSO_180466_regex_replace_ITERATOR_DEBUG_ARRAY_OVERLOADS() {
+void test_VSO_180466_regex_replace_ARRAY() {
     const regex pattern("d");
     const string format("x");
     const char input[]    = "abcdefg";
     const char expected[] = "abcxefg";
     char buff[sizeof(input)];
 
-    // tests that the following regex_replace calls don't emit _SCL_INSECURE_DEPRECATE_FN warnings due to
-    // _ITERATOR_DEBUG_ARRAY_OVERLOADS
+    // tests that the following regex_replace calls don't emit _SCL_INSECURE_DEPRECATE_FN warnings
     fill(begin(buff), end(buff), '\0');
     assert(end(buff) == regex_replace(buff, begin(input), end(input), pattern, format));
     assert(equal(begin(buff), end(buff), begin(expected), end(expected)));
@@ -397,7 +396,7 @@ int main() {
     test_LWG_2217_sub_match_should_not_slice_nulls<list<char>>();
     test_VSO_177524_sub_match_compare_should_not_construct_unnecessary_basic_strings<string>();
     test_VSO_177524_sub_match_compare_should_not_construct_unnecessary_basic_strings<list<char>>();
-    test_VSO_180466_regex_replace_ITERATOR_DEBUG_ARRAY_OVERLOADS();
+    test_VSO_180466_regex_replace_ARRAY();
     test_VSO_180466_regex_search_missing_Unchecked_call();
     test_VSO_226914_match_prev_avail();
 }
