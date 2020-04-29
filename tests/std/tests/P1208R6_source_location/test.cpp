@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifdef __clang__
 #include "header.h"
 #include <type_traits>
 
@@ -10,9 +11,9 @@ static_assert(is_nothrow_swappable_v<source_location>, "source_location is not n
 
 constexpr auto g = source_location::current();
 static_assert(g.line() == __LINE__ - 1);
-static_assert(g.column() == 37);
-// static_assert(g.function_name() == ""sv);
-// static_assert(string_view{g.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
+static_assert(g.column() == 20);
+static_assert(g.function_name() == ""sv);
+static_assert(string_view{g.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 
 constexpr int s_int_line = __LINE__ + 3;
 struct s {
@@ -37,14 +38,10 @@ constexpr void copy_test() {
     assert(string_view{lhs.file_name()} == string_view{rhs.file_name()});
 }
 
-// constexpr void tab_test() {
-//    constexpr auto x = source_location::current();
-// }
-
 constexpr void local_test() {
     constexpr auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
-    assert(x.column() == 41);
+    assert(x.column() == 24);
     assert(x.function_name() == "local_test"sv);
     assert(string_view{x.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
@@ -67,7 +64,7 @@ constexpr void sloc_constructor_test() {
 constexpr void different_constructor_test() {
     s x{1};
     assert(x.loc.line() == s_int_line);
-    assert(x.loc.column() == 5);
+    assert(x.loc.column() == 15);
     assert(x.loc.function_name() == "s"sv);
     assert(string_view{x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
@@ -81,7 +78,7 @@ constexpr void sub_member_test() {
 
     s2 s_i{1};
     assert(s_i.x.loc.line() == s2_int_line);
-    assert(s_i.x.loc.column() == 5);
+    assert(s_i.x.loc.column() == 15);
     assert(s_i.x.loc.function_name() == "s2"sv);
     assert(string_view{s_i.x.loc.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 }
@@ -103,7 +100,7 @@ constexpr source_location function_template() {
 constexpr void function_template_test() {
     auto x1 = function_template<void>();
     assert(x1.line() == __LINE__ - 5);
-    assert(x1.column() == 29);
+    assert(x1.column() == 12);
     assert(x1.function_name() == "function_template"sv);
     assert(string_view{x1.file_name()}.ends_with(R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv));
 
@@ -116,11 +113,10 @@ constexpr void function_template_test() {
 
 constexpr bool test() {
     copy_test();
-    // tab_test();
     local_test();
     argument_test(__LINE__, 5);
-    auto loc = std::source_location::current();
-    argument_test(__LINE__ - 1, 38, loc);
+    auto loc = source_location::current();
+    argument_test(__LINE__ - 1, 16, loc);
     sloc_constructor_test();
     different_constructor_test();
     sub_member_test();
@@ -132,6 +128,9 @@ constexpr bool test() {
 
 int main() {
     test();
-    // static_assert(test());
+    static_assert(test());
     return 0;
 }
+#else // !defined(__clang__)
+int main() {}
+#endif

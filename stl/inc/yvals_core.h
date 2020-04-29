@@ -1122,11 +1122,13 @@
 #define __cpp_lib_span                     202002L
 #define __cpp_lib_ssize                    201902L
 #define __cpp_lib_starts_ends_with         201711L
-#define __cpp_lib_source_location          201907L
-#define __cpp_lib_to_address               201711L
-#define __cpp_lib_to_array                 201907L
-#define __cpp_lib_type_identity            201806L
-#define __cpp_lib_unwrap_ref               201811L
+#ifdef __clang__
+#define __cpp_lib_source_location 201907L
+#endif // defined(__clang__)
+#define __cpp_lib_to_address    201711L
+#define __cpp_lib_to_array      201907L
+#define __cpp_lib_type_identity 201806L
+#define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
 // EXPERIMENTAL

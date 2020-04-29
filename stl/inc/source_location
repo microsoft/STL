@@ -8,8 +8,8 @@
 #define _SOURCE_LOCATION_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if !_HAS_CXX20
-#pragma message("The contents of <source_location> are available only with C++20 or later.")
+#if !_HAS_CXX20 || !defined(__clang__)
+#pragma message("The contents of <source_location> are available only with C++20 consteval support.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <cstdint>
@@ -23,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 struct source_location {
-    _NODISCARD static constexpr source_location current(uint_least32_t _InLine = __builtin_LINE(),
+    _NODISCARD static consteval source_location current(uint_least32_t _InLine = __builtin_LINE(),
         uint_least32_t _InColumn = __builtin_COLUMN(), const char* _InFile = __builtin_FILE(),
         const char* _InFunction = __builtin_FUNCTION()) noexcept {
         source_location _Result;
