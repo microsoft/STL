@@ -1676,11 +1676,12 @@ void _Implicitly_convert_to(_To) noexcept; // not defined
 
 template <class _From, class _To, bool = is_convertible_v<_From, _To>, bool = is_void_v<_To>>
 _INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_Implicitly_convert_to<_To>(_STD declval<_From>()));
-#pragma warning(pop)
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
+
+#pragma warning(pop)
 
 template <class _From, class _To, bool _IsVoid>
 _INLINE_VAR constexpr bool _Is_nothrow_convertible_v<_From, _To, false, _IsVoid> = false;

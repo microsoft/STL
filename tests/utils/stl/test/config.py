@@ -42,7 +42,6 @@ class Configuration:
         self.long_tests = None
         self.msvc_toolset_libs_root = None
         self.stl_build_root = None
-        self.stl_lib_env_var = None
         self.stl_path_env_var = None
         self.stl_src_root = None
         self.stl_test_env = None

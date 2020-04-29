@@ -182,7 +182,7 @@ _STL_DISABLE_CLANG_WARNINGS
     }                                                                                      \
     while (false)                                                                          \
     _Pragma("clang diagnostic pop")
-#else // ^^^ clang // msvc vvv
+#else // ^^^ Clang // MSVC vvv
 #define _STL_VERIFY(cond, mesg)                                     \
     do {                                                            \
         if (cond) { /* contextually convertible to bool paranoia */ \
@@ -192,7 +192,7 @@ _STL_DISABLE_CLANG_WARNINGS
                                                                     \
         _Analysis_assume_(cond);                                    \
     } while (false)
-#endif // ^^^ msvc ^^^
+#endif // ^^^ MSVC ^^^
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)

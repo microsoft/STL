@@ -633,8 +633,8 @@ const T& fake_lvalue(const T&& t) { // C++11 12.2 [class.temporary]/5: "A tempor
     return t;
 }
 
-#pragma warning(pop)
-
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
+
+#pragma warning(pop)
