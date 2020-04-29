@@ -56,7 +56,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
     }
 
     // if checking case of c does not require API call, do it
-    if ((unsigned) c < 256) {
+    if (static_cast<unsigned int>(c) < 256) {
         if (ploc == 0) {
             if (!islower(c)) {
                 return c;
