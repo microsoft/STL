@@ -613,7 +613,7 @@
 #define _CONSTEXPR_IF
 #endif // _HAS_IF_CONSTEXPR
 
-#if defined(__cpp_consteval) || defined(__clang__) // TRANSITION, LLVM-45745 and VSO-778944
+#ifdef __cpp_consteval
 #define _CONSTEVAL consteval
 #else // ^^^ supports consteval / no consteval vvv
 #define _CONSTEVAL constexpr
