@@ -47,7 +47,7 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
     wchar_t* string1, wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) {
     size_t n1              = end1 - string1;
     size_t n2              = end2 - string2;
-    size_t size            = (size_t) -1;
+    size_t size            = static_cast<size_t>(-1);
     unsigned char* bbuffer = nullptr;
     const wchar_t* locale_name;
 
@@ -70,14 +70,15 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
         // compared using wcscmp(). User's buffer is n1 wide chars, so
         // use an internal buffer of n1 bytes.
 
-        bbuffer = (unsigned char*) _malloc_crt(n1);
+        bbuffer = static_cast<unsigned char*>(_malloc_crt(n1));
 
         if (bbuffer != nullptr) {
-            size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, (int) n2, (wchar_t*) bbuffer, (int) n1);
+            size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2),
+                reinterpret_cast<wchar_t*>(bbuffer), static_cast<int>(n1));
 
             if (size == 0) {
                 // buffer not big enough, get size required.
-                size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, (int) n2, nullptr, 0);
+                size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), nullptr, 0);
 
                 if (size == 0) {
                     size = INT_MAX; // default error
@@ -86,7 +87,7 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
                 // string successfully mapped, convert to wide char
 
                 for (size_t i = 0; i < size; ++i) {
-                    string1[i] = (wchar_t) bbuffer[i];
+                    string1[i] = static_cast<wchar_t>(bbuffer[i]);
                 }
             }
         }
@@ -102,7 +103,8 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
 #ifdef MRTDLL
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(unsigned short* string1, unsigned short* end1,
     const unsigned short* string2, const unsigned short* end2, const _Collvec* ploc) {
-    return _Wcsxfrm((wchar_t*) string1, (wchar_t*) end1, (const wchar_t*) string2, (const wchar_t*) end2, ploc);
+    return _Wcsxfrm(reinterpret_cast<wchar_t*>(string1), reinterpret_cast<wchar_t*>(end1),
+        reinterpret_cast<const wchar_t*>(string2), reinterpret_cast<const wchar_t*>(end2), ploc);
 }
 #endif // MRTDLL
 

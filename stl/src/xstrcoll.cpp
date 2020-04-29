@@ -41,8 +41,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
     const char* string1, const char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
     int ret = 0;
     UINT codepage;
-    int n1 = (int) (end1 - string1);
-    int n2 = (int) (end2 - string2);
+    int n1 = static_cast<int>(end1 - string1);
+    int n2 = static_cast<int>(end2 - string2);
     const wchar_t* locale_name;
 
     if (ploc == nullptr) {

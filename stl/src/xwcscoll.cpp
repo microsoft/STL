@@ -36,8 +36,8 @@ _EXTERN_C_UNLESS_PURE
 //     errno = EINVAL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
     const wchar_t* string1, const wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) {
-    int n1  = (int) (end1 - string1);
-    int n2  = (int) (end2 - string2);
+    int n1  = static_cast<int>(end1 - string1);
+    int n2  = static_cast<int>(end2 - string2);
     int ret = 0;
     const wchar_t* locale_name;
 
@@ -67,8 +67,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
 #ifdef MRTDLL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const unsigned short* string1, const unsigned short* end1,
     const unsigned short* string2, const unsigned short* end2, const _Collvec* ploc) {
-    return _Wcscoll(
-        (const wchar_t*) string1, (const wchar_t*) end1, (const wchar_t*) string2, (const wchar_t*) end2, ploc);
+    return _Wcscoll(reinterpret_cast<const wchar_t*>(string1), reinterpret_cast<const wchar_t*>(end1),
+        reinterpret_cast<const wchar_t*>(string2), reinterpret_cast<const wchar_t*>(end2), ploc);
 }
 #endif // MRTDLL
 
