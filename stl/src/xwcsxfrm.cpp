@@ -70,20 +70,22 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
         // compared using wcscmp(). User's buffer is n1 wide chars, so
         // use an internal buffer of n1 bytes.
 
-        if (nullptr != (bbuffer = (unsigned char*) _malloc_crt(n1))) {
-            if (0
-                == (size = __crtLCMapStringW(
-                        locale_name, LCMAP_SORTKEY, string2, (int) n2, (wchar_t*) bbuffer, (int) n1))) {
-                // buffer not big enough, get size required.
+        bbuffer = (unsigned char*) _malloc_crt(n1);
 
-                if (0 == (size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, (int) n2, nullptr, 0))) {
+        if (bbuffer != nullptr) {
+            size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, (int) n2, (wchar_t*) bbuffer, (int) n1);
+
+            if (size == 0) {
+                // buffer not big enough, get size required.
+                size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, (int) n2, nullptr, 0);
+
+                if (size == 0) {
                     size = INT_MAX; // default error
                 }
             } else {
-                size_t i;
                 // string successfully mapped, convert to wide char
 
-                for (i = 0; i < size; i++) {
+                for (size_t i = 0; i < size; ++i) {
                     string1[i] = (wchar_t) bbuffer[i];
                 }
             }

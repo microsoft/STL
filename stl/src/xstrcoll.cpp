@@ -54,11 +54,12 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
     }
 
     if (locale_name == nullptr) {
-        int ans;
-        ans = memcmp(string1, string2, n1 < n2 ? n1 : n2);
-        ret = (ans != 0 || n1 == n2 ? ans : n1 < n2 ? -1 : +1);
+        int ans = memcmp(string1, string2, n1 < n2 ? n1 : n2);
+        ret     = (ans != 0 || n1 == n2 ? ans : n1 < n2 ? -1 : +1);
     } else {
-        if (0 == (ret = __crtCompareStringA(locale_name, SORT_STRINGSORT, string1, n1, string2, n2, codepage))) {
+        ret = __crtCompareStringA(locale_name, SORT_STRINGSORT, string1, n1, string2, n2, codepage);
+
+        if (ret == 0) {
             errno = EINVAL;
             ret   = _NLSCMPERROR;
         } else {
