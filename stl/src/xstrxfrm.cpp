@@ -59,7 +59,7 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
     UINT codepage;
     const wchar_t* locale_name;
 
-    if (ploc == 0) {
+    if (ploc == nullptr) {
         locale_name = ___lc_locale_name_func()[LC_COLLATE];
         codepage    = ___lc_collate_cp_func();
     } else {

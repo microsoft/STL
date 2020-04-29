@@ -41,7 +41,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const wchar_t* _string1, cons
     int ret = 0;
     const wchar_t* locale_name;
 
-    if (ploc == 0) {
+    if (ploc == nullptr) {
         locale_name = ___lc_locale_name_func()[LC_COLLATE];
     } else {
         locale_name = ploc->_LocaleName;

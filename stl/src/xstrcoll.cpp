@@ -45,7 +45,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
     int n2 = (int) (_end2 - _string2);
     const wchar_t* locale_name;
 
-    if (ploc == 0) {
+    if (ploc == nullptr) {
         locale_name = ___lc_locale_name_func()[LC_COLLATE];
         codepage    = ___lc_collate_cp_func();
     } else {

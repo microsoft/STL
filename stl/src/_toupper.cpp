@@ -39,7 +39,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
     const wchar_t* locale_name;
     UINT codepage;
 
-    if (ploc == 0) {
+    if (ploc == nullptr) {
         locale_name = ___lc_locale_name_func()[LC_CTYPE];
         codepage    = ___lc_codepage_func();
     } else {
@@ -57,7 +57,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
 
     // if checking case of c does not require API call, do it
     if (static_cast<unsigned int>(c) < 256) {
-        if (ploc == 0) {
+        if (ploc == nullptr) {
             if (!islower(c)) {
                 return c;
             }
@@ -69,7 +69,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
     }
 
     // convert int c to multibyte string
-    if (ploc == 0 ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
+    if (ploc == nullptr ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
         inbuffer[0] = (c >> 8 & 0xff);
         inbuffer[1] = (unsigned char) c;
         inbuffer[2] = 0;
