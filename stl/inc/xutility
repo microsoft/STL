@@ -1787,12 +1787,12 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
 // CLASS TEMPLATE reverse_iterator
 #if !_HAS_IF_CONSTEXPR
 template <class _Iter>
-constexpr _Iter _Operator_arrow(true_type, _Iter _Target) {
+_NODISCARD constexpr _Iter _Operator_arrow(true_type, _Iter _Target) {
     return _Target;
 }
 
 template <class _Iter>
-constexpr decltype(auto) _Operator_arrow(false_type, _Iter& _Target) {
+_NODISCARD constexpr decltype(auto) _Operator_arrow(false_type, _Iter& _Target) {
     return _Target.operator->();
 }
 #endif // !_HAS_IF_CONSTEXPR
@@ -1877,7 +1877,7 @@ public:
             return _Tmp.operator->();
         }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-        return _Operator_arrow(is_pointer<_BidIt>(), _Tmp);
+        return _Operator_arrow(is_pointer<_BidIt>{}, _Tmp);
 #endif // _HAS_IF_CONSTEXPR
     }
 #endif // __cpp_lib_concepts
@@ -1971,7 +1971,7 @@ public:
         current._Seek_to(_It.current);
     }
 
-    constexpr const _BidIt& _Get_current() const noexcept {
+    _NODISCARD constexpr const _BidIt& _Get_current() const noexcept {
         return current;
     }
 
