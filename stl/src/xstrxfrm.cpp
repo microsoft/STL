@@ -53,10 +53,9 @@ _EXTERN_C_UNLESS_PURE
 //     Non-standard: if OM/API error, return INT_MAX.
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
     char* _string1, char* _end1, const char* _string2, const char* _end2, const _Collvec* ploc) {
-    size_t _n1 = _end1 - _string1;
-    size_t _n2 = _end2 - _string2;
-    int dstlen;
-    size_t retval = (size_t) -1; // NON-ANSI: default if OM or API error
+    size_t _n1    = _end1 - _string1;
+    size_t _n2    = _end2 - _string2;
+    size_t retval = static_cast<size_t>(-1); // NON-ANSI: default if OM or API error
     UINT codepage;
     const wchar_t* locale_name;
 
@@ -68,22 +67,24 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
         codepage    = ploc->_Page;
     }
 
-    if ((locale_name == nullptr) && (codepage == CP_ACP)) {
+    if (locale_name == nullptr && codepage == CP_ACP) {
         if (_n2 <= _n1) {
             memcpy(_string1, _string2, _n2);
         }
         retval = _n2;
     } else {
         // Inquire size of dst string in BYTES
-        if (0
-            != (dstlen =
-                    __crtLCMapStringA(locale_name, LCMAP_SORTKEY, _string2, (int) _n2, nullptr, 0, codepage, TRUE))) {
+        const int dstlen =
+            __crtLCMapStringA(locale_name, LCMAP_SORTKEY, _string2, static_cast<int>(_n2), nullptr, 0, codepage, TRUE);
+
+        if (dstlen != 0) {
             retval = dstlen;
 
             // if not enough room, return amount needed
-            if (dstlen <= (int) (_n1)) {
+            if (dstlen <= static_cast<int>(_n1)) {
                 // Map src string to dst string
-                __crtLCMapStringA(locale_name, LCMAP_SORTKEY, _string2, (int) _n2, _string1, (int) _n1, codepage, TRUE);
+                __crtLCMapStringA(locale_name, LCMAP_SORTKEY, _string2, static_cast<int>(_n2), _string1,
+                    static_cast<int>(_n1), codepage, TRUE);
             }
         }
     }
