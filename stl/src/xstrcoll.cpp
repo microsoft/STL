@@ -23,10 +23,10 @@ _EXTERN_C_UNLESS_PURE
 //     In the C locale, strcoll() simply resolves to strcmp().
 //
 // Entry:
-//     const char* _string1 = pointer to beginning of the first string
-//     const char* _end1    = pointer past end of the first string
-//     const char* _string2 = pointer to beginning of the second string
-//     const char* _end2    = pointer past end of the second string
+//     const char* string1  = pointer to beginning of the first string
+//     const char* end1     = pointer past end of the first string
+//     const char* string2  = pointer to beginning of the second string
+//     const char* end2     = pointer past end of the second string
 //     const _Collvec* ploc = pointer to locale info
 //
 // Exit:
@@ -38,11 +38,11 @@ _EXTERN_C_UNLESS_PURE
 //     _NLSCMPERROR = error
 //     errno = EINVAL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
-    const char* _string1, const char* _end1, const char* _string2, const char* _end2, const _Collvec* ploc) {
+    const char* string1, const char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
     int ret = 0;
     UINT codepage;
-    int n1 = (int) (_end1 - _string1);
-    int n2 = (int) (_end2 - _string2);
+    int n1 = (int) (end1 - string1);
+    int n2 = (int) (end2 - string2);
     const wchar_t* locale_name;
 
     if (ploc == nullptr) {
@@ -55,10 +55,10 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
 
     if (locale_name == nullptr) {
         int ans;
-        ans = memcmp(_string1, _string2, n1 < n2 ? n1 : n2);
+        ans = memcmp(string1, string2, n1 < n2 ? n1 : n2);
         ret = (ans != 0 || n1 == n2 ? ans : n1 < n2 ? -1 : +1);
     } else {
-        if (0 == (ret = __crtCompareStringA(locale_name, SORT_STRINGSORT, _string1, n1, _string2, n2, codepage))) {
+        if (0 == (ret = __crtCompareStringA(locale_name, SORT_STRINGSORT, string1, n1, string2, n2, codepage))) {
             errno = EINVAL;
             ret   = _NLSCMPERROR;
         } else {

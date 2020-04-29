@@ -19,10 +19,10 @@ _EXTERN_C_UNLESS_PURE
 //     In the C locale, wcscmp() is used to make the comparison.
 //
 // Entry:
-//     const wchar_t* _string1 = pointer to beginning of the first string
-//     const wchar_t* _end1    = pointer past end of the first string
-//     const wchar_t* _string2 = pointer to beginning of the second string
-//     const wchar_t* _end2    = pointer past end of the second string
+//     const wchar_t* string1  = pointer to beginning of the first string
+//     const wchar_t* end1     = pointer past end of the first string
+//     const wchar_t* string2  = pointer to beginning of the second string
+//     const wchar_t* end2     = pointer past end of the second string
 //     const _Collvec* ploc    = pointer to locale info
 //
 // Exit:
@@ -34,10 +34,10 @@ _EXTERN_C_UNLESS_PURE
 // Exceptions:
 //     _NLSCMPERROR = error
 //     errno = EINVAL
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const wchar_t* _string1, const wchar_t* _end1,
-    const wchar_t* _string2, const wchar_t* _end2, const _Collvec* ploc) {
-    int n1  = (int) (_end1 - _string1);
-    int n2  = (int) (_end2 - _string2);
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
+    const wchar_t* string1, const wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) {
+    int n1  = (int) (end1 - string1);
+    int n2  = (int) (end2 - string2);
     int ret = 0;
     const wchar_t* locale_name;
 
@@ -48,10 +48,10 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const wchar_t* _string1, cons
     }
 
     if (locale_name == nullptr) {
-        int ans = wmemcmp(_string1, _string2, n1 < n2 ? n1 : n2);
+        int ans = wmemcmp(string1, string2, n1 < n2 ? n1 : n2);
         ret     = (ans != 0 || n1 == n2 ? ans : n1 < n2 ? -1 : +1);
     } else {
-        if (0 == (ret = __crtCompareStringW(locale_name, SORT_STRINGSORT, _string1, n1, _string2, n2))) {
+        if (0 == (ret = __crtCompareStringW(locale_name, SORT_STRINGSORT, string1, n1, string2, n2))) {
             errno = EINVAL;
             ret   = _NLSCMPERROR;
         } else {
@@ -63,10 +63,10 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const wchar_t* _string1, cons
 }
 
 #ifdef MRTDLL
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const unsigned short* _string1, const unsigned short* _end1,
-    const unsigned short* _string2, const unsigned short* _end2, const _Collvec* ploc) {
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(const unsigned short* string1, const unsigned short* end1,
+    const unsigned short* string2, const unsigned short* end2, const _Collvec* ploc) {
     return _Wcscoll(
-        (const wchar_t*) _string1, (const wchar_t*) _end1, (const wchar_t*) _string2, (const wchar_t*) _end2, ploc);
+        (const wchar_t*) string1, (const wchar_t*) end1, (const wchar_t*) string2, (const wchar_t*) end2, ploc);
 }
 #endif // MRTDLL
 

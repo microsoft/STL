@@ -18,9 +18,9 @@ _EXTERN_C_UNLESS_PURE
 // size_t _Strxfrm() - Transform a string using locale information
 //
 // Purpose:
-//     Transform the string pointed to by _string2 and place the
-//     resulting string into the array pointed to by _string1.
-//     No more than _end1 - _string1 characters are placed into the
+//     Transform the string pointed to by string2 and place the
+//     resulting string into the array pointed to by string1.
+//     No more than end1 - string1 characters are placed into the
 //     resulting string (including the null).
 //
 //     The transformation is such that if strcmp() is applied to
@@ -38,23 +38,23 @@ _EXTERN_C_UNLESS_PURE
 //     In the "C" locale, _Strxfrm() simply resolves to strncpy()/strlen().
 //
 // Entry:
-//     char* _string1       = pointer to beginning of result string
-//     char* _end1          = pointer past end of result string
-//     const char* _string2 = pointer to beginning of source string
-//     const char* _end2    = pointer past end of source string
+//     char* string1        = pointer to beginning of result string
+//     char* end1           = pointer past end of result string
+//     const char* string2  = pointer to beginning of source string
+//     const char* end2     = pointer past end of source string
 //     const _Collvec* ploc = pointer to locale info
 //
 // Exit:
 //     Length of the transformed string.
 //     If the value returned is too big, the contents of the
-//     _string1 array are indeterminate.
+//     string1 array are indeterminate.
 //
 // Exceptions:
 //     Non-standard: if OM/API error, return INT_MAX.
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
-    char* _string1, char* _end1, const char* _string2, const char* _end2, const _Collvec* ploc) {
-    size_t _n1    = _end1 - _string1;
-    size_t _n2    = _end2 - _string2;
+    char* string1, char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
+    size_t n1     = end1 - string1;
+    size_t n2     = end2 - string2;
     size_t retval = static_cast<size_t>(-1); // NON-ANSI: default if OM or API error
     UINT codepage;
     const wchar_t* locale_name;
@@ -68,23 +68,23 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
     }
 
     if (locale_name == nullptr && codepage == CP_ACP) {
-        if (_n2 <= _n1) {
-            memcpy(_string1, _string2, _n2);
+        if (n2 <= n1) {
+            memcpy(string1, string2, n2);
         }
-        retval = _n2;
+        retval = n2;
     } else {
         // Inquire size of dst string in BYTES
         const int dstlen =
-            __crtLCMapStringA(locale_name, LCMAP_SORTKEY, _string2, static_cast<int>(_n2), nullptr, 0, codepage, TRUE);
+            __crtLCMapStringA(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), nullptr, 0, codepage, TRUE);
 
         if (dstlen != 0) {
             retval = dstlen;
 
             // if not enough room, return amount needed
-            if (dstlen <= static_cast<int>(_n1)) {
+            if (dstlen <= static_cast<int>(n1)) {
                 // Map src string to dst string
-                __crtLCMapStringA(locale_name, LCMAP_SORTKEY, _string2, static_cast<int>(_n2), _string1,
-                    static_cast<int>(_n1), codepage, TRUE);
+                __crtLCMapStringA(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), string1,
+                    static_cast<int>(n1), codepage, TRUE);
             }
         }
     }
