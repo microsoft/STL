@@ -81,6 +81,7 @@
 #include <regex>
 #include <scoped_allocator>
 #include <set>
+#include <source_location>
 #include <span>
 #include <sstream>
 #include <stack>
@@ -101,10 +102,6 @@
 #include <variant>
 #include <vector>
 #include <version>
-
-#if _HAS_CXX20 && defined(__clang__)
-#include <source_location>
-#endif
 
 #ifndef _M_CEE_PURE
 #include <atomic>
