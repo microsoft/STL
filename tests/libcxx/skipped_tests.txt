@@ -408,10 +408,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0415R1 "constexpr For <complex> (Again)"
-numerics\complex.number\cmplx.over\imag.pass.cpp
-numerics\complex.number\cmplx.over\real.pass.cpp
-
 # C++20 P0476R2 "<bit> bit_cast"
 language.support\support.limits\support.limits.general\bit.version.pass.cpp
 

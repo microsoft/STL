@@ -408,10 +408,6 @@ std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp SKIPPED
 std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp SKIPPED
 std/utilities/time/time.hms/time.hms.members/width.pass.cpp SKIPPED
 
-# C++20 P0415R1 "constexpr For <complex> (Again)"
-std/numerics/complex.number/cmplx.over/imag.pass.cpp SKIPPED
-std/numerics/complex.number/cmplx.over/real.pass.cpp SKIPPED
-
 # C++20 P0476R2 "<bit> bit_cast"
 std/language.support/support.limits/support.limits.general/bit.version.pass.cpp SKIPPED
 

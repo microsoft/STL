@@ -47,6 +47,23 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
+// FUNCTION TEMPLATE _Bit_cast
+template <class _To, class _From,
+    enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
+                    is_trivially_copyable<_From>>,
+        int> = 0>
+#ifdef __CUDACC__
+_NODISCARD _To _Bit_cast(const _From& _Val) noexcept {
+    _To _To_obj; // assumes default-init
+    _CSTD memcpy(_STD addressof(_To_obj), _STD addressof(_Val), sizeof(_To));
+    return _To_obj;
+}
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
+    return __builtin_bit_cast(_To, _Val);
+}
+#endif // ^^^ no workaround ^^^
+
 // STRUCT TEMPLATE _Get_first_parameter
 template <class _Ty>
 struct _Get_first_parameter;
