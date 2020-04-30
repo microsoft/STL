@@ -108,13 +108,17 @@ inline bool _Is_lzcnt_supported() {
     return cpuinfo[2] & (1 << 5);
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4640)
+
 template <typename T>
 constexpr int _Popcount_helper(T x) {
     constexpr int _Digits = numeric_limits<T>::digits;
     // we static cast these bit patterns in order to truncate
     // them to the correct size
     x = static_cast<T>(x - ((x >> 1) & static_cast<T>(0x5555555555555555ull)));
-    x = static_cast<T>((x & static_cast<T>(0x3333333333333333ull)) + ((x >> 2) & static_cast<T>(0x3333333333333333ull)));
+    x = static_cast<T>(
+        (x & static_cast<T>(0x3333333333333333ull)) + ((x >> 2) & static_cast<T>(0x3333333333333333ull)));
     x = static_cast<T>((x + (x >> 4)) & static_cast<T>(0x0F0F0F0F0F0F0F0Full));
     for (int _ShiftDigits = numeric_limits<char>::digits; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
         x = static_cast<T>(x + static_cast<T>(x >> _ShiftDigits));
@@ -177,7 +181,7 @@ inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
 #endif
         }
     } else {
-        _Popcount_helper(_Val);
+        return _Popcount_helper(_Val);
     }
 }
 #endif // defined(_M_IX86) || defined(_M_X64)
@@ -212,7 +216,7 @@ _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 #endif
     }
 }
-
+#pragma warning(pop)
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
     return _STD countl_zero(static_cast<_Ty>(~_Val));
