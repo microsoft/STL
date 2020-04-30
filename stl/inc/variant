@@ -1143,6 +1143,10 @@ public:
     using _Mybase::valueless_by_exception;
 
     // swap [variant.swap]
+#ifdef __clang__ // TRANSITION, LLVM-45398
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
+#endif // TRANSITION, LLVM-45398
     void swap(variant& _That) noexcept(
         conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
         // exchange the contained values if *this and _That hold the same alternative, otherwise exchange the values of
@@ -1219,6 +1223,9 @@ public:
             }
         }
     }
+#ifdef __clang__ // TRANSITION, LLVM-45398
+#pragma clang diagnostic pop
+#endif // TRANSITION, LLVM-45398
 
 private:
     template <size_t _Idx, class... _ArgTypes>
