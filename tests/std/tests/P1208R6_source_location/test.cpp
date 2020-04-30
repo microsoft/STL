@@ -49,7 +49,7 @@ constexpr void local_test() {
 }
 
 constexpr void argument_test(
-    const unsigned line, const unsigned column, const source_location x = source_location::current()) {
+    const unsigned int line, const unsigned int column, const source_location x = source_location::current()) {
     assert(x.line() == line);
     assert(x.column() == column);
     assert(x.function_name() == "test"sv);

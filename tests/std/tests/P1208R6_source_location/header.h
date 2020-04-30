@@ -9,9 +9,9 @@
 using namespace std;
 
 constexpr void header_test() {
-    auto x = source_location::current();
+    const auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 14);
     assert(x.function_name() == "header_test"sv);
-    assert(string_view{x.file_name()}.ends_with("header.h"sv));
+    assert(string_view{x.file_name()}.ends_with("header.h"sv)); // TRANSITION LLVM-45731
 }
