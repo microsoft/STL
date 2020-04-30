@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifdef __clang__
+#ifdef __cpp_consteval
 #include "header.h"
 #include <type_traits>
 
@@ -134,6 +134,6 @@ int main() {
     static_assert(test());
     return 0;
 }
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ defined(__cpp_consteval) / !defined(__cpp_consteval) vvv
 int main() {}
 #endif
