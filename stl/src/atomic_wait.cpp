@@ -312,6 +312,33 @@ namespace {
 
 } // unnamed namespace
 
+#ifdef _BUILDING_SATELLITE_ATOMIC_WAIT
+
+#pragma comment(linker, "/export:__std_atomic_set_api_level")
+#pragma comment(linker, "/export:__std_atomic_get_spin_count")
+#pragma comment(linker, "/export:__std_atomic_wait_get_deadline")
+#pragma comment(linker, "/export:__std_atomic_wait_direct")
+
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
+#pragma comment(linker, "/export:__std_atomic_notify_one_direct=api-ms-win-core-synch-l1-2-0.WakeByAddressSingle")
+#pragma comment(linker, "/export:__std_atomic_notify_all_direct=api-ms-win-core-synch-l1-2-0.WakeByAddressAll")
+
+#else // ^^^ statically available / not statically available vvv
+
+#pragma comment(linker, "/export:__std_atomic_notify_one_direct")
+#pragma comment(linker, "/export:__std_atomic_notify_all_direct")
+
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
+#pragma comment(linker, "/export:__std_atomic_unwait_direct")
+#pragma comment(linker, "/export:__std_atomic_wait_indirect")
+#pragma comment(linker, "/export:__std_atomic_notify_one_indirect")
+#pragma comment(linker, "/export:__std_atomic_notify_all_indirect")
+#pragma comment(linker, "/export:__std_atomic_unwait_indirect")
+
+#endif // _BUILDING_SATELLITE_ATOMIC_WAIT
+
 _EXTERN_C
 bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const size_t _Size,
     _Atomic_wait_context_t& _Wait_context) noexcept {
