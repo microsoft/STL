@@ -1846,6 +1846,8 @@ class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     _Vb_reference() = default;
 
 public:
+    _Vb_reference(const _Vb_reference&) = default;
+
     _Vb_reference(const _Mybase& _Right) noexcept : _Mybase(_Right._Myptr, _Right._Myoff, _Right._Getcont()) {}
 
     _Vb_reference& operator=(const _Vb_reference& _Right) noexcept {

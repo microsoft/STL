@@ -102,7 +102,7 @@ _MRTIMP2 int __cdecl _Mbrtowc(wchar_t* pwc, const char* s, size_t n, mbstate_t* 
     case 4: // UTF-8
         _ASSERTE(ploc->_Page == CP_UTF8);
         trailingUtf8Units = _Utf8_trailing_byte_count(&wch, ch);
-        if (trailingUtf8Units == 0) { // optimistic ASCII passsthrough
+        if (trailingUtf8Units == 0) { // optimistic ASCII passthrough
             *pwc = static_cast<wchar_t>(ch);
             return 1;
         }
