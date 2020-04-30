@@ -1158,6 +1158,24 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 #endif // _M_IX86
 };
 
+#if 1 // TRANSITION, ABI
+template <size_t _TypeSize>
+_INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= 8 && (_TypeSize & (_TypeSize - 1)) == 0;
+#else // ^^^ don't break ABI / break ABI vvv
+#if _ATOMIC_HAS_DCAS
+template <size_t _TypeSize>
+_INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= 2 * sizeof(void*);
+#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
+template <size_t _TypeSize>
+_INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= sizeof(void*);
+#endif // _ATOMIC_HAS_DCAS
+#endif // break ABI
+
+template <class _Ty, bool _Is_lock_free = _Is_always_lock_free<sizeof(_Ty)>>
+_INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile = true;
+
+template <class _Ty>
+_CXX20_DEPRECATE_VOLATILE _INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile<_Ty, false> = true;
 
 // STRUCT TEMPLATE _Atomic_integral_facade
 template <class _Ty>
@@ -1172,6 +1190,8 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
+
+    // _Deprecate_non_lock_free_volatile is unnecessary here.
 
     // note: const_cast-ing away volatile is safe because all our intrinsics add volatile back on.
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
@@ -1313,6 +1333,8 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
         return _Temp;
     }
 
+    // _Deprecate_non_lock_free_volatile is unnecessary here.
+
     // note: const_cast-ing away volatile is safe because all our intrinsics add volatile back on.
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
     // are far more common than volatile ones.
@@ -1376,6 +1398,8 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
 #endif // hardware
         return reinterpret_cast<_Ty>(_Result);
     }
+
+    // _Deprecate_non_lock_free_volatile is unnecessary here.
 
     _Ty fetch_add(const ptrdiff_t _Diff) volatile noexcept {
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff);
@@ -1495,35 +1519,17 @@ public:
     atomic(const atomic&) = delete;
     atomic& operator=(const atomic&) = delete;
 
-#if 1 // TRANSITION, ABI
 #if _HAS_CXX17
-    static constexpr bool is_always_lock_free = sizeof(_Ty) <= 8 && (sizeof(_Ty) & sizeof(_Ty) - 1) == 0;
+    static constexpr bool is_always_lock_free = _Is_always_lock_free<sizeof(_Ty)>;
 #endif // _HAS_CXX17
 
+#if 1 // TRANSITION, ABI
     _NODISCARD bool is_lock_free() const volatile noexcept {
         constexpr bool _Result = sizeof(_Ty) <= 8 && (sizeof(_Ty) & sizeof(_Ty) - 1) == 0;
         return _Result;
     }
 
-#ifndef _ENABLE_ATOMIC_ALIGNMENT_FIX
-    static_assert(alignof(_Ty) >= sizeof(_Ty) || (sizeof(_Ty) != 2 && sizeof(_Ty) != 4 && sizeof(_Ty) != 8),
-        "You've instantiated std::atomic<T> with sizeof(T) equal to 2/4/8 and alignof(T) < sizeof(T). "
-        "Before VS 2015 Update 2, this would have misbehaved at runtime. "
-        "VS 2015 Update 2 was fixed to handle this correctly, "
-        "but the fix inherently changes layout and breaks binary compatibility. "
-        "Please define _ENABLE_ATOMIC_ALIGNMENT_FIX to acknowledge that you understand this, "
-        "and that everything you're linking has been compiled with VS 2015 Update 2 (or later).");
-#endif // _ENABLE_ATOMIC_ALIGNMENT_FIX
-
 #else // ^^^ don't break ABI / break ABI vvv
-
-#if _HAS_CXX17
-#if _ATOMIC_HAS_DCAS
-    static constexpr bool is_always_lock_free = sizeof(_Ty) <= 2 * sizeof(void*);
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-    static constexpr bool is_always_lock_free = sizeof(_Ty) <= sizeof(void*);
-#endif // _ATOMIC_HAS_DCAS
-#endif // _HAS_CXX17
 
     _NODISCARD bool is_lock_free() const volatile noexcept {
 #if _ATOMIC_HAS_DCAS
@@ -1539,6 +1545,7 @@ public:
     }
 
     _Ty operator=(const _Ty _Value) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         this->store(_Value);
         return _Value;
     }
@@ -1555,42 +1562,51 @@ public:
     // non-volatile should result in better debug codegen.
     using _Base::store;
     void store(const _Ty _Value) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<atomic*>(this)->_Base::store(_Value);
     }
 
     void store(const _Ty _Value, const memory_order _Order) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         const_cast<atomic*>(this)->_Base::store(_Value, _Order);
     }
 
     using _Base::load;
     _NODISCARD _Ty load() const volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<const atomic*>(this)->_Base::load();
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<const atomic*>(this)->_Base::load(_Order);
     }
 
     using _Base::exchange;
     _Ty exchange(const _Ty _Value) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::exchange(_Value);
     }
 
     _Ty exchange(const _Ty _Value, const memory_order _Order) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::exchange(_Value, _Order);
     }
 
     using _Base::compare_exchange_strong;
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::compare_exchange_strong(_Expected, _Desired);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<atomic*>(this)->_Base::compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
         const memory_order _Failure) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
@@ -1601,6 +1617,7 @@ public:
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
         // we have no weak CAS intrinsics, even on ARM32/ARM64, so fall back to strong
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired);
     }
 
@@ -1609,6 +1626,7 @@ public:
     }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
@@ -1618,6 +1636,7 @@ public:
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
         const memory_order _Failure) volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
@@ -1627,6 +1646,7 @@ public:
     }
 
     operator _Ty() const volatile noexcept {
+        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->load();
     }
 
@@ -1666,11 +1686,13 @@ template <class _Ty>
 _CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
     volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
     // NB: respecting volatility here appears unimplementable
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _STD atomic_init(const_cast<atomic<_Ty>*>(_Mem), _Value);
 }
 
 template <class _Ty>
 void atomic_store(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value);
 }
 
@@ -1682,6 +1704,7 @@ void atomic_store(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexce
 template <class _Ty>
 void atomic_store_explicit(
     volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value, _Order);
 }
 
@@ -1692,6 +1715,7 @@ void atomic_store_explicit(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Valu
 
 template <class _Ty>
 _NODISCARD _Ty atomic_load(const volatile atomic<_Ty>* const _Mem) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load();
 }
 
@@ -1702,6 +1726,7 @@ _NODISCARD _Ty atomic_load(const atomic<_Ty>* const _Mem) noexcept {
 
 template <class _Ty>
 _NODISCARD _Ty atomic_load_explicit(const volatile atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load(_Order);
 }
 
@@ -1712,6 +1737,7 @@ _NODISCARD _Ty atomic_load_explicit(const atomic<_Ty>* const _Mem, const memory_
 
 template <class _Ty>
 _Ty atomic_exchange(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->exchange(_Value);
 }
 
@@ -1723,6 +1749,7 @@ _Ty atomic_exchange(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noex
 template <class _Ty>
 _Ty atomic_exchange_explicit(
     volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->exchange(_Value, _Order);
 }
 
@@ -1735,6 +1762,7 @@ _Ty atomic_exchange_explicit(
 template <class _Ty>
 bool atomic_compare_exchange_strong(
     volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
@@ -1747,6 +1775,7 @@ bool atomic_compare_exchange_strong(
 template <class _Ty>
 bool atomic_compare_exchange_strong_explicit(volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
@@ -1759,6 +1788,7 @@ bool atomic_compare_exchange_strong_explicit(atomic<_Ty>* const _Mem, _Identity_
 template <class _Ty>
 bool atomic_compare_exchange_weak(
     volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected, const _Identity_t<_Ty> _Desired) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired);
 }
 
@@ -1771,6 +1801,7 @@ bool atomic_compare_exchange_weak(
 template <class _Ty>
 bool atomic_compare_exchange_weak_explicit(volatile atomic<_Ty>* const _Mem, _Identity_t<_Ty>* const _Expected,
     const _Identity_t<_Ty> _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->compare_exchange_strong(*_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
 }
 
@@ -1782,6 +1813,7 @@ bool atomic_compare_exchange_weak_explicit(atomic<_Ty>* const _Mem, _Identity_t<
 
 template <class _Ty>
 _Ty atomic_fetch_add(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_add(_Value);
 }
 
@@ -1793,6 +1825,7 @@ _Ty atomic_fetch_add(atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_t
 template <class _Ty>
 _Ty atomic_fetch_add_explicit(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value,
     const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_add(_Value, _Order);
 }
 
@@ -1804,6 +1837,7 @@ _Ty atomic_fetch_add_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_sub(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_sub(_Value);
 }
 
@@ -1815,6 +1849,7 @@ _Ty atomic_fetch_sub(atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_t
 template <class _Ty>
 _Ty atomic_fetch_sub_explicit(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::difference_type _Value,
     const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_sub(_Value, _Order);
 }
 
@@ -1826,6 +1861,7 @@ _Ty atomic_fetch_sub_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_and(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_and(_Value);
 }
 
@@ -1837,6 +1873,7 @@ _Ty atomic_fetch_and(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _
 template <class _Ty>
 _Ty atomic_fetch_and_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_and(_Value, _Order);
 }
 
@@ -1848,6 +1885,7 @@ _Ty atomic_fetch_and_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_or(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_or(_Value);
 }
 
@@ -1859,6 +1897,7 @@ _Ty atomic_fetch_or(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _V
 template <class _Ty>
 _Ty atomic_fetch_or_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_or(_Value, _Order);
 }
 
@@ -1870,6 +1909,7 @@ _Ty atomic_fetch_or_explicit(
 
 template <class _Ty>
 _Ty atomic_fetch_xor(volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_xor(_Value);
 }
 
@@ -1881,6 +1921,7 @@ _Ty atomic_fetch_xor(atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _
 template <class _Ty>
 _Ty atomic_fetch_xor_explicit(
     volatile atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->fetch_xor(_Value, _Order);
 }
 
@@ -1901,8 +1942,15 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
-        static long _Guard;
-        (void) _InterlockedCompareExchange(&_Guard, 0, 0);
+        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
+
+        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
+        // The memory fence provided by interlocked operations has some exceptions, but this is fine:
+        // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
+#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
+#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
+                                  // usage which could be reconsidered."
+        (void) _InterlockedIncrement(&_Guard);
         _Compiler_barrier();
     }
 #endif // hardware

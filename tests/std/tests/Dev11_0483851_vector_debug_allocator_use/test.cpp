@@ -105,4 +105,4 @@ namespace std {
     // vector<bool>
     template class vector<bool, simple_allocator<bool, empty_base>>;
     template class vector<bool, simple_allocator<bool, nonempty_base>>;
-}
+} // namespace std

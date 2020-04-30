@@ -29,7 +29,7 @@ namespace impl {
         };
         template <class T>
         using second = _t<second_<T>>;
-    }
+    } // namespace meta
 
     template <class I, class Cat>
     struct associated_types : std::iterator_traits<I> {
@@ -173,7 +173,7 @@ namespace impl {
             return !(x < y);
         }
     };
-}
+} // namespace impl
 
 template <class I, class C>
 struct adapterator : impl::output<adapterator<I, C>> {

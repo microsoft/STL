@@ -362,7 +362,7 @@ int approx2(Float_type d1, Float_type d2, Float_type sensitivity) { // test for 
         if (err < (Float_type) 0)
             err = -err;
 
-        sensitivity += ulp;
+        sensitivity += static_cast<Float_type>(ulp);
         if (err <= sensitivity * eps0) { // close enough, maybe display then succeed
             if (verbose)
                 CSTD printf("difference is %.2g ulp (<= %.2g ulp)"

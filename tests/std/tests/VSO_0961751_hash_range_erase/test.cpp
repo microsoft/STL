@@ -283,7 +283,7 @@ namespace std {
             return e.memoized_hash;
         }
     };
-}
+} // namespace std
 
 struct erase_bucket_consistency_fixture {
     struct liveness_empty_asserter {

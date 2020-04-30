@@ -36,7 +36,7 @@ int main() {
     // insert nullptr because that's the moved from state; the bug made this element get returned:
     uut.insert(unique_ptr<int>{});
     // insert enough elements to be on the edge of a rehash:
-    while ((static_cast<float>(uut.size() + 1) / uut.bucket_count()) <= 0.5f) {
+    while ((static_cast<float>(uut.size() + 1) / static_cast<float>(uut.bucket_count())) <= 0.5f) {
         uut.insert(make_unique<int>(i++));
     }
 

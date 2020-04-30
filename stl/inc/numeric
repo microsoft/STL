@@ -80,7 +80,6 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            (void) _Reduce_op; // TRANSITION, VSO-486357
             return _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
         }
     }
@@ -146,31 +145,11 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
     return _Val;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
-    // return noncommutative and nonassociative transform-reduction of sequences, using
-    // _Reduce_op and _Transform_op
-    return _STD inner_product(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _STD move(_Val),
-        _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Ty _Val) {
     // return noncommutative and nonassociative transform-reduction of sequences
     return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>(), multiplies<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty>
-_NODISCARD _CONSTEXPR20 _Ty inner_product(
-    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
-    // return noncommutative and nonassociative transform-reduction of sequences
-    return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>(), multiplies<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE transform_reduce
@@ -213,8 +192,6 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            (void) _Reduce_op; // TRANSITION, VSO-486357
-            (void) _Transform_op; // TRANSITION, VSO-486357
             return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
         }
     }
@@ -225,30 +202,11 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     return _Val;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty, class _BinOp1, class _BinOp2>
-_NODISCARD _CONSTEXPR20 _Ty transform_reduce(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) {
-    // return commutative and associative transform-reduction of
-    // sequences, using _Reduce_op and _Transform_op
-    return _STD transform_reduce(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _STD move(_Val),
-        _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
     return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _Ty>
-_NODISCARD _CONSTEXPR20 _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Ty _Val) {
-    // return commutative and associative transform-reduction of sequences
-    return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _Ty, class _BinOp, class _UnaryOp>
 _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
@@ -270,18 +228,6 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, c
 _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val,
     _BinOp1 _Reduce_op, _BinOp2 _Transform_op) noexcept; // terminates
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, class _Ty, class _BinOp1, class _BinOp2,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _Ty transform_reduce(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1,
-    _RightTy (&_First2)[_RightSize], _Ty _Val, _BinOp1 _Reduce_op, _BinOp2 _Transform_op) noexcept /* terminates */ {
-    // return commutative and associative transform-reduction of sequences, using _Reduce_op and _Transform_op
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD transform_reduce(_STD forward<_ExPo>(_Exec), _First1, _Last1,
-        _Array_iterator<_RightTy, _RightSize>(_First2), _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val) noexcept
 /* terminates */ {
@@ -291,18 +237,6 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, 
     return _STD transform_reduce(
         _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, class _Ty,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _Ty _Val) noexcept /* terminates */ {
-    // return commutative and associative transform-reduction of sequences
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD transform_reduce(
-        _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, const _FwdIt _First1, const _FwdIt _Last1, _Ty _Val, _BinOp _Reduce_op,
@@ -339,28 +273,11 @@ _CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _D
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp>
-_CONSTEXPR20 _DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op) {
-    // compute partial noncommutative and nonassociative reductions into _Dest, using _Reduce_op
-    return _STD partial_sum(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt partial_sum(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // compute partial noncommutative and nonassociative reductions into _Dest
     return _STD partial_sum(_First, _Last, _Dest, plus<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* partial_sum(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
-    // compute partial noncommutative and nonassociative reductions into _Dest
-    return _STD partial_sum(_First, _Last, _Dest, plus<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE exclusive_scan
@@ -389,46 +306,15 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp>
-_CONSTEXPR20 _DestTy* exclusive_scan(
-    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val, _BinOp _Reduce_op) {
-    // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(
-        _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _STD move(_Val), _Pass_fn(_Reduce_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest, _Ty _Val) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus<>{});
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty>
-_CONSTEXPR20 _DestTy* exclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val) {
-    // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus<>{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Ty, class _BinOp,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], _Ty _Val,
-    _BinOp _Reduce_op) noexcept /* terminates */ {
-    // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest),
-        _STD move(_Val), _Pass_fn(_Reduce_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest, _Ty _Val) noexcept
@@ -436,16 +322,6 @@ _FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last,
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus<>{});
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Ty,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _Ty _Val) noexcept /* terminates */ {
-    // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus<>{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 // FUNCTION TEMPLATE inclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp>
@@ -464,17 +340,6 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp>
-_CONSTEXPR20 _DestTy* inclusive_scan(
-    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op, _Ty _Val) {
-    // compute partial noncommutative and associative reductions including _Val into _Dest, using _Reduce_op
-    return _STD inclusive_scan(
-        _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op), _STD move(_Val))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt, class _BinOp>
 _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Reduce_op) {
@@ -501,64 +366,19 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp>
-_CONSTEXPR20 _DestTy* inclusive_scan(
-    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op) {
-    // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
-    return _STD inclusive_scan(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute partial noncommutative and associative reductions into _Dest
     return _STD inclusive_scan(_First, _Last, _Dest, plus<>{});
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
-    // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_First, _Last, _Dest, plus<>{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 inclusive_scan(
     _ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty _Val) noexcept; // terminates
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _BinOp, class _Ty,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _BinOp _Reduce_op, _Ty _Val) noexcept /* terminates */ {
-    // compute partial noncommutative and associative reductions
-    // including _Val into _Dest, using _Reduce_op
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest),
-        _Pass_fn(_Reduce_op), _STD move(_Val))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 inclusive_scan(
     _ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _BinOp,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _BinOp _Reduce_op) noexcept /* terminates */ {
-    // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD inclusive_scan(
-        _STD forward<_ExPo>(_Exec), _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
@@ -566,15 +386,6 @@ _FwdIt2 inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last,
     // compute partial noncommutative and associative reductions into _Dest
     return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept
-/* terminates */ {
-    // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 // FUNCTION TEMPLATE transform_exclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp, class _UnaryOp>
@@ -603,33 +414,10 @@ _CONSTEXPR20 _OutIt transform_exclusive_scan(
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp, class _UnaryOp>
-_CONSTEXPR20 _DestTy* transform_exclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize],
-    _Ty _Val, _BinOp _Reduce_op, _UnaryOp _Transform_op) {
-    // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of transformed predecessors
-    return _STD transform_exclusive_scan(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _STD move(_Val),
-        _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _OutIt, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _OutIt transform_exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _OutIt _Dest, _Ty _Val,
     _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Ty, class _BinOp, class _UnaryOp,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* transform_exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _Ty _Val, _BinOp _Reduce_op, _UnaryOp _Transform_op) {
-    // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of transformed predecessors
-    return _STD transform_exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last,
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 // FUNCTION TEMPLATE transform_inclusive_scan
 template <class _InIt, class _OutIt, class _Ty, class _BinOp, class _UnaryOp>
@@ -649,17 +437,6 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty, class _BinOp, class _UnaryOp>
-_CONSTEXPR20 _DestTy* transform_inclusive_scan(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize],
-    _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) {
-    // compute partial noncommutative and associative transformed reductions including _Val into _Dest
-    return _STD transform_inclusive_scan(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest),
-        _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op), _STD move(_Val))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _InIt, class _OutIt, class _BinOp, class _UnaryOp>
 _CONSTEXPR20 _OutIt transform_inclusive_scan(
@@ -687,50 +464,15 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp, class _UnaryOp>
-_CONSTEXPR20 _DestTy* transform_inclusive_scan(
-    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Reduce_op, _UnaryOp _Transform_op) {
-    // compute partial noncommutative and associative transformed reductions into _Dest
-    return _STD transform_inclusive_scan(
-        _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest,
     _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) noexcept; // terminates
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Ty, class _BinOp, class _UnaryOp,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) {
-    // compute partial noncommutative and associative transformed reductions including _Val into _Dest
-    return _STD transform_inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last,
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op), _STD move(_Val))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest,
     _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _BinOp, class _UnaryOp,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _BinOp _Reduce_op, _UnaryOp _Transform_op) {
-    // compute partial noncommutative and associative transformed reductions into _Dest
-    return _STD transform_inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last,
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE adjacent_difference
@@ -761,46 +503,16 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _BinOp>
-_CONSTEXPR20 _DestTy* adjacent_difference(
-    const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _BinOp _Func) {
-    // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute adjacent differences into _Dest
     return _STD adjacent_difference(_First, _Last, _Dest, minus<>());
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* adjacent_difference(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
-    // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_First, _Last, _Dest, minus<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 adjacent_difference(
     _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _BinOp,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize],
-    _BinOp _Diff_op) noexcept /* terminates */ {
-    // compute adjacent differences into _Dest
-    return _STD adjacent_difference(
-        _STD forward<_ExPo>(_Exec), _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Diff_op))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
@@ -808,15 +520,6 @@ _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _
     // compute adjacent differences into _Dest
     return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* adjacent_difference(
-    _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE iota
@@ -859,7 +562,10 @@ _NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
 
 // FUNCTION TEMPLATE _Stl_bitscan_forward
 template <class _Unsigned>
-constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
+_NODISCARD constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
+#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+    return static_cast<unsigned long>(_Countr_zero(_Mask));
+#else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
     // find the index of the least significant set bit (_BitScanForward isn't constexpr... yet :))
     static_assert(is_unsigned_v<_Unsigned>, "Bitscan only works on bits");
     unsigned long _Count = 0;
@@ -871,6 +577,7 @@ constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
     }
 
     return _Count;
+#endif // !__cpp_lib_bitops
 }
 
 // FUNCTION TEMPLATE gcd

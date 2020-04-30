@@ -220,6 +220,8 @@ public:
     template <class _Tag, class _Alloc, enable_if_t<is_same_v<_Tag, _Alloc_exact_args_t>, int> = 0>
     tuple(_Tag, const _Alloc&) noexcept /* strengthened */ {}
 
+    constexpr tuple& operator=(const tuple&) = default;
+
     void swap(tuple&) noexcept {}
 
     constexpr bool _Equals(const tuple&) const noexcept {
@@ -927,13 +929,10 @@ struct _Tuple_cat1 : _Tuple_cat2<tuple<>, index_sequence<>, index_sequence<>, 0,
                                                                                // return type and _Kx/_Ix indices
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 template <class _Ret, size_t... _Kx, size_t... _Ix, class _Ty>
 constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& _Arg) { // concatenate tuples
     return _Ret(_STD get<_Kx>(_STD get<_Ix>(_STD forward<_Ty>(_Arg)))...);
 }
-#pragma warning(pop)
 
 template <class... _Tuples>
 _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
@@ -944,14 +943,11 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&.
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE apply
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 template <class _Callable, class _Tuple, size_t... _Indices>
 constexpr decltype(auto) _Apply_impl(
     _Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) { // invoke _Obj with the elements of _Tpl
     return _STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
-#pragma warning(pop)
 
 template <class _Callable, class _Tuple>
 constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) { // invoke _Obj with the elements of _Tpl
@@ -960,14 +956,11 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) { // invoke _Obj
 }
 
 // FUNCTION TEMPLATE make_from_tuple
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 template <class _Ty, class _Tuple, size_t... _Indices>
 constexpr _Ty _Make_from_tuple_impl(
     _Tuple&& _Tpl, index_sequence<_Indices...>) { // construct _Ty from the elements of _Tpl
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
-#pragma warning(pop)
 
 template <class _Ty, class _Tuple>
 _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from the elements of _Tpl
@@ -976,35 +969,17 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from 
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE _For_each_tuple_element
-template <class _Tpl, class _Fx, size_t... _Indices>
-void _For_each_tuple_element_impl(
-    _Tpl&& _Tuple, _Fx _Func, index_sequence<_Indices...>) { // call _Func() on the _Indices elements of _Tuple
-    int _Ignored[] = {(static_cast<void>(_Func(_STD get<_Indices>(_STD forward<_Tpl>(_Tuple)))), 0)...};
-    (void) _Ignored;
-}
-
-template <class _Tpl, class _Fx>
-void _For_each_tuple_element(_Tpl&& _Tuple, _Fx _Func) { // call _Func() on each element in _Tuple
-    _For_each_tuple_element_impl(
-        _STD forward<_Tpl>(_Tuple), _Func, make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>());
-}
-
-
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 // TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
 template <class _Ty1, class _Ty2>
 template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
 pair<_Ty1, _Ty2>::pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
     : first(_STD get<_Indexes1>(_STD move(_Val1))...), second(_STD get<_Indexes2>(_STD move(_Val2))...) {}
-#pragma warning(pop)
 
 // TEMPLATE CONSTRUCTOR pair::pair(piecewise_construct_t, tuple, tuple)
 template <class _Ty1, class _Ty2>
 template <class... _Types1, class... _Types2>
 pair<_Ty1, _Ty2>::pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
-    : pair(_Val1, _Val2, index_sequence_for<_Types1...>(), index_sequence_for<_Types2...>()) {}
+    : pair(_Val1, _Val2, index_sequence_for<_Types1...>{}, index_sequence_for<_Types2...>{}) {}
 
 // STRUCT TEMPLATE uses_allocator
 template <class... _Types, class _Alloc>

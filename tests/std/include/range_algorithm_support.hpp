@@ -36,7 +36,7 @@ namespace detail {
             return permissive();
         }
     };
-}
+} // namespace detail
 constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <bool>
@@ -48,11 +48,17 @@ struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
 template <>
 inline constexpr bool std::ranges::enable_borrowed_range<borrowed<true>> = true;
 
-inline constexpr auto get_first = [](auto&& x) -> auto&& {
+#ifndef __clang__ // TRANSITION, LLVM-45213
+inline
+#endif
+    constexpr auto get_first = [](auto&& x) -> auto&& {
     return static_cast<decltype(x)>(x).first;
 };
 
-inline constexpr auto get_second = [](auto&& x) -> auto&& {
+#ifndef __clang__ // TRANSITION, LLVM-45213
+inline
+#endif
+    constexpr auto get_second = [](auto&& x) -> auto&& {
     return static_cast<decltype(x)>(x).second;
 };
 
@@ -100,7 +106,7 @@ private:
 
 public:
     using iterator_concept  = std::input_iterator_tag;
-    using iterator_category = std::output_iterator_tag;
+    using iterator_category = void; // TRANSITION, LWG-3289
     using value_type        = std::remove_cv_t<T>;
     using difference_type   = std::ptrdiff_t;
     using pointer           = void;
@@ -216,9 +222,6 @@ struct test_iterator {
         STATIC_ASSERT(always_false<Category>);
     }
 
-    friend void iter_move(test_iterator const&) {
-        STATIC_ASSERT(always_false<Category>);
-    }
     friend void iter_swap(test_iterator const&, test_iterator const&) {
         STATIC_ASSERT(always_false<Category>);
     }

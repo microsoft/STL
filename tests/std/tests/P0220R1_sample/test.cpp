@@ -72,7 +72,7 @@ namespace {
         test_source_dest<SourceCategory, bidirectional_iterator_tag>(gen);
         test_source_dest<SourceCategory, random_access_iterator_tag>(gen);
     }
-}
+} // unnamed namespace
 
 int main() {
     iota(begin(source), end(source), 0);

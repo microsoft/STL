@@ -149,7 +149,7 @@ namespace test_LWG_2782 {
     STATIC_ASSERT(!is_constructible_v<SA, SM>);
     STATIC_ASSERT(is_constructible_v<SAA, scoped_allocator_adaptor<allocator<float>, allocator<int>>>);
     STATIC_ASSERT(!is_constructible_v<SAA, SMA>);
-}
+} // namespace test_LWG_2782
 
 int main() {
     test_case_VSO_129349_non_default_constructible_allocators();

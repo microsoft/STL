@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # TRANSITION, VSO-1093670 "Memory corruption in EDG when processing multiple TUs"
-tests/GH_000545_include_compare:15 SKIP
-tests/GH_000545_include_compare:16 SKIP
-tests/P0607R0_inline_variables:19 SKIP
-tests/P0607R0_inline_variables:20 SKIP
-tests/P0607R0_inline_variables:21 SKIP
+tests/GH_000545_include_compare:15 SKIPPED
+tests/GH_000545_include_compare:16 SKIPPED
+tests/P0607R0_inline_variables:19 SKIPPED
+tests/P0607R0_inline_variables:20 SKIPPED
+tests/P0607R0_inline_variables:21 SKIPPED
 
 # TRANSITION, GH-697 "We should have means of collecting compiler and test crash dumps"
 # The ICE we are skipping this test because of is not easily reproducible we need to collect dumps
-tests/VSO_0000000_string_view_idl:15 SKIP
+tests/VSO_0000000_string_view_idl:15 SKIPPED

@@ -243,7 +243,7 @@ constexpr size_t _Get_least2_chunked_work_chunk_count(const size_t _Hw_threads, 
 
 // STRUCT TEMPLATE _Parallelism_allocator
 struct _Parallelism_allocate_traits {
-    _DECLSPEC_ALLOCATOR static void* _Allocate(const size_t _Bytes) {
+    __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
         void* _Result = ::operator new(_Bytes, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
@@ -253,7 +253,7 @@ struct _Parallelism_allocate_traits {
     }
 
 #ifdef __cpp_aligned_new
-    _DECLSPEC_ALLOCATOR static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+    __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
         void* _Result = ::operator new (_Bytes, align_val_t{_Align}, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
@@ -773,8 +773,9 @@ struct _Static_partition_team { // common data for all static partitioned ops
     _Diff _Unchunked_items;
 
     _Static_partition_team(const _Diff _Count_, const size_t _Chunks_)
-        : _Consumed_chunks{0}, _Chunks{_Chunks_}, _Count{_Count_}, _Chunk_size{_Count_ / static_cast<_Diff>(_Chunks_)},
-          _Unchunked_items{_Count_ % static_cast<_Diff>(_Chunks_)} {
+        : _Consumed_chunks{0}, _Chunks{_Chunks_}, _Count{_Count_}, _Chunk_size{static_cast<_Diff>(
+                                                                       _Count_ / static_cast<_Diff>(_Chunks_))},
+          _Unchunked_items{static_cast<_Diff>(_Count_ % static_cast<_Diff>(_Chunks_))} {
         // Calculate common data for statically partitioning iterator ranges.
         // pre: _Count_ >= _Chunks_ && _Chunks_ >= 1
     }
@@ -1003,16 +1004,10 @@ template <class _InIt1, class _InIt2>
 _Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // get the distance from 2 ranges which should have identical lengths
     if constexpr (_Is_random_iter_v<_InIt1>) {
-        (void) _First2; // TRANSITION, VSO-486357
-        (void) _Last2; // TRANSITION, VSO-486357
         return _Last1 - _First1;
     } else if constexpr (_Is_random_iter_v<_InIt2>) {
-        (void) _First1; // TRANSITION, VSO-486357
-        (void) _Last1; // TRANSITION, VSO-486357
         return _Last2 - _First2;
     } else {
-        (void) _First2; // TRANSITION, VSO-486357
-        (void) _Last2; // TRANSITION, VSO-486357
         return _STD distance(_First1, _Last1);
     }
 }
@@ -1275,19 +1270,6 @@ _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noe
 
     return _First;
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_SourceTy* for_each_n(_ExPo&& _Exec, _SourceTy (&_First)[_SourceSize], const _Diff _Count_raw, _Fn _Func) noexcept
-/* terminates */ {
-    // perform function for each element [_First, _First + _Count)
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-    return _STD for_each_n(_STD forward<_ExPo>(_Exec), static_cast<_SourceTy*>(_First), _Count, _Pass_fn(_Func));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 
 // PARALLEL FUNCTION TEMPLATE find
 template <class _FwdIt>
@@ -3022,7 +3004,6 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
         _Hw_threads          = __std_parallel_algorithms_hw_threads();
         _Attempt_parallelism = _Hw_threads > 1;
     } else {
-        (void) _Hw_threads; // TRANSITION, VSO-486357
         _Attempt_parallelism = false;
     }
 
@@ -4050,7 +4031,6 @@ template <class _InIt, class _Ty, class _BinOp>
 _Ty _Reduce_move_unchecked(_InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op) {
     // return reduction, choose optimization
     if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Val);
     } else {
         for (; _First != _Last; ++_First) {
@@ -4066,7 +4046,6 @@ _Ty _Reduce_at_least_two(const _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce
     // return reduction with no initial value
     // pre: distance(_First, _Last) >= 2
     if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_FwdIt, _Ty, _BinOp>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Ty{0});
     } else {
         auto _Next = _First;

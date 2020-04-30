@@ -131,11 +131,11 @@ namespace Concurrency {
         const GUID PPLTaskCausalityPlatformID = {
             0x7A76B220, 0xA758, 0x4E6E, 0xB0, 0xE0, 0xD7, 0xC6, 0xD7, 0x4A, 0x88, 0xFE};
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _isContinuation) {
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {
             if (asyncCausalityTracer.isCausalitySupported()) {
                 asyncCausalityTracer.get()->TraceOperationCreation(CausalityTraceLevel_Required,
                     CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    HStringReference(_isContinuation ? L"Concurrency::PPLTask::ScheduleContinuationTask"
+                    HStringReference(_IsContinuation ? L"Concurrency::PPLTask::ScheduleContinuationTask"
                                                      : L"Concurrency::PPLTask::ScheduleTask")
                         .Get(),
                     0);
