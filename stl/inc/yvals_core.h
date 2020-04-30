@@ -614,7 +614,7 @@
 #define _CONSTEXPR_IF
 #endif // _HAS_IF_CONSTEXPR
 
-#ifdef __clang__
+#ifdef __cpp_consteval
 #define _CONSTEVAL consteval
 #else // ^^^ supports consteval / no consteval vvv
 #define _CONSTEVAL constexpr
