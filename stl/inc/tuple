@@ -969,21 +969,6 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from 
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE _For_each_tuple_element
-template <class _Tpl, class _Fx, size_t... _Indices>
-void _For_each_tuple_element_impl(
-    _Tpl&& _Tuple, _Fx _Func, index_sequence<_Indices...>) { // call _Func() on the _Indices elements of _Tuple
-    int _Ignored[] = {(static_cast<void>(_Func(_STD get<_Indices>(_STD forward<_Tpl>(_Tuple)))), 0)...};
-    (void) _Ignored;
-}
-
-template <class _Tpl, class _Fx>
-void _For_each_tuple_element(_Tpl&& _Tuple, _Fx _Func) { // call _Func() on each element in _Tuple
-    _For_each_tuple_element_impl(
-        _STD forward<_Tpl>(_Tuple), _Func, make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>());
-}
-
-
 // TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
 template <class _Ty1, class _Ty2>
 template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
