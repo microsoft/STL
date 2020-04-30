@@ -117,6 +117,37 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 _STD_BEGIN
 
+// FENCES
+extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
+    if (_Order == memory_order_relaxed) {
+        return;
+    }
+
+#if defined(_M_ARM) || defined(_M_ARM64)
+    _Memory_barrier();
+#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+    _Compiler_barrier();
+    if (_Order == memory_order_seq_cst) {
+        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
+
+        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
+        // The memory fence provided by interlocked operations has some exceptions, but this is fine:
+        // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
+#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
+#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
+                                  // usage which could be reconsidered."
+        (void) _InterlockedIncrement(&_Guard);
+        _Compiler_barrier();
+    }
+#endif // hardware
+}
+
+extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
+    if (_Order != memory_order_relaxed) {
+        _Compiler_barrier();
+    }
+}
+
 // FUNCTION TEMPLATE kill_dependency
 template <class _Ty>
 _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependency ordering when called
@@ -639,11 +670,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if defined(_M_IX86)
         _Compiler_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
-#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
-#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
-                                  // usage which could be reconsidered."
-        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
-        (void) _InterlockedIncrement(&_Guard);
+        atomic_thread_fence(memory_order_seq_cst);
 #elif defined(_M_ARM64)
         _Memory_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
@@ -675,7 +702,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             return;
         }
     }
-
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<const long long>(_Storage);
@@ -1921,37 +1947,6 @@ template <class _Ty>
 _Ty atomic_fetch_xor_explicit(
     atomic<_Ty>* _Mem, const typename atomic<_Ty>::value_type _Value, const memory_order _Order) noexcept {
     return _Mem->fetch_xor(_Value, _Order);
-}
-
-// FENCES
-extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
-    if (_Order == memory_order_relaxed) {
-        return;
-    }
-
-#if defined(_M_ARM) || defined(_M_ARM64)
-    _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-    _Compiler_barrier();
-    if (_Order == memory_order_seq_cst) {
-        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
-
-        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
-        // The memory fence provided by interlocked operations has some exceptions, but this is fine:
-        // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
-#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
-#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
-                                  // usage which could be reconsidered."
-        (void) _InterlockedIncrement(&_Guard);
-        _Compiler_barrier();
-    }
-#endif // hardware
-}
-
-extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
-    if (_Order != memory_order_relaxed) {
-        _Compiler_barrier();
-    }
 }
 
 // ATOMIC TYPEDEFS
