@@ -27,14 +27,12 @@ public:
 
     explicit logic_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS domain_error
@@ -46,14 +44,12 @@ public:
 
     explicit domain_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS invalid_argument
@@ -65,14 +61,12 @@ public:
 
     explicit invalid_argument(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS length_error
@@ -84,14 +78,12 @@ public:
 
     explicit length_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS out_of_range
@@ -103,14 +95,12 @@ public:
 
     explicit out_of_range(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS runtime_error
@@ -122,14 +112,12 @@ public:
 
     explicit runtime_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS overflow_error
@@ -141,14 +129,12 @@ public:
 
     explicit overflow_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS underflow_error
@@ -160,14 +146,12 @@ public:
 
     explicit underflow_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 // CLASS range_error
@@ -179,14 +163,12 @@ public:
 
     explicit range_error(const char* _Message) : _Mybase(_Message) {}
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 [[noreturn]] inline void _Throw_range_error(const char* const _Message) {

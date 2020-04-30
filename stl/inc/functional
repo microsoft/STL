@@ -1360,9 +1360,9 @@ struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
     }
 
     template <class _Untuple>
-    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(_Apply(_Tid, _STD move(_Ut),
-        make_index_sequence<tuple_size_v<_Untuple>>())) { // call a nested bind expression
-        return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>());
+    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(
+        _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) { // call a nested bind expression
+        return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
 };
 
@@ -1430,9 +1430,9 @@ public:
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                           \
     template <class... _Unbound>                                                                              \
-    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq(),    \
+    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq{},    \
         _Mypair._Get_first(), _Mypair._Myval2, _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) { \
-        return _Call_binder(_Invoker_ret<_Ret>(), _Seq(), _Mypair._Get_first(), _Mypair._Myval2,              \
+        return _Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _Mypair._Get_first(), _Mypair._Myval2,              \
             _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...));                                      \
     }
 

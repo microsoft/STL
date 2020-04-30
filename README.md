@@ -170,8 +170,8 @@ architectures.
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja
--DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
-11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
+-DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B out\build\x64`
+11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C out\build\x64`
 
 # How To Consume
 

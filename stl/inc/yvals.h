@@ -455,7 +455,6 @@ private:
     catch (...) {
 #define _CATCH_END }
 
-#define _RAISE(x) throw x
 #define _RERAISE  throw
 #define _THROW(x) throw x
 

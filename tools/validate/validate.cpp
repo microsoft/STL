@@ -157,6 +157,7 @@ int main() {
         L".vs"sv,
         L".vscode"sv,
         L"__pycache__"sv,
+        L"build"sv,
         L"llvm-project"sv,
         L"out"sv,
         L"vcpkg"sv,
