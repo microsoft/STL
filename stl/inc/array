@@ -286,7 +286,7 @@ private:
 template <class _Ty, size_t _Size>
 constexpr void _Verify_range(
     const _Array_const_iterator<_Ty, _Size>& _First, const _Array_const_iterator<_Ty, _Size>& _Last) noexcept {
-    // TRANSITION, VSO-612785
+    // TRANSITION, CUDA
     _First._Verify_with(_Last);
 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
