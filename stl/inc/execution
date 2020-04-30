@@ -1003,16 +1003,10 @@ template <class _InIt1, class _InIt2>
 _Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // get the distance from 2 ranges which should have identical lengths
     if constexpr (_Is_random_iter_v<_InIt1>) {
-        (void) _First2; // TRANSITION, VSO-486357
-        (void) _Last2; // TRANSITION, VSO-486357
         return _Last1 - _First1;
     } else if constexpr (_Is_random_iter_v<_InIt2>) {
-        (void) _First1; // TRANSITION, VSO-486357
-        (void) _Last1; // TRANSITION, VSO-486357
         return _Last2 - _First2;
     } else {
-        (void) _First2; // TRANSITION, VSO-486357
-        (void) _Last2; // TRANSITION, VSO-486357
         return _STD distance(_First1, _Last1);
     }
 }
@@ -3009,7 +3003,6 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
         _Hw_threads          = __std_parallel_algorithms_hw_threads();
         _Attempt_parallelism = _Hw_threads > 1;
     } else {
-        (void) _Hw_threads; // TRANSITION, VSO-486357
         _Attempt_parallelism = false;
     }
 
@@ -4037,7 +4030,6 @@ template <class _InIt, class _Ty, class _BinOp>
 _Ty _Reduce_move_unchecked(_InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op) {
     // return reduction, choose optimization
     if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Val);
     } else {
         for (; _First != _Last; ++_First) {
@@ -4053,7 +4045,6 @@ _Ty _Reduce_at_least_two(const _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce
     // return reduction with no initial value
     // pre: distance(_First, _Last) >= 2
     if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_FwdIt, _Ty, _BinOp>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Ty{0});
     } else {
         auto _Next = _First;

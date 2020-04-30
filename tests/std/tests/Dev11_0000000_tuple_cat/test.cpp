@@ -189,8 +189,7 @@ int main() {
     }
 #endif // _HAS_CXX17
 
-    // Also test our workarounds for VSO-181496 "Variadic template emits spurious warning C4100: unreferenced formal
-    // parameter".
+    // Also test VSO-181496 "Variadic template emits spurious warning C4100: unreferenced formal parameter".
     {
         auto b1 = bind([] { return 256; });
         assert(b1() == 256);
