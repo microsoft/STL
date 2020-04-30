@@ -10,6 +10,7 @@ jobs:
   variables:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
     buildOutputLocation: 'D:/build'
+    litFlags: '-j$[testParallelism];--xunit-xml-output $[buildOutputLocation]/${{ parameters.targetPlatform }}/test-results.xml;--timeout 240;--shuffle'
   steps:
     - script: |
         if exist "$(tmpDir)" (
@@ -61,7 +62,7 @@ jobs:
         buildDirectory: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         useVcpkgToolchainFile: true
         cmakeAppendedArgs: |
-          -G Ninja -DENABLE_XUNIT_OUTPUT=TRUE -DADDITIONAL_LIT_FLAGS=-j$(testParallelism)
+          -G Ninja -DADDITIONAL_LIT_FLAGS="$(litFlags)"
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: CmdLine@2
       displayName: 'Run Tests'
@@ -75,29 +76,11 @@ jobs:
           ctest -V
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PublishTestResults@2
-      displayName: 'Publish libcxx Tests'
+      displayName: 'Publish Tests'
       timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
         testResultsFormat: JUnit
-        testResultsFiles: '**/libcxx.test.xml'
-        testRunTitle: 'libcxx-${{ parameters.targetPlatform }}'
-    - task: PublishTestResults@2
-      displayName: 'Publish std Tests'
-      timeoutInMinutes: 10
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
-      inputs:
-        searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
-        testResultsFormat: JUnit
-        testResultsFiles: '**/std.test.xml'
-        testRunTitle: 'std-${{ parameters.targetPlatform }}'
-    - task: PublishTestResults@2
-      displayName: 'Publish tr1 Tests'
-      timeoutInMinutes: 10
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
-      inputs:
-        searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
-        testResultsFormat: JUnit
-        testResultsFiles: '**/tr1.test.xml'
-        testRunTitle: 'tr1-${{ parameters.targetPlatform }}'
+        testResultsFiles: '**/test-results.xml'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}'
