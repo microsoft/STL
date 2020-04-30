@@ -111,20 +111,20 @@ inline bool _Is_lzcnt_supported() {
 #pragma warning(push)
 #pragma warning(disable : 4640)
 
-template <typename T>
-constexpr int _Popcount_helper(T x) {
-    constexpr int _Digits = numeric_limits<T>::digits;
+template <typename _Ty>
+constexpr int _Popcount_helper(_Ty _Val) {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
     // we static cast these bit patterns in order to truncate
     // them to the correct size
-    x = static_cast<T>(x - ((x >> 1) & static_cast<T>(0x5555555555555555ull)));
-    x = static_cast<T>(
-        (x & static_cast<T>(0x3333333333333333ull)) + ((x >> 2) & static_cast<T>(0x3333333333333333ull)));
-    x = static_cast<T>((x + (x >> 4)) & static_cast<T>(0x0F0F0F0F0F0F0F0Full));
+    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555555555555555ull)));
+    _Val = static_cast<_Ty>(
+        (_Val & static_cast<_Ty>(0x3333333333333333ull)) + ((_Val >> 2) & static_cast<_Ty>(0x3333333333333333ull)));
+    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F0F0F0F0F0F0Full));
     for (int _ShiftDigits = numeric_limits<char>::digits; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
-        x = static_cast<T>(x + static_cast<T>(x >> _ShiftDigits));
+        _Val = static_cast<_Ty>(_Val + static_cast<_Ty>(_Val >> _ShiftDigits));
     }
     // we want the bottom "slot" that's big enough to store _Digits
-    return static_cast<int>(x & (_Digits + _Digits - 1));
+    return static_cast<int>(_Val & (_Digits + _Digits - 1));
 }
 
 #if defined(_M_IX86) || defined(_M_X64)

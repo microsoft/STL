@@ -1023,27 +1023,27 @@ inline bool _Is_tzcnt_supported() {
 
 
 // see "Hacker's Delight" section 5-3
-template <typename T>
-constexpr int _Countl_zero_helper(T x) {
-    T y = 0;
+template <typename _Ty>
+constexpr int _Countl_zero_helper(_Ty _Val) {
+    _Ty _Yy = 0;
 
-    unsigned int n = numeric_limits<T>::digits;
-    unsigned int c = numeric_limits<T>::digits / 2;
+    unsigned int _Nn = numeric_limits<_Ty>::digits;
+    unsigned int _Cc = numeric_limits<_Ty>::digits / 2;
     do {
-        y = static_cast<T>(x >> c);
-        if (y != 0) {
-            n = n - c;
-            x = y;
+        _Yy = static_cast<T>(_Val >> _Cc);
+        if (_Yy != 0) {
+            _Nn  = _Nn - _Cc;
+            _Val = _Yy;
         }
-        c = c >> 1;
-    } while (c != 0);
-    return static_cast<int>(n) - static_cast<int>(x);
+        _Cc = _Cc >> 1;
+    } while (_Cc != 0);
+    return static_cast<int>(_Nn) - static_cast<int>(_Val);
 }
 
 // see "Hacker's Delight" section 5-4
-template <typename T>
-constexpr int _Countr_zero_helper(T x) {
-    return numeric_limits<T>::digits - _Countl_zero_helper(~x & (x - 1));
+template <typename _Ty>
+constexpr int _Countr_zero_helper(_Ty _Val) {
+    return numeric_limits<_Ty>::digits - _Countl_zero_helper(~_Val & (_Val - 1));
 }
 #pragma warning(push)
 #pragma warning(disable : 4640)
