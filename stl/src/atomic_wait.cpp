@@ -319,7 +319,7 @@ namespace {
 #pragma comment(linker, "/export:__std_atomic_wait_get_deadline")
 #pragma comment(linker, "/export:__std_atomic_wait_direct")
 
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
 
 #pragma comment(linker, "/export:__std_atomic_notify_one_direct=api-ms-win-core-synch-l1-2-0.WakeByAddressSingle")
 #pragma comment(linker, "/export:__std_atomic_notify_all_direct=api-ms-win-core-synch-l1-2-0.WakeByAddressAll")
