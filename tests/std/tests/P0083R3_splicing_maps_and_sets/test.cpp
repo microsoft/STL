@@ -374,7 +374,6 @@ void test_merge_single() {
         assert(4 <= c2.size() && c2.size() <= 5);
 #if _ITERATOR_DEBUG_LEVEL != 1 // merge invalidates iterators under IDL1
         auto const d = std::distance(c2.cbegin(), pos);
-        (void) d; // TRANSITION, VSO-486357
         if constexpr (ordered<C2>) {
             assert(d == (Reverse == should_reverse::yes ? static_cast<decltype(d)>(c2.size()) - 2 : 1));
         }

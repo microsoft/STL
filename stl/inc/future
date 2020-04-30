@@ -139,14 +139,12 @@ public:
         return _Future_error_map(_Mycode.value());
     }
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 
 private:
     error_code _Mycode; // the stored error code
