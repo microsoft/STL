@@ -408,10 +408,6 @@ std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp SKIPPED
 std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp SKIPPED
 std/utilities/time/time.hms/time.hms.members/width.pass.cpp SKIPPED
 
-# C++20 P0415R1 "constexpr For <complex> (Again)"
-std/numerics/complex.number/cmplx.over/imag.pass.cpp SKIPPED
-std/numerics/complex.number/cmplx.over/real.pass.cpp SKIPPED
-
 # C++20 P0476R2 "<bit> bit_cast"
 std/language.support/support.limits/support.limits.general/bit.version.pass.cpp SKIPPED
 
@@ -519,7 +515,7 @@ std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp SKIPPED
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
 std/utilities/tuple/tuple.tuple/tuple.cnstr/test_lazy_sfinae.pass.cpp:0 SKIPPED
 
-# Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
+# Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 SKIPPED
 
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.

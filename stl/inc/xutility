@@ -47,6 +47,23 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
+// FUNCTION TEMPLATE _Bit_cast
+template <class _To, class _From,
+    enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
+                    is_trivially_copyable<_From>>,
+        int> = 0>
+#ifdef __CUDACC__
+_NODISCARD _To _Bit_cast(const _From& _Val) noexcept {
+    _To _To_obj; // assumes default-init
+    _CSTD memcpy(_STD addressof(_To_obj), _STD addressof(_Val), sizeof(_To));
+    return _To_obj;
+}
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
+    return __builtin_bit_cast(_To, _Val);
+}
+#endif // ^^^ no workaround ^^^
+
 // STRUCT TEMPLATE _Get_first_parameter
 template <class _Ty>
 struct _Get_first_parameter;
@@ -1167,9 +1184,6 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
     // check that [_First, _Last) forms an iterator range
     if constexpr (_Range_verifiable_v<_Iter, _Sentinel>) {
         _Verify_range(_First, _Last);
-    } else {
-        (void) _First; // TRANSITION, VSO-486357
-        (void) _Last; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -1310,7 +1324,6 @@ _INLINE_VAR constexpr bool _Unwrappable_for_offset_v =
 #if _HAS_IF_CONSTEXPR
 template <class _Iter, class _Diff>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
-    (void) _Off;
     if constexpr (is_pointer_v<decay_t<_Iter>>) {
         return _It + 0;
     } else if constexpr (_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) {
@@ -1465,8 +1478,6 @@ _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last)
     if constexpr (_Is_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
     } else {
-        (void) _First; // TRANSITION, VSO-486357
-        (void) _Last; // TRANSITION, VSO-486357
         return _Distance_unknown{};
     }
 }
@@ -1551,10 +1562,6 @@ constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred
                 _STL_VERIFY(!static_cast<bool>(_Pred(*_Next, *_First)), "sequence not ordered");
             }
         }
-    } else {
-        (void) _First; // TRANSITION, VSO-486357
-        (void) _Last; // TRANSITION, VSO-486357
-        (void) _Pred; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -1587,10 +1594,6 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
     // test if range is ordered by predicate
     if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>> && _Is_fwd_iter_v<_InIt>) {
         _Debug_order_unchecked(_First, _Last, _Pred);
-    } else {
-        (void) _First; // TRANSITION, VSO-486357
-        (void) _Last; // TRANSITION, VSO-486357
-        (void) _Pred; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -4889,7 +4892,8 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
 
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
-        return _Find_unchecked1(_First, _Last, _Val, false_type{});
+        using _Elem = remove_pointer_t<_InIt>;
+        return _Find_unchecked1(_First, _Last, static_cast<_Elem>(_Val), false_type{});
     }
 #endif // __cpp_lib_is_constant_evaluated
     _First =

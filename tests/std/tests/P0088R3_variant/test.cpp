@@ -37,6 +37,7 @@
 
 #define _HAS_DEPRECATED_RESULT_OF 1
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+#define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 

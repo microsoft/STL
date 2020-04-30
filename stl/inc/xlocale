@@ -777,8 +777,6 @@ protected:
         _Mid1 = _First1;
         _Mid2 = _First2;
         if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
-            (void) _Last1;
-            (void) _Last2;
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one
@@ -798,8 +796,6 @@ protected:
         _Mid1 = _First1;
         _Mid2 = _First2;
         if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
-            (void) _Last1;
-            (void) _Last2;
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one

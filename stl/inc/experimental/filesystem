@@ -94,7 +94,7 @@ enum class copy_options { // names for copy options
 
 _BITMASK_OPS(copy_options)
 
-// ENUM dirctory_options
+// ENUM directory_options
 enum class directory_options { // names for directory options
     none = 0,
     follow_directory_symlink
