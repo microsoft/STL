@@ -79,7 +79,7 @@ int main() {
         // Make sure we don't look for 0x11 bytes in the range!
 
         assert(find(v.begin(), v.end(), 0xAABBCCDDUL) == v.begin() + 2);
-        assert(find(v.begin(), v.end(), 0x11) == v.end());
+        assert(find(v.begin(), v.end(), 0x11UL) == v.end());
     }
 
     { // Optimization inapplicable due to bogus value type (although the element type is good)

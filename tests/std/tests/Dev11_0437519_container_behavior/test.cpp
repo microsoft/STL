@@ -22,7 +22,7 @@ void assert_forward_list_resize_empty() {
 // argument is a reference to an element in the list that will be removed.
 
 struct A {
-    A(unsigned value) : _value(value) {}
+    A(unsigned int value) : _value(value) {}
     ~A() {
         _value = 0;
     }
@@ -33,7 +33,7 @@ struct A {
     }
 
 private:
-    unsigned _value;
+    unsigned int _value;
 };
 
 void assert_list_remove_element_in_sequence() {

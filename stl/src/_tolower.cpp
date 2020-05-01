@@ -41,7 +41,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     UINT codepage;
     const wchar_t* locale_name;
 
-    if (ploc == 0) {
+    if (ploc == nullptr) {
         locale_name = ___lc_locale_name_func()[LC_CTYPE];
         codepage    = ___lc_codepage_func();
     } else {
@@ -58,8 +58,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 
     // if checking case of c does not require API call, do it
-    if ((unsigned) c < 256) {
-        if (ploc == 0) {
+    if (static_cast<unsigned int>(c) < 256) {
+        if (ploc == nullptr) {
             if (!isupper(c)) {
                 return c;
             }
@@ -71,7 +71,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 
     // convert int c to multibyte string
-    if (ploc == 0 ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
+    if (ploc == nullptr ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
         inbuffer[0] = (c >> 8 & 0xff);
         inbuffer[1] = (unsigned char) c;
         inbuffer[2] = 0;
@@ -83,9 +83,10 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 
     // convert wide char to lowercase
-    if (0
-        == (size = __crtLCMapStringA(
-                locale_name, LCMAP_LOWERCASE, (const char*) inbuffer, size, (char*) outbuffer, 3, codepage, TRUE))) {
+    size = __crtLCMapStringA(locale_name, LCMAP_LOWERCASE, reinterpret_cast<const char*>(inbuffer), size,
+        reinterpret_cast<char*>(outbuffer), 3, codepage, TRUE);
+
+    if (size == 0) {
         return c;
     }
 

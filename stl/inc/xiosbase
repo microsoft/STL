@@ -206,14 +206,12 @@ public:
             : system_error(_Errcode, _Message) { // construct with message
         }
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
     protected:
         virtual void _Doraise() const override { // report the exception
             _RAISE(*this);
         }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
     };
 
     // CLASS Init

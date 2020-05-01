@@ -463,7 +463,7 @@ public:
     }
 
     ~scoped_lock() noexcept {
-        _For_each_tuple_element(_MyMutexes, [](auto& _Mutex) noexcept { _Mutex.unlock(); });
+        _STD apply([](_Mutexes&... _Mtxes) { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
     }
 
     scoped_lock(const scoped_lock&) = delete;
@@ -518,8 +518,8 @@ auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices.
 // FUNCTION TEMPLATE _Invoke_stored
 template <class... _Types>
 auto _Invoke_stored(tuple<_Types...>&& _Tuple)
-    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>())) { // invoke() a tuple
-    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>());
+    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
+    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
 }
 
 // FUNCTION TEMPLATE call_once
@@ -530,9 +530,9 @@ int __stdcall _Callback_once(void*, void* _Pv, void**) { // adapt call_once() to
     _Tuple* _Ptup = static_cast<_Tuple*>(_Pv);
 
     _TRY_BEGIN
-    // Note explicit _Seq() selects every element from *_Ptup except the last,
+    // Note explicit _Seq{} selects every element from *_Ptup except the last,
     // which contains call_once's exception_ptr.
-    _Invoke_stored_explicit(_STD move(*_Ptup), _Seq());
+    _Invoke_stored_explicit(_STD move(*_Ptup), _Seq{});
     _CATCH_ALL
     auto& _Ref = _STD get<_Idx>(*_Ptup);
     _Ref       = _STD current_exception();

@@ -46,6 +46,19 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
+template <typename Tpl, typename Fx, size_t... Indices>
+void for_each_tuple_element_impl(Tpl&& Tuple, Fx Func, index_sequence<Indices...>) {
+    // call Func() on the Indices elements of Tuple
+    int ignored[] = {(static_cast<void>(Func(get<Indices>(forward<Tpl>(Tuple)))), 0)...};
+    (void) ignored;
+}
+
+template <typename Tpl, typename Fx>
+void for_each_tuple_element(Tpl&& Tuple, Fx Func) { // call Func() on each element in Tuple
+    for_each_tuple_element_impl(
+        forward<Tpl>(Tuple), Func, make_index_sequence<tuple_size_v<remove_reference_t<Tpl>>>{});
+}
+
 // Use this type to ensure function templates are used instead
 // of regular member functions.
 template <typename T>
@@ -121,7 +134,7 @@ template <typename T>
 void construct_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [](auto c) {
+    for_each_tuple_element(containers, [](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c));
     });
@@ -131,7 +144,7 @@ template <typename T>
 void construct_tree_containers_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [&](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.key_comp());
         T another3(begin(c), end(c), value.key_comp(), value.get_allocator());
@@ -142,7 +155,7 @@ template <typename T>
 void construct_hash_containers_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [&](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.bucket_count());
         T another3(begin(c), end(c), value.bucket_count(), value.hash_function());
