@@ -332,6 +332,8 @@
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
 #define _MSVC_KNOWN_SEMANTICS
+#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
+#define _MSVC_KNOWN_SEMANTICS
 #elif __has_cpp_attribute(msvc::known_semantics)
 #define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
 #else
