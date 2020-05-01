@@ -1863,7 +1863,7 @@ public:
     template <class... _Types>
     explicit _Ref_count_obj_alloc3(const _Alloc& _Al_arg, _Types&&... _Args)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
-        if _CONSTEXPR20 (_Init == _Init_form::_Default_init) {
+        if _CONSTEXPR_IF (_Init == _Init_form::_Default_init) {
             _Construct_in_place_for_overwrite(_Storage._Value);
         } else {
             allocator_traits<_Rebound>::construct(
