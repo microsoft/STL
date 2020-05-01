@@ -248,7 +248,7 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 
 C:\STL\build>ctest -V
 
-:: This command will also run all of the testsuites
+:: This command will also run all of the testsuites.
 
 C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test ..\tests\std ..\tests\tr1
 
@@ -271,7 +271,7 @@ C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test\s
 
 ### CTest
 
-When running the tests via CTest all of the testsuites are considered to be a single test. If any single test in a
+When running the tests via CTest, all of the testsuites are considered to be a single test. If any single test in a
 testsuite fails, CTest will simply report that the `stl` test failed.
 
 Example:
