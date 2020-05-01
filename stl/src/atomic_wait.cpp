@@ -452,8 +452,8 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
     // which in this case helps avoiding kernel call.
 #if defined(_M_IX86) || defined(_M_IX64)
     // On x86/x64 it is a bit more efficient to use memory fence guaranteed by an interlocked instruction
-    _Atomic_spin_count.store(result, std::memory_order_seq_cst);
-#else 
+    _Atomic_spin_count.store(spin_count, std::memory_order_seq_cst);
+#else
     _Atomic_spin_count.store(spin_count, std::memory_order_relaxed);
     std::atomic_thread_fence(std::memory_order_seq_cst);
 #endif
