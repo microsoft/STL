@@ -5580,18 +5580,17 @@ template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
 _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
     // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
 #ifdef __cpp_lib_is_constant_evaluated
-    if (!_STD is_constant_evaluated())
+    if (_STD is_constant_evaluated()) {
+        for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+            _STD iter_swap(_First1, _First2);
+        }
+
+        return _First2;
+    }
 #endif // __cpp_lib_is_constant_evaluated
-    {
-        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
-        return _First2 + (_Last1 - _First1);
-    }
 
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
-    }
-
-    return _First2;
+    __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
+    return _First2 + (_Last1 - _First1);
 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 

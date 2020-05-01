@@ -680,7 +680,7 @@ protected:
         char _Buf[40];
 
         // convert to chars:
-        const auto _Count = static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), "%.0Lf", _Val));
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), "%.0Lf", _Val);
 
         if (_Count < 0) {
             return _Dest; // bad conversion, give up
@@ -689,7 +689,7 @@ protected:
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         const _Elem _E0                = _Ctype_fac.widen('0');
 
-        string_type _Val2(_Count, _Elem{});
+        string_type _Val2(static_cast<size_t>(_Count), _Elem{});
         _Ctype_fac.widen(&_Buf[0], &_Buf[_Count], &_Val2[0]);
         _Val2.append(_Exp, _E0); // scale by trailing zeros
         return _Putmfld(_Dest, _Intl, _Iosbase, _Fill, _Negative, _Val2, _E0);
