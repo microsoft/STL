@@ -17,6 +17,8 @@ stages:
         pool:
           name: $(agentPool)
 
+        variables:
+          buildOutputLocation: 'D:\tools'
         steps:
           - script: |
               if exist "$(tmpDir)" (
@@ -28,14 +30,14 @@ stages:
             clean: true
             submodules: false
           - script: |
-              if exist "D:\tools" (
-                rmdir /S /Q "D:\tools"
+              if exist "$(buildOutputLocation)" (
+                rmdir /S /Q "$(buildOutputLocation)"
               )
               call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
               -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
-              -S $(Build.SourcesDirectory)\tools -B D:\tools
-              cmake --build D:\tools
+              -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
+              cmake --build $(buildOutputLocation)
             displayName: 'Build Support Tools'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
@@ -44,7 +46,7 @@ stages:
             inputs:
               filename: 'azure-devops/enforce-clang-format.cmd'
               failOnStandardError: true
-              arguments: 'D:/tools/parallelize/parallelize.exe'
+              arguments: '$(buildOutputLocation)/parallelize/parallelize.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Validate Files'
@@ -52,7 +54,7 @@ stages:
             inputs:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
-              arguments: 'D:/tools/validate/validate.exe'
+              arguments: '$(buildOutputLocation)/validate/validate.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   - stage: Build_And_Test
     displayName: 'Build and Test'
