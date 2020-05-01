@@ -26,7 +26,7 @@ jobs:
       clean: true
       submodules: true
     - task: Cache@2
-      displayName: Restore Cached vcpkg Installed Directory
+      displayName: vcpkg/installed Caching
       timeoutInMinutes: 10
       inputs:
         key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
