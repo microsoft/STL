@@ -28,12 +28,14 @@ stages:
             clean: true
             submodules: false
           - script: |
+              if exist "D:\tools" (
+                rmdir /S /Q "D:\tools"
+              )
               call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
               -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
-              -S $(Build.SourcesDirectory)\tools -B $(Build.ArtifactStagingDirectory)\tools
-              cd $(Build.ArtifactStagingDirectory)\tools
-              cmake --build .
+              -S $(Build.SourcesDirectory)\tools -B D:\tools
+              cmake --build D:\tools
             displayName: 'Build Support Tools'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
@@ -42,7 +44,7 @@ stages:
             inputs:
               filename: 'azure-devops/enforce-clang-format.cmd'
               failOnStandardError: true
-              arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
+              arguments: 'D:/tools/parallelize/parallelize.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Validate Files'
@@ -50,7 +52,7 @@ stages:
             inputs:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
-              arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
+              arguments: 'D:/tools/validate/validate.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   - stage: Build_And_Test
     displayName: 'Build and Test'
