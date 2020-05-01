@@ -9,7 +9,7 @@ jobs:
 
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
-    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/${{ parameters.targetPlatform }}/test-results.xml'
+    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
@@ -79,7 +79,7 @@ jobs:
       timeoutInMinutes: 120
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        workingDirectory: $(buildOutputLocation)/${{ parameters.targetPlatform }}
+        workingDirectory: $(buildOutputLocation)
         script: |
           call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
@@ -90,7 +90,7 @@ jobs:
       timeoutInMinutes: 10
       condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        searchFolder: $(buildOutputLocation)/${{ parameters.targetPlatform }}
+        searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit
         testResultsFiles: '**/test-results.xml'
         testRunTitle: 'test-${{ parameters.targetPlatform }}'
