@@ -42,18 +42,6 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
-    std::atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
-
-    unsigned long _Atomic_init_spin_count() noexcept {
-        unsigned long result = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-        _Atomic_spin_count.store(result, std::memory_order_relaxed);
-        // Make sure another thread is likely to get this,
-        // as we've done a kernel call for that.
-        std::atomic_thread_fence(std::memory_order_seq_cst);
-        return result;
-    }
-
     unsigned long _Get_remaining_waiting_time(_Atomic_wait_context_t& _Wait_context) {
         const unsigned long long deadline = _Wait_context._Deadline;
         if (deadline == _Atomic_wait_no_deadline) {
@@ -384,7 +372,6 @@ bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wa
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     switch (_Wait_context._Wait_phase_and_spin_count) {
     case _Atomic_wait_phase_wait_none:
-        std::atomic_thread_fence(std::memory_order_seq_cst);
         _Wait_context._Counter = _Entry._Counter.load(std::memory_order_relaxed);
         // Save counter in context and check again
         _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_counter;
@@ -417,7 +404,6 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
 #endif
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _Entry._Counter.fetch_add(1, std::memory_order_relaxed);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
     __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
 }
 
@@ -450,11 +436,28 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
         }
 #endif
     }
-    const unsigned long result = _Atomic_spin_count.load(std::memory_order_relaxed);
-    if (result != _Uninitialized_spin_count) {
-        return result;
+    constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
+    static std::atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
+    const unsigned long spin_count_from_cache = _Atomic_spin_count.load(std::memory_order_relaxed);
+    if (spin_count_from_cache != _Uninitialized_spin_count) {
+        return spin_count_from_cache;
     }
-    return _Atomic_init_spin_count();
+
+    unsigned long spin_count = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+    // Now the result should be stored for subsequent callers.
+    // C++ memory model requires only relaxed order here, as only whe value of _Atomic_spin_count itself is involved.
+    // Stronger order does not make sense from C++ memory model view point.
+    // But steghtened memory order is implemented on the hardware as full memory barrier,
+    // and having memory barrier makes variable change visible across threads,
+    // which in this case helps avoiding kernel call.
+#if defined(_M_IX86) || defined(_M_IX64)
+    // On x86/x64 it is a bit more efficient to use memory fence guaranteed by an interlocked instruction
+    _Atomic_spin_count.store(result, std::memory_order_seq_cst);
+#else 
+    _Atomic_spin_count.store(spin_count, std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+#endif
+    return spin_count;
 }
 
 void __stdcall __std_atomic_wait_get_deadline(
