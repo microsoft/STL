@@ -4745,7 +4745,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 
     for (;;) { // find rightmost element smaller than successor
         auto _UNext1 = _UNext;
-        if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_UNext), *_UNext1)) { 
+        if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_UNext), *_UNext1)) {
             // swap with rightmost element that's smaller, flip suffix
             auto _UMid = _ULast;
             do {
@@ -4784,7 +4784,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 
     for (;;) { // find rightmost element not smaller than successor
         auto _UNext1 = _UNext;
-        if (_DEBUG_LT_PRED(_Pred, *_UNext1, *_Prev_iter(_UNext))) { 
+        if (_DEBUG_LT_PRED(_Pred, *_UNext1, *_Prev_iter(_UNext))) {
             // swap with rightmost element that's not smaller, flip suffix
             auto _UMid = _ULast;
             do {
