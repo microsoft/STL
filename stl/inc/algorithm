@@ -2424,7 +2424,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UDest) {
-      *_UDest = *_Prev_iter(_ULast);
+        *_UDest = *_Prev_iter(_ULast);
     }
 
     _Seek_wrapped(_Dest, _UDest);
@@ -4745,7 +4745,8 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 
     for (;;) { // find rightmost element smaller than successor
         auto _UNext1 = _UNext;
-        if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_UNext), *_UNext1)) { // swap with rightmost element that's smaller, flip suffix
+        if (_DEBUG_LT_PRED(
+                _Pred, *_Prev_iter(_UNext), *_UNext1)) { // swap with rightmost element that's smaller, flip suffix
             auto _UMid = _ULast;
             do {
                 --_UMid;
@@ -4783,7 +4784,8 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 
     for (;;) { // find rightmost element not smaller than successor
         auto _UNext1 = _UNext;
-        if (_DEBUG_LT_PRED(_Pred, *_UNext1, *_Prev_iter(_UNext))) { // swap with rightmost element that's not smaller, flip suffix
+        if (_DEBUG_LT_PRED(
+                _Pred, *_UNext1, *_Prev_iter(_UNext))) { // swap with rightmost element that's not smaller, flip suffix
             auto _UMid = _ULast;
             do {
                 --_UMid;
