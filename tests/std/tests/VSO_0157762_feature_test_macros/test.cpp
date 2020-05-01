@@ -1002,6 +1002,20 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_smart_ptr_for_overwrite
+#error __cpp_lib_smart_ptr_for_overwrite is not defined
+#elif __cpp_lib_smart_ptr_for_overwrite != 201811L
+#error __cpp_lib_smart_ptr_for_overwrite is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_smart_ptr_for_overwrite
+#error __cpp_lib_smart_ptr_for_overwrite is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_span
 #error __cpp_lib_span is not defined
 #elif __cpp_lib_span != 202002L

@@ -1162,6 +1162,7 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_shift                   201806L
+#define __cpp_lib_smart_ptr_for_overwrite 201811L
 #define __cpp_lib_span                    202002L
 #define __cpp_lib_ssize                   201902L
 #define __cpp_lib_starts_ends_with        201711L
