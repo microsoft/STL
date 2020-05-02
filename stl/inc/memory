@@ -3105,7 +3105,7 @@ protected:
                     _YIELD_PROCESSOR();
                     break;
                 }
-                _Rep = _Rep & _Ptr_value_mask | _Locked_notify_needed;
+                _Rep = (_Rep & _Ptr_value_mask) | _Locked_notify_needed;
                 [[fallthrough]];
 
             case _Locked_notify_needed: // "Notify needed" is already set, just wait
