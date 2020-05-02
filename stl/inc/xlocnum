@@ -675,7 +675,7 @@ private:
         static constexpr char _Src[]  = "0123456789ABCDEFabcdef-+Xx";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Loc);
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         char* _Ptr = _Ac;
 
@@ -788,7 +788,7 @@ private:
         static constexpr char _Src[]  = "0123456789-+Ee";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         if (_First != _Last) {
             if (*_First == _Atoms[_Numget_signoff + 1]) { // gather plus sign
@@ -970,7 +970,7 @@ private:
         static constexpr char _Src[]  = "0123456789ABCDEFabcdef-+XxPp";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         char* _Ptr = _Ac;
         bool _Bad  = false;
@@ -1410,7 +1410,7 @@ private:
 
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         basic_string<_Elem> _Groupstring(_Count, _Elem(0)); // reserve space
-        _Ctype_fac.widen(&_Buf[0], &_Buf[_Count], &_Groupstring[0]);
+        _Ctype_fac.widen(_Buf, _Buf + _Count, &_Groupstring[0]);
 
         const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping  = _Punct_fac.grouping();
@@ -1496,7 +1496,7 @@ private:
 
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         basic_string<_Elem> _Groupstring(_Count, _Elem(0)); // reserve space
-        _Ctype_fac.widen(&_Buf[0], &_Buf[_Count], &_Groupstring[0]);
+        _Ctype_fac.widen(_Buf, _Buf + _Count, &_Groupstring[0]);
 
         const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping = _Punct_fac.grouping();

@@ -54,12 +54,12 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4849][], which will eventually become the next C++
-International Standard (which is sometimes referred to as C++2a, but we optimistically refer to it as C++20). The terms
-Working Draft (WD) and Working Paper (WP) are interchangeable; we often informally refer to these drafts as "the
-Standard" while being aware of the difference. (There are other relevant Standards; for example, supporting `/std:c++14`
-and `/std:c++17` involves understanding how the C++14 and C++17 Standards differ from the Working Paper, and we often
-need to refer to the C Standard Library and ECMAScript regular expression specifications.)
+We're implementing the latest C++ Working Draft, currently [N4861][], which will eventually become the next C++
+International Standard, C++20. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
+informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
+Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
+Standards differ from the Working Paper, and we often need to refer to the C Standard Library and ECMAScript regular
+expression specifications.)
 
 Our primary goals are conformance, performance, usability, and compatibility.
 
@@ -170,8 +170,8 @@ architectures.
 9. Invoke `cd STL`
 10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
 -S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja
--DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B build.x64`
-11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C build.x64`
+-DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B out\build\x64`
+11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C out\build\x64`
 
 # How To Consume
 
@@ -399,7 +399,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4849]: https://wg21.link/n4849
+[N4861]: https://wg21.link/n4861
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master

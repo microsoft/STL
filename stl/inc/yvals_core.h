@@ -138,6 +138,7 @@
 // P0325R4 to_array()
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
+// P0415R1 constexpr For <complex> (Again)
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
@@ -211,6 +212,7 @@
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
+// P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
 // Parallel Algorithms Notes
@@ -330,6 +332,8 @@
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
 #define _MSVC_KNOWN_SEMANTICS
+#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
+#define _MSVC_KNOWN_SEMANTICS
 #elif __has_cpp_attribute(msvc::known_semantics)
 #define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
 #else
@@ -410,13 +414,14 @@
 // warning C5026: move constructor was implicitly defined as deleted (/Wall)
 // warning C5027: move assignment operator was implicitly defined as deleted (/Wall)
 // warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified (/Wall)
+// warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
     4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
-    4820 4988 5026 5027 5045                          \
+    4820 4988 5026 5027 5045 6294                     \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -425,6 +430,7 @@
 #endif // _STL_DISABLED_WARNINGS
 
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
+// warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
@@ -435,6 +441,7 @@
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
@@ -609,7 +616,7 @@
 #define _CONSTEXPR_IF
 #endif // _HAS_IF_CONSTEXPR
 
-#ifdef __clang__
+#ifdef __cpp_consteval
 #define _CONSTEVAL consteval
 #else // ^^^ supports consteval / no consteval vvv
 #define _CONSTEVAL constexpr
@@ -952,7 +959,18 @@
 #define _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4030
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_VOLATILE                                                                   \
+    [[deprecated("warning STL4030: "                                                                \
+                 "Some operations on volatile-qualified types in the STL are deprecated in C++20. " \
+                 "You can define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING "                      \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_VOLATILE
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4031
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1104,10 +1122,7 @@
 #define __cpp_lib_atomic_float      201711L
 #define __cpp_lib_atomic_shared_ptr 201711L
 #define __cpp_lib_bind_front        201907L
-
-#ifndef __EDG__ // TRANSITION, VSO-1041044
-#define __cpp_lib_bit_cast 201806L
-#endif // __EDG__
+#define __cpp_lib_bit_cast          201806L
 
 #ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
@@ -1125,6 +1140,7 @@
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
 #define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_complex    201711L
 #define __cpp_lib_constexpr_memory     201811L
 #define __cpp_lib_constexpr_numeric    201911L
 
