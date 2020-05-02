@@ -224,7 +224,7 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
 2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
-3. Acquire [Python][] 3.8 or newer. Have it on tha `PATH` (or call directly using full or relative path).
+3. Acquire [Python][] 3.8 or newer. Have it on the `PATH` (or call directly using full or relative path).
 4. Have LLVM's `bin` directory on the `PATH`. Simply using [LLVM's installer][] and choosing to add LLVM to your `PATH`
 during installation is the easiest way to get LLVM's `bin` directory on your `PATH`.
 5. Follow the instructions below.
