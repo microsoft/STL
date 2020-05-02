@@ -1439,8 +1439,8 @@ auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices.
 // FUNCTION TEMPLATE _Invoke_stored
 template <class... _Types>
 auto _Invoke_stored(tuple<_Types...>&& _Tuple)
-    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>())) { // invoke() a tuple
-    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>());
+    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
+    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
 }
 
 // FUNCTION TEMPLATE async
