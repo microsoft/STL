@@ -3100,7 +3100,7 @@ protected:
                 break;
 
             case _Locked_notify_not_needed: // Try to set "notify needed" and wait
-                if (!_Repptr.compare_exchange_weak(_Rep, _Rep & _Ptr_value_mask | _Locked_notify_needed)) {
+                if (!_Repptr.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
                     // Failed to put notify needed flag on, try again
                     _YIELD_PROCESSOR();
                     break;
