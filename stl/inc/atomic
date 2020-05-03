@@ -663,7 +663,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         // non-atomically initialize this atomic
     }
 
-#if defined(_M_IX86) // TRANSITION, DevCom-986061
+#ifdef _M_IX86 // TRANSITION, DevCom-986061
     void store(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // store with (effectively) sequential consistency
         _Check_store_memory_order(_Order);
