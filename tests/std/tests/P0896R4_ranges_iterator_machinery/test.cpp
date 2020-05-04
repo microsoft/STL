@@ -2987,7 +2987,7 @@ namespace reverse_iterator_test {
 } // namespace reverse_iterator_test
 
 namespace lwg3420 {
-    // Validate that we can ask for the iterator_traits of a type with no * operator for which checking copyability
+    // Validate that we can ask for the iterator_traits of a type with no operator* for which checking copyability
     // results in constraint recursion.
     struct X {
         X() = default;
