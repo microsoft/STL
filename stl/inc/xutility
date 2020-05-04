@@ -431,11 +431,13 @@ struct _Iter_traits_difference<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
-    { *__i } -> _Can_reference;
-    { ++__i } -> same_as<_It&>;
-    { *__i++ } -> _Can_reference;
-};
+concept _Cpp17_iterator =
+    requires(_It __i) {
+        { *__i } -> _Can_reference;
+        { ++__i } -> same_as<_It&>;
+        { *__i++ } -> _Can_reference;
+    }
+    && copyable<_It>;
 
 template <class _It>
 concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
