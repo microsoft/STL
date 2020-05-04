@@ -21,9 +21,13 @@ add_subdirectory(utils/stl-lit)
 set(Python_FIND_STRATEGY VERSION)
 find_package(Python3)
 
+if(NOT DEFINED LIT_FLAGS)
+    list(APPEND LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
+endif()
+
 get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
 list(APPEND STL_LIT_COMMAND "${STL_LIT_OUTPUT}"
-                            "${ADDITIONAL_LIT_FLAGS}"
+                            "${LIT_FLAGS}"
                             "${STL_LIT_TEST_DIRS}")
 
 add_test(NAME stl COMMAND ${Python3_EXECUTABLE} ${STL_LIT_COMMAND} COMMAND_EXPAND_LISTS)
