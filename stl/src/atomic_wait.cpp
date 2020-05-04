@@ -417,19 +417,7 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
     }
 
     unsigned long spin_count = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-    // Now the result should be stored for subsequent callers.
-    // C++ memory model requires only relaxed order here, as only whe value of _Atomic_spin_count itself is involved.
-    // Stronger order does not make sense from C++ memory model view point.
-    // But steghtened memory order is implemented on the hardware as full memory barrier,
-    // and having memory barrier makes variable change visible across threads,
-    // which in this case helps avoiding kernel call.
-#if defined(_M_IX86) || defined(_M_IX64)
-    // On x86/x64 it is a bit more efficient to use memory fence guaranteed by an interlocked instruction
-    _Atomic_spin_count.store(spin_count, std::memory_order_seq_cst);
-#else
     _Atomic_spin_count.store(spin_count, std::memory_order_relaxed);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-#endif
     return spin_count;
 }
 
