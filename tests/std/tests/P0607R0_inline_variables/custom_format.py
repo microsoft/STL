@@ -19,5 +19,6 @@ class CustomTestFormat(STLTestFormat):
                                             output_dir, shared.exec_dir,
                                             output_base, [], [], [])
 
-        yield TestStep(cmd, shared.exec_dir, [exe_source, test2_source],
-                       test.cxx.compile_env)
+        yield TestStep(cmd=cmd, dependencies=[exe_source, test2_source],
+                       env=shared.exec_env, out_files=out_files,
+                       work_dir=shared.exec_dir)

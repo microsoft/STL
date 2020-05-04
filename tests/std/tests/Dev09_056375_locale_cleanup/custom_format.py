@@ -10,10 +10,8 @@ class CustomTestFormat(STLTestFormat):
     def getBuildSteps(self, test, lit_config, shared):
         exe_source = Path(test.getSourcePath())
         dll_source = exe_source.parent / 'TestDll.cpp'
-        shared.exec_dir = test.getExecDir()
         output_base = test.getOutputBaseName()
         output_dir = test.getOutputDir()
-        pass_var, fail_var = test.getPassFailResultCodes()
         dll_output = output_dir / 'TestDll.DLL'
 
         dll_compile_cmd, out_files, exec_file = \
@@ -24,19 +22,22 @@ class CustomTestFormat(STLTestFormat):
 
         shared.dll_file = dll_output
 
-        yield TestStep(dll_compile_cmd, shared.exec_dir, [dll_source],
-                       test.cxx.compile_env)
+        yield TestStep(cmd=dll_compile_cmd, dependencies=[dll_source],
+                       env=shared.exec_dir, out_files=out_files,
+                       work_dir=shared.exec_dir)
 
         exe_compile_cmd, out_files, shared.exec_file = \
             test.cxx.executeBasedOnFlagsCmd([exe_source], output_dir,
                                             shared.exec_dir, output_base,
                                             [], [], [])
 
-        yield TestStep(exe_compile_cmd, shared.exec_dir, [exe_source],
-                       test.cxx.compile_env)
+        yield TestStep(cmd=exe_compile_cmd, dependencies=[exe_source],
+                       env=shared.exec_dir, out_files=out_files,
+                       work_dir=shared.exec_dir, num=1)
 
     def getTestSteps(self, test, lit_config, shared):
         if shared.exec_file is not None:
-            yield TestStep([str(shared.exec_file)], shared.exec_dir,
-                           [shared.exec_file, shared.dll_file],
-                           test.cxx.compile_env)
+            yield TestStep(cmd=[str(shared.exec_file)],
+                           dependencies=[shared.exec_file, shared.dll_file],
+                           env=shared.exec_env,
+                           work_dir=shared.exec_dir)

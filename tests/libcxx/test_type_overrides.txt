@@ -579,98 +579,98 @@ std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
 
 # *** STL BUGS ***
 # STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
-std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp COMPILE_FAIL
 
 # STL Bug: VSO-595631 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
-std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
-std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
+std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp RUN_FAIL
+std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp RUN_FAIL
 
 # STL bug: We don't have tgmath.h.
 std/depr/depr.c.headers/tgmath_h.pass.cpp SKIPPED
 
 # STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
-std/numerics/complex.number/complex.special/double_long_double_implicit.compile.fail.cpp FAIL
-std/numerics/complex.number/complex.special/float_double_implicit.compile.fail.cpp FAIL
-std/numerics/complex.number/complex.special/float_long_double_implicit.compile.fail.cpp FAIL
+std/numerics/complex.number/complex.special/double_long_double_implicit.fail.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.special/float_double_implicit.fail.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.special/float_long_double_implicit.fail.cpp COMPILE_FAIL
 
 # STL bug: regex_traits::transform() isn't following the Standard.
-std/re/re.traits/transform.pass.cpp FAIL
+std/re/re.traits/transform.pass.cpp COMPILE_FAIL
 
 # STL bug: Incorrect return types.
-std/numerics/complex.number/cmplx.over/conj.pass.cpp FAIL
-std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
-std/numerics/complex.number/cmplx.over/proj.pass.cpp FAIL
+std/numerics/complex.number/cmplx.over/conj.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/cmplx.over/pow.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/cmplx.over/proj.pass.cpp COMPILE_FAIL
 
 # STL bug: Missing <valarray> assignment operators.
-std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
-std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp FAIL
+std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp COMPILE_FAIL
+std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp COMPILE_FAIL
 
 # STL bug: We allow fill() and swap() for array<const T, 0>.
-std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
-std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
+std/containers/sequences/array/array.fill/fill.fail.cpp RUN_FAIL
+std/containers/sequences/array/array.swap/swap.fail.cpp RUN_FAIL
 
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
-std/containers/sequences/array/array.cons/default.pass.cpp FAIL
-std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
-std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
-std/containers/sequences/array/array.data/data.pass.cpp FAIL
-std/containers/sequences/array/begin.pass.cpp FAIL
+std/containers/sequences/array/array.cons/default.pass.cpp COMPILE_FAIL
+std/containers/sequences/array/array.cons/implicit_copy.pass.cpp COMPILE_FAIL
+std/containers/sequences/array/array.data/data_const.pass.cpp COMPILE_FAIL
+std/containers/sequences/array/array.data/data.pass.cpp COMPILE_FAIL
+std/containers/sequences/array/begin.pass.cpp COMPILE_FAIL
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-std/strings/string.view/char.bad.fail.cpp:0 FAIL
+std/strings/string.view/char.bad.fail.cpp:0 COMPILE_FAIL
 
 # Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
-std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp RUN_FAIL
+std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp COMPILE_FAIL
+std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp RUN_FAIL
 
 # STL bug: We don't match strtod / strtof when doing field extraction for hexfloats, or special cases like inf
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp COMPILE_FAIL
 
 # STL bug: We don't match numpunct groups correctly in do_get
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp COMPILE_FAIL
 
 # STL test bug: We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.
-std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp FAIL
-std/localization/locale.categories/category.collate/locale.collate.byname/compare.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/is_1.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/is_many.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/narrow_1.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/narrow_many.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/scan_is.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/scan_not.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/widen_1.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.ctype.byname/widen_many.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/curr_symbol.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/decimal_point.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/grouping.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/neg_format.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/negative_sign.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/pos_format.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct.byname/thousands_sep.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
-std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/grouping.pass.cpp FAIL
-std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp FAIL
+std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.collate/locale.collate.byname/compare.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/is_1.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/is_many.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/narrow_1.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/narrow_many.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/scan_is.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/scan_not.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/widen_1.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.ctype.byname/widen_many.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/curr_symbol.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/decimal_point.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/grouping.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/neg_format.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/negative_sign.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/pos_format.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct.byname/thousands_sep.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/grouping.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp COMPILE_FAIL
 
 # STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
-std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp COMPILE_FAIL
 
 # STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp:1 FAIL
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp:1 COMPILE_FAIL
 
 # STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
-std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
+std/thread/futures/futures.promise/set_value_const.pass.cpp COMPILE_FAIL
 
 # STL bug: GH-757 <xstring>: Too many enabled hash specializations
 std/strings/basic.string.hash/char_type_hash.fail.cpp FAIL
@@ -849,228 +849,228 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp S
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.f/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.exp/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eq.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.f/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.exp/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eq.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_init_func.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_iterator.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_init_func.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_iterator.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_default.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_func.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_init_func.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_iterator.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_default.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_func.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_init_func.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_iterator.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.
-std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
-std/re/re.alg/re.alg.match/basic.pass.cpp FAIL
-std/re/re.alg/re.alg.match/ecma.pass.cpp FAIL
-std/re/re.alg/re.alg.match/extended.pass.cpp FAIL
-std/re/re.alg/re.alg.search/awk.pass.cpp FAIL
-std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
-std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
-std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
-std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
-std/re/re.badexp/regex_error.pass.cpp FAIL
-std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
-std/re/re.grammar/excessive_brace_count.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_range.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
-std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
-std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
-std/re/re.traits/lookup_collatename.pass.cpp FAIL
-std/re/re.traits/transform_primary.pass.cpp FAIL
+std/re/re.alg/re.alg.match/awk.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.match/basic.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.match/ecma.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.match/extended.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.search/awk.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.search/basic.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.search/ecma.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.search/extended.pass.cpp COMPILE_FAIL
+std/re/re.alg/re.alg.search/no_update_pos.pass.cpp COMPILE_FAIL
+std/re/re.badexp/regex_error.pass.cpp COMPILE_FAIL
+std/re/re.const/re.synopt/syntax_option_type.pass.cpp COMPILE_FAIL
+std/re/re.grammar/excessive_brace_count.pass.cpp COMPILE_FAIL
+std/re/re.regex/re.regex.construct/bad_backref.pass.cpp COMPILE_FAIL
+std/re/re.regex/re.regex.construct/bad_escape.pass.cpp COMPILE_FAIL
+std/re/re.regex/re.regex.construct/bad_range.pass.cpp COMPILE_FAIL
+std/re/re.regex/re.regex.construct/default.pass.cpp COMPILE_FAIL
+std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp COMPILE_FAIL
+std/re/re.regex/re.regex.swap/swap.pass.cpp COMPILE_FAIL
+std/re/re.traits/lookup_collatename.pass.cpp COMPILE_FAIL
+std/re/re.traits/transform_primary.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.
-std/numerics/complex.number/complex.member.ops/divide_equal_complex.pass.cpp FAIL
-std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
-std/numerics/complex.number/complex.ops/complex_times_complex.pass.cpp FAIL
-std/numerics/complex.number/complex.ops/scalar_divide_complex.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/acos.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/acosh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/asin.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/cos.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/exp.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/log10.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/pow_scalar_complex.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/sqrt.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/proj.pass.cpp FAIL
+std/numerics/complex.number/complex.member.ops/divide_equal_complex.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.ops/complex_times_complex.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.ops/scalar_divide_complex.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/acos.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/acosh.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/asin.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/cos.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/exp.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/log10.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/pow_scalar_complex.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/sin.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/sqrt.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.value.ops/norm.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.value.ops/polar.pass.cpp COMPILE_FAIL
+std/numerics/complex.number/complex.value.ops/proj.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
-std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_string_en_US.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_string_en_US.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/decimal_point.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/thousands_sep.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.pass.cpp FAIL
-std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf16_in.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf16_length.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf16_max_length.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf16_out.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf16.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_in.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_length.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_max_length.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_out.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_utf16_in.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_utf16_length.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_utf16_max_length.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8_utf16_out.pass.cpp FAIL
-std/localization/locale.stdcvt/codecvt_utf8.pass.cpp FAIL
-std/localization/locales/locale.convenience/conversions/conversions.buffer/overflow.pass.cpp FAIL
-std/localization/locales/locale.convenience/conversions/conversions.buffer/pbackfail.pass.cpp FAIL
-std/localization/locales/locale.convenience/conversions/conversions.buffer/underflow.pass.cpp FAIL
-std/localization/locales/locale.convenience/conversions/conversions.string/ctor_err_string.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_string_en_US.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_ru_RU.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_zh_CN.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_string_en_US.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/decimal_point.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/thousands_sep.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf16_in.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf16_length.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf16_max_length.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf16_out.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf16.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_in.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_length.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_max_length.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_out.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_in.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_length.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_max_length.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8_utf16_out.pass.cpp COMPILE_FAIL
+std/localization/locale.stdcvt/codecvt_utf8.pass.cpp COMPILE_FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/overflow.pass.cpp COMPILE_FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/pbackfail.pass.cpp COMPILE_FAIL
+std/localization/locales/locale.convenience/conversions/conversions.buffer/underflow.pass.cpp COMPILE_FAIL
+std/localization/locales/locale.convenience/conversions/conversions.string/ctor_err_string.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.
-std/input.output/iostream.format/ext.manip/get_money.pass.cpp FAIL
-std/input.output/iostream.format/ext.manip/put_money.pass.cpp FAIL
-std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp FAIL
+std/input.output/iostream.format/ext.manip/get_money.pass.cpp RUN_FAIL
+std/input.output/iostream.format/ext.manip/put_money.pass.cpp COMPILE_FAIL
+std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp RUN_FAIL
 
 # Not yet analyzed, likely STL bugs. Assertion failed: os.str() == a
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.mers/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp FAIL
+std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.eng/rand.eng.mers/ctor_result_type.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed, likely STL bugs. Assertion failed: e1 == e2
-std/numerics/rand/rand.adapt/rand.adapt.disc/io.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/io.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp FAIL
+std/numerics/rand/rand.adapt/rand.adapt.disc/io.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.adapt/rand.adapt.ibits/io.pass.cpp COMPILE_FAIL
+std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp COMPILE_FAIL
 
 # Likely STL bug: Looks like we shouldn't be using assignment.
-std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
+std/thread/futures/futures.promise/set_rvalue.pass.cpp COMPILE_FAIL
 
 # Possible STL bugs in pair and tuple.
-std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp:0 FAIL
-std/utilities/tuple/tuple.tuple/tuple.cnstr/PR31384.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp:0 COMPILE_FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR31384.pass.cpp COMPILE_FAIL
 
 # Likely STL bugs in mersenne_twister; also fails at runtime
 # random(1186,26):  error: constexpr variable '_WMSK' must be initialized by a constant expression
 #    static constexpr _Ty _WMSK = ~((~_Ty(0) << (_Wx - 1)) << 1);
 #                         ^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq_all_zero.pass.cpp FAIL
+std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq_all_zero.pass.cpp COMPILE_FAIL
 
 # Bugs/questionable choices in codecvt<char(16|32)_t, char, mbstate_t>, which we probably will not fix since
 # (1) they are deprecated, and (2) we don't want to break existing users.
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_max_length.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_unshift.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp FAIL
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_max_length.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_unshift.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp COMPILE_FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp COMPILE_FAIL
 
 # Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
-std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
+std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp COMPILE_FAIL
 
 
 # *** NOT YET ANALYZED ***
 # Not yet analyzed. Asserting about alloc_count.
-std/thread/futures/futures.promise/alloc_ctor.pass.cpp FAIL
-std/thread/futures/futures.promise/move_assign.pass.cpp FAIL
-std/thread/futures/futures.promise/move_ctor.pass.cpp FAIL
-std/thread/futures/futures.promise/swap.pass.cpp FAIL
-std/thread/futures/futures.shared_future/dtor.pass.cpp FAIL
-std/thread/futures/futures.unique_future/dtor.pass.cpp FAIL
+std/thread/futures/futures.promise/alloc_ctor.pass.cpp COMPILE_FAIL
+std/thread/futures/futures.promise/move_assign.pass.cpp COMPILE_FAIL
+std/thread/futures/futures.promise/move_ctor.pass.cpp COMPILE_FAIL
+std/thread/futures/futures.promise/swap.pass.cpp COMPILE_FAIL
+std/thread/futures/futures.shared_future/dtor.pass.cpp COMPILE_FAIL
+std/thread/futures/futures.unique_future/dtor.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp FAIL
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp COMPILE_FAIL
+std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed. Possibly testing nonstandard deduction guides.
-std/containers/associative/map/map.cons/deduct_const.pass.cpp FAIL
-std/containers/associative/multimap/multimap.cons/deduct_const.pass.cpp FAIL
-std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
-std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 FAIL
-std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
-std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
+std/containers/associative/map/map.cons/deduct_const.pass.cpp COMPILE_FAIL
+std/containers/associative/multimap/multimap.cons/deduct_const.pass.cpp COMPILE_FAIL
+std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp COMPILE_FAIL
+std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 COMPILE_FAIL
+std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp COMPILE_FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 COMPILE_FAIL
 
 # Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
+std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp COMPILE_FAIL
 
 # Not yet analyzed. Frequent timeouts
 std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
 
-# *** XFAILs WHICH PASS ***
+# *** XFAILs which PASS in MSVC ***
 # Not yet implemented in libcxx and marked as XFAIL
-std/strings/c.strings/cuchar.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bm/default.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bm/hash.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bm/hash.pred.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bm/pred.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bmh/default.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bmh/hash.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bmh/hash.pred.pass.cpp PASS
-std/utilities/function.objects/func.search/func.search.bmh/pred.pass.cpp PASS
+std/strings/c.strings/cuchar.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bm/default.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bm/hash.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bm/hash.pred.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bm/pred.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bmh/default.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bmh/hash.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bmh/hash.pred.pass.cpp SKIPPED
+std/utilities/function.objects/func.search/func.search.bmh/pred.pass.cpp SKIPPED

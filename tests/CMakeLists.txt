@@ -14,15 +14,36 @@ set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
 set(LLVM_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/llvm" CACHE PATH
     "Location of the llvm source tree")
 
-set(STL_LIT ${CMAKE_CURRENT_BINARY_DIR}/utils/stl-lit/stl-lit.py)
-
-set(Python_FIND_STRATEGY VERSION)
-find_package(Python3)
-
 add_subdirectory(libcxx)
 add_subdirectory(std)
 add_subdirectory(tr1)
 
+set(STL_LIT ${CMAKE_CURRENT_BINARY_DIR}/utils/stl-lit/stl-lit.py)
 # Add the stl-lit subdirectory last so all the test directories have had a
 # chance to add to the config map.
 add_subdirectory(utils/stl-lit)
+
+set(Python_FIND_STRATEGY VERSION)
+find_package(Python3)
+
+execute_process(
+    COMMAND ${Python3_EXECUTABLE}
+            ${STL_LIT}
+            "${LIBCXX_SOURCE_DIR}/test/std"
+            "${CMAKE_CURRENT_SOURCE_DIR}/std"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tr1")
+
+include("${CMAKE_CURRENT_BINARY_DIR}/libcxx/tests.cmake")
+include("${CMAKE_CURRENT_BINARY_DIR}/std/tests.cmake")
+include("${CMAKE_CURRENT_BINARY_DIR}/tr1/tests.cmake")
+
+get_property(STL_LIT_GENERATED_FILES GLOBAL PROPERTY STL_LIT_GENERATED_FILES)
+
+#add_custom_target(
+#    generate_test_files
+#    ${Python3_EXECUTABLE}
+#    ${STL_LIT}
+#    #"${LIBCXX_SOURCE_DIR}/test/std"
+#    #"${CMAKE_CURRENT_SOURCE_DIR}/std"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/tr1"
+#    BYPRODUCTS ${STL_LIT_GENERATED_FILES})

@@ -37,8 +37,9 @@ class CustomTestFormat(STLTestFormat):
                                             [test.calling_convention_a, '/c'],
                                             [], [])
 
-        yield TestStep(a_compile_cmd, shared.exec_dir, [a_source],
-                       test.cxx.compile_env)
+        yield TestStep(cmd=a_compile_cmd, dependencies=[a_source],
+                       env=shared.exec_env, out_files=out_files,
+                       work_dir=shared.exec_dir)
 
         a_output = output_dir / 'a.obj'
 
@@ -48,5 +49,8 @@ class CustomTestFormat(STLTestFormat):
                                             [test.calling_convention_b,
                                             str(a_output)], [], [])
 
-        yield TestStep(exe_compile_cmd, shared.exec_dir,
-                       [a_output, exe_source], test.cxx.compile_env)
+        yield TestStep(cmd=exe_compile_cmd,
+                       dependencies=[a_output, exe_source],
+                       env=shared.exec_env,
+                       out_files=out_files,
+                       work_dir=shared.exec_dir, num=1)

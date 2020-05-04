@@ -11,11 +11,11 @@ import re
 
 import lit.Test
 
-import stl.test.tests
+from stl.test.tests import TestType
 
 _envlst_cache = dict()
 _preprocessed_file_cache = dict()
-_expected_result_entry_cache = dict()
+_test_type_entry_cache = dict()
 
 
 @dataclass
@@ -52,7 +52,7 @@ _COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
 _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
 _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
-_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
+_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<type>.*?)$')
 
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
@@ -110,22 +110,19 @@ def parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
         return result
 
 
-def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
+def parse_test_type_file(filename: Union[str, bytes, os.PathLike]) \
         -> Dict[str, lit.Test.ResultCode]:
-    if str(filename) in _expected_result_entry_cache:
-        return _expected_result_entry_cache[str(filename)]
+    if str(filename) in _test_type_entry_cache:
+        return _test_type_entry_cache[str(filename)]
 
     res = dict()
     for line in parse_commented_file(filename):
         m = _EXPECTED_RESULT_REGEX.match(line)
         prefix = m.group("prefix")
-        result = m.group("result")
-        result_code = getattr(lit.Test, result, None)
-        if result_code is None:
-            result_code = getattr(stl.test.tests, result)
-        res[prefix] = result_code
+        type = getattr(TestType, m.group("type"))
+        res[prefix] = type
 
-    _expected_result_entry_cache[str(filename)] = res
+    _test_type_entry_cache[str(filename)] = res
     return res
 
 

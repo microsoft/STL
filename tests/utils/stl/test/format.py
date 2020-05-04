@@ -8,18 +8,16 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 import copy
 import itertools
-import errno
 import os
 import shutil
-import time
 
 import lit.Test        # pylint: disable=import-error
 import lit.TestRunner  # pylint: disable=import-error
 
-from stl.test.tests import STLTest, LibcxxTest
+from stl.test.tests import STLTest, LibcxxTest, TestType
 import stl.test.file_parsing
 import stl.util
 
@@ -27,10 +25,15 @@ import stl.util
 @dataclass
 class TestStep:
     cmd: List[str] = field(default_factory=list)
-    work_dir: os.PathLike = field(default=Path('.'))
-    file_deps: List[os.PathLike] = field(default_factory=list)
+    dependencies: List[os.PathLike] = field(default_factory=list)
     env: Dict[str, str] = field(default_factory=dict)
+    num: int = field(default=0)
+    out_files: List[os.PathLike] = field(default_factory=list)
     should_fail: bool = field(default=False)
+    work_dir: os.PathLike = field(default=Path('.'))
+
+
+_test_suite_file_handles = {}
 
 
 class STLTestFormat:
@@ -39,11 +42,52 @@ class STLTestFormat:
     """
 
     def __init__(self, default_cxx, execute_external,
-                 build_executor, test_executor):
+                 build_step_writer, test_step_writer):
         self.cxx = default_cxx
         self.execute_external = execute_external
-        self.build_executor = build_executor
-        self.test_executor = test_executor
+        self.build_step_writer = build_step_writer
+        self.test_step_writer = test_step_writer
+
+    def getSteps(self, test, lit_config):
+        class SharedState:
+            def __init__(self, test):
+                self.exec_dir = test.getExecDir()
+                self.exec_env = test.cxx.compile_env
+                self.exec_env['TMP'] = str(self.exec_dir)
+                self.exec_env['TEMP'] = str(self.exec_dir)
+                self.exec_env['TMPDIR'] = str(self.exec_dir)
+                self.exec_env['TEMPDIR'] = str(self.exec_dir)
+                self.exec_file = None
+
+        shared = SharedState(test)
+        return self.getBuildSteps(test, lit_config, shared), \
+            self.getTestSteps(test, lit_config, shared)
+
+    def getBuildSteps(self, test, lit_config, shared):
+        output_base = test.getOutputBaseName()
+        output_dir = test.getOutputDir()
+        source_path = Path(test.getSourcePath())
+
+        cmd, out_files, shared.exec_file = \
+            test.cxx.executeBasedOnFlagsCmd([source_path], output_dir,
+                                            shared.exec_dir, output_base,
+                                            [], [], [])
+
+        yield TestStep(cmd=cmd, dependencies=[source_path],
+                       env=shared.exec_env, out_files=out_files,
+                       should_fail=not test.shouldBuild(),
+                       work_dir=shared.exec_dir)
+
+    def getTestSteps(self, test, lit_config, shared):
+        if shared.exec_file is None:
+            return
+
+        if test.test_type in (TestType.RUN_PASS, TestType.RUN_FAIL):
+            yield TestStep(cmd=[str(shared.exec_file)],
+                           dependencies=[shared.exec_file],
+                           env=shared.exec_env,
+                           should_fail=test.test_type is TestType.RUN_FAIL,
+                           work_dir=shared.exec_dir)
 
     def isLegalDirectory(self, source_path, litConfig):
         found = False
@@ -71,6 +115,14 @@ class STLTestFormat:
 
     def getTestsInDirectory(self, testSuite, path_in_suite,
                             litConfig, localConfig, test_class=STLTest):
+        if testSuite.name not in _test_suite_file_handles:
+            test_list = Path(testSuite.exec_root) / 'tests.cmake'
+            _test_suite_file_handles[testSuite.name] = test_list.open('w')
+
+        global_prop_string = \
+            'set_property(GLOBAL APPEND PROPERTY STL_LIT_GENERATED_FILES {})'
+        include_string = '\ninclude({})'
+
         source_path = testSuite.getSourcePath(path_in_suite)
 
         if not self.isLegalDirectory(source_path, litConfig):
@@ -95,17 +147,26 @@ class STLTestFormat:
                         stl.test.file_parsing.parse_env_lst_file(envlst_path)
                     format_string = "{:0" + str(len(str(len(env_entries)))) + \
                                     "d}"
+
                     for env_entry, env_num \
                             in zip(env_entries, itertools.count()):
                         test_config = copy.deepcopy(localConfig)
                         test_path_in_suite = path_in_suite + (filename,)
 
-                        yield test_class(testSuite,
-                                         test_path_in_suite,
-                                         litConfig, test_config,
-                                         env_entry,
-                                         format_string.format(env_num),
-                                         self.cxx)
+                        test = test_class(testSuite, test_path_in_suite,
+                                          litConfig, test_config, env_entry,
+                                          format_string.format(env_num),
+                                          self.cxx)
+
+                        if test.script_result is None:
+                            test_file = test.getTestFilePath().as_posix()
+                            out_string = global_prop_string.format(test_file)
+                            out_string += include_string.format(test_file)
+                            out_handle = \
+                                _test_suite_file_handles[testSuite.name]
+                            print(out_string, file=out_handle)
+
+                        yield test
 
     def setup(self, test):
         exec_dir = test.getExecDir()
@@ -123,109 +184,27 @@ class STLTestFormat:
             if path.is_file() and path.name.endswith('.dat'):
                 shutil.copy2(path, exec_dir / path.name)
 
-    def cleanup(self, test):
-        shutil.rmtree(test.getExecDir(), ignore_errors=True)
-        shutil.rmtree(test.getOutputDir(), ignore_errors=True)
-
-    def getIntegratedScriptResult(self, test, lit_config):
-        if test.skipped:
-            return (lit.Test.SKIPPED, "Test was marked as skipped")
-
-        name = test.path_in_suite[-1]
-        name_root, name_ext = os.path.splitext(name)
-        is_sh_test = name_root.endswith('.sh')
-        is_objcxx_test = name.endswith('.mm')
-
-        if is_sh_test:
-            return (lit.Test.UNSUPPORTED,
-                    "Sh tests are currently unsupported")
-
-        if is_objcxx_test:
-            return (lit.Test.UNSUPPORTED,
-                    "Objective-C tests are unsupported")
-
-        if test.config.unsupported:
-            return (lit.Test.UNSUPPORTED,
-                    "A lit.local.cfg marked this unsupported")
-
-        if lit_config.noExecute:
-            return lit.Test.Result(lit.Test.PASS)
-
-        if test.expected_result is None:
-            script = lit.TestRunner.parseIntegratedTestScript(
-                test, require_script=False)
-
-            if isinstance(script, lit.Test.Result):
-                return script
-
-        return None
-
     def execute(self, test, lit_config):
-        result = None
-        while True:
-            try:
-                result = self._execute(test, lit_config)
-                break
-            except OSError as oe:
-                if oe.errno != errno.ETXTBSY:
-                    raise
-                time.sleep(0.1)
+        if test.script_result is not None:
+            return test.script_result
 
-        return result
+        self.setup(test)
+        buildSteps, testSteps = self.getSteps(test, lit_config)
 
-    def _execute(self, test, lit_config):
-        # TRANSITION: It is potentially wasteful that all the skipping and
-        # unsupported logic lives here when it is known at time of test
-        # discovery. Investigate
-        script_result = self.getIntegratedScriptResult(test, lit_config)
-        if script_result is not None:
-            return script_result
+        test_file = test.getTestFilePath()
 
         try:
-            self.setup(test)
-            pass_var, fail_var = test.getPassFailResultCodes()
-            buildSteps, testSteps = self.getSteps(test, lit_config)
-
-            report = ""
-            for step in buildSteps:
-                cmd, out, err, rc = \
-                    self.build_executor.run(step.cmd, step.work_dir,
-                                            step.file_deps, step.env)
-
-                if step.should_fail and rc == 0:
-                    report += "Build step succeeded unexpectedly.\n"
-                elif rc != 0:
-                    report += "Build step failed unexpectedly.\n"
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.should_fail and rc == 0) or \
-                        (not step.should_fail and rc != 0):
-                    lit_config.note(report)
-                    return lit.Test.Result(fail_var, report)
-
-            for step in testSteps:
-                cmd, out, err, rc = \
-                    self.test_executor.run(step.cmd, step.work_dir,
-                                           step.file_deps, step.env)
-
-                if step.should_fail and rc == 0:
-                    report += "Test step succeeded unexpectedly.\n"
-                elif rc != 0:
-                    report += "Test step failed unexpectedly.\n"
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.should_fail and rc == 0) or \
-                        (not step.should_fail and rc != 0):
-                    lit_config.note(report)
-                    return lit.Test.Result(fail_var, report)
-
-            return lit.Test.Result(pass_var, report)
-
+            with test_file.open('w') as f:
+                for step in buildSteps:
+                    self.build_step_writer.write(test, step, f)
+                for step in testSteps:
+                    self.test_step_writer.write(test, step, f)
         except Exception as e:
             lit_config.warning(str(e))
             raise e
-        finally:
-            self.cleanup(test)
+
+        return lit.Test.Result(lit.Test.PASS,
+                               'Command file was succesfully written')
 
     def getSteps(self, test, lit_config):
         @dataclass
