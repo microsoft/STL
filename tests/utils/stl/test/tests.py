@@ -36,9 +36,11 @@ class STLTest(Test):
 
         # TRANSITION: These configurations should be enabled in the future.
         for flag in chain(self.cxx.flags, self.cxx.compile_flags):
-            if flag.startswith('clr:pure', 1):
+            if flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure')
-            elif flag.startswith('BE', 1):
+            elif flag[1:] == 'clr':
+                self.requires.append('clr')
+            elif flag[1:] == 'BE':
                 self.requires.append('edg')
 
     def getOutputDir(self):
