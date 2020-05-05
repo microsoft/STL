@@ -1686,9 +1686,6 @@ _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_t
         ++_UWhere;
     }
 
-    // the following warning is triggered if _Diff is unsigned
-#pragma warning(suppress : 6294) // Ill-defined for-loop: initial condition does not satisfy test.
-                                 // Loop body not executed.
     for (; _Off < 0; ++_Off) {
         --_UWhere;
     }
