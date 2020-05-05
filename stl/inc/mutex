@@ -13,8 +13,8 @@
 #error <mutex> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
-#include <stdlib.h>
 #include <chrono>
+#include <stdlib.h>
 #include <system_error>
 #include <thread>
 #include <utility>
