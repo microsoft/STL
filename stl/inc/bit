@@ -120,7 +120,7 @@ constexpr int _Popcount_helper(_Ty _Val) {
     _Val = static_cast<_Ty>(
         (_Val & static_cast<_Ty>(0x3333333333333333ull)) + ((_Val >> 2) & static_cast<_Ty>(0x3333333333333333ull)));
     _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F0F0F0F0F0F0Full));
-    for (int _ShiftDigits = numeric_limits<unsigned char>::digits; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
+    for (int _ShiftDigits = 8; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
         _Val = static_cast<_Ty>(_Val + static_cast<_Ty>(_Val >> _ShiftDigits));
     }
     // we want the bottom "slot" that's big enough to store _Digits
