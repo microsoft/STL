@@ -591,9 +591,7 @@ std/numerics/complex.number/complex.special/float_long_double_implicit.compile.f
 std/re/re.traits/transform.pass.cpp FAIL
 
 # STL bug: Incorrect return types.
-std/numerics/complex.number/cmplx.over/conj.pass.cpp FAIL
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
-std/numerics/complex.number/cmplx.over/proj.pass.cpp FAIL
 
 # STL bug: Missing <valarray> assignment operators.
 std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
@@ -811,6 +809,10 @@ std/containers/sequences/array/array.creation/to_array.pass.cpp:0 FAIL
 std/iterators/predef.iterators/insert.iterators/back.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/front.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp FAIL
+
+# Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
+std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
+std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
 
 # *** LIKELY STL BUGS ***
