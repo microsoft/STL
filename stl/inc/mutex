@@ -13,8 +13,8 @@
 #error <mutex> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
+#include <stdlib.h>
 #include <chrono>
-#include <exception>
 #include <system_error>
 #include <thread>
 #include <utility>
@@ -509,35 +509,56 @@ public:
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE call_once
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
+// WINBASEAPI
+// BOOL
+// WINAPI
+// InitOnceBeginInitialize(
+//     _Inout_ LPINIT_ONCE lpInitOnce,
+//     _In_ DWORD dwFlags,
+//     _Out_ PBOOL fPending,
+//     _Outptr_opt_result_maybenull_ LPVOID* lpContext
+//     );
+extern "C" int __declspec(dllimport) __stdcall __std_init_once_begin_initialize(
+    void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept;
+// WINBASEAPI
+// BOOL
+// WINAPI
+// InitOnceComplete(
+//     _Inout_ LPINIT_ONCE lpInitOnce,
+//     _In_ DWORD dwFlags,
+//     _In_opt_ LPVOID lpContext
+//     );
+extern "C" int __declspec(dllimport) __stdcall __std_init_once_complete(
+    void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
+// #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
+// #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
+_INLINE_VAR constexpr unsigned long _Init_once_init_failed = 0x4UL;
+struct _Init_once_completer {
+    once_flag& _Once;
+    unsigned long _DwFlags;
+    ~_Init_once_completer() {
+        if (__std_init_once_complete(&_Once._Opaque, _DwFlags, nullptr) == 0) {
+            _CSTD abort();
+        }
+    }
+};
 
 template <class _Fn, class... _Args>
-void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax...) once
+void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
+    noexcept(_STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...))) // Strengthened
+{
+    // call _Fx(_Ax...) once
     // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
     int _Pending;
-    if (_Execute_once_begin(_Once, _Pending) == 0) {
-        _XGetLastError();
+    if (__std_init_once_begin_initialize(&_Once._Opaque, 0, &_Pending, nullptr) == 0) {
+        _CSTD abort();
     }
 
-    if (_Pending == 0) {
-        return; // already initialized (won the race otherwise)
+    if (_Pending) {
+        _Init_once_completer _Op{_Once, _Init_once_init_failed};
+        _STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
+        _Op._DwFlags = 0;
     }
-
-    struct _Execute_once_scope_t {
-        ~_Execute_once_scope_t() {
-            if (!_Execute_once_complete(_Once_flag, _Succeeded)) {
-                _STD terminate(); // Cannot throw, even if moved out of destructor.
-                // call_once is permited to throw if some condition prevented from calling the callback.
-            }
-        }
-
-        once_flag& _Once_flag;
-        bool _Succeeded;
-    } _Execute_once_scope = {_Once, false};
-
-    _STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
-
-    _Execute_once_scope._Succeeded = true;
 }
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
