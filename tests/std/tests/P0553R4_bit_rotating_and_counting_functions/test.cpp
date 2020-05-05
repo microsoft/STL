@@ -162,21 +162,21 @@ template <typename T>
 void test_all() {
     static_assert(test_countl_zero<T>());
     test_countl_zero<T>();
-    // static_assert(test_countr_zero<T>());
+    static_assert(test_countr_zero<T>());
     test_countr_zero<T>();
-    // static_assert(test_countl_one<T>());
+    static_assert(test_countl_one<T>());
     test_countl_one<T>();
-    // static_assert(test_countr_one<T>());
+    static_assert(test_countr_one<T>());
     test_countr_one<T>();
-    // static_assert(test_popcount<T>());
+    static_assert(test_popcount<T>());
     test_popcount<T>();
-    // static_assert(test_rotl<T>());
+    static_assert(test_rotl<T>());
     test_rotl<T>();
-    // static_assert(test_rotr<T>());
+    static_assert(test_rotr<T>());
     test_rotr<T>();
-    // static_assert(test_popcount_specialcases<T>());
+    static_assert(test_popcount_specialcases<T>());
     test_popcount_specialcases<T>();
-    // static_assert(test_64bit_split_ops());
+    static_assert(test_64bit_split_ops());
     test_64bit_split_ops();
 }
 #endif // __cpp_lib_bitops

@@ -1030,7 +1030,7 @@ constexpr int _Countl_zero_helper(_Ty _Val) {
     unsigned int _Nn = numeric_limits<_Ty>::digits;
     unsigned int _Cc = numeric_limits<_Ty>::digits / 2;
     do {
-        _Yy = static_cast<T>(_Val >> _Cc);
+        _Yy = static_cast<_Ty>(_Val >> _Cc);
         if (_Yy != 0) {
             _Nn  = _Nn - _Cc;
             _Val = _Yy;
@@ -1043,7 +1043,8 @@ constexpr int _Countl_zero_helper(_Ty _Val) {
 // see "Hacker's Delight" section 5-4
 template <typename _Ty>
 constexpr int _Countr_zero_helper(_Ty _Val) {
-    return numeric_limits<_Ty>::digits - _Countl_zero_helper(~_Val & (_Val - 1));
+    return numeric_limits<_Ty>::digits
+           - _Countl_zero_helper(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
 }
 #pragma warning(push)
 #pragma warning(disable : 4640)
