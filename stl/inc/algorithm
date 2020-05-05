@@ -1606,7 +1606,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
             _FwdIt _Mid                  = _First;
 
-            while (_Old_first != _First && _Pred(*(_First - 1), _Val)) {
+            while (_Old_first != _First && _Pred(*_Prev_iter(_First), _Val)) {
                 --_Count1; // back up over any skipped prefix
                 --_First;
             }
