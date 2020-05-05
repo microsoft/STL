@@ -191,6 +191,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         </BuildFiles>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(CrtBuildModelIsDll)' != 'true'">
+      <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_begin_initialize.obj" />
+      <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_complete.obj" />
+    </ItemGroup>
+
     <Choose>
       <When Condition="'$(CrtBuildModel)' != 'md'">
         <!-- Only check exports of release, DLL, builds -->
