@@ -105,6 +105,27 @@ int main() {
     STATIC_ASSERT(is_same_v<decltype(conj(1729)), complex<double>>);
     STATIC_ASSERT(is_same_v<decltype(proj(1729)), complex<double>>);
 
+    STATIC_ASSERT(is_same_v<decltype(arg(1729.0f)), float>);
+    STATIC_ASSERT(is_same_v<decltype(imag(1729.0f)), float>);
+    STATIC_ASSERT(is_same_v<decltype(real(1729.0f)), float>);
+    STATIC_ASSERT(is_same_v<decltype(norm(1729.0f)), float>);
+    STATIC_ASSERT(is_same_v<decltype(conj(1729.0f)), complex<float>>);
+    STATIC_ASSERT(is_same_v<decltype(proj(1729.0f)), complex<float>>);
+
+    STATIC_ASSERT(is_same_v<decltype(arg(1729.0)), double>);
+    STATIC_ASSERT(is_same_v<decltype(imag(1729.0)), double>);
+    STATIC_ASSERT(is_same_v<decltype(real(1729.0)), double>);
+    STATIC_ASSERT(is_same_v<decltype(norm(1729.0)), double>);
+    STATIC_ASSERT(is_same_v<decltype(conj(1729.0)), complex<double>>);
+    STATIC_ASSERT(is_same_v<decltype(proj(1729.0)), complex<double>>);
+
+    STATIC_ASSERT(is_same_v<decltype(arg(1729.0L)), long double>);
+    STATIC_ASSERT(is_same_v<decltype(imag(1729.0L)), long double>);
+    STATIC_ASSERT(is_same_v<decltype(real(1729.0L)), long double>);
+    STATIC_ASSERT(is_same_v<decltype(norm(1729.0L)), long double>);
+    STATIC_ASSERT(is_same_v<decltype(conj(1729.0L)), complex<long double>>);
+    STATIC_ASSERT(is_same_v<decltype(proj(1729.0L)), complex<long double>>);
+
     assert((arg(-1.0) == arg(complex<double>{-1.0, 0.0})));
     assert((arg(-1) == arg(complex<double>{-1.0, 0.0})));
 
