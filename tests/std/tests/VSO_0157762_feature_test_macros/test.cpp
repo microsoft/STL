@@ -987,7 +987,7 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__clang__)
+#if _HAS_CXX20 && defined(__cpp_consteval)
 #ifndef __cpp_lib_source_location
 #error __cpp_lib_source_location is not defined
 #elif __cpp_lib_source_location != 201907L

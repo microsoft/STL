@@ -1163,7 +1163,7 @@
 #define __cpp_lib_ssize                   201902L
 #define __cpp_lib_starts_ends_with        201711L
 
-#ifdef __clang__
+#ifdef __cpp_consteval
 #define __cpp_lib_source_location 201907L
 #endif
 
