@@ -1,15 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-set(STD_TEST_OUTPUT_DIR "${STL_TEST_OUTPUT_DIR}/std")
-set(STD_TEST_SUBDIRS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/test.lst")
-set(STD_TEST_SUBDIRS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-set(STD_TEST_TYPE_OVERRIDES "${CMAKE_CURRENT_SOURCE_DIR}/test_type_overrides.txt")
+include(ProcessorCount)
+ProcessorCount(NUM_PROCESSORS)
 
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in
-  ${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg)
+add_custom_target(std)
+add_dependencies(check std)
+add_custom_target(check-std COMMAND "ctest --progress -j ${NUM_PROCESSORS} --timeout 240 -O \"${CMAKE_CURRENT_BINARY_DIR}/test_results.log\" -I \"${CMAKE_CURRENT_BINARY_DIR}/CTestTestfile.cmake\"" DEPENDS std COMMENT "Running std tests" USES_TERMINAL)
 
-get_property(STL_LIT_CONFIG_MAP GLOBAL PROPERTY STL_LIT_CONFIG_MAP)
-string(APPEND STL_LIT_CONFIG_MAP "map_config(\"${CMAKE_CURRENT_SOURCE_DIR}/lit.cfg\", \"${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg\")\n")
-set_property(GLOBAL PROPERTY STL_LIT_CONFIG_MAP ${STL_LIT_CONFIG_MAP})
+include("${CMAKE_CURRENT_BINARY_DIR}/tests.cmake")

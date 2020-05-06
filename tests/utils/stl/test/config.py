@@ -375,7 +375,6 @@ class Configuration:
             self.default_compiler,
             self.execute_external,
             self.build_step_writer,
-            self.test_step_writer,
             self.test_step_writer)
 
     # TRANSITION: Might be nice to actually print something

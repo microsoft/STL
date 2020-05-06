@@ -11,16 +11,13 @@ from itertools import chain
 from pathlib import Path
 import enum
 import os
-import re
 import shutil
 
 from lit.Test import Test
 import lit
 
 from stl.compiler import CXXCompiler
-
-_CMAKE_TARGET_NAME_REGEX = re.compile('[^a-zA-Z0-9_.+\-]+')
-_name_counter = 0
+from stl.util import mangleCMakeTarget
 
 _compiler_path_cache = dict()
 
@@ -44,7 +41,7 @@ class STLTest(Test):
         self.skipped = False
         Test.__init__(self, suite, path_in_suite, test_config, file_path)
 
-        self._configure_name()
+        self.mangled_name = mangleCMakeTarget(self.getFullName())
         self._configure_test_type(suite, path_in_suite, lit_config,
                                   test_config)
         if self.test_type is TestType.SKIPPED:
@@ -92,15 +89,6 @@ class STLTest(Test):
 
         return None
 
-    def _configure_name(self):
-        global _name_counter
-
-        self.name = _CMAKE_TARGET_NAME_REGEX.sub(
-            str(_name_counter), '-'.join(self.path_in_suite[:-1])) + \
-            '--' + self.env_num
-
-        _name_counter = _name_counter + 1
-
     def getOutputDir(self):
         return Path(os.path.join(
             self.suite.getExecPath(self.path_in_suite[:-1]))) / self.env_num
@@ -118,14 +106,14 @@ class STLTest(Test):
         return self.getOutputDir() / 'test.cmake'
 
     def getTestName(self):
-        return self.name
+        return '/'.join(self.path_in_suite[:-1]) + ':' + self.env_num
 
     def getFullName(self):
-        return self.suite.config.name + '--' + self.getTestName()
+        return self.suite.config.name + '::' + self.getTestName()
 
     def _configure_test_type(self, suite, path_in_suite, lit_config,
                              test_config):
-        test_name = '/'.join(path_in_suite) + ':' + self.env_num
+        test_name = self.getTestName()
         self.test_type = None
 
         current_prefix = ""
@@ -220,11 +208,5 @@ class LibcxxTest(STLTest):
             self.suite.getExecPath(self.path_in_suite[:-1]))) / dir_name / \
             self.env_num
 
-    def _configure_name(self):
-        global _name_counter
-
-        self.name = _CMAKE_TARGET_NAME_REGEX.sub(
-            str(_name_counter), '-'.join(self.path_in_suite[:-1]) + '-' +
-            self.getOutputBaseName()) + "--" + self.env_num
-
-        _name_counter = _name_counter + 1
+    def getTestName(self):
+        return '/'.join(self.path_in_suite) + ':' + self.env_num

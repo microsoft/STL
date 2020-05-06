@@ -115,20 +115,35 @@ class STLTestFormat:
 
     def getTestsInDirectory(self, testSuite, path_in_suite,
                             litConfig, localConfig, test_class=STLTest):
-        if testSuite.name not in _test_suite_file_handles:
-            test_list = Path(testSuite.exec_root) / 'tests.cmake'
-            _test_suite_file_handles[testSuite.name] = test_list.open('w')
-
-        global_prop_string = \
-            'set_property(GLOBAL APPEND PROPERTY STL_LIT_GENERATED_FILES {})'
-        include_string = '\ninclude({})'
-
         source_path = testSuite.getSourcePath(path_in_suite)
 
         if not self.isLegalDirectory(source_path, litConfig):
             return
 
+        file_handle = None
+        mangled_dir_name = stl.util.mangleCMakeTarget(testSuite.name + '--' + '-'.join(path_in_suite))
+
+        if testSuite.name not in _test_suite_file_handles:
+            test_list = Path(testSuite.exec_root) / 'tests.cmake'
+            file_handle = test_list.open('w')
+            _test_suite_file_handles[testSuite.name] = file_handle
+
+            dep_string = 'add_custom_target({dir_name})\nadd_dependencies({suite_name} {dir_name})'
+            print(dep_string.format(suite_name=testSuite.name,
+                                    dir_name=mangled_dir_name),
+                  file=file_handle)
+        else:
+            dir_path = Path(testSuite.exec_root) / os.path.join(path_in_suite)
+            dir_path.mkdir(parents=True, exist_ok=True)
+            dir_file = dir_path / 'CMakeLists.txt'
+            file_handle = dir_file.open('w')
+            dep_string = 'add_custom_target({dir_name})\nadd_dependencies({updir_name} {dir_name})\nadd_custom_target(check-{dir_name} COMMAND -I \\"${CMAKE_CURRENT_BINARY_DIR}/CTestTestfile.cmake\\"" DEPENDS {dir_name} COMMENT "Running {dir_name} tests" USES_TERMINAL)'
+            print(dep_string.format(updir_name=stl.util.mangleCMakeTarget(testSuite.name + '--' + '-'.join(path_in_suite[:-1])),
+                                    dir_name=mangled_dir_name),
+                  file=file_handle)
+
         envlst_path = self.getEnvLst(source_path, localConfig)
+        exec_path = Path(os.path.join(testSuite.getExecPath(path_in_suite)))
 
         for filename in os.listdir(source_path):
             # Ignore dot files and excluded tests.
@@ -145,9 +160,11 @@ class STLTestFormat:
 
                     env_entries = \
                         stl.test.file_parsing.parse_env_lst_file(envlst_path)
-                    format_string = "{:0" + str(len(str(len(env_entries)))) + \
-                                    "d}"
+                    env_num_string = "{:0" + str(len(str(len(env_entries)))) + \
+                                     "d}"
 
+                    is_first = True
+                    top_level_test_file_handle = None
                     for env_entry, env_num \
                             in zip(env_entries, itertools.count()):
                         test_config = copy.deepcopy(localConfig)
@@ -155,18 +172,34 @@ class STLTestFormat:
 
                         test = test_class(testSuite, test_path_in_suite,
                                           litConfig, test_config, env_entry,
-                                          format_string.format(env_num),
+                                          env_num_string.format(env_num),
                                           self.cxx)
 
                         if test.script_result is None:
-                            test_file = test.getTestFilePath().as_posix()
-                            out_string = global_prop_string.format(test_file)
-                            out_string += include_string.format(test_file)
-                            out_handle = \
-                                _test_suite_file_handles[testSuite.name]
-                            print(out_string, file=out_handle)
+                            if is_first:
+                                top_level_test_dir = test.getOutputDir().parent
+                                top_level_test_file = \
+                                    top_level_test_dir / 'CMakeLists.txt'
+                                top_level_test_file_handle = \
+                                    top_level_test_file.open('w')
+                                mangled_test_dir_name = \
+                                    stl.util.mangleCMakeTarget(
+                                        testSuite.name + '--' + '-'.join(top_level_test_dir.relative_to(Path(
+                                print(
+
+                                is_first = False
+
+                            out_string = \
+                                per_test_string.format(test_file=test_file,
+                                                       dir_name=dir_name,
+                                                       test_name=test.mangled_name)
+                            print(out_string, file=file_handle)
 
                         yield test
+            elif self.isLegalDirectory(filepath, litConfig):
+                per_subdir_string = 'add_subdirectory({subdir_name})'
+
+        file_handle.close()
 
     def setup(self, test):
         exec_dir = test.getExecDir()
@@ -185,16 +218,19 @@ class STLTestFormat:
                 shutil.copy2(path, exec_dir / path.name)
 
     def execute(self, test, lit_config):
-        if test.script_result is not None:
-            return test.script_result
-
-        self.setup(test)
-        buildSteps, testSteps = self.getSteps(test, lit_config)
-
-        test_file = test.getTestFilePath()
-
         try:
+            if test.script_result is not None:
+                return test.script_result
+
+            self.setup(test)
+            buildSteps, testSteps = self.getSteps(test, lit_config)
+
+            test_file = test.getTestFilePath()
+            test_target = 'add_custom_target(' + test.mangled_name + ')'
+
             with test_file.open('w') as f:
+                print(test_target, file=f)
+
                 for step in buildSteps:
                     self.build_step_writer.write(test, step, f)
                 for step in testSteps:
@@ -205,56 +241,6 @@ class STLTestFormat:
 
         return lit.Test.Result(lit.Test.PASS,
                                'Command file was succesfully written')
-
-    def getSteps(self, test, lit_config):
-        @dataclass
-        class SharedState:
-            exec_file: Optional[os.PathLike] = field(default=None)
-            exec_dir: os.PathLike = field(default_factory=Path)
-
-        shared = SharedState()
-        return self.getBuildSteps(test, lit_config, shared), \
-            self.getTestSteps(test, lit_config, shared)
-
-    def getBuildSteps(self, test, lit_config, shared):
-        if not test.path_in_suite[-1].endswith('.fail.cpp'):
-            shared.exec_dir = test.getExecDir()
-            output_base = test.getOutputBaseName()
-            output_dir = test.getOutputDir()
-            source_path = Path(test.getSourcePath())
-
-            cmd, out_files, shared.exec_file = \
-                test.cxx.executeBasedOnFlagsCmd([source_path], output_dir,
-                                                shared.exec_dir, output_base,
-                                                [], [], [])
-
-            yield TestStep(cmd, shared.exec_dir, [source_path],
-                           test.cxx.compile_env)
-
-    def getTestSteps(self, test, lit_config, shared):
-        if shared.exec_file is not None:
-            exec_env = test.cxx.compile_env
-            exec_env['TMP'] = str(shared.exec_dir)
-
-            yield TestStep([str(shared.exec_file)], shared.exec_dir,
-                           [shared.exec_file], exec_env)
-        elif test.path_in_suite[-1].endswith('.fail.cpp'):
-            exec_dir = test.getExecDir()
-            source_path = Path(test.getSourcePath())
-
-            flags = []
-            if test.cxx.name == 'cl' and \
-                    ('/analyze' in test.cxx.flags or
-                     '/analyze' in test.cxx.compile_flags):
-                output_base = test.getOutputBaseName()
-                output_dir = test.getOutputDir()
-                analyze_path = output_dir / (output_base +
-                                             '.nativecodeanalysis.xml')
-                flags.append('/analyze:log' + str(analyze_path))
-
-            cmd, _ = test.cxx.compileCmd([source_path], os.devnull, flags)
-            yield TestStep(cmd, exec_dir, [source_path],
-                           test.cxx.compile_env, True)
 
 
 class LibcxxTestFormat(STLTestFormat):

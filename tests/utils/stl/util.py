@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 import os
 import platform
+import re
 import signal
 import subprocess
 import sys
@@ -40,6 +41,30 @@ def nullContext(value):
     # Yields a variable within a with statement. No action is taken upon scope
     # exit.
     yield value
+
+
+_mangle_map = {}
+_name_counter = 0
+_CMAKE_TARGET_NAME_REGEX = re.compile('[\\/:]')
+_CMAKE_TARGET_NAME_SPECIAL_CHAR_REGEX = re.compile('[^a-zA-Z0-9_.+\-]+')
+
+
+def mangleCMakeTarget(to_mangle):
+    global _mangle_map
+    global _name_counter
+
+    if to_mangle in _mangle_map:
+        return _mangle_map[to_mangle]
+
+    to_mangle = _CMAKE_TARGET_NAME_REGEX.sub('-', to_mangle)
+    ret = _CMAKE_TARGET_NAME_SPECIAL_CHAR_REGEX.sub(
+        str(_name_counter), to_mangle)
+
+    if ret != to_mangle:
+        _name_counter = _name_counter + 1
+
+    _mangle_map[to_mangle] = ret
+    return ret
 
 
 def makeReport(cmd, out, err, rc):

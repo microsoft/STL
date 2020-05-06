@@ -673,8 +673,8 @@ std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass
 std/thread/futures/futures.promise/set_value_const.pass.cpp COMPILE_FAIL
 
 # STL bug: GH-757 <xstring>: Too many enabled hash specializations
-std/strings/basic.string.hash/char_type_hash.fail.cpp FAIL
-std/strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
+std/strings/basic.string.hash/char_type_hash.fail.cpp COMPILE_FAIL
+std/strings/string.view/string.view.hash/char_type.hash.fail.cpp COMPILE_FAIL
 
 
 # *** CRT BUGS ***
@@ -1036,6 +1036,9 @@ std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp COMPILE_FAIL
 
 
 # *** NOT YET ANALYZED ***
+# Not yet analyzed. Incomplete type.
+std/containers/associative/map/map.cons/default_recursive.pass:1 COMPILE_FAIL
+
 # Not yet analyzed. Asserting about alloc_count.
 std/thread/futures/futures.promise/alloc_ctor.pass.cpp COMPILE_FAIL
 std/thread/futures/futures.promise/move_assign.pass.cpp COMPILE_FAIL
