@@ -528,6 +528,7 @@ public:
 //     );
 extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize)(
     void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept;
+
 // WINBASEAPI
 // BOOL
 // WINAPI
