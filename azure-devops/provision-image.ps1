@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-#
 
 <#
 .SYNOPSIS
@@ -8,7 +7,7 @@ Sets up a machine to be an image for a scale set.
 
 .DESCRIPTION
 provision-image.ps1 runs on an existing, freshly provisioned virtual machine,
-and sets that virtual machine up as a vcpkg build machine. After this is done,
+and sets up that virtual machine as a build machine. After this is done,
 (outside of this script), we take that machine and make it an image to be copied
 for setting up new VMs in the scale set.
 
@@ -190,10 +189,10 @@ Function InstallVisualStudio {
 
 <#
 .SYNOPSIS
-Install a .msi file.
+Install an .msi file.
 
 .DESCRIPTION
-InstallMSI takes a url where an .msi lives, and installs that .msi to the system.
+InstallMSI takes a URL where an .msi lives, and installs that .msi to the system.
 
 .PARAMETER Name
 The name of the thing to install.
@@ -321,7 +320,7 @@ Installs NVIDIA's CUDA Toolkit.
 
 .DESCRIPTION
 InstallCuda installs the CUDA Toolkit with the features specified as a
-space separated list of strings in $Features.
+space-separated list of strings in $Features.
 
 .PARAMETER Url
 The URL of the CUDA installer.
@@ -358,13 +357,13 @@ Function InstallCuda {
 Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
 
 Write-Host 'Configuring AntiVirus exclusions...'
-Add-MPPreference -ExclusionPath C:\agent
-Add-MPPreference -ExclusionPath D:\
-Add-MPPreference -ExclusionProcess ninja.exe
-Add-MPPreference -ExclusionProcess clang-cl.exe
-Add-MPPreference -ExclusionProcess cl.exe
-Add-MPPreference -ExclusionProcess link.exe
-Add-MPPreference -ExclusionProcess python.exe
+Add-MpPreference -ExclusionPath C:\agent
+Add-MpPreference -ExclusionPath D:\
+Add-MpPreference -ExclusionProcess ninja.exe
+Add-MpPreference -ExclusionProcess clang-cl.exe
+Add-MpPreference -ExclusionProcess cl.exe
+Add-MpPreference -ExclusionProcess link.exe
+Add-MpPreference -ExclusionProcess python.exe
 
 InstallMSI 'CMake' $CMakeUrl
 InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'

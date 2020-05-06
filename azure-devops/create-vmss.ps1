@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-#
 
 <#
 .SYNOPSIS
@@ -83,7 +82,7 @@ function Find-ResourceGroupName {
 
 <#
 .SYNOPSIS
-Creates a randomly generated password.
+Generates a random password.
 
 .DESCRIPTION
 New-Password generates a password, randomly, of length $Length, containing
@@ -110,7 +109,7 @@ Waits for the shutdown of the specified resource.
 
 .DESCRIPTION
 Wait-Shutdown takes a VM, and checks if there's a 'PowerState/stopped'
-code; if there is, it returns. If there isn't, it waits ten seconds and
+code; if there is, it returns. If there isn't, it waits 10 seconds and
 tries again.
 
 .PARAMETER ResourceGroupName
