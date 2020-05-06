@@ -538,6 +538,7 @@ extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize
 //     );
 extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
     void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
+
 // #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
 // #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
 _INLINE_VAR constexpr unsigned long _Init_once_init_failed = 0x4UL;
