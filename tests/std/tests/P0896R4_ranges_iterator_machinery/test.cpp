@@ -3225,6 +3225,20 @@ namespace move_iterator_test {
     STATIC_ASSERT(test());
 } // namespace move_iterator_test
 
+namespace lwg3420 {
+    // Validate that we can ask for the iterator_traits of a type with no operator* for which checking copyability
+    // results in constraint recursion.
+    struct X {
+        X() = default;
+        template <std::copyable T>
+        X(T const&);
+    };
+    STATIC_ASSERT(!has_member_iter_concept<std::iterator_traits<X>>);
+    STATIC_ASSERT(!has_member_iter_category<std::iterator_traits<X>>);
+    STATIC_ASSERT(!has_member_difference_type<std::iterator_traits<X>>);
+    STATIC_ASSERT(!has_member_value_type<std::iterator_traits<X>>);
+} // namespace lwg3420
+
 int main() {
     iterator_cust_swap_test::test();
     iter_ops::test();
