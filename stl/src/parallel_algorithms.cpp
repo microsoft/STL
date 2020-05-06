@@ -39,9 +39,9 @@ namespace {
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
         _Value = __iso_volatile_load32(reinterpret_cast<const volatile int*>(_Ptr));
         _ReadWriteBarrier();
-#else 
+#else
 #error Unsupported architecture
-#endif 
+#endif
         return _Value;
     }
 
@@ -66,7 +66,7 @@ static DWORD _Get_number_of_processors() noexcept {
 extern "C" {
 
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {
-      // _Atomic_load_uint enforces memory ordering in _Initialize_parallel_init_info:
+    // _Atomic_load_uint enforces memory ordering in _Initialize_parallel_init_info:
     unsigned int _Result = _Atomic_load_uint(&_Parallel_info._Hw_threads);
     if (_Result == 0) {
         _Result = _Get_number_of_processors();
