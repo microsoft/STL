@@ -174,6 +174,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\sharedmutex.cpp;
             $(CrtRoot)\github\stl\src\syserror_import_lib.cpp;
             $(CrtRoot)\github\stl\src\vector_algorithms.cpp;
+            $(CrtRoot)\github\stl\src\xonce2.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
             <IncludeInLink>false</IncludeInLink>

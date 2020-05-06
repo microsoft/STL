@@ -509,6 +509,14 @@ public:
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE call_once
+#ifdef _M_CEE
+#define _WINDOWS_API              __stdcall
+#define _RENAME_WINDOWS_API(_Api) _Api##_clr
+#else // ^^^ _M_CEE // !_M_CEE vvv
+#define _WINDOWS_API              __declspec(dllimport) __stdcall
+#define _RENAME_WINDOWS_API(_Api) _Api
+#endif // _M_CEE
+
 // WINBASEAPI
 // BOOL
 // WINAPI
@@ -518,7 +526,7 @@ public:
 //     _Out_ PBOOL fPending,
 //     _Outptr_opt_result_maybenull_ LPVOID* lpContext
 //     );
-extern "C" int __declspec(dllimport) __stdcall __std_init_once_begin_initialize(
+extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize)(
     void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept;
 // WINBASEAPI
 // BOOL
@@ -528,7 +536,7 @@ extern "C" int __declspec(dllimport) __stdcall __std_init_once_begin_initialize(
 //     _In_ DWORD dwFlags,
 //     _In_opt_ LPVOID lpContext
 //     );
-extern "C" int __declspec(dllimport) __stdcall __std_init_once_complete(
+extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
     void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
 // #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
 // #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
@@ -537,7 +545,7 @@ struct _Init_once_completer {
     once_flag& _Once;
     unsigned long _DwFlags;
     ~_Init_once_completer() {
-        if (__std_init_once_complete(&_Once._Opaque, _DwFlags, nullptr) == 0) {
+        if (_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr) == 0) {
             _CSTD abort();
         }
     }
@@ -550,7 +558,7 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
     // call _Fx(_Ax...) once
     // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
     int _Pending;
-    if (__std_init_once_begin_initialize(&_Once._Opaque, 0, &_Pending, nullptr) == 0) {
+    if (_RENAME_WINDOWS_API(__std_init_once_begin_initialize)(&_Once._Opaque, 0, &_Pending, nullptr) == 0) {
         _CSTD abort();
     }
 
@@ -560,6 +568,9 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
         _Op._DwFlags = 0;
     }
 }
+
+#undef _WINDOWS_API
+#undef _RENAME_WINDOWS_API
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
 #ifndef _M_CEE
