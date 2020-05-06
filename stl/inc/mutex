@@ -526,7 +526,7 @@ public:
 //     _Out_ PBOOL fPending,
 //     _Outptr_opt_result_maybenull_ LPVOID* lpContext
 //     );
-extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize)(
+extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize)(
     void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept;
 
 // WINBASEAPI
@@ -537,7 +537,7 @@ extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize
 //     _In_ DWORD dwFlags,
 //     _In_opt_ LPVOID lpContext
 //     );
-extern "C" int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
+extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
     void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
 
 // #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
