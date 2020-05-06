@@ -25,8 +25,6 @@ enum _Atomic_spin_phase : unsigned long {
     _Atomic_wait_phase_wait_locked     = 0x0000'0001,
     _Atomic_wait_phase_wait_none       = 0x0000'0002,
     _Atomic_wait_phase_wait_counter    = 0x0000'0004,
-    _Atomic_wait_phase_yield           = 0x0000'0010,
-    _Atomic_wait_phase_sleep           = 0x0000'0020,
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 

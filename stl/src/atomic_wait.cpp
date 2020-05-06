@@ -81,6 +81,50 @@ namespace {
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
+    bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
+        DWORD remaining_waiting_time = _Get_remaining_waiting_time(_Wait_context);
+        if (remaining_waiting_time == 0) {
+            return false;
+        }
+
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
+        switch (_Wait_context._Wait_phase_and_spin_count) {
+        case _Atomic_wait_phase_wait_none:
+            ::AcquireSRWLockExclusive(&_Entry._Lock);
+            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_locked;
+            // re-check, and go to _Atomic_wait_phase_wait_locked
+            break;
+
+        case _Atomic_wait_phase_wait_locked:
+            if (!::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, remaining_waiting_time, 0)) {
+                _Assume_timeout();
+                ::ReleaseSRWLockExclusive(&_Entry._Lock);
+                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
+                return false;
+            }
+            // re-check, and still in _Atomic_wait_phase_wait_locked
+            break;
+        }
+
+        return true;
+    }
+
+    void _Atomic_unwait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
+        if (_Wait_context._Wait_phase_and_spin_count == _Atomic_wait_phase_wait_locked) {
+            auto& _Entry = _Atomic_wait_table_entry(_Storage);
+            ::ReleaseSRWLockExclusive(&_Entry._Lock);
+            // Superflous currently, but let's have it for robustness
+            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
+        }
+    }
+
+    void _Atomic_notify_fallback(const void* const _Storage) noexcept {
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
+        ::AcquireSRWLockExclusive(&_Entry._Lock);
+        ::ReleaseSRWLockExclusive(&_Entry._Lock);
+        ::WakeAllConditionVariable(&_Entry._Condition);
+    }
+
     template <class _Function_pointer>
     inline void _Save_function_pointer_relaxed(std::atomic<_Function_pointer>& _Dest, FARPROC _Src) {
         _Dest.store(reinterpret_cast<_Function_pointer>(_Src), std::memory_order_relaxed);
@@ -91,157 +135,6 @@ namespace {
         _Initalized,
         _In_progress,
     };
-
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-
-    constexpr bool _Have_condition_variable_functions() noexcept {
-        return true;
-    }
-
-#define __crtAcquireSRWLockExclusive   AcquireSRWLockExclusive
-#define __crtReleaseSRWLockExclusive   ReleaseSRWLockExclusive
-#define __crtSleepConditionVariableSRW SleepConditionVariableSRW
-#define __crtWakeAllConditionVariable  WakeAllConditionVariable
-
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _WIN32_WINNT_VISTA vvv
-
-    struct _Condition_variable_functions {
-        std::atomic<decltype(&::AcquireSRWLockExclusive)> _Pfn_AcquireSRWLockExclusive{nullptr};
-        std::atomic<decltype(&::ReleaseSRWLockExclusive)> _Pfn_ReleaseSRWLockExclusive{nullptr};
-        std::atomic<decltype(&::SleepConditionVariableSRW)> _Pfn_SleepConditionVariableSRW{nullptr};
-        std::atomic<decltype(&::WakeAllConditionVariable)> _Pfn_WakeAllConditionVariable{nullptr};
-        std::atomic<_Api_initialized> _Initialized{_Not_initalized};
-    };
-
-    _Condition_variable_functions _Cv_fcns;
-
-    _Condition_variable_functions& _Get_Condition_variable_functions() {
-        if (_Cv_fcns._Initialized.load(std::memory_order_acquire) != _Initalized) {
-            _Api_initialized expected = _Not_initalized;
-            if (!_Cv_fcns._Initialized.compare_exchange_strong(expected, _In_progress, std::memory_order_acquire)) {
-                if (expected == _Initalized) {
-                    return _Cv_fcns;
-                }
-            }
-            HMODULE kernel_module                = ::GetModuleHandleW(L"Kernel32.dll");
-            FARPROC acquire_srw_lock_exclusive   = ::GetProcAddress(kernel_module, "AcquireSRWLockExclusive");
-            FARPROC release_srw_lock_exclusive   = ::GetProcAddress(kernel_module, "ReleaseSRWLockExclusive");
-            FARPROC sleep_condition_variable_srw = ::GetProcAddress(kernel_module, "SleepConditionVariableSRW");
-            FARPROC wake_all_condition_variable  = ::GetProcAddress(kernel_module, "WakeAllConditionVariable");
-
-            if (acquire_srw_lock_exclusive != nullptr && release_srw_lock_exclusive != nullptr
-                && sleep_condition_variable_srw != nullptr && wake_all_condition_variable != nullptr) {
-                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_AcquireSRWLockExclusive, acquire_srw_lock_exclusive);
-                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_ReleaseSRWLockExclusive, release_srw_lock_exclusive);
-                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_SleepConditionVariableSRW, sleep_condition_variable_srw);
-                _Save_function_pointer_relaxed(_Cv_fcns._Pfn_WakeAllConditionVariable, wake_all_condition_variable);
-            }
-
-            expected = _In_progress;
-            _Cv_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_release);
-        }
-        return _Cv_fcns;
-    }
-
-    bool _Have_condition_variable_functions() noexcept {
-        auto any_fn = _Get_Condition_variable_functions()._Pfn_AcquireSRWLockExclusive.load(std::memory_order_relaxed);
-        return any_fn != nullptr;
-    }
-
-    inline void __crtAcquireSRWLockExclusive(PSRWLOCK _Lock) {
-        _Get_Condition_variable_functions()._Pfn_AcquireSRWLockExclusive.load(std::memory_order_relaxed)(_Lock);
-    }
-
-    inline void __crtReleaseSRWLockExclusive(PSRWLOCK _Lock) {
-        _Get_Condition_variable_functions()._Pfn_ReleaseSRWLockExclusive.load(std::memory_order_relaxed)(_Lock);
-    }
-
-    inline BOOL __crtSleepConditionVariableSRW(
-        PCONDITION_VARIABLE _Condition_variable, PSRWLOCK _Lock, DWORD _Milliseconds, ULONG _Flags) {
-        auto fn = _Get_Condition_variable_functions()._Pfn_SleepConditionVariableSRW.load(std::memory_order_relaxed);
-        return fn(_Condition_variable, _Lock, _Milliseconds, _Flags);
-    }
-
-    inline void __crtWakeAllConditionVariable(PCONDITION_VARIABLE _Condition_variable) {
-        auto fn = _Get_Condition_variable_functions()._Pfn_WakeAllConditionVariable.load(std::memory_order_relaxed);
-        fn(_Condition_variable);
-    }
-#endif // _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-
-    bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-        DWORD remaining_waiting_time = _Get_remaining_waiting_time(_Wait_context);
-        if (remaining_waiting_time == 0) {
-            return false;
-        }
-
-        if (_Have_condition_variable_functions()) {
-            auto& _Entry = _Atomic_wait_table_entry(_Storage);
-            switch (_Wait_context._Wait_phase_and_spin_count) {
-            case _Atomic_wait_phase_wait_none:
-                __crtAcquireSRWLockExclusive(&_Entry._Lock);
-                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_locked;
-                // re-check, and go to _Atomic_wait_phase_wait_locked
-                break;
-
-            case _Atomic_wait_phase_wait_locked:
-                if (!__crtSleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, remaining_waiting_time, 0)) {
-                    _Assume_timeout();
-                    __crtReleaseSRWLockExclusive(&_Entry._Lock);
-                    _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-                    return false;
-                }
-                // re-check, and still in _Atomic_wait_phase_wait_locked
-                break;
-            }
-        } else { // !_Have_condition_variable_functions()
-            switch (_Wait_context._Wait_phase_and_spin_count & _Atomic_wait_phase_mask) {
-            case _Atomic_wait_phase_wait_none:
-                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_yield | 5 * _Atomic_spin_value_step;
-                [[fallthrough]];
-
-            case _Atomic_wait_phase_yield:
-                if ((_Wait_context._Wait_phase_and_spin_count & _Atomic_spin_value_mask) != 0) {
-                    ::SwitchToThread();
-                    _Wait_context._Wait_phase_and_spin_count -= _Atomic_spin_value_step;
-                    break;
-                }
-                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_sleep | 2 * _Atomic_spin_value_step;
-                [[fallthrough]];
-
-            case _Atomic_wait_phase_sleep:
-                auto sleep_value =
-                    (_Wait_context._Wait_phase_and_spin_count & _Atomic_spin_value_mask) / _Atomic_spin_value_step;
-
-                ::Sleep(std::min<DWORD>(sleep_value, remaining_waiting_time));
-
-                auto next_sleep_value = std::min<DWORD>(sleep_value + sleep_value / 2, 4000);
-
-                _Wait_context._Wait_phase_and_spin_count =
-                    _Atomic_wait_phase_sleep | next_sleep_value * _Atomic_spin_value_step;
-                break;
-            }
-        }
-
-        return true;
-    }
-
-    void _Atomic_unwait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-        if (_Wait_context._Wait_phase_and_spin_count == _Atomic_wait_phase_wait_locked) {
-            auto& _Entry = _Atomic_wait_table_entry(_Storage);
-            __crtReleaseSRWLockExclusive(&_Entry._Lock);
-            // Superflous currently, but let's have it for robustness
-            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-        }
-    }
-
-    void _Atomic_notify_fallback(const void* const _Storage) noexcept {
-        if (_Have_condition_variable_functions()) { // Otherwise no-op
-            auto& _Entry = _Atomic_wait_table_entry(_Storage);
-            __crtAcquireSRWLockExclusive(&_Entry._Lock);
-            __crtReleaseSRWLockExclusive(&_Entry._Lock);
-            __crtWakeAllConditionVariable(&_Entry._Condition);
-        }
-    }
 
     struct _Wait_on_address_functions {
         std::atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
@@ -434,14 +327,6 @@ bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept {
     if (!IsWindowsVersionOrGreater(HIBYTE(LOWORD(_Api_level)), LOBYTE(LOWORD(_Api_level)), 0)) {
         return false;
     }
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    if (_Api_level < _WIN32_WINNT_VISTA) {
-        _Api_initialized expected = _Not_initalized;
-        if (!_Cv_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_relaxed)) {
-            return false; // It is too late
-        }
-    }
-#endif
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
     if (_Api_level < _WIN32_WINNT_WIN8) {
         _Api_initialized expected = _Not_initalized;
