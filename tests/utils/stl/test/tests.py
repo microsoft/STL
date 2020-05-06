@@ -34,14 +34,13 @@ class STLTest(Test):
 
         self._configure_cxx(lit_config, envlst_entry, default_cxx)
 
-        # TRANSITION: These configurations should be enabled in the future.
         for flag in chain(self.cxx.flags, self.cxx.compile_flags):
             if flag[1:] == 'clr:pure':
-                self.requires.append('clr_pure')
+                self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
-                self.requires.append('clr')
+                self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
-                self.requires.append('edg')
+                self.requires.append('edg') # TRANSITION, GH-799
 
     def getOutputDir(self):
         return Path(os.path.join(
