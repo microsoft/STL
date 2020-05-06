@@ -3,7 +3,7 @@
 
 #include <yvals_core.h>
 
-#include "awint.h"
+#include <synchapi.h>
 
 // This must be as small as possible, because its contents are
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
