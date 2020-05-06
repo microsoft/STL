@@ -40,7 +40,7 @@ class STLTest(Test):
             elif flag[1:] == 'clr':
                 self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
-                self.requires.append('edg') # TRANSITION, GH-799
+                self.requires.append('edg') # available for x86, see config.py
 
     def getOutputDir(self):
         return Path(os.path.join(
