@@ -3844,21 +3844,24 @@ public:
 
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent>
-    friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
+    _NODISCARD friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
         return _Left.current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    friend constexpr difference_type operator-(const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
+    _NODISCARD friend constexpr difference_type operator-(
+        const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
         return _Left._Get_last() - _Right.current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    friend constexpr difference_type operator-(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
+    _NODISCARD friend constexpr difference_type operator-(
+        const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
         return _Left.current - _Right._Get_last();
     }
 
-    friend constexpr reference iter_move(const move_iterator& _It) noexcept(noexcept(_RANGES iter_move(_It.current))) {
+    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
+        noexcept(_RANGES iter_move(_It.current))) {
         return _RANGES iter_move(_It.current);
     }
 

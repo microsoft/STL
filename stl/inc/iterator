@@ -194,7 +194,7 @@ public:
     constexpr move_sentinel() = default;
 
     constexpr explicit move_sentinel(_Se _Val) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
-        : _Last(_STD move(_Val)) {}
+        : _Last{_STD move(_Val)} {}
 
     // clang-format off
     template <class _Se2>
@@ -212,11 +212,11 @@ public:
     }
     // clang-format on
 
-    constexpr _Se base() const noexcept(is_nothrow_copy_constructible_v<_Se>) /* strengthened */ {
+    _NODISCARD constexpr _Se base() const noexcept(is_nothrow_copy_constructible_v<_Se>) /* strengthened */ {
         return _Last;
     }
 
-    constexpr const _Se& _Get_last() const noexcept {
+    _NODISCARD constexpr const _Se& _Get_last() const noexcept {
         return _Last;
     }
 
