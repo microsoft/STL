@@ -13,7 +13,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 namespace {
     struct _Parallel_init_info {
         unsigned int _Hw_threads;
@@ -55,7 +54,6 @@ namespace {
     }
 
 } // unnamed namespace
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
 static DWORD _Get_number_of_processors() noexcept {
     SYSTEM_INFO _Info;
