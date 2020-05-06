@@ -31,20 +31,14 @@ static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexce
     }
 }
 
-static size_t _Byte_length(void* _First, void* _Last) noexcept {
-    return static_cast<unsigned char*>(_Last) - static_cast<unsigned char*>(_First);
-}
-
-static size_t _Byte_length(const void* _First, const void* _Last) noexcept {
+template <class _Ptr>
+static size_t _Byte_length(_Ptr _First, _Ptr _Last) noexcept {
     return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
 }
 
-static void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = static_cast<unsigned char*>(_Target) + _Offset;
-}
-
-static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = static_cast<const unsigned char*>(_Target) + _Offset;
+template <class _Ptr>
+static void _Advance_bytes(_Ptr& _Target, ptrdiff_t _Offset) noexcept {
+    _Target = const_cast<unsigned char*>(static_cast<const unsigned char*>(_Target) + _Offset);
 }
 
 extern "C" {
