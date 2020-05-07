@@ -47,12 +47,18 @@ containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
-# libcxx doesn't yet implement P1423R3, so it expects an "old" value for __cpp_lib_char8_t
+# libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
 language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
 language.support\support.limits\support.limits.general\istream.version.pass.cpp
 language.support\support.limits\support.limits.general\limits.version.pass.cpp
 language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
+
+# libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
+numerics\bit\bit.pow.two\ceil2.pass.cpp
+numerics\bit\bit.pow.two\floor2.pass.cpp
+numerics\bit\bit.pow.two\ispow2.pass.cpp
+numerics\bit\bit.pow.two\log2p1.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -446,9 +452,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0476R2 "<bit> bit_cast"
-language.support\support.limits\support.limits.general\bit.version.pass.cpp
-
 # C++20 P0553R4 "<bit> Rotating And Counting Functions"
 numerics\bit\bitops.count\countl_one.pass.cpp
 numerics\bit\bitops.count\countl_zero.pass.cpp
@@ -457,12 +460,6 @@ numerics\bit\bitops.count\countr_zero.pass.cpp
 numerics\bit\bitops.count\popcount.pass.cpp
 numerics\bit\bitops.rot\rotl.pass.cpp
 numerics\bit\bitops.rot\rotr.pass.cpp
-
-# C++20 P0556R3 "<bit> ispow2(), ceil2(), floor2(), log2p1()"
-numerics\bit\bit.pow.two\ceil2.pass.cpp
-numerics\bit\bit.pow.two\floor2.pass.cpp
-numerics\bit\bit.pow.two\ispow2.pass.cpp
-numerics\bit\bit.pow.two\log2p1.pass.cpp
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
@@ -547,9 +544,6 @@ thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.
 
 
 # *** C1XX COMPILER BUGS ***
-# Compiler bug: VSO-120957 "alignas by-value parameters should be permitted"
-utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
-
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
 utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
 
@@ -564,6 +558,9 @@ containers\views\span.cons\ptr_ptr.pass.cpp
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 thread\macro.pass.cpp
+
+# Clang's tgmath.h interferes with the UCRT's tgmath.h
+depr\depr.c.headers\tgmath_h.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -585,9 +582,6 @@ localization\locale.categories\category.monetary\locale.moneypunct\money_base.pa
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 
-# STL bug: We don't have tgmath.h.
-depr\depr.c.headers\tgmath_h.pass.cpp
-
 # STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
 numerics\complex.number\complex.special\double_long_double_implicit.compile.fail.cpp
 numerics\complex.number\complex.special\float_double_implicit.compile.fail.cpp
@@ -597,9 +591,7 @@ numerics\complex.number\complex.special\float_long_double_implicit.compile.fail.
 re\re.traits\transform.pass.cpp
 
 # STL bug: Incorrect return types.
-numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
-numerics\complex.number\cmplx.over\proj.pass.cpp
 
 # STL bug: Missing <valarray> assignment operators.
 numerics\numarray\template.mask.array\mask.array.assign\mask_array.pass.cpp
@@ -676,6 +668,9 @@ thread\futures\futures.promise\set_value_const.pass.cpp
 strings\basic.string.hash\char_type_hash.fail.cpp
 strings\string.view\string.view.hash\char_type.hash.fail.cpp
 
+# STL bug: GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
+utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -691,34 +686,6 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 # Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
-
-# Tests need to be updated for P1115R3 "erase()/erase_if() Return size_type".
-containers\associative\map\map.erasure\erase_if.pass.cpp
-containers\associative\multimap\multimap.erasure\erase_if.pass.cpp
-containers\associative\multiset\multiset.erasure\erase_if.pass.cpp
-containers\associative\set\set.erasure\erase_if.pass.cpp
-containers\sequences\deque\deque.erasure\erase_if.pass.cpp
-containers\sequences\deque\deque.erasure\erase.pass.cpp
-containers\sequences\forwardlist\forwardlist.erasure\erase_if.pass.cpp
-containers\sequences\forwardlist\forwardlist.erasure\erase.pass.cpp
-containers\sequences\list\list.erasure\erase_if.pass.cpp
-containers\sequences\list\list.erasure\erase.pass.cpp
-containers\sequences\vector\vector.erasure\erase_if.pass.cpp
-containers\sequences\vector\vector.erasure\erase.pass.cpp
-containers\unord\unord.map\erase_if.pass.cpp
-containers\unord\unord.multimap\erase_if.pass.cpp
-containers\unord\unord.multiset\erase_if.pass.cpp
-containers\unord\unord.set\erase_if.pass.cpp
-language.support\support.limits\support.limits.general\deque.version.pass.cpp
-language.support\support.limits\support.limits.general\forward_list.version.pass.cpp
-language.support\support.limits\support.limits.general\list.version.pass.cpp
-language.support\support.limits\support.limits.general\map.version.pass.cpp
-language.support\support.limits\support.limits.general\set.version.pass.cpp
-language.support\support.limits\support.limits.general\unordered_map.version.pass.cpp
-language.support\support.limits\support.limits.general\unordered_set.version.pass.cpp
-language.support\support.limits\support.limits.general\vector.version.pass.cpp
-strings\strings.erasure\erase_if.pass.cpp
-strings\strings.erasure\erase.pass.cpp
 
 # Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
 containers\views\span.cons\assign.pass.cpp
@@ -739,16 +706,13 @@ containers\views\span.iterators\rbegin.pass.cpp
 containers\views\span.iterators\end.pass.cpp
 containers\views\span.iterators\rend.pass.cpp
 
-# Test needs to be updated for P2116R0 removing the tuple interface of span
+# Test needs to be removed after P2116R0 removed the tuple interface of span
 containers\views\span.tuple\get.fail.cpp
 containers\views\span.tuple\get.pass.cpp
 containers\views\span.tuple\tuple_element.fail.cpp
 containers\views\span.tuple\tuple_element.pass.cpp
 containers\views\span.tuple\tuple_size.fail.cpp
 containers\views\span.tuple\tuple_size.pass.cpp
-
-# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
-utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
@@ -845,6 +809,10 @@ containers\sequences\array\array.creation\to_array.pass.cpp
 iterators\predef.iterators\insert.iterators\back.insert.iterator\types.pass.cpp
 iterators\predef.iterators\insert.iterators\front.insert.iterator\types.pass.cpp
 iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
+
+# Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
+numerics\complex.number\cmplx.over\conj.pass.cpp
+numerics\complex.number\cmplx.over\proj.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -1061,3 +1029,6 @@ localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.memb
 
 # Not yet analyzed. Frequent timeouts
 containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp
+
+# Not yet analyzed. Failing after https://reviews.llvm.org/D75622.
+re\re.const\re.matchflag\match_prev_avail.pass.cpp
