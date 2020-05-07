@@ -550,6 +550,9 @@ utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
 # Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
+# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.index\difference_type.pass.cpp
+
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 containers\views\span.cons\ptr_len.pass.cpp
 containers\views\span.cons\ptr_ptr.pass.cpp
@@ -717,11 +720,12 @@ containers\views\span.tuple\tuple_size.pass.cpp
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\get.pass.cpp
-thread\futures\futures.shared_future\wait_for.pass.cpp
 thread\futures\futures.shared_future\wait.pass.cpp
+thread\futures\futures.shared_future\wait_for.pass.cpp
+thread\futures\futures.shared_future\wait_until.pass.cpp
 thread\futures\futures.unique_future\get.pass.cpp
-thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\futures\futures.unique_future\wait.pass.cpp
+thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_all.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_one.pass.cpp
 thread\thread.condition\thread.condition.condvar\wait_for_pred.pass.cpp
