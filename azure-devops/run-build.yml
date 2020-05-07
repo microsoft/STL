@@ -59,7 +59,7 @@ jobs:
         targetType: inline
         script: |
           $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
-          Write-Output "##vso[task.setvariable variable=testParallelism;]$testParallelism"
+          Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
     - script: |
         if exist "$(buildOutputLocation)" (
           rmdir /S /Q "$(buildOutputLocation)"
