@@ -9,20 +9,25 @@ set(STL_TESTED_HEADERS_DIR "${STL_BUILD_ROOT}/inc")
 
 set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
     "Location of the llvm-project source tree")
-set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
-    "Location of the libcxx source tree")
-set(LLVM_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/llvm" CACHE PATH
-    "Location of the llvm source tree")
-
-set(STL_LIT ${CMAKE_CURRENT_BINARY_DIR}/utils/stl-lit/stl-lit.py)
-
-set(Python_FIND_STRATEGY VERSION)
-find_package(Python3)
 
 add_subdirectory(libcxx)
 add_subdirectory(std)
 add_subdirectory(tr1)
 
 # Add the stl-lit subdirectory last so all the test directories have had a
-# chance to add to the config map.
+# chance to add to the config map and test directory global properties.
 add_subdirectory(utils/stl-lit)
+
+set(Python_FIND_STRATEGY VERSION)
+find_package(Python3)
+
+if(NOT DEFINED LIT_FLAGS)
+    list(APPEND LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
+endif()
+
+get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
+list(APPEND STL_LIT_COMMAND "${STL_LIT_OUTPUT}"
+                            "${LIT_FLAGS}"
+                            "${STL_LIT_TEST_DIRS}")
+
+add_test(NAME stl COMMAND ${Python3_EXECUTABLE} ${STL_LIT_COMMAND} COMMAND_EXPAND_LISTS)
