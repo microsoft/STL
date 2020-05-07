@@ -19,6 +19,10 @@ set(STL_LIT ${CMAKE_CURRENT_BINARY_DIR}/utils/stl-lit/stl-lit.py)
 set(Python_FIND_STRATEGY VERSION)
 find_package(Python3)
 
+if(Python_VERSION VERSION_LESS "3.8")
+    message(FATAL_ERROR "Found Python version ${Python_VERSION}. We require at least Python 3.8.")
+endif()
+
 add_subdirectory(libcxx)
 add_subdirectory(std)
 add_subdirectory(tr1)
