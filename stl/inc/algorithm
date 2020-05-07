@@ -3468,7 +3468,7 @@ void _Inplace_merge_buffer_left(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Iter_
     using _Ptr_ty = _Iter_value_t<_BidIt>*;
     _Uninitialized_backout<_Ptr_ty> _Backout{_Temp_ptr, _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr)};
     _Ptr_ty _Left_first      = _Temp_ptr;
-    const _Ptr_ty _Left_last = _Backout._Last - 1; // avoid a compare with the highest element
+    const _Ptr_ty _Left_last = _Prev_iter(_Backout._Last); // avoid a compare with the highest element
     *_First                  = _STD move(*_Mid); // the lowest element is now in position
     ++_First;
     ++_Mid;
@@ -3503,7 +3503,7 @@ void _Inplace_merge_buffer_right(
     _Uninitialized_backout<_Ptr_ty> _Backout{_Temp_ptr, _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr)};
     *--_Last                   = _STD move(*--_Mid); // move the highest element into position
     const _Ptr_ty _Right_first = _Temp_ptr;
-    _Ptr_ty _Right_last        = _Backout._Last - 1;
+    _Ptr_ty _Right_last        = _Prev_iter(_Backout._Last);
     --_Mid;
     for (;;) {
         if (_Pred(*_Right_last, *_Mid)) { // merge from the left partition
