@@ -505,7 +505,7 @@ std/strings/char.traits/char.traits.specializations/char.traits.specializations.
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
 std/atomics/types.pass.cpp FAIL
-std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp FAIL
+std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp PASS
 std/thread/thread.barrier/arrive.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_drop.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
