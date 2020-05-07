@@ -16,12 +16,7 @@ set(LLVM_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/llvm" CACHE PATH
 
 set(STL_LIT ${CMAKE_CURRENT_BINARY_DIR}/utils/stl-lit/stl-lit.py)
 
-set(Python_FIND_STRATEGY VERSION)
-find_package(Python3)
-
-if(Python_VERSION VERSION_LESS "3.8")
-    message(FATAL_ERROR "Found Python version ${Python_VERSION}. We require at least Python 3.8.")
-endif()
+find_package(Python "3.8" REQUIRED COMPONENTS Interpreter)
 
 add_subdirectory(libcxx)
 add_subdirectory(std)
