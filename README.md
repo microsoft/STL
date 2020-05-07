@@ -248,11 +248,11 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 
 C:\STL\out\build\x64>ctest -V
 
+:: This command will also run all of the testsuites.
+
+C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1
+
 :: This command will run all of the std testsuite.
-
-C:\STL\out\build\x64>ctest -R std
-
-:: This command will also run all of the std testsuite.
 
 C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std
 
@@ -271,18 +271,20 @@ C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project
 
 ### CTest
 
-When running the tests via CTest each of the testsuites is considered to be a single test. If any single test in a
-testsuite fails, CTest will report the test which represents that testsuite as failed.
+When running the tests via CTest, all of the testsuites are considered to be a single test. If any single test in a
+testsuite fails, CTest will simply report that the `stl` test failed.
 
 Example:
 ```
-67% tests passed, 1 tests failed out of 3
+0% tests passed, 1 tests failed out of 1
 
 Total Test time (real) = 2441.55 sec
 
 The following tests FAILED:
-      1 - libcxx (Failed)
+      1 - stl (Failed)
 ```
+
+The primary utility of CTest in this case is to conveniently invoke `stl-lit.py` with the correct set of arguments.
 
 CTest will output everything that was sent to stderr for each of the failed testsuites, which can be used to identify
 which individual test within the testsuite failed. It can sometimes be helpful to run CTest with the `-V` option in
