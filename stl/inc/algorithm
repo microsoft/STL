@@ -26,15 +26,14 @@ _EXTERN_C
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
-__declspec(noalias) void* __cdecl __std_reverse_trivially_copyable_1(
+__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-__declspec(noalias) void* __cdecl __std_reverse_trivially_copyable_2(
+__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-__declspec(noalias) void* __cdecl __std_reverse_trivially_copyable_4(
+__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-__declspec(noalias) void* __cdecl __std_reverse_trivially_copyable_8(
+__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-
 _END_EXTERN_C
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -2457,7 +2456,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_trivially_copyable_1(_UFirst, _ULast, _UDest));
+            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest));
             _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
@@ -2466,7 +2465,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_trivially_copyable_2(_UFirst, _ULast, _UDest));
+            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest));
             _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
@@ -2475,7 +2474,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_trivially_copyable_4(_UFirst, _ULast, _UDest));
+            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest));
             _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
@@ -2484,7 +2483,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_trivially_copyable_8(_UFirst, _ULast, _UDest));
+            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest));
             _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
@@ -2510,22 +2509,22 @@ _OutIt _Reverse_copy_unchecked1(_BidIt _First, _BidIt _Last, _OutIt _Dest, integ
 #if _USE_STD_VECTOR_ALGORITHMS
 template <class _BidIt, class _OutIt>
 _OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 1>) {
-    return static_cast<_OutIt>(__std_reverse_trivially_copyable_1(_First, _Last, _Dest));
+    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest));
 }
 
 template <class _BidIt, class _OutIt>
 _OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 2>) {
-    return static_cast<_OutIt>(__std_reverse_trivially_copyable_2(_First, _Last, _Dest));
+    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_2(_First, _Last, _Dest));
 }
 
 template <class _BidIt, class _OutIt>
 _OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 4>) {
-    return static_cast<_OutIt>(__std_reverse_trivially_copyable_4(_First, _Last, _Dest));
+    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_4(_First, _Last, _Dest));
 }
 
 template <class _BidIt, class _OutIt>
 _OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 8>) {
-    return static_cast<_OutIt>(__std_reverse_trivially_copyable_8(_First, _Last, _Dest));
+    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest));
 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
