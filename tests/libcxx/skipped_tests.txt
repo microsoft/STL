@@ -720,11 +720,12 @@ containers\views\span.tuple\tuple_size.pass.cpp
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\get.pass.cpp
-thread\futures\futures.shared_future\wait_for.pass.cpp
 thread\futures\futures.shared_future\wait.pass.cpp
+thread\futures\futures.shared_future\wait_for.pass.cpp
+thread\futures\futures.shared_future\wait_until.pass.cpp
 thread\futures\futures.unique_future\get.pass.cpp
-thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\futures\futures.unique_future\wait.pass.cpp
+thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_all.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_one.pass.cpp
 thread\thread.condition\thread.condition.condvar\wait_for_pred.pass.cpp
