@@ -224,7 +224,7 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
 2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
-3. Acquire [Python][] 3.8 or newer.
+3. Acquire [Python][] 3.8 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 4. Have LLVM's `bin` directory on the `PATH`. Simply using [LLVM's installer][] and choosing to add LLVM to your `PATH`
 during installation is the easiest way to get LLVM's `bin` directory on your `PATH`.
 5. Follow the instructions below.
@@ -246,25 +246,25 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 ```
 :: This command will run all of the testsuites with verbose output.
 
-C:\STL\build>ctest -V
+C:\STL\out\build\x64>ctest -V
 
 :: This command will also run all of the testsuites.
 
-C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test ..\tests\std ..\tests\tr1
+C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1
 
 :: This command will run all of the std testsuite.
 
-C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std
+C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std
 
 :: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
 :: will run the single test found under VSO_0000000_any_calling_conventions.
 
-C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\tests\std\tests\VSO_0000000_any_calling_conventions
+C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions
 
 :: You can invoke stl-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
 :: control over what category of tests you would like to run. The following will run all the libcxx map tests.
 
-C:\STL\build>python tests\utils\stl-lit\stl-lit.py ..\llvm-project\libcxx\test\std\containers\associative\map
+C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map
 ```
 
 ## Interpreting The Results Of Tests
