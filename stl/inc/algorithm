@@ -1525,7 +1525,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
                 auto _UMid                   = _UFirst;
 
-                while (_UOld_first != _UFirst && _Pred(*(_UFirst - 1), _Val)) { // back up over any skipped prefix
+                while (_UOld_first != _UFirst && _Pred(*_Prev_iter(_UFirst), _Val)) { // back up over any skipped prefix
                     --_Count1;
                     --_UFirst;
                 }
@@ -1606,7 +1606,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
             _FwdIt _Mid                  = _First;
 
-            while (_Old_first != _First && _Pred(*(_First - 1), _Val)) {
+            while (_Old_first != _First && _Pred(*_Prev_iter(_First), _Val)) {
                 --_Count1; // back up over any skipped prefix
                 --_First;
             }
@@ -3764,7 +3764,8 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
     _RanIt _Pfirst = _Mid;
     _RanIt _Plast  = _Next_iter(_Pfirst);
 
-    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *(_Pfirst - 1), *_Pfirst) && !_Pred(*_Pfirst, *(_Pfirst - 1))) {
+    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Pfirst), *_Pfirst)
+           && !_Pred(*_Pfirst, *_Prev_iter(_Pfirst))) {
         --_Pfirst;
     }
 
@@ -3789,8 +3790,8 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
         }
 
         for (; _First < _Glast; --_Glast) {
-            if (_DEBUG_LT_PRED(_Pred, *(_Glast - 1), *_Pfirst)) {
-            } else if (_Pred(*_Pfirst, *(_Glast - 1))) {
+            if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+            } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
                 break;
             } else if (--_Pfirst != _Prev_iter(_Glast)) {
                 _STD iter_swap(_Pfirst, _Prev_iter(_Glast));
