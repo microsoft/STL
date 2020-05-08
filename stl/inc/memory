@@ -3067,11 +3067,11 @@ class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
 
     static_assert(alignof(_Ref_count_base) >= (1 << 2), "Two bits don't fit as low bits");
 
-    static constexpr uintptr_t _Lock_mask                   = 3;
-    static constexpr uintptr_t _Not_locked                  = 0;
-    static constexpr uintptr_t _Locked_notify_not_needed    = 1;
-    static constexpr uintptr_t _Locked_notify_needed        = 2;
-    static constexpr uintptr_t _Ptr_value_mask              = ~_Lock_mask;
+    static constexpr uintptr_t _Lock_mask                = 3;
+    static constexpr uintptr_t _Not_locked               = 0;
+    static constexpr uintptr_t _Locked_notify_not_needed = 1;
+    static constexpr uintptr_t _Locked_notify_needed     = 2;
+    static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
 
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
