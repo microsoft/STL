@@ -3071,7 +3071,6 @@ class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
     static constexpr uintptr_t _Not_locked                  = 0;
     static constexpr uintptr_t _Locked_notify_not_needed    = 1;
     static constexpr uintptr_t _Locked_notify_needed        = 2;
-    static constexpr uintptr_t _Locked_notify_not_supported = 3;
     static constexpr uintptr_t _Ptr_value_mask              = ~_Lock_mask;
 
 protected:
@@ -3091,11 +3090,6 @@ protected:
                 _YIELD_PROCESSOR();
                 break;
 
-            case _Locked_notify_not_supported: // Keep spinning
-                _YIELD_PROCESSOR();
-                _Rep = _Repptr.load(memory_order::relaxed);
-                break;
-
             case _Locked_notify_not_needed: // Try to set "notify needed" and wait
                 if (!_Repptr.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
                     // Failed to put notify needed flag on, try again
@@ -3109,6 +3103,9 @@ protected:
                 _Repptr.wait(_Rep, memory_order::relaxed);
                 _Rep = _Repptr.load(memory_order::relaxed);
                 break;
+
+            default: // Unrecognized bit pattern
+                abort();
             }
         }
     }
