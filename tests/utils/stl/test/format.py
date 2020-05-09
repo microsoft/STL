@@ -121,7 +121,7 @@ class STLTestFormat:
         # on the .dat files the test requires.
         for path in source_dir.iterdir():
             if path.is_file() and path.name.endswith('.dat'):
-                os.link(path, exec_dir / path.name)
+                shutil.copy2(path, exec_dir / path.name)
 
     def cleanup(self, test):
         shutil.rmtree(test.getExecDir(), ignore_errors=True)
@@ -129,7 +129,7 @@ class STLTestFormat:
 
     def getIntegratedScriptResult(self, test, lit_config):
         if test.skipped:
-            return (stl.test.tests.SKIP, "Test was marked as skipped")
+            return (lit.Test.SKIPPED, "Test was marked as skipped")
 
         name = test.path_in_suite[-1]
         name_root, name_ext = os.path.splitext(name)

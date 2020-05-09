@@ -1271,7 +1271,7 @@ public:
     }
 
     iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
-        return erase(_Where, _Where + 1);
+        return erase(_Where, _Next_iter(_Where));
     }
 
     iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept(

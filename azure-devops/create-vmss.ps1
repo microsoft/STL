@@ -1,10 +1,19 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-#
-# This script assumes you have installed Azure tools into PowerShell by following the instructions
-# at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-3.6.1
-# or are running from Azure Cloud Shell.
-#
+
+<#
+.SYNOPSIS
+Creates a Windows virtual machine scale set, set up for the STL's CI.
+
+.DESCRIPTION
+create-vmss.ps1 creates an Azure Windows VM scale set, set up for the STL's CI
+system. See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview
+for more information.
+
+This script assumes you have installed Azure tools into PowerShell by following the instructions
+at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-3.6.1
+or are running from Azure Cloud Shell.
+#>
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
@@ -14,10 +23,25 @@ $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 10
+$TotalProgress = 11
 $CurrentProgress = 1
 
+<#
+.SYNOPSIS
+Returns whether there's a name collision in the resource group.
+
+.DESCRIPTION
+Find-ResourceGroupNameCollision takes a list of resources, and checks if $Test
+collides names with any of the resources.
+
+.PARAMETER Test
+The name to test.
+
+.PARAMETER Resources
+The list of resources.
+#>
 function Find-ResourceGroupNameCollision {
+  [CmdletBinding()]
   Param([string]$Test, $Resources)
 
   foreach ($resource in $Resources) {
@@ -29,7 +53,20 @@ function Find-ResourceGroupNameCollision {
   return $false
 }
 
+<#
+.SYNOPSIS
+Attempts to find a name that does not collide with any resources in the resource group.
+
+.DESCRIPTION
+Find-ResourceGroupName takes a set of resources from Get-AzResourceGroup, and finds the
+first name in {$Prefix, $Prefix-1, $Prefix-2, ...} such that the name doesn't collide with
+any of the resources in the resource group.
+
+.PARAMETER Prefix
+The prefix of the final name; the returned name will be of the form "$Prefix(-[1-9][0-9]*)?"
+#>
 function Find-ResourceGroupName {
+  [CmdletBinding()]
   Param([string] $Prefix)
 
   $resources = Get-AzResourceGroup
@@ -43,6 +80,17 @@ function Find-ResourceGroupName {
   return $result
 }
 
+<#
+.SYNOPSIS
+Generates a random password.
+
+.DESCRIPTION
+New-Password generates a password, randomly, of length $Length, containing
+only alphanumeric characters (both uppercase and lowercase).
+
+.PARAMETER Length
+The length of the returned password.
+#>
 function New-Password {
   Param ([int] $Length = 32)
 
@@ -55,10 +103,26 @@ function New-Password {
   return $result
 }
 
-function Start-WaitForShutdown {
+<#
+.SYNOPSIS
+Waits for the shutdown of the specified resource.
+
+.DESCRIPTION
+Wait-Shutdown takes a VM, and checks if there's a 'PowerState/stopped'
+code; if there is, it returns. If there isn't, it waits 10 seconds and
+tries again.
+
+.PARAMETER ResourceGroupName
+The name of the resource group to look up the VM in.
+
+.PARAMETER Name
+The name of the virtual machine to wait on.
+#>
+function Wait-Shutdown {
+  [CmdletBinding()]
   Param([string]$ResourceGroupName, [string]$Name)
 
-  Write-Output "Waiting for $Name to stop..."
+  Write-Host "Waiting for $Name to stop..."
   while ($true) {
     $Vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status
     $highestStatus = $Vm.Statuses.Count
@@ -68,19 +132,11 @@ function Start-WaitForShutdown {
       }
     }
 
-    Write-Output "... not stopped yet, sleeping for 10 seconds"
+    Write-Host "... not stopped yet, sleeping for 10 seconds"
     Start-Sleep -Seconds 10
   }
 }
 
-function Write-Reminders {
-  Param([string]$AdminPW)
-
-  Write-Output "Location: $Location"
-  Write-Output "Resource group name: $ResourceGroupName"
-  Write-Output "User name: AdminUser"
-  Write-Output "Using generated password: $AdminPW"
-}
 
 ####################################################################################################
 Write-Progress `
@@ -90,14 +146,14 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-Write-Reminders $AdminPW
 New-AzResourceGroup -Name $ResourceGroupName -Location $Location
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ("AdminUser", $AdminPWSecure)
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Creating prototype VM' `
+  -Activity $ProgressActivity `
+  -Status 'Creating virtual network' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
@@ -157,6 +213,11 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -AddressPrefix "10.0.0.0/16" `
   -Subnet $Subnet
 
+####################################################################################################
+Write-Progress `
+  -Activity 'Creating prototype VM' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
 $NicName = $ResourceGroupName + 'NIC'
 $Nic = New-AzNetworkInterface `
   -Name $NicName `
@@ -164,14 +225,13 @@ $Nic = New-AzNetworkInterface `
   -Location $Location `
   -Subnet $VirtualNetwork.Subnets[0]
 
-$VM = New-AzVMConfig -Name $ProtoVMName -VMSize $VMSize
+$VM = New-AzVMConfig -Name $ProtoVMName -VMSize $VMSize -Priority 'Spot' -MaxPrice -1
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
   -ComputerName $ProtoVMName `
   -Credential $Credential `
-  -ProvisionVMAgent `
-  -EnableAutoUpdate
+  -ProvisionVMAgent
 
 $VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
 $VM = Set-AzVMSourceImage `
@@ -226,7 +286,7 @@ Write-Progress `
   -Status 'Waiting for VM to shut down' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Start-WaitForShutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
 Write-Progress `
@@ -275,7 +335,6 @@ $Vmss = New-AzVmssConfig `
   -Overprovision $false `
   -UpgradePolicyMode Manual `
   -EvictionPolicy Delete `
-  -ScaleInPolicy OldestVM `
   -Priority Spot `
   -MaxPrice -1
 
@@ -307,5 +366,8 @@ New-AzVmss `
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
-Write-Reminders $AdminPW
-Write-Output 'Finished!'
+Write-Host "Location: $Location"
+Write-Host "Resource group name: $ResourceGroupName"
+Write-Host "User name: AdminUser"
+Write-Host "Using generated password: $AdminPW"
+Write-Host 'Finished!'

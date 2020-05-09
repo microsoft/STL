@@ -744,7 +744,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
     if constexpr (_Testable_callable_v<_Ty>) {
         return !!_Arg;
     } else {
-        (void) _Arg;
         return true;
     }
 }
@@ -795,7 +794,8 @@ private:
 constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
-_INLINE_VAR constexpr bool _Is_large = (_Space_size < sizeof(_Impl)) || !_Impl::_Nothrow_move::value;
+_INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
+                                       || !_Impl::_Nothrow_move::value;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // CLASS TEMPLATE _Func_impl
@@ -818,7 +818,6 @@ private:
     virtual _Mybase* _Copy(void* _Where) const override {
         auto& _Myax = _Mypair._Get_first();
         if _CONSTEXPR_IF (_Is_large<_Func_impl>) {
-            (void) _Where;
             _Myalty _Rebound(_Myax);
             _Alloc_construct_ptr<_Myalty> _Constructor{_Rebound};
             _Constructor._Allocate();
@@ -833,7 +832,6 @@ private:
 
     virtual _Mybase* _Move(void* _Where) noexcept override {
         if _CONSTEXPR_IF (_Is_large<_Func_impl>) {
-            (void) _Where;
             return nullptr;
         } else {
             const auto _Ptr = static_cast<_Func_impl*>(_Where);
@@ -886,7 +884,7 @@ public:
 private:
     virtual _Mybase* _Copy(void* _Where) const override {
         if _CONSTEXPR_IF (_Is_large<_Func_impl_no_alloc>) {
-            (void) _Where;
+            (void) _Where; // TRANSITION, DevCom-1004719
             return _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_Callee);
@@ -895,7 +893,7 @@ private:
 
     virtual _Mybase* _Move(void* _Where) noexcept override {
         if _CONSTEXPR_IF (_Is_large<_Func_impl_no_alloc>) {
-            (void) _Where;
+            (void) _Where; // TRANSITION, DevCom-1004719
             return nullptr;
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_STD move(_Callee));
@@ -1355,19 +1353,16 @@ struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
 
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
     template <class _Untuple, size_t... _Jx>
     static auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut,
         index_sequence<_Jx...>) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) { // call a nested bind expression
         return _Tid(_STD get<_Jx>(_STD move(_Ut))...);
     }
-#pragma warning(pop)
 
     template <class _Untuple>
-    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(_Apply(_Tid, _STD move(_Ut),
-        make_index_sequence<tuple_size_v<_Untuple>>())) { // call a nested bind expression
-        return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>());
+    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(
+        _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) { // call a nested bind expression
+        return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
 };
 
@@ -1396,8 +1391,6 @@ auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut)
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 // FUNCTION TEMPLATE _Call_binder
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl, _Untuple&& _Ut)
@@ -1405,7 +1398,6 @@ auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_
         _Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) { // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
-#pragma warning(pop)
 
 // CLASS TEMPLATE _Binder
 template <class _Ret>
@@ -1438,9 +1430,9 @@ public:
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                           \
     template <class... _Unbound>                                                                              \
-    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq(),    \
+    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq{},    \
         _Mypair._Get_first(), _Mypair._Myval2, _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) { \
-        return _Call_binder(_Invoker_ret<_Ret>(), _Seq(), _Mypair._Get_first(), _Mypair._Myval2,              \
+        return _Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _Mypair._Get_first(), _Mypair._Myval2,              \
             _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...));                                      \
     }
 
@@ -1768,31 +1760,62 @@ private:
 
 // FUNCTION TEMPLATE _Build_boyer_moore_delta_2_table
 template <class _RanItPat, class _Pred_eq>
-void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* _Shifts, const _RanItPat _Pat_first,
+void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, const _RanItPat _Pat_first,
     const _Iter_diff_t<_RanItPat> _Pat_size, _Pred_eq& _Eq) {
-    // builds Boyer-Moore's delta_2 table from a pattern [_Pat_first, _Pat_first + _Pat_size)
-    // pre: _Shifts is a pointer to _Pat_size _Iter_diff_t<_RanIt>s
+    // Builds Boyer-Moore's delta_2 table from a pattern [_Pat_first, _Pat_first + _Pat_size).
+    // pre: _Shifts is a pointer to _Pat_size _Iter_diff_t<_RanItPat>s.
+    // This is the `dd'` algorithm from "Fast Pattern Matching In Strings" by Knuth, Morris, and Pratt (1977).
+    // Note that the published algorithm used 1-based indexing!
+    using _Diff = _Iter_diff_t<_RanItPat>;
+
     if (_Pat_size == 0) {
         return;
     }
 
-    using _Diff = _Iter_diff_t<_RanItPat>;
-    unique_ptr<_Diff[]> _Suffix_fn{::new _Diff[static_cast<size_t>(_Pat_size)]};
-    for (_Diff _Idx = 0; _Idx < _Pat_size; ++_Idx) {
-        _Shifts[_Idx] = 2 * _Pat_size - _Idx - 1;
+    if ((numeric_limits<_Diff>::max)() - _Pat_size < _Pat_size) {
+        _Xlength_error("Boyer-Moore pattern is too long");
     }
 
-    _Diff _Suffix = _Pat_size;
-    for (_Diff _Idx = _Pat_size; _Idx > 0; --_Idx, (void) --_Suffix) {
-        _Suffix_fn[static_cast<size_t>(_Idx - 1)] = _Suffix;
-        while (_Suffix < _Pat_size && !_Eq(_Pat_first[_Idx - 1], _Pat_first[_Suffix])) {
-            _Shifts[_Suffix] = (_STD min)(_Shifts[_Suffix], _Pat_size - _Idx);
-            _Suffix          = _Suffix_fn[static_cast<size_t>(_Suffix)];
+    const auto _Mx = static_cast<size_t>(_Pat_size);
+
+    const unique_ptr<size_t[]> _Fx{new size_t[_Mx]};
+
+    for (size_t _Kx = 1; _Kx <= _Mx; ++_Kx) {
+        _Shifts[_Kx - 1] = static_cast<_Diff>(2 * _Mx - _Kx);
+    }
+
+    size_t _Tx = _Mx + 1;
+    for (size_t _Jx = _Mx; _Jx > 0; --_Jx, --_Tx) {
+        _Fx[_Jx - 1] = _Tx;
+        while (_Tx <= _Mx && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx - 1])) {
+            _Shifts[_Tx - 1] = (_STD min)(_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
+            _Tx              = _Fx[_Tx - 1];
         }
     }
 
-    for (_Diff _Idx = 0; _Idx <= _Suffix; ++_Idx) {
-        _Shifts[_Idx] = (_STD min)(_Shifts[_Idx], _Pat_size + _Suffix - _Idx);
+    // The code below is the "Rytter correction" from "Algorithms For String Searching: A Survey" by Baeza-Yates (1989),
+    // originally from "A Correct Preprocessing Algorithm For Boyer-Moore String-Searching" by Rytter (1980).
+
+    size_t _Qx = _Tx;
+    _Tx        = _Mx + 1 - _Qx;
+    for (size_t _Jx = 1, _Tx1 = 0; _Jx <= _Tx; ++_Tx1, ++_Jx) {
+        _Fx[_Jx - 1] = _Tx1;
+        while (_Tx1 >= 1 && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx1 - 1])) {
+            _Tx1 = _Fx[_Tx1 - 1];
+        }
+    }
+
+    size_t _Qx1 = 1;
+    while (_Qx < _Mx) {
+        for (size_t _Kx = _Qx1; _Kx <= _Qx; ++_Kx) {
+            _Shifts[_Kx - 1] = (_STD min)(_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
+        }
+        _Qx1 = _Qx + 1;
+
+        const size_t _Temp = _Fx[_Tx - 1];
+
+        _Qx = _Qx + _Tx - _Temp;
+        _Tx = _Temp;
     }
 }
 
