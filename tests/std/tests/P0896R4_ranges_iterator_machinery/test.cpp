@@ -25,6 +25,41 @@ concept can_reference = requires {
     typename reference_to<T>;
 };
 
+template <class T, class U = T>
+concept has_eq = requires(T const& t, U const& u) {
+    t == u;
+};
+
+template <class T, class U = T>
+concept has_neq = requires(T const& t, U const& u) {
+    t != u;
+};
+
+template <class T, class U = T>
+concept has_less = requires(T const& t, U const& u) {
+    t < u;
+};
+
+template <class T, class U = T>
+concept has_greater = requires(T const& t, U const& u) {
+    t > u;
+};
+
+template <class T, class U = T>
+concept has_less_eq = requires(T const& t, U const& u) {
+    t <= u;
+};
+
+template <class T, class U = T>
+concept has_greater_eq = requires(T const& t, U const& u) {
+    t >= u;
+};
+
+template <class T, class U = T>
+concept has_difference = requires(T const& t, U const& u) {
+    t - u;
+};
+
 struct no_such_type; // not defined
 
 struct empty_type {
@@ -93,6 +128,10 @@ template <class T>
 struct arrow_base {
     T operator->() const;
     std::strong_ordering operator<=>(arrow_base const&) const = default;
+};
+
+struct sentinel_base {
+    bool operator==(std::default_sentinel_t) const;
 };
 
 struct simple_input_iter {
@@ -190,6 +229,62 @@ template <class Base>
 struct std::indirectly_readable_traits<simple_contiguous_iter<Base>> {
     using value_type = double;
 };
+
+template <int I>
+struct proxy_iterator {
+    using difference_type = int;
+    using value_type      = int;
+
+    struct reference {
+        operator int() const;
+    };
+
+    proxy_iterator() = default;
+    constexpr explicit proxy_iterator(int* count) : pcount_{count} {}
+
+    constexpr reference operator*() const noexcept {
+        return {};
+    }
+    constexpr reference operator[](int) const noexcept;
+
+    bool operator==(proxy_iterator) const;
+    std::strong_ordering operator<=>(proxy_iterator const&) const;
+
+    proxy_iterator& operator++();
+    proxy_iterator operator++(int);
+
+    constexpr proxy_iterator& operator--() noexcept {
+        return *this;
+    }
+    proxy_iterator operator--(int);
+
+    constexpr proxy_iterator operator+(int) const {
+        return *this;
+    }
+    friend proxy_iterator operator+(int, proxy_iterator const&) {
+        return {};
+    }
+    proxy_iterator& operator+=(int) const;
+
+    proxy_iterator operator-(int) const;
+    int operator-(proxy_iterator const&) const;
+    proxy_iterator& operator-=(int) const;
+
+    friend constexpr int iter_move(proxy_iterator const& i) {
+        ++*i.pcount_;
+        return 42;
+    }
+
+    template <int J>
+    friend constexpr void iter_swap(proxy_iterator const& x, proxy_iterator<J> const& y) {
+        assert(x.pcount_ == y.pcount_);
+        *x.pcount_ -= J;
+    }
+
+    int* pcount_ = nullptr;
+};
+STATIC_ASSERT(std::random_access_iterator<proxy_iterator<0>>);
+STATIC_ASSERT(std::indirectly_swappable<proxy_iterator<0>, proxy_iterator<1>>);
 
 #pragma warning(push)
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
@@ -2838,36 +2933,6 @@ namespace reverse_iterator_test {
     STATIC_ASSERT(same_as<reverse_iterator<simple_no_arrow>::pointer, void>);
 
     // Validate comparison constraints
-    template <class T, class U = T>
-    concept has_eq = requires(T const& t, U const& u) {
-        t == u;
-    };
-
-    template <class T, class U = T>
-    concept has_neq = requires(T const& t, U const& u) {
-        t != u;
-    };
-
-    template <class T, class U = T>
-    concept has_less = requires(T const& t, U const& u) {
-        t < u;
-    };
-
-    template <class T, class U = T>
-    concept has_greater = requires(T const& t, U const& u) {
-        t > u;
-    };
-
-    template <class T, class U = T>
-    concept has_less_eq = requires(T const& t, U const& u) {
-        t <= u;
-    };
-
-    template <class T, class U = T>
-    concept has_greater_eq = requires(T const& t, U const& u) {
-        t >= u;
-    };
-
     STATIC_ASSERT(has_eq<reverse_iterator<simple_bidi_iter<>>>);
     STATIC_ASSERT(has_neq<reverse_iterator<simple_bidi_iter<>>>);
     STATIC_ASSERT(!has_less<reverse_iterator<simple_bidi_iter<>>>);
@@ -2901,57 +2966,15 @@ namespace reverse_iterator_test {
     STATIC_ASSERT(!has_greater_eq<reverse_iterator<int*>, reverse_iterator<string*>>);
     STATIC_ASSERT(!three_way_comparable_with<reverse_iterator<int*>, reverse_iterator<string*>>);
 
-    template <int I>
-    struct bidi_proxy_iterator {
-        using difference_type = int;
-        using value_type      = int;
-
-        struct reference {
-            operator int() const;
-        };
-
-        bidi_proxy_iterator() = default;
-        constexpr explicit bidi_proxy_iterator(int* count) : pcount_{count} {}
-
-        constexpr auto operator*() const noexcept {
-            return reference{};
-        }
-
-        bool operator==(bidi_proxy_iterator) const;
-
-        bidi_proxy_iterator& operator++();
-        bidi_proxy_iterator operator++(int);
-
-        constexpr bidi_proxy_iterator& operator--() noexcept {
-            return *this;
-        }
-        bidi_proxy_iterator operator--(int);
-
-        friend constexpr int iter_move(bidi_proxy_iterator const& i) {
-            ++*i.pcount_;
-            return 42;
-        }
-
-        template <int J>
-        friend constexpr void iter_swap(bidi_proxy_iterator const& x, bidi_proxy_iterator<J> const& y) {
-            assert(x.pcount_ == y.pcount_);
-            *x.pcount_ -= J;
-        }
-
-        int* pcount_ = nullptr;
-    };
-    STATIC_ASSERT(std::bidirectional_iterator<bidi_proxy_iterator<0>>);
-    STATIC_ASSERT(std::indirectly_swappable<bidi_proxy_iterator<0>, bidi_proxy_iterator<1>>);
-
     constexpr bool test() {
         // Validate iter_move
         int count = 0;
-        auto i    = reverse_iterator{bidi_proxy_iterator<0>{&count}};
+        auto i    = reverse_iterator{proxy_iterator<0>{&count}};
         assert(ranges::iter_move(i) == 42);
         assert(count == 1);
 
         // Validate iter_swap
-        ranges::iter_swap(i, reverse_iterator{bidi_proxy_iterator<2>{&count}});
+        ranges::iter_swap(i, reverse_iterator{proxy_iterator<2>{&count}});
         assert(count == -1);
 
         // Validate <=>
@@ -2986,6 +3009,222 @@ namespace reverse_iterator_test {
         !std::sized_sentinel_for<reverse_iterator<simple_no_difference>, reverse_iterator<simple_no_difference>>);
 } // namespace reverse_iterator_test
 
+namespace move_iterator_test {
+    using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
+        std::move_iterator, std::move_sentinel, std::random_access_iterator_tag, std::same_as, std::string,
+        std::three_way_comparable, std::three_way_comparable_with;
+
+    template <bool CanCopy>
+    struct input_iter {
+        using iterator_concept  = input_iterator_tag;
+        using iterator_category = void;
+        using value_type        = int;
+        using difference_type   = int;
+        using pointer           = void;
+
+        struct reference {
+            operator int() const;
+            reference const& operator=(int) const;
+        };
+        struct rvalue_reference {
+            constexpr operator int() const noexcept {
+                return 42;
+            }
+        };
+
+        input_iter()                                   = default;
+        input_iter(input_iter const&) requires CanCopy = default;
+        input_iter(input_iter&&)                       = default;
+        input_iter& operator=(input_iter const&) requires CanCopy = default;
+        input_iter& operator=(input_iter&&) = default;
+
+        reference operator*() const;
+        input_iter& operator++();
+        void operator++(int);
+
+        constexpr friend rvalue_reference iter_move(input_iter const&) noexcept {
+            return {};
+        }
+        friend void iter_swap(input_iter const&, input_iter const&) noexcept {}
+
+        friend bool operator==(input_iter const&, std::default_sentinel_t) {
+            return true;
+        }
+        friend int operator-(input_iter const&, std::default_sentinel_t) {
+            return 0;
+        }
+        friend int operator-(std::default_sentinel_t, input_iter const&) {
+            return 0;
+        }
+    };
+    struct common {
+        common(input_iter<false>::reference);
+        common(input_iter<true>::reference);
+        common(input_iter<false>::rvalue_reference);
+        common(input_iter<true>::rvalue_reference);
+    };
+} // namespace move_iterator_test
+
+template <>
+struct std::common_type<move_iterator_test::input_iter<false>::reference,
+    move_iterator_test::input_iter<false>::rvalue_reference> {
+    using type = move_iterator_test::common;
+};
+template <>
+struct std::common_type<move_iterator_test::input_iter<false>::rvalue_reference,
+    move_iterator_test::input_iter<false>::reference> {
+    using type = move_iterator_test::common;
+};
+template <>
+struct std::common_type<move_iterator_test::input_iter<true>::reference,
+    move_iterator_test::input_iter<true>::rvalue_reference> {
+    using type = move_iterator_test::common;
+};
+template <>
+struct std::common_type<move_iterator_test::input_iter<true>::rvalue_reference,
+    move_iterator_test::input_iter<true>::reference> {
+    using type = move_iterator_test::common;
+};
+
+namespace move_iterator_test {
+    // Validate the iterator_concept/iterator_category metaprogramming
+    STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_category, random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+
+    // Validate that move_iterator<some_proxy_iterator>::reference is iter_rvalue_reference_t<some_proxy_iterator>
+    STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::reference, input_iter<false>::rvalue_reference>);
+
+    // Validate that postincrement returns void for single-pass adaptees
+    STATIC_ASSERT(same_as<decltype(move_iterator<input_iter<false>> {} ++), void>);
+    STATIC_ASSERT(same_as<decltype(move_iterator<simple_forward_iter<>> {} ++), move_iterator<simple_forward_iter<>>>);
+
+    // Validate comparison constraints
+    STATIC_ASSERT(!has_eq<move_iterator<input_iter<false>>>);
+    STATIC_ASSERT(!has_neq<move_iterator<input_iter<false>>>);
+    STATIC_ASSERT(!has_less<move_iterator<input_iter<false>>>);
+    STATIC_ASSERT(!has_greater<move_iterator<input_iter<false>>>);
+    STATIC_ASSERT(!has_less_eq<move_iterator<input_iter<false>>>);
+    STATIC_ASSERT(!has_greater_eq<move_iterator<input_iter<false>>>);
+    STATIC_ASSERT(!three_way_comparable<move_iterator<input_iter<false>>>);
+
+    STATIC_ASSERT(has_eq<move_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_neq<move_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(!has_less<move_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(!has_greater<move_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(!has_less_eq<move_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(!has_greater_eq<move_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(!three_way_comparable<move_iterator<simple_forward_iter<>>>);
+
+    STATIC_ASSERT(has_eq<move_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_neq<move_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less<move_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater<move_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less_eq<move_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<move_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<move_iterator<simple_random_iter<>>, std::strong_ordering>);
+
+    STATIC_ASSERT(has_eq<move_iterator<int*>, move_iterator<int const*>>);
+    STATIC_ASSERT(has_neq<move_iterator<int*>, move_iterator<int const*>>);
+    STATIC_ASSERT(has_less<move_iterator<int*>, move_iterator<int const*>>);
+    STATIC_ASSERT(has_greater<move_iterator<int*>, move_iterator<int const*>>);
+    STATIC_ASSERT(has_less_eq<move_iterator<int*>, move_iterator<int const*>>);
+    STATIC_ASSERT(has_greater_eq<move_iterator<int*>, move_iterator<int const*>>);
+    STATIC_ASSERT(three_way_comparable_with<move_iterator<int*>, move_iterator<int const*>, std::strong_ordering>);
+
+    STATIC_ASSERT(!has_eq<move_iterator<int*>, move_iterator<string*>>);
+    STATIC_ASSERT(!has_neq<move_iterator<int*>, move_iterator<string*>>);
+    STATIC_ASSERT(!has_less<move_iterator<int*>, move_iterator<string*>>);
+    STATIC_ASSERT(!has_greater<move_iterator<int*>, move_iterator<string*>>);
+    STATIC_ASSERT(!has_less_eq<move_iterator<int*>, move_iterator<string*>>);
+    STATIC_ASSERT(!has_greater_eq<move_iterator<int*>, move_iterator<string*>>);
+    STATIC_ASSERT(!three_way_comparable_with<move_iterator<int*>, move_iterator<string*>>);
+
+    // Validate that move_sentinel requires a semiregular template argument, and models semiregular
+    template <class T>
+    concept CanMoveSentinel = requires {
+        typename move_sentinel<T>;
+    };
+    struct moveonly {
+        moveonly()           = default;
+        moveonly(moveonly&&) = default;
+        moveonly& operator=(moveonly&&) = default;
+    };
+    STATIC_ASSERT(!CanMoveSentinel<void>);
+    STATIC_ASSERT(!CanMoveSentinel<moveonly>);
+    STATIC_ASSERT(CanMoveSentinel<int>);
+    STATIC_ASSERT(CanMoveSentinel<default_sentinel_t>);
+
+    // Validate move_sentinel comparisons and difference
+    STATIC_ASSERT(!has_eq<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_neq<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_less<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_greater<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_less_eq<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_greater_eq<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!three_way_comparable_with<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_difference<move_iterator<input_iter<false>>, move_sentinel<int>>);
+    STATIC_ASSERT(!has_difference<move_sentinel<int>, move_iterator<input_iter<false>>>);
+
+    STATIC_ASSERT(has_eq<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(has_neq<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!has_less<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!has_greater<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!has_less_eq<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!has_greater_eq<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!three_way_comparable_with<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(has_difference<move_iterator<input_iter<false>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(has_difference<move_sentinel<std::default_sentinel_t>, move_iterator<input_iter<false>>>);
+
+    STATIC_ASSERT(has_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(has_neq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!has_less<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(
+        !has_greater<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(
+        !has_less_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(
+        !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
+    STATIC_ASSERT(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
+                  move_sentinel<std::default_sentinel_t>>);
+
+    constexpr bool test() {
+        // Validate iter_move
+        int count = 0;
+        auto i    = move_iterator{proxy_iterator<0>{&count}};
+        assert(ranges::iter_move(i) == 42);
+        assert(count == 1);
+
+        // Validate that operator* and operator[] call iter_move
+        assert(*i == 42);
+        assert(count == 2);
+        assert(i[42] == 42);
+        assert(count == 3);
+
+        // Validate iter_swap
+        ranges::iter_swap(i, move_iterator{proxy_iterator<2>{&count}});
+        assert(count == 1);
+
+        // Validate <=>
+        int some_ints[] = {3, 2, 1, 0};
+        move_iterator<int*> mi{&some_ints[1]};
+        move_iterator<int const*> mic{&some_ints[2]};
+        assert((mi <=> mi) == std::strong_ordering::equal);
+        assert((mi <=> mic) == std::strong_ordering::less);
+        assert((mic <=> mi) == std::strong_ordering::greater);
+
+        return true;
+    }
+    STATIC_ASSERT(test());
+} // namespace move_iterator_test
+
 namespace lwg3420 {
     // Validate that we can ask for the iterator_traits of a type with no operator* for which checking copyability
     // results in constraint recursion.
@@ -3004,4 +3243,5 @@ int main() {
     iterator_cust_swap_test::test();
     iter_ops::test();
     reverse_iterator_test::test();
+    move_iterator_test::test();
 }
