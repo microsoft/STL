@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cstddef>
 #include <execution>
 #include <numeric>
 #include <vector>
@@ -20,13 +21,13 @@ void test_flags(const IsSet is_set, const TestAndSet test_and_set, const Clear c
 
     FlagType flags[unique];
     std::vector<FlagType*> ptrs;
-    for (std::size_t i = 0; i != repetitions; i++) {
-        for (std::size_t j = 0; j != unique; j++) {
+    for (std::size_t i = 0; i != repetitions; ++i) {
+        for (std::size_t j = 0; j != unique; ++j) {
             ptrs.push_back(&flags[j]);
         }
     }
 
-    const auto& par = std::execution::par;
+    using std::execution::par;
 
     assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, is_set) == 0);
     assert(std::transform_reduce(par, ptrs.begin(), ptrs.end(), 0, std::plus{}, test_and_set) == dups);
@@ -47,7 +48,7 @@ void test_flags_members() {
 
 
 template <typename FlagType>
-void test_flags_members_x() {
+void test_flags_members_mo() {
     const auto is_set       = [](const FlagType* f) { return f->test(mo); };
     const auto test_and_set = [](FlagType* f) { return f->test_and_set(mo); };
     const auto clear        = [](FlagType* f) { f->clear(mo); };
@@ -65,7 +66,7 @@ void test_flags_free() {
 }
 
 template <typename FlagType>
-void test_flags_free_x() {
+void test_flags_free_mo() {
     const auto is_set       = [](const FlagType* f) { return std::atomic_flag_test_explicit(f, mo); };
     const auto test_and_set = [](FlagType* f) { return std::atomic_flag_test_and_set_explicit(f, mo); };
     const auto clear        = [](FlagType* f) { std::atomic_flag_clear_explicit(f, mo); };
@@ -77,8 +78,8 @@ template <typename FlagType>
 void test_flag_type() {
     test_flags_members<FlagType>();
     test_flags_free<FlagType>();
-    test_flags_members_x<FlagType>();
-    test_flags_free_x<FlagType>();
+    test_flags_members_mo<FlagType>();
+    test_flags_free_mo<FlagType>();
 }
 
 int main() {

@@ -2030,11 +2030,11 @@ using atomic_unsigned_lock_free = atomic_uintptr_t;
     {}
 struct atomic_flag { // flag with test-and-set semantics
 #if _HAS_CXX20
-    _NODISCARD bool test(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
         return _Storage.load(_Order) != 0;
     }
 
-    _NODISCARD bool test(const memory_order _Order = memory_order::seq_cst) const volatile noexcept {
+    _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
         return _Storage.load(_Order) != 0;
     }
 #endif // _HAS_CXX20
