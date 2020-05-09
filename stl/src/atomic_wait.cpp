@@ -62,11 +62,9 @@ namespace {
     }
 
     void _Assume_timeout() noexcept {
-#ifndef _NDEBUG
         if (::GetLastError() != ERROR_TIMEOUT) {
-            std::terminate(); // we are in noexcept, don't throw
+            abort(); // we are in noexcept, don't throw
         }
-#endif // !_NDEBUG
     }
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
