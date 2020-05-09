@@ -334,6 +334,8 @@
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
 #define _MSVC_KNOWN_SEMANTICS
+#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
+#define _MSVC_KNOWN_SEMANTICS
 #elif __has_cpp_attribute(msvc::known_semantics)
 #define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
 #else
@@ -483,7 +485,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202004L
+#define _MSVC_STL_UPDATE  202005L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -970,7 +972,18 @@
 #define _CXX20_DEPRECATE_VOLATILE
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4031
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_MOVE_ITERATOR_ARROW_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW                                              \
+    [[deprecated("warning STL4031: "                                                      \
+                 "std::move_iterator::operator->() is deprecated in C++20. "              \
+                 "You can define _SILENCE_CXX20_MOVE_ITERATOR_ARROW_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4032
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20

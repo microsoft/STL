@@ -4297,8 +4297,7 @@ private:
     void _Tidy_init() noexcept { // initialize basic_string data members
         _Mypair._Myval2._Mysize = 0;
         _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
-        // the _Traits::assign is last so the codegen doesn't think the char
-        // write can alias this
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
     }
 
@@ -4313,8 +4312,7 @@ private:
 
         _Mypair._Myval2._Mysize = 0;
         _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
-        // the _Traits::assign is last so the codegen doesn't think the char
-        // write can alias this
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
     }
 
