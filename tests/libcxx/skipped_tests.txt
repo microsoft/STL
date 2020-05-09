@@ -47,12 +47,18 @@ containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
-# libcxx doesn't yet implement P1423R3, so it expects an "old" value for __cpp_lib_char8_t
+# libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
 language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
 language.support\support.limits\support.limits.general\istream.version.pass.cpp
 language.support\support.limits\support.limits.general\limits.version.pass.cpp
 language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
+
+# libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
+numerics\bit\bit.pow.two\ceil2.pass.cpp
+numerics\bit\bit.pow.two\floor2.pass.cpp
+numerics\bit\bit.pow.two\ispow2.pass.cpp
+numerics\bit\bit.pow.two\log2p1.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -174,22 +180,11 @@ input.output\filesystems\fs.op.funcs\fs.op.symlink_status\symlink_status.pass.cp
 input.output\filesystems\fs.op.funcs\fs.op.temp_dir_path\temp_directory_path.pass.cpp
 input.output\filesystems\fs.op.funcs\fs.op.weakly_canonical\weakly_canonical.pass.cpp
 
-# We need some way to turn on deprecations for tests asking for _LIBCPP_ENABLE_DEPRECATION_WARNINGS
-utilities\function.objects\negators\binary_negate.depr_in_cxx17.fail.cpp
-utilities\function.objects\negators\unary_negate.depr_in_cxx17.fail.cpp
-
 # generate_feature_test_macro_components.py needs to learn about C1XX
 language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
 language.support\support.limits\support.limits.general\version.version.pass.cpp
 
 # Contest does not understand .sh tests, which must be run specially
-depr\depr.c.headers\stdint_h.sh.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size_align_nothrow.sh.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size_align.sh.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size_nothrow.sh.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size.sh.cpp
-language.support\support.dynamic\new.delete\new.delete.single\new_size_align_nothrow.sh.cpp
-language.support\support.dynamic\new.delete\new.delete.single\new_size_align.sh.cpp
 thread\thread.condition\thread.condition.condvarany\wait_terminates.sh.cpp
 
 # These tests set an allocator with a max_size() too small to default construct an unordered container
@@ -201,6 +196,55 @@ containers\unord\unord.set\max_size.pass.cpp
 
 # Requires too great a template instantiation depth for C1XX.
 utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
+
+# .verify.cpp tests use clang-verify to validate warnings
+containers\associative\map\map.access\empty.verify.cpp
+containers\associative\multimap\empty.verify.cpp
+containers\associative\multiset\empty.verify.cpp
+containers\associative\set\empty.verify.cpp
+containers\container.adaptors\priority.queue\priqueue.members\empty.verify.cpp
+containers\container.adaptors\queue\queue.defn\empty.verify.cpp
+containers\container.adaptors\stack\stack.defn\empty.verify.cpp
+containers\sequences\array\empty.verify.cpp
+containers\sequences\deque\deque.capacity\empty.verify.cpp
+containers\sequences\forwardlist\empty.verify.cpp
+containers\sequences\list\list.capacity\empty.verify.cpp
+containers\sequences\vector\vector.capacity\empty.verify.cpp
+containers\sequences\vector.bool\empty.verify.cpp
+containers\sequences\vector\vector.cons\copy.move_only.verify.cpp
+containers\unord\unord.map\empty.verify.cpp
+containers\unord\unord.multimap\empty.verify.cpp
+containers\unord\unord.multiset\empty.verify.cpp
+containers\unord\unord.set\empty.verify.cpp
+depr\depr.lib.binders\depr.lib.bind.1st\bind1st.depr_in_cxx11.verify.cpp
+depr\depr.lib.binders\depr.lib.bind.2nd\bind2nd.depr_in_cxx11.verify.cpp
+depr\depr.lib.binders\depr.lib.binder.1st\binder1st.depr_in_cxx11.verify.cpp
+depr\depr.lib.binders\depr.lib.binder.2nd\binder2nd.depr_in_cxx11.verify.cpp
+input.output\filesystems\class.path\path.member\path.decompose\empty.verify.cpp
+iterators\iterator.container\empty.array.verify.cpp
+iterators\iterator.container\empty.container.verify.cpp
+iterators\iterator.container\empty.initializer_list.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size_align.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size_align_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.placement\new_array_ptr.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.placement\new_ptr.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size_align.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size_align_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size_nothrow.verify.cpp
+language.support\support.dynamic\ptr.launder\launder.nodiscard.verify.cpp
+re\re.results\re.results.size\empty.verify.cpp
+strings\basic.string\string.capacity\empty.verify.cpp
+strings\string.view\string.view.capacity\empty.verify.cpp
+thread\futures\futures.async\async.verify.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\allocate_size.verify.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\allocate_size_hint.verify.cpp
+utilities\function.objects\negators\not1.depr_in_cxx17.verify.cpp
+utilities\function.objects\negators\not2.depr_in_cxx17.verify.cpp
+utilities\memory\allocator.traits\allocator.traits.members\allocate.verify.cpp
+utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
@@ -408,13 +452,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0415R1 "constexpr For <complex> (Again)"
-numerics\complex.number\cmplx.over\imag.pass.cpp
-numerics\complex.number\cmplx.over\real.pass.cpp
-
-# C++20 P0476R2 "<bit> bit_cast"
-language.support\support.limits\support.limits.general\bit.version.pass.cpp
-
 # C++20 P0553R4 "<bit> Rotating And Counting Functions"
 numerics\bit\bitops.count\countl_one.pass.cpp
 numerics\bit\bitops.count\countl_zero.pass.cpp
@@ -423,12 +460,6 @@ numerics\bit\bitops.count\countr_zero.pass.cpp
 numerics\bit\bitops.count\popcount.pass.cpp
 numerics\bit\bitops.rot\rotl.pass.cpp
 numerics\bit\bitops.rot\rotr.pass.cpp
-
-# C++20 P0556R3 "<bit> ispow2(), ceil2(), floor2(), log2p1()"
-numerics\bit\bit.pow.two\ceil2.pass.cpp
-numerics\bit\bit.pow.two\floor2.pass.cpp
-numerics\bit\bit.pow.two\ispow2.pass.cpp
-numerics\bit\bit.pow.two\log2p1.pass.cpp
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
@@ -513,14 +544,14 @@ thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.
 
 
 # *** C1XX COMPILER BUGS ***
-# Compiler bug: VSO-120957 "alignas by-value parameters should be permitted"
-utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
-
 # Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
 utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
 
-# Compiler bug: VSO-406936 "is_constructible<int&&, double&> and is_constructible<const int&, ExplicitTo<int&&>> should be true"
+# Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
+
+# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.index\difference_type.pass.cpp
 
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 containers\views\span.cons\ptr_len.pass.cpp
@@ -530,6 +561,9 @@ containers\views\span.cons\ptr_ptr.pass.cpp
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 thread\macro.pass.cpp
+
+# Clang's tgmath.h interferes with the UCRT's tgmath.h
+depr\depr.c.headers\tgmath_h.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -551,21 +585,16 @@ localization\locale.categories\category.monetary\locale.moneypunct\money_base.pa
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 
-# STL bug: We don't have tgmath.h.
-depr\depr.c.headers\tgmath_h.pass.cpp
-
 # STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
-numerics\complex.number\complex.special\double_long_double_implicit.fail.cpp
-numerics\complex.number\complex.special\float_double_implicit.fail.cpp
-numerics\complex.number\complex.special\float_long_double_implicit.fail.cpp
+numerics\complex.number\complex.special\double_long_double_implicit.compile.fail.cpp
+numerics\complex.number\complex.special\float_double_implicit.compile.fail.cpp
+numerics\complex.number\complex.special\float_long_double_implicit.compile.fail.cpp
 
 # STL bug: regex_traits::transform() isn't following the Standard.
 re\re.traits\transform.pass.cpp
 
 # STL bug: Incorrect return types.
-numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
-numerics\complex.number\cmplx.over\proj.pass.cpp
 
 # STL bug: Missing <valarray> assignment operators.
 numerics\numarray\template.mask.array\mask.array.assign\mask_array.pass.cpp
@@ -638,6 +667,13 @@ diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 # STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
 thread\futures\futures.promise\set_value_const.pass.cpp
 
+# STL bug: GH-757 <xstring>: Too many enabled hash specializations
+strings\basic.string.hash\char_type_hash.fail.cpp
+strings\string.view\string.view.hash\char_type.hash.fail.cpp
+
+# STL bug: GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
+utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -653,34 +689,6 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 # Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
-
-# Tests need to be updated for P1115R3 "erase()/erase_if() Return size_type".
-containers\associative\map\map.erasure\erase_if.pass.cpp
-containers\associative\multimap\multimap.erasure\erase_if.pass.cpp
-containers\associative\multiset\multiset.erasure\erase_if.pass.cpp
-containers\associative\set\set.erasure\erase_if.pass.cpp
-containers\sequences\deque\deque.erasure\erase_if.pass.cpp
-containers\sequences\deque\deque.erasure\erase.pass.cpp
-containers\sequences\forwardlist\forwardlist.erasure\erase_if.pass.cpp
-containers\sequences\forwardlist\forwardlist.erasure\erase.pass.cpp
-containers\sequences\list\list.erasure\erase_if.pass.cpp
-containers\sequences\list\list.erasure\erase.pass.cpp
-containers\sequences\vector\vector.erasure\erase_if.pass.cpp
-containers\sequences\vector\vector.erasure\erase.pass.cpp
-containers\unord\unord.map\erase_if.pass.cpp
-containers\unord\unord.multimap\erase_if.pass.cpp
-containers\unord\unord.multiset\erase_if.pass.cpp
-containers\unord\unord.set\erase_if.pass.cpp
-language.support\support.limits\support.limits.general\deque.version.pass.cpp
-language.support\support.limits\support.limits.general\forward_list.version.pass.cpp
-language.support\support.limits\support.limits.general\list.version.pass.cpp
-language.support\support.limits\support.limits.general\map.version.pass.cpp
-language.support\support.limits\support.limits.general\set.version.pass.cpp
-language.support\support.limits\support.limits.general\unordered_map.version.pass.cpp
-language.support\support.limits\support.limits.general\unordered_set.version.pass.cpp
-language.support\support.limits\support.limits.general\vector.version.pass.cpp
-strings\strings.erasure\erase_if.pass.cpp
-strings\strings.erasure\erase.pass.cpp
 
 # Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
 containers\views\span.cons\assign.pass.cpp
@@ -701,7 +709,7 @@ containers\views\span.iterators\rbegin.pass.cpp
 containers\views\span.iterators\end.pass.cpp
 containers\views\span.iterators\rend.pass.cpp
 
-# Test needs to be updated for P2116R0 removing the tuple interface of span
+# Test needs to be removed after P2116R0 removed the tuple interface of span
 containers\views\span.tuple\get.fail.cpp
 containers\views\span.tuple\get.pass.cpp
 containers\views\span.tuple\tuple_element.fail.cpp
@@ -709,17 +717,15 @@ containers\views\span.tuple\tuple_element.pass.cpp
 containers\views\span.tuple\tuple_size.fail.cpp
 containers\views\span.tuple\tuple_size.pass.cpp
 
-# Test bug. See LWG-3099 "is_assignable<Incomplete&, Incomplete&>"
-utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
-
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\get.pass.cpp
-thread\futures\futures.shared_future\wait_for.pass.cpp
 thread\futures\futures.shared_future\wait.pass.cpp
+thread\futures\futures.shared_future\wait_for.pass.cpp
+thread\futures\futures.shared_future\wait_until.pass.cpp
 thread\futures\futures.unique_future\get.pass.cpp
-thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\futures\futures.unique_future\wait.pass.cpp
+thread\futures\futures.unique_future\wait_for.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_all.pass.cpp
 thread\thread.condition\thread.condition.condvar\notify_one.pass.cpp
 thread\thread.condition\thread.condition.condvar\wait_for_pred.pass.cpp
@@ -807,6 +813,10 @@ containers\sequences\array\array.creation\to_array.pass.cpp
 iterators\predef.iterators\insert.iterators\back.insert.iterator\types.pass.cpp
 iterators\predef.iterators\insert.iterators\front.insert.iterator\types.pass.cpp
 iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
+
+# Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
+numerics\complex.number\cmplx.over\conj.pass.cpp
+numerics\complex.number\cmplx.over\proj.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -1023,3 +1033,6 @@ localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.memb
 
 # Not yet analyzed. Frequent timeouts
 containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp
+
+# Not yet analyzed. Failing after https://reviews.llvm.org/D75622.
+re\re.const\re.matchflag\match_prev_avail.pass.cpp

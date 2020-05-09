@@ -37,7 +37,7 @@ namespace {
     void t_treat_as_floating_point() {
         CHECK_INT(STD chrono::treat_as_floating_point<char>::value, false);
         CHECK_INT(STD chrono::treat_as_floating_point<short>::value, false);
-        CHECK_INT(STD chrono::treat_as_floating_point<unsigned>::value, false);
+        CHECK_INT(STD chrono::treat_as_floating_point<unsigned int>::value, false);
         CHECK_INT(STD chrono::treat_as_floating_point<int>::value, false);
         CHECK_INT(STD chrono::treat_as_floating_point<long>::value, false);
         CHECK_INT(STD chrono::treat_as_floating_point<unsigned long>::value, false);

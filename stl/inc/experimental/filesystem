@@ -94,7 +94,7 @@ enum class copy_options { // names for copy options
 
 _BITMASK_OPS(copy_options)
 
-// ENUM dirctory_options
+// ENUM directory_options
 enum class directory_options { // names for directory options
     none = 0,
     follow_directory_symlink
@@ -1370,14 +1370,12 @@ private:
     path _Mypval1;
     path _Mypval2;
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 [[noreturn]] inline void _Throw_filesystem_error(const char* const _Message) {

@@ -527,7 +527,6 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Has_allocate_hint<_Alloc, size_type, const_void_pointer>::value) {
             return _Al.allocate(_Count, _Hint);
         } else {
-            (void) _Hint;
             return _Al.allocate(_Count);
         }
     }
@@ -556,7 +555,7 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Ty, class... _Types>
     static void construct(_Alloc& _Al, _Ty* _Ptr, _Types&&... _Args) {
         if constexpr (_Uses_default_construct<_Alloc, _Ty*, _Types...>::value) {
-            (void) _Al;
+            (void) _Al; // TRANSITION, DevCom-1004719
             ::new (static_cast<void*>(_Ptr)) _Ty(_STD forward<_Types>(_Args)...);
         } else {
             _Al.construct(_Ptr, _STD forward<_Types>(_Args)...);
@@ -584,7 +583,6 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Ty>
     static void destroy(_Alloc& _Al, _Ty* _Ptr) {
         if constexpr (_Uses_default_destroy<_Alloc, _Ty*>::value) {
-            (void) _Al;
             _Ptr->~_Ty();
         } else {
             _Al.destroy(_Ptr);
@@ -612,7 +610,6 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Has_max_size<_Alloc>::value) {
             return _Al.max_size();
         } else {
-            (void) _Al;
             return (numeric_limits<size_type>::max)() / sizeof(value_type);
         }
     }
@@ -881,9 +878,6 @@ template <class _Alloc>
 void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value) {
         _Left = _Right;
-    } else {
-        (void) _Left; // TRANSITION, VSO-486357
-        (void) _Right; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
@@ -907,9 +901,6 @@ template <class _Alloc>
 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) propagate on container move assignment
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value) {
         _Left = _STD move(_Right);
-    } else {
-        (void) _Left; // TRANSITION, VSO-486357
-        (void) _Right; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
@@ -936,8 +927,6 @@ void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
         _Swap_adl(_Left, _Right);
     } else {
         _STL_ASSERT(_Left == _Right, "containers incompatible for swap");
-        (void) _Left; // TRANSITION, VSO-486357
-        (void) _Right; // TRANSITION, VSO-486357
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
@@ -966,11 +955,7 @@ template <class _Alloc>
 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
-    if _CONSTEXPR_IF (conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
-        (void) _First;
-        (void) _Last;
-        (void) _Al;
-    } else {
+    if _CONSTEXPR_IF (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
         for (; _First != _Last; ++_First) {
             allocator_traits<_Alloc>::destroy(_Al, _Unfancy(_First));
         }
@@ -982,10 +967,7 @@ void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Las
 template <class _NoThrowFwdIt>
 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
-    if _CONSTEXPR_IF (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
-        (void) _First;
-        (void) _Last;
-    } else {
+    if _CONSTEXPR_IF (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         for (; _First != _Last; ++_First) {
             _Destroy_in_place(*_First);
         }
@@ -1554,7 +1536,6 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
         _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
         _Dest += _ULast - _UFirst;
-        (void) _Al;
     } else {
         _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
         for (; _UFirst != _ULast; ++_UFirst) {
@@ -1659,14 +1640,6 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _OutTy, size_t _OutSize>
-_OutTy* uninitialized_copy(const _InIt _First, const _InIt _Last, _OutTy (&_Dest)[_OutSize]) {
-    // copy [_First, _Last) to raw [_Dest, ...)
-    return _STD uninitialized_copy(_First, _Last, _Array_iterator<_OutTy, _OutSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 // FUNCTION TEMPLATE _Uninitialized_move WITH ALLOCATOR
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Alloc>
@@ -1681,7 +1654,6 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
         _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
         return _Dest + (_ULast - _UFirst);
-        (void) _Al;
     } else {
         _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
         for (; _UFirst != _ULast; ++_UFirst) {
@@ -1741,7 +1713,6 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-        (void) _Al;
         _CSTD memset(_Unfancy(_First), static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
         return _First + _Count;
     } else {
@@ -1854,7 +1825,6 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
     // value-initialize _Count objects to raw _First, using _Al
     using _Ptrty = typename _Alloc::value_type*;
     if constexpr (_Use_memset_value_construct_v<_Ptrty> && _Uses_default_construct<_Alloc, _Ptrty>::value) {
-        (void) _Al;
         auto _PFirst = _Unfancy(_First);
         _Zero_range(_PFirst, _PFirst + _Count);
         return _First + _Count;
@@ -2028,8 +1998,6 @@ struct _Alloc_temporary {
 template <class _Alloc>
 _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _Rhs) noexcept {
     if _CONSTEXPR_IF (allocator_traits<_Alloc>::is_always_equal::value) {
-        (void) _Lhs;
-        (void) _Rhs;
         return true;
     } else {
         return _Lhs == _Rhs;

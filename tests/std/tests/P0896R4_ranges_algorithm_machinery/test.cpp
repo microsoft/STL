@@ -348,7 +348,7 @@ namespace indirectly_comparable_test {
 
 namespace dangling_test {
     // Also test borrowed_iterator_t and borrowed_subrange_t
-    using ranges::dangling, ranges::borrowed_iterator_t;
+    using ranges::dangling, ranges::borrowed_iterator_t, ranges::borrowed_subrange_t;
     using std::is_nothrow_constructible_v, std::same_as;
 
     STATIC_ASSERT(std::is_class_v<dangling>);
@@ -367,10 +367,8 @@ namespace dangling_test {
     STATIC_ASSERT(same_as<borrowed_iterator_t<borrowed<false>>, dangling>);
     STATIC_ASSERT(same_as<borrowed_iterator_t<borrowed<true>>, int*>);
 
-#if 0 // TRANSITION, subrange
     STATIC_ASSERT(same_as<borrowed_subrange_t<borrowed<false>>, dangling>);
     STATIC_ASSERT(same_as<borrowed_subrange_t<borrowed<true>>, ranges::subrange<int*>>);
-#endif // TRANSITION, subrange
 } // namespace dangling_test
 
 namespace result_test {

@@ -312,7 +312,6 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
     if _CONSTEXPR_IF (_Ax == 0) { // degenerate case; avoid divide by 0
-        (void) _Prev;
         return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
     } else if _CONSTEXPR_IF (_Mx == 0) {
         // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
@@ -591,7 +590,7 @@ private:
 // CLASS TEMPLATE _Circ_buf FOR subtract_with_carry, subtract_with_carry_01, AND mersenne_twister
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
-    _Ty _At(int _Ix) const {
+    _Ty _At(size_t _Ix) const {
         return _Ax[_Base(_Ix)];
     }
 
@@ -637,7 +636,7 @@ struct _Circ_buf { // holds historical values for generators
         return true;
     }
 
-    unsigned int _Base(int _Ix = 0) const {
+    size_t _Base(size_t _Ix = 0) const {
         return (_Ix += _Idx) < _Nw ? (_Ix + _Nw) : (_Ix - _Nw);
     }
 
@@ -736,7 +735,7 @@ protected:
         this->_Idx = _Rx;
     }
 
-    void _Setx(unsigned int _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
+    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
         bool _Underflowed = false;
         _Ty _Newx         = _Xis;
         if (_Newx < _Xir) {
@@ -827,7 +826,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
                                                              // otherwise compute from last value
         int _Kx = _Get_wc();
 
-        for (int _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
+        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
             _Ax[_Ix] = _Gx();
             for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 _Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
@@ -846,7 +845,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 #pragma warning(disable : 4724) // potential mod by 0
     static _Cy_t _Reduce(_Ty* _Ax) { // reduce values to allowed range
         if _CONSTEXPR_IF (_Mx != 0) {
-            for (int _Ix = 0; _Ix < _Nw; ++_Ix) {
+            for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
                 _Ax[_Ix] = _Ax[_Ix] % _Mx;
             }
         }
@@ -860,7 +859,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
         basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
         int _Kx = _Get_wc();
 
-        for (int _Ix = 0; _Ix < _Nw; ++_Ix) {
+        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
             for (int _Jx = 1; _Jx <= _Kx; ++_Jx) { // unpack into _Kx words
                 unsigned int _Word = static_cast<unsigned int>(_Buf._At(_Ix) >> ((_Kx - _Jx) * 32));
                 _Ostr << _Word << ' ';
@@ -931,8 +930,8 @@ public:
         unsigned long _Arr[_Kx * _Rx];
         _Seq.generate(&_Arr[0], &_Arr[_Kx * _Rx]);
 
-        int _Idx0 = 0;
-        for (int _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
+        size_t _Idx0 = 0;
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
             this->_Ax[_Ix] = _Arr[_Idx0];
             for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
@@ -975,7 +974,7 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax, bool _Readcy) { // set initial values of _Ax from generator _Gx
                                                              // return value of _Cy from range if _Readcy is true,
                                                              // otherwise from last value
-        for (int _Ix = 0; _Ix < _Rx; ++_Ix) { // read values
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // read values
             _Ty _Factor = 1;
             _Ty _Val    = 0;
             for (int _Jx = 0; _Jx < _Nwords - 1; ++_Jx) { // read components of value
@@ -996,7 +995,7 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     template <class _Elem, class _Traits>
     static void _Write(
         basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Rx>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        for (int _Ix = 0; _Ix < _Rx; ++_Ix) { // write values
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // write values
             _Ty _Val = _Buf._At(_Ix);
             unsigned long _Temp;
             for (int _Jx = 0; _Jx < _Nwords - 1; ++_Jx) { // write components of value
@@ -1090,7 +1089,7 @@ public:
     void seed(_Ty _X0 = default_seed, _Ty _Fx = static_cast<_Ty>(1812433253)) {
         // set initial values from specified value
         _Ty _Prev = this->_Ax[0] = _X0 & _WMSK;
-        for (int _Ix = 1; _Ix < _Nx; ++_Ix) {
+        for (size_t _Ix = 1; _Ix < _Nx; ++_Ix) {
             _Prev = this->_Ax[_Ix] = (_Ix + _Fx * (_Prev ^ (_Prev >> (_Wx - 2)))) & _WMSK;
         }
 
@@ -1099,7 +1098,7 @@ public:
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, mersenne_twister> = 0>
     void seed(_Gen& _Gx, bool = false) { // set initial values from range
-        for (int _Ix = 0; _Ix < _Nx; ++_Ix) {
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
             this->_Ax[_Ix] = _Gx() & _WMSK;
         }
 
@@ -1108,7 +1107,7 @@ public:
 
     template <class _Elem, class _S_Traits>
     basic_ostream<_Elem, _S_Traits>& _Write(basic_ostream<_Elem, _S_Traits>& _Ostr) const { // write state to _Ostr
-        for (int _Ix = 0; _Ix < _Nx; ++_Ix) {
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
             _Ostr << this->_At(_Ix) << ' ';
         }
 
@@ -1148,7 +1147,7 @@ protected:
     _Post_satisfies_(this->_Idx == 0)
 
         void _Refill_lower() { // compute values for the lower half of the history array
-        int _Ix;
+        size_t _Ix;
         for (_Ix = 0; _Ix < _Nx - _Mx; ++_Ix) { // fill in lower region
             _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + 1] & _LMSK);
             this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _Mx];
@@ -1165,7 +1164,7 @@ protected:
     }
 
     void _Refill_upper() { // compute values for the upper half of the history array
-        int _Ix;
+        size_t _Ix;
         for (_Ix = _Nx; _Ix < 2 * _Nx; ++_Ix) { // fill in values
             _Ty _Tmp       = (this->_Ax[_Ix - _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + 1] & _LMSK);
             this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _Mx];
@@ -4369,10 +4368,8 @@ public:
 
     struct param_type { // parameter package
         using distribution_type = discrete_distribution;
-        struct _Noinit { // placeholder to suppress initialization
-        };
 
-        param_type(_Noinit) { // do-nothing constructor for derived classes
+        param_type(_Uninitialized) { // do-nothing constructor for derived classes
         }
 
         param_type() {
@@ -4568,7 +4565,6 @@ public:
 
     using _Mybase     = discrete_distribution<size_t>;
     using _Mypbase    = typename _Mybase::param_type;
-    using _Noinit     = typename _Mypbase::_Noinit;
     using result_type = _Ty;
 
     struct param_type : _Mypbase { // parameter package
@@ -4580,7 +4576,7 @@ public:
         }
 
         template <class _InIt1, class _InIt2>
-        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit()), _Bvec(_First1, _Last1) {
+        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit), _Bvec(_First1, _Last1) {
             if (2 <= _Bvec.size()) {
                 for (size_t _Idx = 0; _Idx < _Bvec.size() - 1; ++_Idx) {
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
@@ -4591,7 +4587,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit()) {
+        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
             } else { // default construct
@@ -4770,7 +4766,6 @@ public:
 
     using _Mybase     = discrete_distribution<size_t>;
     using _Mypbase    = typename _Mybase::param_type;
-    using _Noinit     = typename _Mypbase::_Noinit;
     using result_type = _Ty;
 
     struct param_type : _Mypbase { // parameter package
@@ -4782,7 +4777,7 @@ public:
         }
 
         template <class _InIt1, class _InIt2>
-        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit()), _Bvec(_First1, _Last1) {
+        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit), _Bvec(_First1, _Last1) {
             if (2 <= _Bvec.size()) {
                 for (size_t _Idx = 0; _Idx < _Bvec.size(); ++_Idx) {
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
@@ -4793,7 +4788,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit()) {
+        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
             } else { // default construct
@@ -4814,7 +4809,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Mypbase(_Noinit()) {
+        param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Mypbase(_Noinit) {
             _Ty _Range = _High - _Low;
             _STL_ASSERT(_Ty{0} < _Range, "invalid range for piecewise_linear_distribution");
             if (_Count < 2) {
