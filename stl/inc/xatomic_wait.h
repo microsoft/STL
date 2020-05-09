@@ -1,4 +1,4 @@
-// xatomic.h internal header
+// xatomic_wait.h internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
