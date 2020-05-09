@@ -11,7 +11,6 @@
 
 constexpr auto mo = std::memory_order_seq_cst;
 
-
 template <typename FlagType, typename IsSet, typename TestAndSet, typename Clear>
 void test_flags(const IsSet is_set, const TestAndSet test_and_set, const Clear clear) {
     constexpr std::size_t unique      = 800;
@@ -21,9 +20,10 @@ void test_flags(const IsSet is_set, const TestAndSet test_and_set, const Clear c
 
     FlagType flags[unique];
     std::vector<FlagType*> ptrs;
+    ptrs.reserve(total);
     for (std::size_t i = 0; i != repetitions; ++i) {
-        for (std::size_t j = 0; j != unique; ++j) {
-            ptrs.push_back(&flags[j]);
+        for (auto& flag : flags) {
+            ptrs.push_back(&flag);
         }
     }
 
@@ -45,7 +45,6 @@ void test_flags_members() {
 
     test_flags<FlagType>(is_set, test_and_set, clear);
 }
-
 
 template <typename FlagType>
 void test_flags_members_mo() {
