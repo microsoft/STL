@@ -235,7 +235,7 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 }
 
 // FUNCTION TEMPLATE _Atomic_wait_direct_timed
-// Provides common implementation of atomic wait for 1,2,4 and 8
+// Provides common implementation of atomic wait for 1, 2, 4, and 8
 // Not CRTP base to avoid change that might break ODR
 template <class _Value_type, class _Atomic_storage>
 inline bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_type _Expected_bytes,
