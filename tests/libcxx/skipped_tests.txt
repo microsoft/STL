@@ -505,7 +505,6 @@ strings\char.traits\char.traits.specializations\char.traits.specializations.wcha
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
 atomics\types.pass.cpp
-atomics\atomics.types.operations\atomics.types.operations.wait\atomic_wait.pass.cpp
 thread\thread.barrier\arrive.pass.cpp
 thread\thread.barrier\arrive_and_drop.pass.cpp
 thread\thread.barrier\arrive_and_wait.pass.cpp
