@@ -1907,6 +1907,53 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_first_of
+    class _Find_first_of_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr _It1 operator()(_It1 _First1, const _Se1 _Last1, const _It2 _First2, const _Se2 _Last2,
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UFirst1       = _Get_unwrapped(_STD move(_First1));
+            const auto _ULast1  = _Get_unwrapped(_Last1);
+            const auto _UFirst2 = _Get_unwrapped(_First2);
+            const auto _ULast2  = _Get_unwrapped(_Last2);
+            for (; _UFirst1 != _ULast1; ++_UFirst1) {
+                for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UMid2))) {
+                        _Seek_wrapped(_First1, _STD move(_UFirst1));
+                        return _First1;
+                    }
+                }
+            }
+
+            _Seek_wrapped(_First1, _STD move(_UFirst1));
+            return _First1;
+        }
+
+        template <input_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng1> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE swap_ranges
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {

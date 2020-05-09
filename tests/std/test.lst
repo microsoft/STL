@@ -239,6 +239,7 @@ tests\P0896R4_ranges_alg_count
 tests\P0896R4_ranges_alg_count_if
 tests\P0896R4_ranges_alg_equal
 tests\P0896R4_ranges_alg_find
+tests\P0896R4_ranges_alg_find_first_of
 tests\P0896R4_ranges_alg_find_if
 tests\P0896R4_ranges_alg_find_if_not
 tests\P0896R4_ranges_alg_for_each
