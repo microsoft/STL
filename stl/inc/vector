@@ -2695,11 +2695,11 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
-        _STD copy(_Where + 1, end(), _Where);
+        _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        _STD copy(_Where + 1, end(), _Where);
+        _STD copy(_Next_iter(_Where), end(), _Where);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Trim(this->_Mysize - 1);

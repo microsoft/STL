@@ -550,6 +550,9 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/test_lazy_sfinae.pass.cpp:0 FAIL
 # Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 
+# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.index/difference_type.pass.cpp:0 FAIL
+
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
@@ -717,11 +720,12 @@ std/containers/views/span.tuple/tuple_size.pass.cpp FAIL
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
 std/thread/futures/futures.shared_future/get.pass.cpp SKIPPED
-std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIPPED
 std/thread/futures/futures.shared_future/wait.pass.cpp SKIPPED
+std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIPPED
+std/thread/futures/futures.shared_future/wait_until.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/get.pass.cpp SKIPPED
-std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait.pass.cpp SKIPPED
+std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp SKIPPED

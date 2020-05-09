@@ -1543,7 +1543,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _UOld_first = ++_UMid; // failed match, take small jump
                 _Inc        = 0;
             } else { // no match, take big jump and back up as needed
-                _UOld_first = _UFirst + 1;
+                _UOld_first = _Next_iter(_UFirst);
                 _Inc        = _Count_diff - 1;
             }
         }
@@ -1623,7 +1623,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Old_first = ++_Mid; // failed match, take small jump
             _Inc       = 0;
         } else { // no match, take big jump and back up as needed
-            _Old_first = _First + 1;
+            _Old_first = _Next_iter(_First);
             _Inc       = _Count_diff - 1;
         }
     }
@@ -3760,9 +3760,9 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last), using _Pred
     _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-    _Guess_median_unchecked(_First, _Mid, _Last - 1, _Pred);
+    _Guess_median_unchecked(_First, _Mid, _Prev_iter(_Last), _Pred);
     _RanIt _Pfirst = _Mid;
-    _RanIt _Plast  = _Pfirst + 1;
+    _RanIt _Plast  = _Next_iter(_Pfirst);
 
     while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Pfirst), *_Pfirst)
            && !_Pred(*_Pfirst, *_Prev_iter(_Pfirst))) {
@@ -3793,8 +3793,8 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
             if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
             } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
                 break;
-            } else if (--_Pfirst != _Glast - 1) {
-                _STD iter_swap(_Pfirst, _Glast - 1);
+            } else if (--_Pfirst != _Prev_iter(_Glast)) {
+                _STD iter_swap(_Pfirst, _Prev_iter(_Glast));
             }
         }
 
