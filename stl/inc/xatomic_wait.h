@@ -94,7 +94,7 @@ inline void _Atomic_wait_get_deadline(
 
 // FUNCTION _Atomic_wait_direct_timed_for_internal_spinlock
 // Provides common implementation of atomic wait for 1,2,4 and 8 sizes.
-// Does not do _Atomic_reinterpret_as, wors only with "good" types.
+// Does not do _Atomic_reinterpret_as, works only with "good" types.
 // Spins before going to kernel wait.
 // May return spuriosuly.
 template <class _Value_type>
