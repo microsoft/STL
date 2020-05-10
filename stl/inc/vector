@@ -2893,54 +2893,140 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_vbool(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
 
-    // Slow path as _First and _Dest are not aligned
-    if (_First._Myoff != _Dest._Myoff) {
-        for (; _First != _Last; ++_Dest, (void) ++_First) {
-            *_Dest = *_First;
-        }
+    const auto _DestEnd = _Dest + (_Last - _First);
+    _Vbase* _UFirst     = const_cast<_Vbase*>(_First._Myptr);
+    _Vbase* _UDest      = const_cast<_Vbase*>(_Dest._Myptr);
+    _Vbase* _ULast      = const_cast<_Vbase*>(_Last._Myptr);
 
-        return _Dest;
-    }
+    const bool _IsRightShift = _Dest._Myoff < _First._Myoff;
+    const auto _SourceShift  = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
 
-    _Vbase* _UFirst = const_cast<_Vbase*>(_First._Myptr);
-    _Vbase* _UDest  = const_cast<_Vbase*>(_Dest._Myptr);
-    _Vbase* _ULast  = const_cast<_Vbase*>(_Last._Myptr);
+    const auto _SourceMask   = _Vbase(-1) << _First._Myoff;
+    const auto _DestMask     = _Dest._Myoff == 0 ? _Vbase(0) : _Vbase(-1) >> (_VBITS - _Dest._Myoff);
+    const auto _LastMask     = _Last._Myoff == 0 ? _Vbase(0) : _Vbase(-1) >> (_VBITS - _Last._Myoff);
+    const auto _LastDestMask = _IsRightShift ? _Vbase(-1) << (_Last._Myoff - _SourceShift) //
+                                             : _Vbase(-1) << (_Last._Myoff + _SourceShift);
 
     // Fast path for less than _VBITS
+    // Always needed in case we only copy a range within one char
     if (_UFirst == _ULast) {
-        const auto _SourceMask = (_Vbase(-1) << _First._Myoff) & (_Vbase(-1) >> (_VBITS - _Last._Myoff));
-        const auto _DestMask   = _Vbase(-1) ^ _SourceMask;
-        *_UDest                = (*_UDest & _DestMask) | (*_UFirst & _SourceMask);
-        return _Dest + (_Last - _First);
+        const auto _SourceVal = _IsRightShift ? (*_UFirst & _SourceMask & _LastMask) >> _SourceShift //
+                                              : (*_UFirst & _SourceMask & _LastMask) << _SourceShift;
+        *_UDest = (*_UDest & (_DestMask | _LastDestMask)) | _SourceVal;
+
+        if (_DestEnd._Myptr == _Dest._Myptr) {
+            return _DestEnd;
+        }
+
+        ++_UDest;
+        const auto _CarryShift = _Last._Myoff - _DestEnd._Myoff;
+        const auto _CarryMask  = _Vbase(-1) << _CarryShift;
+        const auto _CarryVal   = (*_UFirst & _CarryMask & _LastMask) >> _CarryShift;
+
+        const auto _DestEndMask = _Vbase(-1) << _DestEnd._Myoff;
+        *_UDest                 = (*_UDest & _DestEndMask) | _CarryVal;
+        return _DestEnd;
     }
 
-    if (_First._Myoff != 0) {
-        const auto _FirstSourceMask = _Vbase(-1) << _First._Myoff;
-        const auto _FirstDestMask   = _Vbase(-1) ^ _FirstSourceMask;
-        *_UDest                     = (*_UDest & _FirstDestMask) | (*_UFirst & _FirstSourceMask);
+    // _First and _Dest have matching char alignment, so use memmove
+    const auto _UnalignedFirstBits = _First._Myoff & _Vbase(7);
+    const auto _UnalignedDestBits  = _Dest._Myoff & _Vbase(7);
+    if (_UnalignedFirstBits == _UnalignedDestBits) {
+        const auto _UnalignedLastBits = _Last._Myoff & _Vbase(7);
+
+        // What is the Strict Aliasing Rule and Why do we care?
+        char* _UFirst_ch = reinterpret_cast<char*>(_UFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
+        char* _UDest_ch  = reinterpret_cast<char*>(_UDest) + (_Dest._Myoff - _UnalignedFirstBits) / 8;
+        char* _ULast_ch  = reinterpret_cast<char*>(_ULast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+
+        // Copy bits until the next char alignment
+        if (_UnalignedFirstBits != 0) {
+            const auto _SourceBitMask = static_cast<char>(UCHAR_MAX << _UnalignedFirstBits);
+            const auto _DestBitMask   = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
+            *_UDest_ch                = (*_UDest_ch & _DestBitMask) | (*_UFirst_ch & _SourceBitMask);
+            ++_UFirst_ch;
+            ++_UDest_ch;
+        }
+
+        if (true
+#ifdef __cpp_lib_is_constant_evaluated
+            && !_STD is_constant_evaluated()
+#endif // __cpp_lib_is_constant_evaluated
+        ) {
+            _UDest_ch = _Copy_memmove(_UFirst_ch, _ULast_ch, _UDest_ch);
+        } else {
+            for (; _UFirst_ch != _ULast_ch; ++_UDest_ch, (void) ++_UFirst_ch) {
+                *_UDest_ch = *_UFirst_ch;
+            }
+        }
+
+        // Copy remaining last bits, shifts needed as we are already in
+        if (_UnalignedLastBits != 0) {
+            const auto _SourceBitMask = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
+            const auto _DestBitMask   = static_cast<char>(UCHAR_MAX << _UnalignedLastBits);
+            *_UDest_ch                = (*_UDest_ch & _DestBitMask) | (*_ULast_ch & _SourceBitMask);
+        }
+        return _DestEnd;
+    }
+
+    // Unaligned _UFirst and _ULast require a two step copy with carry
+    const auto _FirstSourceVal = _IsRightShift ? (*_UFirst & _SourceMask) >> _SourceShift //
+                                               : (*_UFirst & _SourceMask) << _SourceShift;
+    *_UDest = (*_UDest & _DestMask) | _FirstSourceVal;
+
+    const auto _CarryShift = _VBITS - _SourceShift;
+    if (_IsRightShift) {
+        // Source : |                         |                         |
+        // Dest   :         |                         |                         |
+        //           ^^^^^^^ ^^^^^^^^^^^^^^^^^ ^^^^^^^ ^^^^^^^^^^^^^^^^^
+        //          _CarryVal    _SourceVal    _CarryVal  _SourceVal
+        const auto _SourceCarryMask = _Vbase(-1) >> _CarryShift;
+        const auto _DestCarryMask   = _Vbase(-1) >> _SourceShift;
+
+        ++_UFirst;
+        for (; _UFirst != _ULast; ++_UFirst) {
+            const auto _CarryVal = (*_UFirst & _SourceCarryMask) << _CarryShift;
+            *_UDest              = (*_UDest & _DestCarryMask) | _CarryVal;
+
+            ++_UDest;
+            const auto _SourceVal = (*_UFirst & _SourceMask) >> _SourceShift;
+            *_UDest               = _SourceVal;
+        }
+
+        if (_Last._Myoff != 0) {
+            const auto _LastSourceCarryMask = _SourceCarryMask & _LastMask;
+            const auto _LastDestCarryMask   = _DestCarryMask | (_Vbase(-1) << (_VBITS - _Last._Myoff));
+            const auto _CarryVal            = (*_UFirst & _LastSourceCarryMask) << _CarryShift;
+            *_UDest                         = (*_UDest & _LastDestCarryMask) | _CarryVal;
+        }
+
+        if (_Last._Myoff > _SourceShift) {
+            const auto _LastSourceMask = _SourceMask & _LastMask;
+            const auto _SourceVal      = (*_UFirst & _LastSourceMask) >> _SourceShift;
+            ++_UDest;
+            *_UDest = (*_UDest & _LastDestMask) | _SourceVal;
+        }
+    } else {
+        // Source :         |                         |                         |
+        // Dest   : |                         |                         |
+        //           ^^^^^^^ ^^^^^^^^^^^^^^^^^ ^^^^^^^ ^^^^^^^^^^^^^^^^^
+        //          _CarryVal    _SourceVal    _CarryVal  _SourceVal
+        const auto _SourceCarryMask = _Vbase(-1) << _CarryShift;
+
+        auto _CarryVal = (*_UFirst & _SourceCarryMask) >> _CarryShift;
         ++_UFirst;
         ++_UDest;
-    }
+        for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
+            const auto _SourceVal = *_UFirst << _SourceShift;
+            *_UDest               = _CarryVal | _SourceVal;
 
-    if (true
-#ifdef __cpp_lib_is_constant_evaluated
-        && !_STD is_constant_evaluated()
-#endif // __cpp_lib_is_constant_evaluated
-    ) {
-        _UDest = _Copy_memmove(_UFirst, _ULast, _UDest);
-    } else {
-        for (; _UFirst != _ULast; ++_UDest, (void) ++_UFirst) {
-            *_UDest = *_UFirst;
+            _CarryVal = (*_UFirst & _SourceCarryMask) >> _CarryShift;
         }
-    }
 
-    if (_Last._Myoff != 0) {
-        const auto _LastSourceMask = _Vbase(-1) >> (_VBITS - _Last._Myoff);
-        const auto _LastDestMask   = _Vbase(-1) ^ _LastSourceMask;
-        *_UDest                    = (*_UDest & _LastDestMask) | (*_ULast & _LastSourceMask);
+        const auto _SourceVal = _Last._Myoff != 0 ? (*_UFirst & _LastMask) << _SourceShift : _Vbase(0);
+        *_UDest               = (*_UDest & _LastDestMask) | _CarryVal | _SourceVal;
     }
-
-    return _Dest + (_Last - _First);
+    return _DestEnd;
 }
 
 template <class _BidIt1, class _BidIt2>
@@ -2972,8 +3058,6 @@ _CONSTEXPR20 _BidIt2 _Copy_backward_vbool(_BidIt1 _First, _BidIt1 _Last, _BidIt2
         const auto _LastSourceMask = _Vbase(-1) >> _LastShift;
         const auto _LastDestMask   = _Vbase(-1) ^ _LastSourceMask;
         *_UDest                    = (*_UDest & _LastDestMask) | (*_ULast & _LastSourceMask);
-        --_ULast;
-        --_UDest;
     }
 
     if (true
@@ -2985,6 +3069,8 @@ _CONSTEXPR20 _BidIt2 _Copy_backward_vbool(_BidIt1 _First, _BidIt1 _Last, _BidIt2
         _UDest = _Copy_backward_memmove(_UFirst + 1, _ULast, _UDest);
         --_UDest;
     } else {
+        --_UDest;
+        --_ULast;
         for (; _UFirst != _ULast; --_UDest, (void) --_ULast) {
             *_UDest = *_ULast;
         }
