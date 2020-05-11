@@ -10,11 +10,13 @@ rmdir /s /q i386
 rmdir /s /q amd64
 rmdir /s /q arm
 rmdir /s /q arm64
+rmdir /s /q chpe
 
 mkdir i386
 mkdir amd64
 mkdir arm
 mkdir arm64
+mkdir chpe
 
 :: __std_init_once_begin_initialize
 ..\..\..\..\..\tools\x86\aliasobj.exe ^
@@ -30,6 +32,10 @@ mkdir arm64
   __imp_InitOnceBeginInitialize ^
   arm\std_init_once_begin_initialize.obj
 copy amd64\std_init_once_begin_initialize.obj arm64\std_init_once_begin_initialize.obj
+..\..\..\..\..\tools\x86\aliasobj.exe ^
+  __imp_#__std_init_once_begin_initialize@16 ^
+  __imp_#InitOnceBeginInitialize@16 ^
+  chpe\std_init_once_begin_initialize.obj
 
 :: __std_init_once_complete
 ..\..\..\..\..\tools\x86\aliasobj.exe ^
@@ -45,3 +51,7 @@ copy amd64\std_init_once_begin_initialize.obj arm64\std_init_once_begin_initiali
   __imp_InitOnceComplete ^
   arm\std_init_once_complete.obj
 copy amd64\std_init_once_complete.obj arm64\std_init_once_complete.obj
+..\..\..\..\..\tools\x86\aliasobj.exe ^
+  __imp_#__std_init_once_complete@12 ^
+  __imp_#InitOnceComplete@12 ^
+  chpe\std_init_once_complete.obj
