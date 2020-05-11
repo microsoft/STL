@@ -941,27 +941,6 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
     }
 };
 
-template <class _Cancel_or_completion, class _Diff>
-_NODISCARD _Static_partition_key<_Diff> _Get_next_if_not_canceled(
-    _Cancel_or_completion& _Status, _Static_partition_team<_Diff>& _Team) {
-    // Check cancellation/completion status before getting a chunk of work to process, instead of after. If we check
-    // after and a result was found in a later block than the one we are assigned, we won't notice an earlier/better
-    // result in our block.
-
-    bool _Done;
-    if constexpr (is_same_v<_Cancel_or_completion, _Cancellation_token>) {
-        _Done = _Status._Is_canceled();
-    } else {
-        _Done = _Status._Complete();
-    }
-
-    if (_Done) {
-        return {static_cast<size_t>(-1), 0, 0};
-    } else {
-        return _Team._Get_next_key();
-    }
-}
-
 // STRUCT TEMPLATE _Static_partition_range_backward
 template <class _BidIt, class _Diff = _Iter_diff_t<_BidIt>, bool = _Is_random_iter_v<_BidIt>>
 struct _Static_partition_range_backward;
@@ -1080,7 +1059,11 @@ struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task schedu
     }
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Cancel_token, _Team);
+        if (_Cancel_token._Is_canceled()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -1305,7 +1288,11 @@ struct _Static_partitioned_find2 {
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results(_Last), _Fx(_Fx_) {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -1506,7 +1493,11 @@ struct _Static_partitioned_find_end_backward2 {
           _Results(_Last1), _Range2{_First2, _Last2}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -1622,7 +1613,11 @@ struct _Static_partitioned_adjacent_find2 {
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results{_Last}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -1832,12 +1827,12 @@ struct _Static_partitioned_mismatch2 {
               _Get_unwrapped(_Basis1._Populate(_Team, _First1)), _Get_unwrapped(_Basis2._Populate(_Team, _First2))),
           _Pred(_Pred_) {}
 
-    _NODISCARD bool _Complete() const {
-        return _Results._Storage._Complete();
-    }
-
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(*this, _Team);
+        if (_Results._Storage._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -1964,7 +1959,11 @@ struct _Static_partitioned_equal2 {
           _Pred(_Pred_), _Cancel_token{} {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Cancel_token, _Team);
+        if (_Cancel_token._Is_canceled()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -2078,7 +2077,11 @@ struct _Static_partitioned_search2 {
     }
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -2192,7 +2195,11 @@ struct _Static_partitioned_search_n2 {
     }
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -3040,7 +3047,11 @@ struct _Static_partitioned_is_sorted_until {
     }
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -3145,17 +3156,17 @@ struct _Static_partitioned_is_partitioned {
         _Basis._Populate(_Team, _First);
     }
 
-    _NODISCARD bool _Complete() const noexcept {
-        // If we've found a T to the right of an F, the range cannot be partitioned and we can stop
-        return _Rightmost_true.load(memory_order_relaxed) > _Leftmost_false.load(memory_order_relaxed);
-    }
-
     _Cancellation_status _Process_chunk() {
         // Note that the cancellation status here is not used in the final returned answer of is_partitioned. Returning
         // _Cancellation_status::_Canceled is simply used as an "early fail" mechanism to avoid doing unnecessary work.
         // A final comparison of _Rightmost_true and _Leftmost_false is used to determine the final return value from
         // a call to is_partitioned.
-        const auto _Key = _Get_next_if_not_canceled(*this, _Team);
+        if (_Rightmost_true.load(memory_order_relaxed) > _Leftmost_false.load(memory_order_relaxed)) {
+            // we've found a T to the right of an F, so we know the range cannot be partitioned and we can stop
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
@@ -3263,7 +3274,11 @@ struct _Static_partitioned_is_heap_until {
           _Results(_Last) {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Get_next_if_not_canceled(_Results, _Team);
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
+        const auto _Key = _Team._Get_next_key();
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
