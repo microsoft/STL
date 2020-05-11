@@ -22,9 +22,10 @@ constexpr void smoke_test() {
 
     const auto pred = [](const int x, const int y) { return x == y + 1; };
 
+    const array good_needle = {-1, 0};
     {
         // Validate range overload [found case]
-        const auto result = find_end(pairs, array{-1, 0}, pred, get_first);
+        const auto result = find_end(pairs, good_needle, pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
         assert(result.size() == 2);
         assert(result.begin() == pairs.begin() + 4);
@@ -32,16 +33,18 @@ constexpr void smoke_test() {
     }
     {
         // Validate iterator + sentinel overload [found case]
-        const array needle = {-1, 0};
-        const auto result  = find_end(pairs.begin(), pairs.end(), needle.begin(), needle.end(), pred, get_first);
+        const auto result =
+            find_end(pairs.begin(), pairs.end(), good_needle.begin(), good_needle.end(), pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
         assert(result.size() == 2);
         assert(result.begin() == pairs.begin() + 4);
         assert(result.end() == pairs.begin() + 6);
     }
+
+    const array bad_needle = {0, 0};
     {
         // Validate range overload [not found case]
-        const auto result = find_end(pairs, array{0, 0}, pred, get_first);
+        const auto result = find_end(pairs, bad_needle, pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
         assert(result.empty());
         assert(result.begin() == pairs.end());
@@ -49,8 +52,7 @@ constexpr void smoke_test() {
     }
     {
         // Validate range overload [not found case]
-        const array needle = {0, 0};
-        const auto result  = find_end(pairs.begin(), pairs.end(), needle.begin(), needle.end(), pred, get_first);
+        const auto result = find_end(pairs.begin(), pairs.end(), bad_needle.begin(), bad_needle.end(), pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
         assert(result.empty());
         assert(result.begin() == pairs.end());
@@ -90,7 +92,7 @@ struct instantiator {
             (void) ranges::find_end(
                 ranges::begin(fwd1), ranges::end(fwd1), ranges::begin(fwd2), ranges::end(fwd2), projpred, proj1, proj2);
         }
-    };
+    }
 };
 
 template void test_fwd_fwd<instantiator>();
