@@ -2875,8 +2875,9 @@ void test_status() {
         EXPECT(status(nonexistent).type() == file_type::not_found); // should not throw
         EXPECT(status(nonexistent, ec).type() == file_type::not_found);
         EXPECT(ec.category() == system_category());
-        // accept ERROR_FILE_NOT_FOUND (2), ERROR_PATH_NOT_FOUND (3), or ERROR_BAD_NETPATH (53)
-        EXPECT(ec.value() == 2 || ec.value() == 3 || ec.value() == 53);
+        // Accept ERROR_FILE_NOT_FOUND (2), ERROR_PATH_NOT_FOUND (3), ERROR_BAD_NETPATH (53), ERROR_INVALID_NAME (123).
+        // This should match __std_is_file_not_found() in <xfilesystem_abi.h>.
+        EXPECT(ec.value() == 2 || ec.value() == 3 || ec.value() == 53 || ec.value() == 123);
         EXPECT(ec == errc::no_such_file_or_directory);
     }
 
