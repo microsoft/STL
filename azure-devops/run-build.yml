@@ -77,12 +77,11 @@ jobs:
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         workingDirectory: $(buildOutputLocation)
         script: |
           call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          -host_arch=${{ parameters.vsDevCmdHostArch }} -arch=${{ parameters.vsDevCmdTargetArch }} -no_logo
           ctest -V
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PublishTestResults@2

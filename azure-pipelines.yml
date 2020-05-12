@@ -62,19 +62,23 @@ stages:
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x86
-          vsDevCmdArch: x86
+          vsDevCmdHostArch: x86
+          vsDevCmdTargetArch: x86
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x64
-          vsDevCmdArch: amd64
+          vsDevCmdHostArch: amd64
+          vsDevCmdTargetArch: amd64
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm
-          vsDevCmdArch: arm
+          vsDevCmdHostArch: amd64
+          vsDevCmdTargetArch: arm
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm64
-          vsDevCmdArch: arm64
+          vsDevCmdHostArch: amd64
+          vsDevCmdTargetArch: arm64
