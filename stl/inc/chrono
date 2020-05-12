@@ -609,18 +609,6 @@ namespace chrono {
         using time_point                = chrono::time_point<steady_clock>;
         static constexpr bool is_steady = true;
 
-        _NODISCARD static long long _Scale_large_counter(const long long _Ctr, const long long _Freq) noexcept {
-            static_assert(period::num == 1, "This assumes period::num == 1.");
-            // Instead of just having "(_Ctr * period::den) / _Freq",
-            // the algorithm below prevents overflow when _Ctr is sufficiently large.
-            // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
-            // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
-            // but the initial value of _Ctr could be large.
-            const long long _Whole = (_Ctr / _Freq) * period::den;
-            const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
-            return _Whole + _Part;
-        }
-
         _NODISCARD static time_point now() noexcept { // get current time
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
             // Implement atomics avoiding <atomic> header dependency
@@ -653,6 +641,19 @@ namespace chrono {
             const long long _Ctr  = _Query_perf_counter();
             return time_point(duration(_Scale_large_counter(_Ctr, _Freq)));
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
+        }
+
+    private:
+        _NODISCARD static long long _Scale_large_counter(const long long _Ctr, const long long _Freq) noexcept {
+            static_assert(period::num == 1, "This assumes period::num == 1.");
+            // Instead of just having "(_Ctr * period::den) / _Freq",
+            // the algorithm below prevents overflow when _Ctr is sufficiently large.
+            // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
+            // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
+            // but the initial value of _Ctr could be large.
+            const long long _Whole = (_Ctr / _Freq) * period::den;
+            const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
+            return _Whole + _Part;
         }
 
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
