@@ -504,6 +504,48 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // VARIABLE ranges::adjacent_find
+    class _Adjacent_find_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr _It operator()(_It _First, const _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // find first satisfying _Pred with successor
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_First);
+            const auto _ULast  = _Get_unwrapped(_Last);
+
+            if (_UFirst != _ULast) {
+                for (auto _UNext = _UFirst;; _UFirst = _UNext) {
+                    if (++_UNext == _ULast) {
+                        _UFirst = _UNext;
+                        break;
+                    }
+
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, *_UNext))) {
+                        break;
+                    }
+                }
+            }
+
+            _Seek_wrapped(_First, _UFirst);
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>,
+                projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};
+
     // VARIABLE ranges::count
     class _Count_fn : private _Not_quite_object {
     public:
