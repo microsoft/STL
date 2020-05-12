@@ -612,13 +612,13 @@ namespace chrono {
         _NODISCARD static time_point now() noexcept { // get current time
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
             // Implement atomics avoiding <atomic> header dependency
-            static volatile long long _Cached_Freq        = LLONG_MAX;
-            static volatile long long _Cached_Ctr_base    = LLONG_MAX;
-            static volatile long long _Cached_Result_base = LLONG_MAX;
+            static volatile long long _Cached_freq        = LLONG_MAX;
+            static volatile long long _Cached_ctr_base    = LLONG_MAX;
+            static volatile long long _Cached_result_base = LLONG_MAX;
 
-            const long long _Freq_from_cache = _Atomic_load_ll_relaxed(&_Cached_Freq);
-            const long long _Ctr_base        = _Atomic_load_ll_relaxed(&_Cached_Ctr_base);
-            const long long _Result_base     = _Atomic_load_ll_relaxed(&_Cached_Result_base);
+            const long long _Freq_from_cache = _Atomic_load_ll_relaxed(&_Cached_freq);
+            const long long _Ctr_base        = _Atomic_load_ll_relaxed(&_Cached_ctr_base);
+            const long long _Result_base     = _Atomic_load_ll_relaxed(&_Cached_result_base);
             if (_Freq_from_cache != LLONG_MAX && _Ctr_base != LLONG_MAX && _Result_base != LLONG_MAX) {
                 // Fast path
                 const long long _Ctr = _Query_perf_counter();
@@ -628,10 +628,10 @@ namespace chrono {
             const long long _Freq   = _Query_perf_frequency();
             const long long _Ctr    = _Query_perf_counter();
             const long long _Result = _Scale_large_counter(_Ctr, _Freq);
-            if (_Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_Freq, _Freq, LLONG_MAX)) {
+            if (_Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_freq, _Freq, LLONG_MAX)) {
                 // This is the first result, save current result as base for fast path
-                _Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_Ctr_base, _Ctr, LLONG_MAX);
-                _Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_Result_base, _Result, LLONG_MAX);
+                _Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_ctr_base, _Ctr, LLONG_MAX);
+                _Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_result_base, _Result, LLONG_MAX);
             }
             // if _Result is not saved as first, it is still compatible with fast result
             return time_point(duration(_Result));
