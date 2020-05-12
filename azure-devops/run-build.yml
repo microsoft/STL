@@ -87,7 +87,6 @@ jobs:
     - task: PublishTestResults@2
       displayName: 'Publish Tests'
       timeoutInMinutes: 10
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
         searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit
