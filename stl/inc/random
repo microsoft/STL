@@ -671,12 +671,12 @@ public:
     }
 
     void seed(_Seed_t _Value = default_seed) { // set initial values from specified seed value
-        _Seed(_Value, false, true_type());
+        _Seed(_Value, false, true_type{});
     }
 
     template <class _Gen>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>());
+        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>{});
     }
 
     _NODISCARD result_type(min)() const {
@@ -920,7 +920,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed(_Value, false, true_type());
+        this->_Seed(_Value, false, true_type{});
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
@@ -1860,7 +1860,7 @@ private:
     }
 
     static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
-        return _Adjust(_Uval, is_signed<_Ty>());
+        return _Adjust(_Uval, is_signed<_Ty>{});
     }
 
     static _Uty _Adjust(_Uty _Uval, true_type) { // convert signed ranges to unsigned ranges and vice versa
