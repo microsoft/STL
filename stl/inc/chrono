@@ -13,6 +13,7 @@
 #include <ratio>
 #include <time.h>
 #include <utility>
+#include <xatomic.h>
 #include <xtimec.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -654,25 +655,6 @@ namespace chrono {
             const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
             return _Whole + _Part;
         }
-
-#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
-        _NODISCARD static long long _Atomic_load_ll_relaxed(volatile long long* _Mem) noexcept {
-            // Copy from _Atomic_storage<_Ty, 8>::load
-#if defined(_M_IX86) || defined(_M_ARM64)
-            return __iso_volatile_load64(_Mem);
-#elif defined(_M_X64)
-            return *_Mem;
-#else // _M_ARM
-            return __ldrexd(_Mem);
-#endif // hardware
-        }
-
-        static bool _Atomic_compare_exchange_strong_ll_seq_cst(
-            volatile long long* _Mem, long long _Value, long long _Comparand) noexcept {
-            // Copy from _Atomic_storage<_Ty, 8>::store
-            return _InterlockedCompareExchange64(_Mem, _Value, _Comparand) == _Comparand;
-        }
-#endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
     };
 
     using high_resolution_clock = steady_clock;
