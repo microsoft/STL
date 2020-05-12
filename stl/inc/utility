@@ -718,7 +718,7 @@ _NODISCARD constexpr bool in_range(const _Ty2 _Value) noexcept {
         "The integer comparison functions only accept standard and extended integer types.");
     using _UTy1 = make_unsigned_t<_Ty1>;
     // _U_max is numeric_limits<_Ty1>::max() converted to _UTy1
-    constexpr auto _U_max = static_cast<_UTy1>(static_cast<_UTy1>(-1) >> is_signed_v<_Ty1>);
+    constexpr auto _U_max = static_cast<_UTy1>(static_cast<_UTy1>(-1) >> static_cast<int>(is_signed_v<_Ty1>));
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return static_cast<_Ty1>(_U_max + 1) <= _Value && _Value <= static_cast<_Ty1>(_U_max);
     } else if constexpr (is_signed_v<_Ty2>) {
