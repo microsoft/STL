@@ -5,8 +5,6 @@
 // Tests the new functions added as part of P0586R2, "Integer Comparison Functions"
 //
 
-#define NOMINMAX
-
 #include <assert.h>
 #include <limits>
 #include <utility>
@@ -15,7 +13,6 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-#ifdef __cpp_lib_integer_comparison_functions
 STATIC_ASSERT(cmp_equal(1L, 1));
 STATIC_ASSERT(!cmp_equal(1, -1));
 STATIC_ASSERT(!cmp_equal(1, 42));
@@ -58,13 +55,10 @@ STATIC_ASSERT(in_range<int>(numeric_limits<int>::min()));
 STATIC_ASSERT(in_range<long>(numeric_limits<int>::max()));
 STATIC_ASSERT(in_range<long>(numeric_limits<int>::min()));
 
-#endif // __cpp_lib_integer_comparison_functions
-
 int main() {
-#ifdef __cpp_lib_integer_comparison_functions
     { // Different signs
-        int i          = -1;
-        unsigned int u = 1;
+        const int i          = -1;
+        const unsigned int u = 1;
         assert(!cmp_equal(i, u));
         assert(cmp_not_equal(i, u));
         assert(cmp_less(i, u));
@@ -77,8 +71,8 @@ int main() {
         assert(!cmp_greater_equal(i, u));
     }
     { // Equal
-        const int i    = 7;
-        unsigned int u = 7;
+        const int i          = 7;
+        const unsigned int u = 7;
         assert(cmp_equal(i, u));
         assert(!cmp_not_equal(i, u));
         assert(!cmp_less(i, u));
@@ -91,8 +85,8 @@ int main() {
         assert(cmp_greater_equal(i, u));
     }
     { // Not equal
-        const int i    = 42;
-        unsigned int u = 7;
+        const int i          = 42;
+        const unsigned int u = 7;
         assert(!cmp_equal(i, u));
         assert(cmp_not_equal(i, u));
         assert(!cmp_less(i, u));
@@ -104,5 +98,4 @@ int main() {
         assert(!cmp_greater_equal(u, i));
         assert(cmp_greater_equal(i, u));
     }
-#endif // __cpp_lib_integer_comparison_functions
 }
