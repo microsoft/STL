@@ -649,7 +649,7 @@ inline constexpr in_place_index_t<_Idx> in_place_index{};
 
 #if _HAS_CXX20
 template <class _Ty>
-inline constexpr bool _Is_standard_integer = is_integral_v<remove_cv_t<_Ty>>
+inline constexpr bool _Is_standard_integer = is_integral_v<_Ty>
     && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
 #ifdef _NATIVE_WCHAR_T_DEFINED
         wchar_t,
