@@ -14,9 +14,9 @@
 #endif // _M_CEE_PURE
 
 #include <chrono>
+#include <stdlib.h>
 #include <system_error>
 #include <thread>
-#include <tuple>
 #include <utility>
 #include <xcall_once.h>
 
@@ -508,60 +508,71 @@ public:
 };
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE _Invoke_stored_explicit
-template <class... _Types, size_t... _Indices>
-auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(
-    _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
-    return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
-}
-
-// FUNCTION TEMPLATE _Invoke_stored
-template <class... _Types>
-auto _Invoke_stored(tuple<_Types...>&& _Tuple)
-    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
-    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
-}
-
 // FUNCTION TEMPLATE call_once
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
+#ifdef _M_CEE
+#define _WINDOWS_API              __stdcall
+#define _RENAME_WINDOWS_API(_Api) _Api##_clr
+#else // ^^^ _M_CEE // !_M_CEE vvv
+#define _WINDOWS_API              __declspec(dllimport) __stdcall
+#define _RENAME_WINDOWS_API(_Api) _Api
+#endif // _M_CEE
 
-template <class _Tuple, class _Seq, size_t _Idx>
-int __stdcall _Callback_once(void*, void* _Pv, void**) { // adapt call_once() to callback API
-    _Tuple* _Ptup = static_cast<_Tuple*>(_Pv);
+// WINBASEAPI
+// BOOL
+// WINAPI
+// InitOnceBeginInitialize(
+//     _Inout_ LPINIT_ONCE lpInitOnce,
+//     _In_ DWORD dwFlags,
+//     _Out_ PBOOL fPending,
+//     _Outptr_opt_result_maybenull_ LPVOID* lpContext
+//     );
+extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin_initialize)(
+    void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept;
 
-    _TRY_BEGIN
-    // Note explicit _Seq{} selects every element from *_Ptup except the last,
-    // which contains call_once's exception_ptr.
-    _Invoke_stored_explicit(_STD move(*_Ptup), _Seq{});
-    _CATCH_ALL
-    auto& _Ref = _STD get<_Idx>(*_Ptup);
-    _Ref       = _STD current_exception();
-    return 0;
-    _CATCH_END
+// WINBASEAPI
+// BOOL
+// WINAPI
+// InitOnceComplete(
+//     _Inout_ LPINIT_ONCE lpInitOnce,
+//     _In_ DWORD dwFlags,
+//     _In_opt_ LPVOID lpContext
+//     );
+extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
+    void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
 
-    return 1;
-}
+// #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
+// #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
+_INLINE_VAR constexpr unsigned long _Init_once_init_failed = 0x4UL;
+
+struct _Init_once_completer {
+    once_flag& _Once;
+    unsigned long _DwFlags;
+    ~_Init_once_completer() {
+        if (_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr) == 0) {
+            _CSTD abort();
+        }
+    }
+};
 
 template <class _Fn, class... _Args>
-void(call_once)(once_flag& _Flag, _Fn&& _Fx, _Args&&... _Ax) { // call _Fx(_Ax...) once
-    using _Tuple = tuple<_Fn&&, _Args&&..., exception_ptr&>;
-    using _Seq   = make_index_sequence<1 + sizeof...(_Args)>;
-
-    exception_ptr _Exc;
-    _Tuple _Tup(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)..., _Exc);
-
-    _Execute_once_fp_t _Fp = &_Callback_once<_Tuple, _Seq, 1 + sizeof...(_Args)>;
-
-    if (_Execute_once(_Flag, _Fp, _STD addressof(_Tup)) != 0) {
-        return;
+void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
+    noexcept(_STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...))) /* strengthened */ {
+    // call _Fx(_Ax...) once
+    // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
+    int _Pending;
+    if (_RENAME_WINDOWS_API(__std_init_once_begin_initialize)(&_Once._Opaque, 0, &_Pending, nullptr) == 0) {
+        _CSTD abort();
     }
 
-    if (_Exc) {
-        _STD rethrow_exception(_Exc);
+    if (_Pending != 0) {
+        _Init_once_completer _Op{_Once, _Init_once_init_failed};
+        _STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
+        _Op._DwFlags = 0;
     }
-
-    _XGetLastError();
 }
+
+#undef _WINDOWS_API
+#undef _RENAME_WINDOWS_API
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
 #ifndef _M_CEE

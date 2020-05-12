@@ -7,6 +7,7 @@
 #include <mutex>
 
 _STD_BEGIN
+// TRANSITION, ABI
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept { // wrap Win32 InitOnceExecuteOnce()
     static_assert(sizeof(_Flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
