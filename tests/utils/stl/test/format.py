@@ -234,8 +234,10 @@ class STLTestFormat:
             exec_dir: os.PathLike = field(default_factory=Path)
 
         shared = SharedState()
-        return self.getBuildSteps(test, lit_config, shared), \
+        buildSteps = self.getBuildSteps(test, lit_config, shared)
+        testSteps = [] if test.build_only else \
             self.getTestSteps(test, lit_config, shared)
+        return buildSteps, testSteps
 
     def getBuildSteps(self, test, lit_config, shared):
         if not test.path_in_suite[-1].endswith('.fail.cpp'):

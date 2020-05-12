@@ -23,6 +23,7 @@ _compiler_path_cache = dict()
 class STLTest(Test):
     def __init__(self, suite, path_in_suite, lit_config, test_config,
                  envlst_entry, env_num, default_cxx, file_path=None):
+        self.build_only = False
         self.env_num = env_num
         self.skipped = False
         Test.__init__(self, suite, path_in_suite, test_config, file_path)
@@ -36,11 +37,14 @@ class STLTest(Test):
 
         for flag in chain(self.cxx.flags, self.cxx.compile_flags):
             if flag[1:] == 'clr:pure':
-                self.requires.append('clr_pure') # TRANSITION, GH-798
+                self.requires.append('clr_pure')  # TRANSITION, GH-798
             elif flag[1:] == 'clr':
-                self.requires.append('clr') # TRANSITION, GH-797
+                self.requires.append('clr')  # TRANSITION, GH-797
             elif flag[1:] == 'BE':
-                self.requires.append('edg') # available for x86, see config.py
+                self.requires.append('edg')  # available for x86, see config.py
+
+        if test_config.target_arch.startswith('arm'):
+            self.build_only = True  # TRANSITION, GH-820
 
     def getOutputDir(self):
         return Path(os.path.join(
@@ -140,6 +144,10 @@ class STLTest(Test):
                 compile_flags.append('-m64')
             elif (target_arch == 'x86'.casefold()):
                 compile_flags.append('-m32')
+            elif (target_arch == 'arm'.casefold()):
+                self.requires.append('clang-cl_arm_backend')
+            elif (target_arch == 'arm64'.casefold()):
+                self.requires.append('clang-cl_arm64_backend')
 
         self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags,
                                default_cxx.compile_env)
