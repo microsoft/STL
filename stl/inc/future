@@ -97,11 +97,11 @@ struct is_error_code_enum<future_errc> : true_type {};
 _NODISCARD const error_category& future_category() noexcept;
 
 _NODISCARD inline error_code make_error_code(future_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), future_category());
+    return error_code(static_cast<int>(_Errno), _STD future_category());
 }
 
 _NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), future_category());
+    return error_condition(static_cast<int>(_Errno), _STD future_category());
 }
 
 // CLASS future_error
