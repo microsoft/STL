@@ -1023,7 +1023,7 @@ inline bool _Is_tzcnt_supported() {
 
 
 // see "Hacker's Delight" section 5-3
-template <typename _Ty>
+template <class _Ty>
 constexpr int _Countl_zero_helper(_Ty _Val) {
     _Ty _Yy = 0;
 
@@ -1041,7 +1041,7 @@ constexpr int _Countl_zero_helper(_Ty _Val) {
 }
 
 // see "Hacker's Delight" section 5-4
-template <typename _Ty>
+template <class _Ty>
 constexpr int _Countr_zero_helper(_Ty _Val) {
     return numeric_limits<_Ty>::digits
            - _Countl_zero_helper(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
@@ -1049,7 +1049,7 @@ constexpr int _Countr_zero_helper(_Ty _Val) {
 #pragma warning(push)
 #pragma warning(disable : 4640)
 #if defined(_M_IX86) || defined(_M_X64)
-template <typename _Ty>
+template <class _Ty>
 inline int _Checked_x86_x86_64_countr_zero(_Ty _Val) {
     static bool _Have_tzcnt = _Is_tzcnt_supported();
     constexpr int _Digits   = numeric_limits<_Ty>::digits;

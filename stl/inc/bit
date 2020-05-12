@@ -98,8 +98,8 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
 #pragma warning(push)
 #pragma warning(disable : 4640)
 
-template <typename _Ty>
-constexpr int _Popcount_helper(_Ty _Val) {
+template <class _Ty>
+_NODISCARD constexpr int _Popcount_helper(_Ty _Val) {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     // we static cast these bit patterns in order to truncate
     // them to the correct size
@@ -116,20 +116,20 @@ constexpr int _Popcount_helper(_Ty _Val) {
 
 #if defined(_M_IX86) || defined(_M_X64)
 
-inline bool __Is_popcnt_supported() {
+_NODISCARD inline bool _Is_popcnt_supported() {
     int cpuinfo[4];
     __cpuid(cpuinfo, 0x01);
     return cpuinfo[2] & (1 << 23);
 }
 
-inline bool _Is_lzcnt_supported() {
+_NODISCARD inline bool _Is_lzcnt_supported() {
     int cpuinfo[4];
     __cpuid(cpuinfo, 0x80000001);
     return cpuinfo[2] & (1 << 5);
 }
 
-template <typename _Ty>
-inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
+template <class _Ty>
+_NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
     static bool _Have_lzcnt = _Is_lzcnt_supported();
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
     // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
@@ -163,9 +163,9 @@ inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
     // all supported intel processors at least have bsr/bsf
 }
 
-template <typename _Ty>
-inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
-    static bool _Have_popcnt = __Is_popcnt_supported();
+template <class _Ty>
+_NODISCARD inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
+    static bool _Have_popcnt = _Is_popcnt_supported();
     constexpr int _Digits    = numeric_limits<_Ty>::digits;
     if (_Have_popcnt) {
         if constexpr (_Digits <= 16) {
@@ -187,8 +187,8 @@ inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
 
 
 #if defined(_M_ARM) || defined(_M_ARM64)
-template <typename _Ty>
-inline int _Checked_arm_countl_zero(_Ty _Val) {
+template <class _Ty>
+_NODISCARD inline int _Checked_arm_countl_zero(_Ty _Val) {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if (_Val == 0) {
         return _Digits;
