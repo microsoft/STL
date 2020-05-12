@@ -1315,7 +1315,6 @@ _NODISCARD gslice_array<_Ty> valarray<_Ty>::operator[](const gslice& _Gslicearr)
 
 template <class _Ty>
 valarray<_Ty>& valarray<_Ty>::operator=(const mask_array<_Ty>& _Maskarr) {
-
     _Tidy_deallocate();
     _Grow(_Maskarr._Totlen());
     size_t _Count = 0;

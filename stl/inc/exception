@@ -93,7 +93,6 @@ public:
     __CLR_OR_THIS_CALL exception(const exception& _Right) noexcept : _Ptr(_Right._Ptr) {}
 
     exception& __CLR_OR_THIS_CALL operator=(const exception& _Right) noexcept {
-
         _Ptr = _Right._Ptr;
         return *this;
     }

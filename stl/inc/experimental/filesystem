@@ -596,7 +596,6 @@ public:
         : _Myptr(_Right._Myptr), _Myelem(_Right._Myelem), _Myoff(_Right._Myoff) {}
 
     _Path_iterator& operator=(const _Path_iterator& _Right) {
-
         _Myptr  = _Right._Myptr;
         _Myelem = _Right._Myelem;
         _Myoff  = _Right._Myoff;
@@ -607,7 +606,6 @@ public:
         : _Myptr(_Right._Myptr), _Myelem(_STD move(_Right._Myelem)), _Myoff(_Right._Myoff) {}
 
     _Path_iterator& operator=(_Path_iterator&& _Right) noexcept {
-
         _Myptr  = _Right._Myptr;
         _Myelem = _STD move(_Right._Myelem);
         _Myoff  = _Right._Myoff;
@@ -806,7 +804,6 @@ public:
     path(path&& _Right) noexcept : _Mystr(_STD move(_Right._Mystr)) {}
 
     path& operator=(path&& _Right) noexcept {
-
         _Mystr = _STD move(_Right._Mystr);
         return *this;
     }
@@ -815,14 +812,12 @@ public:
 
     // ARBITRARY SOURCE ASSIGN
     path& operator=(const path& _Right) {
-
         _Mystr = _Right._Mystr;
         return *this;
     }
 
     template <class _InIt>
     path& operator=(_InIt _First) {
-
         return *this = path(_First);
     }
 

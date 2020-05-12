@@ -278,7 +278,6 @@ struct pair { // store a pair of values
             int>            = 0>
     pair& operator=(_Identity_t<const _Myself&> _Right) noexcept(
         conjunction_v<is_nothrow_copy_assignable<_Ty1>, is_nothrow_copy_assignable<_Ty2>>) /* strengthened */ {
-
         first  = _Right.first;
         second = _Right.second;
         return *this;
@@ -290,7 +289,6 @@ struct pair { // store a pair of values
             int>            = 0>
     pair& operator=(_Identity_t<_Myself&&> _Right) noexcept(
         conjunction_v<is_nothrow_move_assignable<_Ty1>, is_nothrow_move_assignable<_Ty2>>) /* strengthened */ {
-
         first  = _STD forward<_Ty1>(_Right.first);
         second = _STD forward<_Ty2>(_Right.second);
         return *this;
@@ -302,7 +300,6 @@ struct pair { // store a pair of values
             int> = 0>
     pair& operator=(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_assignable_v<_Ty1&, const _Other1&>&&
             is_nothrow_assignable_v<_Ty2&, const _Other2&>) /* strengthened */ {
-
         first  = _Right.first;
         second = _Right.second;
         return *this;
@@ -314,7 +311,6 @@ struct pair { // store a pair of values
             int> = 0>
     pair& operator=(pair<_Other1, _Other2>&& _Right) noexcept(
         is_nothrow_assignable_v<_Ty1&, _Other1>&& is_nothrow_assignable_v<_Ty2&, _Other2>) /* strengthened */ {
-
         first  = _STD forward<_Other1>(_Right.first);
         second = _STD forward<_Other2>(_Right.second);
         return *this;

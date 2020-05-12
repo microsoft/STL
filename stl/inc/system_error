@@ -138,7 +138,6 @@ public:
 
     template <class _Enum, enable_if_t<is_error_code_enum_v<_Enum>, int> = 0>
     error_code& operator=(_Enum _Errcode) noexcept {
-
         *this = make_error_code(_Errcode); // using ADL
         return *this;
     }
@@ -222,7 +221,6 @@ public:
 
     template <class _Enum, enable_if_t<is_error_condition_enum_v<_Enum>, int> = 0>
     error_condition& operator=(_Enum _Errcode) noexcept {
-
         *this = make_error_condition(_Errcode); // using ADL
         return *this;
     }
