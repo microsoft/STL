@@ -1867,7 +1867,7 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // CLASS ranges::_Find_end_fn
+    // VARIABLE ranges::find_end
     class _Find_end_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
@@ -1877,10 +1877,7 @@ namespace ranges {
             constexpr bool _Both_identity = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>;
             // Performance note: teach _Equal_memcmp_is_safe about contiguous iterators and ranges::equal_to
             if constexpr (_Both_identity && decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
-#ifdef __cpp_lib_is_constant_evaluated
-                if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-                {
+                if (!_STD is_constant_evaluated()) {
                     const auto _First1_ch = reinterpret_cast<const char*>(_First1);
                     const auto _First2_ch = reinterpret_cast<const char*>(_First2);
                     const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
@@ -2053,7 +2050,6 @@ namespace ranges {
         // clang-format on
     };
 
-    // VARIABLE ranges::find_end
     inline constexpr _Find_end_fn find_end{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
