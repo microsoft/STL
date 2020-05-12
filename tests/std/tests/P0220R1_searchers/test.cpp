@@ -3,10 +3,16 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <chrono>
 #include <forward_list>
 #include <functional>
 #include <initializer_list>
+#include <iostream>
 #include <iterator>
+#include <random>
+#include <stddef.h>
+#include <stdint.h>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -38,9 +44,41 @@ void test_boyer_moore_table2_construction() {
     // Test cases from Boyer and Moore's original 1977 paper on page 4:
     test_case_boyer_moore_table2_construction("abcxxxabc", {14, 13, 12, 11, 10, 9, 11, 10, 1});
     test_case_boyer_moore_table2_construction("abyxcdeyx", {17, 16, 15, 14, 13, 12, 7, 10, 1});
+
     // Test case from Knuth, Morris, and Pratt's updated 1977 paper, from which our delta2
     // construction algorithm is derived, on page 20:
     test_case_boyer_moore_table2_construction("badbacbacba", {19, 18, 17, 16, 15, 8, 13, 12, 8, 12, 1});
+
+    // Test cases from Rytter's 1980 paper:
+    test_case_boyer_moore_table2_construction("aaaaaaaaaa", {10, 10, 10, 10, 10, 10, 10, 10, 10, 10});
+    test_case_boyer_moore_table2_construction("abaabaabaa", {12, 11, 10, 12, 11, 10, 12, 11, 2, 2});
+
+    // More test cases (made from scratch) exercising the Rytter correction:
+    test_case_boyer_moore_table2_construction("a", {1});
+    test_case_boyer_moore_table2_construction("aa", {2, 2});
+    test_case_boyer_moore_table2_construction("aaa", {3, 3, 3});
+    test_case_boyer_moore_table2_construction("aaaa", {4, 4, 4, 4});
+    test_case_boyer_moore_table2_construction("aaaaa", {5, 5, 5, 5, 5});
+    test_case_boyer_moore_table2_construction("aaaaaa", {6, 6, 6, 6, 6, 6});
+    test_case_boyer_moore_table2_construction("aaaaaaa", {7, 7, 7, 7, 7, 7, 7});
+    test_case_boyer_moore_table2_construction("aaaaaaaa", {8, 8, 8, 8, 8, 8, 8, 8});
+    test_case_boyer_moore_table2_construction("aaaaaaaaa", {9, 9, 9, 9, 9, 9, 9, 9, 9});
+    test_case_boyer_moore_table2_construction("ab", {3, 1});
+    test_case_boyer_moore_table2_construction("aba", {4, 3, 1});
+    test_case_boyer_moore_table2_construction("abab", {5, 4, 5, 1});
+    test_case_boyer_moore_table2_construction("ababa", {6, 5, 6, 5, 1});
+    test_case_boyer_moore_table2_construction("ababab", {7, 6, 7, 6, 7, 1});
+    test_case_boyer_moore_table2_construction("abababa", {8, 7, 8, 7, 8, 7, 1});
+    test_case_boyer_moore_table2_construction("abababab", {9, 8, 9, 8, 9, 8, 9, 1});
+    test_case_boyer_moore_table2_construction("ababababa", {10, 9, 10, 9, 10, 9, 10, 9, 1});
+    test_case_boyer_moore_table2_construction("ababababab", {11, 10, 11, 10, 11, 10, 11, 10, 11, 1});
+    test_case_boyer_moore_table2_construction("abc", {5, 4, 1});
+    test_case_boyer_moore_table2_construction("abca", {6, 5, 4, 1});
+    test_case_boyer_moore_table2_construction("abcab", {7, 6, 5, 6, 1});
+    test_case_boyer_moore_table2_construction("abcabc", {8, 7, 6, 8, 7, 1});
+    test_case_boyer_moore_table2_construction("abcabca", {9, 8, 7, 9, 8, 7, 1});
+    test_case_boyer_moore_table2_construction("abcabcab", {10, 9, 8, 10, 9, 8, 9, 1});
+    test_case_boyer_moore_table2_construction("abcabcabc", {11, 10, 9, 11, 10, 9, 11, 10, 1});
 }
 
 template <typename Searcher, typename Result, typename... Args>
@@ -92,6 +130,35 @@ void test_case_searcher(const Args... args) {
 
     test_case_searcher_found<Searcher>("abcd", "ddddabcd", 4, args...);
     test_case_searcher_not_found<Searcher>("abcd", "ddddxbcd", args...);
+
+    // GH-713 "<functional>: boyer_moore_searcher produces incorrect results"
+    test_case_searcher_found<Searcher>("aaa",
+        "fbdhhihagdjcdibfdfdgbbhjcdifffdjdaighiaaaehigjegecjffcaecagcbiaeadhebggbijfdeihiceajbcjcjghhbjfcebge", 38,
+        args...);
+    // More test cases for GH-713 discovered through randomized testing:
+    test_case_searcher_found<Searcher>("bbbb",
+        "aaaaaaabaaabaaabbabbabaaaaabaababbabaabaaaababbbaaaabbaaababbaaabbbbabaaabbaabbaaabbbabababbbb", 64, args...);
+    test_case_searcher_found<Searcher>("ababa", "babbaabbbbbabbbbabaaaaaabbabababaabba", 26, args...);
+    test_case_searcher_found<Searcher>("bababbab",
+        "bbaaaaaaabbbabaaababaaabaaababaababbabbbbabaaabbaabbbababbbaaaabbbabbbbaaaabababbabbaaaabbbbab", 75, args...);
+    test_case_searcher_found<Searcher>("abaaba",
+        "abaaabbaabababbbbbbaabbbbbaabaaababbaaabaaaaaabbbaaaaabbbbabaababaababbbbaaaabbabbaabaaabaabaaabaaba", 58,
+        args...);
+    test_case_searcher_found<Searcher>("babbabba",
+        "bbbbbbbaabbbbbbbababababaabaababbbbbaabbbbbaaababaabbabbbaabaaababbbaabaabbbbabbabbaabbabaa", 76, args...);
+    test_case_searcher_found<Searcher>("aabaaaaba", "aabaaabbaabaaaabaabbabaabaab", 8, args...);
+    test_case_searcher_found<Searcher>(
+        "babaabbaba", "abbaabbaaababbbbaabbbaababaabbabaaabbaababbbbbbabbbbbbaaaaba", 23, args...);
+    test_case_searcher_found<Searcher>(
+        "babbabbab", "aaabaabbbabaaabaaababbababbbababbabbabaaaaababbabbabab", 29, args...);
+    test_case_searcher_found<Searcher>(
+        "babcbab", "acaabcaaacccacabbaaacbbbcbbaaaaccbbbacabcbabaacbbcbcaababcbabccbccbaababcacacbbc", 54, args...);
+    test_case_searcher_found<Searcher>("cbcacbc", "abcbabcbcacbcaabbbacabbbccbccaaababbaabaabccacbaa", 6, args...);
+    test_case_searcher_found<Searcher>(
+        "cbaccbac", "babccaaaccccbcbacccacbaaccaaabbacabbacababacaccccbcccbccacbaccbacaaacaaacac", 57, args...);
+    test_case_searcher_found<Searcher>("abcabca",
+        "abbababbaccbaacbaabacccbaabbbbccbccacbbabcababbabcabcaabbaabaabbcaaaaaabaccbbbacbaabcacbcbbbaca", 47, args...);
+    test_case_searcher_found<Searcher>("bacbbacb", "cbcacbbaaaabccbacbbacbcacacbcbabcbccbacabbacbabacb", 14, args...);
 }
 
 struct FancyHash {
@@ -290,6 +357,86 @@ void test_case_BM_unicode32() {
     assert_equal(slowSlow, slowHaystack.begin(), 147, static_cast<ptrdiff_t>(slowPattern.size()));
 }
 
+void report_randomized_failure(const string_view searcher, const string_view needle, const string_view haystack) {
+    cout << searcher << " failed for needle \"" << needle << "\" and haystack \"" << haystack << "\".\n";
+    cout << "This is a randomized test.\n";
+    cout << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+    cout << "You must report it to the STL maintainers.\n";
+    assert(false);
+}
+
+void initialize_randomness(mt19937& mt) {
+    static_assert(mt19937::word_size == 32);
+    vector<uint32_t> vec(mt19937::state_size);
+    random_device rd;
+    generate(vec.begin(), vec.end(), ref(rd));
+    seed_seq seq(vec.cbegin(), vec.cend());
+    mt.seed(seq);
+}
+
+void test_case_randomized_cases() {
+    using namespace std::chrono;
+
+    const auto start = steady_clock::now();
+
+    mt19937 mt;
+    initialize_randomness(mt);
+
+    constexpr int Needles   = 150;
+    constexpr int Haystacks = 150;
+
+    constexpr size_t MaxNeedleLength = 10;
+    uniform_int_distribution<size_t> needle_length(1, MaxNeedleLength);
+    string needle(MaxNeedleLength, '?');
+    const auto needle_first = needle.c_str();
+
+    constexpr size_t MaxHaystackLength = 100;
+    uniform_int_distribution<size_t> haystack_length(1, MaxHaystackLength);
+    string haystack(MaxHaystackLength, '?');
+    const auto haystack_first = haystack.c_str();
+
+    for (int max_char = 'b'; max_char <= 'f'; ++max_char) {
+        uniform_int_distribution<int> characters('a', max_char);
+
+        for (int n = 0; n < Needles; ++n) {
+            needle.resize(needle_length(mt));
+            for (auto& ch : needle) {
+                ch = static_cast<char>(characters(mt));
+            }
+            const auto needle_last = needle_first + needle.size();
+
+            const default_searcher ds{needle_first, needle_last};
+            const boyer_moore_searcher bms{needle_first, needle_last};
+            const boyer_moore_horspool_searcher bmhs{needle_first, needle_last};
+
+            for (int h = 0; h < Haystacks; ++h) {
+                haystack.resize(haystack_length(mt));
+                for (auto& ch : haystack) {
+                    ch = static_cast<char>(characters(mt));
+                }
+                const auto haystack_last = haystack_first + haystack.size();
+
+                const auto correct = ds(haystack_first, haystack_last);
+
+                if (bms(haystack_first, haystack_last) != correct) {
+                    report_randomized_failure("boyer_moore_searcher", needle, haystack);
+                }
+
+                if (bmhs(haystack_first, haystack_last) != correct) {
+                    report_randomized_failure("boyer_moore_horspool_searcher", needle, haystack);
+                }
+            }
+        }
+    }
+
+    const auto elapsed = steady_clock::now() - start;
+
+    if (elapsed > 10s) {
+        cout << "test_case_randomized_cases() took " << duration_cast<milliseconds>(elapsed).count() << " ms.\n";
+        cout << "Consider retuning Needles and Haystacks.\n";
+    }
+}
+
 int main() {
     test_boyer_moore_table2_construction();
 
@@ -315,4 +462,6 @@ int main() {
 
     test_case_BM_unicode32<boyer_moore_searcher>();
     test_case_BM_unicode32<boyer_moore_horspool_searcher>();
+
+    test_case_randomized_cases();
 }

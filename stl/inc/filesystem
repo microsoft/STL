@@ -1794,14 +1794,12 @@ namespace filesystem {
         path _Path2;
         string _What;
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
     protected:
         virtual void _Doraise() const override { // perform class-specific exception handling
             _RAISE(*this);
         }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
     };
 
     [[noreturn]] inline void _Throw_fs_error(const char* _Op, __std_win_error _Error) {

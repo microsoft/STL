@@ -27,7 +27,7 @@ _STD_BEGIN
 // size in pointers of std::function and std::any (roughly 3 pointers larger than std::string when building debug)
 constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
 
-#if !(_HAS_EXCEPTIONS)
+#if !_HAS_EXCEPTIONS
 
 // CLASS bad_cast
 class _CRTIMP2_IMPORT bad_cast : public exception { // base of all bad cast exceptions
@@ -59,7 +59,7 @@ class _CRTIMP2_IMPORT __non_rtti_object : public bad_typeid { // report a non RT
 public:
     __non_rtti_object(const char* _Message) : bad_typeid(_Message) {}
 };
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 
 [[noreturn]] inline void _Throw_bad_cast() {
     _THROW(bad_cast{});

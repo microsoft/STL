@@ -139,14 +139,12 @@ public:
         return _Future_error_map(_Mycode.value());
     }
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 
 private:
     error_code _Mycode; // the stored error code
@@ -1429,6 +1427,20 @@ struct uses_allocator<packaged_task<_Ty>, _Alloc> : true_type {};
 template <class _Ty>
 void swap(packaged_task<_Ty>& _Left, packaged_task<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
+}
+
+// FUNCTION TEMPLATE _Invoke_stored_explicit
+template <class... _Types, size_t... _Indices>
+auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(
+    _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
+    return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
+}
+
+// FUNCTION TEMPLATE _Invoke_stored
+template <class... _Types>
+auto _Invoke_stored(tuple<_Types...>&& _Tuple)
+    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
+    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
 }
 
 // FUNCTION TEMPLATE async

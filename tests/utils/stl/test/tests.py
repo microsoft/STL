@@ -13,13 +13,11 @@ from xml.sax.saxutils import quoteattr
 import os
 import shutil
 
-from lit.Test import FAIL, PASS, ResultCode, Test, UNSUPPORTED, XPASS, XFAIL
+from lit.Test import FAIL, PASS, SKIPPED, Test, UNSUPPORTED, XPASS, XFAIL
 
 from stl.compiler import CXXCompiler
 
 _compiler_path_cache = dict()
-
-SKIP = ResultCode('SKIP', False)
 
 
 class STLTest(Test):
@@ -36,12 +34,13 @@ class STLTest(Test):
 
         self._configure_cxx(lit_config, envlst_entry, default_cxx)
 
-        # TRANSITION: These configurations should be enabled in the future.
         for flag in chain(self.cxx.flags, self.cxx.compile_flags):
-            if flag.startswith('clr:pure', 1):
-                self.requires.append('clr_pure')
-            elif flag.startswith('BE', 1):
-                self.requires.append('edg')
+            if flag[1:] == 'clr:pure':
+                self.requires.append('clr_pure') # TRANSITION, GH-798
+            elif flag[1:] == 'clr':
+                self.requires.append('clr') # TRANSITION, GH-797
+            elif flag[1:] == 'BE':
+                self.requires.append('edg') # available for x86, see config.py
 
     def getOutputDir(self):
         return Path(os.path.join(
@@ -105,7 +104,7 @@ class STLTest(Test):
             self.expected_result = lit_config.expected_results[test_name]
 
         if self.expected_result is not None:
-            if self.expected_result == SKIP:
+            if self.expected_result == SKIPPED:
                 self.skipped = True
             elif self.expected_result.isFailure:
                 self.xfails = ['*']
@@ -184,7 +183,7 @@ class STLTest(Test):
             fil.write(
                 ">\n\t<skipped message={} />\n</testcase>".format(
                     skip_message))
-        elif self.result.code == SKIP:
+        elif self.result.code == SKIPPED:
             message = quoteattr('Test is explicitly marked as skipped')
             fil.write(">\n\t<skipped message={} />\n</testcase>".format(
                 message))

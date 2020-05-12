@@ -104,7 +104,7 @@ public:
         return _Ptr ? _Ptr : "unknown exception";
     }
 
-    void __CLR_OR_THIS_CALL _Raise() const { // raise the exception
+    [[noreturn]] void __CLR_OR_THIS_CALL _Raise() const { // raise the exception
         if (_STD _Raise_handler) {
             (*_STD _Raise_handler)(*this); // call raise handler if present
         }
@@ -171,7 +171,8 @@ inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept { /
     return nullptr;
 }
 
-inline void __CRTDECL terminate() noexcept { // handle exception termination
+[[noreturn]] inline void __CRTDECL terminate() noexcept { // handle exception termination
+    _CSTD abort();
 }
 
 _NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler

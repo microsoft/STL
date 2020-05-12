@@ -320,7 +320,7 @@ public:
 
     _NODISCARD _Ty sum() const {
         _Ty _Sum = _Myptr[0];
-        for (size_t _Idx = 0; ++_Idx < size();) {
+        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
             _Sum += _Myptr[_Idx];
         }
 
@@ -329,7 +329,7 @@ public:
 
     _NODISCARD _Ty(min)() const {
         _Ty _Min = _Myptr[0];
-        for (size_t _Idx = 0; ++_Idx < size();) {
+        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
             if (_Myptr[_Idx] < _Min) {
                 _Min = _Myptr[_Idx];
             }
@@ -340,7 +340,7 @@ public:
 
     _NODISCARD _Ty(max)() const {
         _Ty _Max = _Myptr[0];
-        for (size_t _Idx = 0; ++_Idx < size();) {
+        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
             if (_Max < _Myptr[_Idx]) {
                 _Max = _Myptr[_Idx];
             }
@@ -999,7 +999,7 @@ public:
         }
 
         size_t _Count = _Len[0];
-        for (size_t _Idx = 0; ++_Idx < _Len.size();) {
+        for (size_t _Idx = 1; _Idx < _Len.size(); ++_Idx) {
             _Count *= _Len[_Idx];
         }
 

@@ -119,14 +119,12 @@ constexpr bool test_three_way_comparable(std::integer_sequence<int, Is...>) {
     (test_three_way_comparable1<three_way_archetype<Is, partial_ordering>, void>(), ...);
     (test_three_way_comparable1<three_way_archetype<Is, weak_ordering>, void>(), ...);
     (test_three_way_comparable1<three_way_archetype<Is, strong_ordering>, void>(), ...);
-#ifndef __clang__ // TRANSITION, LLVM-44761 (fixed for RC2)
     STATIC_ASSERT(
         test_three_way_comparable1<three_way_archetype<three_way_archetype_max, partial_ordering>, partial_ordering>());
     STATIC_ASSERT(
         test_three_way_comparable1<three_way_archetype<three_way_archetype_max, weak_ordering>, weak_ordering>());
     STATIC_ASSERT(
         test_three_way_comparable1<three_way_archetype<three_way_archetype_max, strong_ordering>, strong_ordering>());
-#endif // TRANSITION, LLVM-44761 (fixed for RC2)
 
     return true;
 }
@@ -208,14 +206,12 @@ constexpr bool test_three_way_comparable_with(std::integer_sequence<int, Is...>)
     (test_three_way_comparable_with1<three_way_archetype<Is, partial_ordering>, void>(), ...);
     (test_three_way_comparable_with1<three_way_archetype<Is, weak_ordering>, void>(), ...);
     (test_three_way_comparable_with1<three_way_archetype<Is, strong_ordering>, void>(), ...);
-#ifndef __clang__ // TRANSITION, LLVM-44761 (fixed for RC2)
     STATIC_ASSERT(
         test_three_way_comparable_with1<three_way_archetype<three_way_with_max, partial_ordering>, partial_ordering>());
     STATIC_ASSERT(
         test_three_way_comparable_with1<three_way_archetype<three_way_with_max, weak_ordering>, weak_ordering>());
     STATIC_ASSERT(
         test_three_way_comparable_with1<three_way_archetype<three_way_with_max, strong_ordering>, strong_ordering>());
-#endif // TRANSITION, LLVM-44761 (fixed for RC2)
 
     return true;
 }
