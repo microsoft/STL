@@ -1427,7 +1427,7 @@ public:
     }
 
     _NODISCARD file_status status(error_code& _Code) const noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (!status_known(_Mystat)) {
             if (status_known(_Mysymstat) && !is_symlink(_Mysymstat)) {
                 _Mystat = _Mysymstat;
@@ -1445,7 +1445,7 @@ public:
     }
 
     _NODISCARD file_status symlink_status(error_code& _Code) const noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (!status_known(_Mysymstat)) {
             _Mysymstat = _FSPFX symlink_status(_Mypval, _Code);
         }
@@ -1548,7 +1548,7 @@ public:
     }
 
     _Directory_iterator& increment(error_code& _Code) noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (_Mypdir && *_Mypdir) {
             _Get();
         } else {
@@ -1655,13 +1655,13 @@ public:
 
     recursive_directory_iterator(const path& _Path, directory_options _Opts, error_code& _Code) noexcept
         : _Mylist(1, _Mypair(_Myiter(_Path), _Path)), _Myentry(), _No_push(false), _Options(_Opts) {
-        _Code = error_code();
+        _Code.clear();
         _Get();
     }
 
     recursive_directory_iterator(const path& _Path, error_code& _Code) noexcept
         : _Mylist(1, _Mypair(_Myiter(_Path), _Path)), _Myentry(), _No_push(false), _Options(directory_options::none) {
-        _Code = error_code();
+        _Code.clear();
         _Get();
     }
 
@@ -1729,7 +1729,7 @@ public:
     }
 
     recursive_directory_iterator& increment(error_code& _Code) noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (_Mylist.front().first == _Myiter()) {
             _Code = make_error_code(errc::operation_not_permitted);
         } else {
@@ -1784,7 +1784,7 @@ _NODISCARD inline recursive_directory_iterator end(const recursive_directory_ite
 // OPERATIONAL FUNCTIONS
 inline path _Absolute(const path& _Path, const path& _Base,
     error_code& _Code) { // make absolute path from _Path and directory _Base; errors in _Code
-    _Code                               = error_code();
+    _Code.clear();
     const bool _Path_has_root_name      = _Path.has_root_name();
     const bool _Path_has_root_directory = _Path.has_root_directory();
     if (_Path_has_root_name && _Path_has_root_directory) {
@@ -1880,7 +1880,7 @@ _NODISCARD inline path canonical(const path& _Path,
 
 _NODISCARD inline path canonical(const path& _Path, const path& _Base,
     error_code& _Code) { // make absolute path from _Path, _Base with no ".", "..", symlink
-    _Code = error_code();
+    _Code.clear();
     path _Canon_path; // NRVO this variable
     path _Abs_path = _Absolute(_Path, _Base, _Code);
     if (_Code != error_code()) {
@@ -1941,7 +1941,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
     file_status _Newstat;
     error_code _Code2;
 
-    _Code = error_code();
+    _Code.clear();
     if ((_Opts & copy_options::create_symlinks) != copy_options::none
         || (_Opts & copy_options::skip_symlinks) != copy_options::none) { // get symlink status
         _Oldstat = symlink_status(_Oldpval);
@@ -2008,7 +2008,7 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval, copy_options _
     file_time_type _Oldtime;
     file_time_type _Newtime;
 
-    _Code = error_code();
+    _Code.clear();
     if (_Exists && (_Opt == copy_options::none || equivalent(_Oldpval, _Newpval, _Code))) {
         _Code = make_error_code(errc::file_exists);
         return false;
@@ -2062,7 +2062,7 @@ inline bool create_directories(const path& _Path) { // create directories chain
 
 inline bool create_directories(const path& _Path,
     error_code& _Code) noexcept { // create directory chain
-    _Code = error_code();
+    _Code.clear();
     if (_Path.empty()) {
         return false;
     } else if (!exists(_Path)) { // recursively create parent directories, then current
@@ -2100,7 +2100,7 @@ inline bool create_directory(const path& _Path,
     error_code& _Code) noexcept { // create a directory
     const int _Ans = _Make_dir(_Path.c_str(), nullptr);
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans < 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2123,7 +2123,7 @@ inline bool create_directory(const path& _Path, const path& _Attrs,
     error_code& _Code) noexcept { // create a directory, copying attributes
     const int _Ans = _Make_dir(_Path.c_str(), _Attrs.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans < 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2144,7 +2144,7 @@ inline void create_directory_symlink(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // symlink directory_Newpval to _Oldpval (NB: SAME AS FILE)
     const int _Ans = _Symlink(_Oldpval.c_str(), _Newpval.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans != 0) {
         _Code = error_code(_Ans, _STD system_category());
     }
@@ -2162,7 +2162,7 @@ inline void create_hard_link(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // hard link _Newpval to _Oldpval
     const int _Ans = _Link(_Oldpval.c_str(), _Newpval.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans != 0) {
         _Code = error_code(_Ans, _STD system_category());
     }
@@ -2180,7 +2180,7 @@ inline void create_symlink(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // symlink _Newpval to _Oldpval
     const int _Ans = _Symlink(_Oldpval.c_str(), _Newpval.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans != 0) {
         _Code = error_code(_Ans, _STD system_category());
     }
@@ -2197,7 +2197,7 @@ _NODISCARD inline path current_path() {
 }
 
 _NODISCARD inline path current_path(error_code& _Code) {
-    _Code = error_code();
+    _Code.clear();
     _Pchar _Dest[_MAX_FILESYS_NAME];
     if (!_Current_get(_Dest)) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2214,7 +2214,7 @@ inline void current_path(const path& _Path) { // set current working directory
 
 inline void current_path(const path& _Path,
     error_code& _Code) noexcept { // set current working directory
-    _Code = error_code();
+    _Code.clear();
     if (!_Current_set(_Path.c_str())) {
         _Code = make_error_code(errc::no_such_file_or_directory);
     }
@@ -2234,7 +2234,7 @@ _NODISCARD inline bool equivalent(const path& _Path1, const path& _Path2) {
 _NODISCARD inline bool equivalent(const path& _Path1, const path& _Path2, error_code& _Code) noexcept {
     const int _Ans = _Equivalent(_Path1.c_str(), _Path2.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans < 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2251,7 +2251,7 @@ _NODISCARD inline bool exists(const path& _Path) {
 }
 
 _NODISCARD inline bool exists(const path& _Path, error_code& _Code) noexcept {
-    _Code = error_code();
+    _Code.clear();
     return exists(status(_Path));
 }
 
@@ -2269,7 +2269,7 @@ _NODISCARD inline uintmax_t file_size(const path& _Path, error_code& _Code) noex
     uintmax_t _Ans          = static_cast<uintmax_t>(-1);
     const file_status _Stat = status(_Path);
 
-    _Code = error_code();
+    _Code.clear();
     if (exists(_Stat) && is_regular_file(_Stat)) {
         _Ans = _File_size(_Path.c_str());
     }
@@ -2292,7 +2292,7 @@ _NODISCARD inline uintmax_t hard_link_count(const path& _Path) {
 }
 
 _NODISCARD inline uintmax_t hard_link_count(const path& _Path, error_code& _Code) noexcept {
-    _Code                = error_code();
+    _Code.clear();
     const uintmax_t _Ans = _Hard_links(_Path.c_str());
     if (_Ans == static_cast<uintmax_t>(-1)) {
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2350,7 +2350,7 @@ _NODISCARD inline bool is_empty(const path& _Path) {
 _NODISCARD inline bool is_empty(const path& _Path, error_code& _Code) noexcept {
     const file_status _Stat = status(_Path);
 
-    _Code = error_code();
+    _Code.clear();
     if (is_directory(_Stat)) {
         return directory_iterator(_Path) == directory_iterator();
     } else {
@@ -2431,7 +2431,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path) {
 _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& _Code) noexcept {
     const int64_t _Ticks = _Last_write_time(_Path.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ticks == -1) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
         return (file_time_type::min)();
@@ -2449,7 +2449,7 @@ inline void last_write_time(const path& _Path, file_time_type _Newtime) { // set
 
 inline void last_write_time(const path& _Path, file_time_type _Newtime,
     error_code& _Code) noexcept { // set last write time
-    _Code = error_code();
+    _Code.clear();
     if (_Set_last_write_time(_Path.c_str(), _Newtime.time_since_epoch().count()) == 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2469,7 +2469,7 @@ inline void permissions(const path& _Path, perms _Mask,
     _Mask             = _Mask & perms::mask;
     bool _Ok          = true;
 
-    _Code = error_code();
+    _Code.clear();
     if ((_Todo & perms::add_perms) == perms::none) {
         if ((_Todo & perms::remove_perms) != perms::none) {
             _Mask = status(_Path).permissions() & ~_Mask;
@@ -2499,7 +2499,7 @@ _NODISCARD inline path read_symlink(const path& _Path) { // read symbolic link
 
 _NODISCARD inline path read_symlink(const path& _Path,
     error_code& _Code) { // read symbolic link
-    _Code = error_code();
+    _Code.clear();
     if (!is_symlink(_Path)) { // report error
         _Code = make_error_code(errc::no_such_file_or_directory);
         return path{};
@@ -2521,7 +2521,7 @@ inline bool remove(const path& _Path) { // remove a file
 
 inline bool remove(const path& _Path,
     error_code& _Code) noexcept { // remove a file
-    _Code = error_code();
+    _Code.clear();
     if (!exists(symlink_status(_Path))) {
         return false;
     } else if (is_directory(_Path, _Code)) {
@@ -2543,7 +2543,7 @@ inline bool remove(const path& _Path,
 
 inline bool _Remove_all(const path& _Path, uintmax_t& _Ans,
     error_code& _Code) noexcept { // recursively remove a file or directory, count removed files
-    _Code = error_code();
+    _Code.clear();
     if (is_directory(_Path)) { // empty and remove a directory
         using _Myit = _Directory_iterator<false_type>;
         _Myit _Last;
@@ -2603,7 +2603,7 @@ inline void rename(const path& _Oldpval, const path& _Newpval) { // rename _Oldp
 
 inline void rename(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // rename _Oldpval as _Newpval
-    _Code = error_code();
+    _Code.clear();
 
     if (!exists(_Oldpval)) { // fail immediately without modifying the filesystem
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2637,7 +2637,7 @@ inline void resize_file(const path& _Path, uintmax_t _Newsize,
     error_code& _Code) noexcept { // change file size
     const int _Errno = _Resize(_Path.c_str(), _Newsize);
 
-    _Code = error_code();
+    _Code.clear();
     if (_Errno != 0) {
         _Code = error_code(_Errno, _STD system_category());
     }
@@ -2648,7 +2648,7 @@ _NODISCARD inline space_info space(const path& _Path) {
 }
 
 _NODISCARD inline space_info space(const path& _Path, error_code& _Code) noexcept {
-    _Code = error_code();
+    _Code.clear();
     return _Statvfs(_Path.c_str());
 }
 
@@ -2658,7 +2658,7 @@ _NODISCARD inline file_status status(const path& _Path) {
 }
 
 _NODISCARD inline file_status status(const path& _Path, error_code& _Code) noexcept {
-    _Code = error_code();
+    _Code.clear();
     perms _Mode;
     const file_type _Ftype = _Stat(_Path.c_str(), &_Mode);
     return file_status(_Ftype, _Mode);
@@ -2677,7 +2677,7 @@ _NODISCARD inline file_status symlink_status(const path& _Path, error_code& _Cod
     perms _Mode;
     const file_type _Ftype = _Lstat(_Path.c_str(), &_Mode);
 
-    _Code = error_code();
+    _Code.clear();
     return file_status(_Ftype, _Mode);
 }
 
@@ -2698,7 +2698,7 @@ _NODISCARD inline path system_complete(const path& _Path) {
 }
 
 _NODISCARD inline path system_complete(const path& _Path, error_code& _Code) {
-    _Code = error_code();
+    _Code.clear();
 
     path _Ans;
 
@@ -2727,7 +2727,7 @@ _NODISCARD inline path temp_directory_path(error_code& _Code) {
     _Temp_get(_Dest);
     path _Ans(_Dest);
 
-    _Code = error_code();
+    _Code.clear();
     if (!exists(_Ans) || !is_directory(_Ans)) { // report error
         _Code = make_error_code(errc::no_such_file_or_directory);
         return path{};
