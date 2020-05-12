@@ -1978,7 +1978,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
             _Code = make_error_code(errc::operation_not_permitted);
         }
 
-        for (directory_iterator _Next(_Oldpval), _End; _Code == error_code() && _Next != _End; ++_Next) {
+        for (directory_iterator _Next(_Oldpval), _End; !_Code && _Next != _End; ++_Next) {
             copy(_Next->path(), _Newpval / _Next->path().filename(),
                 _Opts | copy_options::_Unspecified_recursion_prevention_tag, _Code);
         }
