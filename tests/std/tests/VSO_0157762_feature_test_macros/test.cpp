@@ -561,7 +561,7 @@ STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #ifndef __cpp_lib_integer_comparison_functions
 #error __cpp_lib_integer_comparison_functions is not defined
 #elif __cpp_lib_integer_comparison_functions != 202002L
-#error __cpp_lib_integer_comparison_functions is not 201811L
+#error __cpp_lib_integer_comparison_functions is not 202002L
 #else
 STATIC_ASSERT(__cpp_lib_integer_comparison_functions == 202002L);
 #endif
