@@ -47,8 +47,8 @@ constexpr bool test() {
     assert(!in_range<unsigned int>(-1));
     assert(in_range<unsigned int>(0));
     assert(in_range<unsigned int>(42));
-    assert(!in_range<int>(numeric_limits<long>::max()));
-    assert(!in_range<int>(numeric_limits<long>::min()));
+    assert(!in_range<int>(numeric_limits<long long>::max()));
+    assert(!in_range<int>(numeric_limits<long long>::min()));
     assert(in_range<int>(numeric_limits<int>::max()));
     assert(in_range<int>(numeric_limits<int>::min()));
     assert(in_range<long>(numeric_limits<int>::max()));
