@@ -89,9 +89,8 @@ namespace ranges {
         [[no_unique_address]] _In in;
         [[no_unique_address]] _Fn fun;
 
-        // clang-format off
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fn&> _FFn>
-        constexpr operator in_fun_result<_IIn, _FFn>() const & {
+        constexpr operator in_fun_result<_IIn, _FFn>() const& {
             return {in, fun};
         }
 
@@ -99,7 +98,6 @@ namespace ranges {
         constexpr operator in_fun_result<_IIn, _FFn>() && {
             return {_STD move(in), _STD move(fun)};
         }
-        // clang-format on
     };
 
     // STRUCT TEMPLATE in_in_result
@@ -108,9 +106,8 @@ namespace ranges {
         [[no_unique_address]] _In1 in1;
         [[no_unique_address]] _In2 in2;
 
-        // clang-format off
         template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2>
-        constexpr operator in_in_result<_IIn1, _IIn2>() const & {
+        constexpr operator in_in_result<_IIn1, _IIn2>() const& {
             return {in1, in2};
         }
 
@@ -118,7 +115,6 @@ namespace ranges {
         constexpr operator in_in_result<_IIn1, _IIn2>() && {
             return {_STD move(in1), _STD move(in2)};
         }
-        // clang-format on
     };
 
     // STRUCT TEMPLATE in_out_result
@@ -127,9 +123,8 @@ namespace ranges {
         [[no_unique_address]] _In in;
         [[no_unique_address]] _Out out;
 
-        // clang-format off
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() const & {
+        constexpr operator in_out_result<_IIn, _OOut>() const& {
             return {in, out};
         }
 
@@ -137,7 +132,6 @@ namespace ranges {
         constexpr operator in_out_result<_IIn, _OOut>() && {
             return {_STD move(in), _STD move(out)};
         }
-        // clang-format on
     };
 
     // STRUCT TEMPLATE in_in_out_result
@@ -147,10 +141,9 @@ namespace ranges {
         [[no_unique_address]] _In2 in2;
         [[no_unique_address]] _Out out;
 
-        // clang-format off
         template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2,
             _Convertible_from<const _Out&> _OOut>
-        constexpr operator in_in_out_result<_IIn1, _IIn2, _OOut>() const & {
+        constexpr operator in_in_out_result<_IIn1, _IIn2, _OOut>() const& {
             return {in1, in2, out};
         }
 
@@ -158,7 +151,6 @@ namespace ranges {
         constexpr operator in_in_out_result<_IIn1, _IIn2, _OOut>() && {
             return {_STD move(in1), _STD move(in2), _STD move(out)};
         }
-        // clang-format on
     };
 
     // STRUCT TEMPLATE in_out_out_result
@@ -168,10 +160,9 @@ namespace ranges {
         [[no_unique_address]] _Out1 out1;
         [[no_unique_address]] _Out2 out2;
 
-        // clang-format off
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out1&> _OOut1,
             _Convertible_from<const _Out2&> _OOut2>
-        constexpr operator in_out_out_result<_IIn, _OOut1, _OOut2>() const & {
+        constexpr operator in_out_out_result<_IIn, _OOut1, _OOut2>() const& {
             return {in, out1, out2};
         }
 
@@ -179,7 +170,6 @@ namespace ranges {
         constexpr operator in_out_out_result<_IIn, _OOut1, _OOut2>() && {
             return {_STD move(in), _STD move(out1), _STD move(out2)};
         }
-        // clang-format on
     };
 
     // STRUCT TEMPLATE min_max_result
@@ -188,9 +178,8 @@ namespace ranges {
         [[no_unique_address]] _Ty min;
         [[no_unique_address]] _Ty max;
 
-        // clang-format off
         template <_Convertible_from<const _Ty&> _Ty2>
-        constexpr operator min_max_result<_Ty2>() const & {
+        constexpr operator min_max_result<_Ty2>() const& {
             return {min, max};
         }
 
@@ -198,7 +187,6 @@ namespace ranges {
         constexpr operator min_max_result<_Ty2>() && {
             return {_STD move(min), _STD move(max)};
         }
-        // clang-format on
     };
 
     // STRUCT TEMPLATE in_found_result
@@ -207,9 +195,8 @@ namespace ranges {
         [[no_unique_address]] _In in;
         bool found;
 
-        // clang-format off
         template <_Convertible_from<const _In&> _IIn>
-        constexpr operator in_found_result<_IIn>() const & {
+        constexpr operator in_found_result<_IIn>() const& {
             return {in, found};
         }
 
@@ -217,7 +204,6 @@ namespace ranges {
         constexpr operator in_found_result<_IIn>() && {
             return {_STD move(in), found};
         }
-        // clang-format on
     };
 
 #ifdef __clang__
@@ -379,7 +365,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
@@ -401,7 +386,6 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
-        // clang-format on
     };
 
     inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag{}};
@@ -437,7 +421,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
@@ -459,7 +442,6 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
-        // clang-format on
     };
 
     inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
@@ -611,7 +593,6 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
@@ -633,7 +614,6 @@ namespace ranges {
         _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
-        // clang-format on
     };
 
     inline constexpr _Count_if_fn count_if{_Not_quite_object::_Construct_tag{}};
@@ -958,6 +938,340 @@ namespace ranges {
     };
 
     inline constexpr _Equal_fn equal{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
+// FUNCTION TEMPLATE is_permutation
+template <class _FwdIt1, class _FwdIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
+    // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
+        if (!_Pred(*_First1, *_First2)) {
+            // found first inequality, check match counts in suffix
+            //
+            // narrowing _Iter_diff_t<_FwdIt1> to _Iter_diff_t<_FwdIt2> is OK because if the second range is shorter
+            // than the first, the user already triggered UB
+            auto _Last2 = _STD next(_First2, static_cast<_Iter_diff_t<_FwdIt2>>(_STD distance(_First1, _Last1)));
+            return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
+        }
+    }
+
+    return true;
+}
+
+template <class _FwdIt1, class _FwdIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
+    // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
+    _Adl_verify_range(_First1, _Last1);
+    const auto _UFirst1 = _Get_unwrapped(_First1);
+    const auto _ULast1  = _Get_unwrapped(_Last1);
+    const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
+    return _Is_permutation_unchecked(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
+}
+
+template <class _FwdIt1, class _FwdIt2>
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
+    // test if [_First1, _Last1) == permuted [_First2, ...)
+    return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
+}
+
+template <class _FwdIt1, class _FwdIt2, class _Pr>
+_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
+    forward_iterator_tag, forward_iterator_tag) {
+    // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, arbitrary iterators
+    for (;;) { // trim matching prefix
+        if (_First1 == _Last1) {
+            return _First2 == _Last2;
+        }
+
+        if (_First2 == _Last2) {
+            return false;
+        }
+
+        if (!_Pred(*_First1, *_First2)) { // found first inequality, check match counts in suffix
+            break;
+        }
+
+        ++_First1;
+        ++_First2;
+    }
+
+    auto _Next1 = _First1;
+    auto _Next2 = _First2;
+    for (;;) { // check for same lengths
+        if (_Next1 == _Last1) {
+            if (_Next2 == _Last2) {
+                return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
+            }
+
+            return false; // sequence 1 is shorter than sequence 2, not a permutation
+        }
+
+        if (_Next2 == _Last2) {
+            return false; // sequence 1 is longer than sequence 2, not a permutation
+        }
+
+        ++_Next1;
+        ++_Next2;
+    }
+}
+
+template <class _FwdIt1, class _FwdIt2, class _Pr>
+_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
+    random_access_iterator_tag, random_access_iterator_tag) {
+    // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, random-access iterators
+    if (_Last1 - _First1 != _Last2 - _First2) {
+        return false;
+    }
+
+    for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
+        if (!_Pred(*_First1, *_First2)) {
+            // found first inequality, check match counts in suffix
+            return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
+        }
+    }
+
+    return true;
+}
+
+template <class _FwdIt1, class _FwdIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 bool is_permutation(
+    _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
+    // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred
+    _Adl_verify_range(_First1, _Last1);
+    _Adl_verify_range(_First2, _Last2);
+    return _Is_permutation_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
+        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>(), _Iter_cat_t<_FwdIt2>());
+}
+
+template <class _FwdIt1, class _FwdIt2>
+_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
+    // test if [_First1, _Last1) == permuted [_First2, _Last2)
+    return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>());
+}
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    template <class _It, class _Se>
+    concept _Bidi_common = is_same_v<_It, _Se> && bidirectional_iterator<_It>;
+    template <class _Rng>
+    concept _Bidi_common_range = common_range<_Rng>&& bidirectional_iterator<iterator_t<_Rng>>;
+    // clang-format on
+
+    // VARIABLE ranges::is_permutation
+    class _Is_permutation_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pj1 = identity, class _Pj2 = identity,
+            indirect_equivalence_relation<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
+
+            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                const auto _Count = _ULast1 - _UFirst1;
+                if (_ULast2 - _UFirst2 != _Count) {
+                    return false;
+                }
+
+                return _Sized_ranges(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
+                    _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Unsized_ranges(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+
+        template <forward_range _Rng1, forward_range _Rng2, class _Pj1 = identity, class _Pj2 = identity,
+            indirect_equivalence_relation<projected<iterator_t<_Rng1>, _Pj1>, projected<iterator_t<_Rng2>, _Pj2>> _Pr =
+                ranges::equal_to>
+        _NODISCARD constexpr bool operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
+                const auto _Count = _RANGES distance(_Range1);
+                if (_RANGES distance(_Range2) != _Count) {
+                    return false;
+                }
+
+                return _Sized_ranges(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES end(_Range1)),
+                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)), _Count,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Unsized_ranges(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES end(_Range1)),
+                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)), _Pass_fn(_Pred),
+                    _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Sized_ranges(_It1 _First1, _Se1 _End1, _It2 _First2, _Se2 _End2,
+            iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_CHECK(_RANGES distance(_First1, _End1) == _Count);
+            _STL_INTERNAL_CHECK(_RANGES distance(_First2, _End2) == _Count);
+
+            for (;;) { // Trim matching prefixes
+                if (_Count == 0) { // Everything matched
+                    return true;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) { // mismatch
+                    if (_Count == 1) { // Single non-matching characters remain; not a permutation
+                        return false;
+                    }
+
+                    break;
+                }
+
+                ++_First1;
+                ++_First2;
+                --_Count;
+            }
+            // If we get here, _Count > 1 and initial elements do not match.
+
+            if constexpr (bidirectional_iterator<_It1> && bidirectional_iterator<_It2>) {
+                // Determine final iterator values
+                auto _Last1 = _Find_last_iterator(_First1, _End1, _Count);
+                auto _Last2 = _Find_last_iterator(_First2, _End2, _Count);
+
+                for (;;) { // Trim matching suffixes
+                    --_Last1;
+                    --_Last2;
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Last1), _STD invoke(_Proj2, *_Last2))) { // mismatch
+                        ++_Last1;
+                        ++_Last2;
+                        break;
+                    }
+
+                    if (--_Count == 1) {
+                        return false; // initial elements did not match when trimming prefixes
+                    }
+                }
+                // If we get here, _Count > 1, initial elements do not match, and final elements do not match.
+
+                return _Match_counts(_STD move(_First1), _STD move(_Last1), _STD move(_First2), _STD move(_Last2),
+                    _Pred, _Proj1, _Proj2);
+            } else {
+                return _Match_counts(
+                    _STD move(_First1), _STD move(_End1), _STD move(_First2), _STD move(_End2), _Pred, _Proj1, _Proj2);
+            }
+        }
+
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Unsized_ranges(
+            _It1 _First1, _Se1 _End1, _It2 _First2, _Se2 _End2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            for (;;) { // Trim matching prefixes
+                if (_First1 == _End1) { // first range is a (possibly proper?) prefix of the second
+                    return _First2 == _End2;
+                } else if (_First2 == _End2) { // second range is a proper prefix of the first
+                    return false;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) { // mismatch
+                    break;
+                }
+
+                ++_First1;
+                ++_First2;
+            }
+            // If we get here, initial elements do not match.
+
+            // Determine final iterator values and validate lengths
+            auto _Last1 = _First1;
+            auto _Last2 = _First2;
+            for (;;) {
+                ++_Last1;
+                ++_Last2;
+                if (_Last1 == _End1) {
+                    if (_Last2 == _End2) {
+                        break; // equal lengths
+                    }
+
+                    return false; // different lengths; not a permutation
+                }
+
+                if (_Last2 == _End2) {
+                    return false; // Ditto
+                }
+            }
+            // if we get here, initial elements do not match and ranges have equal lengths.
+
+            if constexpr (bidirectional_iterator<_It1> && bidirectional_iterator<_It2>) {
+                for (;;) { // Trim matching suffixes
+                    if (--_Last1 == _First1) {
+                        return false; // initial elements did not match when trimming prefixes.
+                    }
+                    if (--_Last2 == _First2) {
+                        return false; // Ditto
+                    }
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Last1), _STD invoke(_Proj2, *_Last2))) { // mismatch
+                        ++_Last1;
+                        ++_Last2;
+                        break;
+                    }
+                }
+                // If we get here, initial elements do not match, final elements do not match, and ranges have length
+                // at least 2.
+            }
+
+            return _Match_counts(
+                _STD move(_First1), _STD move(_Last1), _STD move(_First2), _STD move(_Last2), _Pred, _Proj1, _Proj2);
+        }
+
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Match_counts(const _It1 _First1, const _Se1 _Last1, const _It2 _First2,
+            const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            for (auto _Mid1 = _First1; _Mid1 != _Last1; ++_Mid1) {
+                bool _Found = false;
+                auto _Meow  = _First1;
+                for (; _Meow != _Mid1; ++_Meow) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_Mid1), _STD invoke(_Proj1, *_Meow))) {
+                        // the same value appears earlier in the first range; we've already counted occurrences
+                        _Found = true;
+                        break;
+                    }
+                }
+                if (_Found) {
+                    continue;
+                }
+
+                // count occurrences of this value in the first range
+                iter_difference_t<_It1> _Occurrences = 1;
+                while (++_Meow != _Last1) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_Mid1), _STD invoke(_Proj1, *_Meow))) {
+                        ++_Occurrences;
+                    }
+                }
+
+                // subtract occurrences in the second range
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_Mid1), _STD invoke(_Proj2, *_Mid2))) {
+                        if (--_Occurrences < 0) {
+                            // value appears more in second range than first; not a permutation
+                            return false;
+                        }
+                    }
+                }
+
+                if (_Occurrences != 0) {
+                    // value appears more in first range than second; not a permutation
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    };
+
+    inline constexpr _Is_permutation_fn is_permutation{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -2048,8 +2362,7 @@ namespace ranges {
                 && random_access_iterator<_It2> && sized_sentinel_for<_Se2, _It2>) {
                 return _Random_access_sized_ranges(_First1, _Last1 - _First1, _First2, _Last2 - _First2,
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            } else if constexpr (bidirectional_iterator<_It1> && is_same_v<_It1, _Se1>
-                && bidirectional_iterator<_It2> && is_same_v<_It2, _Se2>) {
+            } else if constexpr (_Bidi_common<_It1, _Se1> && _Bidi_common<_It2, _Se2>) {
                 return _Bidi_common_ranges(_First1, _Last1, _First2, _Last2,
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
@@ -2069,8 +2382,7 @@ namespace ranges {
                     _RANGES begin(_Range1), _RANGES distance(_Range1),
                     _RANGES begin(_Range2), _RANGES distance(_Range2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            } else if constexpr (bidirectional_range<_Rng1> && common_range<_Rng1>
-                && bidirectional_range<_Rng2> && common_range<_Rng2>) {
+            } else if constexpr (_Bidi_common_range<_Rng1> && _Bidi_common_range<_Rng2>) {
                 return _Bidi_common_ranges(
                     _RANGES begin(_Range1), _RANGES end(_Range1),
                     _RANGES begin(_Range2), _RANGES end(_Range2),
