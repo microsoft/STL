@@ -2611,7 +2611,7 @@ inline void rename(const path& _Oldpval, const path& _Newpval,
     }
 
     if (exists(_Newpval)) { // both exist; there can be only one
-        if (equivalent(_Oldpval, _Newpval, _Code) || _Code != error_code()) {
+        if (equivalent(_Oldpval, _Newpval, _Code) || _Code) {
             return; // successful no-op, or report equivalent() failure
         }
 
