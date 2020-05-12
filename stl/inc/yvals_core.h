@@ -1162,28 +1162,28 @@
 #define __cpp_lib_destroying_delete 201806L
 #endif // __cpp_impl_destroying_delete
 
-#define __cpp_lib_endian                       201907L
-#define __cpp_lib_erase_if                     202002L
-#define __cpp_lib_generic_unordered_lookup     201811L
-#define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_endian                   201907L
+#define __cpp_lib_erase_if                 202002L
+#define __cpp_lib_generic_unordered_lookup 201811L
 
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 #define __cpp_lib_int_pow2 202002L
 #endif
 
-#define __cpp_lib_is_constant_evaluated   201811L
-#define __cpp_lib_is_nothrow_convertible  201806L
-#define __cpp_lib_list_remove_return_type 201806L
-#define __cpp_lib_math_constants          201907L
-#define __cpp_lib_remove_cvref            201711L
-#define __cpp_lib_shift                   201806L
-#define __cpp_lib_span                    202002L
-#define __cpp_lib_ssize                   201902L
-#define __cpp_lib_starts_ends_with        201711L
-#define __cpp_lib_to_address              201711L
-#define __cpp_lib_to_array                201907L
-#define __cpp_lib_type_identity           201806L
-#define __cpp_lib_unwrap_ref              201811L
+#define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_is_constant_evaluated        201811L
+#define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_list_remove_return_type      201806L
+#define __cpp_lib_math_constants               201907L
+#define __cpp_lib_remove_cvref                 201711L
+#define __cpp_lib_shift                        201806L
+#define __cpp_lib_span                         202002L
+#define __cpp_lib_ssize                        201902L
+#define __cpp_lib_starts_ends_with             201711L
+#define __cpp_lib_to_address                   201711L
+#define __cpp_lib_to_array                     201907L
+#define __cpp_lib_type_identity                201806L
+#define __cpp_lib_unwrap_ref                   201811L
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
