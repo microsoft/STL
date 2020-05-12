@@ -1792,12 +1792,12 @@ inline path _Absolute(const path& _Path, const path& _Base,
     }
 
     path _Current = current_path(_Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         return path{};
     }
 
     path _Abs_base = _Absolute(_Base, _Current, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         return path{};
     }
 
@@ -1814,7 +1814,7 @@ _NODISCARD inline path absolute(const path& _Path,
     const path& _Base = current_path()) { // make absolute path from _Path and directory _Base
     error_code _Code;
     path _Result = _Absolute(_Path, _Base, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("absolute(p1, p2): current_path() couldn't get current working directory");
     }
 
@@ -1861,7 +1861,7 @@ _NODISCARD inline path canonical(const path& _Path,
     error_code _Code;
     path _Ans = canonical(_Path, _Base, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("canonical(p1, p2): invalid arguments");
     }
 
@@ -1871,7 +1871,7 @@ _NODISCARD inline path canonical(const path& _Path,
 _NODISCARD inline path canonical(const path& _Path,
     error_code& _Code) { // make absolute path from _Path with no ., .., or symlink
     path _Current = current_path(_Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         return path{};
     }
 
@@ -1883,7 +1883,7 @@ _NODISCARD inline path canonical(const path& _Path, const path& _Base,
     _Code.clear();
     path _Canon_path; // NRVO this variable
     path _Abs_path = _Absolute(_Path, _Base, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         return _Canon_path;
     }
 
@@ -1915,7 +1915,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval) { // copy _Oldpval 
     error_code _Code;
 
     copy(_Oldpval, _Newpval, copy_options::none, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy(p1, p2): invalid arguments");
     }
 }
@@ -1930,7 +1930,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval,
     error_code _Code;
 
     copy(_Oldpval, _Newpval, _Opts, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy(p1, p2, options): invalid arguments");
     }
 }
@@ -1989,7 +1989,7 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval,
     copy_options _Opt /* = copy_options::none */) { // copy _Oldpval to _Newpval
     error_code _Code;
     const bool _Ans = copy_file(_Oldpval, _Newpval, _Opt, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy_file(p1, p2, options): invalid arguments");
     }
 
@@ -2036,7 +2036,7 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval, copy_options _
 inline void copy_symlink(const path& _Oldpval, const path& _Newpval) { // copy symlink, file or directory
     error_code _Code;
     copy_symlink(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy_symlink(p1, p2): invalid arguments");
     }
 }
@@ -2053,7 +2053,7 @@ inline void copy_symlink(const path& _Oldpval, const path& _Newpval,
 inline bool create_directories(const path& _Path) { // create directories chain
     error_code _Code;
     const bool _Ans = create_directories(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directories(p): invalid argument");
     }
 
@@ -2089,7 +2089,7 @@ inline bool create_directory(const path& _Path) { // create a directory
     error_code _Code;
     const bool _Ans = create_directory(_Path, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directory(p): invalid argument");
     }
 
@@ -2112,7 +2112,7 @@ inline bool create_directory(const path& _Path, const path& _Attrs) { // create 
     error_code _Code;
     const bool _Ans = create_directory(_Path, _Attrs, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directory(p1, p2): invalid arguments");
     }
 
@@ -2135,7 +2135,7 @@ inline void create_directory_symlink(const path& _Oldpval,
     const path& _Newpval) { // symlink directory _Newpval to _Oldpval
     error_code _Code;
     create_directory_symlink(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directory_symlink(p1, p2): invalid arguments");
     }
 }
@@ -2153,7 +2153,7 @@ inline void create_directory_symlink(const path& _Oldpval, const path& _Newpval,
 inline void create_hard_link(const path& _Oldpval, const path& _Newpval) { // hard link _Newpval to _Oldpval
     error_code _Code;
     create_hard_link(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_hard_link(p1, p2): invalid arguments");
     }
 }
@@ -2171,7 +2171,7 @@ inline void create_hard_link(const path& _Oldpval, const path& _Newpval,
 inline void create_symlink(const path& _Oldpval, const path& _Newpval) { // symlink _Newpval to _Oldpval
     error_code _Code;
     create_symlink(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_symlink(p1, p2): invalid arguments");
     }
 }
@@ -2189,7 +2189,7 @@ inline void create_symlink(const path& _Oldpval, const path& _Newpval,
 _NODISCARD inline path current_path() {
     error_code _Code;
     path _Ans = current_path(_Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("current_path(): can't get current working directory");
     }
 
@@ -2224,7 +2224,7 @@ _NODISCARD inline bool equivalent(const path& _Path1, const path& _Path2) {
     error_code _Code;
     const int _Ans = equivalent(_Path1, _Path2, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("equivalent(p1, p2): invalid arguments");
     }
 
@@ -2258,7 +2258,7 @@ _NODISCARD inline bool exists(const path& _Path, error_code& _Code) noexcept {
 _NODISCARD inline uintmax_t file_size(const path& _Path) {
     error_code _Code;
     const uintmax_t _Ans = file_size(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("file_size(p): invalid argument");
     }
 
@@ -2284,7 +2284,7 @@ _NODISCARD inline uintmax_t file_size(const path& _Path, error_code& _Code) noex
 _NODISCARD inline uintmax_t hard_link_count(const path& _Path) {
     error_code _Code;
     const uintmax_t _Ans = hard_link_count(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("hard_link_count(p): invalid argument");
     }
 
@@ -2340,7 +2340,7 @@ _NODISCARD inline bool is_directory(const path& _Path, error_code& _Code) noexce
 _NODISCARD inline bool is_empty(const path& _Path) {
     error_code _Code;
     const bool _Ans = _FSPFX is_empty(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("is_empty(p): invalid argument");
     }
 
@@ -2421,7 +2421,7 @@ _NODISCARD inline bool is_symlink(const path& _Path, error_code& _Code) noexcept
 _NODISCARD inline file_time_type last_write_time(const path& _Path) {
     error_code _Code;
     file_time_type _Ans = last_write_time(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("last_write_time(p): invalid argument");
     }
 
@@ -2442,7 +2442,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& 
 inline void last_write_time(const path& _Path, file_time_type _Newtime) { // set last write time
     error_code _Code;
     last_write_time(_Path, _Newtime, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("last_write_time(p, new_time): invalid arguments");
     }
 }
@@ -2458,7 +2458,7 @@ inline void last_write_time(const path& _Path, file_time_type _Newtime,
 inline void permissions(const path& _Path, perms _Mask) { // set access permissions
     error_code _Code;
     permissions(_Path, _Mask, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("permissions(p, prms): can't set permissions");
     }
 }
@@ -2490,7 +2490,7 @@ inline void permissions(const path& _Path, perms _Mask,
 _NODISCARD inline path read_symlink(const path& _Path) { // read symbolic link
     error_code _Code;
     path _Sympath = read_symlink(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("read_symlink(p): can't read symbolic link");
     }
 
@@ -2512,7 +2512,7 @@ inline bool remove(const path& _Path) { // remove a file
     error_code _Code;
     const bool _Ans = remove(_Path, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("remove(p): invalid argument");
     }
 
@@ -2575,7 +2575,7 @@ inline bool _Remove_all(const path& _Path, uintmax_t& _Ans,
 inline uintmax_t remove_all(const path& _Path) { // recursively remove a directory
     error_code _Code;
     const uintmax_t _Ans = remove_all(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("remove_all(p): invalid argument");
     }
 
@@ -2596,7 +2596,7 @@ inline uintmax_t remove_all(const path& _Path,
 inline void rename(const path& _Oldpval, const path& _Newpval) { // rename _Oldpval as _Newpval
     error_code _Code;
     rename(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("rename(p1, p2): invalid arguments");
     }
 }
@@ -2628,7 +2628,7 @@ inline void rename(const path& _Oldpval, const path& _Newpval,
 inline void resize_file(const path& _Path, uintmax_t _Newsize) { // change file size
     error_code _Code;
     resize_file(_Path, _Newsize, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("resize_file(p, n): invalid arguments");
     }
 };
@@ -2715,7 +2715,7 @@ _NODISCARD inline path system_complete(const path& _Path, error_code& _Code) {
 _NODISCARD inline path temp_directory_path() {
     error_code _Code;
     path _Ans = temp_directory_path(_Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("temp_directory_path(): can't find temp directory");
     }
 
