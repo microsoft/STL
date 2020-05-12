@@ -65,7 +65,7 @@ jobs:
           rmdir /S /Q "$(buildOutputLocation)"
         )
         call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-        -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
+        -host_arch=amd64 -arch=${{ parameters.vsDevCmdTargetArch }} -no_logo
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
         -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
