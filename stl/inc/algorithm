@@ -518,21 +518,22 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_First);
             const auto _ULast  = _Get_unwrapped(_Last);
 
-            if (_UFirst != _ULast) {
-                for (auto _UNext = _UFirst;; _UFirst = _UNext) {
-                    if (++_UNext == _ULast) {
-                        _UFirst = _UNext;
-                        break;
-                    }
-
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, *_UNext))) {
-                        break;
-                    }
-                }
+            if (_UFirst == _ULast) {
+                _Seek_wrapped(_First, _UFirst);
+                return _First;
             }
 
-            _Seek_wrapped(_First, _UFirst);
-            return _First;
+            for (auto _UNext = _UFirst;; _UFirst = _UNext) {
+                if (++_UNext == _ULast) {
+                    _Seek_wrapped(_First, _UNext);
+                    return _First;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, *_UNext))) {
+                    _Seek_wrapped(_First, _UFirst);
+                    return _First;
+                }
+            }
         }
 
         template <forward_range _Rng, class _Pj = identity,
