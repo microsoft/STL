@@ -113,8 +113,7 @@ public:
     }
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const { // perform class-specific exception handling
-    }
+    virtual void __CLR_OR_THIS_CALL _Doraise() const {} // perform class-specific exception handling
 
 protected:
     const char* _Ptr; // the message pointer
@@ -137,8 +136,7 @@ protected:
 class bad_alloc : public exception { // base of all bad allocation exceptions
 public:
     __CLR_OR_THIS_CALL bad_alloc() noexcept
-        : exception("bad allocation", 1) { // construct from message string with no memory allocation
-    }
+        : exception("bad allocation", 1) {} // construct from message string with no memory allocation
 
     virtual __CLR_OR_THIS_CALL ~bad_alloc() noexcept {}
 
@@ -146,8 +144,7 @@ private:
     friend class bad_array_new_length;
 
     __CLR_OR_THIS_CALL bad_alloc(const char* _Message) noexcept
-        : exception(_Message, 1) { // construct from message string with no memory allocation
-    }
+        : exception(_Message, 1) {} // construct from message string with no memory allocation
 
 protected:
     virtual void __CLR_OR_THIS_CALL _Doraise() const override { // perform class-specific exception handling
@@ -185,8 +182,7 @@ inline unexpected_handler __CRTDECL set_unexpected(unexpected_handler) noexcept 
     return nullptr;
 }
 
-inline void __CRTDECL unexpected() { // handle unexpected exception
-}
+inline void __CRTDECL unexpected() {} // handle unexpected exception
 
 _NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
     return nullptr;
@@ -354,8 +350,7 @@ private:
 template <class _Ty, class _Uty>
 struct _With_nested : _Uty, nested_exception { // glue user exception to nested_exception
     explicit _With_nested(_Ty&& _Arg)
-        : _Uty(_STD forward<_Ty>(_Arg)), nested_exception() { // store user exception and current_exception()
-    }
+        : _Uty(_STD forward<_Ty>(_Arg)), nested_exception() {} // store user exception and current_exception()
 };
 
 #if _HAS_IF_CONSTEXPR
@@ -408,8 +403,7 @@ void _Rethrow_if_nested(const _Ty* _Ptr, true_type) { // use dynamic_cast
 }
 
 template <class _Ty>
-void _Rethrow_if_nested(const _Ty*, false_type) { // can't use dynamic_cast
-}
+void _Rethrow_if_nested(const _Ty*, false_type) {} // can't use dynamic_cast
 
 template <class _Ty>
 void rethrow_if_nested(const _Ty& _Arg) { // detect nested_exception inheritance

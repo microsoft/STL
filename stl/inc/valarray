@@ -953,8 +953,7 @@ private:
 // CLASS gslice
 class gslice { // define a generalized (multidimensional) slice of a valarray
 public:
-    gslice() : _Start(0) { // construct with all zeros
-    }
+    gslice() : _Start(0) {} // construct with all zeros
 
     gslice(size_t _Off, const _Sizarray& _Lenarr, const _Sizarray& _Incarr)
         : _Start(_Off), _Len(_Lenarr), _Stride(_Incarr) {}

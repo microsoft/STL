@@ -121,8 +121,7 @@ _NODISCARD inline bool _System_error_equal(const error_code&, const error_condit
 // CLASS error_code
 class error_code { // store an implementation-specific error code and category
 public:
-    error_code() noexcept : _Myval(0), _Mycat(&_STD system_category()) { // construct non-error
-    }
+    error_code() noexcept : _Myval(0), _Mycat(&_STD system_category()) {} // construct non-error
 
     error_code(int _Val, const error_category& _Cat) noexcept : _Myval(_Val), _Mycat(&_Cat) {}
 
@@ -204,8 +203,7 @@ private:
 // CLASS error_condition
 class error_condition { // store an abstract error code and category
 public:
-    error_condition() noexcept : _Myval(0), _Mycat(&_STD generic_category()) { // construct non-error
-    }
+    error_condition() noexcept : _Myval(0), _Mycat(&_STD generic_category()) {} // construct non-error
 
     error_condition(int _Val, const error_category& _Cat) noexcept : _Myval(_Val), _Mycat(&_Cat) {}
 

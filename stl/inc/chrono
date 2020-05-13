@@ -25,8 +25,7 @@ _STD_BEGIN
 namespace chrono {
     // STRUCT TEMPLATE treat_as_floating_point
     template <class _Rep>
-    struct treat_as_floating_point : is_floating_point<_Rep> { // tests for floating-point type
-    };
+    struct treat_as_floating_point : is_floating_point<_Rep> {}; // tests for floating-point type
 
     template <class _Rep>
     _INLINE_VAR constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
@@ -221,9 +220,7 @@ namespace chrono {
 
 // STRUCT TEMPLATE _Lcm (LEAST COMMON MULTIPLE)
 template <intmax_t _Ax, intmax_t _Bx>
-struct _Lcm
-    : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> { // compute least common multiple of _Ax and _Bx
-};
+struct _Lcm : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> {}; // compute LCM of _Ax and _Bx
 
 // STRUCT TEMPLATE common_type SPECIALIZATIONS
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
@@ -281,12 +278,10 @@ namespace chrono {
     };
 
     template <class _CR, class _Period1, class _Rep2>
-    struct _Duration_div_mod1<_CR, _Period1, _Rep2, false> { // no return type
-    };
+    struct _Duration_div_mod1<_CR, _Period1, _Rep2, false> {}; // no return type
 
     template <class _CR, class _Period1, class _Rep2, bool = _Is_duration_v<_Rep2>>
-    struct _Duration_div_mod { // no return type
-    };
+    struct _Duration_div_mod {}; // no return type
 
     template <class _CR, class _Period1, class _Rep2>
     struct _Duration_div_mod<_CR, _Period1, _Rep2, false> : _Duration_div_mod1<_CR, _Period1, _Rep2> {

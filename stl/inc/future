@@ -60,8 +60,7 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
 }
 
 // STRUCT _Nil
-struct _Nil { // empty struct, for unused argument types
-};
+struct _Nil {}; // empty struct, for unused argument types
 
 // ENUM future_errc
 enum class future_errc { // names for futures errors
@@ -409,8 +408,7 @@ private:
         return false;
     }
 
-    virtual void _Run_deferred_function(unique_lock<mutex>&) { // do nothing
-    }
+    virtual void _Run_deferred_function(unique_lock<mutex>&) {} // do nothing
 
     virtual void _Do_notify(unique_lock<mutex>* _Lock, bool _At_thread_exit) { // notify waiting threads
         // TRANSITION, ABI: This is virtual, but never overridden.

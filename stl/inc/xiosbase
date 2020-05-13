@@ -199,12 +199,10 @@ public:
     class failure : public system_error { // base of all iostreams exceptions
     public:
         explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
-            : system_error(_Errcode, _Message) { // construct with message
-        }
+            : system_error(_Errcode, _Message) {} // construct with message
 
         explicit failure(const char* _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
-            : system_error(_Errcode, _Message) { // construct with message
-        }
+            : system_error(_Errcode, _Message) {} // construct with message
 
 #if !_HAS_EXCEPTIONS
     protected:
@@ -479,8 +477,7 @@ private:
     struct _Iosarray : _Crt_new_delete { // list element for open-ended sparse array of longs/pointers
     public:
         __CLR_OR_THIS_CALL _Iosarray(int _Idx, _Iosarray* _Link)
-            : _Next(_Link), _Index(_Idx), _Lo(0), _Vp(nullptr) { // construct node for index _Idx and link it in
-        }
+            : _Next(_Link), _Index(_Idx), _Lo(0), _Vp(nullptr) {} // construct node for index _Idx and link it in
 
         _Iosarray* _Next; // pointer to next node
         int _Index; // index of this node
@@ -491,8 +488,7 @@ private:
     // STRUCT _Fnarray
     struct _Fnarray : _Crt_new_delete { // list element for open-ended sparse array of event handlers
         __CLR_OR_THIS_CALL _Fnarray(int _Idx, event_callback _Pnew, _Fnarray* _Link)
-            : _Next(_Link), _Index(_Idx), _Pfn(_Pnew) { // construct node for index _Idx and link it in
-        }
+            : _Next(_Link), _Index(_Idx), _Pfn(_Pnew) {} // construct node for index _Idx and link it in
 
         _Fnarray* _Next; // pointer to next node
         int _Index; // index of this node
