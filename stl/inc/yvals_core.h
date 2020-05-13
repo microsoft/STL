@@ -1130,11 +1130,13 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
-#define __cpp_lib_atomic_float      201711L
-#define __cpp_lib_atomic_shared_ptr 201711L
-#define __cpp_lib_atomic_wait       201907L
-#define __cpp_lib_bind_front        201907L
-#define __cpp_lib_bit_cast          201806L
+#define __cpp_lib_atomic_flag_test              201907L
+#define __cpp_lib_atomic_float                  201711L
+#define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_shared_ptr             201711L
+#define __cpp_lib_atomic_wait                   201907L
+#define __cpp_lib_bind_front                    201907L
+#define __cpp_lib_bit_cast                      201806L
 
 #ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics

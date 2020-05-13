@@ -29,6 +29,7 @@ input.output\file.streams\fstreams\ofstream.members\open_path.pass.cpp
 iterators\iterator.primitives\iterator.operations\prev.pass.cpp
 
 # Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
+# rethrow_if_nested.pass.cpp can crash.
 language.support\support.exception\propagation\current_exception.pass.cpp
 language.support\support.exception\propagation\make_exception_ptr.pass.cpp
 language.support\support.exception\propagation\rethrow_exception.pass.cpp
@@ -194,7 +195,7 @@ containers\unord\unord.multimap\max_size.pass.cpp
 containers\unord\unord.multiset\max_size.pass.cpp
 containers\unord\unord.set\max_size.pass.cpp
 
-# Requires too great a template instantiation depth for C1XX.
+# Extreme compiler memory consumption.
 utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 
 # .verify.cpp tests use clang-verify to validate warnings
@@ -504,7 +505,6 @@ strings\char.traits\char.traits.specializations\char.traits.specializations.wcha
 strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\move.pass.cpp
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
-atomics\types.pass.cpp
 thread\thread.barrier\arrive.pass.cpp
 thread\thread.barrier\arrive_and_drop.pass.cpp
 thread\thread.barrier\arrive_and_wait.pass.cpp
@@ -628,6 +628,7 @@ localization\locale.categories\category.numeric\locale.num.get\facet.num.get.mem
 
 # STL test bug: We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.
+# move.pass.cpp can crash.
 input.output\iostreams.base\ios\basic.ios.members\move.pass.cpp
 localization\locale.categories\category.collate\locale.collate.byname\compare.pass.cpp
 localization\locale.categories\category.ctype\locale.ctype.byname\is_1.pass.cpp
@@ -685,7 +686,7 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
-# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
+# Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
 
