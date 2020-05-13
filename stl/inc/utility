@@ -712,13 +712,35 @@ _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right)
 }
 
 // FUNCTION TEMPLATE in_range
+template <class _Ty>
+_NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
+    static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
+    if constexpr (is_signed_v<_Ty>) {
+        constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
+        return static_cast<_Ty>((_Unsigned_max >> 1) + 1); // well-defined, N4861 [conv.integral]/3
+    } else {
+        return 0;
+    }
+}
+
+template <class _Ty>
+_NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
+    static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
+    if constexpr (is_signed_v<_Ty>) {
+        constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
+        return static_cast<_Ty>(_Unsigned_max >> 1);
+    } else {
+        return static_cast<_Ty>(-1);
+    }
+}
+
 template <class _Rx, class _Ty>
 _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
     static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
         "The integer comparison functions only accept standard and extended integer types.");
 
-    constexpr auto _Ty_min = (numeric_limits<_Ty>::min)();
-    constexpr auto _Rx_min = (numeric_limits<_Rx>::min)();
+    constexpr auto _Ty_min = _Min_limit<_Ty>();
+    constexpr auto _Rx_min = _Min_limit<_Rx>();
 
     if constexpr (_STD cmp_less(_Ty_min, _Rx_min)) {
         if (_Value < static_cast<_Ty>(_Rx_min)) {
@@ -726,8 +748,8 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
         }
     }
 
-    constexpr auto _Ty_max = (numeric_limits<_Ty>::max)();
-    constexpr auto _Rx_max = (numeric_limits<_Rx>::max)();
+    constexpr auto _Ty_max = _Max_limit<_Ty>();
+    constexpr auto _Rx_max = _Max_limit<_Rx>();
 
     if constexpr (_STD cmp_greater(_Ty_max, _Rx_max)) {
         if (_Value > static_cast<_Ty>(_Rx_max)) {
