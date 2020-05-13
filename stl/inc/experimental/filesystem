@@ -975,7 +975,7 @@ public:
         return *this;
     }
 
-    path& replace_extension(const path& _Newext = path{}) { // replace extension with _Newext
+    path& replace_extension(const path& _Newext = {}) { // replace extension with _Newext
         if (_Newext.empty() || _Newext.c_str()[0] == _FS_PERIOD) {
             *this = parent_path() / path((stem().native() + _Newext.native()));
         } else {
@@ -1111,7 +1111,7 @@ public:
         if (_Idx < _Mystr.size() && _FS_ISSEP(_Mystr[_Idx])) {
             return path(string_type(1, _FS_PREF));
         } else {
-            return path{};
+            return {};
         }
     }
 
@@ -1788,12 +1788,12 @@ inline path _Absolute(const path& _Path, const path& _Base,
 
     path _Current = current_path(_Code);
     if (_Code) {
-        return path{};
+        return {};
     }
 
     path _Abs_base = _Absolute(_Base, _Current, _Code);
     if (_Code) {
-        return path{};
+        return {};
     }
 
     if (_Path_has_root_name) { // insert _Base
@@ -1867,7 +1867,7 @@ _NODISCARD inline path canonical(const path& _Path,
     error_code& _Code) { // make absolute path from _Path with no ., .., or symlink
     path _Current = current_path(_Code);
     if (_Code) {
-        return path{};
+        return {};
     }
 
     return canonical(_Path, _Current, _Code);
@@ -2196,7 +2196,7 @@ _NODISCARD inline path current_path(error_code& _Code) {
     _Pchar _Dest[_MAX_FILESYS_NAME];
     if (!_Current_get(_Dest)) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
-        return path{};
+        return {};
     }
     return path(_Dest);
 }
@@ -2497,7 +2497,7 @@ _NODISCARD inline path read_symlink(const path& _Path,
     _Code.clear();
     if (!is_symlink(_Path)) { // report error
         _Code = make_error_code(errc::no_such_file_or_directory);
-        return path{};
+        return {};
     }
     _Pchar _Dest[_MAX_FILESYS_NAME];
     return path(_Symlink_get(_Dest, _Path.c_str()));
@@ -2701,7 +2701,7 @@ _NODISCARD inline path system_complete(const path& _Path, error_code& _Code) {
     _Ans = system_complete(_Path);
     _CATCH_ALL
     _Code = make_error_code(errc::operation_not_permitted);
-    return path{};
+    return {};
     _CATCH_END
 
     return _Ans;
@@ -2725,7 +2725,7 @@ _NODISCARD inline path temp_directory_path(error_code& _Code) {
     _Code.clear();
     if (!exists(_Ans) || !is_directory(_Ans)) { // report error
         _Code = make_error_code(errc::no_such_file_or_directory);
-        return path{};
+        return {};
     }
     return _Ans;
 }
