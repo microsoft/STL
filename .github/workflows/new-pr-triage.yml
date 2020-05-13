@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 name: Move new PRs to New board in the Code Reviews Project
 
 on:
