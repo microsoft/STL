@@ -214,7 +214,7 @@ void ptr_cat_test_cases() {
 
 template <bool Expected, class Ptr1, class Ptr2, class Pr>
 void test_case_Equal_memcmp_is_safe_helper() {
-    STATIC_ASSERT(decltype(_Equal_memcmp_is_safe(declval<Ptr1>(), declval<Ptr2>(), declval<Pr>()))::value == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Ptr1, Ptr2, Pr> == Expected);
 }
 
 template <bool Expected, class Elem1, class Elem2>

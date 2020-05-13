@@ -4650,55 +4650,51 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE equal
+// Tests whether the usual arithmetic conversions will preserve the bit-pattern when promoting to int
+// e.g. short == unsigned short -> false
+//      int == unsigned int -> true
 template <class _Elem1, class _Elem2>
-struct _Value_equality_is_bitwise_equality : bool_constant<static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1)> {
-    // Tests whether the usual arithmetic conversions will preserve the bit-pattern when promoting to int
-    // e.g. short == unsigned short -> false
-    //      int == unsigned int -> true
-};
+_INLINE_VAR constexpr bool _Value_equality_is_bitwise_equality = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 
+// determines whether it is safe to call memcmp to compare things
 template <class _Elem1, class _Elem2, class _Pr>
-struct _Equal_memcmp_is_safe_helper : false_type {
-    // determines whether it is safe to call memcmp to compare things; defaults to false
-};
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = false;
 
+// allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
+// clang-format off
 template <class _Elem1, class _Elem2>
-struct _Equal_memcmp_is_safe_helper<_Elem1, _Elem2, equal_to<>>
-    : bool_constant<conjunction_v<bool_constant<sizeof(_Elem1) == sizeof(_Elem2)
-                                                && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2>>,
-          negation<is_volatile<_Elem1>>, negation<is_volatile<_Elem2>>,
-          // order matters here: being integral is a precondition of _Value_equality_is_bitwise_equality
-          _Value_equality_is_bitwise_equality<_Elem1, _Elem2>>> {
-    // allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
-};
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2,
+    enable_if_t<sizeof(_Elem1) == sizeof(_Elem2)
+             && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2>
+             && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>, equal_to<>>
+    > = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
+// clang-format on
 
+// allow memcmping pointers-to-cv-T with equal_to<>
 template <class _Elem1, class _Elem2>
-struct _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>>
-    : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type {}; // allow memcmping pointers-to-cv-T with equal_to<>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>> =
+    is_same_v<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>;
 
 #ifdef __cpp_lib_byte
+// allow memcmping std::byte
 template <>
-struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type {}; // allow memcmping std::byte
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> = true;
 #endif // __cpp_lib_byte
 
+// treat equal_to with exact T as equal_to<> this is safe because we only activate the optimization for builtin
+// _Elem (and std::byte)
 template <class _Elem>
-struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>>
-    : _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>::type {
-    // treat equal_to with exact T as equal_to<> this is safe because we only activate the optimization for builtin
-    // _Elem (and std::byte)
-};
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>> =
+    _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>;
 
-template <class _Iter1, class _Iter2, class _Pr>
-false_type _Equal_memcmp_is_safe(const _Iter1&, const _Iter2&, const _Pr&) {
-    // return equal optimization category for arbitrary iterators
-    return {};
-}
+// return equal optimization category for arbitrary iterators
+template <class _Elem1, class _Elem2, class _Pr>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe = false;
 
-template <class _Obj1, class _Obj2, class _Pr>
-typename _Equal_memcmp_is_safe_helper<remove_const_t<_Obj1>, remove_const_t<_Obj2>, _Pr>::type _Equal_memcmp_is_safe(
-    _Obj1* const&, _Obj2* const&, const _Pr&) { // return equal optimization category for pointers
-    return {};
-}
+// return equal optimization category for pointers
+template <class _Elem1, class _Elem2, class _Pr>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe<_Elem1*, _Elem2*, _Pr> =
+    _Equal_memcmp_is_safe_helper<remove_const_t<_Elem1>, remove_const_t<_Elem2>, _Pr>;
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
@@ -4708,7 +4704,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-    if constexpr (decltype(_Equal_memcmp_is_safe(_UFirst1, _UFirst2, _Pred))::value) {
+    if constexpr (_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4729,8 +4725,8 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_unchecked1(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred, false_type) {
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
+bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, ...) using _Pred, no special optimization
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         if (!_Pred(*_First1, *_First2)) {
@@ -4741,19 +4737,13 @@ bool _Equal_unchecked1(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr 
     return true;
 }
 
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_unchecked1(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr, true_type) {
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
+bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr) {
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
     const auto _First1_ch = reinterpret_cast<const char*>(_First1);
     const auto _First2_ch = reinterpret_cast<const char*>(_First2);
     const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-}
-
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred, choose optimization
-    return _Equal_unchecked1(_First1, _Last1, _First2, _Pred, _Equal_memcmp_is_safe(_First1, _First2, _Pred));
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
