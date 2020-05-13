@@ -712,20 +712,30 @@ _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right)
 }
 
 // FUNCTION TEMPLATE in_range
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool in_range(const _Ty2 _Value) noexcept {
-    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+template <class _Rx, class _Ty>
+_NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
+    static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
         "The integer comparison functions only accept standard and extended integer types.");
-    using _UTy1 = make_unsigned_t<_Ty1>;
-    // _U_max is numeric_limits<_Ty1>::max() converted to _UTy1
-    constexpr auto _U_max = static_cast<_UTy1>(static_cast<_UTy1>(-1) >> static_cast<int>(is_signed_v<_Ty1>));
-    if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
-        return static_cast<_Ty1>(_U_max + 1) <= _Value && _Value <= static_cast<_Ty1>(_U_max);
-    } else if constexpr (is_signed_v<_Ty2>) {
-        return _Value >= 0 && static_cast<make_unsigned_t<_Ty2>>(_Value) <= static_cast<_Ty1>(_U_max);
-    } else {
-        return _Value <= _U_max;
+
+    constexpr auto _Ty_min = (numeric_limits<_Ty>::min)();
+    constexpr auto _Rx_min = (numeric_limits<_Rx>::min)();
+
+    if constexpr (_STD cmp_less(_Ty_min, _Rx_min)) {
+        if (_Value < static_cast<_Ty>(_Rx_min)) {
+            return false;
+        }
     }
+
+    constexpr auto _Ty_max = (numeric_limits<_Ty>::max)();
+    constexpr auto _Rx_max = (numeric_limits<_Rx>::max)();
+
+    if constexpr (_STD cmp_greater(_Ty_max, _Rx_max)) {
+        if (_Value > static_cast<_Ty>(_Rx_max)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 #endif // _HAS_CXX20
 
