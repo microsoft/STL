@@ -2018,11 +2018,27 @@ using atomic_ptrdiff_t = atomic<ptrdiff_t>;
 using atomic_intmax_t  = atomic<intmax_t>;
 using atomic_uintmax_t = atomic<uintmax_t>;
 
+#if _HAS_CXX20
+// Though there are CMPXCHG8B and CMPXCHG16B,
+// the largest atomics with a full set of efficient operations are pointer-sized.
+using atomic_signed_lock_free   = atomic_intptr_t;
+using atomic_unsigned_lock_free = atomic_uintptr_t;
+#endif // _HAS_CXX20
 
 // STRUCT atomic_flag
 #define ATOMIC_FLAG_INIT \
     {}
 struct atomic_flag { // flag with test-and-set semantics
+#if _HAS_CXX20
+    _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
+        return _Storage.load(_Order) != 0;
+    }
+
+    _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
+        return _Storage.load(_Order) != 0;
+    }
+#endif // _HAS_CXX20
+
     bool test_and_set(const memory_order _Order = memory_order_seq_cst) noexcept {
         return _Storage.exchange(true, _Order) != 0;
     }
@@ -2050,6 +2066,25 @@ struct atomic_flag { // flag with test-and-set semantics
 
 
 // atomic_flag NONMEMBERS
+#if _HAS_CXX20
+_NODISCARD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
+    return _Flag->test();
+}
+
+_NODISCARD inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
+    return _Flag->test();
+}
+
+_NODISCARD inline bool atomic_flag_test_explicit(
+    const volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
+    return _Flag->test(_Order);
+}
+
+_NODISCARD inline bool atomic_flag_test_explicit(const atomic_flag* const _Flag, const memory_order _Order) noexcept {
+    return _Flag->test(_Order);
+}
+#endif // _HAS_CXX20
+
 inline bool atomic_flag_test_and_set(atomic_flag* _Flag) noexcept {
     return _Flag->test_and_set();
 }

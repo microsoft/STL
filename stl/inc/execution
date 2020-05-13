@@ -1613,8 +1613,12 @@ struct _Static_partitioned_adjacent_find2 {
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results{_Last}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
         const auto _Key = _Team._Get_next_key();
-        if (!_Key || _Results._Complete()) {
+        if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
 
