@@ -509,17 +509,15 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
         _NODISCARD constexpr _It operator()(_It _First, const _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             // find first satisfying _Pred with successor
             _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Get_unwrapped(_First);
-            const auto _ULast  = _Get_unwrapped(_Last);
+            auto _UFirst      = _Get_unwrapped(_First);
+            const auto _ULast = _Get_unwrapped(_Last);
 
             if (_UFirst == _ULast) {
-                _Seek_wrapped(_First, _UFirst);
                 return _First;
             }
 
@@ -537,12 +535,11 @@ namespace ranges {
         }
 
         template <forward_range _Rng, class _Pj = identity,
-            indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>,
-                projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
+            indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
+                ranges::equal_to>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
-        // clang-format on
     };
 
     inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};

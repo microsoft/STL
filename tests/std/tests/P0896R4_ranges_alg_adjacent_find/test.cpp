@@ -23,26 +23,26 @@ constexpr void smoke_test() {
 
     {
         // Validate range overload [found case]
-        auto result = adjacent_find(pairs, pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<decltype(pairs)>>);
+        const auto result = adjacent_find(pairs, pred, get_first);
+        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.begin() + 2);
     }
     {
         // Validate iterator + sentinel overload [found case]
-        auto result = adjacent_find(pairs.begin(), pairs.end(), pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<decltype(pairs)>>);
+        const auto result = adjacent_find(pairs.begin(), pairs.end(), pred, get_first);
+        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.begin() + 2);
     }
     {
         // Validate range overload [not found case]
-        auto result = adjacent_find(pairs, ranges::equal_to{}, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<decltype(pairs)>>);
+        const auto result = adjacent_find(pairs, ranges::equal_to{}, get_first);
+        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.end());
     }
     {
         // Validate iterator + sentinel overload [not found case]
-        auto result = adjacent_find(pairs.begin(), pairs.end(), ranges::equal_to{}, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<decltype(pairs)>>);
+        const auto result = adjacent_find(pairs.begin(), pairs.end(), ranges::equal_to{}, get_first);
+        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.end());
     }
 }
