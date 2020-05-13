@@ -239,6 +239,7 @@ tests\P0896R4_ranges_alg_count
 tests\P0896R4_ranges_alg_count_if
 tests\P0896R4_ranges_alg_equal
 tests\P0896R4_ranges_alg_find
+tests\P0896R4_ranges_alg_find_end
 tests\P0896R4_ranges_alg_find_first_of
 tests\P0896R4_ranges_alg_find_if
 tests\P0896R4_ranges_alg_find_if_not
@@ -255,6 +256,7 @@ tests\P0898R3_identity
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
 tests\P1023R0_constexpr_for_array_comparisons
+tests\P1135R6_atomic_flag_test
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric
