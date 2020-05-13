@@ -34,9 +34,10 @@ class STLTest(Test):
         self.skipped = False
         Test.__init__(self, suite, path_in_suite, test_config, file_path)
 
-        self._configure_expected_result(suite, path_in_suite, lit_config,
-                                        test_config, env_num)
-        if self.skipped:
+        self._configure_test_type(suite, path_in_suite, lit_config,
+                                  test_config, env_num)
+        if self.test_type is TestType.SKIPPED:
+            self.script_result = (SKIPPED, 'Test was marked as skipped')
             return
 
         self._configure_cxx(lit_config, envlst_entry, default_cxx)
@@ -51,6 +52,9 @@ class STLTest(Test):
 
         if test_config.target_arch.startswith('arm'):
             self.build_only = True  # TRANSITION, GH-820
+
+    def getIntegratedScriptResult(self):
+        pass
 
     def getOutputDir(self):
         return Path(os.path.join(

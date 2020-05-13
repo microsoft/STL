@@ -9,10 +9,10 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
-import copy
 import itertools
 import errno
 import os
+import re
 import shutil
 import time
 
@@ -31,6 +31,36 @@ class TestStep:
     file_deps: List[os.PathLike] = field(default_factory=list)
     env: Dict[str, str] = field(default_factory=dict)
     should_fail: bool = field(default=False)
+
+
+def parseScript(test):
+    # Parse the test file, including custom directives
+    fileDependencies = [test.getSourcePath()]
+    parsers = [
+        lit.TestRunner.IntegratedTestKeywordParser(
+            'FILE_DEPENDENCIES:',
+            lit.TestRunner.ParserKind.LIST,
+            initial_value=fileDependencies)
+    ]
+
+    script = \
+        lit.TestRunner.parseIntegratedTestScript(
+            test, additional_parsers=parsers, require_script=False)
+
+    if isinstance(script, lit.Test.Result):
+        return script
+
+    fileDependencies = \
+        lit.TestRunner.applySubstitutions(
+            fileDependencies, substitutions,
+            recursion_limit=test.config.recursiveExpansionLimit)
+
+    # Perform substitutions in the script itself.
+    script = lit.TestRunner.applySubstitutions(
+        script, substitutions,
+        recursion_limit=test.config.recursiveExpansionLimit)
+
+    return script
 
 
 class STLTestFormat:
@@ -71,6 +101,10 @@ class STLTestFormat:
 
     def getTestsInDirectory(self, testSuite, path_in_suite,
                             litConfig, localConfig, test_class=STLTest):
+        SUPPORTED_SUFFIXES = ['[.]pass[.]cpp$', '[.]run[.]fail[.]cpp$',
+                              '[.]compile[.]pass[.]cpp$',
+                              '[.]compile[.]fail[.]cpp$',
+                              '[.]fail[.]cpp$']
         source_path = testSuite.getSourcePath(path_in_suite)
 
         if not self.isLegalDirectory(source_path, litConfig):
@@ -79,32 +113,29 @@ class STLTestFormat:
         envlst_path = self.getEnvLst(source_path, localConfig)
 
         for filename in os.listdir(source_path):
-            # Ignore dot files and excluded tests.
-            filepath = os.path.join(source_path, filename)
             if filename.startswith('.'):
                 continue
 
+            filepath = os.path.join(source_path, filename)
             if not os.path.isdir(filepath):
-                if any([filename.endswith(ext)
-                        for ext in localConfig.suffixes]):
-
+                if any(re.search(ext, filename) for ext in SUPPORTED_SUFFIXES):
                     if envlst_path is None:
                         litConfig.fatal("Could not find an env.lst file.")
 
                     env_entries = \
                         stl.test.file_parsing.parse_env_lst_file(envlst_path)
-                    format_string = "{:0" + str(len(str(len(env_entries)))) + \
-                                    "d}"
+                    format_env_num = "{:0" + \
+                                     str(len(str(len(env_entries)))) + \
+                                     "d}"
                     for env_entry, env_num \
                             in zip(env_entries, itertools.count()):
-                        test_config = copy.deepcopy(localConfig)
                         test_path_in_suite = path_in_suite + (filename,)
 
                         yield test_class(testSuite,
                                          test_path_in_suite,
-                                         litConfig, test_config,
+                                         litConfig, localConfig,
                                          env_entry,
-                                         format_string.format(env_num),
+                                         format_env_num.format(env_num),
                                          self.cxx)
 
     def setup(self, test):
@@ -123,33 +154,9 @@ class STLTestFormat:
             if path.is_file() and path.name.endswith('.dat'):
                 shutil.copy2(path, exec_dir / path.name)
 
-    def cleanup(self, test):
-        shutil.rmtree(test.getExecDir(), ignore_errors=True)
-        shutil.rmtree(test.getOutputDir(), ignore_errors=True)
-
     def getIntegratedScriptResult(self, test, lit_config):
         if test.skipped:
             return (lit.Test.SKIPPED, "Test was marked as skipped")
-
-        name = test.path_in_suite[-1]
-        name_root, name_ext = os.path.splitext(name)
-        is_sh_test = name_root.endswith('.sh')
-        is_objcxx_test = name.endswith('.mm')
-
-        if is_sh_test:
-            return (lit.Test.UNSUPPORTED,
-                    "Sh tests are currently unsupported")
-
-        if is_objcxx_test:
-            return (lit.Test.UNSUPPORTED,
-                    "Objective-C tests are unsupported")
-
-        if test.config.unsupported:
-            return (lit.Test.UNSUPPORTED,
-                    "A lit.local.cfg marked this unsupported")
-
-        if lit_config.noExecute:
-            return lit.Test.Result(lit.Test.PASS)
 
         if test.expected_result is None:
             script = lit.TestRunner.parseIntegratedTestScript(
@@ -178,12 +185,11 @@ class STLTestFormat:
         # unsupported logic lives here when it is known at time of test
         # discovery. Investigate
         script_result = self.getIntegratedScriptResult(test, lit_config)
-        if script_result is not None:
+        if test.script_result is not None:
             return script_result
 
         try:
             self.setup(test)
-            pass_var, fail_var = test.getPassFailResultCodes()
             buildSteps, testSteps = self.getSteps(test, lit_config)
 
             report = ""
@@ -224,8 +230,6 @@ class STLTestFormat:
         except Exception as e:
             lit_config.warning(str(e))
             raise e
-        finally:
-            self.cleanup(test)
 
     def getSteps(self, test, lit_config):
         @dataclass
