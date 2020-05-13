@@ -57,6 +57,8 @@ struct _Char_traits { // properties of a string or stream element
         return _Count;
     }
 
+#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
+                                 // does not set the named _Out_ parameter.
     static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
@@ -99,6 +101,8 @@ struct _Char_traits { // properties of a string or stream element
         return nullptr;
     }
 
+#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
+                                 // does not set the named _Out_ parameter.
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...), allowing overlap
@@ -204,6 +208,8 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #endif // _HAS_CXX17
     }
 
+#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
+                                 // does not set the named _Out_ parameter.
     static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
@@ -250,6 +256,8 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #endif // _HAS_CXX17
     }
 
+#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
+                                 // does not set the named _Out_ parameter.
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
@@ -406,6 +414,8 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #endif // _HAS_CXX17
     }
 
+#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
+                                 // does not set the named _Out_ parameter.
     static _CONSTEXPR20 _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
@@ -458,6 +468,8 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #endif // _HAS_CXX17
     }
 
+#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
+                                 // does not set the named _Out_ parameter.
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
