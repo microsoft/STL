@@ -27,7 +27,7 @@ constexpr void smoke_test() {
         // Validate range overload [found case]
         const auto result = find_first_of(move_only_range{pairs}, good_needle, pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const iterator_t<move_only_range<const P>>>);
-        assert(&*result.base() == &pairs.begin()[2]);
+        assert(to_address(result.base()) == pairs.data() + 2);
     }
     {
         // Validate iterator + sentinel overload [found case]
@@ -35,7 +35,7 @@ constexpr void smoke_test() {
         const auto result = find_first_of(
             wrapped_pairs.begin(), wrapped_pairs.end(), good_needle.begin(), good_needle.end(), pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const iterator_t<move_only_range<const P>>>);
-        assert(&*result.base() == &pairs.begin()[2]);
+        assert(to_address(result.base()) == pairs.data() + 2);
     }
 
     const array bad_needle = {29, 17};
@@ -43,7 +43,7 @@ constexpr void smoke_test() {
         // Validate range overload [not found case]
         const auto result = find_first_of(move_only_range{pairs}, bad_needle, pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const iterator_t<move_only_range<const P>>>);
-        assert(to_address(result.base()) == to_address(pairs.end()));
+        assert(to_address(result.base()) == pairs.data() + pairs.size());
     }
     {
         // Validate iterator + sentinel overload [not found case]
@@ -51,7 +51,7 @@ constexpr void smoke_test() {
         const auto result = find_first_of(
             wrapped_pairs.begin(), wrapped_pairs.end(), bad_needle.begin(), bad_needle.end(), pred, get_first);
         STATIC_ASSERT(same_as<decltype(result), const iterator_t<move_only_range<const P>>>);
-        assert(to_address(result.base()) == to_address(pairs.end()));
+        assert(to_address(result.base()) == pairs.data() + pairs.size());
     }
 }
 
