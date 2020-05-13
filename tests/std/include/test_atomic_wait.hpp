@@ -52,7 +52,7 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
 }
 
 inline void test_atomic_wait() {
-    constexpr std::chrono::milliseconds waiting_duration{10};
+    constexpr std::chrono::milliseconds waiting_duration{100};
     test_atomic_wait_func<char>(1, 2, waiting_duration);
     test_atomic_wait_func<signed char>(1, 2, waiting_duration);
     test_atomic_wait_func<unsigned char>(1, 2, waiting_duration);
