@@ -1,0 +1,15 @@
+name: Move new PRs to New board in the Code Reviews Project
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  automate-project-columns:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: alex-page/github-project-automation-plus@v0.2.3
+      with:
+        project: "Code Reviews"
+        column: New
+        repo-token: ${{ secrets.GH_TOKEN }}
