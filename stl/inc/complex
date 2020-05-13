@@ -1758,8 +1758,11 @@ template <class _Ty>
 using _Upgrade_to_double = conditional_t<is_integral_v<_Ty>, double, _Ty>;
 
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
-_NODISCARD _Upgrade_to_double<_Ty> arg(_Ty) {
-    return 0;
+_NODISCARD _Upgrade_to_double<_Ty> arg(_Ty _Left) {
+    using _Upgraded = _Upgrade_to_double<_Ty>;
+    const auto _Val = static_cast<_Upgraded>(_Left);
+
+    return _Ctraits<_Upgraded>::atan2(0, _Val);
 }
 
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
@@ -1769,22 +1772,40 @@ _NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> imag(_Ty) {
 
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> real(_Ty _Left) {
-    return static_cast<_Upgrade_to_double<_Ty>>(_Left);
+    using _Upgraded = _Upgrade_to_double<_Ty>;
+    const auto _Val = static_cast<_Upgraded>(_Left);
+
+    return _Val;
 }
 
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> norm(_Ty _Left) {
-    return static_cast<_Upgrade_to_double<_Ty>>(_Left * _Left);
+    using _Upgraded = _Upgrade_to_double<_Ty>;
+    const auto _Val = static_cast<_Upgraded>(_Left);
+
+    return _Val * _Val;
 }
 
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR20 _Upgrade_to_double<_Ty> conj(_Ty _Left) {
-    return static_cast<_Upgrade_to_double<_Ty>>(_Left);
+_NODISCARD _CONSTEXPR20 complex<_Upgrade_to_double<_Ty>> conj(_Ty _Left) {
+    using _Upgraded = _Upgrade_to_double<_Ty>;
+    const auto _Val = static_cast<_Upgraded>(_Left);
+
+    return complex<_Upgraded>(_Val, -_Upgraded{0});
 }
 
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>
-_NODISCARD _Upgrade_to_double<_Ty> proj(_Ty _Left) {
-    return static_cast<_Upgrade_to_double<_Ty>>(_Left);
+_NODISCARD complex<_Upgrade_to_double<_Ty>> proj(_Ty _Left) {
+    using _Upgraded = _Upgrade_to_double<_Ty>;
+    const auto _Val = static_cast<_Upgraded>(_Left);
+
+    if (_Ctraits<_Upgraded>::_Isinf(_Val)) {
+        // C11 7.3.9.5/2: "z projects to z except that all complex infinities [...]
+        // project to positive infinity on the real axis."
+        return complex<_Upgraded>(_Ctraits<_Upgraded>::_Infv(), 0);
+    }
+
+    return complex<_Upgraded>(_Val, 0);
 }
 
 // FUNCTION TEMPLATE pow

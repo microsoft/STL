@@ -1525,7 +1525,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
                 auto _UMid                   = _UFirst;
 
-                while (_UOld_first != _UFirst && _Pred(*(_UFirst - 1), _Val)) { // back up over any skipped prefix
+                while (_UOld_first != _UFirst && _Pred(*_Prev_iter(_UFirst), _Val)) { // back up over any skipped prefix
                     --_Count1;
                     --_UFirst;
                 }
@@ -1543,7 +1543,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _UOld_first = ++_UMid; // failed match, take small jump
                 _Inc        = 0;
             } else { // no match, take big jump and back up as needed
-                _UOld_first = _UFirst + 1;
+                _UOld_first = _Next_iter(_UFirst);
                 _Inc        = _Count_diff - 1;
             }
         }
@@ -1606,7 +1606,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
             _FwdIt _Mid                  = _First;
 
-            while (_Old_first != _First && _Pred(*(_First - 1), _Val)) {
+            while (_Old_first != _First && _Pred(*_Prev_iter(_First), _Val)) {
                 --_Count1; // back up over any skipped prefix
                 --_First;
             }
@@ -1623,7 +1623,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Old_first = ++_Mid; // failed match, take small jump
             _Inc       = 0;
         } else { // no match, take big jump and back up as needed
-            _Old_first = _First + 1;
+            _Old_first = _Next_iter(_First);
             _Inc       = _Count_diff - 1;
         }
     }
@@ -1687,14 +1687,14 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     const auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
         const _Iter_diff_t<_FwdIt2> _Count2 = _ULast2 - _UFirst2;
-        if (0 < _Count2 && _Count2 <= _ULast1 - _UFirst1) {
+        if (_Count2 > 0 && _Count2 <= _ULast1 - _UFirst1) {
             for (auto _UCandidate = _ULast1 - static_cast<_Iter_diff_t<_FwdIt1>>(_Count2);; --_UCandidate) {
                 if (_Equal_rev_pred_unchecked(_UCandidate, _UFirst2, _ULast2, _Pass_fn(_Pred))) {
                     _Seek_wrapped(_First1, _UCandidate);
                     return _First1;
                 }
 
-                if (_UFirst1 == _UCandidate) {
+                if (_UCandidate == _UFirst1) {
                     break;
                 }
             }
@@ -1702,17 +1702,17 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
 
         return _Last1;
     } else if constexpr (_Is_bidi_iter_v<_FwdIt1> && _Is_bidi_iter_v<_FwdIt2>) {
-        for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _Candidate
+        for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _UCandidate
             auto _UNext1 = _UCandidate;
             auto _UNext2 = _ULast2;
-            for (;;) { // test if [_UFirst2, _ULast2) is a suffix of [_UFirst1, _Candidate)
+            for (;;) { // test if [_UFirst2, _ULast2) is a suffix of [_UFirst1, _UCandidate)
                 if (_UFirst2 == _UNext2) { // match found
                     _Seek_wrapped(_First1, _UNext1);
                     return _First1;
                 }
 
                 if (_UFirst1 == _UNext1) {
-                    // [_UFirst1, _Candidate) is shorter than [_UFirst2, _ULast2), remaining candidates nonviable
+                    // [_UFirst1, _UCandidate) is shorter than [_UFirst2, _ULast2), remaining candidates nonviable
                     return _Last1;
                 }
 
@@ -1818,7 +1818,7 @@ _RanIt1 _Find_end_unchecked(const _RanIt1 _First1, const _RanIt1 _Last1, const _
     _Pr _Pred, random_access_iterator_tag, random_access_iterator_tag) {
     // find last [_First2, _Last2) satisfying _Pred in random-access ranges
     const _Iter_diff_t<_RanIt2> _Count2 = _Last2 - _First2;
-    if (0 < _Count2 && _Count2 <= _Last1 - _First1) {
+    if (_Count2 > 0 && _Count2 <= _Last1 - _First1) {
         for (_RanIt1 _Candidate = _Last1 - static_cast<_Iter_diff_t<_RanIt1>>(_Count2);; --_Candidate) {
             if (_Equal_rev_pred_unchecked(_Candidate, _First2, _Last2, _Pred)) {
                 return _Candidate;
@@ -1864,6 +1864,195 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
     return _STD find_end(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>());
 }
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_end
+    class _Find_end_fn : private _Not_quite_object {
+    private:
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Equal_rev_pred_unchecked(
+            _It1 _First1, _It2 _First2, const _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            // compare [_First1, ...) to [_First2, _Last2)
+            constexpr bool _Both_identity = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>;
+            // Performance note: teach _Equal_memcmp_is_safe about contiguous iterators and ranges::equal_to
+            if constexpr (_Both_identity && decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First1_ch = reinterpret_cast<const char*>(_First1);
+                    const auto _First2_ch = reinterpret_cast<const char*>(_First2);
+                    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
+                    return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+                }
+            }
+
+            for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr subrange<_It1> _Random_access_sized_ranges(_It1 _First1,
+            const iter_difference_t<_It1> _Count1, _It2 _First2, const iter_difference_t<_It2> _Count2, _Pr _Pred,
+            _Pj1 _Proj1, _Pj2 _Proj2) {
+            if (_Count2 > 0 && _Count2 <= _Count1) {
+                const auto _UFirst1    = _Get_unwrapped(_First1);
+                const auto _UFirst2    = _Get_unwrapped(_First2);
+                const auto _Count2_as1 = static_cast<iter_difference_t<_It1>>(_Count2);
+
+                for (auto _UCandidate = _UFirst1 + (_Count1 - _Count2_as1);; --_UCandidate) {
+                    if (_Equal_rev_pred_unchecked(_UCandidate, _UFirst2, _UFirst2 + _Count2, _Pred, _Proj1, _Proj2)) {
+                        _Seek_wrapped(_First1, _UCandidate);
+                        return {_First1, _First1 + _Count2_as1};
+                    }
+
+                    if (_UCandidate == _UFirst1) {
+                        break;
+                    }
+                }
+            }
+
+            _First1 += _Count1;
+            return {_First1, _First1};
+        }
+
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr subrange<_It1> _Bidi_common_ranges(
+            _It1 _First1, _It1 _Last1, _It2 _First2, _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            auto _UFirst1       = _Get_unwrapped(_First1);
+            const auto _ULast1  = _Get_unwrapped(_Last1);
+            const auto _UFirst2 = _Get_unwrapped(_First2);
+            const auto _ULast2  = _Get_unwrapped(_Last2);
+            for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _UCandidate
+                auto _UNext1 = _UCandidate;
+                auto _UNext2 = _ULast2;
+                for (;;) { // test if [_UFirst2, _ULast2) is a suffix of [_UFirst1, _UCandidate)
+                    if (_UFirst2 == _UNext2) { // match found
+                        _Seek_wrapped(_First1, _UNext1);
+                        _Seek_wrapped(_Last1, _UCandidate);
+                        return {_First1, _Last1};
+                    }
+
+                    if (_UFirst1 == _UNext1) {
+                        // [_UFirst1, _UCandidate) is shorter than [_UFirst2, _ULast2), remaining candidates nonviable
+                        return {_Last1, _Last1};
+                    }
+
+                    --_UNext1;
+                    --_UNext2;
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UNext1), _STD invoke(_Proj2, *_UNext2))) {
+                        break; // mismatch
+                    }
+                }
+            }
+        }
+
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr subrange<_It1> _Forward_ranges(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            auto _UFirst1       = _Get_unwrapped(_First1);
+            const auto _ULast1  = _Get_unwrapped(_Last1);
+            const auto _UFirst2 = _Get_unwrapped(_First2);
+            const auto _ULast2  = _Get_unwrapped(_Last2);
+            decltype(_UFirst1) _UMatch_first;
+            decltype(_UFirst1) _UMatch_last;
+            bool _Found = false;
+
+            for (;;) { // try a match at _UFirst1
+                auto _UNext1 = _UFirst1;
+                auto _UNext2 = _UFirst2;
+                for (;;) { // test if [_UFirst2, _ULast2) is a prefix of [_UFirst1, _ULast1)
+                    const bool _End_of_needle = _UNext2 == _ULast2;
+                    if (_End_of_needle) { // match candidate found
+                        _UMatch_first = _UFirst1;
+                        _UMatch_last  = _UNext1;
+                        _Found        = true;
+                    }
+
+                    if (_UNext1 == _ULast1) { // haystack exhausted
+                        _Seek_wrapped(_First1, _Found ? _UMatch_first : _UFirst1);
+                        auto _Mid1 = _First1;
+                        if (_Found) {
+                            _Seek_wrapped(_Mid1, _UMatch_last);
+                        }
+
+                        return {_First1, _Mid1};
+                    }
+
+                    if (_End_of_needle) {
+                        break; // end of match found, go to the next candidate
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UNext1), _STD invoke(_Proj2, *_UNext2))) {
+                        break; // mismatch, go to the next candidate
+                    }
+
+                    ++_UNext1;
+                    ++_UNext2;
+                }
+
+                ++_UFirst1;
+            }
+        }
+
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            if constexpr (random_access_iterator<_It1> && sized_sentinel_for<_Se1, _It1>
+                && random_access_iterator<_It2> && sized_sentinel_for<_Se2, _It2>) {
+                return _Random_access_sized_ranges(_First1, _Last1 - _First1, _First2, _Last2 - _First2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else if constexpr (bidirectional_iterator<_It1> && is_same_v<_It1, _Se1>
+                && bidirectional_iterator<_It2> && is_same_v<_It2, _Se2>) {
+                return _Bidi_common_ranges(_First1, _Last1, _First2, _Last2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Forward_ranges(_First1, _Last1, _First2, _Last2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+
+        template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            if constexpr (random_access_range<_Rng1> && sized_range<_Rng1>
+                && random_access_range<_Rng2> && sized_range<_Rng2>) {
+                return _Random_access_sized_ranges(
+                    _RANGES begin(_Range1), _RANGES distance(_Range1),
+                    _RANGES begin(_Range2), _RANGES distance(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else if constexpr (bidirectional_range<_Rng1> && common_range<_Rng1>
+                && bidirectional_range<_Rng2> && common_range<_Rng2>) {
+                return _Bidi_common_ranges(
+                    _RANGES begin(_Range1), _RANGES end(_Range1),
+                    _RANGES begin(_Range2), _RANGES end(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Forward_ranges(
+                    _RANGES begin(_Range1), _RANGES end(_Range1),
+                    _RANGES begin(_Range2), _RANGES end(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_end_fn find_end{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE find_first_of
 template <class _FwdIt1, class _FwdIt2, class _Pr>
@@ -3760,11 +3949,12 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last), using _Pred
     _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-    _Guess_median_unchecked(_First, _Mid, _Last - 1, _Pred);
+    _Guess_median_unchecked(_First, _Mid, _Prev_iter(_Last), _Pred);
     _RanIt _Pfirst = _Mid;
-    _RanIt _Plast  = _Pfirst + 1;
+    _RanIt _Plast  = _Next_iter(_Pfirst);
 
-    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *(_Pfirst - 1), *_Pfirst) && !_Pred(*_Pfirst, *(_Pfirst - 1))) {
+    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Pfirst), *_Pfirst)
+           && !_Pred(*_Pfirst, *_Prev_iter(_Pfirst))) {
         --_Pfirst;
     }
 
@@ -3789,11 +3979,11 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
         }
 
         for (; _First < _Glast; --_Glast) {
-            if (_DEBUG_LT_PRED(_Pred, *(_Glast - 1), *_Pfirst)) {
-            } else if (_Pred(*_Pfirst, *(_Glast - 1))) {
+            if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+            } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
                 break;
-            } else if (--_Pfirst != _Glast - 1) {
-                _STD iter_swap(_Pfirst, _Glast - 1);
+            } else if (--_Pfirst != _Prev_iter(_Glast)) {
+                _STD iter_swap(_Pfirst, _Prev_iter(_Glast));
             }
         }
 

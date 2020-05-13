@@ -431,11 +431,13 @@ struct _Iter_traits_difference<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_iterator = copyable<_It> && requires(_It __i) {
-    { *__i } -> _Can_reference;
-    { ++__i } -> same_as<_It&>;
-    { *__i++ } -> _Can_reference;
-};
+concept _Cpp17_iterator = // per LWG-3420
+    requires(_It __i) {
+        { *__i } -> _Can_reference;
+        { ++__i } -> same_as<_It&>;
+        { *__i++ } -> _Can_reference;
+    }
+    && copyable<_It>;
 
 template <class _It>
 concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
@@ -1686,9 +1688,6 @@ _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_t
         ++_UWhere;
     }
 
-    // the following warning is triggered if _Diff is unsigned
-#pragma warning(suppress : 6294) // Ill-defined for-loop: initial condition does not satisfy test.
-                                 // Loop body not executed.
     for (; _Off < 0; ++_Off) {
         --_UWhere;
     }
@@ -3440,7 +3439,7 @@ namespace ranges {
 
     public:
         _Subrange_base() = default;
-        explicit constexpr _Subrange_base(const _Size_type& _Size_) noexcept : _Size(_Size_) {}
+        constexpr explicit _Subrange_base(const _Size_type& _Size_) noexcept : _Size(_Size_) {}
     };
 
     template <class _It, class _Se, subrange_kind _Ki>
@@ -3451,7 +3450,7 @@ namespace ranges {
 
     public:
         _Subrange_base() = default;
-        explicit constexpr _Subrange_base(const _Size_type&) noexcept {}
+        constexpr explicit _Subrange_base(const _Size_type&) noexcept {}
     };
 
     // clang-format off
@@ -3695,39 +3694,82 @@ struct _Iterator_base12;
 struct _Default_sentinel {}; // empty struct to serve as the end of a range
 
 // CLASS TEMPLATE move_iterator
+#ifdef __cpp_lib_concepts
+template <semiregular>
+class move_sentinel;
+#endif // __cpp_lib_concepts
+
 template <class _Iter>
-class move_iterator { // wrap iterator to move rvalues
+class move_iterator {
 public:
-    using iterator_category = typename iterator_traits<_Iter>::iterator_category;
-    using value_type        = typename iterator_traits<_Iter>::value_type;
-    using difference_type   = typename iterator_traits<_Iter>::difference_type;
-    using pointer           = _Iter;
-    using _Ref0             = typename iterator_traits<_Iter>::reference;
-    using reference         = conditional_t<is_reference_v<_Ref0>, remove_reference_t<_Ref0>&&, _Ref0>;
-    using iterator_type     = _Iter;
+    using iterator_type = _Iter;
+#ifdef __cpp_lib_concepts
+    using iterator_concept  = input_iterator_tag;
+    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
+        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using iterator_category = _Iter_cat_t<_Iter>;
+#endif // __cpp_lib_concepts
+    using value_type      = _Iter_value_t<_Iter>;
+    using difference_type = _Iter_diff_t<_Iter>;
+    using pointer         = _Iter;
+#ifdef __cpp_lib_concepts
+    using reference = iter_rvalue_reference_t<_Iter>;
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using reference =
+        conditional_t<is_reference_v<_Iter_ref_t<_Iter>>, remove_reference_t<_Iter_ref_t<_Iter>>&&, _Iter_ref_t<_Iter>>;
+#endif // __cpp_lib_concepts
 
-    _CONSTEXPR17 move_iterator() : current() {}
+    _CONSTEXPR17 move_iterator() = default;
 
-    _CONSTEXPR17 explicit move_iterator(iterator_type _Right) : current(_Right) {}
+    _CONSTEXPR17 explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
+        : current(_STD move(_Right)) {}
 
-    template <class _Iter2>
-    _CONSTEXPR17 move_iterator(const move_iterator<_Iter2>& _Right) : current(_Right.base()) {}
+    // clang-format off
+    template <class _Other>
+#ifdef __cpp_lib_concepts
+        // per LWG-3435
+        requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
+#endif // __cpp_lib_concepts
+    _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
+        is_nothrow_constructible_v<_Iter, const _Other&>) // strengthened
+        : current(_Right.base()) {}
 
-    template <class _Iter2>
-    _CONSTEXPR17 move_iterator& operator=(const move_iterator<_Iter2>& _Right) {
+    template <class _Other>
+#ifdef __cpp_lib_concepts
+        // per LWG-3435
+        requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
+            && assignable_from<_Iter&, const _Other&>
+#endif // __cpp_lib_concepts
+    _CONSTEXPR17 move_iterator& operator=(const move_iterator<_Other>& _Right) noexcept(
+        is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
         current = _Right.base();
         return *this;
     }
+    // clang-format on
 
-    _NODISCARD _CONSTEXPR17 _Iter base() const {
+#ifdef __cpp_lib_concepts
+    _NODISCARD constexpr const iterator_type& base() const& { // Per LWG-3391
         return current;
     }
+    _NODISCARD constexpr iterator_type base() && {
+        return _STD move(current);
+    }
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    _NODISCARD _CONSTEXPR17 iterator_type base() const {
+        return current;
+    }
+#endif // __cpp_lib_concepts
 
     _NODISCARD _CONSTEXPR17 reference operator*() const {
+#ifdef __cpp_lib_concepts
+        return _RANGES iter_move(current);
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
         return static_cast<reference>(*current);
+#endif // __cpp_lib_concepts
     }
 
-    _NODISCARD _CONSTEXPR17 pointer operator->() const {
+    _NODISCARD _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _CONSTEXPR17 pointer operator->() const {
         return current;
     }
 
@@ -3736,10 +3778,18 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 move_iterator operator++(int) {
-        move_iterator _Tmp = *this;
-        ++current;
-        return _Tmp;
+    _CONSTEXPR17 auto operator++(int) {
+#ifdef __cpp_lib_concepts
+        if constexpr (forward_iterator<_Iter>) {
+#endif // __cpp_lib_concepts
+            move_iterator _Tmp = *this;
+            ++current;
+            return _Tmp;
+#ifdef __cpp_lib_concepts
+        } else {
+            ++current;
+        }
+#endif // __cpp_lib_concepts
     }
 
     _CONSTEXPR17 move_iterator& operator--() {
@@ -3765,19 +3815,12 @@ public:
         return current != _Sentinel;
     }
 
-    // N.B. functions valid for random-access iterators only beyond this point
-
-    _CONSTEXPR17 move_iterator& operator+=(const difference_type _Off) {
-        current += _Off;
-        return *this;
-    }
-
     _NODISCARD _CONSTEXPR17 move_iterator operator+(const difference_type _Off) const {
         return move_iterator(current + _Off);
     }
 
-    _CONSTEXPR17 move_iterator& operator-=(const difference_type _Off) {
-        current -= _Off;
+    _CONSTEXPR17 move_iterator& operator+=(const difference_type _Off) {
+        current += _Off;
         return *this;
     }
 
@@ -3785,14 +3828,59 @@ public:
         return move_iterator(current - _Off);
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const {
-        return _STD move(current[_Off]);
+    _CONSTEXPR17 move_iterator& operator-=(const difference_type _Off) {
+        current -= _Off;
+        return *this;
     }
+
+    _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const {
+#ifdef __cpp_lib_concepts
+        return _RANGES iter_move(current + _Off);
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+        return _STD move(current[_Off]);
+#endif // __cpp_lib_concepts
+    }
+
+#ifdef __cpp_lib_concepts
+    template <sentinel_for<_Iter> _Sent>
+    _NODISCARD friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
+        return _Left.current == _Right._Get_last();
+    }
+
+    template <sized_sentinel_for<_Iter> _Sent>
+    _NODISCARD friend constexpr difference_type operator-(
+        const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
+        return _Left._Get_last() - _Right.current;
+    }
+
+    template <sized_sentinel_for<_Iter> _Sent>
+    _NODISCARD friend constexpr difference_type operator-(
+        const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
+        return _Left.current - _Right._Get_last();
+    }
+
+    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
+        noexcept(_RANGES iter_move(_It.current))) {
+        return _RANGES iter_move(_It.current);
+    }
+
+    template <indirectly_swappable<_Iter> _Iter2>
+    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+        noexcept(_RANGES iter_swap(_Left.current, _Right.base()))) {
+        _RANGES iter_swap(_Left.current, _Right.base());
+    }
+#endif // __cpp_lib_concepts
 
     template <class _Iter2, enable_if_t<_Range_verifiable_v<_Iter, _Iter2>, int> = 0>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_iterator<_Iter2>& _Last) {
-        _Verify_range(_First.base(), _Last.base());
+        _Verify_range(_First.current, _Last.base());
     }
+#ifdef __cpp_lib_concepts
+    template <sentinel_for<_Iter> _Sent, enable_if_t<_Range_verifiable_v<_Iter, _Sent>, int> = 0>
+    friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) {
+        _Verify_range(_First.current, _Last._Get_last());
+    }
+#endif // __cpp_lib_concepts
 
     using _Prevent_inheriting_unwrap = move_iterator;
 
@@ -3802,26 +3890,92 @@ public:
     }
 
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
-    _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const {
+    _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& {
         return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(current._Unwrapped());
+    }
+    template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
+    _NODISCARD constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && {
+        return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(current)._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_type>;
 
-    template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, _Src>, int> = 0>
+    template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, const _Src&>, int> = 0>
     constexpr void _Seek_to(const move_iterator<_Src>& _It) {
         current._Seek_to(_It.base());
     }
+    template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, _Src>, int> = 0>
+    constexpr void _Seek_to(move_iterator<_Src>&& _It) {
+        current._Seek_to(_STD move(_It).base());
+    }
 
 protected:
-    iterator_type current; // the wrapped iterator
+    iterator_type current{};
 };
 
-template <class _Iter>
-_NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(
-    typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) {
-    return _Right + _Off;
+template <class _Iter1, class _Iter2>
+_NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left.base() == _Right.base(); }
+
+#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+template <class _Iter1, class _Iter2>
+_NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
+    return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+
+template <class _Iter1, class _Iter2>
+_NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Left.base() < _Right.base(); }
+
+template <class _Iter1, class _Iter2>
+_NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires { _Right < _Left; }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return _Right < _Left; }
+
+template <class _Iter1, class _Iter2>
+_NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires { _Right < _Left; }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return !(_Right < _Left); }
+
+template <class _Iter1, class _Iter2>
+_NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires { _Left < _Right; }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return !(_Left < _Right); }
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
+_NODISCARD constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(
+    const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
+    return _Left.base() <=> _Right.base();
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 auto operator-(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
@@ -3829,35 +3983,17 @@ _NODISCARD _CONSTEXPR17 auto operator-(const move_iterator<_Iter1>& _Left, const
     return _Left.base() - _Right.base();
 }
 
-template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
-    return _Left.base() == _Right.base();
-}
-
-template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
-    return _Left.base() < _Right.base();
-}
-
-template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
-    return _Right < _Left;
-}
-
-template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
-    return !(_Right < _Left);
-}
-
-template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
-    return !(_Left < _Right);
-}
+template <class _Iter>
+_NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(
+    typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right)
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    requires requires {
+        { _Right.base() + _Off } -> same_as<_Iter>; // LWG-3293
+    }
+// clang-format on
+#endif // __cpp_lib_concepts
+{ return move_iterator<_Iter>{_Right.base() + _Off}; }
 
 // FUNCTION TEMPLATE make_move_iterator
 template <class _Iter>
@@ -4907,10 +5043,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 #endif // __cpp_lib_byte
                           conjunction<_Is_character<_Ty1>, is_unsigned<_Ty1>, _Is_character<_Ty2>,
                               is_unsigned<_Ty2>>>>) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
+        if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
             const int _Ans   = _CSTD memcmp(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
@@ -5580,18 +5713,17 @@ template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
 _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
     // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
 #ifdef __cpp_lib_is_constant_evaluated
-    if (!_STD is_constant_evaluated())
+    if (_STD is_constant_evaluated()) {
+        for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
+            _STD iter_swap(_First1, _First2);
+        }
+
+        return _First2;
+    }
 #endif // __cpp_lib_is_constant_evaluated
-    {
-        __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
-        return _First2 + (_Last1 - _First1);
-    }
 
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-        _STD iter_swap(_First1, _First2);
-    }
-
-    return _First2;
+    __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
+    return _First2 + (_Last1 - _First1);
 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
