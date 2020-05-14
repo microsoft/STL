@@ -109,9 +109,11 @@
 #ifndef _M_CEE
 #include <condition_variable>
 #include <execution>
+
 #ifndef _INNER_STD_NAMESPACE_TEST // Fails due to "#include <ppltask.h>"
 #include <future>
 #endif
+
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
