@@ -548,6 +548,11 @@ void test_in_in() {
 }
 
 template <class Instantiator>
+void test_in_fwd() {
+    with_input_ranges<with_forward_ranges<Instantiator>>::call();
+}
+
+template <class Instantiator>
 void test_fwd_fwd() {
     with_forward_ranges<with_forward_ranges<Instantiator>>::call();
 }
