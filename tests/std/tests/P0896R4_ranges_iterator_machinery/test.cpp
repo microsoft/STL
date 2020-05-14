@@ -3239,6 +3239,27 @@ namespace lwg3420 {
     STATIC_ASSERT(!has_member_value_type<std::iterator_traits<X>>);
 } // namespace lwg3420
 
+namespace vso1121031 {
+    // Validate that indirectly_readable_traits accepts type arguments with both value_type and element_type nested
+    // types if they are consistent.
+    using std::indirectly_readable_traits, std::same_as;
+
+    template <class Element>
+    struct iterish {
+        using value_type   = int;
+        using element_type = Element;
+    };
+    STATIC_ASSERT(same_as<indirectly_readable_traits<iterish<int>>::value_type, int>);
+    STATIC_ASSERT(same_as<indirectly_readable_traits<iterish<int const>>::value_type, int>);
+    STATIC_ASSERT(same_as<indirectly_readable_traits<iterish<int volatile>>::value_type, int>);
+    STATIC_ASSERT(same_as<indirectly_readable_traits<iterish<int const volatile>>::value_type, int>);
+
+    STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<iterish<float>>>);
+    STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<iterish<float const>>>);
+    STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<iterish<float volatile>>>);
+    STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<iterish<float const volatile>>>);
+} // namespace vso1121031
+
 int main() {
     iterator_cust_swap_test::test();
     iter_ops::test();
