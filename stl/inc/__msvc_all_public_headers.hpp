@@ -109,7 +109,9 @@
 #ifndef _M_CEE
 #include <condition_variable>
 #include <execution>
+#ifndef _INNER_STD_NAMESPACE_TEST // Fails due to "#include <ppltask.h>"
 #include <future>
+#endif
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
@@ -176,7 +178,11 @@
 #include <mbstring.h>
 #include <memory.h>
 #include <minmax.h>
+
+#ifndef _INNER_STD_NAMESPACE_TEST // Fails due to "using std::new_handler; using std::set_new_handler;"
 #include <new.h>
+#endif
+
 #include <process.h>
 #include <safeint.h>
 #include <sal.h>
