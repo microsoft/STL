@@ -743,7 +743,7 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
     constexpr auto _Rx_min = _Min_limit<_Rx>();
 
     if constexpr (_STD cmp_less(_Ty_min, _Rx_min)) {
-        if (_Value < static_cast<_Ty>(_Rx_min)) {
+        if (_Value < _Ty{_Rx_min}) {
             return false;
         }
     }
@@ -752,7 +752,7 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
     constexpr auto _Rx_max = _Max_limit<_Rx>();
 
     if constexpr (_STD cmp_greater(_Ty_max, _Rx_max)) {
-        if (_Value > static_cast<_Ty>(_Rx_max)) {
+        if (_Value > _Ty{_Rx_max}) {
             return false;
         }
     }
