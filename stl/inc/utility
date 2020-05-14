@@ -278,7 +278,6 @@ struct pair { // store a pair of values
             int>            = 0>
     pair& operator=(_Identity_t<const _Myself&> _Right) noexcept(
         conjunction_v<is_nothrow_copy_assignable<_Ty1>, is_nothrow_copy_assignable<_Ty2>>) /* strengthened */ {
-
         first  = _Right.first;
         second = _Right.second;
         return *this;
@@ -290,7 +289,6 @@ struct pair { // store a pair of values
             int>            = 0>
     pair& operator=(_Identity_t<_Myself&&> _Right) noexcept(
         conjunction_v<is_nothrow_move_assignable<_Ty1>, is_nothrow_move_assignable<_Ty2>>) /* strengthened */ {
-
         first  = _STD forward<_Ty1>(_Right.first);
         second = _STD forward<_Ty2>(_Right.second);
         return *this;
@@ -302,7 +300,6 @@ struct pair { // store a pair of values
             int> = 0>
     pair& operator=(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_assignable_v<_Ty1&, const _Other1&>&&
             is_nothrow_assignable_v<_Ty2&, const _Other2&>) /* strengthened */ {
-
         first  = _Right.first;
         second = _Right.second;
         return *this;
@@ -314,7 +311,6 @@ struct pair { // store a pair of values
             int> = 0>
     pair& operator=(pair<_Other1, _Other2>&& _Right) noexcept(
         is_nothrow_assignable_v<_Ty1&, _Other1>&& is_nothrow_assignable_v<_Ty2&, _Other2>) /* strengthened */ {
-
         first  = _STD forward<_Other1>(_Right.first);
         second = _STD forward<_Other2>(_Right.second);
         return *this;
@@ -423,26 +419,20 @@ template <class _Tuple>
 struct tuple_size;
 
 template <class _Tuple, class = void>
-struct _Tuple_size_sfinae { // selected when tuple_size<_Tuple>::value isn't well-formed
-};
+struct _Tuple_size_sfinae {}; // selected when tuple_size<_Tuple>::value isn't well-formed
 
 template <class _Tuple>
 struct _Tuple_size_sfinae<_Tuple, void_t<decltype(tuple_size<_Tuple>::value)>>
-    : integral_constant<size_t, tuple_size<_Tuple>::value> { // selected when tuple_size<_Tuple>::value is well-formed
-};
+    : integral_constant<size_t, tuple_size<_Tuple>::value> {}; // selected when tuple_size<_Tuple>::value is well-formed
 
 template <class _Tuple>
-struct tuple_size<const _Tuple> : _Tuple_size_sfinae<_Tuple> { // size of const tuple
-};
+struct tuple_size<const _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
 
 template <class _Tuple>
-struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfinae<_Tuple> { // size of volatile tuple
-};
+struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
 
 template <class _Tuple>
-struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple>
-    : _Tuple_size_sfinae<_Tuple> { // size of const volatile tuple
-};
+struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
 
 template <class _Ty>
 _INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
@@ -478,9 +468,7 @@ template <class _Ty, size_t _Size>
 class array;
 
 template <class _Ty, size_t _Size>
-struct tuple_size<array<_Ty, _Size>>
-    : integral_constant<size_t, _Size> { // struct to determine number of elements in array
-};
+struct tuple_size<array<_Ty, _Size>> : integral_constant<size_t, _Size> {}; // size of array
 
 template <size_t _Idx, class _Ty, size_t _Size>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
@@ -492,8 +480,7 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
 
 // TUPLE INTERFACE TO tuple
 template <class... _Types>
-struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types)> { // size of tuple
-};
+struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types)> {}; // size of tuple
 
 template <size_t _Index>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<>> { // enforce bounds checking
@@ -509,13 +496,11 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<0, tuple<_This, _Rest...>> { // selec
 
 template <size_t _Index, class _This, class... _Rest>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
-    : tuple_element<_Index - 1, tuple<_Rest...>> { // recursive tuple_element definition
-};
+    : tuple_element<_Index - 1, tuple<_Rest...>> {}; // recursive tuple_element definition
 
 // TUPLE INTERFACE TO pair
 template <class _Ty1, class _Ty2>
-struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> { // size of pair
-};
+struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> {}; // size of pair
 
 template <size_t _Idx, class _Ty1, class _Ty2>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, pair<_Ty1, _Ty2>> {

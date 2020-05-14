@@ -904,8 +904,7 @@ struct _View_as_tuple<array<_Ty, _Size>, _Types...>
 
 // STRUCT TEMPLATE _Repeat_for
 template <size_t _Nx, class _Ty>
-struct _Repeat_for : integral_constant<size_t, _Nx> { // repeats _Nx for each _Ty in a parameter pack
-};
+struct _Repeat_for : integral_constant<size_t, _Nx> {}; // repeats _Nx for each _Ty in a parameter pack
 
 // FUNCTION TEMPLATE tuple_cat
 template <class _Ret, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Tuples>
@@ -983,8 +982,7 @@ pair<_Ty1, _Ty2>::pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Ty
 
 // STRUCT TEMPLATE uses_allocator
 template <class... _Types, class _Alloc>
-struct uses_allocator<tuple<_Types...>, _Alloc> : true_type { // true_type if container allocator enabled
-};
+struct uses_allocator<tuple<_Types...>, _Alloc> : true_type {}; // true_type if container allocator enabled
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
