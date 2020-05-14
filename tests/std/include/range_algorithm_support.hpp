@@ -543,6 +543,11 @@ void test_in() {
 }
 
 template <class Instantiator>
+void test_fwd() {
+    with_forward_ranges<Instantiator>::call();
+}
+
+template <class Instantiator>
 void test_in_in() {
     with_input_ranges<with_input_ranges<Instantiator>>::call();
 }
