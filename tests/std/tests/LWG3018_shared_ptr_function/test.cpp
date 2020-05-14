@@ -8,8 +8,7 @@ using namespace std;
 
 int val = 0;
 
-struct decrement_val
-{
+struct decrement_val {
     void operator()(void (*)(int)) {
         --val;
     }
