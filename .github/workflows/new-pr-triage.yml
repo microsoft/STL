@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-name: Move new PRs to New board in the Code Reviews Project
+name: Move new PRs to the New column in the Code Reviews Project
 
 on:
   pull_request:
