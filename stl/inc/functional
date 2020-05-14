@@ -1281,13 +1281,15 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 
 // PLACEHOLDERS
 template <int _Nx>
-struct _Ph {}; // placeholder
+struct _Ph { // placeholder
+    static_assert(_Nx > 0, "invalid placeholder index");
+};
 
 template <class _Tx>
 struct is_placeholder : integral_constant<int, 0> {}; // _Tx is not a placeholder
 
 template <int _Nx>
-struct is_placeholder<_Ph<_Nx>> : integral_constant<int, _Nx> {}; // _Ph<_Nx> is a placeholder
+struct is_placeholder<_Ph<_Nx>> : integral_constant<int, _Nx> {}; // _Ph is a placeholder
 
 template <class _Tx>
 struct is_placeholder<const _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers

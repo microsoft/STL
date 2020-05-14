@@ -5817,7 +5817,8 @@ _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 // STRUCT TEMPLATE uses_allocator
 template <class _Ty, class _Alloc>
 struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
-}; // determine whether _Ty has an allocator_type member type
+    // determine whether _Ty has an allocator_type member type
+};
 
 template <class _Ty, class _Alloc>
 _INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;

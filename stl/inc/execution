@@ -335,7 +335,8 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
 // VARIABLE TEMPLATE _Use_atomic_iterator
 template <class _Ty>
 struct _Atomic_is_usually_lock_free : bool_constant<atomic<_Ty>::is_always_lock_free> {
-}; // deferred evaluation of atomic::is_always_lock_free
+    // deferred evaluation of atomic::is_always_lock_free
+};
 
 template <class _FwdIt>
 inline constexpr bool _Use_atomic_iterator = conjunction_v<bool_constant<_Is_random_iter_v<_FwdIt>>,

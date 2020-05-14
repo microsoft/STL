@@ -426,14 +426,13 @@ struct _Tuple_size_sfinae<_Tuple, void_t<decltype(tuple_size<_Tuple>::value)>>
     : integral_constant<size_t, tuple_size<_Tuple>::value> {}; // selected when tuple_size<_Tuple>::value is well-formed
 
 template <class _Tuple>
-struct tuple_size<const _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // size of const tuple
+struct tuple_size<const _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
 
 template <class _Tuple>
-struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // size of volatile tuple
+struct _CXX20_DEPRECATE_VOLATILE tuple_size<volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
 
 template <class _Tuple>
-struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {
-}; // size of const volatile tuple
+struct _CXX20_DEPRECATE_VOLATILE tuple_size<const volatile _Tuple> : _Tuple_size_sfinae<_Tuple> {}; // ignore cv
 
 template <class _Ty>
 _INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
