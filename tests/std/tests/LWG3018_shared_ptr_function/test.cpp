@@ -9,7 +9,7 @@ using namespace std;
 int val = 0;
 
 struct decrement_val {
-    void operator()(void (*const)(int)) const {
+    void operator()(void (*)(int)) const {
         --val;
     }
 };
