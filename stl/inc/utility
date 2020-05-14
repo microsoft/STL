@@ -647,6 +647,120 @@ template <size_t _Idx>
 inline constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+template <class _Ty>
+inline constexpr bool _Is_standard_integer = is_integral_v<_Ty>
+    && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
+#ifdef _NATIVE_WCHAR_T_DEFINED
+        wchar_t,
+#endif // _NATIVE_WCHAR_T_DEFINED
+#ifdef __cpp_char8_t
+        char8_t,
+#endif // __cpp_char8_t
+        char16_t, char32_t>;
+
+// FUNCTION TEMPLATE cmp_equal
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
+    if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
+        return _Left == _Right;
+    } else if constexpr (is_signed_v<_Ty2>) {
+        return _Left == static_cast<make_unsigned_t<_Ty2>>(_Right) && _Right >= 0;
+    } else {
+        return static_cast<make_unsigned_t<_Ty1>>(_Left) == _Right && _Left >= 0;
+    }
+}
+
+// FUNCTION TEMPLATE cmp_not_equal
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !_STD cmp_equal(_Left, _Right);
+}
+
+// FUNCTION TEMPLATE cmp_less
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
+    if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
+        return _Left < _Right;
+    } else if constexpr (is_signed_v<_Ty2>) {
+        return _Right > 0 && _Left < static_cast<make_unsigned_t<_Ty2>>(_Right);
+    } else {
+        return _Left < 0 || static_cast<make_unsigned_t<_Ty1>>(_Left) < _Right;
+    }
+}
+
+// FUNCTION TEMPLATE cmp_greater
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD cmp_less(_Right, _Left);
+}
+
+// FUNCTION TEMPLATE cmp_less_equal
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !_STD cmp_less(_Right, _Left);
+}
+
+// FUNCTION TEMPLATE cmp_greater_equal
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !_STD cmp_less(_Left, _Right);
+}
+
+// FUNCTION TEMPLATE in_range
+template <class _Ty>
+_NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
+    static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
+    if constexpr (is_signed_v<_Ty>) {
+        constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
+        return static_cast<_Ty>((_Unsigned_max >> 1) + 1); // well-defined, N4861 [conv.integral]/3
+    } else {
+        return 0;
+    }
+}
+
+template <class _Ty>
+_NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
+    static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
+    if constexpr (is_signed_v<_Ty>) {
+        constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
+        return static_cast<_Ty>(_Unsigned_max >> 1);
+    } else {
+        return static_cast<_Ty>(-1);
+    }
+}
+
+template <class _Rx, class _Ty>
+_NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
+    static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
+        "The integer comparison functions only accept standard and extended integer types.");
+
+    constexpr auto _Ty_min = _Min_limit<_Ty>();
+    constexpr auto _Rx_min = _Min_limit<_Rx>();
+
+    if constexpr (_STD cmp_less(_Ty_min, _Rx_min)) {
+        if (_Value < _Ty{_Rx_min}) {
+            return false;
+        }
+    }
+
+    constexpr auto _Ty_max = _Max_limit<_Ty>();
+    constexpr auto _Rx_max = _Max_limit<_Rx>();
+
+    if constexpr (_STD cmp_greater(_Ty_max, _Rx_max)) {
+        if (_Value > _Ty{_Rx_max}) {
+            return false;
+        }
+    }
+
+    return true;
+}
+#endif // _HAS_CXX20
+
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD get;
