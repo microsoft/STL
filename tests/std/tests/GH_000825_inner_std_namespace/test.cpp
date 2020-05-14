@@ -6,7 +6,9 @@
 // Suppress other known failed headers
 #define _INNER_STD_NAMESPACE_TEST
 
-namespace X::std {}
+namespace X {
+    namespace std {}
+} // namespace X
 using namespace X;
 
 #include <__msvc_all_public_headers.hpp>
