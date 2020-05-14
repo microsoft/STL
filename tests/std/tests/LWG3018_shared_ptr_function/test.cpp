@@ -9,20 +9,20 @@ using namespace std;
 int val = 0;
 
 struct decrement_val {
-    void operator()(void (*)(int)) {
+    void operator()(void (* const)(int)) const {
         --val;
     }
 };
 
-void add(int i) {
+void add(const int i) {
     val += i;
 }
 
-int add_return(int i) {
+int add_return(const int i) {
     return val += i;
 }
 
-void subtract(int i) {
+void subtract(const int i) {
     val -= i;
 }
 
