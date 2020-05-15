@@ -801,11 +801,6 @@ iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
-# Bogus for various reasons (See https://reviews.llvm.org/D80030)
-containers\views\span.cons\stdarray.pass.cpp
-utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\F_assign.pass.cpp
-utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.const\shared_ptr_pointer.pass.cpp
-
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
