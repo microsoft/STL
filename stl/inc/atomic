@@ -713,25 +713,23 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<const long long>(_Storage);
         long long _As_bytes;
-#if defined(_M_ARM)
+#ifdef _M_ARM
         _As_bytes = __ldrexd(_Mem);
         _Memory_barrier();
-#else // _M_X86/_M_X64/_M_ARM64
+#else
         _As_bytes = __iso_volatile_load64(_Mem);
         _Compiler_or_memory_barrier();
-#endif // hardware
+#endif
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<const long long>(_Storage);
-#if defined(_M_ARM)
+#ifdef _M_ARM
         long long _As_bytes = __ldrexd(_Mem);
-#elif defined(_M_IX86) || defined(_M_ARM64)
+#else
         long long _As_bytes = __iso_volatile_load64(_Mem);
-#else // _M_X64
-        long long _As_bytes = *_Mem;
-#endif // hardware
+#endif
         _Load_barrier(_Order);
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
