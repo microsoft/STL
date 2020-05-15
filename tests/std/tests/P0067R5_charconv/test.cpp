@@ -1072,7 +1072,6 @@ int main(int argc, char** argv) {
     const auto finish  = chrono::steady_clock::now();
     const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
 
-
     puts("PASS");
     printf("Randomized test cases: %u\n", PrefixesToTest * Fractions);
     printf("Total time: %lld ms\n", ms);
