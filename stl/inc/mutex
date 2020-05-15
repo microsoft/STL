@@ -138,26 +138,21 @@ public:
     }
 
     unique_lock(_Mutex& _Mtx, adopt_lock_t)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct and assume already locked
-    }
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct and assume already locked
 
     unique_lock(_Mutex& _Mtx, defer_lock_t) noexcept
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // construct but don't lock
-    }
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct but don't lock
 
     unique_lock(_Mutex& _Mtx, try_to_lock_t)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock()) { // construct and try to lock
-    }
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock()) {} // construct and try to lock
 
     template <class _Rep, class _Period>
     unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_for(_Rel_time)) { // construct and lock with timeout
-    }
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_for(_Rel_time)) {} // construct and lock with timeout
 
     template <class _Clock, class _Duration>
     unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) { // construct and lock with timeout
-    }
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) {} // construct and lock with timeout
 
     unique_lock(_Mutex& _Mtx, const xtime* _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // try to lock until _Abs_time
@@ -436,8 +431,7 @@ public:
         _MyMutex.lock();
     }
 
-    lock_guard(_Mutex& _Mtx, adopt_lock_t) : _MyMutex(_Mtx) { // construct but don't lock
-    }
+    lock_guard(_Mutex& _Mtx, adopt_lock_t) : _MyMutex(_Mtx) {} // construct but don't lock
 
     ~lock_guard() noexcept {
         _MyMutex.unlock();
@@ -459,8 +453,7 @@ public:
         _STD lock(_Mtxes...);
     }
 
-    explicit scoped_lock(adopt_lock_t, _Mutexes&... _Mtxes) : _MyMutexes(_Mtxes...) { // construct but don't lock
-    }
+    explicit scoped_lock(adopt_lock_t, _Mutexes&... _Mtxes) : _MyMutexes(_Mtxes...) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
         _STD apply([](_Mutexes&... _Mtxes) { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
@@ -482,8 +475,7 @@ public:
         _MyMutex.lock();
     }
 
-    explicit scoped_lock(adopt_lock_t, _Mutex& _Mtx) : _MyMutex(_Mtx) { // construct but don't lock
-    }
+    explicit scoped_lock(adopt_lock_t, _Mutex& _Mtx) : _MyMutex(_Mtx) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
         _MyMutex.unlock();

@@ -2314,7 +2314,7 @@ public:
     }
 
     void reset() noexcept { // release resource, convert to null weak_ptr object
-        weak_ptr().swap(*this);
+        weak_ptr{}.swap(*this);
     }
 
     void swap(weak_ptr& _Other) noexcept {
