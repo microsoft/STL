@@ -801,6 +801,11 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp F
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Bogus for various reasons (See https://reviews.llvm.org/D80030)
+std/containers/views/span.cons/stdarray.pass.cpp:0 FAIL
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/F_assign.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/shared_ptr_pointer.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -1010,9 +1015,6 @@ std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
-
-# Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
 
 # Not yet analyzed. Frequent timeouts
 std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
