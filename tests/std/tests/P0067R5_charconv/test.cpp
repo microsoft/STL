@@ -1070,7 +1070,8 @@ int main(int argc, char** argv) {
     all_floating_tests(mt64);
 
     const auto finish  = chrono::steady_clock::now();
-    const long long ms = chrono::duration_cast<milliseconds>(finish - start).count();
+    const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
+
 
     puts("PASS");
     printf("Randomized test cases: %u\n", PrefixesToTest * Fractions);
