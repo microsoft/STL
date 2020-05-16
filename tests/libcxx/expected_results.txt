@@ -481,6 +481,23 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
+# C++20 P1032R1 "Miscellaneous constexpr"
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/assign3.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/copy.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/move.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/assign3.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/copy.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/move.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/assign3.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/copy.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/move.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/assign3.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/copy.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/move.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/assign3.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/copy.pass.cpp FAIL
+std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/move.pass.cpp FAIL
+
 # C++20 P1135R6 "The C++20 Synchronization Library"
 std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp FAIL
 std/thread/thread.barrier/arrive.pass.cpp FAIL
@@ -694,12 +711,6 @@ std/containers/views/span.tuple/tuple_element.fail.cpp PASS
 std/containers/views/span.tuple/tuple_element.pass.cpp FAIL
 std/containers/views/span.tuple/tuple_size.fail.cpp PASS
 std/containers/views/span.tuple/tuple_size.pass.cpp FAIL
-
-# Test needs to be updated for P1032R1 "Miscellaneous constexpr"
-std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED

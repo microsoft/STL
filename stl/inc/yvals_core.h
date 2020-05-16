@@ -527,6 +527,17 @@
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
+// Builtin memory operations that are usable in constexpr are only supported for clang
+#if _HAS_CXX20
+#ifdef __clang__
+#define _CONSTEXPR20_MEMOP constexpr
+#else // ^^^ clang / Other no clang
+#define _CONSTEXPR20_MEMOP inline
+#endif // ^^^ no clang ^^^
+#else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
+#define _CONSTEXPR20_MEMOP inline
+#endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
+
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline

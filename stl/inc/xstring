@@ -56,30 +56,15 @@ struct _Char_traits { // properties of a string or stream element
 
         return _Count;
     }
-
-#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
-                                 // does not set the named _Out_ parameter.
-    static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem)));
-        }
-
-        if (_First1 <= _First2) {
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        } else {
-            for (size_t _Idx = _Count; _Idx-- > 0;) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        }
-
+#ifdef __clang__
+        __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
         return _First1;
+#else // ^^^ clang / Other no clang
+        return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem)));
+#endif // ^^^ no clang ^^^
     }
 
     _Pre_satisfies_(_Dest_size >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _First1,
@@ -101,29 +86,15 @@ struct _Char_traits { // properties of a string or stream element
         return nullptr;
     }
 
-#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
-                                 // does not set the named _Out_ parameter.
-    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20_MEMOP _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...), allowing overlap
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count * sizeof(_Elem)));
-        }
-
-        if (_First1 <= _First2) {
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                *(_First1 + _Idx) = _STD move(*(_First2 + _Idx));
-            }
-        } else {
-            for (size_t _Idx = _Count; _Idx-- > 0;) {
-                *(_First1 + _Idx) = _STD move(*(_First2 + _Idx));
-            }
-        }
-
+#ifdef __clang__
+        __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
         return _First1;
+#else // ^^^ clang / Other no clang
+        return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count * sizeof(_Elem)));
+#endif // ^^^ no clang ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -208,30 +179,16 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #endif // _HAS_CXX17
     }
 
-#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
-                                 // does not set the named _Out_ parameter.
-    static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            return reinterpret_cast<_Elem*>(
-                _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
-        }
-
-        if (_First1 <= _First2) {
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        } else {
-            for (size_t _Idx = _Count; _Idx-- > 0;) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        }
-
+#ifdef __clang__
+        __builtin_wmemcpy(_First1, _First2, _Count);
         return _First1;
+#else // ^^^ clang / Other no clang
+        return reinterpret_cast<_Elem*>(
+            _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
+#endif // ^^^ no clang ^^^
     }
 
     _Pre_satisfies_(_Size_in_words >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_words)
@@ -256,30 +213,16 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #endif // _HAS_CXX17
     }
 
-#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
-                                 // does not set the named _Out_ parameter.
-    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20_MEMOP _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            return reinterpret_cast<_Elem*>(
-                _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
-        }
-
-        if (_First1 <= _First2) {
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        } else {
-            for (size_t _Idx = _Count; _Idx-- > 0;) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        }
-
+#ifdef __clang__
+        __builtin_wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
         return _First1;
+#else // ^^^ clang / Other no clang
+        return reinterpret_cast<_Elem*>(
+            _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
+#endif // ^^^ no clang ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, size_t _Count, _Elem _Ch) noexcept
@@ -414,29 +357,15 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #endif // _HAS_CXX17
     }
 
-#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
-                                 // does not set the named _Out_ parameter.
-    static _CONSTEXPR20 _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count));
-        }
-
-        if (_First1 <= _First2) {
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        } else {
-            for (size_t _Idx = _Count; _Idx-- > 0;) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        }
-
+#ifdef __clang__
+        __builtin_memcpy(_First1, _First2, _Count);
         return _First1;
+#else // ^^^ clang / Other no clang
+        return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count));
+#endif // ^^^ no clang ^^^
     }
 
     _Pre_satisfies_(_Size_in_bytes >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_bytes)
@@ -468,29 +397,15 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #endif // _HAS_CXX17
     }
 
-#pragma warning(suppress : 6101) // Returning uninitialized memory '*_First1'.  A successful path through the function
-                                 // does not set the named _Out_ parameter.
-    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20_MEMOP _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count));
-        }
-
-        if (_First1 <= _First2) {
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        } else {
-            for (size_t _Idx = _Count; _Idx-- > 0;) {
-                *(_First1 + _Idx) = *(_First2 + _Idx);
-            }
-        }
-
+#ifdef __clang__
+        __builtin_memmove(_First1, _First2, _Count);
         return _First1;
+#else // ^^^ clang / Other no clang
+        return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count));
+#endif // ^^^ no clang ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -3908,7 +3823,7 @@ public:
         return size() == 0;
     }
 
-    _CONSTEXPR20 size_type copy(
+    _CONSTEXPR20_MEMOP size_type copy(
         _Out_writes_(_Count) _Elem* const _Ptr, size_type _Count, const size_type _Off = 0) const {
         // copy [_Off, _Off + _Count) to [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);

@@ -481,6 +481,23 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
+# C++20 P1032R1 "Miscellaneous constexpr"
+strings\char.traits\char.traits.specializations\char.traits.specializations.char\assign3.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char\copy.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char\move.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\assign3.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\copy.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\move.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\assign3.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\copy.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\move.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\assign3.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\copy.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\move.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\assign3.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\copy.pass.cpp
+strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\move.pass.cpp
+
 # C++20 P1135R6 "The C++20 Synchronization Library"
 atomics\atomics.types.operations\atomics.types.operations.wait\atomic_wait.pass.cpp
 thread\thread.barrier\arrive.pass.cpp
@@ -694,12 +711,6 @@ containers\views\span.tuple\tuple_element.fail.cpp
 containers\views\span.tuple\tuple_element.pass.cpp
 containers\views\span.tuple\tuple_size.fail.cpp
 containers\views\span.tuple\tuple_size.pass.cpp
-
-# Test needs to be updated for P1032R1 "Miscellaneous constexpr"
-language.support\support.limits\support.limits.general\array.version.pass.cpp
-language.support\support.limits\support.limits.general\string_view.version.pass.cpp
-language.support\support.limits\support.limits.general\tuple.version.pass.cpp
-language.support\support.limits\support.limits.general\utility.version.pass.cpp
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
