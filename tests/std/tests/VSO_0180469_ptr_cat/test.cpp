@@ -239,6 +239,18 @@ void test_case_Equal_memcmp_is_safe() {
     test_case_Equal_memcmp_is_safe_helper<false, const Elem1*, const volatile Elem2*, equal_to<>>();
     test_case_Equal_memcmp_is_safe_helper<false, const volatile Elem1*, const volatile Elem2*, equal_to<>>();
 
+    // Top level const should work
+    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, Elem2*, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1*, Elem2* const, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, Elem2* const, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, const Elem2*, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1*, const Elem2* const, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, const Elem2* const, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1* const, Elem2*, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1*, Elem2* const, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1* const, Elem2* const, equal_to<>>();
+    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1* const, const Elem2* const, equal_to<>>();
+
     // Iterators that are not pointers should explode
     test_case_Equal_memcmp_is_safe_helper<false, typename list<Elem1>::iterator, typename list<Elem2>::iterator,
         equal_to<>>();

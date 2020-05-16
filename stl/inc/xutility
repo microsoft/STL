@@ -4688,14 +4688,15 @@ template <class _Elem>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>> =
     _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>;
 
-// return equal optimization category for arbitrary iterators
-template <class _Iter1, class _Iter2, class _Pr>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe = false;
-
 // return equal optimization category for pointers
+template <class _Elem1, class _Elem2, class _Pr, bool = conjunction_v<is_pointer<_Elem1>, is_pointer<_Elem2>>>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
+    _Equal_memcmp_is_safe_helper<remove_const_t<remove_pointer_t<_Elem1>>, remove_const_t<remove_pointer_t<_Elem2>>,
+        _Pr>;
+
+// return equal optimization category for arbitrary iterators
 template <class _Elem1, class _Elem2, class _Pr>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe<_Elem1*, _Elem2*, _Pr> =
-    _Equal_memcmp_is_safe_helper<remove_const_t<_Elem1>, remove_const_t<_Elem2>, _Pr>;
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe<_Elem1, _Elem2, _Pr, false> = false;
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
