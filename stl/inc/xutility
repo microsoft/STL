@@ -4661,14 +4661,13 @@ template <class _Elem1, class _Elem2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = false;
 
 // allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
-// clang-format off
+// being integral is a precondition of _Value_equality_is_bitwise_equality
 template <class _Elem1, class _Elem2>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2,
-    enable_if_t<sizeof(_Elem1) == sizeof(_Elem2)
-             && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2>
-             && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>, equal_to<>>
-    > = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
-// clang-format on
+    enable_if_t<sizeof(_Elem1) == sizeof(_Elem2) //
+                    && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2> //
+                    && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>,
+        equal_to<>>> = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
 
 // allow memcmping pointers-to-cv-T with equal_to<>
 template <class _Elem1, class _Elem2>
@@ -4677,18 +4676,20 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_
 
 #ifdef __cpp_lib_byte
 // allow memcmping std::byte
+// inline is required here as explicit specialization of variable templates are problematic in C++14 and below.
+// However, std::byte is C++17 and above so we are safe
 template <>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> = true;
+inline constexpr bool _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> = true;
 #endif // __cpp_lib_byte
 
-// treat equal_to with exact T as equal_to<> this is safe because we only activate the optimization for builtin
-// _Elem (and std::byte)
+// Treat equal_to with exact T as equal_to<>.
+// This is safe because we only activate the optimization for builtin _Elem (and std::byte).
 template <class _Elem>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>> =
     _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>;
 
 // return equal optimization category for arbitrary iterators
-template <class _Elem1, class _Elem2, class _Pr>
+template <class _Iter1, class _Iter2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe = false;
 
 // return equal optimization category for pointers
@@ -4704,7 +4705,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-    if constexpr (_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>) {
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
