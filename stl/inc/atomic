@@ -290,7 +290,7 @@ struct _Atomic_padded<_Ty, false> {
 #endif // TRANSITION, ABI
 
 
-inline long& _Atomic_ref_get_mutex(const void* const _Key) noexcept {
+inline long* _Atomic_ref_get_mutex(const void* const _Key) noexcept {
     // TODO: Move to satellite
 #pragma warning(push)
 #pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
@@ -302,7 +302,7 @@ inline long& _Atomic_ref_get_mutex(const void* const _Key) noexcept {
     auto _Key_as_int = reinterpret_cast<const uintptr_t>(_Key);
     _Key_as_int ^= _Key_as_int >> 16;
     _Key_as_int ^= _Key_as_int >> 8;
-    return _Table[_Key_as_int & 0xFF]._Splinlock;
+    return &_Table[_Key_as_int & 0xFF]._Splinlock;
 }
 
 template <class _Ty>
@@ -310,11 +310,15 @@ struct _Atomic_storage_types {
     using _TVal          = _Ty;
     using _TStorage      = _Atomic_padded<_Ty>;
     using _TConstr       = const _Ty;
-    using _Mx_val_or_ref = long;
+    using _Mx_val_or_ptr = long;
 
     static constexpr long _Mx_init(const void* const _Key) noexcept {
         (void) _Key;
         return 0;
+    }
+
+    static long* _Mx_ptr(_Mx_val_or_ptr& _Val) {
+        return &_Val;
     }
 };
 
@@ -323,10 +327,14 @@ struct _Atomic_storage_types<_Ty&> {
     using _TVal          = _Ty;
     using _TStorage      = _Ty&;
     using _TConstr       = _Ty&;
-    using _Mx_val_or_ref = long&;
+    using _Mx_val_or_ptr = long*;
 
-    static long& _Mx_init(const void* const _Key) noexcept {
+    static long* _Mx_init(const void* const _Key) noexcept {
         return _Atomic_ref_get_mutex(_Key);
+    }
+
+    static long* _Mx_ptr(_Mx_val_or_ptr _Ptr) {
+        return _Ptr;
     }
 };
 
@@ -397,7 +405,7 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange(const_cast<long*>(&_Spinlock), 1)) {
+        while (_InterlockedExchange(_Atomic_storage_types<_Ty>::_Mx_ptr(_Spinlock), 1)) {
             _YIELD_PROCESSOR();
         }
     }
@@ -405,15 +413,15 @@ struct _Atomic_storage {
     void _Unlock() const noexcept { // unlock the spinlock
 #if defined(_M_ARM) || defined(_M_ARM64)
         _Memory_barrier();
-        __iso_volatile_store32(reinterpret_cast<int*>(const_cast<long*>(&_Spinlock)), 0);
+        __iso_volatile_store32(reinterpret_cast<int*>(_Atomic_storage_types<_Ty>::_Mx_ptr(_Spinlock)), 0);
         _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange(const_cast<long*>(&_Spinlock), 0);
+        _InterlockedExchange(_Atomic_storage_types<_Ty>::_Mx_ptr(_Spinlock), 0);
 #endif // hardware
     }
 
 private:
-    typename _Atomic_storage_types<_Ty&>::_Mx_val_or_ref _Spinlock;
+    mutable typename _Atomic_storage_types<_Ty&>::_Mx_val_or_ptr _Spinlock;
 
 public:
     _Ty _Storage{};
