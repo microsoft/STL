@@ -1801,6 +1801,12 @@ public:
         return _Value;
     }
 
+    using _Base::compare_exchange_strong;
+    bool compare_exchange_strong(
+        _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
+        return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
+    }
+
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired);
     }

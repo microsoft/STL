@@ -8,7 +8,6 @@
 #include <execution>
 #include <vector>
 
-
 struct bigint {
     int value;
     int more_value[10];
