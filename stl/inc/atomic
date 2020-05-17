@@ -289,20 +289,19 @@ struct _Atomic_padded<_Ty, false> {
 };
 #endif // TRANSITION, ABI
 
-template<class _Ty>
+template <class _Ty>
 struct _Atomic_storage_types {
-    using _TVal = _Ty;
+    using _TVal     = _Ty;
     using _TStorage = _Atomic_padded<_Ty>;
-    using _TConstr = const _Ty;
+    using _TConstr  = const _Ty;
 };
 
 template <class _Ty>
 struct _Atomic_storage_types<_Ty&> {
-    using _TVal = _Ty;
+    using _TVal     = _Ty;
     using _TStorage = _Ty&;
-    using _TConstr = _Ty&;
+    using _TConstr  = _Ty&;
 };
-
 
 // STRUCT TEMPLATE _Atomic_storage
 #if 1 // TRANSITION, ABI
@@ -318,7 +317,8 @@ struct _Atomic_storage {
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept : _Storage(_Value) {
+    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+        : _Storage(_Value) {
         // non-atomically initialize this atomic
     }
 
@@ -503,7 +503,8 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept : _Storage{_Value} {
+    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+        : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
 
@@ -666,7 +667,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept : _Storage{_Value} {
+    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+        : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
 
@@ -1089,7 +1091,8 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
-    /* implicit */ constexpr _Atomic_integral(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept : _Base(_Value) {}
+    /* implicit */ constexpr _Atomic_integral(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+        : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
@@ -1775,45 +1778,45 @@ public:
     using _Base::store;
     void store(const _Ty _Value) volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        const_cast<atomic*>(this)->_Base::store(_Value);
+        const_cast<atomic_ref*>(this)->_Base::store(_Value);
     }
 
     void store(const _Ty _Value, const memory_order _Order) volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        const_cast<atomic*>(this)->_Base::store(_Value, _Order);
+        const_cast<atomic_ref*>(this)->_Base::store(_Value, _Order);
     }
 
     using _Base::load;
     _NODISCARD _Ty load() const volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<const atomic*>(this)->_Base::load();
+        return const_cast<const atomic_ref*>(this)->_Base::load();
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<const atomic*>(this)->_Base::load(_Order);
+        return const_cast<const atomic_ref*>(this)->_Base::load(_Order);
     }
 
     using _Base::exchange;
     _Ty exchange(const _Ty _Value) volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic*>(this)->_Base::exchange(_Value);
+        return const_cast<atomic_ref*>(this)->_Base::exchange(_Value);
     }
 
     _Ty exchange(const _Ty _Value, const memory_order _Order) volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic*>(this)->_Base::exchange(_Value, _Order);
+        return const_cast<atomic_ref*>(this)->_Base::exchange(_Value, _Order);
     }
 
     using _Base::compare_exchange_strong;
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic*>(this)->_Base::compare_exchange_strong(_Expected, _Desired);
+        return const_cast<atomic_ref*>(this)->_Base::compare_exchange_strong(_Expected, _Desired);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic*>(this)->_Base::compare_exchange_strong(_Expected, _Desired, _Order);
+        return const_cast<atomic_ref*>(this)->_Base::compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
