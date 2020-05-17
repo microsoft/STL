@@ -1559,19 +1559,19 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
 #define ATOMIC_VAR_INIT(_Value) \
     { _Value }
 
-template <class _Ty>
+template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base2_t =
-    typename _Select<is_integral_v<_Ty> && !is_same_v<bool, _Ty>>::template _Apply<_Atomic_integral_facade<_Ty>,
-        typename _Select<is_pointer_v<_Ty> && is_object_v<remove_pointer_t<_Ty>>>::template _Apply<_Atomic_pointer<_Ty>,
-            _Atomic_storage<_Ty>>>;
+    typename _Select<is_integral_v<_TVal> && !is_same_v<bool, _TVal>>::template _Apply<_Atomic_integral_facade<_Ty>,
+        typename _Select<is_pointer_v<_TVal> && is_object_v<remove_pointer_t<_TVal>>>::template _Apply<
+            _Atomic_pointer<_Ty>, _Atomic_storage<_Ty>>>;
 
 #if _HAS_CXX20
-template <class _Ty>
-using _Choose_atomic_base_t =
-    typename _Select<is_floating_point_v<_Ty>>::template _Apply<_Atomic_floating<_Ty>, _Choose_atomic_base2_t<_Ty>>;
+template <class _TVal, class _Ty = _TVal>
+using _Choose_atomic_base_t = typename _Select<is_floating_point_v<_TVal>>::template _Apply<_Atomic_floating<_Ty>,
+    _Choose_atomic_base2_t<_TVal, _Ty>>;
 #else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
-template <class _Ty>
-using _Choose_atomic_base_t = _Choose_atomic_base2_t<_Ty>;
+template <class _TVal, class _Ty = _TVal>
+using _Choose_atomic_base_t = _Choose_atomic_base2_t<_TVal, _Ty>;
 #endif //_HAS_CXX20
 
 template <class _Ty>
@@ -1743,9 +1743,9 @@ atomic(_Ty) -> atomic<_Ty>;
 
 #if _HAS_CXX20
 template <class _Ty>
-struct atomic_ref : _Choose_atomic_base_t<_Ty&> { // atomic value
+struct atomic_ref : _Choose_atomic_base_t<_Ty, _Ty&> { // atomic value
 private:
-    using _Base = _Choose_atomic_base_t<_Ty&>;
+    using _Base = _Choose_atomic_base_t<_Ty, _Ty&>;
 
 public:
     // clang-format off
