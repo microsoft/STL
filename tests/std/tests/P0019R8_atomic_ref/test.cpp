@@ -43,19 +43,20 @@ void test_ops() {
     auto load  = [](const std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.load()); };
     auto xchg0 = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.exchange(0)); };
 
-    int (*add)(std::atomic_ref<ValueType> & ref);
+    int (*inc)(std::atomic_ref<ValueType> & ref);
     if constexpr (AddViaCas) {
-        add = [](std::atomic_ref<ValueType>& ref) 
+        inc = [](std::atomic_ref<ValueType>& ref) 
         {
             for (;;) {
                 ValueType e = ref.load();
                 ValueType d  = e + 1;
-                if (ref.compare_exchange_weak(e, d))
+                if (ref.compare_exchange_weak(e, d)) {
                     return static_cast<int>(e);
+                }
             }
         };
     } else {
-        add = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.fetch_add(1)); };
+        inc = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.fetch_add(1)); };
     }
 
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
