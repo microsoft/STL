@@ -1252,7 +1252,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
     using _Base           = _Atomic_integral<_Ty>;
     using _TVal           = typename _Base::_TVal;
-    using difference_type = _Ty;
+    using difference_type = _TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral_facade() = default;
