@@ -183,8 +183,11 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
 #ifdef __clang__
-        __builtin_wmemcpy(_First1, _First2, _Count);
-        return _First1;
+        if constexpr (is_same_v<_Elem, wchar_t>) {
+            __builtin_wmemcpy(_First1, _First2, _Count);
+        } else {
+            return _Char_traits<_Elem, unsigned short>::copy(_First1, _First2, _Count);
+        }
 #else // ^^^ clang / Other no clang
         return reinterpret_cast<_Elem*>(
             _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
