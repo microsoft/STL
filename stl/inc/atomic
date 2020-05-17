@@ -290,19 +290,19 @@ struct _Atomic_padded<_Ty, false> {
 #endif // TRANSITION, ABI
 
 
-long& _Atomic_ref_get_mutex(const void* const _Key) noexcept {
+inline long& _Atomic_ref_get_mutex(const void* const _Key) noexcept {
     // TODO: Move to satellite
 #pragma warning(push)
 #pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
     struct alignas(64) _Table_entry {
         long _Splinlock = 0;
     };
-     static _Table_entry _Table[256];
+    static _Table_entry _Table[256];
 #pragma warning(pop)
     auto _Key_as_int = reinterpret_cast<const uintptr_t>(_Key);
     _Key_as_int ^= _Key_as_int << 16;
     _Key_as_int ^= _Key_as_int << 8;
-    return _Table[_Key_as_int]._Splinlock;
+    return _Table[_Key_as_int & 0xFF]._Splinlock;
 }
 
 template <class _Ty>
