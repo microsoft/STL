@@ -60,9 +60,9 @@ void test_ops() {
     }
 
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
-    assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, add) == 0);
+    assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc) == 0);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == range * repetitions);
-    assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, add) == range);
+    assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc) == range);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == range * repetitions * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
