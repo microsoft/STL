@@ -307,7 +307,7 @@ struct _Atomic_storage_types<_Ty&> {
     using _TVal                   = _Ty;
     using _TStorage               = _Ty&;
     using _TConstr                = _Ty&;
-    static constexpr bool _Is_ref = false;
+    static constexpr bool _Is_ref = true;
 };
 
 // STRUCT TEMPLATE _Atomic_storage
