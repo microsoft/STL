@@ -391,11 +391,16 @@ set(SOURCES_SATELLITE_CODECVT_IDS
     ${CMAKE_CURRENT_LIST_DIR}/src/ulocale.cpp
 )
 
+set(SOURCES_SATELLITE_ATOMIC_REF
+    ${CMAKE_CURRENT_LIST_DIR}/src/atomic_ref.cpp
+)
+
 # Objs that exist only in libcpmt[d][01].lib.
 set(STATIC_SOURCES
     ${SOURCES_SATELLITE_1}
     ${SOURCES_SATELLITE_2}
     ${SOURCES_SATELLITE_CODECVT_IDS}
+    ${SOURCES_SATELLITE_ATOMIC_REF}
 )
 
 add_library(std_init_once_begin_initialize OBJECT IMPORTED)
@@ -470,11 +475,23 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     set_target_properties(msvcp${D_SUFFIX}_codecvt_ids PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_codecvt_ids${VCLIBS_SUFFIX}")
     target_link_options(msvcp${D_SUFFIX}_codecvt_ids PRIVATE "${THIS_CONFIG_LINK_OPTIONS}")
 
+    # msvcp140_atomic_ref.dll (the atomic ref satellite)
+    add_library(msvcp${D_SUFFIX}_atomic_ref_objects OBJECT ${SOURCES_SATELLITE_ATOMIC_REF})
+    target_compile_definitions(msvcp${D_SUFFIX}_atomic_ref_objects PRIVATE "_BUILDING_SATELLITE_ATOMIC_REF;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_options(msvcp${D_SUFFIX}_atomic_ref_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+
+    add_library(msvcp${D_SUFFIX}_atomic_ref SHARED)
+    target_link_libraries(msvcp${D_SUFFIX}_atomic_ref PRIVATE msvcp${D_SUFFIX}_atomic_ref_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_ref PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_ref${D_SUFFIX}${VCLIBS_SUFFIX}")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_ref PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_ref PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_ref${VCLIBS_SUFFIX}")
+    target_link_options(msvcp${D_SUFFIX}_atomic_ref PRIVATE "${THIS_CONFIG_LINK_OPTIONS}" "/DEF:${CMAKE_CURRENT_LIST_DIR}/src/msvcp_atomic_ref.def")
+
     # import library
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
     target_link_libraries(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX}_implib_objects std_init_once_begin_initialize std_init_once_complete)
-    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_codecvt_ids)
-    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>")
+    add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_codecvt_ids msvcp${D_SUFFIX}_atomic_ref)
+    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_ref>")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
 endfunction()
 
