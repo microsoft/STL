@@ -45,8 +45,7 @@ void test_ops() {
 
     int (*inc)(std::atomic_ref<ValueType> & ref);
     if constexpr (AddViaCas) {
-        inc = [](std::atomic_ref<ValueType>& ref) 
-        {
+        inc = [](std::atomic_ref<ValueType>& ref) {
             for (;;) {
                 ValueType e = ref.load();
                 ValueType d = static_cast<ValueType>(static_cast<int>(e) + 1);
@@ -67,9 +66,6 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
 }
-
-
-
 
 int main() {
     test_ops<false, char>();
