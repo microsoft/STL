@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <new>
 
-
 _EXTERN_C
 long* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     constexpr size_t _Table_size_power = 8;

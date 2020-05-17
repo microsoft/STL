@@ -402,7 +402,6 @@ struct _Atomic_storage {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
         _InterlockedExchange(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock), 0);
 #endif // hardware
-
     }
 
 protected:
@@ -435,8 +434,8 @@ public:
     }
 
     _Ty _Storage;
-    // Revisit for atomic_ref, should be removed completely
-    mutable char _Spinlock = 0; 
+    // Revisit, could be removed completely for atomic_ref
+    mutable char _Spinlock = 0;
 #endif // TRANSITION, ABI
 };
 
@@ -1758,7 +1757,7 @@ public:
     using value_type = _Ty;
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {
-        if constexpr (!is_always_lock_free){
+        if constexpr (!is_always_lock_free) {
             this->_Init_spinlock_for_ref();
         }
     }
@@ -1805,7 +1804,6 @@ public:
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired);
     }
-
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Order);
