@@ -1770,99 +1770,18 @@ public:
         return _Value;
     }
 
-    // For the following, we do the real implementation in the non-volatile function, and const_cast
-    // to call the non-volatile function in the volatile one. This is safe because all of the
-    // non-volatile functions reapply volatile, as all our intrinsics accept only volatile T *.
-    // We expect most atomic<T>s to be non-volatile, so making the real implementations
-    // non-volatile should result in better debug codegen.
-    using _Base::store;
-    void store(const _Ty _Value) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        const_cast<atomic_ref*>(this)->_Base::store(_Value);
-    }
-
-    void store(const _Ty _Value, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        const_cast<atomic_ref*>(this)->_Base::store(_Value, _Order);
-    }
-
-    using _Base::load;
-    _NODISCARD _Ty load() const volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<const atomic_ref*>(this)->_Base::load();
-    }
-
-    _NODISCARD _Ty load(const memory_order _Order) const volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<const atomic_ref*>(this)->_Base::load(_Order);
-    }
-
-    using _Base::exchange;
-    _Ty exchange(const _Ty _Value) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic_ref*>(this)->_Base::exchange(_Value);
-    }
-
-    _Ty exchange(const _Ty _Value, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic_ref*>(this)->_Base::exchange(_Value, _Order);
-    }
-
-    using _Base::compare_exchange_strong;
-    bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic_ref*>(this)->_Base::compare_exchange_strong(_Expected, _Desired);
-    }
-
-    bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return const_cast<atomic_ref*>(this)->_Base::compare_exchange_strong(_Expected, _Desired, _Order);
-    }
-
-    bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
-        const memory_order _Failure) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
-    }
-
-    bool compare_exchange_strong(
-        _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
-        return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
-    }
-
-    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
-        // we have no weak CAS intrinsics, even on ARM32/ARM64, so fall back to strong
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return this->compare_exchange_strong(_Expected, _Desired);
-    }
-
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired);
     }
 
-    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return this->compare_exchange_strong(_Expected, _Desired, _Order);
-    }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
-    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Success,
-        const memory_order _Failure) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
-    }
-
     bool compare_exchange_weak(
         _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
-    }
-
-    operator _Ty() const volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        return this->load();
     }
 
     operator _Ty() const noexcept {
