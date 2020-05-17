@@ -307,11 +307,10 @@ inline long& _Atomic_ref_get_mutex(const void* const _Key) noexcept {
 
 template <class _Ty>
 struct _Atomic_storage_types {
-    using _TVal     = _Ty;
-    using _TStorage = _Atomic_padded<_Ty>;
-    using _TConstr  = const _Ty;
-
-    using _Mx_val_or_ref = long; 
+    using _TVal          = _Ty;
+    using _TStorage      = _Atomic_padded<_Ty>;
+    using _TConstr       = const _Ty;
+    using _Mx_val_or_ref = long;
 
     constexpr long _Mx_init(const void* const _Key) noexcept {
         (void) _Key;
@@ -321,17 +320,15 @@ struct _Atomic_storage_types {
 
 template <class _Ty>
 struct _Atomic_storage_types<_Ty&> {
-    using _TVal     = _Ty;
-    using _TStorage = _Ty&;
-    using _TConstr  = _Ty&;
-
+    using _TVal          = _Ty;
+    using _TStorage      = _Ty&;
+    using _TConstr       = _Ty&;
     using _Mx_val_or_ref = long&;
 
     long& _Mx_init(const void* const _Key) noexcept {
         return _Atomic_ref_get_mutex(_Key);
     }
 };
-
 
 // STRUCT TEMPLATE _Atomic_storage
 #if 1 // TRANSITION, ABI
