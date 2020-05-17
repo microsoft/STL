@@ -1,0 +1,4 @@
+\.exports$
+\.obj$
+^\.github/actions/
+^\.github/workflows/
