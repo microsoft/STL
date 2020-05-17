@@ -4,4 +4,5 @@
 ; atomic ref satellite DLL definition
 
 EXPORTS
-    __std_atomic_ref_get_mutex
+    __std_atomic_ref_lock
+    __std_atomic_ref_unlock
