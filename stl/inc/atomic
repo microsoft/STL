@@ -392,7 +392,7 @@ struct _Atomic_storage {
         } else {
 #if defined(_M_ARM) || defined(_M_ARM64)
             _Memory_barrier();
-            __iso_volatile_store32(&_Spinlock, 0);
+            __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
             _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
             _InterlockedExchange(&_Spinlock, 0);
