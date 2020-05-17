@@ -342,10 +342,10 @@ struct _Atomic_storage {
 
     using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
 
-    _Atomic_storage() : _Storage({}), _Spinlock(_Atomic_storage_types<_Ty&>::_Mx_init(nullptr)) {}
+    _Atomic_storage() : _Spinlock(_Atomic_storage_types<_Ty&>::_Mx_init(nullptr)), _Storage({}) {}
 
     /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
-        : _Storage(_Value), _Spinlock(_Atomic_storage_types<_Ty&>::_Mx_init(&_Storage)) {
+        : _Spinlock(_Atomic_storage_types<_Ty&>::_Mx_init(&_Storage)), _Storage(_Value) {
         // non-atomically initialize this atomic
     }
 

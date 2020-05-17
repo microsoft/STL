@@ -49,7 +49,7 @@ void test_ops() {
         {
             for (;;) {
                 ValueType e = ref.load();
-                ValueType d  = e + 1;
+                ValueType d = static_cast<ValueType>(static_cast<int>(e) + 1);
                 if (ref.compare_exchange_weak(e, d)) {
                     return static_cast<int>(e);
                 }
