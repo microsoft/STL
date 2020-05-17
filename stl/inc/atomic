@@ -386,6 +386,7 @@ struct _Atomic_storage {
     }
 
 private:
+    // TODO: Don't use it for atomic_ref
     mutable long _Spinlock = 0;
 
 public:
@@ -1738,15 +1739,20 @@ public:
 
     static constexpr bool is_always_lock_free = _Is_always_lock_free<sizeof(_Ty)>;
 
+    static constexpr size_t required_alignment =
+        (sizeof(_Ty) == 1 || sizeof(_Ty) == 2 || sizeof(_Ty) == 4 || sizeof(_Ty) == 8 || sizeof(_Ty) == 16)
+            ? sizeof(_Ty)
+            : alignof(_Ty);
+
 #if 1 // TRANSITION, ABI
-    _NODISCARD bool is_lock_free() const volatile noexcept {
+    _NODISCARD bool is_lock_free() const noexcept {
         constexpr bool _Result = sizeof(_Ty) <= 8 && (sizeof(_Ty) & sizeof(_Ty) - 1) == 0;
         return _Result;
     }
 
 #else // ^^^ don't break ABI / break ABI vvv
 
-    _NODISCARD bool is_lock_free() const volatile noexcept {
+    _NODISCARD bool is_lock_free() const noexcept {
 #if _ATOMIC_HAS_DCAS
         return sizeof(_Ty) <= 2 * sizeof(void*);
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
@@ -1754,10 +1760,6 @@ public:
 #endif // _ATOMIC_HAS_DCAS
     }
 #endif // TRANSITION, ABI
-
-    _NODISCARD bool is_lock_free() const noexcept {
-        return static_cast<const volatile atomic*>(this)->is_lock_free();
-    }
 
     _Ty operator=(const _Ty _Value) noexcept {
         this->store(_Value);
