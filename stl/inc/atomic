@@ -294,6 +294,8 @@ struct _Atomic_storage_types {
     using _TVal     = _Ty;
     using _TStorage = _Atomic_padded<_Ty>;
     using _TConstr  = const _Ty;
+
+    static constexpr bool _Is_ref = false;
 };
 
 template <class _Ty>
@@ -301,7 +303,12 @@ struct _Atomic_storage_types<_Ty&> {
     using _TVal     = _Ty;
     using _TStorage = _Ty&;
     using _TConstr  = _Ty&;
+
+    static constexpr bool _Is_ref = true;
 };
+
+void _Atomic_ref_lock(const void* key) noexcept; // TODO: Satellite
+void _Atomic_ref_unlock(const void* key) noexcept; // TODO: Satellite
 
 // STRUCT TEMPLATE _Atomic_storage
 #if 1 // TRANSITION, ABI
@@ -370,23 +377,31 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange(&_Spinlock, 1)) {
-            _YIELD_PROCESSOR();
+        if _CONSTEXPR_IF (_Atomic_storage_types<_Ty>::_Is_ref) {
+            _Atomic_ref_lock(_STD addressof(_Storage));
+        } else {
+            while (_InterlockedExchange(&_Spinlock, 1)) {
+                _YIELD_PROCESSOR();
+            }
         }
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
+        if _CONSTEXPR_IF (_Atomic_storage_types<_Ty>::_Is_ref) {
+            _Atomic_ref_unlock(_STD addressof(_Storage));
+        } else {
 #if defined(_M_ARM) || defined(_M_ARM64)
-        _Memory_barrier();
-        __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-        _Memory_barrier();
+            _Memory_barrier();
+            __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
+            _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange(&_Spinlock, 0);
+            _InterlockedExchange(&_Spinlock, 0);
 #endif // hardware
+        }
     }
 
 private:
-    // TODO: Don't use it for atomic_ref
+    // Used only for atomic_ref. Hard to avoid without ABI break, will eliminate with next ABI breaking release
     mutable long _Spinlock = 0;
 
 public:
@@ -410,6 +425,7 @@ public:
     }
 
     _Ty _Storage;
+    // TODO: Emimitate for atomic_ref using [[no_unique_address]] or by re-defining hierarchy
     mutable char _Spinlock = 0;
 #endif // TRANSITION, ABI
 };
