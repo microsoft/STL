@@ -5,7 +5,6 @@
 
 #include <cstdint>
 #include <new>
-
 #include <synchapi.h>
 
 SRWLOCK* _Atomic_atomic_ref_get_mutex(const void* const _Key) noexcept {
