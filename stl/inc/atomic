@@ -312,7 +312,7 @@ struct _Atomic_storage_types {
     using _TConstr       = const _Ty;
     using _Mx_val_or_ref = long;
 
-    constexpr long _Mx_init(const void* const _Key) noexcept {
+    static constexpr long _Mx_init(const void* const _Key) noexcept {
         (void) _Key;
         return 0;
     }
@@ -325,7 +325,7 @@ struct _Atomic_storage_types<_Ty&> {
     using _TConstr       = _Ty&;
     using _Mx_val_or_ref = long&;
 
-    long& _Mx_init(const void* const _Key) noexcept {
+    static long& _Mx_init(const void* const _Key) noexcept {
         return _Atomic_ref_get_mutex(_Key);
     }
 };
@@ -342,10 +342,10 @@ struct _Atomic_storage {
 
     using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
 
-    _Atomic_storage() : _Storage({}), _Atomic_storage_types<_Ty&>::_Mx_init(nullptr) {}
+    _Atomic_storage() : _Storage({}), _Spinlock(_Atomic_storage_types<_Ty&>::_Mx_init(nullptr)) {}
 
     /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
-        : _Storage(_Value), _Atomic_storage_types<_Ty&>::_Mx_init(&_Storage) {
+        : _Storage(_Value), _Spinlock(_Atomic_storage_types<_Ty&>::_Mx_init(&_Storage)) {
         // non-atomically initialize this atomic
     }
 
@@ -397,7 +397,7 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange(&_Spinlock, 1)) {
+        while (_InterlockedExchange(const_cast<long*>(&_Spinlock), 1)) {
             _YIELD_PROCESSOR();
         }
     }
@@ -405,15 +405,15 @@ struct _Atomic_storage {
     void _Unlock() const noexcept { // unlock the spinlock
 #if defined(_M_ARM) || defined(_M_ARM64)
         _Memory_barrier();
-        __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
+        __iso_volatile_store32(reinterpret_cast<int*>(const_cast<long*>(&_Spinlock)), 0);
         _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange(&_Spinlock, 0);
+        _InterlockedExchange(const_cast<long*>(&_Spinlock), 0);
 #endif // hardware
     }
 
 private:
-    mutable typename _Atomic_storage_types<_Ty&>::_Mx_val_or_ref _Spinlock;
+    typename _Atomic_storage_types<_Ty&>::_Mx_val_or_ref _Spinlock;
 
 public:
     _Ty _Storage{};
