@@ -345,10 +345,10 @@ struct _Atomic_storage {
 
     using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
 
-    _Atomic_storage() = default;
+    _Atomic_storage() : _Storage({}), _Atomic_storage_types<_Ty&>::_Mx_init(nullptr) {}
 
     /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
-        : _Storage(_Value) {
+        : _Storage(_Value), _Atomic_storage_types<_Ty&>::_Mx_init(&_Storage) {
         // non-atomically initialize this atomic
     }
 
@@ -416,7 +416,7 @@ struct _Atomic_storage {
     }
 
 private:
-    mutable typename _Atomic_storage_types<_Ty&>::_Mx_val_or_ref _Spinlock = _Atomic_storage_types<_Ty&>::_Mx_init(this);
+    mutable typename _Atomic_storage_types<_Ty&>::_Mx_val_or_ref _Spinlock;
 
 public:
     _Ty _Storage{};
