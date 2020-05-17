@@ -864,7 +864,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     }
 
     _TVal exchange(const _TVal _Value) noexcept { // exchange with sequential consistency
-        _Ty _Result{_Value};
+        _TVal _Result{_Value};
         while (!compare_exchange_strong(_Result, _Value)) { // keep trying
         }
 
@@ -872,7 +872,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     }
 
     _TVal exchange(const _TVal _Value, const memory_order _Order) noexcept { // exchange with given memory order
-        _Ty _Result{_Value};
+        _TVal _Result{_Value};
         while (!compare_exchange_strong(_Result, _Value, _Order)) { // keep trying
         }
 
@@ -918,6 +918,7 @@ struct _Atomic_integral; // not defined
 template <class _Ty>
 struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral operations using 1-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+    using _TVal = typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -926,8 +927,6 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
-
-    using _TVal = typename _Base::_TVal;
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
@@ -984,6 +983,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral operations using 2-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+    using _TVal = typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -992,8 +992,6 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
-
-    using _TVal = typename _Base::_TVal;
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
@@ -1049,6 +1047,7 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral operations using 4-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+    using _TVal = typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1057,8 +1056,6 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
-
-    using _TVal = typename _Base::_TVal;
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
@@ -1114,6 +1111,7 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral operations using 8-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
+    using _TVal = typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1122,8 +1120,6 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
-
-    using _TVal = typename _Base::_TVal;
 
 #ifdef _M_IX86
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
@@ -1255,6 +1251,7 @@ template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
     using _Base           = _Atomic_integral<_Ty>;
+    using _TVal           = typename _Base::_TVal;
     using difference_type = _Ty;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1264,8 +1261,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
-
-    using _TVal = typename _Base::_TVal;
 
     // _Deprecate_non_lock_free_volatile is unnecessary here.
 
@@ -1392,7 +1387,8 @@ template <class _Ty>
 struct _Atomic_floating : _Atomic_storage<_Ty> {
     // provides atomic floating-point operations
     using _Base           = _Atomic_storage<_Ty>;
-    using difference_type = _Ty;
+    using _TVal           = typename _Base::_TVal;
+    using difference_type = _TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_floating() = default;
@@ -1401,8 +1397,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
-
-    using _TVal = typename _Base::_TVal;
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         _TVal _Temp{this->load(memory_order_relaxed)};
@@ -1422,30 +1416,30 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Ty _Temp{this->load(memory_order_relaxed)};
+        _TVal _Temp{this->load(memory_order_relaxed)};
         while (!this->compare_exchange_strong(_Temp, _Temp - _Operand, _Order)) { // keep trying
         }
 
         return _Temp;
     }
 
-    _Ty fetch_sub(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
+    _TVal fetch_sub(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand, _Order);
     }
 
-    _Ty operator+=(const _Ty _Operand) noexcept {
+    _TVal operator+=(const _TVal _Operand) noexcept {
         return fetch_add(_Operand) + _Operand;
     }
 
-    _Ty operator+=(const _Ty _Operand) volatile noexcept {
+    _TVal operator+=(const _TVal _Operand) volatile noexcept {
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand) + _Operand;
     }
 
-    _Ty operator-=(const _Ty _Operand) noexcept {
+    _TVal operator-=(const _TVal _Operand) noexcept {
         return fetch_sub(_Operand) - _Operand;
     }
 
-    _Ty operator-=(const _Ty _Operand) volatile noexcept {
+    _TVal operator-=(const _TVal _Operand) volatile noexcept {
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand) - _Operand;
     }
 };
@@ -1455,6 +1449,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 template <class _Ty>
 struct _Atomic_pointer : _Atomic_storage<_Ty> {
     using _Base           = _Atomic_storage<_Ty>;
+    using _TVal           = typename _Base::_TVal;
     using difference_type = ptrdiff_t;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1465,9 +1460,9 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
 
-    _Ty fetch_add(const ptrdiff_t _Diff, const memory_order _Order = memory_order_seq_cst) noexcept {
+    _TVal fetch_add(const ptrdiff_t _Diff, const memory_order _Order = memory_order_seq_cst) noexcept {
         const ptrdiff_t _Shift_bytes =
-            static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
+            static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_TVal>));
         ptrdiff_t _Result;
 #if defined(_M_IX86) || defined(_M_ARM)
         _ATOMIC_CHOOSE_INTRINSIC(
@@ -1476,80 +1471,80 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
         _ATOMIC_CHOOSE_INTRINSIC(
             _Order, _Result, _InterlockedExchangeAdd64, _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
 #endif // hardware
-        return reinterpret_cast<_Ty>(_Result);
+        return reinterpret_cast<_TVal>(_Result);
     }
 
     // _Deprecate_non_lock_free_volatile is unnecessary here.
 
-    _Ty fetch_add(const ptrdiff_t _Diff) volatile noexcept {
+    _TVal fetch_add(const ptrdiff_t _Diff) volatile noexcept {
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff);
     }
 
-    _Ty fetch_add(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
+    _TVal fetch_add(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff, _Order);
     }
 
-    _Ty fetch_sub(const ptrdiff_t _Diff) volatile noexcept {
+    _TVal fetch_sub(const ptrdiff_t _Diff) volatile noexcept {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
     }
 
-    _Ty fetch_sub(const ptrdiff_t _Diff) noexcept {
+    _TVal fetch_sub(const ptrdiff_t _Diff) noexcept {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
     }
 
-    _Ty fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
+    _TVal fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
     }
 
-    _Ty fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) noexcept {
+    _TVal fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) noexcept {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
     }
 
-    _Ty operator++(int) volatile noexcept {
+    _TVal operator++(int) volatile noexcept {
         return fetch_add(1);
     }
 
-    _Ty operator++(int) noexcept {
+    _TVal operator++(int) noexcept {
         return fetch_add(1);
     }
 
-    _Ty operator++() volatile noexcept {
+    _TVal operator++() volatile noexcept {
         return fetch_add(1) + 1;
     }
 
-    _Ty operator++() noexcept {
+    _TVal operator++() noexcept {
         return fetch_add(1) + 1;
     }
 
-    _Ty operator--(int) volatile noexcept {
+    _TVal operator--(int) volatile noexcept {
         return fetch_add(-1);
     }
 
-    _Ty operator--(int) noexcept {
+    _TVal operator--(int) noexcept {
         return fetch_add(-1);
     }
 
-    _Ty operator--() volatile noexcept {
+    _TVal operator--() volatile noexcept {
         return fetch_add(-1) - 1;
     }
 
-    _Ty operator--() noexcept {
+    _TVal operator--() noexcept {
         return fetch_add(-1) - 1;
     }
 
-    _Ty operator+=(const ptrdiff_t _Diff) volatile noexcept {
+    _TVal operator+=(const ptrdiff_t _Diff) volatile noexcept {
         return fetch_add(_Diff) + _Diff;
     }
 
-    _Ty operator+=(const ptrdiff_t _Diff) noexcept {
+    _TVal operator+=(const ptrdiff_t _Diff) noexcept {
         return fetch_add(_Diff) + _Diff;
     }
 
-    _Ty operator-=(const ptrdiff_t _Diff) volatile noexcept {
+    _TVal operator-=(const ptrdiff_t _Diff) volatile noexcept {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 
-    _Ty operator-=(const ptrdiff_t _Diff) noexcept {
+    _TVal operator-=(const ptrdiff_t _Diff) noexcept {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 };
