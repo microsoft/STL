@@ -300,8 +300,8 @@ inline long& _Atomic_ref_get_mutex(const void* const _Key) noexcept {
     static _Table_entry _Table[256];
 #pragma warning(pop)
     auto _Key_as_int = reinterpret_cast<const uintptr_t>(_Key);
-    _Key_as_int ^= _Key_as_int << 16;
-    _Key_as_int ^= _Key_as_int << 8;
+    _Key_as_int ^= _Key_as_int >> 16;
+    _Key_as_int ^= _Key_as_int >> 8;
     return _Table[_Key_as_int & 0xFF]._Splinlock;
 }
 
