@@ -132,8 +132,7 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_POINTER_LOCK_FREE  2
 
 _EXTERN_C
-void __stdcall __std_atomic_ref_lock(const void* _Key) noexcept;
-void __stdcall __std_atomic_ref_unlock(const void* _Key) noexcept;
+long* __stdcall __std_atomic_get_mutex(const void* _Key) noexcept;
 _END_EXTERN_C
 
 _STD_BEGIN
@@ -281,6 +280,11 @@ struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
     static constexpr bool _Uses_padding   = _Padding_size != 0;
 };
 
+template <class _Ty>
+struct _Atomic_storage_traits<_Ty&> { // properties for how _Ty is stored in an atomic
+    static_assert("Should be defined for atomic ref");
+};
+
 // STRUCT TEMPLATE _Atomic_padded
 template <class _Ty, bool = _Atomic_storage_traits<_Ty>::_Uses_padding>
 struct _Atomic_padded { // aggregate to allow explicit constexpr zeroing of padding
@@ -296,18 +300,26 @@ struct _Atomic_padded<_Ty, false> {
 
 template <class _Ty>
 struct _Atomic_storage_types {
-    using _TVal                   = _Ty;
-    using _TStorage               = _Atomic_padded<_Ty>;
-    using _TConstr                = const _Ty;
-    static constexpr bool _Is_ref = false;
+    using _TVal     = _Ty;
+    using _TStorage = _Atomic_padded<_Ty>;
+    using _TConstr  = const _Ty;
+    using _Spinlock = long;
+
+    static long* _Get_spinlock(long& _Spinlock) {
+        return &_Spinlock;
+    }
 };
 
 template <class _Ty>
 struct _Atomic_storage_types<_Ty&> {
-    using _TVal                   = _Ty;
-    using _TStorage               = _Ty&;
-    using _TConstr                = _Ty&;
-    static constexpr bool _Is_ref = true;
+    using _TVal     = _Ty;
+    using _TStorage = _Ty&;
+    using _TConstr  = _Ty&;
+    using _Spinlock = long*;
+
+    static long* _Get_spinlock(long* _Spinlock) {
+        return _Spinlock;
+    }
 };
 
 // STRUCT TEMPLATE _Atomic_storage
@@ -377,32 +389,30 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-        if _CONSTEXPR_IF (_Atomic_storage_types<_Ty>::_Is_ref) {
-            __std_atomic_ref_lock(_STD addressof(_Storage));
-        } else {
-            while (_InterlockedExchange(&_Spinlock, 1)) {
-                _YIELD_PROCESSOR();
-            }
+        while (_InterlockedExchange(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock), 1)) {
+            _YIELD_PROCESSOR();
         }
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
-        if _CONSTEXPR_IF (_Atomic_storage_types<_Ty>::_Is_ref) {
-            __std_atomic_ref_unlock(_STD addressof(_Storage));
-        } else {
 #if defined(_M_ARM) || defined(_M_ARM64)
-            _Memory_barrier();
-            __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-            _Memory_barrier();
+        _Memory_barrier();
+        __iso_volatile_store32(reinterpret_cast<int*>(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock)), 0);
+        _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-            _InterlockedExchange(&_Spinlock, 0);
+        _InterlockedExchange(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock), 0);
 #endif // hardware
-        }
+
+    }
+
+protected:
+    void _Init_spinlock_for_ref() {
+        _Spinlock = __std_atomic_get_mutex(_STD addressof(_Storage));
     }
 
 private:
-    // Spinlock for non-lock-free atomic. Not used by atomic_ref, but cannot be easily eliminated due to ABI
-    mutable long _Spinlock = 0;
+    // Spinlock for non-lock-free atomic. Spinlock pointer for non-lock-free atomic_ref
+    mutable typename _Atomic_storage_types<_Ty>::_Spinlock _Spinlock = 0;
 
 public:
     _Ty _Storage{};
@@ -425,7 +435,8 @@ public:
     }
 
     _Ty _Storage;
-    mutable char _Spinlock = 0; // TODO: refisit for atomic_ref
+    // Revisit for atomic_ref, should be removed completely
+    mutable char _Spinlock = 0; 
 #endif // TRANSITION, ABI
 };
 
@@ -1732,7 +1743,7 @@ atomic(_Ty) -> atomic<_Ty>;
 
 #if _HAS_CXX20
 template <class _Ty>
-struct atomic_ref : _Choose_atomic_base_t<_Ty, _Ty&> { // atomic value
+struct atomic_ref : _Choose_atomic_base_t<_Ty, _Ty&> { // atomic reference
 private:
     using _Base = _Choose_atomic_base_t<_Ty, _Ty&>;
 
@@ -1746,7 +1757,11 @@ public:
 
     using value_type = _Ty;
 
-    explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {}
+    explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {
+        if constexpr (!is_always_lock_free){
+            this->_Init_spinlock_for_ref();
+        }
+    }
 
     atomic_ref(const atomic_ref&) noexcept = default;
 
@@ -1754,10 +1769,16 @@ public:
 
     static constexpr bool is_always_lock_free = _Is_always_lock_free<sizeof(_Ty)>;
 
-    static constexpr size_t required_alignment =
-        (sizeof(_Ty) == 1 || sizeof(_Ty) == 2 || sizeof(_Ty) == 4 || sizeof(_Ty) == 8 || sizeof(_Ty) == 16)
-            ? sizeof(_Ty)
-            : alignof(_Ty);
+#if defined(_M_IX86) || defined(_M_ARM)
+    static constexpr bool _Is_potentially_lock_free =
+        sizeof(_Ty) == 1 || sizeof(_Ty) == 2 || sizeof(_Ty) == 4 || sizeof(_Ty) == 8;
+#elif defined(_M_X64) || defined(_M_ARM64)
+    static constexpr bool _Is_potentially_lock_free =
+        sizeof(_Ty) == 1 || sizeof(_Ty) == 2 || sizeof(_Ty) == 4 || sizeof(_Ty) == 8 || sizeof(_Ty) == 16;
+#else
+#error Unsupported atchitecture
+#endif
+    static constexpr size_t required_alignment = _Is_potentially_lock_free ? sizeof(_Ty) : alignof(_Ty);
 
 #if 1 // TRANSITION, ABI
     _NODISCARD bool is_lock_free() const noexcept {
