@@ -1759,12 +1759,6 @@ public:
         return static_cast<const volatile atomic*>(this)->is_lock_free();
     }
 
-    _Ty operator=(const _Ty _Value) volatile noexcept {
-        static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-        this->store(_Value);
-        return _Value;
-    }
-
     _Ty operator=(const _Ty _Value) noexcept {
         this->store(_Value);
         return _Value;
