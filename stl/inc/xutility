@@ -377,6 +377,13 @@ struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_ty
 template <_Has_member_element_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
+// clang-format off
+template <_Has_member_value_type _Ty> // Per LWG-3446
+    requires _Has_member_element_type<_Ty>
+        && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
+struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
+// clang-format on
+
 // ALIAS TEMPLATE iter_value_t
 template <class _Ty>
 using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
@@ -1434,14 +1441,12 @@ constexpr void _Seek_wrapped(_Ty*& _It, _Ty* const _UIt) {
 #if _HAS_CXX17
 // STRUCT TEMPLATE _Is_allocator
 template <class _Ty, class = void>
-struct _Is_allocator : false_type { // selected when _Ty can't possibly be an allocator
-};
+struct _Is_allocator : false_type {}; // selected when _Ty can't possibly be an allocator
 
 template <class _Ty>
 struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval<_Ty&>().deallocate(
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
-    : true_type { // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
-};
+    : true_type {}; // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
 
 // ALIAS TEMPLATES FOR DEDUCTION GUIDES, N4687 26.4.1 [associative.general]/2
 template <class _Iter>
@@ -1610,8 +1615,8 @@ struct _Priority_tag<0> { // base case priority tag for tag dispatch
 };
 
 template <class _InIt, class _Pr>
-void _Debug_order_set_unchecked2(_InIt, _InIt, _Pr&, input_iterator_tag,
-    _Priority_tag<0>) { // (don't) test if range is ordered by predicate, input iterators or different types
+void _Debug_order_set_unchecked2(_InIt, _InIt, _Pr&, input_iterator_tag, _Priority_tag<0>) {
+    // (don't) test if range is ordered by predicate, input iterators or different types
 }
 
 template <class _FwdIt, class _Pr>
@@ -5796,13 +5801,11 @@ private:
 
 // STRUCT TEMPLATE _Has_allocator_type
 template <class _Ty, class _Alloc, class = void>
-struct _Has_allocator_type : false_type { // tests for suitable _Ty::allocator_type
-};
+struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
 
 template <class _Ty, class _Alloc>
 struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
-    : is_convertible<_Alloc, typename _Ty::allocator_type>::type { // tests for suitable _Ty::allocator_type
-};
+    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
 
 // STRUCT allocator_arg_t
 struct allocator_arg_t { // tag type for added allocator argument
@@ -5820,8 +5823,8 @@ _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 
 // STRUCT TEMPLATE uses_allocator
 template <class _Ty, class _Alloc>
-struct uses_allocator
-    : _Has_allocator_type<_Ty, _Alloc>::type { // determine whether _Ty has an allocator_type member type
+struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
+    // determine whether _Ty has an allocator_type member type
 };
 
 template <class _Ty, class _Alloc>

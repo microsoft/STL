@@ -106,16 +106,13 @@ public:
 };
 
 template <class _Ty>
-class numeric_limits<const _Ty> : public numeric_limits<_Ty> { // numeric limits for const types
-};
+class numeric_limits<const _Ty> : public numeric_limits<_Ty> {}; // numeric limits for const types
 
 template <class _Ty>
-class numeric_limits<volatile _Ty> : public numeric_limits<_Ty> { // numeric limits for volatile types
-};
+class numeric_limits<volatile _Ty> : public numeric_limits<_Ty> {}; // numeric limits for volatile types
 
 template <class _Ty>
-class numeric_limits<const volatile _Ty> : public numeric_limits<_Ty> { // numeric limits for const volatile types
-};
+class numeric_limits<const volatile _Ty> : public numeric_limits<_Ty> {}; // numeric limits for const volatile types
 
 // STRUCT _Num_int_base
 struct _Num_int_base : _Num_base { // base for integer types

@@ -442,8 +442,7 @@ protected:
 }
 
 template <bool _TrivialDestruction, class... _Types>
-class _Variant_storage_ { // empty storage (empty "_Types" case)
-};
+class _Variant_storage_ {}; // empty storage (empty "_Types" case)
 
 // ALIAS TEMPLATE _Variant_storage
 template <class... _Types>
@@ -458,19 +457,17 @@ public:
         _Variant_storage<_Rest...> _Tail;
     };
 
-    _Variant_storage_() noexcept { // no initialization (no active member)
-    }
+    _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_First, _Types...>)
-        : _Head(static_cast<_Types&&>(_Args)...) { // initialize _Head with _Args...
-    }
+        : _Head(static_cast<_Types&&>(_Args)...) {} // initialize _Head with _Args...
+
     template <size_t _Idx, class... _Types, enable_if_t<(_Idx > 0), int> = 0>
     constexpr explicit _Variant_storage_(integral_constant<size_t, _Idx>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
-        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) { // initialize _Tail (recurse)
-    }
+        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
     _NODISCARD constexpr _First& _Get() & noexcept {
         return _Head;
@@ -499,19 +496,17 @@ public:
                                     // since the class has a variant member with a non-trivial destructor)
     }
 
-    _Variant_storage_() noexcept { // no initialization (no active member)
-    }
+    _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_First, _Types...>)
-        : _Head(static_cast<_Types&&>(_Args)...) { // initialize _Head with _Args...
-    }
+        : _Head(static_cast<_Types&&>(_Args)...) {} // initialize _Head with _Args...
+
     template <size_t _Idx, class... _Types, enable_if_t<(_Idx > 0), int> = 0>
     constexpr explicit _Variant_storage_(integral_constant<size_t, _Idx>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
-        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) { // initialize _Tail (recurse)
-    }
+        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
     _Variant_storage_(_Variant_storage_&&)      = default;
     _Variant_storage_(const _Variant_storage_&) = default;
@@ -557,19 +552,17 @@ public:
                                     // since the class has a variant member with a non-trivial destructor)
     }
 
-    _Variant_storage_() noexcept { // no initialization (no active member)
-    }
+    _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_First ^, _Types...>)
-        : _Head(static_cast<_Types&&>(_Args)...) { // initialize _Head with _Args...
-    }
+        : _Head(static_cast<_Types&&>(_Args)...) {} // initialize _Head with _Args...
+
     template <size_t _Idx, class... _Types, enable_if_t<(_Idx > 0), int> = 0>
     constexpr explicit _Variant_storage_(integral_constant<size_t, _Idx>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
-        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) { // initialize _Tail (recurse)
-    }
+        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
     _Variant_storage_(_Variant_storage_&&)      = default;
     _Variant_storage_(const _Variant_storage_&) = default;
@@ -862,8 +855,7 @@ public:
         return _STD move(*this);
     }
 
-    _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} { // initialize to the value-less state
-    }
+    _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} {} // initialize to the value-less state
 
     template <size_t _Idx, class... _UTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant<_Types...>, _Idx>, _UTypes...>, int> = 0>
@@ -994,8 +986,7 @@ template <class... _Types>
 using _Variant_init_overload_set = _Variant_init_overload_set_<index_sequence_for<_Types...>, _Types...>;
 
 template <class Enable, class _Ty, class... _Types>
-struct _Variant_init_helper { // failure case (has no member "type")
-};
+struct _Variant_init_helper {}; // failure case (has no member "type")
 
 template <class _Ty, class... _Types>
 struct _Variant_init_helper<void_t<decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>()))>, _Ty,
@@ -1029,8 +1020,7 @@ public:
     // constructors [variant.ctor]
     template <class _First = _Meta_front<variant>, enable_if_t<is_default_constructible_v<_First>, int> = 0>
     constexpr variant() noexcept(is_nothrow_default_constructible_v<_First>)
-        : _Mybase(in_place_index<0>) { // value-initialize alternative 0
-    }
+        : _Mybase(in_place_index<0>) {} // value-initialize alternative 0
 
     template <class _Ty,
         enable_if_t<sizeof...(_Types) != 0 //
@@ -1064,7 +1054,8 @@ public:
         enable_if_t<is_constructible_v<_Meta_at_c<variant, _Idx>, _UTypes...>, int> = 0>
     constexpr explicit variant(in_place_index_t<_Idx>, _UTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Meta_at_c<variant, _Idx>, _UTypes...>) // strengthened
-        : _Mybase(in_place_index<_Idx>, static_cast<_UTypes&&>(_Args)...) { // initialize alternative _Idx from _Args...
+        : _Mybase(in_place_index<_Idx>, static_cast<_UTypes&&>(_Args)...) {
+        // initialize alternative _Idx from _Args...
     }
     template <size_t _Idx, class _Elem, class... _UTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant, _Idx>, initializer_list<_Elem>&, _UTypes...>, int> = 0>

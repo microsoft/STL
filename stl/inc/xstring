@@ -284,28 +284,24 @@ struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or 
 
 // STRUCT char_traits<char16_t>
 template <>
-struct char_traits<char16_t> : _WChar_traits<char16_t> {}; // properties of a string or stream char16_t element
+struct char_traits<char16_t> : _WChar_traits<char16_t> {};
 
 using u16streampos = streampos;
 
 // STRUCT char_traits<char32_t>
 template <>
-struct char_traits<char32_t>
-    : _Char_traits<char32_t, unsigned int> { // properties of a string or stream char32_t element
-};
+struct char_traits<char32_t> : _Char_traits<char32_t, unsigned int> {};
 
 using u32streampos = streampos;
 
 // STRUCT char_traits<wchar_t>
 template <>
-struct char_traits<wchar_t> : _WChar_traits<wchar_t> {}; // properties of a string or stream wchar_t element
+struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
 // STRUCT char_traits<unsigned short>
 template <>
-struct char_traits<unsigned short> : _WChar_traits<unsigned short> {
-    // properties of a string or stream unsigned short element
-};
+struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #endif // _NATIVE_WCHAR_T_DEFINED
 
 #if defined(__cpp_char8_t) && defined(_MSC_VER) && !defined(__EDG__) && !defined(__clang__)
@@ -549,8 +545,7 @@ struct _Char_traits_lt {
 
 template <class _Elem>
 struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>>
-    : _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>::type { // builtin char_traits::eq behaves like equal_to<>
-};
+    : _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>::type {}; // builtin char_traits::eq acts like equal_to<>
 
 template <class _Traits>
 using _Traits_ch_t = typename _Traits::char_type;

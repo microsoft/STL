@@ -172,11 +172,9 @@ public:
         return xsputn(_Ptr, _Count);
     }
 
-    virtual void __CLR_OR_THIS_CALL _Lock() { // set the thread lock (overridden by basic_filebuf)
-    }
+    virtual void __CLR_OR_THIS_CALL _Lock() {} // set the thread lock (overridden by basic_filebuf)
 
-    virtual void __CLR_OR_THIS_CALL _Unlock() { // clear the thread lock (overridden by basic_filebuf)
-    }
+    virtual void __CLR_OR_THIS_CALL _Unlock() {} // clear the thread lock (overridden by basic_filebuf)
 
 protected:
     _Elem* __CLR_OR_THIS_CALL eback() const {
@@ -376,8 +374,7 @@ protected:
         return 0;
     }
 
-    virtual void __CLR_OR_THIS_CALL imbue(const locale&) { // set locale to argument (do nothing)
-    }
+    virtual void __CLR_OR_THIS_CALL imbue(const locale&) {} // set locale to argument (do nothing)
 
 private:
     _Elem* _Gfirst; // beginning of read buffer

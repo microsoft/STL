@@ -78,8 +78,7 @@ struct _Scoped_base<_Outer, _Inner0, _Inner...> : _Outer { // nest of allocators
         return _Inner_obj;
     }
 
-    _Scoped_base() : _Outer(), _Inner_obj() { // value-initialize Outer and Inner
-    }
+    _Scoped_base() : _Outer(), _Inner_obj() {} // value-initialize Outer and Inner
 
     template <class _Other1, class... _Other2,
         enable_if_t<sizeof...(_Other2) != 0 || !is_base_of_v<_Scoped_base, decay_t<_Other1>>, int> = 0>
@@ -113,13 +112,10 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
         return _Self;
     }
 
-    _Scoped_base() : _Outer() { // value-initialize
-    }
+    _Scoped_base() : _Outer() {} // value-initialize
 
     template <class _Other1, enable_if_t<!is_base_of_v<_Scoped_base, decay_t<_Other1>>, int> = 0>
-    _Scoped_base(_Other1&& _Outer_arg) : _Outer(_STD forward<_Other1>(_Outer_arg)) {
-        // also handles rebinding
-    }
+    _Scoped_base(_Other1&& _Outer_arg) : _Outer(_STD forward<_Other1>(_Outer_arg)) {} // also handles rebinding
 
     _Scoped_base(const _Scoped_base&) = default;
     _Scoped_base(_Scoped_base&&)      = default;

@@ -655,6 +655,20 @@ STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is not defined
+#elif __cpp_lib_integer_comparison_functions != 202002L
+#error __cpp_lib_integer_comparison_functions is not 202002L
+#else
+STATIC_ASSERT(__cpp_lib_integer_comparison_functions == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_integer_sequence
 #error __cpp_lib_integer_sequence is not defined
 #elif __cpp_lib_integer_sequence != 201304L
