@@ -185,6 +185,7 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #ifdef __clang__
         if constexpr (is_same_v<_Elem, wchar_t>) {
             __builtin_wmemcpy(_First1, _First2, _Count);
+            return _First1;
         } else {
             return _Char_traits<_Elem, unsigned short>::copy(_First1, _First2, _Count);
         }
