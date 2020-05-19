@@ -691,9 +691,6 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
 std/numerics/c.math/cmath.pass.cpp FAIL
 
-# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
-std/containers/views/span.cons/assign.pass.cpp FAIL
-
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.runtime.pass.cpp FAIL
@@ -702,21 +699,6 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp
 
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 std/language.support/support.limits/support.limits.general/string.version.pass.cpp FAIL
-
-# Test needs to be updated for LWG-3320 removing span::const_iterator.
-std/containers/views/types.pass.cpp FAIL
-std/containers/views/span.iterators/begin.pass.cpp FAIL
-std/containers/views/span.iterators/rbegin.pass.cpp FAIL
-std/containers/views/span.iterators/end.pass.cpp FAIL
-std/containers/views/span.iterators/rend.pass.cpp FAIL
-
-# Test needs to be removed after P2116R0 removed the tuple interface of span
-std/containers/views/span.tuple/get.fail.cpp PASS
-std/containers/views/span.tuple/get.pass.cpp FAIL
-std/containers/views/span.tuple/tuple_element.fail.cpp PASS
-std/containers/views/span.tuple/tuple_element.pass.cpp FAIL
-std/containers/views/span.tuple/tuple_size.fail.cpp PASS
-std/containers/views/span.tuple/tuple_size.pass.cpp FAIL
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
@@ -1028,9 +1010,6 @@ std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
-
-# Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
 
 # Not yet analyzed. Frequent timeouts
 std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
