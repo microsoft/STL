@@ -274,9 +274,6 @@ std/utilities/time/time.clock/time.clock.file/consistency.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/file_time.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/now.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp FAIL
-std/utilities/time/time.clock/time.clock.system/local_time.types.pass.cpp FAIL
-std/utilities/time/time.clock/time.clock.system/sys.time.types.pass.cpp FAIL
-std/utilities/time/time.duration/time.duration.literals/literals1.pass.cpp FAIL
 std/utilities/time/time.hms/time.12/is_am.pass.cpp FAIL
 std/utilities/time/time.hms/time.12/is_pm.pass.cpp FAIL
 std/utilities/time/time.hms/time.12/make12.pass.cpp FAIL
