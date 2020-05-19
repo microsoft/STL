@@ -73,9 +73,11 @@ int main() {
 #if _HAS_CXX17
         shared_ptr<void(int)> s4(add_noexcept, decrement_val{});
         assert(s4.get() == add_noexcept);
+        (*s4)(1);
 
         shared_ptr<void(int) noexcept> s5(add_noexcept, decrement_val{});
         assert(s5.get() == add_noexcept);
+        (*s5)(1);
 
         s4 = s5;
         assert(s4.get() == add_noexcept);
