@@ -1044,7 +1044,7 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1
 
 // This macro does nothing. It serves as a reminder that once _Key is obtained,
 // the amount of work should not be discarded, unless _Key is evaluated as false.
-// Thus any return that is not due to _Key evaluated as false should be done before obtaining _Key.
+// Thus any early return that is not due to _Key evaluated as false should be done before obtaining _Key.
 #define _CHUNK_MUST_BE_USED(_Key)
 
 // PARALLEL FUNCTION TEMPLATE all_of
