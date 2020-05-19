@@ -62,9 +62,9 @@ struct _Char_traits { // properties of a string or stream element
 #ifdef __clang__
         __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
         return _First1;
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
         return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem)));
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
     }
 
     _Pre_satisfies_(_Dest_size >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _First1,
@@ -92,9 +92,9 @@ struct _Char_traits { // properties of a string or stream element
 #ifdef __clang__
         __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
         return _First1;
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
         return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count * sizeof(_Elem)));
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -189,10 +189,10 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
         } else {
             return _Char_traits<_Elem, unsigned short>::copy(_First1, _First2, _Count);
         }
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
         return reinterpret_cast<_Elem*>(
             _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
     }
 
     _Pre_satisfies_(_Size_in_words >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_words)
@@ -223,10 +223,10 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #ifdef __clang__
         __builtin_wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
         return _First1;
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
         return reinterpret_cast<_Elem*>(
             _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, size_t _Count, _Elem _Ch) noexcept
@@ -363,9 +363,9 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #ifdef __clang__
         __builtin_memcpy(_First1, _First2, _Count);
         return _First1;
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
         return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count));
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
     }
 
     _Pre_satisfies_(_Size_in_bytes >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_bytes)
@@ -403,9 +403,9 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #ifdef __clang__
         __builtin_memmove(_First1, _First2, _Count);
         return _First1;
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
         return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count));
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(
