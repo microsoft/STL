@@ -56,7 +56,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbsta
         BOOL defused = 0;
         _Cvtvec cvtvec;
 
-        if (ploc == 0) {
+        if (ploc == nullptr) {
             cvtvec = _Getcvt();
             ploc   = &cvtvec;
         }

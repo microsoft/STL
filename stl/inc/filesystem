@@ -921,7 +921,7 @@ namespace filesystem {
             return operator/=(_Replacement);
         }
 
-        path& replace_extension(/* const path& _Replacement = path() */) noexcept /* strengthened */ {
+        path& replace_extension(/* const path& _Replacement = {} */) noexcept /* strengthened */ {
             // remove any extension() (and alternate data stream references) from *this's filename()
             const wchar_t* _First = _Text.data();
             const auto _Last      = _First + _Text.size();
@@ -1794,14 +1794,12 @@ namespace filesystem {
         path _Path2;
         string _What;
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
     protected:
         virtual void _Doraise() const override { // perform class-specific exception handling
             _RAISE(*this);
         }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
     };
 
     [[noreturn]] inline void _Throw_fs_error(const char* _Op, __std_win_error _Error) {
@@ -4038,7 +4036,7 @@ namespace filesystem {
 
             if (!__std_is_file_not_found(_Err)) {
                 _Ec = _Make_ec(_Err);
-                return path();
+                return {};
             }
         }
 
@@ -4064,7 +4062,7 @@ namespace filesystem {
                     _Call_canonical = false;
                 } else {
                     _Ec = _Make_ec(_Err);
-                    return path();
+                    return {};
                 }
             }
         }
@@ -4098,13 +4096,13 @@ namespace filesystem {
         const path _Weakly_canonical_path = _STD filesystem::weakly_canonical(_Path, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         const path _Weakly_canonical_base = _STD filesystem::weakly_canonical(_Base, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _Weakly_canonical_path.lexically_proximate(_Weakly_canonical_base);
@@ -4115,7 +4113,7 @@ namespace filesystem {
         const path _Base = _STD filesystem::current_path(_Ec);
         // N4810 29.11.14.27 [fs.op.proximate]/1 incorrectly calls current_path()
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _STD filesystem::proximate(_Path, _Base, _Ec);
@@ -4134,13 +4132,13 @@ namespace filesystem {
         const path _Weakly_canonical_path = _STD filesystem::weakly_canonical(_Path, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         const path _Weakly_canonical_base = _STD filesystem::weakly_canonical(_Base, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _Weakly_canonical_path.lexically_relative(_Weakly_canonical_base);
@@ -4151,7 +4149,7 @@ namespace filesystem {
         const path _Base = _STD filesystem::current_path(_Ec);
         // N4810 29.11.14.29 [fs.op.relative]/1 incorrectly calls current_path()
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _STD filesystem::relative(_Path, _Base, _Ec);

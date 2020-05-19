@@ -34,15 +34,6 @@
 #endif
 
 namespace std_testing {
-
-    template <typename Ty>
-    struct identity_impl {
-        typedef Ty type;
-    };
-
-    template <typename Ty>
-    using identity_t = typename identity_impl<Ty>::type;
-
     namespace dummy_functors {
         // Various functors required by various algorithms.
         // Note that the standard actually requires these to be copyable. As a "nonstandard extension" we want
@@ -169,7 +160,7 @@ namespace std_testing {
 
         // Now, test everything!
         template <typename In1, typename In2, typename Out>
-        void test_in1_in2_out(identity_t<In1> in1, identity_t<In2> in2, identity_t<Out> out) {
+        void test_in1_in2_out(In1 in1, In2 in2, Out out) {
 #if INSTANTIATE_ALGORITHMS_SPLIT_MODE == 1
             std::transform(in1, in1, in2, out, BINARYOP{});
             std::merge(in1, in1, in2, in2, out);
@@ -187,13 +178,13 @@ namespace std_testing {
         }
 
         template <typename In1, typename In2>
-        void test_in1_in2(identity_t<In1> in1, identity_t<In2> in2) {
-            test_in1_in2_out<In1, In2, OutIt>(in1, in2, OUTIT);
-            test_in1_in2_out<In1, In2, InIt>(in1, in2, INIT);
-            test_in1_in2_out<In1, In2, FwdIt>(in1, in2, FWDIT);
-            test_in1_in2_out<In1, In2, BidIt>(in1, in2, BIDIT);
-            test_in1_in2_out<In1, In2, RanIt>(in1, in2, RANIT);
-            test_in1_in2_out<In1, In2, ArrIt>(in1, in2, ARRIT);
+        void test_in1_in2(In1 in1, In2 in2) {
+            test_in1_in2_out(in1, in2, OUTIT);
+            test_in1_in2_out(in1, in2, INIT);
+            test_in1_in2_out(in1, in2, FWDIT);
+            test_in1_in2_out(in1, in2, BIDIT);
+            test_in1_in2_out(in1, in2, RANIT);
+            test_in1_in2_out(in1, in2, ARRIT);
 
 #if INSTANTIATE_ALGORITHMS_SPLIT_MODE == 2
             (void) std::mismatch(in1, in1, in2);
@@ -219,7 +210,7 @@ namespace std_testing {
         }
 
         template <typename In1, typename Fwd1>
-        void test_in1_fwd1(identity_t<In1> in1, identity_t<Fwd1> fwd1) {
+        void test_in1_fwd1(In1 in1, Fwd1 fwd1) {
             // SPLIT_MODE 1
             (void) std::find_first_of(in1, in1, fwd1, fwd1);
             (void) std::find_first_of(in1, in1, fwd1, fwd1, BIPRED{});
@@ -233,20 +224,20 @@ namespace std_testing {
         }
 
         template <typename In1, typename Out, typename Out2>
-        void test_in1_out_out2(identity_t<In1> in1, identity_t<Out> out, identity_t<Out2> out2) {
+        void test_in1_out_out2(In1 in1, Out out, Out2 out2) {
             // SPLIT_MODE 1
             std::partition_copy(in1, in1, out, out2, PRED{});
         }
 
         template <typename In1, typename Out>
-        void test_in1_out(identity_t<In1> in1, identity_t<Out> out) {
+        void test_in1_out(In1 in1, Out out) {
             // SPLIT_MODE 1
-            test_in1_out_out2<In1, Out, OutIt>(in1, out, OUTIT);
-            test_in1_out_out2<In1, Out, InIt>(in1, out, INIT);
-            test_in1_out_out2<In1, Out, FwdIt>(in1, out, FWDIT);
-            test_in1_out_out2<In1, Out, BidIt>(in1, out, BIDIT);
-            test_in1_out_out2<In1, Out, RanIt>(in1, out, RANIT);
-            test_in1_out_out2<In1, Out, ArrIt>(in1, out, ARRIT);
+            test_in1_out_out2(in1, out, OUTIT);
+            test_in1_out_out2(in1, out, INIT);
+            test_in1_out_out2(in1, out, FWDIT);
+            test_in1_out_out2(in1, out, BIDIT);
+            test_in1_out_out2(in1, out, RANIT);
+            test_in1_out_out2(in1, out, ARRIT);
 
             std::copy(in1, in1, out);
             std::copy_n(in1, Get_size(in1), out);
@@ -277,25 +268,25 @@ namespace std_testing {
         }
 
         template <typename In1>
-        void test_in1(identity_t<In1> in1) {
-            test_in1_in2<In1, InIt>(in1, INIT);
-            test_in1_in2<In1, FwdIt>(in1, FWDIT);
-            test_in1_in2<In1, BidIt>(in1, BIDIT);
-            test_in1_in2<In1, RanIt>(in1, RANIT);
-            test_in1_in2<In1, ArrIt>(in1, ARRIT);
+        void test_in1(In1 in1) {
+            test_in1_in2(in1, INIT);
+            test_in1_in2(in1, FWDIT);
+            test_in1_in2(in1, BIDIT);
+            test_in1_in2(in1, RANIT);
+            test_in1_in2(in1, ARRIT);
 
 #if INSTANTIATE_ALGORITHMS_SPLIT_MODE == 1
-            test_in1_fwd1<In1, FwdIt>(in1, FWDIT);
-            test_in1_fwd1<In1, BidIt>(in1, BIDIT);
-            test_in1_fwd1<In1, RanIt>(in1, RANIT);
-            test_in1_fwd1<In1, ArrIt>(in1, ARRIT);
+            test_in1_fwd1(in1, FWDIT);
+            test_in1_fwd1(in1, BIDIT);
+            test_in1_fwd1(in1, RANIT);
+            test_in1_fwd1(in1, ARRIT);
 
-            test_in1_out<In1, OutIt>(in1, OUTIT);
-            test_in1_out<In1, InIt>(in1, INIT);
-            test_in1_out<In1, FwdIt>(in1, FWDIT);
-            test_in1_out<In1, BidIt>(in1, BIDIT);
-            test_in1_out<In1, RanIt>(in1, RANIT);
-            test_in1_out<In1, ArrIt>(in1, ARRIT);
+            test_in1_out(in1, OUTIT);
+            test_in1_out(in1, INIT);
+            test_in1_out(in1, FWDIT);
+            test_in1_out(in1, BIDIT);
+            test_in1_out(in1, RANIT);
+            test_in1_out(in1, ARRIT);
 
             LST.assign(in1, in1);
             LST.insert(LST.end(), in1, in1);
@@ -339,8 +330,7 @@ namespace std_testing {
 
 #if HAS_PARALLEL_ALGORITHMS
         template <typename Fwd1, typename Fwd2, typename Fwd3, typename ExecutionPolicy>
-        void test_exec_fwd1_fwd2_fwd3(
-            ExecutionPolicy&& exec, identity_t<Fwd1> fwd1, identity_t<Fwd2> fwd2, identity_t<Fwd3> fwd3) {
+        void test_exec_fwd1_fwd2_fwd3(ExecutionPolicy&& exec, Fwd1 fwd1, Fwd2 fwd2, Fwd3 fwd3) {
             std::transform(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2, fwd3, BINARYOP{});
 
             std::partition_copy(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2, fwd3, PRED{});
@@ -359,11 +349,11 @@ namespace std_testing {
         }
 
         template <typename Fwd1, typename Fwd2, typename ExecutionPolicy>
-        void test_exec_fwd1_fwd2(ExecutionPolicy&& exec, identity_t<Fwd1> fwd1, identity_t<Fwd2> fwd2) {
-            test_exec_fwd1_fwd2_fwd3<Fwd1, Fwd2, FwdIt>(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, FWDIT);
-            test_exec_fwd1_fwd2_fwd3<Fwd1, Fwd2, BidIt>(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, BIDIT);
-            test_exec_fwd1_fwd2_fwd3<Fwd1, Fwd2, RanIt>(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, RANIT);
-            test_exec_fwd1_fwd2_fwd3<Fwd1, Fwd2, ArrIt>(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, ARRIT);
+        void test_exec_fwd1_fwd2(ExecutionPolicy&& exec, Fwd1 fwd1, Fwd2 fwd2) {
+            test_exec_fwd1_fwd2_fwd3(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, FWDIT);
+            test_exec_fwd1_fwd2_fwd3(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, BIDIT);
+            test_exec_fwd1_fwd2_fwd3(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, RANIT);
+            test_exec_fwd1_fwd2_fwd3(std::forward<ExecutionPolicy>(exec), fwd1, fwd2, ARRIT);
 
             (void) std::find_end(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2, fwd2);
             (void) std::find_end(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, fwd2, fwd2, BIPRED{});
@@ -419,12 +409,12 @@ namespace std_testing {
 #endif // HAS_PARALLEL_ALGORITHMS
 
         template <typename Fwd1, typename Fwd2>
-        void test_fwd1_fwd2(identity_t<Fwd1> fwd1, identity_t<Fwd2> fwd2) {
+        void test_fwd1_fwd2(Fwd1 fwd1, Fwd2 fwd2) {
             // SPLIT_MODE 1
 #if HAS_PARALLEL_ALGORITHMS
-            test_exec_fwd1_fwd2<Fwd1, Fwd2>(std::execution::seq, fwd1, fwd2);
-            test_exec_fwd1_fwd2<Fwd1, Fwd2>(std::execution::par, fwd1, fwd2);
-            test_exec_fwd1_fwd2<Fwd1, Fwd2>(std::execution::par_unseq, fwd1, fwd2);
+            test_exec_fwd1_fwd2(std::execution::seq, fwd1, fwd2);
+            test_exec_fwd1_fwd2(std::execution::par, fwd1, fwd2);
+            test_exec_fwd1_fwd2(std::execution::par_unseq, fwd1, fwd2);
 #endif // HAS_PARALLEL_ALGORITHMS
 
             (void) std::find_end(fwd1, fwd1, fwd2, fwd2);
@@ -440,7 +430,7 @@ namespace std_testing {
         }
 
         template <typename Fwd1, typename Out>
-        void test_fwd1_out(identity_t<Fwd1> fwd1, identity_t<Out> out) {
+        void test_fwd1_out(Fwd1 fwd1, Out out) {
             // SPLIT_MODE 2
             std::rotate_copy(fwd1, fwd1, fwd1, out);
 #if _HAS_CXX17
@@ -450,7 +440,7 @@ namespace std_testing {
 
 #if HAS_PARALLEL_ALGORITHMS
         template <typename Fwd1, typename ExecutionPolicy>
-        void test_exec_fwd1(ExecutionPolicy&& exec, identity_t<Fwd1> fwd1) {
+        void test_exec_fwd1(ExecutionPolicy&& exec, Fwd1 fwd1) {
             (void) std::all_of(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, PRED{});
             (void) std::any_of(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, PRED{});
             (void) std::none_of(std::forward<ExecutionPolicy>(exec), fwd1, fwd1, PRED{});
@@ -507,25 +497,25 @@ namespace std_testing {
 #endif // HAS_PARALLEL_ALGORITHMS
 
         template <typename Fwd1>
-        void test_fwd1(identity_t<Fwd1> fwd1) {
+        void test_fwd1(Fwd1 fwd1) {
             // SPLIT_MODE 2
 #if HAS_PARALLEL_ALGORITHMS
-            test_exec_fwd1<Fwd1>(std::execution::seq, fwd1);
-            test_exec_fwd1<Fwd1>(std::execution::par, fwd1);
-            test_exec_fwd1<Fwd1>(std::execution::par_unseq, fwd1);
+            test_exec_fwd1(std::execution::seq, fwd1);
+            test_exec_fwd1(std::execution::par, fwd1);
+            test_exec_fwd1(std::execution::par_unseq, fwd1);
 #endif // HAS_PARALLEL_ALGORITHMS
 
-            test_fwd1_fwd2<Fwd1, FwdIt>(fwd1, FWDIT);
-            test_fwd1_fwd2<Fwd1, BidIt>(fwd1, BIDIT);
-            test_fwd1_fwd2<Fwd1, RanIt>(fwd1, RANIT);
-            test_fwd1_fwd2<Fwd1, ArrIt>(fwd1, ARRIT);
+            test_fwd1_fwd2(fwd1, FWDIT);
+            test_fwd1_fwd2(fwd1, BIDIT);
+            test_fwd1_fwd2(fwd1, RANIT);
+            test_fwd1_fwd2(fwd1, ARRIT);
 
-            test_fwd1_out<Fwd1, OutIt>(fwd1, OUTIT);
-            test_fwd1_out<Fwd1, InIt>(fwd1, INIT);
-            test_fwd1_out<Fwd1, FwdIt>(fwd1, FWDIT);
-            test_fwd1_out<Fwd1, BidIt>(fwd1, BIDIT);
-            test_fwd1_out<Fwd1, RanIt>(fwd1, RANIT);
-            test_fwd1_out<Fwd1, ArrIt>(fwd1, ARRIT);
+            test_fwd1_out(fwd1, OUTIT);
+            test_fwd1_out(fwd1, INIT);
+            test_fwd1_out(fwd1, FWDIT);
+            test_fwd1_out(fwd1, BIDIT);
+            test_fwd1_out(fwd1, RANIT);
+            test_fwd1_out(fwd1, ARRIT);
 
             (void) std::adjacent_find(fwd1, fwd1);
             (void) std::adjacent_find(fwd1, fwd1, BIPRED{});
@@ -588,7 +578,7 @@ namespace std_testing {
 
 #if HAS_PARALLEL_ALGORITHMS
         template <typename Bid1, typename Bid2, typename ExecutionPolicy>
-        void test_exec_bid1_bid2_xxx_backward(ExecutionPolicy&& exec, identity_t<Bid1> bid1, identity_t<Bid2> bid2) {
+        void test_exec_bid1_bid2_xxx_backward(ExecutionPolicy&& exec, Bid1 bid1, Bid2 bid2) {
             // SPLIT_MODE 2
             std::copy_backward(std::forward<ExecutionPolicy>(exec), bid1, bid1, bid2);
             std::move_backward(std::forward<ExecutionPolicy>(exec), bid1, bid1, bid2);
@@ -596,12 +586,12 @@ namespace std_testing {
 #endif // HAS_PARALLEL_ALGORITHMS
 
         template <typename Bid1, typename Bid2>
-        void test_bid1_bid2_xxx_backward(identity_t<Bid1> bid1, identity_t<Bid2> bid2) {
+        void test_bid1_bid2_xxx_backward(Bid1 bid1, Bid2 bid2) {
             // SPLIT_MODE 2
 #if HAS_PARALLEL_ALGORITHMS
-            test_exec_bid1_bid2_xxx_backward<Bid1, Bid2>(std::execution::seq, bid1, bid2);
-            test_exec_bid1_bid2_xxx_backward<Bid1, Bid2>(std::execution::par, bid1, bid2);
-            test_exec_bid1_bid2_xxx_backward<Bid1, Bid2>(std::execution::par_unseq, bid1, bid2);
+            test_exec_bid1_bid2_xxx_backward(std::execution::seq, bid1, bid2);
+            test_exec_bid1_bid2_xxx_backward(std::execution::par, bid1, bid2);
+            test_exec_bid1_bid2_xxx_backward(std::execution::par_unseq, bid1, bid2);
 #endif // HAS_PARALLEL_ALGORITHMS
 
             std::copy_backward(bid1, bid1, bid2);
@@ -609,26 +599,26 @@ namespace std_testing {
         }
 
         template <typename Bid1, typename Out>
-        void test_bid1_out(identity_t<Bid1> bid1, identity_t<Out> out) {
+        void test_bid1_out(Bid1 bid1, Out out) {
             // SPLIT_MODE 2
             std::reverse_copy(bid1, bid1, out);
         }
 
 #if HAS_PARALLEL_ALGORITHMS
         template <typename Bid1, typename Fwd1, typename ExecutionPolicy>
-        void test_exec_bid1_fwd1(ExecutionPolicy&& exec, identity_t<Bid1> bid1, identity_t<Fwd1> fwd1) {
+        void test_exec_bid1_fwd1(ExecutionPolicy&& exec, Bid1 bid1, Fwd1 fwd1) {
             std::reverse_copy(std::forward<ExecutionPolicy>(exec), bid1, bid1, fwd1);
         }
 
         template <typename Bid1, typename Fwd1>
-        void test_bid1_fwd1(identity_t<Bid1> bid1, identity_t<Fwd1> fwd1) {
-            test_exec_bid1_fwd1<Bid1, Fwd1>(std::execution::seq, bid1, fwd1);
-            test_exec_bid1_fwd1<Bid1, Fwd1>(std::execution::par, bid1, fwd1);
-            test_exec_bid1_fwd1<Bid1, Fwd1>(std::execution::par_unseq, bid1, fwd1);
+        void test_bid1_fwd1(Bid1 bid1, Fwd1 fwd1) {
+            test_exec_bid1_fwd1(std::execution::seq, bid1, fwd1);
+            test_exec_bid1_fwd1(std::execution::par, bid1, fwd1);
+            test_exec_bid1_fwd1(std::execution::par_unseq, bid1, fwd1);
         }
 
         template <typename Bid1, typename ExecutionPolicy>
-        void test_exec_bid1(ExecutionPolicy&& exec, identity_t<Bid1> bid1) {
+        void test_exec_bid1(ExecutionPolicy&& exec, Bid1 bid1) {
             std::reverse(std::forward<ExecutionPolicy>(exec), bid1, bid1);
             // Currently the standard requires random-access iterators for stable_sort, but our implementation
             // works with bidirectional iterators and we don't want to regress this.
@@ -641,30 +631,28 @@ namespace std_testing {
 #endif // HAS_PARALLEL_ALGORITHMS
 
         template <typename Bid1>
-        void test_bid1(identity_t<Bid1> bid1) {
+        void test_bid1(Bid1 bid1) {
             // SPLIT_MODE 2
-            test_bid1_bid2_xxx_backward<Bid1, BidIt>(bid1, BIDIT);
-            test_bid1_bid2_xxx_backward<Bid1, RanIt>(bid1, RANIT);
-            // copy_backward and move_backward don't have _ITERATOR_DEBUG_ARRAY_OVERLOADS, so the destination
-            // argument must not be an array or we trigger _SCL_INSECURE_DEPRECATE_FN.
-            // test_bid1_bid2_xxx_backward<Bid1, ArrIt>(bid1, ARRIT);
+            test_bid1_bid2_xxx_backward(bid1, BIDIT);
+            test_bid1_bid2_xxx_backward(bid1, RANIT);
+            test_bid1_bid2_xxx_backward(bid1, ARRIT);
 
-            test_bid1_out<Bid1, OutIt>(bid1, OUTIT);
-            test_bid1_out<Bid1, InIt>(bid1, INIT);
-            test_bid1_out<Bid1, FwdIt>(bid1, FWDIT);
-            test_bid1_out<Bid1, BidIt>(bid1, BIDIT);
-            test_bid1_out<Bid1, RanIt>(bid1, RANIT);
-            test_bid1_out<Bid1, ArrIt>(bid1, ARRIT);
+            test_bid1_out(bid1, OUTIT);
+            test_bid1_out(bid1, INIT);
+            test_bid1_out(bid1, FWDIT);
+            test_bid1_out(bid1, BIDIT);
+            test_bid1_out(bid1, RANIT);
+            test_bid1_out(bid1, ARRIT);
 
 #if HAS_PARALLEL_ALGORITHMS
-            test_bid1_fwd1<Bid1, FwdIt>(bid1, FWDIT);
-            test_bid1_fwd1<Bid1, BidIt>(bid1, BIDIT);
-            test_bid1_fwd1<Bid1, RanIt>(bid1, RANIT);
-            test_bid1_fwd1<Bid1, ArrIt>(bid1, ARRIT);
+            test_bid1_fwd1(bid1, FWDIT);
+            test_bid1_fwd1(bid1, BIDIT);
+            test_bid1_fwd1(bid1, RANIT);
+            test_bid1_fwd1(bid1, ARRIT);
 
-            test_exec_bid1<Bid1>(std::execution::seq, bid1);
-            test_exec_bid1<Bid1>(std::execution::par, bid1);
-            test_exec_bid1<Bid1>(std::execution::par_unseq, bid1);
+            test_exec_bid1(std::execution::seq, bid1);
+            test_exec_bid1(std::execution::par, bid1);
+            test_exec_bid1(std::execution::par_unseq, bid1);
 #endif // HAS_PARALLEL_ALGORITHMS
 
             std::reverse(bid1, bid1);
@@ -683,7 +671,7 @@ namespace std_testing {
 
 
         template <typename Out>
-        void test_out(identity_t<Out> out) {
+        void test_out(Out out) {
             // SPLIT_MODE 1
             std::fill_n(out, 0, VAL);
             std::generate_n(out, 0, GENERATOR{});
@@ -691,7 +679,7 @@ namespace std_testing {
 
 #if HAS_PARALLEL_ALGORITHMS
         template <typename Ran, typename ExecutionPolicy>
-        void test_exec_ran(ExecutionPolicy&& exec, identity_t<Ran> ran) {
+        void test_exec_ran(ExecutionPolicy&& exec, Ran ran) {
             std::sort(std::forward<ExecutionPolicy>(exec), ran, ran);
             std::sort(std::forward<ExecutionPolicy>(exec), ran, ran, COMP{});
             std::partial_sort(std::forward<ExecutionPolicy>(exec), ran, ran, ran);
@@ -706,12 +694,12 @@ namespace std_testing {
 #endif // HAS_PARALLEL_ALGORITHMS
 
         template <typename Ran>
-        void test_ran(identity_t<Ran> ran) {
+        void test_ran(Ran ran) {
             // SPLIT_MODE 1
 #if HAS_PARALLEL_ALGORITHMS
-            test_exec_ran<Ran>(std::execution::seq, ran);
-            test_exec_ran<Ran>(std::execution::par, ran);
-            test_exec_ran<Ran>(std::execution::par_unseq, ran);
+            test_exec_ran(std::execution::seq, ran);
+            test_exec_ran(std::execution::par, ran);
+            test_exec_ran(std::execution::par_unseq, ran);
 #endif // HAS_PARALLEL_ALGORITHMS
 
 #if _HAS_AUTO_PTR_ETC
@@ -741,33 +729,33 @@ namespace std_testing {
 
 
         void test() {
-            test_in1<InIt>(INIT);
-            test_in1<FwdIt>(FWDIT);
-            test_in1<BidIt>(BIDIT);
-            test_in1<RanIt>(RANIT);
-            test_in1<ArrIt>(ARRIT);
+            test_in1(INIT);
+            test_in1(FWDIT);
+            test_in1(BIDIT);
+            test_in1(RANIT);
+            test_in1(ARRIT);
 
 #if INSTANTIATE_ALGORITHMS_SPLIT_MODE == 2
-            test_fwd1<FwdIt>(FWDIT);
-            test_fwd1<BidIt>(BIDIT);
-            test_fwd1<RanIt>(RANIT);
-            test_fwd1<ArrIt>(ARRIT);
+            test_fwd1(FWDIT);
+            test_fwd1(BIDIT);
+            test_fwd1(RANIT);
+            test_fwd1(ARRIT);
 
-            test_bid1<BidIt>(BIDIT);
-            test_bid1<RanIt>(RANIT);
-            test_bid1<ArrIt>(ARRIT);
+            test_bid1(BIDIT);
+            test_bid1(RANIT);
+            test_bid1(ARRIT);
 #endif // SPLIT_MODE
 
 #if INSTANTIATE_ALGORITHMS_SPLIT_MODE == 1
-            test_out<OutIt>(OUTIT);
-            test_out<InIt>(INIT);
-            test_out<FwdIt>(FWDIT);
-            test_out<BidIt>(BIDIT);
-            test_out<RanIt>(RANIT);
-            test_out<ArrIt>(ARRIT);
+            test_out(OUTIT);
+            test_out(INIT);
+            test_out(FWDIT);
+            test_out(BIDIT);
+            test_out(RANIT);
+            test_out(ARRIT);
 
-            test_ran<RanIt>(RANIT);
-            test_ran<ArrIt>(ARRIT);
+            test_ran(RANIT);
+            test_ran(ARRIT);
 
             LST.merge(LST);
             LST.merge(std::move(LST));

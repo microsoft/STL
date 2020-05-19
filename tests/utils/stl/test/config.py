@@ -42,8 +42,6 @@ class Configuration:
         self.long_tests = None
         self.msvc_toolset_libs_root = None
         self.stl_build_root = None
-        self.stl_inc_env_var = None
-        self.stl_lib_env_var = None
         self.stl_path_env_var = None
         self.stl_src_root = None
         self.stl_test_env = None
@@ -237,42 +235,6 @@ class Configuration:
         self.cxx_runtime_root = Path(cxx_runtime_root)
         self.cxx_library_root = Path(cxx_library_root)
 
-    def configure_inc_env_var(self):
-        stl_inc_env_var = self.get_lit_conf('stl_inc_env_var', None)
-
-        if stl_inc_env_var is None:
-            stl_inc_env_var = self.config.environment.get('INCLUDE', '')
-
-            if self.cxx_headers is None:
-                self.configure_cxx_headers()
-
-            include_dirs = self.get_lit_conf('include_dirs', [])
-
-            if stl_inc_env_var != '':
-                stl_inc_env_var = ';'.join((str(self.cxx_headers),
-                                            *include_dirs,
-                                            stl_inc_env_var))
-            else:
-                stl_inc_env_var = ';'.join((str(self.cxx_headers),
-                                            *include_dirs))
-
-        self.stl_inc_env_var = stl_inc_env_var
-
-    # Note: This relies on kernel32.lib and ucrt.lib being in the LIB env var
-    def configure_lib_env_var(self):
-        stl_lib_env_var = self.get_lit_conf('stl_lib_env_var', None)
-
-        if stl_lib_env_var is None:
-            stl_lib_env_var = self.config.environment.get('LIB', '')
-
-            if stl_lib_env_var != '':
-                stl_lib_env_var = ';'.join((str(self.cxx_library_root),
-                                            stl_lib_env_var))
-            else:
-                stl_lib_env_var = str(self.cxx_library_root)
-
-        self.stl_lib_env_var = stl_lib_env_var
-
     def configure_path_env_var(self):
         stl_path_env_var = self.get_lit_conf('stl_path_env_var', None)
 
@@ -296,22 +258,10 @@ class Configuration:
         self.stl_path_env_var = stl_path_env_var
 
     def configure_test_env(self):
-        stl_test_env = self.get_lit_conf('stl_test_env', None)
-
-        if stl_test_env is None:
-            stl_test_env = self.config.environment
-
-        if self.stl_lib_env_var is None:
-            self.configure_inc_env_var()
-
-        if self.stl_lib_env_var is None:
-            self.configure_lib_env_var()
-
         if self.stl_path_env_var is None:
             self.configure_path_env_var()
 
-        stl_test_env['INCLUDE'] = self.stl_inc_env_var
-        stl_test_env['LIB'] = self.stl_lib_env_var
+        stl_test_env = {}
         stl_test_env['PATH'] = self.stl_path_env_var
 
         self.config.environment = stl_test_env
@@ -358,7 +308,7 @@ class Configuration:
         # Configure extra flags
         self.default_compiler.compile_flags += \
             self.get_lit_conf('compile_flags', [])
-        additional_flags_str = self.get_lit_conf('addtional_compiler_flags')
+        additional_flags_str = self.get_lit_conf('additional_compiler_flags')
         if additional_flags_str:
             self.default_compiler.compile_flags += \
                 shlex.split(additional_flags_str)

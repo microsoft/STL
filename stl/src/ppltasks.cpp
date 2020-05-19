@@ -114,15 +114,23 @@ namespace Concurrency {
             }
 
             bool isCausalitySupported() {
-                std::call_once(m_stateFlag, [this] {
-                    ComPtr<IAsyncCausalityTracerStatics> causalityAPIs;
-                    if (SUCCEEDED(GetActivationFactory(
-                            HStringReference(RuntimeClass_Windows_Foundation_Diagnostics_AsyncCausalityTracer).Get(),
-                            &causalityAPIs))) {
-                        m_causalityAPIs = causalityAPIs.Detach();
-                        m_isSupported   = true;
-                    }
-                });
+                // TRANSITION, ABI
+                _Execute_once(
+                    m_stateFlag,
+                    [](void*, void* _This_raw, void**) -> int {
+                        const auto _This = static_cast<AsyncCausalityTracer*>(_This_raw);
+                        ComPtr<IAsyncCausalityTracerStatics> causalityAPIs;
+                        if (SUCCEEDED(GetActivationFactory(
+                                HStringReference(RuntimeClass_Windows_Foundation_Diagnostics_AsyncCausalityTracer)
+                                    .Get(),
+                                &causalityAPIs))) {
+                            _This->m_causalityAPIs = causalityAPIs.Detach();
+                            _This->m_isSupported   = true;
+                        }
+
+                        return 1;
+                    },
+                    this);
                 return m_isSupported;
             }
         } asyncCausalityTracer;
@@ -131,11 +139,11 @@ namespace Concurrency {
         const GUID PPLTaskCausalityPlatformID = {
             0x7A76B220, 0xA758, 0x4E6E, 0xB0, 0xE0, 0xD7, 0xC6, 0xD7, 0x4A, 0x88, 0xFE};
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _isContinuation) {
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {
             if (asyncCausalityTracer.isCausalitySupported()) {
                 asyncCausalityTracer.get()->TraceOperationCreation(CausalityTraceLevel_Required,
                     CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    HStringReference(_isContinuation ? L"Concurrency::PPLTask::ScheduleContinuationTask"
+                    HStringReference(_IsContinuation ? L"Concurrency::PPLTask::ScheduleContinuationTask"
                                                      : L"Concurrency::PPLTask::ScheduleTask")
                         .Get(),
                     0);

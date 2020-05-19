@@ -331,7 +331,7 @@ int main() {
         assert(!is_permutation(a.begin(), a.end(), b.begin(), b.end(), equal_to<int>()));
     }
 
-    { // Test that _ITERATOR_DEBUG_ARRAY_OVERLOADS aren't viable when attempting to call dual-range algorithms.
+    { // Test that _ITERATOR_DEBUG_ARRAY_OVERLOADS is not needed anymore
         int arr[8] = {};
         assert(mismatch(arr, arr, arr, arr) == make_pair(begin(arr), begin(arr)));
         assert(mismatch(arr, arr, arr, arr + 0) == make_pair(begin(arr), begin(arr)));

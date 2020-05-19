@@ -18,9 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#pragma warning(disable : 6294) // Ill-defined for-loop:
-                                // initial condition does not satisfy test.  Loop body not executed.
-
 _STD_BEGIN
 // CLASS TEMPLATE bitset
 template <size_t _Bits>
@@ -36,8 +33,7 @@ public:
         friend bitset<_Bits>;
 
     public:
-        ~reference() noexcept { // TRANSITION, ABI
-        }
+        ~reference() noexcept {} // TRANSITION, ABI
 
         reference& operator=(bool _Val) noexcept {
             _Pbitset->_Set_unchecked(_Mypos, _Val);

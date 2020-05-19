@@ -152,20 +152,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _ALLOW_RUNTIME_LIBRARY_MISMATCH
 #endif // __cplusplus
 
-#ifdef _ITERATOR_DEBUG_ARRAY_OVERLOADS
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS != 0 && _ITERATOR_DEBUG_ARRAY_OVERLOADS != 1
-#error _ITERATOR_DEBUG_ARRAY_OVERLOADS must be either 0 or 1.
-#elif _ITERATOR_DEBUG_LEVEL == 0 && _ITERATOR_DEBUG_ARRAY_OVERLOADS == 1
-#error _ITERATOR_DEBUG_LEVEL == 0 must imply _ITERATOR_DEBUG_ARRAY_OVERLOADS == 0.
-#endif
-#else // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-#if _ITERATOR_DEBUG_LEVEL == 0
-#define _ITERATOR_DEBUG_ARRAY_OVERLOADS 0
-#else
-#define _ITERATOR_DEBUG_ARRAY_OVERLOADS 1
-#endif
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #ifndef _CONTAINER_DEBUG_LEVEL
 #if _ITERATOR_DEBUG_LEVEL == 0
 #define _CONTAINER_DEBUG_LEVEL 0
@@ -184,6 +170,19 @@ _STL_DISABLE_CLANG_WARNINGS
         _CRT_SECURE_INVALID_PARAMETER(mesg); \
     } while (false)
 
+#ifdef __clang__
+#define _STL_VERIFY(cond, mesg)                                                            \
+    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wassume\"") do { \
+        if (cond) { /* contextually convertible to bool paranoia */                        \
+        } else {                                                                           \
+            _STL_REPORT_ERROR(mesg);                                                       \
+        }                                                                                  \
+                                                                                           \
+        _Analysis_assume_(cond);                                                           \
+    }                                                                                      \
+    while (false)                                                                          \
+    _Pragma("clang diagnostic pop")
+#else // ^^^ Clang // MSVC vvv
 #define _STL_VERIFY(cond, mesg)                                     \
     do {                                                            \
         if (cond) { /* contextually convertible to bool paranoia */ \
@@ -193,6 +192,7 @@ _STL_DISABLE_CLANG_WARNINGS
                                                                     \
         _Analysis_assume_(cond);                                    \
     } while (false)
+#endif // ^^^ MSVC ^^^
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)
@@ -455,7 +455,6 @@ private:
     catch (...) {
 #define _CATCH_END }
 
-#define _RAISE(x) throw x
 #define _RERAISE  throw
 #define _THROW(x) throw x
 

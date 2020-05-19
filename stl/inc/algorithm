@@ -46,7 +46,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
         }
 
         const pair<_Ty*, ptrdiff_t> _Raw = _Get_temporary_buffer<_Ty>(_Attempt);
-        if (_Raw.second > _Optimistic_count) { // engage heap space
+        if (static_cast<size_t>(_Raw.second) > _Optimistic_count) { // engage heap space
             _Data     = _Raw.first;
             _Capacity = _Raw.second;
             return;
@@ -62,7 +62,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
     _Optimistic_temporary_buffer& operator=(const _Optimistic_temporary_buffer&) = delete;
 
     ~_Optimistic_temporary_buffer() noexcept {
-        if (_Capacity > _Optimistic_count) {
+        if (static_cast<size_t>(_Capacity) > _Optimistic_count) {
             _Return_temporary_buffer(_Data);
         }
     }
@@ -264,26 +264,6 @@ _CONSTEXPR20 _InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
 
 template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InTy, size_t _InSize, class _Diff, class _Fn>
-_CONSTEXPR20 _InTy* for_each_n(_InTy (&_First)[_InSize], const _Diff _Count_raw, _Fn _Func) {
-    // perform function for each element [_First, _First + _Count)
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-    _InTy* _UFirst = _First;
-    for (; 0 < _Count; --_Count, (void) ++_UFirst) {
-        _Func(*_UFirst);
-    }
-
-    return _UFirst;
-}
-
-template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_SourceTy* for_each_n(
-    _ExPo&& _Exec, _SourceTy (&_First)[_SourceSize], _Diff _Count_raw, _Fn _Func) noexcept; // terminates
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -524,6 +504,46 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // VARIABLE ranges::adjacent_find
+    class _Adjacent_find_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr _It operator()(_It _First, const _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // find first satisfying _Pred with successor
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_First);
+            const auto _ULast = _Get_unwrapped(_Last);
+
+            if (_UFirst == _ULast) {
+                return _First;
+            }
+
+            for (auto _UNext = _UFirst;; _UFirst = _UNext) {
+                if (++_UNext == _ULast) {
+                    _Seek_wrapped(_First, _UNext);
+                    return _First;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, *_UNext))) {
+                    _Seek_wrapped(_First, _UFirst);
+                    return _First;
+                }
+            }
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
+                ranges::equal_to>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+    };
+
+    inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};
+
     // VARIABLE ranges::count
     class _Count_fn : private _Not_quite_object {
     public:
@@ -638,33 +658,10 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     return {_First1, _First2};
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _Pr, enable_if_t<!is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD _CONSTEXPR20 pair<_InIt1, _RightTy*> mismatch(
-    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], _Pr _Pred) {
-    // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
-    const auto _Result =
-        _STD mismatch(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
-    return {_Result.first, _Result.second._Unwrapped()};
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, class _Pr,
-    enable_if_t<is_execution_policy_v<decay_t<_ExPo>> && !is_same_v<_RightTy*, _Pr>, int> = 0>
-_NODISCARD pair<_FwdIt1, _RightTy*> mismatch(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1,
-    _RightTy (&_First2)[_RightSize], _Pr _Pred) { // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    const auto _Result = _STD mismatch(
-        _STD forward<_ExPo>(_Exec), _First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Pass_fn(_Pred));
-    return {_Result.first, _Result.second._Unwrapped()};
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2>
@@ -672,15 +669,6 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(const _InIt1 _First1, cons
     // return [_First1, _Last1)/[_First2, ...) mismatch
     return _STD mismatch(_First1, _Last1, _First2, equal_to<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize>
-_NODISCARD _CONSTEXPR20 pair<_InIt1, _RightTy*> mismatch(
-    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize]) {
-    // return [_First1, _Last1)/[_First2, ...) mismatch, array source
-    return _STD mismatch(_First1, _Last1, _First2, equal_to<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -691,16 +679,6 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD pair<_FwdIt1, _RightTy*> mismatch(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1,
-    _RightTy (&_First2)[_RightSize]) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, ...) mismatch, array source
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 #if _HAS_IF_CONSTEXPR
@@ -1228,14 +1206,6 @@ _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) 
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // copy each satisfying _Pred, array dest
-    return _STD copy_if(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
@@ -1245,18 +1215,6 @@ _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept
-/* terminates */ {
-    // copy each satisfying _Pred, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -1330,35 +1288,6 @@ _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
     return {_Dest_true, _Dest_false};
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTrueTy, size_t _DestTrueSize, class _OutIt2, class _Pr>
-_CONSTEXPR20 pair<_DestTrueTy*, _OutIt2> partition_copy(
-    _InIt _First, _InIt _Last, _DestTrueTy (&_Dest_true)[_DestTrueSize], _OutIt2 _Dest_false, _Pr _Pred) {
-    // copy true partition to _Dest_true, false to _Dest_false, array dest
-    const auto _Result = _STD partition_copy(
-        _First, _Last, _Array_iterator<_DestTrueTy, _DestTrueSize>(_Dest_true), _Dest_false, _Pass_fn(_Pred));
-    return {_Result.first._Unwrapped(), _Result.second};
-}
-
-template <class _InIt, class _OutIt1, class _DestFalseTy, size_t _DestFalseSize, class _Pr>
-_CONSTEXPR20 pair<_OutIt1, _DestFalseTy*> partition_copy(
-    _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) {
-    // copy true partition to _Dest_true, false to _Dest_false, array dest
-    const auto _Result = _STD partition_copy(
-        _First, _Last, _Dest_true, _Array_iterator<_DestFalseTy, _DestFalseSize>(_Dest_false), _Pass_fn(_Pred));
-    return {_Result.first, _Result.second._Unwrapped()};
-}
-
-template <class _InIt, class _DestTrueTy, size_t _DestTrueSize, class _DestFalseTy, size_t _DestFalseSize, class _Pr>
-_CONSTEXPR20 pair<_DestTrueTy*, _DestFalseTy*> partition_copy(_InIt _First, _InIt _Last,
-    _DestTrueTy (&_Dest_true)[_DestTrueSize], _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) {
-    // copy true partition to _Dest_true, false to _Dest_false, array dest
-    const auto _Result = _STD partition_copy(_First, _Last, _Array_iterator<_DestTrueTy, _DestTrueSize>(_Dest_true),
-        _Array_iterator<_DestFalseTy, _DestFalseSize>(_Dest_false), _Pass_fn(_Pred));
-    return {_Result.first._Unwrapped(), _Result.second._Unwrapped()};
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest_true, _FwdIt3 _Dest_false,
@@ -1370,41 +1299,6 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTrueTy, size_t _DestTrueSize, class _FwdIt3, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-pair<_DestTrueTy*, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last,
-    _DestTrueTy (&_Dest_true)[_DestTrueSize], _FwdIt3 _Dest_false, _Pr _Pred) noexcept /* terminates */ {
-    // copy true partition to _Dest_true, false to _Dest_false, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
-    return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
-}
-
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestFalseTy, size_t _DestFalseSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-pair<_FwdIt2, _DestFalseTy*> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest_true,
-    _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) noexcept /* terminates */ {
-    // copy true partition to _Dest_true, false to _Dest_false, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
-}
-
-template <class _ExPo, class _FwdIt1, class _DestTrueTy, size_t _DestTrueSize, class _DestFalseTy,
-    size_t _DestFalseSize, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-pair<_DestTrueTy*, _DestFalseTy*> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last,
-    _DestTrueTy (&_Dest_true)[_DestTrueSize], _DestFalseTy (&_Dest_false)[_DestFalseSize], _Pr _Pred) noexcept
-/* terminates */ {
-    // copy true partition to _Dest_true, false to _Dest_false, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE is_partitioned
@@ -1671,7 +1565,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
                 auto _UMid                   = _UFirst;
 
-                while (_UOld_first != _UFirst && _Pred(*(_UFirst - 1), _Val)) { // back up over any skipped prefix
+                while (_UOld_first != _UFirst && _Pred(*_Prev_iter(_UFirst), _Val)) { // back up over any skipped prefix
                     --_Count1;
                     --_UFirst;
                 }
@@ -1689,7 +1583,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 _UOld_first = ++_UMid; // failed match, take small jump
                 _Inc        = 0;
             } else { // no match, take big jump and back up as needed
-                _UOld_first = _UFirst + 1;
+                _UOld_first = _Next_iter(_UFirst);
                 _Inc        = _Count_diff - 1;
             }
         }
@@ -1752,7 +1646,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
             _FwdIt _Mid                  = _First;
 
-            while (_Old_first != _First && _Pred(*(_First - 1), _Val)) {
+            while (_Old_first != _First && _Pred(*_Prev_iter(_First), _Val)) {
                 --_Count1; // back up over any skipped prefix
                 --_First;
             }
@@ -1769,7 +1663,7 @@ _FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Coun
             _Old_first = ++_Mid; // failed match, take small jump
             _Inc       = 0;
         } else { // no match, take big jump and back up as needed
-            _Old_first = _First + 1;
+            _Old_first = _Next_iter(_First);
             _Inc       = _Count_diff - 1;
         }
     }
@@ -1833,14 +1727,14 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     const auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
         const _Iter_diff_t<_FwdIt2> _Count2 = _ULast2 - _UFirst2;
-        if (0 < _Count2 && _Count2 <= _ULast1 - _UFirst1) {
+        if (_Count2 > 0 && _Count2 <= _ULast1 - _UFirst1) {
             for (auto _UCandidate = _ULast1 - static_cast<_Iter_diff_t<_FwdIt1>>(_Count2);; --_UCandidate) {
                 if (_Equal_rev_pred_unchecked(_UCandidate, _UFirst2, _ULast2, _Pass_fn(_Pred))) {
                     _Seek_wrapped(_First1, _UCandidate);
                     return _First1;
                 }
 
-                if (_UFirst1 == _UCandidate) {
+                if (_UCandidate == _UFirst1) {
                     break;
                 }
             }
@@ -1848,17 +1742,17 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
 
         return _Last1;
     } else if constexpr (_Is_bidi_iter_v<_FwdIt1> && _Is_bidi_iter_v<_FwdIt2>) {
-        for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _Candidate
+        for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _UCandidate
             auto _UNext1 = _UCandidate;
             auto _UNext2 = _ULast2;
-            for (;;) { // test if [_UFirst2, _ULast2) is a suffix of [_UFirst1, _Candidate)
+            for (;;) { // test if [_UFirst2, _ULast2) is a suffix of [_UFirst1, _UCandidate)
                 if (_UFirst2 == _UNext2) { // match found
                     _Seek_wrapped(_First1, _UNext1);
                     return _First1;
                 }
 
                 if (_UFirst1 == _UNext1) {
-                    // [_UFirst1, _Candidate) is shorter than [_UFirst2, _ULast2), remaining candidates nonviable
+                    // [_UFirst1, _UCandidate) is shorter than [_UFirst2, _ULast2), remaining candidates nonviable
                     return _Last1;
                 }
 
@@ -1964,7 +1858,7 @@ _RanIt1 _Find_end_unchecked(const _RanIt1 _First1, const _RanIt1 _Last1, const _
     _Pr _Pred, random_access_iterator_tag, random_access_iterator_tag) {
     // find last [_First2, _Last2) satisfying _Pred in random-access ranges
     const _Iter_diff_t<_RanIt2> _Count2 = _Last2 - _First2;
-    if (0 < _Count2 && _Count2 <= _Last1 - _First1) {
+    if (_Count2 > 0 && _Count2 <= _Last1 - _First1) {
         for (_RanIt1 _Candidate = _Last1 - static_cast<_Iter_diff_t<_RanIt1>>(_Count2);; --_Candidate) {
             if (_Equal_rev_pred_unchecked(_Candidate, _First2, _Last2, _Pred)) {
                 return _Candidate;
@@ -2011,6 +1905,195 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_end
+    class _Find_end_fn : private _Not_quite_object {
+    private:
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Equal_rev_pred_unchecked(
+            _It1 _First1, _It2 _First2, const _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            // compare [_First1, ...) to [_First2, _Last2)
+            constexpr bool _Both_identity = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>;
+            // Performance note: teach _Equal_memcmp_is_safe about contiguous iterators and ranges::equal_to
+            if constexpr (_Both_identity && decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First1_ch = reinterpret_cast<const char*>(_First1);
+                    const auto _First2_ch = reinterpret_cast<const char*>(_First2);
+                    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
+                    return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+                }
+            }
+
+            for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr subrange<_It1> _Random_access_sized_ranges(_It1 _First1,
+            const iter_difference_t<_It1> _Count1, _It2 _First2, const iter_difference_t<_It2> _Count2, _Pr _Pred,
+            _Pj1 _Proj1, _Pj2 _Proj2) {
+            if (_Count2 > 0 && _Count2 <= _Count1) {
+                const auto _UFirst1    = _Get_unwrapped(_First1);
+                const auto _UFirst2    = _Get_unwrapped(_First2);
+                const auto _Count2_as1 = static_cast<iter_difference_t<_It1>>(_Count2);
+
+                for (auto _UCandidate = _UFirst1 + (_Count1 - _Count2_as1);; --_UCandidate) {
+                    if (_Equal_rev_pred_unchecked(_UCandidate, _UFirst2, _UFirst2 + _Count2, _Pred, _Proj1, _Proj2)) {
+                        _Seek_wrapped(_First1, _UCandidate);
+                        return {_First1, _First1 + _Count2_as1};
+                    }
+
+                    if (_UCandidate == _UFirst1) {
+                        break;
+                    }
+                }
+            }
+
+            _First1 += _Count1;
+            return {_First1, _First1};
+        }
+
+        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr subrange<_It1> _Bidi_common_ranges(
+            _It1 _First1, _It1 _Last1, _It2 _First2, _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            auto _UFirst1       = _Get_unwrapped(_First1);
+            const auto _ULast1  = _Get_unwrapped(_Last1);
+            const auto _UFirst2 = _Get_unwrapped(_First2);
+            const auto _ULast2  = _Get_unwrapped(_Last2);
+            for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _UCandidate
+                auto _UNext1 = _UCandidate;
+                auto _UNext2 = _ULast2;
+                for (;;) { // test if [_UFirst2, _ULast2) is a suffix of [_UFirst1, _UCandidate)
+                    if (_UFirst2 == _UNext2) { // match found
+                        _Seek_wrapped(_First1, _UNext1);
+                        _Seek_wrapped(_Last1, _UCandidate);
+                        return {_First1, _Last1};
+                    }
+
+                    if (_UFirst1 == _UNext1) {
+                        // [_UFirst1, _UCandidate) is shorter than [_UFirst2, _ULast2), remaining candidates nonviable
+                        return {_Last1, _Last1};
+                    }
+
+                    --_UNext1;
+                    --_UNext2;
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UNext1), _STD invoke(_Proj2, *_UNext2))) {
+                        break; // mismatch
+                    }
+                }
+            }
+        }
+
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr subrange<_It1> _Forward_ranges(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            auto _UFirst1       = _Get_unwrapped(_First1);
+            const auto _ULast1  = _Get_unwrapped(_Last1);
+            const auto _UFirst2 = _Get_unwrapped(_First2);
+            const auto _ULast2  = _Get_unwrapped(_Last2);
+            decltype(_UFirst1) _UMatch_first;
+            decltype(_UFirst1) _UMatch_last;
+            bool _Found = false;
+
+            for (;;) { // try a match at _UFirst1
+                auto _UNext1 = _UFirst1;
+                auto _UNext2 = _UFirst2;
+                for (;;) { // test if [_UFirst2, _ULast2) is a prefix of [_UFirst1, _ULast1)
+                    const bool _End_of_needle = _UNext2 == _ULast2;
+                    if (_End_of_needle) { // match candidate found
+                        _UMatch_first = _UFirst1;
+                        _UMatch_last  = _UNext1;
+                        _Found        = true;
+                    }
+
+                    if (_UNext1 == _ULast1) { // haystack exhausted
+                        _Seek_wrapped(_First1, _Found ? _UMatch_first : _UFirst1);
+                        auto _Mid1 = _First1;
+                        if (_Found) {
+                            _Seek_wrapped(_Mid1, _UMatch_last);
+                        }
+
+                        return {_First1, _Mid1};
+                    }
+
+                    if (_End_of_needle) {
+                        break; // end of match found, go to the next candidate
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UNext1), _STD invoke(_Proj2, *_UNext2))) {
+                        break; // mismatch, go to the next candidate
+                    }
+
+                    ++_UNext1;
+                    ++_UNext2;
+                }
+
+                ++_UFirst1;
+            }
+        }
+
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            if constexpr (random_access_iterator<_It1> && sized_sentinel_for<_Se1, _It1>
+                && random_access_iterator<_It2> && sized_sentinel_for<_Se2, _It2>) {
+                return _Random_access_sized_ranges(_First1, _Last1 - _First1, _First2, _Last2 - _First2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else if constexpr (bidirectional_iterator<_It1> && is_same_v<_It1, _Se1>
+                && bidirectional_iterator<_It2> && is_same_v<_It2, _Se2>) {
+                return _Bidi_common_ranges(_First1, _Last1, _First2, _Last2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Forward_ranges(_First1, _Last1, _First2, _Last2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+
+        template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            if constexpr (random_access_range<_Rng1> && sized_range<_Rng1>
+                && random_access_range<_Rng2> && sized_range<_Rng2>) {
+                return _Random_access_sized_ranges(
+                    _RANGES begin(_Range1), _RANGES distance(_Range1),
+                    _RANGES begin(_Range2), _RANGES distance(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else if constexpr (bidirectional_range<_Rng1> && common_range<_Rng1>
+                && bidirectional_range<_Rng2> && common_range<_Rng2>) {
+                return _Bidi_common_ranges(
+                    _RANGES begin(_Range1), _RANGES end(_Range1),
+                    _RANGES begin(_Range2), _RANGES end(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                return _Forward_ranges(
+                    _RANGES begin(_Range1), _RANGES end(_Range1),
+                    _RANGES begin(_Range2), _RANGES end(_Range2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_end_fn find_end{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE find_first_of
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
@@ -2053,6 +2136,53 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_first_of
+    class _Find_first_of_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr _It1 operator()(_It1 _First1, const _Se1 _Last1, const _It2 _First2, const _Se2 _Last2,
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UFirst1       = _Get_unwrapped(_STD move(_First1));
+            const auto _ULast1  = _Get_unwrapped(_Last1);
+            const auto _UFirst2 = _Get_unwrapped(_First2);
+            const auto _ULast2  = _Get_unwrapped(_Last2);
+            for (; _UFirst1 != _ULast1; ++_UFirst1) {
+                for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UMid2))) {
+                        _Seek_wrapped(_First1, _STD move(_UFirst1));
+                        return _First1;
+                    }
+                }
+            }
+
+            _Seek_wrapped(_First1, _STD move(_UFirst1));
+            return _First1;
+        }
+
+        template <input_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng1> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE swap_ranges
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
@@ -2065,14 +2195,6 @@ _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _F
     return _First2;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _FwdIt1, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* swap_ranges(_FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[_DestSize]) {
-    // swap [_First1, _Last1) with [_Dest, ...), array dest
-    return _STD swap_ranges(_First1, _Last1, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noexcept /* terminates */ {
@@ -2080,15 +2202,6 @@ _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noe
     // not parallelized as benchmarks show it isn't worth it
     return _STD swap_ranges(_First1, _Last1, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // swap [_First1, _Last1) with [_Dest, ...), array dest
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD swap_ranges(_First1, _Last1, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE transform
@@ -2107,30 +2220,10 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Fn>
-_CONSTEXPR20 _DestTy* transform(const _InIt _First, const _InIt _Last, _DestTy (&_Dest)[_DestSize], _Fn _Func) {
-    // transform [_First, _Last) with _Func, array dest
-    return _STD transform(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 transform(
     _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* transform(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], _Fn _Func) noexcept
-/* terminates */ {
-    // transform [_First, _Last) with _Func, array dest
-    return _STD transform(
-        _STD forward<_ExPo>(_Exec), _First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
@@ -2151,67 +2244,10 @@ _CONSTEXPR20 _OutIt transform(
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _RightTy, size_t _RightSize, class _OutIt, class _Fn>
-_CONSTEXPR20 _OutIt transform(
-    const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize], const _OutIt _Dest, _Fn _Func) {
-    // transform [_First1, _Last1) and [_First2, ...), array source
-    return _STD transform(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2), _Dest, _Pass_fn(_Func));
-}
-
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Fn>
-_CONSTEXPR20 _DestTy* transform(
-    const _InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _DestTy (&_Dest)[_DestSize], _Fn _Func) {
-    // transform [_First1, _Last1) and [_First2, ...), array dest
-    return _STD transform(_First1, _Last1, _First2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
-        ._Unwrapped();
-}
-
-template <class _InIt1, class _RightTy, size_t _RightSize, class _DestTy, size_t _DestSize, class _Fn>
-_CONSTEXPR20 _DestTy* transform(const _InIt1 _First1, const _InIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _DestTy (&_Dest)[_DestSize], _Fn _Func) {
-    // transform [_First1, _Last1) and [_First2, ...), array source/dest
-    return _STD transform(_First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2),
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt3 _Dest,
     _Fn _Func) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, class _FwdIt3, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt3 transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    const _FwdIt3 _Dest, _Fn _Func) noexcept /* terminates */ {
-    // transform [_First1, _Last1) and [_First2, ...), array source
-    return _STD transform(_STD forward<_ExPo>(_Exec), _First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2),
-        _Dest, _Pass_fn(_Func));
-}
-
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2,
-    _DestTy (&_Dest)[_DestSize], _Fn _Func) noexcept /* terminates */ {
-    // transform [_First1, _Last1) and [_First2, ...), array dest
-    return _STD transform(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2,
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
-        ._Unwrapped();
-}
-
-template <class _ExPo, class _FwdIt1, class _RightTy, size_t _RightSize, class _DestTy, size_t _DestSize, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, _RightTy (&_First2)[_RightSize],
-    _DestTy (&_Dest)[_DestSize], _Fn _Func) noexcept /* terminates */ {
-    // transform [_First1, _Last1) and [_First2, ...), array source/dest
-    return _STD transform(_STD forward<_ExPo>(_Exec), _First1, _Last1, _Array_iterator<_RightTy, _RightSize>(_First2),
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Func))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE replace
@@ -2273,15 +2309,6 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty>
-_CONSTEXPR20 _DestTy* replace_copy(
-    _InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Oldval, const _Ty& _Newval) {
-    // copy replacing each matching _Oldval with _Newval, array dest
-    return _STD replace_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Oldval, _Newval)._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const _Ty& _Oldval,
@@ -2292,18 +2319,6 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD replace_copy(_First, _Last, _Dest, _Oldval, _Newval);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Ty,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Oldval,
-    const _Ty& _Newval) noexcept /* terminates */ {
-    // copy replacing each matching _Oldval with _Newval
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD replace_copy(_First, _Last, _Dest, _Oldval, _Newval);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE replace_copy_if
@@ -2326,16 +2341,6 @@ _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Pr, class _Ty>
-_CONSTEXPR20 _DestTy* replace_copy_if(
-    _InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred, const _Ty& _Val) {
-    // copy replacing each satisfying _Pred with _Val, array dest
-    return _STD replace_copy_if(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred), _Val)
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred, const _Ty& _Val) noexcept
@@ -2346,18 +2351,6 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD replace_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred), _Val);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Pr, class _Ty,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred,
-    const _Ty& _Val) noexcept /* terminates */ {
-    // copy replacing each satisfying _Pred with _Val, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD replace_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred), _Val);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE generate
@@ -2399,21 +2392,6 @@ _CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) 
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _DestTy, size_t _DestSize, class _Diff, class _Fn>
-_CONSTEXPR20 _DestTy* generate_n(_DestTy (&_Dest)[_DestSize], const _Diff _Count_raw, _Fn _Func) {
-    // replace [_Dest, _Dest + _Count) with _Func(), array dest
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    _STL_VERIFY_ARRAY_SIZE(_Dest, _Count);
-    _DestTy* _UDest = _Dest;
-    for (; 0 < _Count; --_Count, (void) ++_UDest) {
-        *_UDest = _Func();
-    }
-
-    return _UDest;
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
@@ -2422,16 +2400,6 @@ _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD generate_n(_Dest, _Count_raw, _Pass_fn(_Func));
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _DestTy, size_t _DestSize, class _Diff, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* generate_n(_ExPo&&, _DestTy (&_Dest)[_DestSize], const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
-    // replace [_Dest, _Dest + _Count) with _Func()
-    // not parallelized at present due to unclear parallelism requirements on _Func
-    return _STD generate_n(_Dest, _Count_raw, _Pass_fn(_Func));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE remove_copy
@@ -2453,14 +2421,6 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Ty>
-_CONSTEXPR20 _DestTy* remove_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Val) {
-    // copy omitting each matching _Val, array dest
-    return _STD remove_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Val)._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const _Ty& _Val) noexcept /* terminates */ {
@@ -2470,18 +2430,6 @@ _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD remove_copy(_First, _Last, _Dest, _Val);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Ty,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], const _Ty& _Val) noexcept
-/* terminates */ {
-    // copy omitting each matching _Val, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD remove_copy(_First, _Last, _Dest, _Val);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE remove_copy_if
@@ -2503,14 +2451,6 @@ _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr 
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* remove_copy_if(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // copy omitting each element satisfying _Pred, array dest
-    return _STD remove_copy_if(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
@@ -2520,18 +2460,6 @@ _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _P
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD remove_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept
-/* terminates */ {
-    // copy omitting each element satisfying _Pred, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD remove_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 #if _HAS_CXX17
@@ -2738,26 +2666,10 @@ _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy
 }
 #endif // _HAS_IF_CONSTEXPR
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* unique_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // copy compressing pairs that match, array dest
-    return _STD unique_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy compressing pairs that match
     return _STD unique_copy(_First, _Last, _Dest, equal_to<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* unique_copy(_InIt _First, _InIt _Last, _DestTy (&_Dest)[_DestSize]) {
-    // copy compressing pairs that match, array dest
-    return _STD unique_copy(_First, _Last, _Dest, equal_to<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -2769,18 +2681,6 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _
     return _STD unique_copy(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept
-/* terminates */ {
-    // copy compressing pairs that match, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD unique_copy(_First, _Last, _Dest, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy compressing pairs that match
@@ -2789,16 +2689,6 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD unique_copy(_First, _Last, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // copy compressing pairs that match, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    return _STD unique_copy(_First, _Last, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE reverse_copy
@@ -2817,14 +2707,6 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _BidIt, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* reverse_copy(_BidIt _First, _BidIt _Last, _DestTy (&_Dest)[_DestSize]) {
-    // copy reversing elements in [_First, _Last), array dest
-    return _STD reverse_copy(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest))._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
@@ -2833,15 +2715,6 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _BidIt, class _DestTy, size_t _DestSize, _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // copy reversing elements in [_First, _Last), array dest
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD reverse_copy(_First, _Last, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE rotate_copy
@@ -2952,14 +2825,6 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
 
     return _Dest;
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _PopIt, class _DestTy, size_t _DestSize, class _Diff, class _Urng>
-_DestTy* sample(_PopIt _First, _PopIt _Last, _DestTy (&_Dest)[_DestSize], _Diff _Count, _Urng&& _Func) {
-    // randomly select _Count elements from [_First, _Last) into _Dest
-    return _STD sample(_First, _Last, _Array_iterator<_DestTy, _DestSize>(_Dest), _Count, _Func)._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE shuffle WITH URNG
@@ -3816,29 +3681,11 @@ _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* merge(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // copy merging ranges, both using _Pred, array dest
-    return _STD merge(_First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // copy merging ranges, both using operator<
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
-    // copy merging ranges, both using operator<, array dest
-    return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -3852,19 +3699,6 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _DestTy (&_Dest)[_DestSize],
-    _Pr _Pred) noexcept /* terminates */ {
-    // copy merging ranges, both using _Pred, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest) noexcept
 /* terminates */ {
@@ -3875,19 +3709,6 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // copy merging ranges, both using operator<, array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE inplace_merge
@@ -4215,11 +4036,12 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last), using _Pred
     _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-    _Guess_median_unchecked(_First, _Mid, _Last - 1, _Pred);
+    _Guess_median_unchecked(_First, _Mid, _Prev_iter(_Last), _Pred);
     _RanIt _Pfirst = _Mid;
-    _RanIt _Plast  = _Pfirst + 1;
+    _RanIt _Plast  = _Next_iter(_Pfirst);
 
-    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *(_Pfirst - 1), *_Pfirst) && !_Pred(*_Pfirst, *(_Pfirst - 1))) {
+    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Pfirst), *_Pfirst)
+           && !_Pred(*_Pfirst, *_Prev_iter(_Pfirst))) {
         --_Pfirst;
     }
 
@@ -4244,11 +4066,11 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
         }
 
         for (; _First < _Glast; --_Glast) {
-            if (_DEBUG_LT_PRED(_Pred, *(_Glast - 1), *_Pfirst)) {
-            } else if (_Pred(*_Pfirst, *(_Glast - 1))) {
+            if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+            } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
                 break;
-            } else if (--_Pfirst != _Glast - 1) {
-                _STD iter_swap(_Pfirst, _Glast - 1);
+            } else if (--_Pfirst != _Prev_iter(_Glast)) {
+                _STD iter_swap(_Pfirst, _Prev_iter(_Glast));
             }
         }
 
@@ -4767,30 +4589,11 @@ _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _In
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* set_union(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_union(_First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // OR sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* set_union(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
-    // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -4804,19 +4607,6 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept /* terminates */ {
-    // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest) noexcept
 /* terminates */ {
@@ -4827,19 +4617,6 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // OR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_intersection
@@ -4873,48 +4650,16 @@ _CONSTEXPR20 _OutIt set_intersection(
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* set_intersection(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_intersection(
-        _First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // AND sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* set_intersection(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept /* terminates */ {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2,
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
@@ -4922,16 +4667,6 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
     // AND sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_difference
@@ -4966,48 +4701,16 @@ _CONSTEXPR20 _OutIt set_difference(
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* set_difference(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // take set [_First2, _Last2) from [_First1, _Last1), array dest
-    return _STD set_difference(
-        _First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // take set [_First2, _Last2) from [_First1, _Last1), using operator<
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* set_difference(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
-    // take set [_First2, _Last2) from [_First1, _Last1), array dest
-    return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept; // terminates
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept /* terminates */ {
-    // take set [_First2, _Last2) from [_First1, _Last1), array dest
-    return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2,
-        _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
@@ -5015,16 +4718,6 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
     // take set [_First2, _Last2) from [_First1, _Last1), using operator<
     return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // take set [_First2, _Last2) from [_First1, _Last1), array dest
-    return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_symmetric_difference
@@ -5061,32 +4754,12 @@ _CONSTEXPR20 _OutIt set_symmetric_difference(
     return _Dest;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize, class _Pr>
-_CONSTEXPR20 _DestTy* set_symmetric_difference(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize], _Pr _Pred) {
-    // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_symmetric_difference(
-        _First1, _Last1, _First2, _Last2, _Array_iterator<_DestTy, _DestSize>(_Dest), _Pass_fn(_Pred))
-        ._Unwrapped();
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2), using operator<
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _InIt1, class _InIt2, class _DestTy, size_t _DestSize>
-_CONSTEXPR20 _DestTy* set_symmetric_difference(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _DestTy (&_Dest)[_DestSize]) {
-    // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -5100,19 +4773,6 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize, class _Pr,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize], _Pr _Pred) noexcept /* terminates */ {
-    // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
@@ -5123,19 +4783,6 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
 }
-
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _DestTy, size_t _DestSize,
-    _Enable_if_execution_policy_t<_ExPo> = 0>
-_DestTy* set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
-    _DestTy (&_Dest)[_DestSize]) noexcept /* terminates */ {
-    // XOR sets [_First1, _Last1) and [_First2, _Last2), array dest
-    // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE max_element

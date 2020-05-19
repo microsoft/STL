@@ -140,6 +140,7 @@
 //     (partially implemented)
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
+// P0415R1 constexpr For <complex> (Again)
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
@@ -151,6 +152,7 @@
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
+// P0586R2 Integer Comparison Functions
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
@@ -333,6 +335,8 @@
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
 #define _MSVC_KNOWN_SEMANTICS
+#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
+#define _MSVC_KNOWN_SEMANTICS
 #elif __has_cpp_attribute(msvc::known_semantics)
 #define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
 #else
@@ -429,6 +433,7 @@
 #endif // _STL_DISABLED_WARNINGS
 
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
+// warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
@@ -439,6 +444,7 @@
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
@@ -480,7 +486,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202004L
+#define _MSVC_STL_UPDATE  202005L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -613,7 +619,7 @@
 #define _CONSTEXPR_IF
 #endif // _HAS_IF_CONSTEXPR
 
-#ifdef __clang__
+#ifdef __cpp_consteval
 #define _CONSTEVAL consteval
 #else // ^^^ supports consteval / no consteval vvv
 #define _CONSTEVAL constexpr
@@ -967,7 +973,18 @@
 #define _CXX20_DEPRECATE_VOLATILE
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4031
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_MOVE_ITERATOR_ARROW_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW                                              \
+    [[deprecated("warning STL4031: "                                                      \
+                 "std::move_iterator::operator->() is deprecated in C++20. "              \
+                 "You can define _SILENCE_CXX20_MOVE_ITERATOR_ARROW_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4032
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1116,13 +1133,12 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
-#define __cpp_lib_atomic_float      201711L
-#define __cpp_lib_atomic_shared_ptr 201711L
-#define __cpp_lib_bind_front        201907L
-
-#ifndef __EDG__ // TRANSITION, VSO-1041044
-#define __cpp_lib_bit_cast 201806L
-#endif // __EDG__
+#define __cpp_lib_atomic_flag_test              201907L
+#define __cpp_lib_atomic_float                  201711L
+#define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_shared_ptr             201711L
+#define __cpp_lib_bind_front                    201907L
+#define __cpp_lib_bit_cast                      201806L
 
 #ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
@@ -1140,6 +1156,7 @@
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
 #define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_complex    201711L
 #define __cpp_lib_constexpr_memory     201811L
 #define __cpp_lib_constexpr_numeric    201911L
 
@@ -1155,19 +1172,20 @@
 #define __cpp_lib_int_pow2 202002L
 #endif
 
-#define __cpp_lib_is_constant_evaluated   201811L
-#define __cpp_lib_is_nothrow_convertible  201806L
-#define __cpp_lib_list_remove_return_type 201806L
-#define __cpp_lib_math_constants          201907L
-#define __cpp_lib_remove_cvref            201711L
-#define __cpp_lib_shift                   201806L
-#define __cpp_lib_span                    202002L
-#define __cpp_lib_ssize                   201902L
-#define __cpp_lib_starts_ends_with        201711L
-#define __cpp_lib_to_address              201711L
-#define __cpp_lib_to_array                201907L
-#define __cpp_lib_type_identity           201806L
-#define __cpp_lib_unwrap_ref              201811L
+#define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_is_constant_evaluated        201811L
+#define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_list_remove_return_type      201806L
+#define __cpp_lib_math_constants               201907L
+#define __cpp_lib_remove_cvref                 201711L
+#define __cpp_lib_shift                        201806L
+#define __cpp_lib_span                         202002L
+#define __cpp_lib_ssize                        201902L
+#define __cpp_lib_starts_ends_with             201711L
+#define __cpp_lib_to_address                   201711L
+#define __cpp_lib_to_array                     201907L
+#define __cpp_lib_type_identity                201806L
+#define __cpp_lib_unwrap_ref                   201811L
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20

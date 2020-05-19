@@ -7,675 +7,6 @@
 
 int main() {} // COMPILE-ONLY
 
-// ATTRIBUTE FEATURE-TEST MACROS
-
-#ifdef __has_cpp_attribute
-// Good
-#else
-#error __has_cpp_attribute is not defined
-#endif
-#if defined(__has_cpp_attribute)
-// Good
-#else
-#error __has_cpp_attribute is not defined
-#endif
-#ifndef __has_cpp_attribute
-#error __has_cpp_attribute is not defined
-#endif
-
-#if __has_cpp_attribute(carries_dependency) != 200809L
-#error __has_cpp_attribute(carries_dependency) is not 200809L
-#endif
-
-#if __has_cpp_attribute(deprecated) != 201309L
-#error __has_cpp_attribute(deprecated) is not 201309L
-#endif
-
-#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
-#if __has_cpp_attribute(fallthrough) != 201603L
-#error __has_cpp_attribute(fallthrough) is not 201603L
-#endif
-#else
-#if __has_cpp_attribute(fallthrough) != 0
-#error __has_cpp_attribute(fallthrough) is not 0
-#endif
-#endif
-
-#if _HAS_CXX17 || defined(__clang__) || defined(__EDG__) // Clang and EDG provide this in C++14 mode.
-#if __has_cpp_attribute(maybe_unused) != 201603L
-#error __has_cpp_attribute(maybe_unused) is not 201603L
-#endif
-#else
-#if __has_cpp_attribute(maybe_unused) != 0
-#error __has_cpp_attribute(maybe_unused) is not 0
-#endif
-#endif
-
-#if __has_cpp_attribute(nodiscard) != 201907L
-#error __has_cpp_attribute(nodiscard) is not 201907L
-#endif
-
-#if __has_cpp_attribute(noreturn) != 200809L
-#error __has_cpp_attribute(noreturn) is not 200809L
-#endif
-
-
-// CORE LANGUAGE FEATURE-TEST MACROS
-
-#if _HAS_CXX17
-#ifndef __cpp_aggregate_bases
-#error __cpp_aggregate_bases is not defined
-#elif __cpp_aggregate_bases != 201603L
-#error __cpp_aggregate_bases is not 201603L
-#else
-STATIC_ASSERT(__cpp_aggregate_bases == 201603L);
-#endif
-#else
-#ifdef __cpp_aggregate_bases
-#error __cpp_aggregate_bases is defined
-#endif
-#endif
-
-#ifndef __cpp_aggregate_nsdmi
-#error __cpp_aggregate_nsdmi is not defined
-#elif __cpp_aggregate_nsdmi != 201304L
-#error __cpp_aggregate_nsdmi is not 201304L
-#else
-STATIC_ASSERT(__cpp_aggregate_nsdmi == 201304L);
-#endif
-
-#ifndef __cpp_alias_templates
-#error __cpp_alias_templates is not defined
-#elif __cpp_alias_templates != 200704L
-#error __cpp_alias_templates is not 200704L
-#else
-STATIC_ASSERT(__cpp_alias_templates == 200704L);
-#endif
-
-// C++17, /Zc:alignedNew[-]
-#if !_HAS_CXX17 || defined(TEST_DISABLED_ALIGNED_NEW)
-#ifdef __cpp_aligned_new
-#error __cpp_aligned_new is defined
-#endif
-#else
-#ifndef __cpp_aligned_new
-#error __cpp_aligned_new is not defined
-#elif __cpp_aligned_new != 201606L
-#error __cpp_aligned_new is not 201606L
-#else
-STATIC_ASSERT(__cpp_aligned_new == 201606L);
-#endif
-#endif
-
-#ifndef __cpp_attributes
-#error __cpp_attributes is not defined
-#elif __cpp_attributes != 200809L
-#error __cpp_attributes is not 200809L
-#else
-STATIC_ASSERT(__cpp_attributes == 200809L);
-#endif
-
-#ifndef __cpp_binary_literals
-#error __cpp_binary_literals is not defined
-#elif __cpp_binary_literals != 201304L
-#error __cpp_binary_literals is not 201304L
-#else
-STATIC_ASSERT(__cpp_binary_literals == 201304L);
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_capture_star_this
-#error __cpp_capture_star_this is not defined
-#elif __cpp_capture_star_this != 201603L
-#error __cpp_capture_star_this is not 201603L
-#else
-STATIC_ASSERT(__cpp_capture_star_this == 201603L);
-#endif
-#else
-#ifdef __cpp_capture_star_this
-#error __cpp_capture_star_this is defined
-#endif
-#endif
-
-#if _HAS_CXX20 || defined(__EDG__)
-// EDG unconditionally reports "explicit(bool)" as being available.
-#ifndef __cpp_conditional_explicit
-#error __cpp_conditional_explicit is not defined
-#elif __cpp_conditional_explicit != 201806L
-#error __cpp_conditional_explicit is not 201806L
-#else
-STATIC_ASSERT(__cpp_conditional_explicit == 201806L);
-#endif
-#else
-#ifdef __cpp_conditional_explicit
-#error __cpp_conditional_explicit is defined
-#endif
-#endif
-
-#ifndef __cpp_constexpr
-#error __cpp_constexpr is not defined
-#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133 and VSO-951142
-#if __cpp_constexpr != 201907L
-#error __cpp_constexpr is not 201907L
-#else
-STATIC_ASSERT(__cpp_constexpr == 201907L);
-#endif
-#elif _HAS_CXX17
-#if __cpp_constexpr != 201603L
-#error __cpp_constexpr is not 201603L
-#else
-STATIC_ASSERT(__cpp_constexpr == 201603L);
-#endif
-#else
-#if __cpp_constexpr != 201304L
-#error __cpp_constexpr is not 201304L
-#else
-STATIC_ASSERT(__cpp_constexpr == 201304L);
-#endif
-#endif
-
-#ifndef __cpp_decltype
-#error __cpp_decltype is not defined
-#elif __cpp_decltype != 200707L
-#error __cpp_decltype is not 200707L
-#else
-STATIC_ASSERT(__cpp_decltype == 200707L);
-#endif
-
-#ifndef __cpp_decltype_auto
-#error __cpp_decltype_auto is not defined
-#elif __cpp_decltype_auto != 201304L
-#error __cpp_decltype_auto is not 201304L
-#else
-STATIC_ASSERT(__cpp_decltype_auto == 201304L);
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_deduction_guides
-#error __cpp_deduction_guides is not defined
-#elif __cpp_deduction_guides != 201703L
-#error __cpp_deduction_guides is not 201703L
-#else
-STATIC_ASSERT(__cpp_deduction_guides == 201703L);
-#endif
-#else
-#ifdef __cpp_deduction_guides
-#error __cpp_deduction_guides is defined
-#endif
-#endif
-
-#ifndef __cpp_delegating_constructors
-#error __cpp_delegating_constructors is not defined
-#elif __cpp_delegating_constructors != 200604L
-#error __cpp_delegating_constructors is not 200604L
-#else
-STATIC_ASSERT(__cpp_delegating_constructors == 200604L);
-#endif
-
-#if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
-#ifndef __cpp_enumerator_attributes
-#error __cpp_enumerator_attributes is not defined
-#elif __cpp_enumerator_attributes != 201411L
-#error __cpp_enumerator_attributes is not 201411L
-#else
-STATIC_ASSERT(__cpp_enumerator_attributes == 201411L);
-#endif
-#else
-#ifdef __cpp_enumerator_attributes
-#error __cpp_enumerator_attributes is defined
-#endif
-#endif
-
-// C++98, /EHs[-]
-#ifdef TEST_DISABLED_EXCEPTIONS
-#ifdef __cpp_exceptions
-#error __cpp_exceptions is defined
-#endif
-#else
-#ifndef __cpp_exceptions
-#error __cpp_exceptions is not defined
-#elif __cpp_exceptions != 199711L
-#error __cpp_exceptions is not 199711L
-#else
-STATIC_ASSERT(__cpp_exceptions == 199711L);
-#endif
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_fold_expressions
-#error __cpp_fold_expressions is not defined
-#elif __cpp_fold_expressions != 201603L
-#error __cpp_fold_expressions is not 201603L
-#else
-STATIC_ASSERT(__cpp_fold_expressions == 201603L);
-#endif
-#else
-#ifdef __cpp_fold_expressions
-#error __cpp_fold_expressions is defined
-#endif
-#endif
-
-#ifndef __cpp_generic_lambdas
-#error __cpp_generic_lambdas is not defined
-#elif _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, VSO-951133
-#if __cpp_generic_lambdas != 201707L
-#error __cpp_generic_lambdas is not 201707L
-#else
-STATIC_ASSERT(__cpp_generic_lambdas == 201707L);
-#endif
-#elif __cpp_generic_lambdas != 201304L
-#error __cpp_generic_lambdas is not 201304L
-#else
-STATIC_ASSERT(__cpp_generic_lambdas == 201304L);
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_guaranteed_copy_elision
-#error __cpp_guaranteed_copy_elision is not defined
-#elif __cpp_guaranteed_copy_elision != 201606L
-#error __cpp_guaranteed_copy_elision is not 201606L
-#else
-STATIC_ASSERT(__cpp_guaranteed_copy_elision == 201606L);
-#endif
-#else
-#ifdef __cpp_guaranteed_copy_elision
-#error __cpp_guaranteed_copy_elision is defined
-#endif
-#endif
-
-#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports hex floats as being available.
-#ifndef __cpp_hex_float
-#error __cpp_hex_float is not defined
-#elif __cpp_hex_float != 201603L
-#error __cpp_hex_float is not 201603L
-#else
-STATIC_ASSERT(__cpp_hex_float == 201603L);
-#endif
-#else
-#ifdef __cpp_hex_float
-#error __cpp_hex_float is defined
-#endif
-#endif
-
-#if _HAS_CXX17 || defined(__EDG__) // EDG unconditionally reports "if constexpr" as being available.
-#ifndef __cpp_if_constexpr
-#error __cpp_if_constexpr is not defined
-#elif __cpp_if_constexpr != 201606L
-#error __cpp_if_constexpr is not 201606L
-#else
-STATIC_ASSERT(__cpp_if_constexpr == 201606L);
-#endif
-#else
-#ifdef __cpp_if_constexpr
-#error __cpp_if_constexpr is defined
-#endif
-#endif
-
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VS 2019 16.7p1
-#if defined(__clang__) || _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG
-#ifndef __cpp_impl_destroying_delete
-#error __cpp_impl_destroying_delete is not defined
-#elif __cpp_impl_destroying_delete != 201806L
-#error __cpp_impl_destroying_delete is not 201806L
-#else
-STATIC_ASSERT(__cpp_impl_destroying_delete == 201806L);
-#endif
-#else
-#ifdef __cpp_impl_destroying_delete
-#error __cpp_impl_destroying_delete is defined
-#endif
-#endif
-#endif
-
-#if _HAS_CXX20
-#ifndef __cpp_impl_three_way_comparison
-#error __cpp_impl_three_way_comparison is not defined
-#else
-#if __cpp_impl_three_way_comparison != 201907L
-#error __cpp_impl_three_way_comparison is not 201907L
-#else
-STATIC_ASSERT(__cpp_impl_three_way_comparison == 201907L);
-#endif
-#endif
-#else
-#ifdef __cpp_impl_three_way_comparison
-#error __cpp_impl_three_way_comparison is defined
-#endif
-#endif
-
-#ifndef __cpp_inheriting_constructors
-#error __cpp_inheriting_constructors is not defined
-#elif (_HAS_CXX17 || defined(__clang__)) && !defined(__EDG__) // Clang implemented this C++17 feature unconditionally.
-                                                              // TRANSITION, VSO-610203
-#if __cpp_inheriting_constructors != 201511L
-#error __cpp_inheriting_constructors is not 201511L
-#else
-STATIC_ASSERT(__cpp_inheriting_constructors == 201511L);
-#endif
-#else
-#if __cpp_inheriting_constructors != 200802L
-#error __cpp_inheriting_constructors is not 200802L
-#else
-STATIC_ASSERT(__cpp_inheriting_constructors == 200802L);
-#endif
-#endif
-
-#ifndef __cpp_init_captures
-#error __cpp_init_captures is not defined
-#elif _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-951133 and EDG
-#if __cpp_init_captures != 201803L
-#error __cpp_init_captures is not 201803L
-#else
-STATIC_ASSERT(__cpp_init_captures == 201803L);
-#endif
-#elif __cpp_init_captures != 201304L
-#error __cpp_init_captures is not 201304L
-#else
-STATIC_ASSERT(__cpp_init_captures == 201304L);
-#endif
-
-#ifndef __cpp_initializer_lists
-#error __cpp_initializer_lists is not defined
-#elif __cpp_initializer_lists != 200806L
-#error __cpp_initializer_lists is not 200806L
-#else
-STATIC_ASSERT(__cpp_initializer_lists == 200806L);
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_inline_variables
-#error __cpp_inline_variables is not defined
-#elif __cpp_inline_variables != 201606L
-#error __cpp_inline_variables is not 201606L
-#else
-STATIC_ASSERT(__cpp_inline_variables == 201606L);
-#endif
-#else
-#ifdef __cpp_inline_variables
-#error __cpp_inline_variables is defined
-#endif
-#endif
-
-#ifndef __cpp_lambdas
-#error __cpp_lambdas is not defined
-#elif __cpp_lambdas != 200907L
-#error __cpp_lambdas is not 200907L
-#else
-STATIC_ASSERT(__cpp_lambdas == 200907L);
-#endif
-
-#if _HAS_CXX17 || !defined(__clang__) // C1XX implemented this C++17 feature unconditionally.
-#ifndef __cpp_namespace_attributes
-#error __cpp_namespace_attributes is not defined
-#elif __cpp_namespace_attributes != 201411L
-#error __cpp_namespace_attributes is not 201411L
-#else
-STATIC_ASSERT(__cpp_namespace_attributes == 201411L);
-#endif
-#else
-#ifdef __cpp_namespace_attributes
-#error __cpp_namespace_attributes is defined
-#endif
-#endif
-
-// C++17, /Zc:noexceptTypes[-]
-#if !_HAS_CXX17 || defined(TEST_DISABLED_NOEXCEPT_FUNCTION_TYPE)
-#ifdef __cpp_noexcept_function_type
-#error __cpp_noexcept_function_type is defined
-#endif
-#else
-#ifndef __cpp_noexcept_function_type
-#error __cpp_noexcept_function_type is not defined
-#elif __cpp_noexcept_function_type != 201510L
-#error __cpp_noexcept_function_type is not 201510L
-#else
-STATIC_ASSERT(__cpp_noexcept_function_type == 201510L);
-#endif
-#endif
-
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
-#ifndef __cpp_nontype_template_args
-#error __cpp_nontype_template_args is not defined
-#elif __cpp_nontype_template_args != 201911L
-#error __cpp_nontype_template_args is not 201911L
-#else
-STATIC_ASSERT(__cpp_nontype_template_args == 201911L);
-#endif
-#elif _HAS_CXX17
-#ifndef __cpp_nontype_template_args
-#error __cpp_nontype_template_args is not defined
-#elif __cpp_nontype_template_args != 201411L
-#error __cpp_nontype_template_args is not 201411L
-#else
-STATIC_ASSERT(__cpp_nontype_template_args == 201411L);
-#endif
-#else
-#ifdef __cpp_nontype_template_args
-#error __cpp_nontype_template_args is defined
-#endif
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_nontype_template_parameter_auto
-#error __cpp_nontype_template_parameter_auto is not defined
-#elif __cpp_nontype_template_parameter_auto != 201606L
-#error __cpp_nontype_template_parameter_auto is not 201606L
-#else
-STATIC_ASSERT(__cpp_nontype_template_parameter_auto == 201606L);
-#endif
-#else
-#ifdef __cpp_nontype_template_parameter_auto
-#error __cpp_nontype_template_parameter_auto is defined
-#endif
-#endif
-
-#ifndef __cpp_nsdmi
-#error __cpp_nsdmi is not defined
-#elif __cpp_nsdmi != 200809L
-#error __cpp_nsdmi is not 200809L
-#else
-STATIC_ASSERT(__cpp_nsdmi == 200809L);
-#endif
-
-#ifndef __cpp_range_based_for
-#error __cpp_range_based_for is not defined
-#elif !defined(__clang__) || _HAS_CXX17 // C1XX implemented this C++17 feature unconditionally.
-#if __cpp_range_based_for != 201603L
-#error __cpp_range_based_for is not 201603L
-#else
-STATIC_ASSERT(__cpp_range_based_for == 201603L);
-#endif
-#else
-#if __cpp_range_based_for != 200907L
-#error __cpp_range_based_for is not 200907L
-#else
-STATIC_ASSERT(__cpp_range_based_for == 200907L);
-#endif
-#endif
-
-#ifndef __cpp_raw_strings
-#error __cpp_raw_strings is not defined
-#elif __cpp_raw_strings != 200710L
-#error __cpp_raw_strings is not 200710L
-#else
-STATIC_ASSERT(__cpp_raw_strings == 200710L);
-#endif
-
-#ifndef __cpp_ref_qualifiers
-#error __cpp_ref_qualifiers is not defined
-#elif __cpp_ref_qualifiers != 200710L
-#error __cpp_ref_qualifiers is not 200710L
-#else
-STATIC_ASSERT(__cpp_ref_qualifiers == 200710L);
-#endif
-
-#ifndef __cpp_return_type_deduction
-#error __cpp_return_type_deduction is not defined
-#elif __cpp_return_type_deduction != 201304L
-#error __cpp_return_type_deduction is not 201304L
-#else
-STATIC_ASSERT(__cpp_return_type_deduction == 201304L);
-#endif
-
-// C++98, /GR[-]
-#ifdef TEST_DISABLED_RTTI
-#ifdef __cpp_rtti
-#error __cpp_rtti is defined
-#endif
-#else
-#ifndef __cpp_rtti
-#error __cpp_rtti is not defined
-#elif __cpp_rtti != 199711L
-#error __cpp_rtti is not 199711L
-#else
-STATIC_ASSERT(__cpp_rtti == 199711L);
-#endif
-#endif
-
-#ifndef __cpp_rvalue_references
-#error __cpp_rvalue_references is not defined
-#elif __cpp_rvalue_references != 200610L
-#error __cpp_rvalue_references is not 200610L
-#else
-STATIC_ASSERT(__cpp_rvalue_references == 200610L);
-#endif
-
-// C++14, /Zc:sizedDealloc[-]
-#if defined(TEST_DISABLED_SIZED_DEALLOCATION) || defined(__clang__) // Clang disables sized deallocation by default.
-#ifdef __cpp_sized_deallocation
-#error __cpp_sized_deallocation is defined
-#endif
-#else
-#ifndef __cpp_sized_deallocation
-#error __cpp_sized_deallocation is not defined
-#elif __cpp_sized_deallocation != 201309L
-#error __cpp_sized_deallocation is not 201309L
-#else
-STATIC_ASSERT(__cpp_sized_deallocation == 201309L);
-#endif
-#endif
-
-#ifndef __cpp_static_assert
-#error __cpp_static_assert is not defined
-#elif _HAS_CXX17
-#if __cpp_static_assert != 201411L
-#error __cpp_static_assert is not 201411L
-#else
-STATIC_ASSERT(__cpp_static_assert == 201411L);
-#endif
-#else
-#if __cpp_static_assert != 200410L
-#error __cpp_static_assert is not 200410L
-#else
-STATIC_ASSERT(__cpp_static_assert == 200410L);
-#endif
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_structured_bindings
-#error __cpp_structured_bindings is not defined
-#elif __cpp_structured_bindings != 201606L
-#error __cpp_structured_bindings is not 201606L
-#else
-STATIC_ASSERT(__cpp_structured_bindings == 201606L);
-#endif
-#else
-#ifdef __cpp_structured_bindings
-#error __cpp_structured_bindings is defined
-#endif
-#endif
-
-#if _HAS_CXX17 && !defined(__clang__)
-// https://clang.llvm.org/cxx_status.html says P0522R0 is Partial, "Despite being
-// the resolution to a Defect Report, this feature is disabled by default in all
-// language versions, and can be enabled explicitly with the flag
-// -frelaxed-template-template-args in Clang 4 onwards. The change to the standard
-// lacks a corresponding change for template partial ordering, resulting in
-// ambiguity errors for reasonable and previously-valid code. This issue is
-// expected to be rectified soon."
-#ifndef __cpp_template_template_args
-#error __cpp_template_template_args is not defined
-#elif __cpp_template_template_args != 201611L
-#error __cpp_template_template_args is not 201611L
-#else
-STATIC_ASSERT(__cpp_template_template_args == 201611L);
-#endif
-#else
-#ifdef __cpp_template_template_args
-#error __cpp_template_template_args is defined
-#endif
-#endif
-
-// C++11, /Zc:threadSafeInit[-]
-#if defined(_M_CEE_PURE) || defined(TEST_DISABLED_THREADSAFE_STATIC_INIT)
-#ifdef __cpp_threadsafe_static_init
-#error __cpp_threadsafe_static_init is defined
-#endif
-#else
-#ifndef __cpp_threadsafe_static_init
-#error __cpp_threadsafe_static_init is not defined
-#elif __cpp_threadsafe_static_init != 200806L
-#error __cpp_threadsafe_static_init is not 200806L
-#else
-STATIC_ASSERT(__cpp_threadsafe_static_init == 200806L);
-#endif
-#endif
-
-#ifndef __cpp_unicode_characters
-#error __cpp_unicode_characters is not defined
-#elif __cpp_unicode_characters != 200704L
-#error __cpp_unicode_characters is not 200704L
-#else
-STATIC_ASSERT(__cpp_unicode_characters == 200704L);
-#endif
-
-#ifndef __cpp_unicode_literals
-#error __cpp_unicode_literals is not defined
-#elif __cpp_unicode_literals != 200710L
-#error __cpp_unicode_literals is not 200710L
-#else
-STATIC_ASSERT(__cpp_unicode_literals == 200710L);
-#endif
-
-#ifndef __cpp_user_defined_literals
-#error __cpp_user_defined_literals is not defined
-#elif __cpp_user_defined_literals != 200809L
-#error __cpp_user_defined_literals is not 200809L
-#else
-STATIC_ASSERT(__cpp_user_defined_literals == 200809L);
-#endif
-
-#ifndef __cpp_variable_templates
-#error __cpp_variable_templates is not defined
-#elif __cpp_variable_templates != 201304L
-#error __cpp_variable_templates is not 201304L
-#else
-STATIC_ASSERT(__cpp_variable_templates == 201304L);
-#endif
-
-#ifndef __cpp_variadic_templates
-#error __cpp_variadic_templates is not defined
-#elif __cpp_variadic_templates != 200704L
-#error __cpp_variadic_templates is not 200704L
-#else
-STATIC_ASSERT(__cpp_variadic_templates == 200704L);
-#endif
-
-#if _HAS_CXX17
-#ifndef __cpp_variadic_using
-#error __cpp_variadic_using is not defined
-#elif __cpp_variadic_using != 201611L
-#error __cpp_variadic_using is not 201611L
-#else
-STATIC_ASSERT(__cpp_variadic_using == 201611L);
-#endif
-#else
-#ifdef __cpp_variadic_using
-#error __cpp_variadic_using is defined
-#endif
-#endif
-
-
 // LIBRARY FEATURE-TEST MACROS
 
 #ifndef __cpp_lib_addressof_constexpr
@@ -753,6 +84,20 @@ STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_flag_test
+#error __cpp_lib_atomic_flag_test is not defined
+#elif __cpp_lib_atomic_flag_test != 201907L
+#error __cpp_lib_atomic_flag_test is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_flag_test == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_flag_test
+#error __cpp_lib_atomic_flag_test is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_float
 #error __cpp_lib_atomic_float is not defined
 #elif __cpp_lib_atomic_float != 201711L
@@ -777,6 +122,20 @@ STATIC_ASSERT(__cpp_lib_atomic_is_always_lock_free == 201603L);
 #else
 #ifdef __cpp_lib_atomic_is_always_lock_free
 #error __cpp_lib_atomic_is_always_lock_free is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_lock_free_type_aliases
+#error __cpp_lib_atomic_lock_free_type_aliases is not defined
+#elif __cpp_lib_atomic_lock_free_type_aliases != 201907L
+#error __cpp_lib_atomic_lock_free_type_aliases is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
+#error __cpp_lib_atomic_lock_free_type_aliases is defined
 #endif
 #endif
 
@@ -816,7 +175,7 @@ STATIC_ASSERT(__cpp_lib_bind_front == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1041044
+#if _HAS_CXX20
 #ifndef __cpp_lib_bit_cast
 #error __cpp_lib_bit_cast is not defined
 #elif __cpp_lib_bit_cast != 201806L
@@ -979,6 +338,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_algorithms == 201806L);
 #else
 #ifdef __cpp_lib_constexpr_algorithms
 #error __cpp_lib_constexpr_algorithms is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_complex
+#error __cpp_lib_constexpr_complex is not defined
+#elif __cpp_lib_constexpr_complex != 201711L
+#error __cpp_lib_constexpr_complex is not 201711L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_complex
+#error __cpp_lib_constexpr_complex is defined
 #endif
 #endif
 
@@ -1209,6 +582,20 @@ STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #else
 #ifdef __cpp_lib_int_pow2
 #error __cpp_lib_int_pow2 is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is not defined
+#elif __cpp_lib_integer_comparison_functions != 202002L
+#error __cpp_lib_integer_comparison_functions is not 202002L
+#else
+STATIC_ASSERT(__cpp_lib_integer_comparison_functions == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is defined
 #endif
 #endif
 

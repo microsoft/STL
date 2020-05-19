@@ -276,8 +276,7 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    _Flist_val() noexcept : _Myhead() { // initialize data
-    }
+    _Flist_val() noexcept : _Myhead() {} // initialize data
 
     _Nodeptr _Before_head() const noexcept { // return pointer to the "before begin" pseudo node
         return pointer_traits<_Nodeptr>::pointer_to(reinterpret_cast<_Node&>(const_cast<_Nodeptr&>(_Myhead)));

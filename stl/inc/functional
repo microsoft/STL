@@ -672,8 +672,7 @@ private:
 public:
     template <class _Callable, class _Tag, enable_if_t<is_same_v<_Tag, _Not_fn_tag>, int> = 0>
     explicit _Not_fn(_Callable&& _Obj, _Tag) noexcept(is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
-        : _Mybase(_STD forward<_Callable>(_Obj)) { // store a callable object
-    }
+        : _Mybase(_STD forward<_Callable>(_Obj)) {} // store a callable object
 
     _Not_fn(const _Not_fn&) = default;
     _Not_fn(_Not_fn&&)      = default;
@@ -744,7 +743,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
     if constexpr (_Testable_callable_v<_Ty>) {
         return !!_Arg;
     } else {
-        (void) _Arg;
         return true;
     }
 }
@@ -819,7 +817,6 @@ private:
     virtual _Mybase* _Copy(void* _Where) const override {
         auto& _Myax = _Mypair._Get_first();
         if _CONSTEXPR_IF (_Is_large<_Func_impl>) {
-            (void) _Where;
             _Myalty _Rebound(_Myax);
             _Alloc_construct_ptr<_Myalty> _Constructor{_Rebound};
             _Constructor._Allocate();
@@ -834,7 +831,6 @@ private:
 
     virtual _Mybase* _Move(void* _Where) noexcept override {
         if _CONSTEXPR_IF (_Is_large<_Func_impl>) {
-            (void) _Where;
             return nullptr;
         } else {
             const auto _Ptr = static_cast<_Func_impl*>(_Where);
@@ -887,7 +883,7 @@ public:
 private:
     virtual _Mybase* _Copy(void* _Where) const override {
         if _CONSTEXPR_IF (_Is_large<_Func_impl_no_alloc>) {
-            (void) _Where;
+            (void) _Where; // TRANSITION, DevCom-1004719
             return _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_Callee);
@@ -896,7 +892,7 @@ private:
 
     virtual _Mybase* _Move(void* _Where) noexcept override {
         if _CONSTEXPR_IF (_Is_large<_Func_impl_no_alloc>) {
-            (void) _Where;
+            (void) _Where; // TRANSITION, DevCom-1004719
             return nullptr;
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_STD move(_Callee));
@@ -1286,28 +1282,23 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 // PLACEHOLDERS
 template <int _Nx>
 struct _Ph { // placeholder
+    static_assert(_Nx > 0, "invalid placeholder index");
 };
 
 template <class _Tx>
-struct is_placeholder : integral_constant<int, 0> { // template to indicate that _Tx is not a placeholder
-};
+struct is_placeholder : integral_constant<int, 0> {}; // _Tx is not a placeholder
 
 template <int _Nx>
-struct is_placeholder<_Ph<_Nx>>
-    : integral_constant<int, _Nx> { // template specialization to indicate that _Ph<_Nx> is a placeholder
-};
+struct is_placeholder<_Ph<_Nx>> : integral_constant<int, _Nx> {}; // _Ph is a placeholder
 
 template <class _Tx>
-struct is_placeholder<const _Tx> : is_placeholder<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_placeholder<const _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_placeholder<volatile _Tx> : is_placeholder<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_placeholder<volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Ty>
 _INLINE_VAR constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
@@ -1318,25 +1309,19 @@ class _Binder;
 
 // STRUCT TEMPLATE is_bind_expression
 template <class _Tx>
-struct is_bind_expression : false_type { // template to indicate that _Tx is not a bind expression
-};
+struct is_bind_expression : false_type {}; // _Tx is not a bind expression
 
 template <class _Ret, class _Fx, class... _Types>
-struct is_bind_expression<_Binder<_Ret, _Fx, _Types...>> : true_type {
-    // template specialization to indicate a bind expression
-};
+struct is_bind_expression<_Binder<_Ret, _Fx, _Types...>> : true_type {}; // _Binder is a bind expression
 
 template <class _Tx>
-struct is_bind_expression<const _Tx> : is_bind_expression<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_bind_expression<const _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_bind_expression<volatile _Tx> : is_bind_expression<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_bind_expression<volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
@@ -1356,19 +1341,16 @@ struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
 
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
     template <class _Untuple, size_t... _Jx>
     static auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut,
         index_sequence<_Jx...>) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) { // call a nested bind expression
         return _Tid(_STD get<_Jx>(_STD move(_Ut))...);
     }
-#pragma warning(pop)
 
     template <class _Untuple>
-    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(_Apply(_Tid, _STD move(_Ut),
-        make_index_sequence<tuple_size_v<_Untuple>>())) { // call a nested bind expression
-        return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>());
+    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(
+        _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) { // call a nested bind expression
+        return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
 };
 
@@ -1397,8 +1379,6 @@ auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut)
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4100) // TRANSITION, VSO-181496, unreferenced formal parameter
 // FUNCTION TEMPLATE _Call_binder
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl, _Untuple&& _Ut)
@@ -1406,7 +1386,6 @@ auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_
         _Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) { // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
-#pragma warning(pop)
 
 // CLASS TEMPLATE _Binder
 template <class _Ret>
@@ -1439,9 +1418,9 @@ public:
 
 #define _BINDER_OPERATOR(CONST_OPT)                                                                           \
     template <class... _Unbound>                                                                              \
-    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq(),    \
+    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq{},    \
         _Mypair._Get_first(), _Mypair._Myval2, _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) { \
-        return _Call_binder(_Invoker_ret<_Ret>(), _Seq(), _Mypair._Get_first(), _Mypair._Myval2,              \
+        return _Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _Mypair._Get_first(), _Mypair._Myval2,              \
             _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...));                                      \
     }
 
@@ -1565,8 +1544,7 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // STRUCT TEMPLATE uses_allocator
 template <class _Fty, class _Alloc>
-struct uses_allocator<function<_Fty>, _Alloc> : true_type { // true_type if container allocator enabled
-};
+struct uses_allocator<function<_Fty>, _Alloc> : true_type {}; // true_type if container allocator enabled
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
 #if _HAS_CXX17

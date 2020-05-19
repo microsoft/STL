@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -106,7 +107,7 @@ private:
 
 public:
     using iterator_concept  = std::input_iterator_tag;
-    using iterator_category = std::output_iterator_tag;
+    using iterator_category = void; // TRANSITION, LWG-3289
     using value_type        = std::remove_cv_t<T>;
     using difference_type   = std::ptrdiff_t;
     using pointer           = void;
@@ -222,9 +223,6 @@ struct test_iterator {
         STATIC_ASSERT(always_false<Category>);
     }
 
-    friend void iter_move(test_iterator const&) {
-        STATIC_ASSERT(always_false<Category>);
-    }
     friend void iter_swap(test_iterator const&, test_iterator const&) {
         STATIC_ASSERT(always_false<Category>);
     }
@@ -491,6 +489,28 @@ struct with_input_ranges {
 };
 
 template <class Continuation>
+struct with_forward_ranges {
+    template <class... Args>
+    static void call() {
+        Continuation::template call<Args..., test_range<std::forward_iterator_tag, int, false, false>>();
+        Continuation::template call<Args..., test_range<std::forward_iterator_tag, int, false, true>>();
+        Continuation::template call<Args..., test_range<std::forward_iterator_tag, int, true, false>>();
+        Continuation::template call<Args..., test_range<std::forward_iterator_tag, int, true, true>>();
+
+        Continuation::template call<Args..., test_range<std::bidirectional_iterator_tag, int, false, false>>();
+        Continuation::template call<Args..., test_range<std::bidirectional_iterator_tag, int, false, true>>();
+        Continuation::template call<Args..., test_range<std::bidirectional_iterator_tag, int, true, false>>();
+        Continuation::template call<Args..., test_range<std::bidirectional_iterator_tag, int, true, true>>();
+
+        Continuation::template call<Args..., test_range<std::random_access_iterator_tag, int, true, false>>();
+        Continuation::template call<Args..., test_range<std::random_access_iterator_tag, int, true, true>>();
+
+        Continuation::template call<Args..., test_range<std::contiguous_iterator_tag, int, true, false>>();
+        Continuation::template call<Args..., test_range<std::contiguous_iterator_tag, int, true, true>>();
+    }
+};
+
+template <class Continuation>
 struct with_input_iterators {
     template <class... Args>
     static void call() {
@@ -523,8 +543,23 @@ void test_in() {
 }
 
 template <class Instantiator>
+void test_fwd() {
+    with_forward_ranges<Instantiator>::call();
+}
+
+template <class Instantiator>
 void test_in_in() {
     with_input_ranges<with_input_ranges<Instantiator>>::call();
+}
+
+template <class Instantiator>
+void test_in_fwd() {
+    with_input_ranges<with_forward_ranges<Instantiator>>::call();
+}
+
+template <class Instantiator>
+void test_fwd_fwd() {
+    with_forward_ranges<with_forward_ranges<Instantiator>>::call();
 }
 
 template <class Instantiator>
