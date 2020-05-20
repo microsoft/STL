@@ -532,9 +532,9 @@
 #if _HAS_CXX20
 #ifdef __clang__
 #define _CONSTEXPR20_MEMOP constexpr
-#else // ^^^ clang / Other no clang
+#else // ^^^ Clang / not Clang vvv
 #define _CONSTEXPR20_MEMOP inline
-#endif // ^^^ no clang ^^^
+#endif // ^^^ not Clang ^^^
 #else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20_MEMOP inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
