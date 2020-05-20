@@ -1296,6 +1296,7 @@ struct _Static_partitioned_find2 {
             return _Cancellation_status::_Canceled;
         }
         // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // GH-818: https://github.com/microsoft/STL/issues/818 
 
         const auto _Range     = _Basis._Get_chunk(_Key);
         const auto _This_find = _Fx(_Range._First, _Range._Last);
