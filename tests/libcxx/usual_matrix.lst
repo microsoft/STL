@@ -3,6 +3,6 @@
 
 PM_CL="/nologo /Od /W4 /w14061 /w14242 /w14265 /w14582 /w14583 /w14587 /w14588 /wd4643 /w14749 /w14841 /w14842 /w15038 /w15214 /w15215 /w15216 /w15217 /sdl /WX /Zc:strictStrings /D_ENABLE_STL_INTERNAL_CHECK /bigobj /FImsvc_stdlib_force_include.h /permissive-"
 RUNALL_CROSSLIST
-# C5105: macro expansion producing 'defined' has undefined behavior is emitted by windows.h
+# C5105: macro expansion producing 'defined' has undefined behavior is emitted by windows.h. TRANSITION, GH-854
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /analyze /Zc:preprocessor /wd5105"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MTd /std:c++latest"
