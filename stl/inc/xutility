@@ -4660,15 +4660,6 @@ _INLINE_VAR constexpr bool _Value_equality_is_bitwise_equality = static_cast<_El
 template <class _Elem1, class _Elem2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = false;
 
-// allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
-// being integral is a precondition of _Value_equality_is_bitwise_equality
-template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2,
-    enable_if_t<sizeof(_Elem1) == sizeof(_Elem2) //
-                    && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2> //
-                    && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>,
-        equal_to<>>> = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
-
 // allow memcmping pointers-to-cv-T with equal_to<>
 template <class _Elem1, class _Elem2>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>> =
@@ -4687,6 +4678,15 @@ inline constexpr bool _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> = tru
 template <class _Elem>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>> =
     _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>;
+
+// allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
+// being integral is a precondition of _Value_equality_is_bitwise_equality
+template <class _Elem1, class _Elem2>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2,
+    enable_if_t<sizeof(_Elem1) == sizeof(_Elem2) //
+                    && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2> //
+                    && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>,
+        equal_to<>>> = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
 
 // return equal optimization category for pointers
 template <class _Elem1, class _Elem2, class _Pr, bool = conjunction_v<is_pointer<_Elem1>, is_pointer<_Elem2>>>
