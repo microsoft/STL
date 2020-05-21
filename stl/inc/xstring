@@ -234,17 +234,16 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
     /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
 #ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
+        if (_STD is_constant_evaluated()) {
+            for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
+                *_Next = _Ch;
+            }
+
+            return _First;
+        }
 #endif // __cpp_lib_is_constant_evaluated
-        {
-            return reinterpret_cast<_Elem*>(_CSTD wmemset(reinterpret_cast<wchar_t*>(_First), _Ch, _Count));
-        }
 
-        for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
-            *_Next = _Ch;
-        }
-
-        return _First;
+        return reinterpret_cast<_Elem*>(_CSTD wmemset(reinterpret_cast<wchar_t*>(_First), _Ch, _Count));
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
@@ -414,17 +413,16 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
     /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
 #ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
+        if (_STD is_constant_evaluated()) {
+            for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
+                *_Next = _Ch;
+            }
+
+            return _First;
+        }
 #endif // __cpp_lib_is_constant_evaluated
-        {
-            return static_cast<_Elem*>(_CSTD memset(_First, _Ch, _Count));
-        }
 
-        for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
-            *_Next = _Ch;
-        }
-
-        return _First;
+        return static_cast<_Elem*>(_CSTD memset(_First, _Ch, _Count));
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
