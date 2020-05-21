@@ -102,8 +102,7 @@ struct _Char_traits { // properties of a string or stream element
         _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept
     /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
-        _Elem* _Next = _First;
-        for (; 0 < _Count; --_Count, ++_Next) {
+        for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
             *_Next = _Ch;
         }
 
@@ -230,7 +229,8 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
 #endif // ^^^ not Clang ^^^
     }
 
-    static _CONSTEXPR20 _Elem* assign(_Out_writes_all_(_Count) _Elem* const _First, size_t _Count, _Elem _Ch) noexcept
+    static _CONSTEXPR20 _Elem* assign(
+        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept
     /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
 #ifdef __cpp_lib_is_constant_evaluated
