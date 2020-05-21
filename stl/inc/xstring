@@ -56,6 +56,7 @@ struct _Char_traits { // properties of a string or stream element
 
         return _Count;
     }
+
     static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
@@ -3822,8 +3823,7 @@ public:
         return size() == 0;
     }
 
-    _CONSTEXPR20_MEMOP size_type copy(
-        _Out_writes_(_Count) _Elem* const _Ptr, size_type _Count, const size_type _Off = 0) const {
+    size_type copy(_Out_writes_(_Count) _Elem* const _Ptr, size_type _Count, const size_type _Off = 0) const {
         // copy [_Off, _Off + _Count) to [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         _Count = _Mypair._Myval2._Clamp_suffix_size(_Off, _Count);

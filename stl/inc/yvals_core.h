@@ -528,7 +528,7 @@
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
-// Builtin memory operations that are usable in constexpr are only supported for clang
+// Only Clang supports builtin memory operations that are usable in constexpr
 #if _HAS_CXX20
 #ifdef __clang__
 #define _CONSTEXPR20_MEMOP constexpr
