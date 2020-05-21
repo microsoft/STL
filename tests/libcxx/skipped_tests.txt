@@ -482,18 +482,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1032R1 "Miscellaneous constexpr"
-strings\char.traits\char.traits.specializations\char.traits.specializations.char\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\move.pass.cpp
-
 # C++20 P1135R6 "The C++20 Synchronization Library"
 atomics\atomics.types.operations\atomics.types.operations.wait\atomic_wait.pass.cpp
 thread\thread.barrier\arrive.pass.cpp

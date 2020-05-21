@@ -57,15 +57,27 @@ struct _Char_traits { // properties of a string or stream element
         return _Count;
     }
 
-    static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
 #ifdef __clang__
         __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
-        return _First1;
 #else // ^^^ Clang / not Clang vvv
-        return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem)));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap; see LWG-3085
+            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                _First1[_Idx] = _First2[_Idx];
+            }
+
+            return _First1;
+        }
+#endif // __cpp_lib_is_constant_evaluated
+
+        _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
 #endif // ^^^ not Clang ^^^
+
+        return _First1;
     }
 
     _Pre_satisfies_(_Dest_size >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _First1,
@@ -87,15 +99,53 @@ struct _Char_traits { // properties of a string or stream element
         return nullptr;
     }
 
-    static _CONSTEXPR20_MEMOP _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...), allowing overlap
 #ifdef __clang__
         __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
-        return _First1;
 #else // ^^^ Clang / not Clang vvv
-        return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count * sizeof(_Elem)));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            // dest: [_First1, _First1 + _Count)
+            // src: [_First2, _First2 + _Count)
+            // We need to handle overlapping ranges.
+            // If _First1 is in the src range, we need a backward loop.
+            // Otherwise, the forward loop works (even if the back of dest overlaps the front of src).
+
+            if (_First1 == _First2) {
+                return _First1; // Self-assignment; either loop would work, but returning immediately is faster.
+            }
+
+            // Usually, we would compare pointers with less-than, even though they could belong to different arrays.
+            // However, we're not allowed to do that during constant evaluation, so we need a linear scan for equality.
+            bool _Loop_forward = true;
+
+            for (const _Elem* _Src = _First2; _Src != _First2 + _Count; ++_Src) {
+                if (_First1 == _Src) {
+                    _Loop_forward = false;
+                    break;
+                }
+            }
+
+            if (_Loop_forward) {
+                for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                    _First1[_Idx] = _First2[_Idx];
+                }
+            } else {
+                for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                    _First1[_Count - 1 - _Idx] = _First2[_Count - 1 - _Idx];
+                }
+            }
+
+            return _First1;
+        }
+#endif // __cpp_lib_is_constant_evaluated
+
+        _CSTD memmove(_First1, _First2, _Count * sizeof(_Elem));
 #endif // ^^^ not Clang ^^^
+
+        return _First1;
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -151,6 +201,10 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
     using off_type   = streamoff;
     using state_type = mbstate_t;
 
+private:
+    using _Primary_char_traits = _Char_traits<_Elem, int_type>;
+
+public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
@@ -158,7 +212,7 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
         if constexpr (is_same_v<_Elem, wchar_t>) {
             return __builtin_wmemcmp(_First1, _First2, _Count);
         } else {
-            return _Char_traits<_Elem, unsigned short>::compare(_First1, _First2, _Count);
+            return _Primary_char_traits::compare(_First1, _First2, _Count);
         }
 #else // _HAS_CXX17
         return _CSTD wmemcmp(
@@ -172,27 +226,29 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
         if constexpr (is_same_v<_Elem, wchar_t>) {
             return __builtin_wcslen(_First);
         } else {
-            return _Char_traits<_Elem, unsigned short>::length(_First);
+            return _Primary_char_traits::length(_First);
         }
 #else // _HAS_CXX17
         return _CSTD wcslen(reinterpret_cast<const wchar_t*>(_First));
 #endif // _HAS_CXX17
     }
 
-    static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
 #ifdef __clang__
-        if constexpr (is_same_v<_Elem, wchar_t>) {
-            __builtin_wmemcpy(_First1, _First2, _Count);
-            return _First1;
-        } else {
-            return _Char_traits<_Elem, unsigned short>::copy(_First1, _First2, _Count);
-        }
+        __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
 #else // ^^^ Clang / not Clang vvv
-        return reinterpret_cast<_Elem*>(
-            _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::copy(_First1, _First2, _Count);
+        }
+#endif // __cpp_lib_is_constant_evaluated
+
+        _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
 #endif // ^^^ not Clang ^^^
+
+        return _First1;
     }
 
     _Pre_satisfies_(_Size_in_words >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_words)
@@ -210,23 +266,29 @@ struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t,
         if constexpr (is_same_v<_Elem, wchar_t>) {
             return __builtin_wmemchr(_First, _Ch, _Count);
         } else {
-            return _Char_traits<_Elem, unsigned short>::find(_First, _Count, _Ch);
+            return _Primary_char_traits::find(_First, _Count, _Ch);
         }
 #else // _HAS_CXX17
         return reinterpret_cast<const _Elem*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First), _Ch, _Count));
 #endif // _HAS_CXX17
     }
 
-    static _CONSTEXPR20_MEMOP _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
 #ifdef __clang__
-        __builtin_wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-        return _First1;
+        __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
 #else // ^^^ Clang / not Clang vvv
-        return reinterpret_cast<_Elem*>(
-            _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::move(_First1, _First2, _Count);
+        }
+#endif // __cpp_lib_is_constant_evaluated
+
+        _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
 #endif // ^^^ not Clang ^^^
+
+        return _First1;
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -320,6 +382,10 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
     using off_type   = streamoff;
     using state_type = mbstate_t;
 
+private:
+    using _Primary_char_traits = _Char_traits<_Elem, _Int_type>;
+
+public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
@@ -345,7 +411,7 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #if _HAS_U8_INTRINSICS
             return __builtin_u8strlen(_First);
 #else // ^^^ use u8 intrinsics / no u8 intrinsics vvv
-            return _Char_traits<_Elem, _Int_type>::length(_First);
+            return _Primary_char_traits::length(_First);
 #endif // _HAS_U8_INTRINSICS
         } else
 #endif // __cpp_char8_t
@@ -357,15 +423,22 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #endif // _HAS_CXX17
     }
 
-    static _CONSTEXPR20_MEMOP _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20 _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
 #ifdef __clang__
         __builtin_memcpy(_First1, _First2, _Count);
-        return _First1;
 #else // ^^^ Clang / not Clang vvv
-        return static_cast<_Elem*>(_CSTD memcpy(_First1, _First2, _Count));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::copy(_First1, _First2, _Count);
+        }
+#endif // __cpp_lib_is_constant_evaluated
+
+        _CSTD memcpy(_First1, _First2, _Count);
 #endif // ^^^ not Clang ^^^
+
+        return _First1;
     }
 
     _Pre_satisfies_(_Size_in_bytes >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_bytes)
@@ -385,7 +458,7 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #if _HAS_U8_INTRINSICS
             return __builtin_u8memchr(_First, _Ch, _Count);
 #else // ^^^ use u8 intrinsics / no u8 intrinsics vvv
-            return _Char_traits<_Elem, _Int_type>::find(_First, _Count, _Ch);
+            return _Primary_char_traits::find(_First, _Count, _Ch);
 #endif // _HAS_U8_INTRINSICS
         } else
 #endif // __cpp_char8_t
@@ -397,15 +470,22 @@ struct _Narrow_char_traits { // Implement char_traits for narrow character types
 #endif // _HAS_CXX17
     }
 
-    static _CONSTEXPR20_MEMOP _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
+    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
 #ifdef __clang__
         __builtin_memmove(_First1, _First2, _Count);
-        return _First1;
 #else // ^^^ Clang / not Clang vvv
-        return static_cast<_Elem*>(_CSTD memmove(_First1, _First2, _Count));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::move(_First1, _First2, _Count);
+        }
+#endif // __cpp_lib_is_constant_evaluated
+
+        _CSTD memmove(_First1, _First2, _Count);
 #endif // ^^^ not Clang ^^^
+
+        return _First1;
     }
 
     static _CONSTEXPR20 _Elem* assign(
