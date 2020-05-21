@@ -254,12 +254,13 @@ constexpr bool test_compare_three_way() {
 
 enum class some_enum { value };
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-905257
 STATIC_ASSERT(test_compare_three_way<int, int, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<int, long, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, float, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, double, partial_ordering>());
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, GH-741
 STATIC_ASSERT(test_compare_three_way<long, double, partial_ordering>());
+#endif // TRANSITION, GH-741
 STATIC_ASSERT(test_compare_three_way<bool, int, void>());
 
 STATIC_ASSERT(test_compare_three_way<some_enum, some_enum, strong_ordering>());
@@ -270,7 +271,6 @@ STATIC_ASSERT(test_compare_three_way<int*, void*, strong_ordering>());
 
 STATIC_ASSERT(test_compare_three_way<int (*)(), int (*)(), void>());
 STATIC_ASSERT(test_compare_three_way<int (*)(), void (*)(), void>());
-#endif // TRANSITION, VSO-905257
 
 template <class Cat>
 struct compares_as {};
@@ -294,17 +294,8 @@ STATIC_ASSERT(test_compare_three_way<compares_as<strong_ordering>, compares_as<s
 // Validate dynamic properties of compare_three_way, ranges::equal_to, ranges::not_equal_to, ranges::less,
 // ranges::less_equal, ranges::greater, ranges::greater_equal
 template <class T, class U, class R>
-constexpr void assert_three_way(T const& t, U const& u, R const result) { // TRANSITION, VSO-905257
-#if !defined(__clang__) && !defined(__EDG__)
-    // <=> expressions that resolve to builtin operators are incorrectly lvalues of const-qualified type on MSVC, so
-    // they are rejected by std::three_way_comparable and std::three_way_comparable_with.
-    if constexpr (!std::is_class_v<std::remove_cvref_t<T>> && !std::is_class_v<std::remove_cvref_t<U>>) {
-        return;
-    } else
-#endif // !defined(__clang__) && !defined(__EDG__)
-    {
-        assert(compare_three_way{}(t, u) == result);
-    }
+constexpr void assert_three_way(T const& t, U const& u, R const result) {
+    assert(compare_three_way{}(t, u) == result);
 }
 
 template <class T, class U>
@@ -465,9 +456,14 @@ constexpr void ordering_test_cases() {
     test_partially_ordered(1.414f, 3.14, partial_ordering::less);
     test_partially_ordered(1.414, 3.14f, partial_ordering::less);
     test_partially_ordered(31.625f, 31.625, partial_ordering::equivalent);
-    test_partially_ordered(3.14, NaN, partial_ordering::unordered);
-    test_partially_ordered(3.14f, NaN, partial_ordering::unordered);
-    test_partially_ordered(3.14, NaNf, partial_ordering::unordered);
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-741
+    if (!std::is_constant_evaluated())
+#endif // TRANSITION, GH-741
+    {
+        test_partially_ordered(3.14, NaN, partial_ordering::unordered);
+        test_partially_ordered(3.14f, NaN, partial_ordering::unordered);
+        test_partially_ordered(3.14, NaNf, partial_ordering::unordered);
+    }
 
     // Validate types with no builtin <=> operators that are nonetheless totally_ordered (within a
     // limited domain) or equality_comparable
