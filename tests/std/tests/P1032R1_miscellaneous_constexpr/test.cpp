@@ -36,8 +36,7 @@ struct constexpr_container {
         return where;
     }
 
-    // Fake begin to ensure that we insert at the correct position
-    // for insert_iterator
+    // Fake begin to ensure that we insert at the correct position for insert_iterator
     constexpr iterator begin() {
         return next(buffer.begin());
     }
@@ -46,28 +45,38 @@ struct constexpr_container {
 constexpr bool run_tests() {
     // test pair piecewise constructor
     {
-        tuple<int, int, double, double> first{1, 2, 0.5, 2.0};
-        tuple<double, int> second{2.0, 1};
-        pair<tuple<int, int, double, double>, tuple<double, int>> meow{piecewise_construct, first, second};
+        const tuple<int, int, double, double> t1{1, 2, 0.5, 1.5};
+        const tuple<double, int> t2{2.5, 3};
+        const pair<tuple<int, int, double, double>, tuple<double, int>> meow{piecewise_construct, t1, t2};
+        assert(meow.first == t1);
+        assert(meow.second == t2);
     }
 
     // test pair assignment operator
     {
         pair<int, int> input{1, 2};
-        pair<int, int> copyAssignment;
+        pair<int, int> copyAssignment{};
         copyAssignment = input;
+        assert(copyAssignment.first == 1);
+        assert(copyAssignment.second == 2);
 
-        pair<int, int> moveAssignment;
+        pair<int, int> moveAssignment{};
         moveAssignment = move(input);
+        assert(moveAssignment.first == 1);
+        assert(moveAssignment.second == 2);
 
-        pair<double, double> copyAssignmentConvertible;
-        copyAssignmentConvertible = moveAssignment;
+        pair<double, double> copyAssignmentConvertible{};
+        copyAssignmentConvertible = copyAssignment;
+        assert(copyAssignmentConvertible.first == 1.0);
+        assert(copyAssignmentConvertible.second == 2.0);
 
-        pair<double, double> moveAssignmentConvertible;
+        pair<double, double> moveAssignmentConvertible{};
         moveAssignmentConvertible = move(moveAssignment);
+        assert(moveAssignmentConvertible.first == 1.0);
+        assert(moveAssignmentConvertible.second == 2.0);
     }
 
-    // test pair::swap
+    // test pair swap
     {
         pair<int, int> pair1{1, 2};
         pair<int, int> pair2{3, 4};
@@ -84,7 +93,10 @@ constexpr bool run_tests() {
         allocator<int> alloc;
         tuple<> tuple_alloc{allocator_arg, alloc};
         tuple<> tuple_alloc_copy{allocator_arg, alloc, tuple_alloc};
-        [[maybe_unused]] tuple<> tuple_alloc_value{_Alloc_exact_args_t{}, alloc};
+        tuple<> tuple_alloc_move{allocator_arg, alloc, move(tuple_alloc)};
+
+        tuple_alloc_copy = tuple_alloc;
+        tuple_alloc_move = move(tuple_alloc);
 
         swap(tuple_alloc, tuple_alloc_copy);
         tuple_alloc.swap(tuple_alloc_copy);
@@ -93,28 +105,88 @@ constexpr bool run_tests() {
     // test tuple
     {
         allocator<int> alloc;
-        tuple<short, int> conversionInput{static_cast<short>(1), 1};
-        const tuple<short, int> constConversionInput{static_cast<short>(1), 1};
-        pair<short, int> conversionInputPair{static_cast<short>(1), 1};
-        const pair<short, int> constConversionInputPair{static_cast<short>(1), 1};
+        tuple<short, int> conversionInput{static_cast<short>(1), 2};
+        const tuple<short, int> constConversionInput{static_cast<short>(3), 4};
+        pair<short, int> conversionInputPair{static_cast<short>(5), 6};
+        const pair<short, int> constConversionInputPair{static_cast<short>(7), 8};
 
         tuple<int, double> tuple_alloc{allocator_arg, alloc};
-        tuple<int, double> tuple_alloc_copy{allocator_arg, alloc, tuple_alloc};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_value{allocator_arg, alloc, 1, 2.0};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion{allocator_arg, alloc, static_cast<short>(1), 1};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_tuple{allocator_arg, alloc, conversionInput};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_const_tuple{
-            allocator_arg, alloc, constConversionInput};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_pair{allocator_arg, alloc, conversionInputPair};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_conversion_const_pair{
-            allocator_arg, alloc, constConversionInputPair};
-        [[maybe_unused]] tuple<int, double> tuple_alloc_move{allocator_arg, alloc, move(tuple_alloc)};
+        assert(get<0>(tuple_alloc) == 0);
+        assert(get<1>(tuple_alloc) == 0.0);
 
-        swap(tuple_alloc, tuple_alloc_copy);
-        tuple_alloc.swap(tuple_alloc_copy);
+        tuple<int, double> tuple_alloc_non_forwarding_value{allocator_arg, alloc, {}, {}};
+        assert(get<0>(tuple_alloc_non_forwarding_value) == 0);
+        assert(get<1>(tuple_alloc_non_forwarding_value) == 0.0);
+
+        tuple<int, double> tuple_alloc_value{allocator_arg, alloc, 9, 9.5};
+        assert(get<0>(tuple_alloc_value) == 9);
+        assert(get<1>(tuple_alloc_value) == 9.5);
+
+        tuple<int, double> tuple_alloc_copy{allocator_arg, alloc, tuple_alloc};
+        assert(get<0>(tuple_alloc_copy) == 0);
+        assert(get<1>(tuple_alloc_copy) == 0.0);
+
+        tuple<int, double> tuple_alloc_move{allocator_arg, alloc, move(tuple_alloc)};
+        assert(get<0>(tuple_alloc_move) == 0);
+        assert(get<1>(tuple_alloc_move) == 0.0);
+
+        tuple<int, double> tuple_alloc_conversion{allocator_arg, alloc, static_cast<short>(11), 22};
+        assert(get<0>(tuple_alloc_conversion) == 11);
+        assert(get<1>(tuple_alloc_conversion) == 22.0);
+
+        tuple<int, double> tuple_alloc_conversion_tuple{allocator_arg, alloc, move(conversionInput)};
+        assert(get<0>(tuple_alloc_conversion_tuple) == 1);
+        assert(get<1>(tuple_alloc_conversion_tuple) == 2.0);
+
+        tuple<int, double> tuple_alloc_conversion_const_tuple{allocator_arg, alloc, constConversionInput};
+        assert(get<0>(tuple_alloc_conversion_const_tuple) == 3);
+        assert(get<1>(tuple_alloc_conversion_const_tuple) == 4.0);
+
+        tuple<int, double> tuple_alloc_conversion_pair{allocator_arg, alloc, move(conversionInputPair)};
+        assert(get<0>(tuple_alloc_conversion_pair) == 5);
+        assert(get<1>(tuple_alloc_conversion_pair) == 6.0);
+
+        tuple<int, double> tuple_alloc_conversion_const_pair{allocator_arg, alloc, constConversionInputPair};
+        assert(get<0>(tuple_alloc_conversion_const_pair) == 7);
+        assert(get<1>(tuple_alloc_conversion_const_pair) == 8.0);
+
+        tuple<int, double> tuple_assign{};
+
+        tuple_assign = tuple_alloc_value;
+        assert(get<0>(tuple_assign) == 9);
+        assert(get<1>(tuple_assign) == 9.5);
+
+        tuple_assign = move(tuple_alloc);
+        assert(get<0>(tuple_assign) == 0);
+        assert(get<1>(tuple_assign) == 0.0);
+
+        tuple_assign = move(conversionInput);
+        assert(get<0>(tuple_assign) == 1);
+        assert(get<1>(tuple_assign) == 2.0);
+
+        tuple_assign = constConversionInput;
+        assert(get<0>(tuple_assign) == 3);
+        assert(get<1>(tuple_assign) == 4.0);
+
+        tuple_assign = move(conversionInputPair);
+        assert(get<0>(tuple_assign) == 5);
+        assert(get<1>(tuple_assign) == 6.0);
+
+        tuple_assign = constConversionInputPair;
+        assert(get<0>(tuple_assign) == 7);
+        assert(get<1>(tuple_assign) == 8.0);
+
+        tuple<int, double> x{10, 20.5};
+        tuple<int, double> y{30, 40.5};
+
+        swap(x, y);
+        assert(get<0>(x) == 30 && get<1>(x) == 40.5 && get<0>(y) == 10 && get<1>(y) == 20.5);
+
+        x.swap(y);
+        assert(get<0>(x) == 10 && get<1>(x) == 20.5 && get<0>(y) == 30 && get<1>(y) == 40.5);
     }
 
-    // test array::swap
+    // test array swap
     {
         array<int, 2> array1{{1, 2}};
         array<int, 2> array2{{3, 4}};
@@ -137,19 +209,22 @@ constexpr bool run_tests() {
         array<int, 2> meow = {};
         meow.fill(1);
         assert(meow[0] == 1 && meow[1] == 1);
+
+        array<int, 0> empty = {};
+        empty.fill(1);
     }
 
     // test back_inserter
     {
         constexpr_container input;
-        int toBeMoved = 5;
-        auto tested   = back_inserter(input);
+        const int toBeCopied = 5;
+        auto tested          = back_inserter(input);
 
         *tested++ = 42;
         *++tested = 1729;
         *tested++ = 1234;
         tested    = 4;
-        tested    = move(toBeMoved);
+        tested    = toBeCopied;
 
         assert(input.buffer[0] == 42 && input.buffer[1] == 1729 && input.buffer[2] == 1234 && input.buffer[3] == 4
                && input.buffer[4] == 5 && input.buffer[5] == 0);
@@ -158,14 +233,14 @@ constexpr bool run_tests() {
     // test front_inserter
     {
         constexpr_container input;
-        int toBeMoved = 5;
-        auto tested   = front_inserter(input);
+        const int toBeCopied = 5;
+        auto tested          = front_inserter(input);
 
         *tested++ = 42;
         *++tested = 1729;
         *tested++ = 1234;
         tested    = 4;
-        tested    = move(toBeMoved);
+        tested    = toBeCopied;
 
         assert(input.buffer[0] == 42 && input.buffer[1] == 1729 && input.buffer[2] == 1234 && input.buffer[3] == 4
                && input.buffer[4] == 5 && input.buffer[5] == 0);
@@ -174,14 +249,14 @@ constexpr bool run_tests() {
     // test insert_inserter
     {
         constexpr_container input;
-        int toBeMoved = 5;
-        auto tested   = inserter(input, input.begin());
+        const int toBeCopied = 5;
+        auto tested          = inserter(input, input.begin());
 
         *tested++ = 42;
         *++tested = 1729;
         *tested++ = 1234;
         tested    = 4;
-        tested    = move(toBeMoved);
+        tested    = toBeCopied;
 
         assert(input.buffer[0] == 0 && input.buffer[1] == 42 && input.buffer[2] == 1729 && input.buffer[3] == 1234
                && input.buffer[4] == 4 && input.buffer[5] == 5);
@@ -196,6 +271,224 @@ constexpr bool run_tests() {
         assert(first - in.begin() == 8);
         assert(last - first == static_cast<ptrdiff_t>(needle.size()));
     }
+
+    // test char_traits move/copy/assign and basic_string_view::copy
+    {
+        using Elem   = char;
+        using Traits = char_traits<Elem>;
+
+        const Elem src[20]{"cute fluffy KITTENS"};
+        Elem buf[20]{"hungry evil ZOMBIES"};
+        assert(buf == "hungry evil ZOMBIES"sv);
+
+        assert(Traits::copy(buf, src, 12) == buf);
+        assert(buf == "cute fluffy ZOMBIES"sv);
+
+        assert(Traits::assign(buf, 4, '1') == buf);
+        assert(buf == "1111 fluffy ZOMBIES"sv);
+
+        assert(Traits::move(buf, src, 19) == buf); // different arrays
+        assert(buf == "cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf, buf, 19) == buf); // self-assignment
+        assert(buf == "cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf + 5, buf + 12, 6) == buf + 5); // non-overlapping
+        assert(buf == "cute KITTEN KITTENS"sv);
+
+        const auto sv = "..........abc......"sv;
+        assert(sv.copy(buf, 4, 10) == 4);
+        assert(buf == "abc. KITTEN KITTENS"sv);
+
+        assert(sv.copy(buf, 19) == 19);
+        assert(buf == "..........abc......"sv);
+
+        assert(Traits::move(buf + 8, buf + 10, 2) == buf + 8); // adjacent, dest before src
+        assert(buf == "........ababc......"sv);
+
+        assert(Traits::move(buf + 13, buf + 9, 4) == buf + 13); // adjacent, dest after src
+        assert(buf == "........ababcbabc.."sv);
+
+        assert(Traits::move(buf + 4, buf + 8, 10) == buf + 4); // overlapping, dest before src
+        assert(buf == "....ababcbabc.abc.."sv);
+
+        assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
+        assert(buf == "....a.ababcbabc.c.."sv);
+    }
+
+    {
+        using Elem   = char16_t;
+        using Traits = char_traits<Elem>;
+
+        const Elem src[20]{u"cute fluffy KITTENS"};
+        Elem buf[20]{u"hungry evil ZOMBIES"};
+        assert(buf == u"hungry evil ZOMBIES"sv);
+
+        assert(Traits::copy(buf, src, 12) == buf);
+        assert(buf == u"cute fluffy ZOMBIES"sv);
+
+        assert(Traits::assign(buf, 4, u'1') == buf);
+        assert(buf == u"1111 fluffy ZOMBIES"sv);
+
+        assert(Traits::move(buf, src, 19) == buf); // different arrays
+        assert(buf == u"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf, buf, 19) == buf); // self-assignment
+        assert(buf == u"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf + 5, buf + 12, 6) == buf + 5); // non-overlapping
+        assert(buf == u"cute KITTEN KITTENS"sv);
+
+        const auto sv = u"..........abc......"sv;
+        assert(sv.copy(buf, 4, 10) == 4);
+        assert(buf == u"abc. KITTEN KITTENS"sv);
+
+        assert(sv.copy(buf, 19) == 19);
+        assert(buf == u"..........abc......"sv);
+
+        assert(Traits::move(buf + 8, buf + 10, 2) == buf + 8); // adjacent, dest before src
+        assert(buf == u"........ababc......"sv);
+
+        assert(Traits::move(buf + 13, buf + 9, 4) == buf + 13); // adjacent, dest after src
+        assert(buf == u"........ababcbabc.."sv);
+
+        assert(Traits::move(buf + 4, buf + 8, 10) == buf + 4); // overlapping, dest before src
+        assert(buf == u"....ababcbabc.abc.."sv);
+
+        assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
+        assert(buf == u"....a.ababcbabc.c.."sv);
+    }
+
+    {
+        using Elem   = char32_t;
+        using Traits = char_traits<Elem>;
+
+        const Elem src[20]{U"cute fluffy KITTENS"};
+        Elem buf[20]{U"hungry evil ZOMBIES"};
+        assert(buf == U"hungry evil ZOMBIES"sv);
+
+        assert(Traits::copy(buf, src, 12) == buf);
+        assert(buf == U"cute fluffy ZOMBIES"sv);
+
+        assert(Traits::assign(buf, 4, U'1') == buf);
+        assert(buf == U"1111 fluffy ZOMBIES"sv);
+
+        assert(Traits::move(buf, src, 19) == buf); // different arrays
+        assert(buf == U"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf, buf, 19) == buf); // self-assignment
+        assert(buf == U"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf + 5, buf + 12, 6) == buf + 5); // non-overlapping
+        assert(buf == U"cute KITTEN KITTENS"sv);
+
+        const auto sv = U"..........abc......"sv;
+        assert(sv.copy(buf, 4, 10) == 4);
+        assert(buf == U"abc. KITTEN KITTENS"sv);
+
+        assert(sv.copy(buf, 19) == 19);
+        assert(buf == U"..........abc......"sv);
+
+        assert(Traits::move(buf + 8, buf + 10, 2) == buf + 8); // adjacent, dest before src
+        assert(buf == U"........ababc......"sv);
+
+        assert(Traits::move(buf + 13, buf + 9, 4) == buf + 13); // adjacent, dest after src
+        assert(buf == U"........ababcbabc.."sv);
+
+        assert(Traits::move(buf + 4, buf + 8, 10) == buf + 4); // overlapping, dest before src
+        assert(buf == U"....ababcbabc.abc.."sv);
+
+        assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
+        assert(buf == U"....a.ababcbabc.c.."sv);
+    }
+
+    {
+        using Elem   = wchar_t;
+        using Traits = char_traits<Elem>;
+
+        const Elem src[20]{L"cute fluffy KITTENS"};
+        Elem buf[20]{L"hungry evil ZOMBIES"};
+        assert(buf == L"hungry evil ZOMBIES"sv);
+
+        assert(Traits::copy(buf, src, 12) == buf);
+        assert(buf == L"cute fluffy ZOMBIES"sv);
+
+        assert(Traits::assign(buf, 4, L'1') == buf);
+        assert(buf == L"1111 fluffy ZOMBIES"sv);
+
+        assert(Traits::move(buf, src, 19) == buf); // different arrays
+        assert(buf == L"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf, buf, 19) == buf); // self-assignment
+        assert(buf == L"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf + 5, buf + 12, 6) == buf + 5); // non-overlapping
+        assert(buf == L"cute KITTEN KITTENS"sv);
+
+        const auto sv = L"..........abc......"sv;
+        assert(sv.copy(buf, 4, 10) == 4);
+        assert(buf == L"abc. KITTEN KITTENS"sv);
+
+        assert(sv.copy(buf, 19) == 19);
+        assert(buf == L"..........abc......"sv);
+
+        assert(Traits::move(buf + 8, buf + 10, 2) == buf + 8); // adjacent, dest before src
+        assert(buf == L"........ababc......"sv);
+
+        assert(Traits::move(buf + 13, buf + 9, 4) == buf + 13); // adjacent, dest after src
+        assert(buf == L"........ababcbabc.."sv);
+
+        assert(Traits::move(buf + 4, buf + 8, 10) == buf + 4); // overlapping, dest before src
+        assert(buf == L"....ababcbabc.abc.."sv);
+
+        assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
+        assert(buf == L"....a.ababcbabc.c.."sv);
+    }
+
+#ifdef __cpp_lib_char8_t
+    {
+        using Elem   = char8_t;
+        using Traits = char_traits<Elem>;
+
+        const Elem src[20]{u8"cute fluffy KITTENS"};
+        Elem buf[20]{u8"hungry evil ZOMBIES"};
+        assert(buf == u8"hungry evil ZOMBIES"sv);
+
+        assert(Traits::copy(buf, src, 12) == buf);
+        assert(buf == u8"cute fluffy ZOMBIES"sv);
+
+        assert(Traits::assign(buf, 4, u8'1') == buf);
+        assert(buf == u8"1111 fluffy ZOMBIES"sv);
+
+        assert(Traits::move(buf, src, 19) == buf); // different arrays
+        assert(buf == u8"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf, buf, 19) == buf); // self-assignment
+        assert(buf == u8"cute fluffy KITTENS"sv);
+
+        assert(Traits::move(buf + 5, buf + 12, 6) == buf + 5); // non-overlapping
+        assert(buf == u8"cute KITTEN KITTENS"sv);
+
+        const auto sv = u8"..........abc......"sv;
+        assert(sv.copy(buf, 4, 10) == 4);
+        assert(buf == u8"abc. KITTEN KITTENS"sv);
+
+        assert(sv.copy(buf, 19) == 19);
+        assert(buf == u8"..........abc......"sv);
+
+        assert(Traits::move(buf + 8, buf + 10, 2) == buf + 8); // adjacent, dest before src
+        assert(buf == u8"........ababc......"sv);
+
+        assert(Traits::move(buf + 13, buf + 9, 4) == buf + 13); // adjacent, dest after src
+        assert(buf == u8"........ababcbabc.."sv);
+
+        assert(Traits::move(buf + 4, buf + 8, 10) == buf + 4); // overlapping, dest before src
+        assert(buf == u8"....ababcbabc.abc.."sv);
+
+        assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
+        assert(buf == u8"....a.ababcbabc.c.."sv);
+    }
+#endif // __cpp_lib_char8_t
 
     return true;
 }
