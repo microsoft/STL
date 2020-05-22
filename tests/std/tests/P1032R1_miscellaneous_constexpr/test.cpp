@@ -214,7 +214,7 @@ constexpr bool run_tests() {
         empty.fill(1);
     }
 
-    // test back_inserter
+    // test back_inserter/back_insert_iterator
     {
         constexpr_container input;
         const int toBeCopied = 5;
@@ -230,7 +230,7 @@ constexpr bool run_tests() {
                && input.buffer[4] == 5 && input.buffer[5] == 0);
     }
 
-    // test front_inserter
+    // test front_inserter/front_insert_iterator
     {
         constexpr_container input;
         const int toBeCopied = 5;
@@ -246,7 +246,7 @@ constexpr bool run_tests() {
                && input.buffer[4] == 5 && input.buffer[5] == 0);
     }
 
-    // test insert_inserter
+    // test inserter/insert_iterator
     {
         constexpr_container input;
         const int toBeCopied = 5;
