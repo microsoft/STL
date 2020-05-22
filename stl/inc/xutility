@@ -4688,13 +4688,13 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2,
                     && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>,
         equal_to<>>> = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
 
-// return equal optimization category for pointers
-template <class _Elem1, class _Elem2, class _Pr, bool = conjunction_v<is_pointer<_Elem1>, is_pointer<_Elem2>>>
+// Determine if it's safe to compare pointers
+template <class _Iter1, class _Iter2, class _Pr, bool = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
-    _Equal_memcmp_is_safe_helper<remove_const_t<remove_pointer_t<_Elem1>>, remove_const_t<remove_pointer_t<_Elem2>>,
+    _Equal_memcmp_is_safe_helper<remove_const_t<remove_pointer_t<_Iter1>>, remove_const_t<remove_pointer_t<_Iter2>>,
         _Pr>;
 
-// return equal optimization category for arbitrary iterators
+// Arbitrary iterators cannot use memcmp
 template <class _Iter1, class _Iter2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr, false> = false;
 

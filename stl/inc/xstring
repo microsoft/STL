@@ -487,7 +487,8 @@ struct _Char_traits_lt {
     }
 };
 
-// builtin char_traits::eq behaves like equal_to<>
+// library-provided char_traits::eq behaves like equal_to<>
+// TRANSITION: This should not work for user defined char_traits
 template <class _Elem>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> =
     _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>;

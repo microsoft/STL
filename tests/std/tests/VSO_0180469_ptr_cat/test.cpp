@@ -212,59 +212,53 @@ void ptr_cat_test_cases() {
     test_ptr_cat<0, bool_enum, char>();
 }
 
-template <bool Expected, class Ptr1, class Ptr2, class Pr>
-void test_case_Equal_memcmp_is_safe_helper() {
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Ptr1, Ptr2, Pr> == Expected);
-}
-
 template <bool Expected, class Elem1, class Elem2>
 void test_case_Equal_memcmp_is_safe() {
     // Default case
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1*, Elem2*, equal_to<>>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<>> == Expected);
     // Adding const should not change the answer
-    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1*, Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1*, const Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1*, const Elem2*, equal_to<>>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, Elem2*, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const Elem2*, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const Elem2*, equal_to<>> == Expected);
+    // Top level const should not change the answer
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, Elem2*, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2* const, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, Elem2* const, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, const Elem2*, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const Elem2* const, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, const Elem2* const, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, Elem2*, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, Elem2* const, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, Elem2* const, equal_to<>> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, const Elem2* const, equal_to<>> == Expected);
     // Adding volatile anywhere should explode
-    test_case_Equal_memcmp_is_safe_helper<false, volatile Elem1*, Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, Elem1*, volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, volatile Elem1*, volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, const volatile Elem1*, Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, const Elem1*, volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, const volatile Elem1*, volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, volatile Elem1*, const Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, Elem1*, const volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, volatile Elem1*, const volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, const volatile Elem1*, const Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, const Elem1*, const volatile Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<false, const volatile Elem1*, const volatile Elem2*, equal_to<>>();
-
-    // Top level const should work
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1*, Elem2* const, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, Elem2* const, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, const Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1*, const Elem2* const, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, Elem1* const, const Elem2* const, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1* const, Elem2*, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1*, Elem2* const, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1* const, Elem2* const, equal_to<>>();
-    test_case_Equal_memcmp_is_safe_helper<Expected, const Elem1* const, const Elem2* const, equal_to<>>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const volatile Elem2*, equal_to<>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const volatile Elem2*, equal_to<>> == false);
 
     // Iterators that are not pointers should explode
-    test_case_Equal_memcmp_is_safe_helper<false, typename list<Elem1>::iterator, typename list<Elem2>::iterator,
-        equal_to<>>();
+    STATIC_ASSERT(
+        _Equal_memcmp_is_safe<typename list<Elem1>::iterator, typename list<Elem2>::iterator, equal_to<>> == false);
 
     // equal_to< some other T > should explode
-    test_case_Equal_memcmp_is_safe_helper<false, Elem1*, Elem2*, equal_to<list<int>>>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<list<int>>> == false);
     // Non equal_to comparison functions should explode
     auto lambda = [](Elem1*, Elem2*) { return false; };
-    test_case_Equal_memcmp_is_safe_helper<false, Elem1*, Elem2*, decltype(lambda)>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, decltype(lambda)> == false);
     // equal_to<T> should not explode
-    test_case_Equal_memcmp_is_safe_helper<Expected && is_same_v<Elem1, Elem2>, Elem1*, Elem2*, equal_to<Elem1>>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<Elem1>> == (Expected && is_same_v<Elem1, Elem2>) );
     // But again, not volatile
-    test_case_Equal_memcmp_is_safe_helper<false, Elem1*, Elem2*, equal_to<volatile Elem1>>();
-    test_case_Equal_memcmp_is_safe_helper<false, Elem1*, Elem2*, equal_to<const volatile Elem1>>();
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<volatile Elem1>> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<const volatile Elem1>> == false);
 }
 
 void equal_safe_test_cases() {
