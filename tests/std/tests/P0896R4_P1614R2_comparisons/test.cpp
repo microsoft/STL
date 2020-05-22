@@ -258,9 +258,9 @@ STATIC_ASSERT(test_compare_three_way<int, int, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<int, long, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, float, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, double, partial_ordering>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, GH-741
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<long, double, partial_ordering>());
-#endif // TRANSITION, GH-741
+#endif // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<bool, int, void>());
 
 STATIC_ASSERT(test_compare_three_way<some_enum, some_enum, strong_ordering>());
@@ -456,9 +456,9 @@ constexpr void ordering_test_cases() {
     test_partially_ordered(1.414f, 3.14, partial_ordering::less);
     test_partially_ordered(1.414, 3.14f, partial_ordering::less);
     test_partially_ordered(31.625f, 31.625, partial_ordering::equivalent);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-741
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1062601
     if (!std::is_constant_evaluated())
-#endif // TRANSITION, GH-741
+#endif // TRANSITION, VSO-1062601
     {
         test_partially_ordered(3.14, NaN, partial_ordering::unordered);
         test_partially_ordered(3.14f, NaN, partial_ordering::unordered);
