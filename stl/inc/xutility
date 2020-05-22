@@ -4694,8 +4694,8 @@ concept _Equal_to_comparator = is_same_v<_Pr, equal_to<>> || is_same_v<_Pr, _RAN
 // clang-format off
 template <class _Elem1, class _Elem2, _Equal_to_comparator _Pr>
     requires (sizeof(_Elem1) == sizeof(_Elem2))
-          && _Is_nonbool_integral<_Elem1> && !is_volatile_v<_Elem1>
-          && _Is_nonbool_integral<_Elem2> && !is_volatile_v<_Elem2>
+          && _Is_nonbool_integral<_Elem1> && (!is_volatile_v<_Elem1>)
+          && _Is_nonbool_integral<_Elem2> && (!is_volatile_v<_Elem2>)
 inline constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2, _Pr> =
     _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
 // clang-format on
