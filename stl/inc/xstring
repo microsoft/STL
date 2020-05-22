@@ -24,6 +24,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifdef __clang__
+#define _HAS_MEMCPY_MEMMOVE_INTRINSICS 1
+#else // ^^^ use __builtin_memcpy and __builtin_memmove ^^^ / vvv use workaround vvv
+#define _HAS_MEMCPY_MEMMOVE_INTRINSICS 0 // TRANSITION, DevCom-1046483 (MSVC) and VSO-1129974 (EDG)
+#endif // ^^^ use workaround ^^^
+
 _STD_BEGIN
 // STRUCT TEMPLATE _Char_traits (FROM <string>)
 template <class _Elem, class _Int_type>
@@ -60,9 +66,9 @@ struct _Char_traits { // properties of a string or stream element
     static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __clang__
+#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap; see LWG-3085
@@ -75,7 +81,7 @@ struct _Char_traits { // properties of a string or stream element
 #endif // __cpp_lib_is_constant_evaluated
 
         _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
-#endif // ^^^ not Clang ^^^
+#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
     }
@@ -102,9 +108,9 @@ struct _Char_traits { // properties of a string or stream element
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...), allowing overlap
-#ifdef __clang__
+#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             // dest: [_First1, _First1 + _Count)
@@ -143,7 +149,7 @@ struct _Char_traits { // properties of a string or stream element
 #endif // __cpp_lib_is_constant_evaluated
 
         _CSTD memmove(_First1, _First2, _Count * sizeof(_Elem));
-#endif // ^^^ not Clang ^^^
+#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
     }
@@ -236,9 +242,9 @@ public:
     static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __clang__
+#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             return _Primary_char_traits::copy(_First1, _First2, _Count);
@@ -246,7 +252,7 @@ public:
 #endif // __cpp_lib_is_constant_evaluated
 
         _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-#endif // ^^^ not Clang ^^^
+#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
     }
@@ -276,9 +282,9 @@ public:
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __clang__
+#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             return _Primary_char_traits::move(_First1, _First2, _Count);
@@ -286,7 +292,7 @@ public:
 #endif // __cpp_lib_is_constant_evaluated
 
         _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-#endif // ^^^ not Clang ^^^
+#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
     }
@@ -426,9 +432,9 @@ public:
     static _CONSTEXPR20 _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __clang__
+#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memcpy(_First1, _First2, _Count);
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             return _Primary_char_traits::copy(_First1, _First2, _Count);
@@ -436,7 +442,7 @@ public:
 #endif // __cpp_lib_is_constant_evaluated
 
         _CSTD memcpy(_First1, _First2, _Count);
-#endif // ^^^ not Clang ^^^
+#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
     }
@@ -473,9 +479,9 @@ public:
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // copy [_First2, _First2 + _Count) to [_First1, ...)
-#ifdef __clang__
+#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memmove(_First1, _First2, _Count);
-#else // ^^^ Clang / not Clang vvv
+#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             return _Primary_char_traits::move(_First1, _First2, _Count);
@@ -483,7 +489,7 @@ public:
 #endif // __cpp_lib_is_constant_evaluated
 
         _CSTD memmove(_First1, _First2, _Count);
-#endif // ^^^ not Clang ^^^
+#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
     }
@@ -539,6 +545,7 @@ public:
 };
 
 #undef _HAS_U8_INTRINSICS
+#undef _HAS_MEMCPY_MEMMOVE_INTRINSICS
 
 // STRUCT char_traits<char> (FROM <string>)
 template <>
