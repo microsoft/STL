@@ -962,6 +962,7 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
 #else // ^^^ Clang / not Clang vvv
 #pragma warning(push)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 #endif // __clang__
 template <size_t _Idx, class _Ty>
@@ -969,11 +970,6 @@ struct _Variant_init_single_overload {
     using _FTy = _Meta_list<integral_constant<size_t, _Idx>, _Ty> (*)(_Ty);
     operator _FTy();
 };
-#ifdef __clang__
-#pragma clang diagnostic pop
-#else // ^^^ Clang / not Clang vvv
-#pragma warning(pop)
-#endif // __clang__
 
 template <class _Indices, class... _Types>
 struct _Variant_init_overload_set_;
@@ -1001,11 +997,16 @@ using _Variant_init_type = _Meta_front<_Meta_pop_front<typename _Variant_init_he
 
 template <class _Ty, class... _Types> // extract the index from _Variant_init_helper
 using _Variant_init_index = _Meta_front<typename _Variant_init_helper<void, _Ty, _Types...>::type>;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ Clang / not Clang vvv
+#pragma warning(pop)
+#endif // __clang__
 
 template <class>
-struct _Is_in_place_index_specialization : false_type {};
+inline constexpr bool _Is_in_place_index_specialization = false;
 template <size_t _Idx>
-struct _Is_in_place_index_specialization<in_place_index_t<_Idx>> : true_type {};
+inline constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
 
 template <class... _Types>
 class variant : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
@@ -1026,7 +1027,7 @@ public:
         enable_if_t<sizeof...(_Types) != 0 //
                         && !is_same_v<_Remove_cvref_t<_Ty>, variant> //
                         && !_Is_specialization_v<_Remove_cvref_t<_Ty>, in_place_type_t> //
-                        && !_Is_in_place_index_specialization<_Remove_cvref_t<_Ty>>::value //
+                        && !_Is_in_place_index_specialization<_Remove_cvref_t<_Ty>> //
                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>, //
             int> = 0>
     constexpr variant(_Ty&& _Obj) noexcept(is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>)

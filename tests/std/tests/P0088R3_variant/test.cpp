@@ -7067,6 +7067,15 @@ namespace msvc {
             static_assert(!std::is_copy_constructible_v<std::variant<volatile S>>);
         }
     } // namespace vso508126
+
+    namespace DevCom1031281 {
+        void Overload(unsigned long long) {}
+        void Overload(std::variant<unsigned short>) {}
+
+        void run_test() {
+            Overload(42ULL);
+        }
+    } // namespace DevCom1031281
 } // namespace msvc
 
 int main() {
@@ -7128,4 +7137,5 @@ int main() {
     msvc::vso468746::run_test();
     msvc::vso508126::run_test();
     msvc::vso492097::run_test();
+    msvc::DevCom1031281::run_test();
 }
