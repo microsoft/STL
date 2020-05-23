@@ -437,11 +437,11 @@ public:
     }
 #endif // _HAS_TR1_NAMESPACE
 
-    void fill(const _Ty& _Value) {
+    _CONSTEXPR20 void fill(const _Ty& _Value) {
         _STD fill_n(_Elems, _Size, _Value);
     }
 
-    void swap(array& _Other) noexcept(_Is_nothrow_swappable<_Ty>::value) {
+    _CONSTEXPR20 void swap(array& _Other) noexcept(_Is_nothrow_swappable<_Ty>::value) {
         _Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
     }
 
@@ -618,9 +618,9 @@ public:
     _DEPRECATE_TR1_NAMESPACE void assign(const _Ty&) {}
 #endif // _HAS_TR1_NAMESPACE
 
-    void fill(const _Ty&) {}
+    _CONSTEXPR20 void fill(const _Ty&) {}
 
-    void swap(array&) noexcept {}
+    _CONSTEXPR20 void swap(array&) noexcept {}
 
     _NODISCARD _CONSTEXPR17 iterator begin() noexcept {
         return iterator{};
@@ -770,7 +770,7 @@ public:
 };
 
 template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
-void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
+_CONSTEXPR20 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
 }
 
