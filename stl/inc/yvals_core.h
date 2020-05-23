@@ -175,6 +175,7 @@
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
+// P1032R1 Miscellaneous constexpr
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
 // P1207R4 Movability Of Single-Pass Iterators
@@ -1153,10 +1154,15 @@
 #define __cpp_lib_concepts 201907L
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
-#define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_complex    201711L
-#define __cpp_lib_constexpr_memory     201811L
-#define __cpp_lib_constexpr_numeric    201911L
+#define __cpp_lib_constexpr_algorithms  201806L
+#define __cpp_lib_constexpr_complex     201711L
+#define __cpp_lib_constexpr_functional  201811L
+#define __cpp_lib_constexpr_iterator    201811L
+#define __cpp_lib_constexpr_memory      201811L
+#define __cpp_lib_constexpr_numeric     201911L
+#define __cpp_lib_constexpr_string_view 201811L
+#define __cpp_lib_constexpr_tuple       201811L
+#define __cpp_lib_constexpr_utility     201811L
 
 #ifdef __cpp_impl_destroying_delete
 #define __cpp_lib_destroying_delete 201806L
@@ -1187,7 +1193,7 @@
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
-#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
 #endif // _HAS_CXX17
