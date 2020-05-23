@@ -200,17 +200,18 @@ struct _Char_traits { // properties of a string or stream element
 
 // STRUCT TEMPLATE _WChar_traits
 template <class _Elem>
-struct _WChar_traits { // char_traits for the char16_t-likes: char16_t, wchar_t, unsigned short
+struct _WChar_traits : private _Char_traits<_Elem, unsigned short> {
+    // char_traits for the char16_t-likes: char16_t, wchar_t, unsigned short
+private:
+    using _Primary_char_traits = _Char_traits<_Elem, unsigned short>;
+
+public:
     using char_type  = _Elem;
     using int_type   = unsigned short;
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
 
-private:
-    using _Primary_char_traits = _Char_traits<_Elem, int_type>;
-
-public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
@@ -239,31 +240,9 @@ public:
 #endif // _HAS_CXX17
     }
 
-    static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
-        _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
-        // copy [_First2, _First2 + _Count) to [_First1, ...)
-#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
-        __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
-#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
-#ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::copy(_First1, _First2, _Count);
-        }
-#endif // __cpp_lib_is_constant_evaluated
-
-        _CSTD wmemcpy(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
-
-        return _First1;
-    }
-
-    _Pre_satisfies_(_Size_in_words >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_words)
-                                                                        _Elem* const _First1,
-        const size_t _Size_in_words, _In_reads_(_Count) const _Elem* const _First2,
-        const size_t _Count) noexcept { // copy [_First2, _First2 + _Count) to [_First1, ...)
-        _STL_VERIFY(_Count <= _Size_in_words, "invalid argument");
-        return copy(_First1, _First2, _Count);
-    }
+    using _Primary_char_traits::_Copy_s;
+    using _Primary_char_traits::copy;
+    using _Primary_char_traits::move;
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(
         _In_reads_(_Count) const _Elem* _First, const size_t _Count, const _Elem& _Ch) noexcept /* strengthened */ {
@@ -277,24 +256,6 @@ public:
 #else // _HAS_CXX17
         return reinterpret_cast<const _Elem*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First), _Ch, _Count));
 #endif // _HAS_CXX17
-    }
-
-    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
-        _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
-        // copy [_First2, _First2 + _Count) to [_First1, ...)
-#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
-        __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
-#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
-#ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::move(_First1, _First2, _Count);
-        }
-#endif // __cpp_lib_is_constant_evaluated
-
-        _CSTD wmemmove(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
-
-        return _First1;
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -377,17 +338,18 @@ struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 
 // STRUCT TEMPLATE _Narrow_char_traits
 template <class _Elem, class _Int_type>
-struct _Narrow_char_traits { // Implement char_traits for narrow character types char and char8_t
+struct _Narrow_char_traits : private _Char_traits<_Elem, _Int_type> {
+    // Implement char_traits for narrow character types char and char8_t
+private:
+    using _Primary_char_traits = _Char_traits<_Elem, _Int_type>;
+
+public:
     using char_type  = _Elem;
     using int_type   = _Int_type;
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
 
-private:
-    using _Primary_char_traits = _Char_traits<_Elem, _Int_type>;
-
-public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
@@ -425,31 +387,9 @@ public:
 #endif // _HAS_CXX17
     }
 
-    static _CONSTEXPR20 _Elem* copy(_Out_writes_(_Count) _Elem* const _First1,
-        _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
-        // copy [_First2, _First2 + _Count) to [_First1, ...)
-#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
-        __builtin_memcpy(_First1, _First2, _Count);
-#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
-#ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::copy(_First1, _First2, _Count);
-        }
-#endif // __cpp_lib_is_constant_evaluated
-
-        _CSTD memcpy(_First1, _First2, _Count);
-#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
-
-        return _First1;
-    }
-
-    _Pre_satisfies_(_Size_in_bytes >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Size_in_bytes)
-                                                                        _Elem* const _First1,
-        const size_t _Size_in_bytes, _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept {
-        // copy [_First2, _First2 + _Count) to [_First1, ...)
-        _STL_VERIFY(_Count <= _Size_in_bytes, "invalid argument");
-        return copy(_First1, _First2, _Count);
-    }
+    using _Primary_char_traits::_Copy_s;
+    using _Primary_char_traits::copy;
+    using _Primary_char_traits::move;
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(_In_reads_(_Count) const _Elem* const _First, const size_t _Count,
         const _Elem& _Ch) noexcept /* strengthened */ {
@@ -470,24 +410,6 @@ public:
 #else // _HAS_CXX17
         return static_cast<const _Elem*>(_CSTD memchr(_First, _Ch, _Count));
 #endif // _HAS_CXX17
-    }
-
-    static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
-        _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
-        // copy [_First2, _First2 + _Count) to [_First1, ...)
-#if _HAS_MEMCPY_MEMMOVE_INTRINSICS
-        __builtin_memmove(_First1, _First2, _Count);
-#else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
-#ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::move(_First1, _First2, _Count);
-        }
-#endif // __cpp_lib_is_constant_evaluated
-
-        _CSTD memmove(_First1, _First2, _Count);
-#endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
-
-        return _First1;
     }
 
     static _CONSTEXPR20 _Elem* assign(
