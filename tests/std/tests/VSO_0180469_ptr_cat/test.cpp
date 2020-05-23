@@ -268,6 +268,15 @@ void test_case_Equal_memcmp_is_safe_comparator() {
     STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const Elem2*, Pr> == false);
     STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const volatile Elem2*, Pr> == false);
     STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const volatile Elem2*, Pr> == false);
+    // contiguous iterators to volatile should explode
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<volatile Elem1>::iterator, typename vector<Elem2>::iterator,
+                      Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<volatile Elem1>::const_iterator,
+                      typename vector<Elem2>::const_iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<volatile Elem1, 1>::iterator, typename array<Elem2, 1>::iterator,
+                      Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<volatile Elem1, 1>::const_iterator,
+                      typename array<Elem2, 1>::const_iterator, Pr> == false);
 
     // Non-contiguous iterators should explode
     STATIC_ASSERT(_Equal_memcmp_is_safe<typename list<Elem1>::iterator, typename list<Elem2>::iterator, Pr> == false);
