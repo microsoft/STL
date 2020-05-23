@@ -56,10 +56,10 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
-#elif __cpp_lib_array_constexpr != 201806L
-#error __cpp_lib_array_constexpr is not 201806L
+#elif __cpp_lib_array_constexpr != 201811L
+#error __cpp_lib_array_constexpr is not 201811L
 #else
-STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201811L);
 #endif
 #elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
@@ -356,6 +356,34 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_functional
+#error __cpp_lib_constexpr_functional is not defined
+#elif __cpp_lib_constexpr_functional != 201811L
+#error __cpp_lib_constexpr_functional is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_functional == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_functional
+#error __cpp_lib_constexpr_functional is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_iterator
+#error __cpp_lib_constexpr_iterator is not defined
+#elif __cpp_lib_constexpr_iterator != 201811L
+#error __cpp_lib_constexpr_iterator is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_iterator
+#error __cpp_lib_constexpr_iterator is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -380,6 +408,48 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #else
 #ifdef __cpp_lib_constexpr_numeric
 #error __cpp_lib_constexpr_numeric is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_string_view
+#error __cpp_lib_constexpr_string_view is not defined
+#elif __cpp_lib_constexpr_string_view != 201811L
+#error __cpp_lib_constexpr_string_view is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_string_view == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_string_view
+#error __cpp_lib_constexpr_string_view is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_tuple
+#error __cpp_lib_constexpr_tuple is not defined
+#elif __cpp_lib_constexpr_tuple != 201811L
+#error __cpp_lib_constexpr_tuple is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_tuple == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_tuple
+#error __cpp_lib_constexpr_tuple is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_utility
+#error __cpp_lib_constexpr_utility is not defined
+#elif __cpp_lib_constexpr_utility != 201811L
+#error __cpp_lib_constexpr_utility is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_utility
+#error __cpp_lib_constexpr_utility is defined
 #endif
 #endif
 

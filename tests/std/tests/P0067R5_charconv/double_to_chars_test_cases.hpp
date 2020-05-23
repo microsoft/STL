@@ -2787,6 +2787,14 @@ inline constexpr DoubleToCharsTestCase double_to_chars_test_cases[] = {
     {1.234e9, chars_format{}, "1.234e+09"},
     {1.234e10, chars_format{}, "1.234e+10"},
 
+    // GH-331 "<charconv>: Test plain shortest's large integer fallback"
+    // The exactly-representable integer 123456789012345683968 is 21 digits, but scientific shortest needs 22
+    // characters. Therefore, the plain overload must select fixed notation. Because this 21-digit number exceeds the
+    // 17-digit round-trip limit, we can't use Ryu - we need to activate the large integer fallback (Ryu Printf for
+    // double).
+    {123456789012345683968.0, chars_format::scientific, "1.2345678901234568e+20"},
+    {123456789012345683968.0, chars_format{}, "123456789012345683968"},
+
     // Exact value is 1.9156918820264798304697...e-56, incorrectly rounded by dtoa_milo() (Grisu2).
     {0x1.e0ffed391517ep-186, chars_format::scientific, "1.9156918820264798e-56"},
 
