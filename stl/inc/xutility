@@ -4687,7 +4687,7 @@ inline constexpr bool _Equal_memcmp_is_safe_helper<byte, byte, _RANGES equal_to>
 #endif // __cpp_lib_byte
 
 template <class _Pr>
-concept _Equal_to_comparator = is_same_v<_Pr, equal_to<>> || is_same_v<_Pr, _RANGES equal_to>;
+concept _Equal_to_comparator = _Is_any_of_v<_Pr, equal_to<>, _RANGES equal_to>;
 
 // allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to
 // being integral is a precondition of _Value_equality_is_bitwise_equality
@@ -4698,20 +4698,13 @@ template <class _Elem1, class _Elem2, _Equal_to_comparator _Pr>
           && _Is_nonbool_integral<_Elem2> && (!is_volatile_v<_Elem2>)
 inline constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2, _Pr> =
     _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
-// clang-format on
 
-template <class _Iter>
-concept _Bitwise_comparable_iterator =
-    (is_pointer_v<_Iter> && !is_volatile_v<remove_pointer_t<_Iter>>) || contiguous_iterator<_Iter>;
-
-// Arbitrary iterators cannot use memcmp
+// Determine if we can compare pointees with memcmp
 template <class _Iter1, class _Iter2, class _Pr>
-inline constexpr bool _Equal_memcmp_is_safe = false;
-
-// Determine if it's safe to compare suitable iterators
-template <_Bitwise_comparable_iterator _Iter1, _Bitwise_comparable_iterator _Iter2, class _Pr>
-inline constexpr bool _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> =
-    _Equal_memcmp_is_safe_helper<remove_const_t<iter_value_t<_Iter1>>, remove_const_t<iter_value_t<_Iter2>>, _Pr>;
+concept _Equal_memcmp_is_safe = contiguous_iterator<_Iter1> && contiguous_iterator<_Iter2> &&
+    _Equal_memcmp_is_safe_helper<remove_const_t<remove_reference_t<iter_reference_t<_Iter1>>>,
+        remove_const_t<remove_reference_t<iter_reference_t<_Iter2>>>, _Pr>;
+// clang-format on
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 
@@ -4724,7 +4717,7 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1, _Elem2,
                     && !is_volatile_v<_Elem1> && !is_volatile_v<_Elem2>,
         equal_to<>>> = _Value_equality_is_bitwise_equality<_Elem1, _Elem2>;
 
-// Determine if it's safe to compare pointers
+// Determine if we can compare pointees with memcmp
 template <class _Iter1, class _Iter2, class _Pr, bool = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<remove_pointer_t<_Iter1>>, remove_const_t<remove_pointer_t<_Iter2>>,
