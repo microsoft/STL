@@ -281,9 +281,10 @@ struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
 };
 
 template <class _Ty>
-struct _Atomic_storage_traits<_Ty&> { // properties for how _Ty is stored in an atomic
-    static_assert("Should be defined for atomic ref");
-};
+struct _Atomic_storage_traits<_Ty&> { // properties for how _Ty is stored in an atomic_ref
+    static constexpr size_t _Storage_size = sizeof(_Ty);
+    static constexpr bool _Uses_padding   = false;
+}
 
 // STRUCT TEMPLATE _Atomic_padded
 template <class _Ty, bool = _Atomic_storage_traits<_Ty>::_Uses_padding>
@@ -296,6 +297,12 @@ template <class _Ty>
 struct _Atomic_padded<_Ty, false> {
     alignas(sizeof(_Ty)) mutable _Ty _Value; // align to sizeof(T); x86 stack aligns 8-byte objects on 4-byte boundaries
 };
+
+template <class _Ty>
+struct _Atomic_padded<_Ty&, false> {
+    _Ty& _Value;
+};
+
 #endif // TRANSITION, ABI
 
 template <class _Ty>
