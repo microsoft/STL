@@ -40,28 +40,7 @@ struct _Char_traits { // properties of a string or stream element
     using off_type   = streamoff;
     using state_type = _Mbstatet;
 
-    _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* _First1,
-        _In_reads_(_Count) const _Elem* _First2, size_t _Count) noexcept /* strengthened */ {
-        // compare [_First1, _First1 + _Count) with [_First2, ...)
-        for (; 0 < _Count; --_Count, ++_First1, ++_First2) {
-            if (*_First1 != *_First2) {
-                return *_First1 < *_First2 ? -1 : +1;
-            }
-        }
-
-        return 0;
-    }
-
-    _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
-        // find length of null-terminated sequence
-        size_t _Count = 0;
-        while (*_First != _Elem()) {
-            ++_Count;
-            ++_First;
-        }
-
-        return _Count;
-    }
+    // For copy/move, we can uniformly call memcpy/memmove (or their builtin versions) for all element types.
 
     static _CONSTEXPR20 _Elem* copy(_Out_writes_all_(_Count) _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
@@ -91,18 +70,6 @@ struct _Char_traits { // properties of a string or stream element
         const size_t _Count) noexcept { // copy [_First2, _First2 + _Count) to [_First1, _First1 + _Dest_size)
         _STL_VERIFY(_Count <= _Dest_size, "invalid argument");
         return copy(_First1, _First2, _Count);
-    }
-
-    _NODISCARD static _CONSTEXPR17 const _Elem* find(
-        _In_reads_(_Count) const _Elem* _First, size_t _Count, const _Elem& _Ch) noexcept /* strengthened */ {
-        // look for _Ch in [_First, _First + _Count)
-        for (; 0 < _Count; --_Count, ++_First) {
-            if (*_First == _Ch) {
-                return _First;
-            }
-        }
-
-        return nullptr;
     }
 
     static _CONSTEXPR20 _Elem* move(_Out_writes_all_(_Count) _Elem* const _First1,
@@ -152,6 +119,44 @@ struct _Char_traits { // properties of a string or stream element
 #endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
 
         return _First1;
+    }
+
+    // For compare/length/find/assign, we can't uniformly call CRT functions (or their builtin versions).
+    // 8-bit: memcmp/strlen/memchr/memset; 16-bit: wmemcmp/wcslen/wmemchr/wmemset; 32-bit: nonexistent
+
+    _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* _First1,
+        _In_reads_(_Count) const _Elem* _First2, size_t _Count) noexcept /* strengthened */ {
+        // compare [_First1, _First1 + _Count) with [_First2, ...)
+        for (; 0 < _Count; --_Count, ++_First1, ++_First2) {
+            if (*_First1 != *_First2) {
+                return *_First1 < *_First2 ? -1 : +1;
+            }
+        }
+
+        return 0;
+    }
+
+    _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
+        // find length of null-terminated sequence
+        size_t _Count = 0;
+        while (*_First != _Elem()) {
+            ++_Count;
+            ++_First;
+        }
+
+        return _Count;
+    }
+
+    _NODISCARD static _CONSTEXPR17 const _Elem* find(
+        _In_reads_(_Count) const _Elem* _First, size_t _Count, const _Elem& _Ch) noexcept /* strengthened */ {
+        // look for _Ch in [_First, _First + _Count)
+        for (; 0 < _Count; --_Count, ++_First) {
+            if (*_First == _Ch) {
+                return _First;
+            }
+        }
+
+        return nullptr;
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -212,6 +217,10 @@ public:
     using off_type   = streamoff;
     using state_type = mbstate_t;
 
+    using _Primary_char_traits::_Copy_s;
+    using _Primary_char_traits::copy;
+    using _Primary_char_traits::move;
+
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
@@ -239,10 +248,6 @@ public:
         return _CSTD wcslen(reinterpret_cast<const wchar_t*>(_First));
 #endif // _HAS_CXX17
     }
-
-    using _Primary_char_traits::_Copy_s;
-    using _Primary_char_traits::copy;
-    using _Primary_char_traits::move;
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(
         _In_reads_(_Count) const _Elem* _First, const size_t _Count, const _Elem& _Ch) noexcept /* strengthened */ {
@@ -350,6 +355,10 @@ public:
     using off_type   = streamoff;
     using state_type = mbstate_t;
 
+    using _Primary_char_traits::_Copy_s;
+    using _Primary_char_traits::copy;
+    using _Primary_char_traits::move;
+
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
@@ -386,10 +395,6 @@ public:
         return _CSTD strlen(reinterpret_cast<const char*>(_First));
 #endif // _HAS_CXX17
     }
-
-    using _Primary_char_traits::_Copy_s;
-    using _Primary_char_traits::copy;
-    using _Primary_char_traits::move;
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(_In_reads_(_Count) const _Elem* const _First, const size_t _Count,
         const _Elem& _Ch) noexcept /* strengthened */ {
