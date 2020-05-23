@@ -21,14 +21,12 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // STRUCT TEMPLATE _Abs
 template <intmax_t _Val>
-struct _Abs : integral_constant<intmax_t, (_Val < 0 ? -_Val : _Val)> { // computes absolute value of _Val
-};
+struct _Abs : integral_constant<intmax_t, (_Val < 0 ? -_Val : _Val)> {}; // computes absolute value of _Val
 
 // STRUCT TEMPLATE _Safe_mult
 template <intmax_t _Ax, intmax_t _Bx, bool _Sfinae = false,
     bool _Good = (_Abs<_Ax>::value <= INTMAX_MAX / (_Bx == 0 ? 1 : _Abs<_Bx>::value))>
-struct _Safe_mult : integral_constant<intmax_t, _Ax * _Bx> { // computes _Ax * _Bx without overflow
-};
+struct _Safe_mult : integral_constant<intmax_t, _Ax * _Bx> {}; // computes _Ax * _Bx without overflow
 
 template <intmax_t _Ax, intmax_t _Bx, bool _Sfinae>
 struct _Safe_mult<_Ax, _Bx, _Sfinae, false> { // _Ax * _Bx would overflow
@@ -37,13 +35,11 @@ struct _Safe_mult<_Ax, _Bx, _Sfinae, false> { // _Ax * _Bx would overflow
 
 // STRUCT TEMPLATE _Sign_of
 template <intmax_t _Val>
-struct _Sign_of : integral_constant<intmax_t, (_Val < 0 ? -1 : 1)> { // computes sign of _Val
-};
+struct _Sign_of : integral_constant<intmax_t, (_Val < 0 ? -1 : 1)> {}; // computes sign of _Val
 
 // STRUCT TEMPLATE _Safe_add
 template <intmax_t _Ax, intmax_t _Bx, bool _Good, bool _Also_good>
-struct _Safe_addX : integral_constant<intmax_t, _Ax + _Bx> { // computes _Ax + _Bx without overflow
-};
+struct _Safe_addX : integral_constant<intmax_t, _Ax + _Bx> {}; // computes _Ax + _Bx without overflow
 
 template <intmax_t _Ax, intmax_t _Bx>
 struct _Safe_addX<_Ax, _Bx, false, false> { // _Ax + _Bx would overflow
@@ -51,28 +47,24 @@ struct _Safe_addX<_Ax, _Bx, false, false> { // _Ax + _Bx would overflow
 };
 
 template <intmax_t _Ax, intmax_t _Bx>
-struct _Safe_add
-    : _Safe_addX<_Ax, _Bx, _Sign_of<_Ax>::value != _Sign_of<_Bx>::value,
-          (_Abs<_Ax>::value <= INTMAX_MAX - _Abs<_Bx>::value)>::type { // computes _Ax + _Bx, forbids overflow
+struct _Safe_add : _Safe_addX<_Ax, _Bx, _Sign_of<_Ax>::value != _Sign_of<_Bx>::value,
+                       (_Abs<_Ax>::value <= INTMAX_MAX - _Abs<_Bx>::value)>::type {
+    // computes _Ax + _Bx, forbids overflow
 };
 
 // STRUCT TEMPLATE _Gcd
 template <intmax_t _Ax, intmax_t _Bx>
-struct _GcdX : _GcdX<_Bx, _Ax % _Bx>::type { // computes greatest common divisor of _Ax and _Bx
-};
+struct _GcdX : _GcdX<_Bx, _Ax % _Bx>::type {}; // computes GCD of _Ax and _Bx
 
 template <intmax_t _Ax>
-struct _GcdX<_Ax, 0> : integral_constant<intmax_t, _Ax> { // computes greatest common divisor of _Ax and 0
-};
+struct _GcdX<_Ax, 0> : integral_constant<intmax_t, _Ax> {}; // computes GCD of _Ax and 0
 
 template <intmax_t _Ax, intmax_t _Bx>
-struct _Gcd
-    : _GcdX<_Abs<_Ax>::value, _Abs<_Bx>::value>::type { // computes greatest common divisor of abs(_Ax) and abs(_Bx)
-};
+struct _Gcd : _GcdX<_Abs<_Ax>::value, _Abs<_Bx>::value>::type {}; // computes GCD of abs(_Ax) and abs(_Bx)
 
 template <>
-struct _Gcd<0, 0> : integral_constant<intmax_t, 1> // contrary to mathematical convention
-{ // avoids division by 0 in ratio_less
+struct _Gcd<0, 0> : integral_constant<intmax_t, 1> {
+    // contrary to mathematical convention; avoids division by 0 in ratio_less
 };
 
 // STRUCT TEMPLATE ratio

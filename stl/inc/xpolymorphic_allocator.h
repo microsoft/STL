@@ -206,8 +206,7 @@ namespace pmr {
 
         template <class _Uty>
         polymorphic_allocator(const polymorphic_allocator<_Uty>& _That) noexcept
-            : _Resource{_That._Resource} { // initialize with _That's resource
-        }
+            : _Resource{_That._Resource} {} // initialize with _That's resource
 
         polymorphic_allocator& operator=(const polymorphic_allocator&) = delete;
 

@@ -64,8 +64,7 @@ namespace pmr {
             virtual void* do_allocate(size_t, size_t) override { // Sorry, OOM!
                 _Xbad_alloc();
             }
-            virtual void do_deallocate(void*, size_t, size_t) override { // Nothing to do
-            }
+            virtual void do_deallocate(void*, size_t, size_t) override {} // Nothing to do
         };
 
         return &const_cast<_Null_resource&>(_Immortalize_memcpy_image<_Null_resource>());

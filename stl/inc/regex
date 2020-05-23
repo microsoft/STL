@@ -4534,21 +4534,19 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
 
     constexpr unsigned int _Egrep_flags = _Extended_flags | _L_alt_nl | _L_no_nl;
 
-    using namespace regex_constants;
+    const regex_constants::syntax_option_type _Masked = _Flags & regex_constants::_Gmask;
 
-    const syntax_option_type _Masked = _Flags & _Gmask;
-
-    if (_Masked == ECMAScript || _Masked == 0) {
+    if (_Masked == regex_constants::ECMAScript || _Masked == 0) {
         _L_flags = _ECMA_flags;
-    } else if (_Masked == basic) {
+    } else if (_Masked == regex_constants::basic) {
         _L_flags = _Basic_flags;
-    } else if (_Masked == extended) {
+    } else if (_Masked == regex_constants::extended) {
         _L_flags = _Extended_flags;
-    } else if (_Masked == awk) {
+    } else if (_Masked == regex_constants::awk) {
         _L_flags = _Awk_flags;
-    } else if (_Masked == grep) {
+    } else if (_Masked == regex_constants::grep) {
         _L_flags = _Grep_flags;
-    } else if (_Masked == egrep) {
+    } else if (_Masked == regex_constants::egrep) {
         _L_flags = _Egrep_flags;
     } else {
         _L_flags = 0;

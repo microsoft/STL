@@ -33,8 +33,7 @@ public:
         friend bitset<_Bits>;
 
     public:
-        ~reference() noexcept { // TRANSITION, ABI
-        }
+        ~reference() noexcept {} // TRANSITION, ABI
 
         reference& operator=(bool _Val) noexcept {
             _Pbitset->_Set_unchecked(_Mypos, _Val);

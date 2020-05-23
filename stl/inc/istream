@@ -156,8 +156,7 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard isfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL isfx() { // perform any wrapup
-    }
+    void __CLR_OR_THIS_CALL isfx() {} // perform any wrapup
 
 #ifdef _M_CEE_PURE
     basic_istream& __CLR_OR_THIS_CALL operator>>(basic_istream&(__clrcall* _Pfn)(basic_istream&) ) {

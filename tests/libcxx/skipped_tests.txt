@@ -54,6 +54,7 @@ language.support\support.limits\support.limits.general\istream.version.pass.cpp
 language.support\support.limits\support.limits.general\limits.version.pass.cpp
 language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
+language.support\support.limits\support.limits.general\string_view.version.pass.cpp
 
 # libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
 numerics\bit\bit.pow.two\ceil2.pass.cpp
@@ -481,29 +482,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1032R1 "Miscellaneous constexpr"
-language.support\support.limits\support.limits.general\array.version.pass.cpp
-language.support\support.limits\support.limits.general\functional.version.pass.cpp
-language.support\support.limits\support.limits.general\iterator.version.pass.cpp
-language.support\support.limits\support.limits.general\string_view.version.pass.cpp
-language.support\support.limits\support.limits.general\tuple.version.pass.cpp
-language.support\support.limits\support.limits.general\utility.version.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char\assign3.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\assign3.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char16_t\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\assign3.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char32_t\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\assign3.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.char8_t\move.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\assign3.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\copy.pass.cpp
-strings\char.traits\char.traits.specializations\char.traits.specializations.wchar.t\move.pass.cpp
-
 # C++20 P1135R6 "The C++20 Synchronization Library"
 thread\thread.barrier\arrive.pass.cpp
 thread\thread.barrier\arrive_and_drop.pass.cpp
@@ -690,9 +668,6 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
 
-# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
-containers\views\span.cons\assign.pass.cpp
-
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
@@ -702,20 +677,14 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 language.support\support.limits\support.limits.general\string.version.pass.cpp
 
-# Test needs to be updated for LWG-3320 removing span::const_iterator.
-containers\views\types.pass.cpp
-containers\views\span.iterators\begin.pass.cpp
-containers\views\span.iterators\rbegin.pass.cpp
-containers\views\span.iterators\end.pass.cpp
-containers\views\span.iterators\rend.pass.cpp
+# libc++ expects an old value for `__cpp_lib_array_constexpr` (`201603L`). We've implemented P0858R0, P1023R0, and P1032R1, increasing the value to `201811L`.
+language.support\support.limits\support.limits.general\array.version.pass.cpp
 
-# Test needs to be removed after P2116R0 removed the tuple interface of span
-containers\views\span.tuple\get.fail.cpp
-containers\views\span.tuple\get.pass.cpp
-containers\views\span.tuple\tuple_element.fail.cpp
-containers\views\span.tuple\tuple_element.pass.cpp
-containers\views\span.tuple\tuple_size.fail.cpp
-containers\views\span.tuple\tuple_size.pass.cpp
+# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_tuple` to have the value `201811L`.
+language.support\support.limits\support.limits.general\tuple.version.pass.cpp
+
+# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_utility` to have the value `201811L`.
+language.support\support.limits\support.limits.general\utility.version.pass.cpp
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
@@ -1027,9 +996,6 @@ containers\unord\unord.map\unord.map.cnstr\deduct_const.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\deduct.pass.cpp
-
-# Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
-localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\utf_sanity_check.pass.cpp
 
 # Not yet analyzed. Frequent timeouts
 containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp
