@@ -305,6 +305,8 @@ struct _Atomic_storage_types {
     using _TConstr  = const _Ty;
     using _Spinlock = long;
 
+    static constexpr bool _Has_volatile = true;
+
     static long* _Get_spinlock(long& _Spinlock) {
         return &_Spinlock;
     }
@@ -316,6 +318,8 @@ struct _Atomic_storage_types<_Ty&> {
     using _TStorage = _Ty&;
     using _TConstr  = _Ty&;
     using _Spinlock = long*;
+
+    static constexpr bool _Has_volatile = false;
 
     static long* _Get_spinlock(long* _Spinlock) {
         return _Spinlock;
@@ -1269,10 +1273,12 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // are far more common than volatile ones.
     using _Base::fetch_add;
     _TVal fetch_add(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand);
     }
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand, _Order);
     }
 
@@ -1285,6 +1291,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(_Negate(_Operand));
     }
 
@@ -1293,51 +1300,62 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(_Negate(_Operand), _Order);
     }
 
     using _Base::fetch_and;
     _TVal fetch_and(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand, _Order);
     }
 
     using _Base::fetch_or;
     _TVal fetch_or(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand, _Order);
     }
 
     using _Base::fetch_xor;
     _TVal fetch_xor(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand, _Order);
     }
 
     using _Base::operator++;
     _TVal operator++(int) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
     }
 
     _TVal operator++() volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
     }
 
     using _Base::operator--;
     _TVal operator--(int) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
     }
 
     _TVal operator--() volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
@@ -1346,6 +1364,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator+=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand) + _Operand);
     }
 
@@ -1354,6 +1373,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator-=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->fetch_sub(_Operand) - _Operand);
     }
 
@@ -1362,6 +1382,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator&=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand) & _Operand);
     }
 
@@ -1370,6 +1391,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator|=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand) | _Operand);
     }
 
@@ -1378,6 +1400,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator^=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand) ^ _Operand);
     }
 };
@@ -1412,6 +1435,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
     // are far more common than volatile ones.
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand, _Order);
     }
 
@@ -1424,6 +1448,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand, _Order);
     }
 
@@ -1432,6 +1457,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal operator+=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand) + _Operand;
     }
 
@@ -1440,6 +1466,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal operator-=(const _TVal _Operand) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand) - _Operand;
     }
 };
@@ -1477,14 +1504,17 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     // _Deprecate_non_lock_free_volatile is unnecessary here.
 
     _TVal fetch_add(const ptrdiff_t _Diff) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff);
     }
 
     _TVal fetch_add(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff, _Order);
     }
 
     _TVal fetch_sub(const ptrdiff_t _Diff) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
     }
 
@@ -1493,6 +1523,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
     }
 
@@ -1501,6 +1532,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator++(int) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(1);
     }
 
@@ -1509,6 +1541,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator++() volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(1) + 1;
     }
 
@@ -1517,6 +1550,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator--(int) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(-1);
     }
 
@@ -1525,6 +1559,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator--() volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(-1) - 1;
     }
 
@@ -1533,6 +1568,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator+=(const ptrdiff_t _Diff) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(_Diff) + _Diff;
     }
 
@@ -1541,6 +1577,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator-=(const ptrdiff_t _Diff) volatile noexcept {
+        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 
