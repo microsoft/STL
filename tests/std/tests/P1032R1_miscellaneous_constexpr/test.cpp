@@ -272,7 +272,7 @@ constexpr bool run_tests() {
         assert(last - first == static_cast<ptrdiff_t>(needle.size()));
     }
 
-    // test char_traits move/copy/assign and basic_string_view::copy
+    // test char_traits assign/copy/_Copy_s/move and basic_string_view::copy/_Copy_s
     {
         using Elem   = char;
         using Traits = char_traits<Elem>;
@@ -314,6 +314,15 @@ constexpr bool run_tests() {
 
         assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
         assert(buf == "....a.ababcbabc.c.."sv);
+
+        assert(Traits::_Copy_s(buf, 20, src, 18) == buf);
+        assert(buf == "cute fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 4, 10) == 4);
+        assert(buf == "abc. fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 11) == 11);
+        assert(buf == "..........a KITTEN."sv);
     }
 
     {
@@ -357,6 +366,15 @@ constexpr bool run_tests() {
 
         assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
         assert(buf == u"....a.ababcbabc.c.."sv);
+
+        assert(Traits::_Copy_s(buf, 20, src, 18) == buf);
+        assert(buf == u"cute fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 4, 10) == 4);
+        assert(buf == u"abc. fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 11) == 11);
+        assert(buf == u"..........a KITTEN."sv);
     }
 
     {
@@ -400,6 +418,15 @@ constexpr bool run_tests() {
 
         assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
         assert(buf == U"....a.ababcbabc.c.."sv);
+
+        assert(Traits::_Copy_s(buf, 20, src, 18) == buf);
+        assert(buf == U"cute fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 4, 10) == 4);
+        assert(buf == U"abc. fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 11) == 11);
+        assert(buf == U"..........a KITTEN."sv);
     }
 
     {
@@ -443,6 +470,15 @@ constexpr bool run_tests() {
 
         assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
         assert(buf == L"....a.ababcbabc.c.."sv);
+
+        assert(Traits::_Copy_s(buf, 20, src, 18) == buf);
+        assert(buf == L"cute fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 4, 10) == 4);
+        assert(buf == L"abc. fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 11) == 11);
+        assert(buf == L"..........a KITTEN."sv);
     }
 
 #ifdef __cpp_lib_char8_t
@@ -487,8 +523,50 @@ constexpr bool run_tests() {
 
         assert(Traits::move(buf + 5, buf + 3, 11) == buf + 5); // overlapping, dest after src
         assert(buf == u8"....a.ababcbabc.c.."sv);
+
+        assert(Traits::_Copy_s(buf, 20, src, 18) == buf);
+        assert(buf == u8"cute fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 4, 10) == 4);
+        assert(buf == u8"abc. fluffy KITTEN."sv);
+
+        assert(sv._Copy_s(buf, 20, 11) == 11);
+        assert(buf == u8"..........a KITTEN."sv);
     }
 #endif // __cpp_lib_char8_t
+
+    // test char_traits::compare refactoring through basic_string_view (not part of P1032R1)
+    {
+        assert("cat"sv == "cat"sv);
+        assert("cat"sv < "category"sv);
+        assert("catastrophe"sv > "cat"sv);
+        assert("catch"sv < "category"sv);
+        assert("catenary"sv > "catapult"sv);
+
+        assert(u"cat"sv == u"cat"sv);
+        assert(u"cat"sv < u"category"sv);
+        assert(u"catastrophe"sv > u"cat"sv);
+        assert(u"catch"sv < u"category"sv);
+        assert(u"catenary"sv > u"catapult"sv);
+
+        assert(U"cat"sv == U"cat"sv);
+        assert(U"cat"sv < U"category"sv);
+        assert(U"catastrophe"sv > U"cat"sv);
+        assert(U"catch"sv < U"category"sv);
+        assert(U"catenary"sv > U"catapult"sv);
+
+        assert(L"cat"sv == L"cat"sv);
+        assert(L"cat"sv < L"category"sv);
+        assert(L"catastrophe"sv > L"cat"sv);
+        assert(L"catch"sv < L"category"sv);
+        assert(L"catenary"sv > L"catapult"sv);
+
+        assert(u8"cat"sv == u8"cat"sv);
+        assert(u8"cat"sv < u8"category"sv);
+        assert(u8"catastrophe"sv > u8"cat"sv);
+        assert(u8"catch"sv < u8"category"sv);
+        assert(u8"catenary"sv > u8"catapult"sv);
+    }
 
     return true;
 }

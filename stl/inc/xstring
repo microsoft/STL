@@ -65,7 +65,8 @@ struct _Char_traits { // properties of a string or stream element
         return _First1;
     }
 
-    _Pre_satisfies_(_Dest_size >= _Count) static _Elem* _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _First1,
+    _Pre_satisfies_(_Dest_size >= _Count) static _CONSTEXPR20 _Elem* _Copy_s(_Out_writes_all_(_Dest_size)
+                                                                                 _Elem* const _First1,
         const size_t _Dest_size, _In_reads_(_Count) const _Elem* const _First2,
         const size_t _Count) noexcept { // copy [_First2, _First2 + _Count) to [_First1, _First1 + _Dest_size)
         _STL_VERIFY(_Count <= _Dest_size, "invalid argument");
@@ -363,14 +364,7 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
-#if _HAS_U8_INTRINSICS
-        if constexpr (is_same_v<_Elem, char8_t>) {
-            return __builtin_u8memcmp(_First1, _First2, _Count);
-        } else
-#endif // _HAS_U8_INTRINSICS
-        {
-            return __builtin_memcmp(_First1, _First2, _Count);
-        }
+        return __builtin_memcmp(_First1, _First2, _Count);
 #else // _HAS_CXX17
         return _CSTD memcmp(_First1, _First2, _Count);
 #endif // _HAS_CXX17
@@ -1372,8 +1366,9 @@ public:
         return _Count;
     }
 
-    _Pre_satisfies_(_Dest_size >= _Count) constexpr size_type _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _Dest,
-        const size_type _Dest_size, size_type _Count, const size_type _Off = 0) const {
+    _Pre_satisfies_(_Dest_size >= _Count) _CONSTEXPR20 size_type
+        _Copy_s(_Out_writes_all_(_Dest_size) _Elem* const _Dest, const size_type _Dest_size, size_type _Count,
+            const size_type _Off = 0) const {
         // copy [_Off, _Off + _Count) to [_Dest, _Dest + _Count)
         _Check_offset(_Off);
         _Count = _Clamp_suffix_size(_Off, _Count);
