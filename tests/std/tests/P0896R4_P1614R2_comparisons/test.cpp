@@ -492,9 +492,7 @@ constexpr void ordering_test_cases() {
         }
     };
     test_equality_comparable(&has_members::x, &has_members::y, strong_ordering::less); // Ditto "not equal"
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1070391
     test_equality_comparable(&has_members::f, &has_members::g, strong_ordering::less); // Ditto "not equal"
-#endif // TRANSITION, VSO-1070391
 
     test_equality_comparable(nullptr, nullptr, strong_ordering::equal);
 
