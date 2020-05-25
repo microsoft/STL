@@ -416,7 +416,7 @@ struct _Atomic_storage {
     }
 
 protected:
-    void _Init_spinlock_for_ref() {
+    void _Init_spinlock_for_ref() noexcept {
         _Spinlock = __std_atomic_get_mutex(_STD addressof(_Storage));
     }
 
@@ -1795,11 +1795,11 @@ public:
 
     using value_type = _Ty;
 
-    explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {
+    explicit atomic_ref(_Ty& _Value) : _Base(_Value) {
         if constexpr (_Is_potentially_lock_free) {
             _Check_aligment(_Value);
         } 
-        
+
 #if 1 // TRANSITION, ABI
         if constexpr (!is_always_lock_free) {
 #else
@@ -1866,7 +1866,7 @@ public:
     }
 
 private:
-    void _Check_aligment([[maybe_unused]] _Ty& _Value) {
+    void _Check_aligment([[maybe_unused]] const _Ty& _Value) {
         _ATOMIC_REF_CHECK_ALIGNMENT(
             (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
             "atomic_ref underlying object is not aligned as required_alignment");
