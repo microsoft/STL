@@ -1798,7 +1798,7 @@ public:
     explicit atomic_ref(_Ty& _Value) : _Base(_Value) {
         if constexpr (_Is_potentially_lock_free) {
             _Check_aligment(_Value);
-        } 
+        }
 
 #if 1 // TRANSITION, ABI
         if constexpr (!is_always_lock_free) {
