@@ -1796,7 +1796,12 @@ public:
     using value_type = _Ty;
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {
-        if constexpr (!is_always_lock_free) {
+        if constexpr (_Is_potentially_lock_free) {
+            if constexpr (alignof(_Ty) < sizeof(_Ty)) {
+                _Warn_potential_misaligment();
+            }
+            _Check_aligment(_Value);
+        } else {
             this->_Init_spinlock_for_ref();
         }
     }
@@ -1807,15 +1812,9 @@ public:
 
     static constexpr bool is_always_lock_free = _Is_always_lock_free<sizeof(_Ty)>;
 
-#if defined(_M_IX86) || defined(_M_ARM)
     static constexpr bool _Is_potentially_lock_free =
-        sizeof(_Ty) == 1 || sizeof(_Ty) == 2 || sizeof(_Ty) == 4 || sizeof(_Ty) == 8;
-#elif defined(_M_X64) || defined(_M_ARM64)
-    static constexpr bool _Is_potentially_lock_free =
-        sizeof(_Ty) == 1 || sizeof(_Ty) == 2 || sizeof(_Ty) == 4 || sizeof(_Ty) == 8 || sizeof(_Ty) == 16;
-#else
-#error Unsupported atchitecture
-#endif
+        sizeof(_Ty) <= 2 * sizeof(void*) && (sizeof(_Ty) & (sizeof(_Ty) - 1)) == 0;
+
     static constexpr size_t required_alignment = _Is_potentially_lock_free ? sizeof(_Ty) : alignof(_Ty);
 
 #if 1 // TRANSITION, ABI
@@ -1861,6 +1860,15 @@ public:
 
     operator _Ty() const noexcept {
         return this->load();
+    }
+
+private:
+    _CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE void _Warn_potential_misaligment() {}
+
+    void _Check_aligment(_Ty& _Value) {
+        _ATOMIC_REF_CHECK_ALIGNMENT(
+            (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
+            "atomic_ref underlying object is not aligned as required_alignment");
     }
 };
 #endif // _HAS_CXX20

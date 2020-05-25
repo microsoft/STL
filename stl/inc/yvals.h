@@ -208,6 +208,21 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
+#ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+#ifdef _DEBUG
+#define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
+#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
+#endif // _DEBUG
+#endif // _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+
+#if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+#define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _STL_VERIFY(cond, mesg)
+#else
+#define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _Analysis_assume_(cond)
+#endif
+
+
 #include <use_ansi.h>
 
 #define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE

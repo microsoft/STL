@@ -983,7 +983,19 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4032
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE)
+#define _CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE                                            \
+    [[deprecated("warning STL4032: "                                                             \
+                 "underlying type for atomic_ref has smaller aligment than required_alignment. " \
+                 "It is up to the caller to make sure that the actual aligment of the object "   \
+                 "satisfies required_alignment requirement. " \
+                 "You can define _SILENCE_CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE " \
+                 "to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
