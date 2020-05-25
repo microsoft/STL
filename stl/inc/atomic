@@ -1797,9 +1797,6 @@ public:
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {
         if constexpr (_Is_potentially_lock_free) {
-            if constexpr (alignof(_Ty) < sizeof(_Ty)) {
-                _Warn_potential_misaligment();
-            }
             _Check_aligment(_Value);
         } else {
             this->_Init_spinlock_for_ref();
