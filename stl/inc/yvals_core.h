@@ -987,7 +987,7 @@
 #define _CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE                                            \
     [[deprecated("warning STL4032: "                                                             \
                  "underlying type for atomic_ref has smaller aligment than required_alignment. " \
-                 "required_alignment requirement might be violated."                             \
+                 "required_alignment requirement might be violated. "                            \
                  "It is up to the caller to make sure that the actual aligment of the object "   \
                  "satisfies required_alignment requirement. "                                    \
                  "You can define _SILENCE_CXX20_ATOMIC_REF_POTENTIALLY_MISALIGNED_TYPE "         \
