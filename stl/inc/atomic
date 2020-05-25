@@ -1798,7 +1798,13 @@ public:
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened  */ : _Base(_Value) {
         if constexpr (_Is_potentially_lock_free) {
             _Check_aligment(_Value);
-        } else {
+        } 
+        
+#if 1 // TRANSITION, ABI
+        if (!is_always_lock_free) {
+#else
+        if constexpr (!_Is_potentially_lock_free) {
+#endif
             this->_Init_spinlock_for_ref();
         }
     }
