@@ -1801,7 +1801,7 @@ public:
         } 
         
 #if 1 // TRANSITION, ABI
-        if (!is_always_lock_free) {
+        if constexpr (!is_always_lock_free) {
 #else
         if constexpr (!_Is_potentially_lock_free) {
 #endif
