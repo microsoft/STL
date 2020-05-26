@@ -27,11 +27,11 @@ void test_ops() {
     constexpr std::size_t repetitions = 8000;
     constexpr std::size_t total       = unique * repetitions;
     constexpr std::size_t range       = 10;
-    
+
     struct alignas(std::atomic_ref<ValueType>::required_alignment) Padded {
         ValueType vals[unique] = {};
     } padded;
-    
+
     auto& vals = padded.vals;
 
     std::vector<std::atomic_ref<ValueType>> refs;
