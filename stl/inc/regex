@@ -2855,16 +2855,16 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _E0x, _Elem _E1x) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, _Elem _Arg1) {
     // add character range to set
     unsigned int _E0;
     unsigned int _E1;
     if (_Flags & regex_constants::icase) { // change to lowercase range
-        _E0 = static_cast<unsigned int>(_Traits.translate_nocase(_E0x));
-        _E1 = static_cast<unsigned int>(_Traits.translate_nocase(_E1x));
+        _E0 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg0));
+        _E1 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg1));
     } else {
-        _E0 = static_cast<typename _RxTraits::_Uelem>(_E0x);
-        _E1 = static_cast<typename _RxTraits::_Uelem>(_E1x);
+        _E0 = static_cast<typename _RxTraits::_Uelem>(_Arg0);
+        _E1 = static_cast<typename _RxTraits::_Uelem>(_Arg1);
     }
 
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
