@@ -593,9 +593,9 @@ _NODISCARD inline bool _Add(_Big_integer_flt& _Xval, const uint32_t _Value) noex
     return true;
 }
 
-_NODISCARD inline uint32_t _Add_carry(uint32_t& _U1, const uint32_t _U2, const uint32_t _U_carry) noexcept {
-    const uint64_t _Uu = static_cast<uint64_t>(_U1) + _U2 + _U_carry;
-    _U1                = static_cast<uint32_t>(_Uu);
+_NODISCARD inline uint32_t _Add_carry(uint32_t& _Ux1, const uint32_t _Ux2, const uint32_t _U_carry) noexcept {
+    const uint64_t _Uu = static_cast<uint64_t>(_Ux1) + _Ux2 + _U_carry;
+    _Ux1               = static_cast<uint32_t>(_Uu);
     return static_cast<uint32_t>(_Uu >> 32);
 }
 
