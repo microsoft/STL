@@ -953,8 +953,7 @@ private:
 // CLASS gslice
 class gslice { // define a generalized (multidimensional) slice of a valarray
 public:
-    gslice() : _Start(0) { // construct with all zeros
-    }
+    gslice() : _Start(0) {} // construct with all zeros
 
     gslice(size_t _Off, const _Sizarray& _Lenarr, const _Sizarray& _Incarr)
         : _Start(_Off), _Len(_Lenarr), _Stride(_Incarr) {}
@@ -1315,7 +1314,6 @@ _NODISCARD gslice_array<_Ty> valarray<_Ty>::operator[](const gslice& _Gslicearr)
 
 template <class _Ty>
 valarray<_Ty>& valarray<_Ty>::operator=(const mask_array<_Ty>& _Maskarr) {
-
     _Tidy_deallocate();
     _Grow(_Maskarr._Totlen());
     size_t _Count = 0;

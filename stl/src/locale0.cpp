@@ -22,8 +22,7 @@ _STD_BEGIN
 
 struct _Fac_node { // node for lazy facet recording
     _Fac_node(_Fac_node* _Nextarg, _Facet_base* _Facptrarg)
-        : _Next(_Nextarg), _Facptr(_Facptrarg) { // construct a node with value
-    }
+        : _Next(_Nextarg), _Facptr(_Facptrarg) {} // construct a node with value
 
     ~_Fac_node() noexcept { // destroy a facet
         delete _Facptr->_Decref();

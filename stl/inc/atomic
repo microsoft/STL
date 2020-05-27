@@ -754,8 +754,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
     _Atomic_storage() = default;
 
     /* implicit */ constexpr _Atomic_storage(const _Ty _Value) noexcept
-        : _Storage{_Value} { // non-atomically initialize this atomic
-    }
+        : _Storage{_Value} {} // non-atomically initialize this atomic
 
     void store(const _Ty _Value) noexcept { // store with sequential consistency
         (void) exchange(_Value);
