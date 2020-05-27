@@ -2174,7 +2174,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-
 // CLASS TEMPLATE poisson_distribution AND HELPER
 template <class _Ty = int>
 class _Small_poisson_distribution { // poisson distribution with small mean
@@ -2352,7 +2351,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     const poisson_distribution<_Ty>& _Dist) { // write state to _Ostr
     return _Dist._Write(_Ostr);
 }
-
 
 // CLASS TEMPLATE binomial_distribution
 template <class _Ty = int>

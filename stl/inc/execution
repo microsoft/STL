@@ -1312,7 +1312,6 @@ struct _Static_partitioned_find2 {
     }
 };
 
-
 template <class _ExPo, class _FwdIt, class _Find_fx>
 _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, const _Find_fx _Fx) {
     // find first matching _Val, potentially in parallel
@@ -3100,7 +3099,6 @@ _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pre
             }
         }
     }
-
 
     _Seek_wrapped(_First, _STD is_sorted_until(_UFirst, _ULast, _Pass_fn(_Pred)));
     return _First;

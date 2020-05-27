@@ -51,7 +51,6 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>, _Pr); // implemented in <al
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorithm>
 
-
 // FUNCTION TEMPLATE min
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
@@ -75,7 +74,6 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>, _Pr); // implemented in <al
 
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorithm>
-
 
 // FUNCTION TEMPLATE iter_swap (from <algorithm>)
 template <class _FwdIt1, class _FwdIt2>
@@ -478,7 +476,6 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
 
     using type = _Ty;
 };
-
 
 // TUPLE INTERFACE TO tuple
 template <class... _Types>
