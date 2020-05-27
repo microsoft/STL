@@ -8,10 +8,10 @@ RUNALL_CROSSLIST
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=1"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /Zc:char8_t-"
-# C5105: macro expansion producing 'defined' has undefined behavior is emitted by windows.h. TRANSITION, GH-854
+# TRANSITION, GH-854
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=0 /permissive- /Zc:wchar_t- /Zc:preprocessor /wd5105"
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=1"
-# C5105: macro expansion producing 'defined' has undefined behavior is emitted by windows.h. TRANSITION, GH-854
+# TRANSITION, GH-854
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /fp:except /Zc:preprocessor /wd5015"
 PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /await"
 PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /analyze:only"
