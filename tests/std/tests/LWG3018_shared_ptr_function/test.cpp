@@ -70,14 +70,16 @@ int main() {
         (*w1.lock())(2);
         assert(val == 3);
 
-#if _HAS_CXX17
+#ifdef __cpp_noexcept_function_type
         shared_ptr<void(int)> s4(add_noexcept, decrement_val{});
         assert(s4.get() == add_noexcept);
         (*s4)(1);
+        assert(val == 4);
 
         shared_ptr<void(int) noexcept> s5(add_noexcept, decrement_val{});
         assert(s5.get() == add_noexcept);
         (*s5)(1);
+        assert(val == 5);
 
         s4 = s5;
         assert(s4.get() == add_noexcept);
@@ -87,7 +89,7 @@ int main() {
         static_assert(!is_convertible_v<shared_ptr<void(int)>, shared_ptr<void(int) noexcept>>,
             "shared_ptr of non-noexcept function type should not be convertible to shared_ptr of noexcept function "
             "type");
-#endif
+#endif // __cpp_noexcept_function_type
     }
     assert(val == 2);
 }
