@@ -46,7 +46,6 @@
 #include <vector>
 
 using namespace std;
-using namespace std::chrono;
 
 void initialize_randomness(mt19937_64& mt64, const int argc, char** const argv) {
     constexpr size_t n = mt19937_64::state_size;
@@ -1060,7 +1059,7 @@ void all_floating_tests(mt19937_64& mt64) {
 }
 
 int main(int argc, char** argv) {
-    const auto start = steady_clock::now();
+    const auto start = chrono::steady_clock::now();
 
     mt19937_64 mt64;
 
@@ -1070,8 +1069,8 @@ int main(int argc, char** argv) {
 
     all_floating_tests(mt64);
 
-    const auto finish  = steady_clock::now();
-    const long long ms = duration_cast<milliseconds>(finish - start).count();
+    const auto finish  = chrono::steady_clock::now();
+    const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
 
     puts("PASS");
     printf("Randomized test cases: %u\n", PrefixesToTest * Fractions);

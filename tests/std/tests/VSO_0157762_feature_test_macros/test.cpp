@@ -56,10 +56,10 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
-#elif __cpp_lib_array_constexpr != 201806L
-#error __cpp_lib_array_constexpr is not 201806L
+#elif __cpp_lib_array_constexpr != 201811L
+#error __cpp_lib_array_constexpr is not 201811L
 #else
-STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201811L);
 #endif
 #elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
@@ -81,6 +81,20 @@ STATIC_ASSERT(__cpp_lib_array_constexpr == 201803L);
 #error __cpp_lib_as_const is not 201510L
 #else
 STATIC_ASSERT(__cpp_lib_as_const == 201510L);
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_flag_test
+#error __cpp_lib_atomic_flag_test is not defined
+#elif __cpp_lib_atomic_flag_test != 201907L
+#error __cpp_lib_atomic_flag_test is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_flag_test == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_flag_test
+#error __cpp_lib_atomic_flag_test is defined
+#endif
 #endif
 
 #if _HAS_CXX20
@@ -108,6 +122,20 @@ STATIC_ASSERT(__cpp_lib_atomic_is_always_lock_free == 201603L);
 #else
 #ifdef __cpp_lib_atomic_is_always_lock_free
 #error __cpp_lib_atomic_is_always_lock_free is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_lock_free_type_aliases
+#error __cpp_lib_atomic_lock_free_type_aliases is not defined
+#elif __cpp_lib_atomic_lock_free_type_aliases != 201907L
+#error __cpp_lib_atomic_lock_free_type_aliases is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
+#error __cpp_lib_atomic_lock_free_type_aliases is defined
 #endif
 #endif
 
@@ -328,6 +356,34 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_functional
+#error __cpp_lib_constexpr_functional is not defined
+#elif __cpp_lib_constexpr_functional != 201811L
+#error __cpp_lib_constexpr_functional is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_functional == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_functional
+#error __cpp_lib_constexpr_functional is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_iterator
+#error __cpp_lib_constexpr_iterator is not defined
+#elif __cpp_lib_constexpr_iterator != 201811L
+#error __cpp_lib_constexpr_iterator is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_iterator
+#error __cpp_lib_constexpr_iterator is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -352,6 +408,48 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #else
 #ifdef __cpp_lib_constexpr_numeric
 #error __cpp_lib_constexpr_numeric is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_string_view
+#error __cpp_lib_constexpr_string_view is not defined
+#elif __cpp_lib_constexpr_string_view != 201811L
+#error __cpp_lib_constexpr_string_view is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_string_view == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_string_view
+#error __cpp_lib_constexpr_string_view is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_tuple
+#error __cpp_lib_constexpr_tuple is not defined
+#elif __cpp_lib_constexpr_tuple != 201811L
+#error __cpp_lib_constexpr_tuple is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_tuple == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_tuple
+#error __cpp_lib_constexpr_tuple is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_utility
+#error __cpp_lib_constexpr_utility is not defined
+#elif __cpp_lib_constexpr_utility != 201811L
+#error __cpp_lib_constexpr_utility is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_utility
+#error __cpp_lib_constexpr_utility is defined
 #endif
 #endif
 
@@ -554,6 +652,20 @@ STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #else
 #ifdef __cpp_lib_int_pow2
 #error __cpp_lib_int_pow2 is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is not defined
+#elif __cpp_lib_integer_comparison_functions != 202002L
+#error __cpp_lib_integer_comparison_functions is not 202002L
+#else
+STATIC_ASSERT(__cpp_lib_integer_comparison_functions == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_integer_comparison_functions
+#error __cpp_lib_integer_comparison_functions is defined
 #endif
 #endif
 

@@ -60,8 +60,7 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
 }
 
 // STRUCT _Nil
-struct _Nil { // empty struct, for unused argument types
-};
+struct _Nil {}; // empty struct, for unused argument types
 
 // ENUM future_errc
 enum class future_errc { // names for futures errors
@@ -97,11 +96,11 @@ struct is_error_code_enum<future_errc> : true_type {};
 _NODISCARD const error_category& future_category() noexcept;
 
 _NODISCARD inline error_code make_error_code(future_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), future_category());
+    return error_code(static_cast<int>(_Errno), _STD future_category());
 }
 
 _NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), future_category());
+    return error_condition(static_cast<int>(_Errno), _STD future_category());
 }
 
 // CLASS future_error
@@ -409,8 +408,7 @@ private:
         return false;
     }
 
-    virtual void _Run_deferred_function(unique_lock<mutex>&) { // do nothing
-    }
+    virtual void _Run_deferred_function(unique_lock<mutex>&) {} // do nothing
 
     virtual void _Do_notify(unique_lock<mutex>* _Lock, bool _At_thread_exit) { // notify waiting threads
         // TRANSITION, ABI: This is virtual, but never overridden.
@@ -1427,6 +1425,20 @@ struct uses_allocator<packaged_task<_Ty>, _Alloc> : true_type {};
 template <class _Ty>
 void swap(packaged_task<_Ty>& _Left, packaged_task<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
+}
+
+// FUNCTION TEMPLATE _Invoke_stored_explicit
+template <class... _Types, size_t... _Indices>
+auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(
+    _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
+    return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
+}
+
+// FUNCTION TEMPLATE _Invoke_stored
+template <class... _Types>
+auto _Invoke_stored(tuple<_Types...>&& _Tuple)
+    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
+    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
 }
 
 // FUNCTION TEMPLATE async

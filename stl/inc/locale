@@ -148,12 +148,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit collate_byname(const char* _Locname, size_t _Refs = 0)
-        : collate<_Elem>(_Locname, _Refs) { // construct for named locale
-    }
+        : collate<_Elem>(_Locname, _Refs) {} // construct for named locale
 
     explicit collate_byname(const string& _Str, size_t _Refs = 0)
-        : collate<_Elem>(_Locinfo(_Str.c_str()), _Refs) { // construct for named locale
-    }
+        : collate<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~collate_byname() noexcept {}

@@ -85,8 +85,7 @@ struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocati
         return _Ptr;
     }
 
-    void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept { // imitate True Placement Delete
-    }
+    void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept {} // imitate True Placement Delete
 #endif // _DEBUG
 };
 
@@ -3255,12 +3254,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit __CLR_OR_THIS_CALL ctype_byname(const char* _Locname, size_t _Refs = 0)
-        : ctype<_Elem>(_Locinfo(_Locname), _Refs) { // construct for named locale
-    }
+        : ctype<_Elem>(_Locinfo(_Locname), _Refs) {} // construct for named locale
 
     explicit __CLR_OR_THIS_CALL ctype_byname(const string& _Str, size_t _Refs = 0)
-        : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) { // construct for named locale
-    }
+        : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}

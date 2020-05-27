@@ -66,7 +66,7 @@ struct instantiator {
         };
         using Projection = type (*)(std::iter_common_reference_t<ranges::iterator_t<In>>);
         (void) ranges::find(in, type{}, Projection{});
-    };
+    }
 };
 
 template void test_in<instantiator>();

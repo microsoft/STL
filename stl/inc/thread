@@ -173,8 +173,7 @@ namespace this_thread {
 
 class thread::id { // thread id
 public:
-    id() noexcept : _Id(0) { // id for no thread
-    }
+    id() noexcept : _Id(0) {} // id for no thread
 
 private:
     id(_Thrd_id_t _Other_id) : _Id(_Other_id) {}

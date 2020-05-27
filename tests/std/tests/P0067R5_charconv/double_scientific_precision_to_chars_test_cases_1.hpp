@@ -287,4 +287,28 @@ inline constexpr DoublePrecisionToCharsTestCase double_scientific_precision_to_c
     {1e-63, chars_format::scientific, 1, "1.0e-63"},
     {1e+83, chars_format::scientific, 0, "1e+83"},
     {1e+83, chars_format::scientific, 1, "1.0e+83"},
+
+    // The UCRT had trouble with rounding this value. charconv was never affected, but let's test it anyways.
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 104,
+        "1.09995565999999994887854821710219658911365648587951921896774663603198787416706536331386569598149846892544e+"
+        "104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 18, "1.099955659999999949e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 17, "1.09995565999999995e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 16, "1.0999556599999999e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 15, "1.099955660000000e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 14, "1.09995566000000e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 13, "1.0999556600000e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 12, "1.099955660000e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 11, "1.09995566000e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 10, "1.0999556600e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 9, "1.099955660e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 8, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 7, "1.0999557e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 6, "1.099956e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 5, "1.09996e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 4, "1.1000e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 3, "1.100e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 2, "1.10e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 1, "1.1e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::scientific, 0, "1e+104"},
 };

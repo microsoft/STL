@@ -334,8 +334,8 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
 
 // VARIABLE TEMPLATE _Use_atomic_iterator
 template <class _Ty>
-struct _Atomic_is_usually_lock_free
-    : bool_constant<atomic<_Ty>::is_always_lock_free> { // deferred evaluation of atomic::is_always_lock_free
+struct _Atomic_is_usually_lock_free : bool_constant<atomic<_Ty>::is_always_lock_free> {
+    // deferred evaluation of atomic::is_always_lock_free
 };
 
 template <class _FwdIt>
@@ -719,8 +719,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
 
     _Work_stealing_team(size_t _Threads, _Diff _Total_work)
         : _Queues(_Threads), _Queues_used(0), _Remaining_work(_Total_work), _Available_mutex(),
-          _Available_queues(greater<>{}, _Get_queues(_Threads)) { // register work with the thread pool
-    }
+          _Available_queues(greater<>{}, _Get_queues(_Threads)) {} // register work with the thread pool
 
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
@@ -1613,8 +1612,12 @@ struct _Static_partitioned_adjacent_find2 {
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results{_Last}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
+        if (_Results._Complete()) {
+            return _Cancellation_status::_Canceled;
+        }
+
         const auto _Key = _Team._Get_next_key();
-        if (!_Key || _Results._Complete()) {
+        if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
 
