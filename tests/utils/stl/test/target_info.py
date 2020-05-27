@@ -40,6 +40,6 @@ class WindowsLocalTI:
             if _test_locale(loc_name):
                 self.features.add('locale.{0}'.format(loc_id))
             else:
-                lit_config.warning('The locale {0} is not supported by '
-                                   'your platform. Some tests will be '
-                                   'unsupported.'.format(loc_name))
+                lit_config.note('The locale {0} is not supported by '
+                                'your platform. Some tests will be '
+                                'unsupported.'.format(loc_name))
