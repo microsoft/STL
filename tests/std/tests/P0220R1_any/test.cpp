@@ -2698,12 +2698,9 @@ namespace msvc {
 
     namespace size_and_alignment {
         void run_test() {
-            static_assert(alignof(std::type_info) >= 4, "Can't steal two bits from type_info*");
-            static_assert(
-                sizeof(any) == std::_Small_object_num_ptrs * sizeof(void*), "any has unintended internal padding");
+            static_assert(sizeof(any) == 4 * sizeof(void*), "any has unintended internal padding");
             static_assert(
                 alignof(any) >= alignof(std::max_align_t), "any should be suitably aligned for any fundamental type");
-            static_assert(std::_Any_is_small<std::string>, "any should hold a string without allocating");
         }
     } // namespace size_and_alignment
 
@@ -2727,7 +2724,7 @@ namespace msvc {
         };
 
         template <class T>
-        constexpr bool IsBig = !(std::_Any_is_small<T> || std::_Any_is_trivial<T>);
+        constexpr bool IsBig = !std::_Any_is_small<T>;
 
         void run_test() {
             STATIC_ASSERT(!IsBig<small>);
