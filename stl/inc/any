@@ -43,97 +43,136 @@ public:
     _THROW(bad_any_cast{});
 }
 
-inline constexpr size_t _Any_trivial_space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
-
-template <class _Ty>
-inline constexpr bool _Any_is_trivial = alignof(_Ty) <= alignof(max_align_t)
-                                        && is_trivially_copyable_v<_Ty> && sizeof(_Ty) <= _Any_trivial_space_size;
-
-inline constexpr size_t _Any_small_space_size = (_Small_object_num_ptrs - 2) * sizeof(void*);
-
-template <class _Ty>
-inline constexpr bool _Any_is_small = alignof(_Ty) <= alignof(max_align_t)
-                                      && is_nothrow_move_constructible_v<_Ty> && sizeof(_Ty) <= _Any_small_space_size;
-
-enum class _Any_representation : uintptr_t { _Trivial, _Big, _Small };
-
-struct _Any_big_RTTI { // Hand-rolled vtable for types that must be heap allocated in an any
-    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(void*) _NOEXCEPT_FNPTR;
-    using _Copy_fn    = void* __CLRCALL_PURE_OR_CDECL(const void*);
-
-    template <class _Ty>
-    static void __CLRCALL_PURE_OR_CDECL _Destroy_impl(void* const _Target) noexcept {
-        ::delete static_cast<_Ty*>(_Target);
-    }
-
-    template <class _Ty>
-    _NODISCARD static void* __CLRCALL_PURE_OR_CDECL _Copy_impl(const void* const _Source) {
-        return ::new _Ty(*static_cast<const _Ty*>(_Source));
-    }
-
-    _Destroy_fn* _Destroy;
-    _Copy_fn* _Copy;
-};
-
-struct _Any_small_RTTI { // Hand-rolled vtable for nontrivial types that can be stored internally in an any
-    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(void*) _NOEXCEPT_FNPTR;
-    using _Copy_fn    = void __CLRCALL_PURE_OR_CDECL(void*, const void*);
-    using _Move_fn    = void __CLRCALL_PURE_OR_CDECL(void*, void*) _NOEXCEPT_FNPTR;
-
-    template <class _Ty>
-    static void __CLRCALL_PURE_OR_CDECL _Destroy_impl(void* const _Target) noexcept {
-        _Destroy_in_place(*static_cast<_Ty*>(_Target));
-    }
-
-    template <class _Ty>
-    static void __CLRCALL_PURE_OR_CDECL _Copy_impl(void* const _Target, const void* const _Source) {
-        _Construct_in_place(*static_cast<_Ty*>(_Target), *static_cast<const _Ty*>(_Source));
-    }
-
-    template <class _Ty>
-    static void __CLRCALL_PURE_OR_CDECL _Move_impl(void* const _Target, void* const _Source) noexcept {
-        _Construct_in_place(*static_cast<_Ty*>(_Target), _STD move(*static_cast<_Ty*>(_Source)));
-    }
-
-    _Destroy_fn* _Destroy;
-    _Copy_fn* _Copy;
-    _Move_fn* _Move;
-};
-
-template <class _Ty>
-inline constexpr _Any_big_RTTI _Any_big_RTTI_obj = {
-    &_Any_big_RTTI::_Destroy_impl<_Ty>, &_Any_big_RTTI::_Copy_impl<_Ty>};
-
-template <class _Ty>
-inline constexpr _Any_small_RTTI _Any_small_RTTI_obj = {
-    &_Any_small_RTTI::_Destroy_impl<_Ty>, &_Any_small_RTTI::_Copy_impl<_Ty>, &_Any_small_RTTI::_Move_impl<_Ty>};
-
 // CLASS any
+struct _Any_vtable;
+extern const _Any_vtable _Any_null_vtable;
+
+struct alignas(max_align_t) _Any_storage {
+    union {
+        unsigned char _Data[3 * sizeof(void*)];
+        void* _Ptr;
+    };
+
+    const _Any_vtable* _Vtable = &_Any_null_vtable;
+};
+_STL_INTERNAL_STATIC_ASSERT(is_standard_layout_v<_Any_storage>);
+_STL_INTERNAL_STATIC_ASSERT(sizeof(_Any_storage) == 4 * sizeof(void*));
+_STL_INTERNAL_STATIC_ASSERT(alignof(_Any_storage) == alignof(max_align_t));
+
+template <class _Ty>
+inline constexpr bool _Any_is_small = alignof(_Ty) <= alignof(_Any_storage)
+                                      && sizeof(_Ty) <= sizeof(_Any_storage::_Data)
+                                      && is_nothrow_move_constructible_v<_Ty>;
+
+struct _Any_vtable {
+    using _Get_fn     = void* __CLRCALL_PURE_OR_CDECL(_Any_storage&) noexcept;
+    using _Copy_fn    = void __CLRCALL_PURE_OR_CDECL(_Any_storage&, const _Any_storage&);
+    using _Move_fn    = void __CLRCALL_PURE_OR_CDECL(_Any_storage&, _Any_storage&) noexcept;
+    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(_Any_storage&) noexcept;
+
+    const type_info& _Type;
+    _Get_fn& _Get;
+    _Copy_fn& _Copy;
+    _Move_fn& _Move;
+    _Destroy_fn& _Destroy;
+};
+
+struct _Any_trivial_impl {
+    _NODISCARD static void* __CLRCALL_PURE_OR_CDECL _Get(_Any_storage&) noexcept {
+        return nullptr;
+    }
+    static void __CLRCALL_PURE_OR_CDECL _Copy(_Any_storage& _Target, const _Any_storage& _Source) noexcept {
+        _Target = _Source;
+    }
+    static void __CLRCALL_PURE_OR_CDECL _Move(_Any_storage& _Target, _Any_storage& _Source) noexcept {
+        _Target = _Source;
+    }
+    static void __CLRCALL_PURE_OR_CDECL _Destroy(_Any_storage&) noexcept {}
+};
+
+inline constexpr _Any_vtable _Any_null_vtable = {
+    typeid(void),
+    _Any_trivial_impl::_Get,
+    _Any_trivial_impl::_Copy,
+    _Any_trivial_impl::_Move,
+    _Any_trivial_impl::_Destroy,
+};
+
+struct _Any_small_impl {
+    _NODISCARD static void* __CLRCALL_PURE_OR_CDECL _Get(_Any_storage& _Sto) noexcept {
+        return _Sto._Data;
+    }
+
+    template <class _Ty>
+    static void __CLRCALL_PURE_OR_CDECL _Copy(_Any_storage& _Target, const _Any_storage& _Source) {
+        ::new (_Target._Data) _Ty(reinterpret_cast<const _Ty&>(_Source._Data));
+        _Target._Vtable = _Source._Vtable;
+    }
+
+    template <class _Ty>
+    static void __CLRCALL_PURE_OR_CDECL _Move(_Any_storage& _Target, _Any_storage& _Source) noexcept {
+        ::new (_Target._Data) _Ty(reinterpret_cast<_Ty&&>(_Source._Data));
+        _Target._Vtable = _Source._Vtable;
+    }
+
+    template <class _Ty>
+    static void __CLRCALL_PURE_OR_CDECL _Destroy(_Any_storage& _Target) noexcept {
+        reinterpret_cast<_Ty&>(_Target._Data).~_Ty();
+    }
+};
+
+struct _Any_big_impl {
+    _NODISCARD static void* __CLRCALL_PURE_OR_CDECL _Get(_Any_storage& _Sto) noexcept {
+        return _Sto._Ptr;
+    }
+
+    template <class _Ty>
+    static void __CLRCALL_PURE_OR_CDECL _Copy(_Any_storage& _Target, const _Any_storage& _Source) {
+        _Target._Ptr    = ::new _Ty(*static_cast<const _Ty*>(_Source._Ptr));
+        _Target._Vtable = _Source._Vtable;
+    }
+
+    static void __CLRCALL_PURE_OR_CDECL _Move(_Any_storage& _Target, _Any_storage& _Source) noexcept {
+        _Target._Ptr    = _Source._Ptr;
+        _Target._Vtable = _Source._Vtable;
+        _Source._Vtable = &_Any_null_vtable;
+    }
+
+    template <class _Ty>
+    static void __CLRCALL_PURE_OR_CDECL _Destroy(_Any_storage& _Sto) noexcept {
+        ::delete static_cast<_Ty*>(_Sto._Ptr);
+    }
+};
+
+template <class _Ty, bool = _Any_is_small<_Ty>>
+inline constexpr _Any_vtable _Any_vtable_for = {
+    typeid(_Ty),
+    _Any_small_impl::_Get,
+    is_trivially_copy_constructible_v<_Ty> ? _Any_trivial_impl::_Copy : _Any_small_impl::_Copy<_Ty>,
+    is_trivially_move_constructible_v<_Ty> ? _Any_trivial_impl::_Move : _Any_small_impl::_Move<_Ty>,
+    is_trivially_destructible_v<_Ty> ? _Any_trivial_impl::_Destroy : _Any_small_impl::_Destroy<_Ty>,
+};
+
+template <class _Ty>
+inline constexpr _Any_vtable _Any_vtable_for<_Ty, false> = {
+    typeid(_Ty),
+    _Any_big_impl::_Get,
+    _Any_big_impl::_Copy<_Ty>,
+    _Any_big_impl::_Move,
+    _Any_big_impl::_Destroy<_Ty>,
+};
+
 class any { // storage for any (CopyConstructible) type
 public:
     // Construction and destruction [any.cons]
-    constexpr any() noexcept {}
+    constexpr any() noexcept : _Storage{} {}
 
     any(const any& _That) {
-        _Storage._TypeData = _That._Storage._TypeData;
-        switch (_Rep()) {
-        case _Any_representation::_Small:
-            _Storage._SmallStorage._RTTI = _That._Storage._SmallStorage._RTTI;
-            _Storage._SmallStorage._RTTI->_Copy(&_Storage._SmallStorage._Data, &_That._Storage._SmallStorage._Data);
-            break;
-        case _Any_representation::_Big:
-            _Storage._BigStorage._RTTI = _That._Storage._BigStorage._RTTI;
-            _Storage._BigStorage._Ptr  = _Storage._BigStorage._RTTI->_Copy(_That._Storage._BigStorage._Ptr);
-            break;
-        case _Any_representation::_Trivial:
-        default:
-            _CSTD memcpy(_Storage._TrivialData, _That._Storage._TrivialData, sizeof(_Storage._TrivialData));
-            break;
-        }
+        _That._Storage._Vtable->_Copy(_Storage, _That._Storage);
     }
 
     any(any&& _That) noexcept {
-        _Move_from(_That);
+        _That._Storage._Vtable->_Move(_Storage, _That._Storage);
     }
 
     template <class _ValueType, enable_if_t<conjunction_v<negation<is_same<decay_t<_ValueType>, any>>,
@@ -163,18 +202,17 @@ public:
     }
 
     ~any() noexcept {
-        reset();
+        _Storage._Vtable->_Destroy(_Storage);
     }
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        *this = any{_That};
+        any{_That}.swap(*this);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        reset();
-        _Move_from(_That);
+        any{_STD move(_That)}.swap(*this);
         return *this;
     }
 
@@ -183,7 +221,7 @@ public:
                                     int> = 0>
     any& operator=(_ValueType&& _Value) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Value
-        *this = any{_STD forward<_ValueType>(_Value)};
+        any{_STD forward<_ValueType>(_Value)}.swap(*this);
         return *this;
     }
 
@@ -194,164 +232,91 @@ public:
             int> = 0>
     decay_t<_ValueType>& emplace(_Types&&... _Args) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Args...
-        reset();
-        return _Emplace<decay_t<_ValueType>>(_STD forward<_Types>(_Args)...);
+        _Storage._Vtable->_Destroy(_Storage);
+        _Emplace_guard _Guard{this};
+        decay_t<_ValueType>& _Result = _Emplace<decay_t<_ValueType>>(_STD forward<_Types>(_Args)...);
+        _Guard._Ptr                  = nullptr;
+        return _Result;
     }
+
     template <class _ValueType, class _Elem, class... _Types,
         enable_if_t<conjunction_v<is_constructible<decay_t<_ValueType>, initializer_list<_Elem>&, _Types...>,
                         is_copy_constructible<decay_t<_ValueType>>>,
             int> = 0>
     decay_t<_ValueType>& emplace(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Ilist and _Args...
-        reset();
-        return _Emplace<decay_t<_ValueType>>(_Ilist, _STD forward<_Types>(_Args)...);
+        _Storage._Vtable->_Destroy(_Storage);
+        _Emplace_guard _Guard{this};
+        decay_t<_ValueType>& _Result = _Emplace<decay_t<_ValueType>>(_Ilist, _STD forward<_Types>(_Args)...);
+        _Guard._Ptr                  = nullptr;
+        return _Result;
     }
 
     void reset() noexcept { // transition to the empty state
-        switch (_Rep()) {
-        case _Any_representation::_Small:
-            _Storage._SmallStorage._RTTI->_Destroy(&_Storage._SmallStorage._Data);
-            break;
-        case _Any_representation::_Big:
-            _Storage._BigStorage._RTTI->_Destroy(_Storage._BigStorage._Ptr);
-            break;
-        case _Any_representation::_Trivial:
-        default:
-            break;
-        }
-        _Storage._TypeData = 0;
+        _Storage._Vtable->_Destroy(_Storage);
+        _Storage._Vtable = &_Any_null_vtable;
     }
 
     void swap(any& _That) noexcept {
-        _That = _STD exchange(*this, _STD move(_That));
+        _STD swap(_Storage, _That._Storage);
     }
 
     // Observers [any.observers]
     _NODISCARD bool has_value() const noexcept {
-        return _Storage._TypeData != 0;
+        return _Storage._Vtable->_Type != typeid(void);
     }
 
     _NODISCARD const type_info& type() const noexcept {
         // if *this contains a value of type T, return typeid(T); otherwise typeid(void)
-        const type_info* const _Info = _TypeInfo();
-        if (_Info) {
-            return *_Info;
+        return _Storage._Vtable->_Type;
+    }
+
+    template <class _Decayed>
+    _NODISCARD _Decayed* _Cast() noexcept { // if *this contains a value of type _Decayed, return a pointer to it
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Decayed, decay_t<_Decayed>>);
+        _STL_INTERNAL_STATIC_ASSERT(!is_void_v<_Decayed>);
+
+        if (_Storage._Vtable->_Type != typeid(_Decayed)) {
+            return nullptr;
         }
 
-        return typeid(void);
+        return static_cast<_Decayed*>(_Storage._Vtable->_Get(_Storage));
     }
 
     template <class _Decayed>
     _NODISCARD const _Decayed* _Cast() const noexcept {
         // if *this contains a value of type _Decayed, return a pointer to it
-        const type_info* const _Info = _TypeInfo();
-        if (!_Info || *_Info != typeid(_Decayed)) {
-            return nullptr;
-        }
-
-        if constexpr (_Any_is_trivial<_Decayed>) {
-            // get a pointer to the contained _Trivial value of type _Decayed
-            return reinterpret_cast<const _Decayed*>(&_Storage._TrivialData);
-        } else if constexpr (_Any_is_small<_Decayed>) {
-            // get a pointer to the contained _Small value of type _Decayed
-            return reinterpret_cast<const _Decayed*>(&_Storage._SmallStorage._Data);
-        } else {
-            // get a pointer to the contained _Big value of type _Decayed
-            return static_cast<const _Decayed*>(_Storage._BigStorage._Ptr);
-        }
-    }
-
-    template <class _Decayed>
-    _NODISCARD _Decayed* _Cast() noexcept { // if *this contains a value of type _Decayed, return a pointer to it
-        return const_cast<_Decayed*>(static_cast<const any*>(this)->_Cast<_Decayed>());
+        return const_cast<any*>(this)->_Cast<_Decayed>();
     }
 
 private:
-    static constexpr uintptr_t _Rep_mask = 3;
+    struct _Emplace_guard {
+        any* _Ptr;
 
-    _NODISCARD _Any_representation _Rep() const noexcept { // extract the representation format from _TypeData
-        return static_cast<_Any_representation>(_Storage._TypeData & _Rep_mask);
-    }
-    _NODISCARD const type_info* _TypeInfo() const noexcept { // extract the type_info from _TypeData
-        return reinterpret_cast<const type_info*>(_Storage._TypeData & ~_Rep_mask);
-    }
-
-    void _Move_from(any& _That) noexcept {
-        _Storage._TypeData = _That._Storage._TypeData;
-        switch (_Rep()) {
-        case _Any_representation::_Small:
-            _Storage._SmallStorage._RTTI = _That._Storage._SmallStorage._RTTI;
-            _Storage._SmallStorage._RTTI->_Move(&_Storage._SmallStorage._Data, &_That._Storage._SmallStorage._Data);
-            break;
-        case _Any_representation::_Big:
-            _Storage._BigStorage._RTTI = _That._Storage._BigStorage._RTTI;
-            _Storage._BigStorage._Ptr  = _That._Storage._BigStorage._Ptr;
-            _That._Storage._TypeData   = 0;
-            break;
-        case _Any_representation::_Trivial:
-        default:
-            _CSTD memcpy(_Storage._TrivialData, _That._Storage._TrivialData, sizeof(_Storage._TrivialData));
-            break;
+        ~_Emplace_guard() {
+            if (_Ptr) {
+                _Ptr->_Storage._Vtable = &_Any_null_vtable;
+            }
         }
-    }
+    };
 
     template <class _Decayed, class... _Types>
     _Decayed& _Emplace(_Types&&... _Args) { // emplace construct _Decayed
-        if constexpr (_Any_is_trivial<_Decayed>) {
-            // using the _Trivial representation
-            auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._TrivialData);
-            _Construct_in_place(_Obj, _STD forward<_Types>(_Args)...);
-            _Storage._TypeData =
-                reinterpret_cast<uintptr_t>(&typeid(_Decayed)) | static_cast<uintptr_t>(_Any_representation::_Trivial);
-            return _Obj;
-        } else if constexpr (_Any_is_small<_Decayed>) {
+        _Storage._Vtable = &_Any_vtable_for<_Decayed>;
+        if constexpr (_Any_is_small<_Decayed>) {
             // using the _Small representation
-            auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._SmallStorage._Data);
+            auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._Data);
             _Construct_in_place(_Obj, _STD forward<_Types>(_Args)...);
-            _Storage._SmallStorage._RTTI = &_Any_small_RTTI_obj<_Decayed>;
-            _Storage._TypeData =
-                reinterpret_cast<uintptr_t>(&typeid(_Decayed)) | static_cast<uintptr_t>(_Any_representation::_Small);
             return _Obj;
         } else {
             // using the _Big representation
-            _Decayed* const _Ptr       = ::new _Decayed(_STD forward<_Types>(_Args)...);
-            _Storage._BigStorage._Ptr  = _Ptr;
-            _Storage._BigStorage._RTTI = &_Any_big_RTTI_obj<_Decayed>;
-            _Storage._TypeData =
-                reinterpret_cast<uintptr_t>(&typeid(_Decayed)) | static_cast<uintptr_t>(_Any_representation::_Big);
+            auto const _Ptr = ::new _Decayed(_STD forward<_Types>(_Args)...);
+            _Storage._Ptr   = _Ptr;
             return *_Ptr;
         }
     }
 
-    struct _Small_storage_t {
-        unsigned char _Data[_Any_small_space_size];
-        const _Any_small_RTTI* _RTTI;
-    };
-    static_assert(sizeof(_Small_storage_t) == _Any_trivial_space_size);
-
-    struct _Big_storage_t {
-        // Pad so that _Ptr and _RTTI might share _TypeData's cache line
-        unsigned char _Padding[_Any_small_space_size - sizeof(void*)];
-        void* _Ptr;
-        const _Any_big_RTTI* _RTTI;
-    };
-    static_assert(sizeof(_Big_storage_t) == _Any_trivial_space_size);
-
-    struct _Storage_t {
-        union {
-            unsigned char _TrivialData[_Any_trivial_space_size];
-            _Small_storage_t _SmallStorage;
-            _Big_storage_t _BigStorage;
-        };
-        uintptr_t _TypeData;
-    };
-    static_assert(sizeof(_Storage_t) == _Any_trivial_space_size + sizeof(void*));
-    static_assert(is_standard_layout_v<_Storage_t>);
-
-    union {
-        _Storage_t _Storage{};
-        max_align_t _Dummy;
-    };
+    _Any_storage _Storage;
 };
 
 // Non-member functions [any.nonmembers]
