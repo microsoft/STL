@@ -7069,11 +7069,16 @@ namespace msvc {
     } // namespace vso508126
 
     namespace DevCom1031281 {
-        void Overload(unsigned long long) {}
+        // Compilers may warn when initializing a variant from a "weird" argument, e.g., std::variant<short>{some_int}
+        // is potentially narrowing. Compilers should not, however, emit such diagnostics from the metaprogramming that
+        // determines which alternative a variant initialization would activate. We don't want to emit warnings when
+        // determining implicit conversion sequences early in overload resolution.
+
+        void Overload(int) {}
         void Overload(std::variant<unsigned short>) {}
 
         void run_test() {
-            Overload(42ULL);
+            Overload(42);
         }
     } // namespace DevCom1031281
 } // namespace msvc
