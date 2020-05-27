@@ -188,8 +188,8 @@ inline const wchar_t* _Cl_names::_Get<wchar_t>() const { // get wide pointer
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
     using _Elem = typename _RxTraits::char_type;
-    bool operator()(_Elem _E1, _Elem _E2) {
-        return _E1 == _E2;
+    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+        return _Ex1 == _Ex2;
     }
 };
 
@@ -199,8 +199,8 @@ struct _Cmp_icase { // functor to compare for case-insensitive equality
 
     explicit _Cmp_icase(const _RxTraits& _Tr) : _Traits(_Tr) {}
 
-    bool operator()(_Elem _E1, _Elem _E2) {
-        return _Traits.translate_nocase(_E1) == _Traits.translate_nocase(_E2);
+    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+        return _Traits.translate_nocase(_Ex1) == _Traits.translate_nocase(_Ex2);
     }
 
     const _RxTraits& _Traits;
@@ -214,8 +214,8 @@ struct _Cmp_collate { // functor to compare for locale-specific equality
 
     explicit _Cmp_collate(const _RxTraits& _Tr) : _Traits(_Tr) {}
 
-    bool operator()(_Elem _E1, _Elem _E2) {
-        return _Traits.translate(_E1) == _Traits.translate(_E2);
+    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+        return _Traits.translate(_Ex1) == _Traits.translate(_Ex2);
     }
 
     const _RxTraits& _Traits;
@@ -1475,7 +1475,7 @@ public:
     void _Add_char(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range(_Elem _E0, _Elem _E1);
+    void _Add_range(_Elem _Ex0, _Elem _Ex1);
     void _Add_named_class(_Regex_traits_base::char_class_type, bool = false);
     void _Add_equiv(_FwdIt, _FwdIt, _Difft);
     void _Add_coll(_FwdIt, _FwdIt, _Difft);
@@ -2857,36 +2857,36 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, _Elem _Arg1) {
     // add character range to set
-    unsigned int _E0;
-    unsigned int _E1;
+    unsigned int _Ex0;
+    unsigned int _Ex1;
     if (_Flags & regex_constants::icase) { // change to lowercase range
-        _E0 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg0));
-        _E1 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg1));
+        _Ex0 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg0));
+        _Ex1 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg1));
     } else {
-        _E0 = static_cast<typename _RxTraits::_Uelem>(_Arg0);
-        _E1 = static_cast<typename _RxTraits::_Uelem>(_Arg1);
+        _Ex0 = static_cast<typename _RxTraits::_Uelem>(_Arg0);
+        _Ex1 = static_cast<typename _RxTraits::_Uelem>(_Arg1);
     }
 
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    for (; _E0 <= _E1 && _E1 < _Get_bmax(); ++_E0) { // set a bit
+    for (; _Ex0 <= _Ex1 && _Ex1 < _Get_bmax(); ++_Ex0) { // set a bit
         if (!_Node->_Small) {
             _Node->_Small = new _Bitmap;
         }
 
-        _Node->_Small->_Mark(_E0);
+        _Node->_Small->_Mark(_Ex0);
     }
-    if (_E1 >= _E0) {
-        if (_E1 - _E0 < _Get_tmax()) {
-            for (; _E0 <= _E1; ++_E0) {
-                _Add_char_to_array(static_cast<_Elem>(_E0));
+    if (_Ex1 >= _Ex0) {
+        if (_Ex1 - _Ex0 < _Get_tmax()) {
+            for (; _Ex0 <= _Ex1; ++_Ex0) {
+                _Add_char_to_array(static_cast<_Elem>(_Ex0));
             }
         } else { // store remaining range as pair
             if (!_Node->_Ranges) {
                 _Node->_Ranges = new _Buf<_Elem>;
             }
 
-            _Node->_Ranges->_Insert(static_cast<_Elem>(_E0));
-            _Node->_Ranges->_Insert(static_cast<_Elem>(_E1));
+            _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex0));
+            _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex1));
         }
     }
 }
