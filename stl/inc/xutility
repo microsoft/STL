@@ -4666,9 +4666,9 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_
     is_same_v<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>;
 
 #ifdef __cpp_lib_byte
-// allow memcmping std::byte
-// inline is required here as explicit specialization of variable templates are problematic in C++14 and below.
-// However, std::byte is C++17 and above so we are safe
+// Allow memcmping std::byte.
+// inline is required here as explicit specializations of variable templates are problematic in C++14.
+// However, std::byte is C++17 and above so we are safe.
 template <>
 inline constexpr bool _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> = true;
 #endif // __cpp_lib_byte
