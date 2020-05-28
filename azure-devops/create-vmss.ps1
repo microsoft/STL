@@ -86,7 +86,7 @@ Generates a random password.
 
 .DESCRIPTION
 New-Password generates a password, randomly, of length $Length, containing
-only alphanumeric characters (both uppercase and lowercase).
+only alphanumeric characters, underscore, and dash
 
 .PARAMETER Length
 The length of the returned password.
@@ -94,10 +94,28 @@ The length of the returned password.
 function New-Password {
   Param ([int] $Length = 32)
 
-  $Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  # 6 bits
+  $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
+  $mask = 63
+  if ($chars.Length -ne 64) {
+    throw 'Bad chars length'
+  }
+
+  [Byte[]]$randomData = [Byte[]]::new($Length)
+  $rng = $null
+  try {
+    $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+    $rng.GetBytes($randomData)
+  }
+  finally {
+    if ($null -ne $rng) {
+      $rng.Dispose()
+    }
+  }
+
   $result = ''
   for ($idx = 0; $idx -lt $Length; $idx++) {
-    $result += $Chars[(Get-Random -Minimum 0 -Maximum $Chars.Length)]
+    $result += $chars[$randomData[$idx] -band $mask]
   }
 
   return $result
