@@ -1335,8 +1335,8 @@ struct _Select_fixer;
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
     template <class _Untuple>
-    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&&) noexcept ->
-        typename _Cv_TiD::type& { // unwrap a reference_wrapper
+    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&&) noexcept -> typename _Cv_TiD::type& {
+        // unwrap a reference_wrapper
         return _Tid.get();
     }
 };
@@ -1344,16 +1344,17 @@ struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
     template <class _Untuple, size_t... _Jx>
-    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut,
-        index_sequence<_Jx...>) noexcept(noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...)))
-        -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) { // call a nested bind expression
+    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut, index_sequence<_Jx...>) noexcept(
+        noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...))) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) {
+        // call a nested bind expression
         return _Tid(_STD get<_Jx>(_STD move(_Ut))...);
     }
 
     template <class _Untuple>
     static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
-        noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{}))) -> decltype(_Apply(_Tid,
-        _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) { // call a nested bind expression
+        noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})))
+        -> decltype(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) {
+        // call a nested bind expression
         return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
 };
@@ -1361,8 +1362,8 @@ struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, false, 0> { // identity fixer
     template <class _Untuple>
-    static constexpr _Cv_TiD& _Fix(
-        _Cv_TiD& _Tid, _Untuple&&) noexcept { // pass a bound argument as an lvalue (important!)
+    static constexpr _Cv_TiD& _Fix(_Cv_TiD& _Tid, _Untuple&&) noexcept {
+        // pass a bound argument as an lvalue (important!)
         return _Tid;
     }
 };
@@ -1389,8 +1390,9 @@ constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
     _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
-    _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...))) -> decltype(_Invoker_ret<_Ret>::_Call(_Obj,
-    _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) { // bind() and bind<R>() invocation
+    _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)))
+    -> decltype(_Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) {
+    // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
 
@@ -1427,6 +1429,24 @@ public:
     _Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, \
         _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))
 
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+    template <class... _Unbound>
+    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_Call_binder(_Invoker_ret<_Ret>(), _Seq{},
+        _STD declval<_First&>(), _STD declval<_Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))))
+        -> decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _STD declval<_First&>(), _STD declval<_Second&>(),
+            _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) {
+        return _CALL_BINDER;
+    }
+
+    template <class... _Unbound>
+    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) const
+        noexcept(noexcept(_Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _STD declval<const _First&>(),
+            _STD declval<const _Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))))
+            -> decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _STD declval<const _First&>(),
+                _STD declval<const _Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) {
+        return _CALL_BINDER;
+    }
+#else // ^^^ workaround / no workaround vvv
     template <class... _Unbound>
     _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) -> decltype(_CALL_BINDER) {
         return _CALL_BINDER;
@@ -1437,6 +1457,7 @@ public:
         -> decltype(_CALL_BINDER) {
         return _CALL_BINDER;
     }
+#endif // TRANSITION, VSO-1132105
 
 #undef _CALL_BINDER
 };
