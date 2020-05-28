@@ -487,11 +487,10 @@ struct _Char_traits_lt {
     }
 };
 
-// library-provided char_traits::eq behaves like equal_to<>
+// library-provided char_traits::eq behaves like equal_to<_Elem>
 // TRANSITION: This should not be activated for user-defined specializations of char_traits
 template <class _Elem>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> =
-    _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>;
+_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> = true;
 
 template <class _Traits>
 using _Traits_ch_t = typename _Traits::char_type;
