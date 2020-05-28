@@ -104,7 +104,7 @@ function New-Password {
   [Byte[]]$randomData = [Byte[]]::new($Length)
   $rng = $null
   try {
-    $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $rng.GetBytes($randomData)
   }
   finally {
