@@ -1158,7 +1158,7 @@
 
 #define __cpp_lib_constexpr_algorithms  201806L
 #define __cpp_lib_constexpr_complex     201711L
-#define __cpp_lib_constexpr_functional  201811L
+#define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
 #define __cpp_lib_constexpr_memory      201811L
 #define __cpp_lib_constexpr_numeric     201911L
