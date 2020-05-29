@@ -4721,7 +4721,6 @@ _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = _Can_memcmp_elements
 
 // _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
 // (Without concepts, this detection is limited, which will limit when we can activate the memcmp optimization.)
-// It ignores top-level constness on the iterators.
 
 #ifdef __cpp_lib_concepts
 // When concepts are available, we can detect arbitrary contiguous iterators.
@@ -4736,11 +4735,15 @@ _INLINE_VAR constexpr bool _Iterators_are_contiguous = conjunction_v<is_pointer<
 
 // _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
 // for arbitrary iterators and predicates.
-// It ignores top-level constness on the iterators.
+// It ignores top-level constness on the iterators and on the elements.
 template <class _Iter1, class _Iter2, class _Pr>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe = _Iterators_are_contiguous<_Iter1, _Iter2> //
-    && _Can_memcmp_elements_with_pred<remove_const_t<remove_reference_t<_Iter_ref_t<remove_const_t<_Iter1>>>>,
-        remove_const_t<remove_reference_t<_Iter_ref_t<remove_const_t<_Iter2>>>>, _Pr>;
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = _Iterators_are_contiguous<_Iter1, _Iter2> //
+    && _Can_memcmp_elements_with_pred<remove_const_t<remove_reference_t<_Iter_ref_t<_Iter1>>>,
+        remove_const_t<remove_reference_t<_Iter_ref_t<_Iter2>>>, _Pr>;
+
+template <class _Iter1, class _Iter2, class _Pr>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
+    _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, _Pr>;
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>

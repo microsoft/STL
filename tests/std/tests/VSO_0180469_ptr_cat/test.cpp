@@ -14,6 +14,7 @@
 
 #ifdef __cpp_lib_concepts
 #include <ranges>
+#include <span>
 #endif // __cpp_lib_concepts
 
 using namespace std;
@@ -212,7 +213,7 @@ void ptr_cat_test_cases() {
     test_ptr_cat<0, bool_enum, bool_enum_class>();
     test_ptr_cat<0, bool_enum_class, bool_enum>();
 
-    // Bool always generates code when you inspect it, so special case it to the general thing:
+    // bool always generates code when you inspect it, so special case it to the general thing:
     test_ptr_cat<0, bool, char>();
     test_ptr_cat<0, char, bool>();
     test_ptr_cat<0, bool_enum, char>();
@@ -236,7 +237,24 @@ void test_case_Equal_memcmp_is_safe_comparator() {
     STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, Elem2*, Pr> == Expected);
     STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, Elem2* const, Pr> == Expected);
     STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, const Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const Elem2* const, Pr> == Expected);
     STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, const Elem2* const, Pr> == Expected);
+    // Adding volatile anywhere should explode
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const volatile Elem2*, Pr> == false);
+
+#ifdef __cpp_lib_concepts
     // contiguous iterators should not change the answer
     STATIC_ASSERT(
         _Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::iterator, Pr> == Expected);
@@ -255,28 +273,41 @@ void test_case_Equal_memcmp_is_safe_comparator() {
         _Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::iterator, Pr> == Expected);
     STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::const_iterator,
                       Pr> == Expected);
-    // Adding volatile anywhere should explode
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const volatile Elem2*, Pr> == false);
+    // span iterators are contiguous
+    STATIC_ASSERT(
+        _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
+    STATIC_ASSERT(
+        _Equal_memcmp_is_safe<typename span<const Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
+    STATIC_ASSERT(
+        _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<const Elem2>::iterator, Pr> == Expected);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const Elem1>::iterator, typename span<const Elem2>::iterator,
+                      Pr> == Expected);
     // contiguous iterators to volatile should explode
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<volatile Elem1>::iterator, typename vector<Elem2>::iterator,
+    STATIC_ASSERT(
+        _Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator, typename span<Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(
+        _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator,
+                      typename span<volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator, typename span<Elem2>::iterator,
                       Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<volatile Elem1>::const_iterator,
-                      typename vector<Elem2>::const_iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<volatile Elem1, 1>::iterator, typename array<Elem2, 1>::iterator,
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const Elem1>::iterator, typename span<volatile Elem2>::iterator,
                       Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<volatile Elem1, 1>::const_iterator,
-                      typename array<Elem2, 1>::const_iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator,
+                      typename span<volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator, typename span<const Elem2>::iterator,
+                      Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<const volatile Elem2>::iterator,
+                      Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator,
+                      typename span<const volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator,
+                      typename span<const Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const Elem1>::iterator,
+                      typename span<const volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator,
+                      typename span<const volatile Elem2>::iterator, Pr> == false);
+#endif // __cpp_lib_concepts
 
     // Non-contiguous iterators should explode
     STATIC_ASSERT(_Equal_memcmp_is_safe<typename list<Elem1>::iterator, typename list<Elem2>::iterator, Pr> == false);
@@ -284,6 +315,7 @@ void test_case_Equal_memcmp_is_safe_comparator() {
 
 template <bool Expected, class Elem1, class Elem2>
 void test_case_Equal_memcmp_is_safe() {
+    test_case_Equal_memcmp_is_safe_comparator<Expected && is_same_v<Elem1, Elem2>, Elem1, Elem2, equal_to<Elem1>>();
     test_case_Equal_memcmp_is_safe_comparator<Expected, Elem1, Elem2, equal_to<>>();
 #ifdef __cpp_lib_concepts
     test_case_Equal_memcmp_is_safe_comparator<Expected, Elem1, Elem2, ranges::equal_to>();
@@ -301,7 +333,6 @@ void test_case_Equal_memcmp_is_safe() {
     STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<const volatile Elem1>> == false);
 }
 
-template <bool Expected, class Elem1, class Elem2>
 void equal_safe_test_cases() {
     // memcmp is safe for non-bool integral types
     test_case_Equal_memcmp_is_safe<true, char, char>();
