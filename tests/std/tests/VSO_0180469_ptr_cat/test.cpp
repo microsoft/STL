@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -355,8 +356,8 @@ void equal_safe_test_cases() {
     // signedness must be the same if usual arithmetic conversions are not bits-preserving
     test_case_Equal_memcmp_is_safe<is_signed_v<char>, char, signed char>();
     test_case_Equal_memcmp_is_safe<is_signed_v<char>, signed char, char>();
-    test_case_Equal_memcmp_is_safe<!is_signed_v<char>, char, unsigned char>();
-    test_case_Equal_memcmp_is_safe<!is_signed_v<char>, unsigned char, char>();
+    test_case_Equal_memcmp_is_safe<is_unsigned_v<char>, char, unsigned char>();
+    test_case_Equal_memcmp_is_safe<is_unsigned_v<char>, unsigned char, char>();
     test_case_Equal_memcmp_is_safe<false, signed char, unsigned char>();
     test_case_Equal_memcmp_is_safe<false, unsigned char, signed char>();
     test_case_Equal_memcmp_is_safe<false, short, unsigned short>();
@@ -366,7 +367,14 @@ void equal_safe_test_cases() {
     test_case_Equal_memcmp_is_safe<true, unsigned int, int>();
     test_case_Equal_memcmp_is_safe<true, long, unsigned long>();
     test_case_Equal_memcmp_is_safe<true, unsigned long, long>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), int, long>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), long, int>();
     test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned int, long>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned long, int>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), int, unsigned long>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), long, unsigned int>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned int, unsigned long>();
+    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned long, unsigned int>();
     test_case_Equal_memcmp_is_safe<true, long long, unsigned long long>();
     test_case_Equal_memcmp_is_safe<true, unsigned long long, long long>();
     // memcmp is not safe for bool types
@@ -383,13 +391,16 @@ void equal_safe_test_cases() {
     // No user-defined types
     test_case_Equal_memcmp_is_safe<false, base_class, base_class>();
 
+#ifdef __cpp_lib_byte
+    test_case_Equal_memcmp_is_safe<true, byte, byte>();
+#endif // __cpp_lib_byte
+
     // Pointers to cv T are OK (they *point to* volatile stuff, they aren't volatile themselves)
     typedef void (*funcptr_t)(int);
     test_case_Equal_memcmp_is_safe<true, void*, void*>();
     test_case_Equal_memcmp_is_safe<true, void*, const void*>();
     test_case_Equal_memcmp_is_safe<true, void*, volatile void*>();
     test_case_Equal_memcmp_is_safe<true, void*, const volatile void*>();
-    test_case_Equal_memcmp_is_safe<true, void*, void*>();
     test_case_Equal_memcmp_is_safe<true, const void*, void*>();
     test_case_Equal_memcmp_is_safe<true, volatile void*, void*>();
     test_case_Equal_memcmp_is_safe<true, const volatile void*, void*>();
