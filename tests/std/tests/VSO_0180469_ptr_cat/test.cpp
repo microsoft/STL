@@ -392,7 +392,10 @@ void equal_safe_test_cases() {
     test_case_Equal_memcmp_is_safe<false, base_class, base_class>();
 
 #ifdef __cpp_lib_byte
+    // memcmp is safe for std::byte, but it can't be compared to integral types
     test_case_Equal_memcmp_is_safe<true, byte, byte>();
+    test_case_Equal_memcmp_is_safe<false, byte, char>();
+    test_case_Equal_memcmp_is_safe<false, char, byte>();
 #endif // __cpp_lib_byte
 
     // Pointers to cv T are OK (they *point to* volatile stuff, they aren't volatile themselves)
