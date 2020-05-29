@@ -1658,6 +1658,7 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     }
 };
 
+
 // TYPE TRAITS FOR invoke()
 #pragma warning(push)
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
