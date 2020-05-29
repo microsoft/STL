@@ -1658,12 +1658,11 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     }
 };
 
-
 // TYPE TRAITS FOR invoke()
 #pragma warning(push)
-#pragma warning(disable : 4242) // 'identifier': conversion from '_From' to '_To', possible loss of data (/Wall)
-#pragma warning(disable : 4244) // 'argument': conversion from '_From' to '_To', possible loss of data
-#pragma warning(disable : 4365) // 'argument': conversion from '_From' to '_To', signed/unsigned mismatch (/Wall)
+#pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
+#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
 #pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
 
 #ifdef __clang__
