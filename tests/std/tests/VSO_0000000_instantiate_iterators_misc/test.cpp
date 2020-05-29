@@ -1484,6 +1484,7 @@ void tuple_test() {
 
     tuple<> empty_tuple1(allocator_arg, allocator<double>());
     tuple<> empty_tuple2(allocator_arg, allocator<double>(), empty_tuple1);
+    (void) empty_tuple2;
 
     tuple<int, int> tup1{};
     tuple<const int&, const int&> tup2(tup1);
