@@ -31,13 +31,13 @@ void assert_same() {
 
 template <int Expected, class Source, class Dest>
 struct test_ptr_cat_helper {
-    static constexpr bool CopyReallyTrivial     = _Ptr_copy_cat<Source, Dest>::_Really_trivial;
-    static constexpr bool CopyTriviallyCopyable = _Ptr_copy_cat<Source, Dest>::_Trivially_copyable;
+    static constexpr bool CopyReallyTrivial     = _Can_memcpy_uninitialized<Source, Dest>;
+    static constexpr bool CopyTriviallyCopyable = _Can_memcpy<Source, Dest>;
     STATIC_ASSERT(Expected == CopyReallyTrivial + CopyTriviallyCopyable);
     STATIC_ASSERT(!CopyReallyTrivial || CopyTriviallyCopyable);
 
-    static constexpr bool MoveReallyTrivial     = _Ptr_move_cat<Source, Dest>::_Really_trivial;
-    static constexpr bool MoveTriviallyCopyable = _Ptr_move_cat<Source, Dest>::_Trivially_copyable;
+    static constexpr bool MoveReallyTrivial     = _Can_memmove_uninitialized<Source, Dest>;
+    static constexpr bool MoveTriviallyCopyable = _Can_memmove<Source, Dest>;
     STATIC_ASSERT(Expected == MoveReallyTrivial + MoveTriviallyCopyable);
     STATIC_ASSERT(!MoveReallyTrivial || MoveTriviallyCopyable);
 };
@@ -185,6 +185,17 @@ void ptr_cat_test_cases() {
     test_ptr_cat<2, volatile int*, volatile int*>();
     test_ptr_cat<2, volatile int*, const volatile int*>();
     test_ptr_cat<2, const volatile int*, const volatile int*>();
+
+    // Pointer to pointer should work
+    test_ptr_cat<2, int**, int**>();
+    test_ptr_cat<2, pod_struct**, pod_struct**>();
+    test_ptr_cat<2, trivially_copyable_struct**, trivially_copyable_struct**>();
+    test_ptr_cat<2, custom_copy_struct**, custom_copy_struct**>();
+
+    // Pointer to pointer of different types should not work
+    test_ptr_cat<0, int**, pod_struct**>();
+    test_ptr_cat<0, pod_struct**, trivially_copyable_struct**>();
+    test_ptr_cat<0, trivially_copyable_struct**, custom_copy_struct**>();
 
     // Pointers to derived are implicitly convertible to pointers to base, but there
     // may still be code required to change an offset, so we don't want to memmove them

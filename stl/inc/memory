@@ -35,7 +35,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+        if constexpr (_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
             _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
         } else {
             _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -77,7 +77,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
         _Seek_wrapped(_Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
-                                 bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial>{}));
+                                 bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>>{}));
     }
 
     return _Dest;
@@ -105,7 +105,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Ptr_move_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+        if constexpr (_Can_memmove_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
             _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
             _UFirst += _Count;
         } else {

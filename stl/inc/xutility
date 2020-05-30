@@ -4256,69 +4256,111 @@ inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE copy
-template <class _Source, class _Dest>
-struct _Ptr_cat_helper {
-    using _USource                        = _Unwrap_enum_t<_Source>;
-    using _UDest                          = _Unwrap_enum_t<_Dest>;
-    static constexpr bool _Really_trivial = conjunction_v<
-        bool_constant<sizeof(_USource) == sizeof(_UDest) && is_same_v<bool, _USource> == is_same_v<bool, _UDest>>,
-        is_integral<_USource>, is_integral<_UDest>>;
-    static constexpr bool _Trivially_copyable = _Really_trivial;
+// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
+// (Without concepts, this detection is limited, which will limit when we can activate certain optimizations.)
+#ifdef __cpp_lib_concepts
+// When concepts are available, we can detect arbitrary contiguous iterators.
+template <class _Iter1, class _Iter2>
+_INLINE_VAR constexpr bool _Iterators_are_contiguous = contiguous_iterator<_Iter1> //
+    && contiguous_iterator<_Iter2>;
+#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
+// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
+template <class _Iter1, class _Iter2>
+_INLINE_VAR constexpr bool _Iterators_are_contiguous = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>;
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+// VARIABLE TEMPLATE _Can_memop
+enum class _Memop_cat {
+    _Copy,
+    _Copy_uninitialized,
+    _Move,
+    _Move_uninitialized,
 };
 
-template <class _Elem>
-struct _Ptr_cat_helper<_Elem, _Elem> { // determines _Ptr_cat's result when the types are the same
-    static constexpr bool _Really_trivial     = is_trivial_v<_Elem>;
-    static constexpr bool _Trivially_copyable = is_trivially_copyable_v<_Elem>;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, const _Anything*> {
-    // determines _Ptr_cat's result when all we do is add const to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, volatile _Anything*> {
-    // determines _Ptr_cat's result when all we do is add volatile to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, const volatile _Anything*> {
-    // determines _Ptr_cat's result when all we do is add cv to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-struct _False_copy_cat {
-    static constexpr bool _Really_trivial     = false;
-    static constexpr bool _Trivially_copyable = false;
-};
+// Integral types are eligible for memcpy in very specific cases.
+// * Enumerations are treated as their underlying integral type
+// * They must be the same size. (`int == long` is eligible; `int != long long` isn't.)
+// * They are either both bool or both non bool
+template <class _Source, class _Dest>
+struct _Same_size_integral_or_bool
+    : bool_constant<sizeof(_Source) == sizeof(_Dest) && is_same_v<bool, _Source> == is_same_v<bool, _Dest>> {};
 
 template <class _Source, class _Dest>
-struct _Ptr_copy_cat : _False_copy_cat {}; // unwrap the pointer-like type and dispatch to _Ptr_cat_helper for copy
+_INLINE_VAR constexpr bool _Can_memop_integrals =
+    conjunction_v<is_integral<_Source>, is_integral<_Dest>, _Same_size_integral_or_bool<_Source, _Dest>>;
+
+// Matching integer type are eligible for memcpy
+template <class _Source, class _Dest, _Memop_cat _Cat,
+    bool _Result = _Can_memop_integrals<_Unwrap_enum_t<_Source>, _Unwrap_enum_t<_Dest>>>
+_INLINE_VAR constexpr bool _Can_memop_elements = _Result;
+
+// Pointer elements are eligible for memcpy when they point to the same type, ignoring cv-qualification.
+// This handles pointers to object types, pointers to void, and pointers to function types.
+// Performance note: This doesn't attempt to handle `object* != void*`.
+template <class _Source, class _Dest, _Memop_cat _Cat>
+_INLINE_VAR constexpr bool _Can_memop_elements<_Source*, _Dest*, _Cat, false> =
+    is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>;
+
+// Types are eligible for memcpy / memmove when they are trivially copyable.
+template <class _Ty>
+_INLINE_VAR constexpr bool _Can_memop_elements<_Ty, enable_if_t<!is_pointer_v<_Ty>, _Ty>, _Memop_cat::_Copy, false> =
+    is_trivially_copyable_v<_Ty>;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool _Can_memop_elements<_Ty, enable_if_t<!is_pointer_v<_Ty>, _Ty>, _Memop_cat::_Move, false> =
+    is_trivially_copyable_v<_Ty>;
+
+// Types are eligible for memcpy / memmove into uninitialized memory when they are trivial.
+template <class _Ty>
+_INLINE_VAR constexpr bool
+    _Can_memop_elements<_Ty, enable_if_t<!is_pointer_v<_Ty>, _Ty>, _Memop_cat::_Copy_uninitialized, false> =
+        is_trivial_v<_Ty>;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool
+    _Can_memop_elements<_Ty, enable_if_t<!is_pointer_v<_Ty>, _Ty>, _Memop_cat::_Move_uninitialized, false> =
+        is_trivial_v<_Ty>;
+
+// Different types are eligible for memcpy when they are trivially copy assignable.
+template <class _Source, class _Dest, _Memop_cat>
+_INLINE_VAR constexpr bool _Can_assign_elements = is_trivially_assignable_v<_Dest&, _Source&>;
+
+// Different types are eligible for memmove when they are trivially move assignable.
+template <class _Source, class _Dest>
+_INLINE_VAR constexpr bool _Can_assign_elements<_Source, _Dest, _Memop_cat::_Move> =
+    is_trivially_assignable_v<_Dest&, _Source&&>;
 
 template <class _Source, class _Dest>
-struct _Ptr_copy_cat<_Source*, _Dest*>
-    : conditional_t<is_trivially_assignable_v<_Dest&, _Source&>,
-          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {};
+_INLINE_VAR constexpr bool _Can_assign_elements<_Source, _Dest, _Memop_cat::_Move_uninitialized> =
+    is_trivially_assignable_v<_Dest&, _Source&&>;
 
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat<move_iterator<_Source*>, _Dest*> : _Ptr_copy_cat<_Source*, _Dest*> {};
+// _Can_memop<_IterSource, _IterDest> reports whether we can activate the memory operation for
+// arbitrary iterators. It ignores top-level constness on the source iterators and on the source elements.
+template <class _IterSource, class _IterDest, _Memop_cat _Cat>
+_INLINE_VAR constexpr bool _Can_memop = false;
 
-template <class _Source, class _Dest>
-struct _Ptr_move_cat : _False_copy_cat {}; // unwrap the pointer-like type and dispatch to _Ptr_cat_helper for move
+template <class _Source, class _Dest, _Memop_cat _Cat>
+_INLINE_VAR constexpr bool _Can_memop<_Source*, _Dest*, _Cat> =
+    conjunction_v<bool_constant<_Can_assign_elements<_Source, _Dest, _Cat>>,
+        bool_constant<_Can_memop_elements<remove_cv_t<_Source>, remove_volatile_t<_Dest>, _Cat>>>;
 
-template <class _Source, class _Dest>
-struct _Ptr_move_cat<_Source*, _Dest*>
-    : conditional_t<is_trivially_assignable_v<_Dest&, _Source>,
-          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {};
+template <class _IterSource, class _IterDest, _Memop_cat _Cat>
+_INLINE_VAR constexpr bool _Can_memop<move_iterator<_IterSource>, _IterDest, _Cat> =
+    _Can_memop<_IterSource, _IterDest, _Cat>;
 
-template <class _Source, class _Dest>
-struct _Ptr_move_cat<move_iterator<_Source*>, _Dest*> : _Ptr_move_cat<_Source*, _Dest*> {};
+template <class _IterSource, class _IterDest>
+_INLINE_VAR constexpr bool _Can_memcpy = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy>;
+
+template <class _IterSource, class _IterDest>
+_INLINE_VAR constexpr bool _Can_memcpy_uninitialized =
+    _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy_uninitialized>;
+
+template <class _IterSource, class _IterDest>
+_INLINE_VAR constexpr bool _Can_memmove = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move>;
+
+template <class _IterSource, class _IterDest>
+_INLINE_VAR constexpr bool _Can_memmove_uninitialized =
+    _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move_uninitialized>;
 
 template <class _InIt, class _OutIt>
 _OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
@@ -4344,7 +4386,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
+    if constexpr (_Can_memcpy<_InIt, _OutIt>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4380,7 +4422,7 @@ template <class _InIt, class _OutIt>
 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable>{});
+    return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memcpy<_InIt, _OutIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4414,7 +4456,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable) {
+        if constexpr (_Can_memcpy<decltype(_UFirst), decltype(_UDest)>) {
 #ifdef __cpp_lib_is_constant_evaluated
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4474,9 +4516,8 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-        _Seek_wrapped(
-            _Dest, _Copy_n_unchecked4(_UFirst, _Count, _UDest,
-                       bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable>{}));
+        _Seek_wrapped(_Dest, _Copy_n_unchecked4(_UFirst, _Count, _UDest,
+                                 bool_constant<_Can_memcpy<decltype(_UFirst), decltype(_UDest)>>{}));
     }
 
     return _Dest;
@@ -4514,7 +4555,7 @@ _BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_Bid
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
-    if constexpr (_Ptr_copy_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
+    if constexpr (_Can_memcpy<_BidIt1, _BidIt2>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4564,7 +4605,7 @@ _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) { // copy [_
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     _Seek_wrapped(_Dest, _Copy_backward_unchecked(_UFirst, _ULast, _UDest,
-                             bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable>{}));
+                             bool_constant<_Can_memcpy<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -4584,7 +4625,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable) {
+    if constexpr (_Can_memmove<_InIt, _OutIt>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4620,7 +4661,7 @@ template <class _InIt, class _OutIt>
 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...), choose optimization
     // note: _Move_unchecked has callers other than the move family
-    return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable>{});
+    return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove<_InIt, _OutIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4652,7 +4693,7 @@ template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
+    if constexpr (_Can_memmove<_BidIt1, _BidIt2>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4688,8 +4729,7 @@ template <class _BidIt1, class _BidIt2>
 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest), choose optimization
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    return _Move_backward_unchecked1(
-        _First, _Last, _Dest, bool_constant<_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable>{});
+    return _Move_backward_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove<_BidIt1, _BidIt2>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4947,20 +4987,6 @@ _INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _RANG
 template <class _Elem1, class _Elem2, class _Pr>
 _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = _Can_memcmp_elements<_Elem1, _Elem2> //
     && _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr>;
-
-// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
-// (Without concepts, this detection is limited, which will limit when we can activate the memcmp optimization.)
-
-#ifdef __cpp_lib_concepts
-// When concepts are available, we can detect arbitrary contiguous iterators.
-template <class _Iter1, class _Iter2>
-_INLINE_VAR constexpr bool _Iterators_are_contiguous = contiguous_iterator<_Iter1> //
-    && contiguous_iterator<_Iter2>;
-#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
-// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
-template <class _Iter1, class _Iter2>
-_INLINE_VAR constexpr bool _Iterators_are_contiguous = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 // _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
 // for arbitrary iterators and predicates.

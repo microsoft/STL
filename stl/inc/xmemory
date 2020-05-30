@@ -1442,7 +1442,7 @@ struct _Uninitialized_backout { // struct to undo partially constructed ranges i
 template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+    if constexpr (_Can_memmove_uninitialized<_InIt, _NoThrowFwdIt>) {
         return _Copy_memmove(_First, _Last, _Dest);
     } else {
         _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
@@ -1476,7 +1476,7 @@ template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...), choose optimization
     return _Uninitialized_move_unchecked1(
-        _First, _Last, _Dest, bool_constant<_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial>{});
+        _First, _Last, _Dest, bool_constant<_Can_memmove_uninitialized<_InIt, _NoThrowFwdIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1524,7 +1524,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
 
-    if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+    if constexpr (conjunction_v<bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), _Ptrval>>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
         _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
         _Dest += _ULast - _UFirst;
@@ -1572,7 +1572,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 
     using _Ptrval = typename _Alloc::value_type*;
     return _Uninitialized_copy_al_unchecked(_UFirst, _ULast, _Dest, _Al,
-        bool_constant<conjunction_v<bool_constant<_Ptr_copy_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+        bool_constant<conjunction_v<bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), _Ptrval>>,
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -1586,7 +1586,7 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+    if constexpr (_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
         _UDest = _Copy_memmove(_UFirst, _ULast, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -1627,7 +1627,7 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     _Seek_wrapped(_Dest, _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest,
-                             bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial>{}));
+                             bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -1642,7 +1642,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     using _Ptrval     = typename _Alloc::value_type*;
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (conjunction_v<bool_constant<_Ptr_move_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+    if constexpr (conjunction_v<bool_constant<_Can_memmove_uninitialized<decltype(_UFirst), _Ptrval>>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
         _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
         return _Dest + (_ULast - _UFirst);
@@ -1689,10 +1689,10 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     // clang-format on
 
     using _Ptrval = typename _Alloc::value_type*;
-    _Seek_wrapped(
-        _Dest, _Uninitialized_move_al_unchecked(_UFirst, _ULast, _UDest, _Al,
-                   bool_constant < _Ptr_move_cat<decltype(_UFirst), _Ptrval>::_Really_trivial
-                       && _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>::value > {}));
+    _Seek_wrapped(_Dest,
+        _Uninitialized_move_al_unchecked(_UFirst, _ULast, _UDest, _Al,
+            bool_constant < _Can_memmove_uninitialized<decltype(_UFirst),
+                    _Ptrval> && _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>::value > {}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
