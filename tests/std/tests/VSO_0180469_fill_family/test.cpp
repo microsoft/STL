@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma warning(disable : 4242) // conversion from 'X' to 'Y', possible loss of data
-#pragma warning(disable : 4244) // conversion from 'X' to 'Y', possible loss of data
+#pragma warning(disable : 4244) // conversion from 'X' to 'Y', possible loss of data (Yes, duplicated message.)
 // Note that this test *should* trigger 4242 and 4244 inside STL headers, because it
 // calls std::fill and std::uninitialized_fill with (small type*, small type*, big type)
 #pragma warning(disable : 4365) // conversion from 'X' to 'Y', signed/unsigned mismatch

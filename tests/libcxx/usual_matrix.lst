@@ -5,5 +5,5 @@ RUNALL_INCLUDE ..\universal_prefix.lst
 RUNALL_CROSSLIST
 PM_CL="/EHsc /MTd /std:c++latest /permissive- /FImsvc_stdlib_force_include.h /wd4643"
 RUNALL_CROSSLIST
-PM_CL="/analyze"
+PM_CL="/analyze /Zc:preprocessor"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing"
