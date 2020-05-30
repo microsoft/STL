@@ -441,7 +441,6 @@ template <class _Alloc, class _Ptr, class... _Args>
 using _Uses_default_construct =
     disjunction<_Is_default_allocator<_Alloc>, _Has_no_allocator_construct<void, _Alloc, _Ptr, _Args...>>;
 
-
 // ALIAS TEMPLATE _Uses_default_destroy AND _Uses_default_destroy_t
 template <class _Alloc, class _Ptr, class = void>
 struct _Has_no_alloc_destroy : true_type {};
@@ -457,7 +456,6 @@ using _Uses_default_destroy = disjunction<_Is_default_allocator<_Alloc>, _Has_no
 
 template <class _Alloc, class _Ptr>
 using _Uses_default_destroy_t = typename _Uses_default_destroy<_Alloc, _Ptr>::type;
-
 
 // STRUCT TEMPLATE _Has_allocate_hint
 template <class _Alloc, class _Size_type, class _Const_void_pointer, class = void>
@@ -486,7 +484,6 @@ struct _Has_select_on_container_copy_construction : false_type {};
 template <class _Alloc>
 struct _Has_select_on_container_copy_construction<_Alloc,
     void_t<decltype(_STD declval<const _Alloc&>().select_on_container_copy_construction())>> : true_type {};
-
 
 // STRUCT TEMPLATE allocator_traits
 template <class _Alloc>
@@ -949,7 +946,6 @@ void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
 }
 #endif // _HAS_IF_CONSTEXPR
 
-
 // FUNCTION TEMPLATE _Destroy_range WITH ALLOC
 template <class _Alloc>
 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
@@ -962,7 +958,6 @@ void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Las
     }
 }
 
-
 // FUNCTION TEMPLATE _Destroy_range
 template <class _NoThrowFwdIt>
 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept {
@@ -973,7 +968,6 @@ void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept {
         }
     }
 }
-
 
 // FUNCTION TEMPLATE _Convert_size
 template <class _Size_type>
@@ -1237,12 +1231,10 @@ inline void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Rig
 #if _ITERATOR_DEBUG_LEVEL == 0
 using _Container_base = _Container_base0;
 using _Iterator_base  = _Iterator_base0;
-
 #else // _ITERATOR_DEBUG_LEVEL == 0
 using _Container_base = _Container_base12;
 using _Iterator_base = _Iterator_base12;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
-
 
 // ALIAS TEMPLATE _Container_proxy_ptr AND SUPPORTING MACHINERY
 struct _Leave_proxy_unbound {

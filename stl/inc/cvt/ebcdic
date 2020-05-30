@@ -20,8 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 namespace stdext {
     namespace cvt {
-
-
         using _Statype = _CSTD mbstate_t;
 
         // CLASS TEMPLATE codecvt_ebcdic
