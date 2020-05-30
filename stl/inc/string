@@ -84,7 +84,6 @@ basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr,
     return getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
 }
 
-
 // sto* NARROW CONVERSIONS
 inline int stoi(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
     // convert string to int

@@ -616,7 +616,6 @@ private:
     function<void(_ArgTypes...)> _Fn;
 };
 
-
 template <class _Ty, class _Alloc>
 _Associated_state<_Ty>* _Make_associated_state(const _Alloc& _Al) {
     // construct an _Associated_state object with an allocator

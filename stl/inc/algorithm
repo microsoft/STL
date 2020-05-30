@@ -1363,7 +1363,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2) using _Pred
-    if constexpr (decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
+    if constexpr (_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -1384,8 +1384,8 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
     return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_rev_pred_unchecked1(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred, false_type) {
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
+bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2) using _Pred, no special optimization
     for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
         if (!_Pred(*_First1, *_First2)) {
@@ -1396,19 +1396,13 @@ bool _Equal_rev_pred_unchecked1(_InIt1 _First1, _InIt2 _First2, const _InIt2 _La
     return true;
 }
 
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_rev_pred_unchecked1(const _InIt1 _First1, const _InIt2 _First2, const _InIt2 _Last2, _Pr, true_type) {
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
+bool _Equal_rev_pred_unchecked(const _InIt1 _First1, const _InIt2 _First2, const _InIt2 _Last2, _Pr) {
     // compare [_First1, ...) to [_First2, _Last2), memcmp optimization
     const auto _First1_ch = reinterpret_cast<const char*>(_First1);
     const auto _First2_ch = reinterpret_cast<const char*>(_First2);
     const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-}
-
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_rev_pred_unchecked(const _InIt1 _First1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
-    // compare [_First1, ...) to [_First2, _Last2) using _Pred, choose optimization
-    return _Equal_rev_pred_unchecked1(_First1, _First2, _Last2, _Pred, _Equal_memcmp_is_safe(_First1, _First2, _Pred));
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1916,11 +1910,12 @@ namespace ranges {
             // compare [_First1, ...) to [_First2, _Last2)
             constexpr bool _Both_identity = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>;
             // Performance note: teach _Equal_memcmp_is_safe about contiguous iterators and ranges::equal_to
-            if constexpr (_Both_identity && decltype(_Equal_memcmp_is_safe(_First1, _First2, _Pred))::value) {
+            if constexpr (_Both_identity && _Equal_memcmp_is_safe<_It1, _It2, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
-                    const auto _First1_ch = reinterpret_cast<const char*>(_First1);
-                    const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-                    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
+                    const auto _First1_ch = reinterpret_cast<const char*>(_STD to_address(_First1));
+                    const auto _First2_ch = reinterpret_cast<const char*>(_STD to_address(_First2));
+                    const auto _Count =
+                        static_cast<size_t>(reinterpret_cast<const char*>(_STD to_address(_Last2)) - _First2_ch);
                     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
                 }
             }
