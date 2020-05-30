@@ -26,7 +26,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-
 _STD_BEGIN
 // CLASS shared_mutex
 class shared_mutex { // class for mutual exclusion shared across threads

@@ -47,7 +47,6 @@ namespace stdext {
 
             explicit codecvt_utf8_utf16(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-
             virtual ~codecvt_utf8_utf16() noexcept {}
 
         protected:
