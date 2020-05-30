@@ -1392,30 +1392,30 @@ public:
         return _Traits_compare<_Traits>(_Mydata, _Mysize, _Right._Mydata, _Right._Mysize);
     }
 
-    _NODISCARD constexpr int compare(const size_type _Off, const size_type _N0, const basic_string_view _Right) const {
-        // compare [_Off, _Off + _N0) with _Right
-        return substr(_Off, _N0).compare(_Right);
+    _NODISCARD constexpr int compare(const size_type _Off, const size_type _Nx, const basic_string_view _Right) const {
+        // compare [_Off, _Off + _Nx) with _Right
+        return substr(_Off, _Nx).compare(_Right);
     }
 
-    _NODISCARD constexpr int compare(const size_type _Off, const size_type _N0, const basic_string_view _Right,
+    _NODISCARD constexpr int compare(const size_type _Off, const size_type _Nx, const basic_string_view _Right,
         const size_type _Roff, const size_type _Count) const {
-        // compare [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
-        return substr(_Off, _N0).compare(_Right.substr(_Roff, _Count));
+        // compare [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
+        return substr(_Off, _Nx).compare(_Right.substr(_Roff, _Count));
     }
 
     _NODISCARD constexpr int compare(_In_z_ const _Elem* const _Ptr) const { // compare [0, _Mysize) with [_Ptr, <null>)
         return compare(basic_string_view(_Ptr));
     }
 
-    _NODISCARD constexpr int compare(const size_type _Off, const size_type _N0, _In_z_ const _Elem* const _Ptr) const {
-        // compare [_Off, _Off + _N0) with [_Ptr, <null>)
-        return substr(_Off, _N0).compare(basic_string_view(_Ptr));
+    _NODISCARD constexpr int compare(const size_type _Off, const size_type _Nx, _In_z_ const _Elem* const _Ptr) const {
+        // compare [_Off, _Off + _Nx) with [_Ptr, <null>)
+        return substr(_Off, _Nx).compare(basic_string_view(_Ptr));
     }
 
-    _NODISCARD constexpr int compare(const size_type _Off, const size_type _N0,
+    _NODISCARD constexpr int compare(const size_type _Off, const size_type _Nx,
         _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) const {
-        // compare [_Off, _Off + _N0) with [_Ptr, _Ptr + _Count)
-        return substr(_Off, _N0).compare(basic_string_view(_Ptr, _Count));
+        // compare [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count)
+        return substr(_Off, _Nx).compare(basic_string_view(_Ptr, _Count));
     }
 
 #if _HAS_CXX20
@@ -3306,63 +3306,63 @@ public:
         _Eos(0);
     }
 
-    basic_string& replace(const size_type _Off, const size_type _N0, const basic_string& _Right) {
-        // replace [_Off, _Off + _N0) with _Right
-        return replace(_Off, _N0, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+    basic_string& replace(const size_type _Off, const size_type _Nx, const basic_string& _Right) {
+        // replace [_Off, _Off + _Nx) with _Right
+        return replace(_Off, _Nx, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    basic_string& replace(const size_type _Off, size_type _N0, const basic_string& _Right, const size_type _Roff,
+    basic_string& replace(const size_type _Off, size_type _Nx, const basic_string& _Right, const size_type _Roff,
         size_type _Count = npos) {
-        // replace [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
+        // replace [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         _Right._Mypair._Myval2._Check_offset(_Roff);
         _Count = _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count);
-        return replace(_Off, _N0, _Right._Mypair._Myval2._Myptr() + _Roff, _Count);
+        return replace(_Off, _Nx, _Right._Mypair._Myval2._Myptr() + _Roff, _Count);
     }
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    basic_string& replace(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right) {
-        // replace [_Off, _Off + _N0) with _Right
+    basic_string& replace(const size_type _Off, const size_type _Nx, const _StringViewIsh& _Right) {
+        // replace [_Off, _Off + _Nx) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return replace(_Off, _N0, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
+        return replace(_Off, _Nx, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    basic_string& replace(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right,
+    basic_string& replace(const size_type _Off, const size_type _Nx, const _StringViewIsh& _Right,
         const size_type _Roff, const size_type _Count = npos) {
-        // replace [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
+        // replace [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return replace(_Off, _N0, _As_view.substr(_Roff, _Count));
+        return replace(_Off, _Nx, _As_view.substr(_Roff, _Count));
     }
 #endif // _HAS_CXX17
 
     basic_string& replace(
-        const size_type _Off, size_type _N0, _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) {
-        // replace [_Off, _Off + _N0) with [_Ptr, _Ptr + _Count)
+        const size_type _Off, size_type _Nx, _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) {
+        // replace [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);
-        _N0 = _Mypair._Myval2._Clamp_suffix_size(_Off, _N0);
-        if (_N0 == _Count) { // size doesn't change, so a single move does the trick
+        _Nx = _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx);
+        if (_Nx == _Count) { // size doesn't change, so a single move does the trick
             _Traits::move(_Mypair._Myval2._Myptr() + _Off, _Ptr, _Count);
             return *this;
         }
 
         const size_type _Old_size    = _Mypair._Myval2._Mysize;
-        const size_type _Suffix_size = _Old_size - _N0 - _Off + 1;
-        if (_Count < _N0) { // suffix shifts backwards; we don't have to move anything out of the way
-            _Mypair._Myval2._Mysize = _Old_size - (_N0 - _Count);
+        const size_type _Suffix_size = _Old_size - _Nx - _Off + 1;
+        if (_Count < _Nx) { // suffix shifts backwards; we don't have to move anything out of the way
+            _Mypair._Myval2._Mysize = _Old_size - (_Nx - _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
             _Traits::move(_Insert_at, _Ptr, _Count);
-            _Traits::move(_Insert_at + _Count, _Insert_at + _N0, _Suffix_size);
+            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Suffix_size);
             return *this;
         }
 
-        const size_type _Growth = static_cast<size_type>(_Count - _N0);
+        const size_type _Growth = static_cast<size_type>(_Count - _Nx);
         if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
             _Mypair._Myval2._Mysize = _Old_size + _Growth;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
-            _Elem* const _Suffix_at = _Insert_at + _N0;
+            _Elem* const _Suffix_at = _Insert_at + _Nx;
 
             size_type _Ptr_shifted_after; // see rationale in insert
             if (_Ptr + _Count <= _Insert_at || _Ptr > _Old_ptr + _Old_size) {
@@ -3388,49 +3388,49 @@ public:
         return _Reallocate_grow_by(
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _N0, const _Elem* const _Ptr, const size_type _Count) {
+                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _N0, _Old_size - _N0 - _Off + 1);
+                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
             },
-            _Off, _N0, _Ptr, _Count);
+            _Off, _Nx, _Ptr, _Count);
     }
 
-    basic_string& replace(const size_type _Off, const size_type _N0, _In_z_ const _Elem* const _Ptr) {
-        // replace [_Off, _Off + _N0) with [_Ptr, <null>)
-        return replace(_Off, _N0, _Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
+    basic_string& replace(const size_type _Off, const size_type _Nx, _In_z_ const _Elem* const _Ptr) {
+        // replace [_Off, _Off + _Nx) with [_Ptr, <null>)
+        return replace(_Off, _Nx, _Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
-    basic_string& replace(const size_type _Off, size_type _N0, const size_type _Count, const _Elem _Ch) {
-        // replace [_Off, _Off + _N0) with _Count * _Ch
+    basic_string& replace(const size_type _Off, size_type _Nx, const size_type _Count, const _Elem _Ch) {
+        // replace [_Off, _Off + _Nx) with _Count * _Ch
         _Mypair._Myval2._Check_offset(_Off);
-        _N0 = _Mypair._Myval2._Clamp_suffix_size(_Off, _N0);
-        if (_Count == _N0) {
+        _Nx = _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx);
+        if (_Count == _Nx) {
             _Traits::assign(_Mypair._Myval2._Myptr() + _Off, _Count, _Ch);
             return *this;
         }
 
         const size_type _Old_size = _Mypair._Myval2._Mysize;
-        if (_Count < _N0
-            || _Count - _N0 <= _Mypair._Myval2._Myres - _Old_size) { // either we are shrinking, or the growth fits
-            _Mypair._Myval2._Mysize = _Old_size + _Count - _N0; // may temporarily overflow;
+        if (_Count < _Nx
+            || _Count - _Nx <= _Mypair._Myval2._Myres - _Old_size) { // either we are shrinking, or the growth fits
+            _Mypair._Myval2._Mysize = _Old_size + _Count - _Nx; // may temporarily overflow;
                                                                 // OK because size_type must be unsigned
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
-            _Traits::move(_Insert_at + _Count, _Insert_at + _N0, _Old_size - _N0 - _Off + 1);
+            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Old_size - _Nx - _Off + 1);
             _Traits::assign(_Insert_at, _Count, _Ch);
             return *this;
         }
 
         return _Reallocate_grow_by(
-            _Count - _N0,
+            _Count - _Nx,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _N0, const size_type _Count, const _Elem _Ch) {
+                const size_type _Nx, const size_type _Count, const _Elem _Ch) {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _N0, _Old_size - _N0 - _Off + 1);
+                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
             },
-            _Off, _N0, _Count, _Ch);
+            _Off, _Nx, _Count, _Ch);
     }
 
     basic_string& replace(const const_iterator _First, const const_iterator _Last, const basic_string& _Right) {
@@ -4164,22 +4164,22 @@ public:
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD int compare(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right) const {
-        // compare [_Off, _Off + _N0) with _Right
+    _NODISCARD int compare(const size_type _Off, const size_type _Nx, const _StringViewIsh& _Right) const {
+        // compare [_Off, _Off + _Nx) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _N0),
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _As_view.data(), _As_view.size());
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD int compare(const size_type _Off, const size_type _N0, const _StringViewIsh& _Right,
+    _NODISCARD int compare(const size_type _Off, const size_type _Nx, const _StringViewIsh& _Right,
         const size_type _Roff, const size_type _Count = npos) const {
-        // compare [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
+        // compare [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         _Mypair._Myval2._Check_offset(_Off);
         const auto _With_substr = _As_view.substr(_Roff, _Count);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _N0),
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _With_substr.data(), _With_substr.size());
     }
 #endif // _HAS_CXX17
@@ -4189,19 +4189,19 @@ public:
             _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    _NODISCARD int compare(size_type _Off, size_type _N0, const basic_string& _Right) const {
-        // compare [_Off, _Off + _N0) with _Right
+    _NODISCARD int compare(size_type _Off, size_type _Nx, const basic_string& _Right) const {
+        // compare [_Off, _Off + _Nx) with _Right
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _N0),
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
-    _NODISCARD int compare(const size_type _Off, const size_type _N0, const basic_string& _Right, const size_type _Roff,
+    _NODISCARD int compare(const size_type _Off, const size_type _Nx, const basic_string& _Right, const size_type _Roff,
         const size_type _Count = npos) const {
-        // compare [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
+        // compare [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         _Right._Mypair._Myval2._Check_offset(_Roff);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _N0),
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _Right._Mypair._Myval2._Myptr() + _Roff, _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count));
     }
 
@@ -4210,18 +4210,18 @@ public:
         return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Ptr, _Traits::length(_Ptr));
     }
 
-    _NODISCARD int compare(const size_type _Off, const size_type _N0, _In_z_ const _Elem* const _Ptr) const {
-        // compare [_Off, _Off + _N0) with [_Ptr, <null>)
+    _NODISCARD int compare(const size_type _Off, const size_type _Nx, _In_z_ const _Elem* const _Ptr) const {
+        // compare [_Off, _Off + _Nx) with [_Ptr, <null>)
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _N0),
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _Ptr, _Traits::length(_Ptr));
     }
 
-    _NODISCARD int compare(const size_type _Off, const size_type _N0, _In_reads_(_Count) const _Elem* const _Ptr,
-        const size_type _Count) const { // compare [_Off, _Off + _N0) with [_Ptr, _Ptr + _Count)
+    _NODISCARD int compare(const size_type _Off, const size_type _Nx, _In_reads_(_Count) const _Elem* const _Ptr,
+        const size_type _Count) const { // compare [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         return _Traits_compare<_Traits>(
-            _Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _N0), _Ptr, _Count);
+            _Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx), _Ptr, _Count);
     }
 
 #if _HAS_CXX20

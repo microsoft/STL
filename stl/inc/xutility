@@ -1214,7 +1214,6 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
 }
 #endif // _HAS_IF_CONSTEXPR
 
-
 // FUNCTION TEMPLATE _Get_unwrapped
 template <class _Iter, class = void>
 _INLINE_VAR constexpr bool _Unwrappable_v = false;
@@ -1508,7 +1507,6 @@ _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last)
     return _Idl_distance1<_Checked>(_First, _Last, _Iter_cat_t<_Iter>());
 }
 #endif // _HAS_IF_CONSTEXPR
-
 
 // STRUCT TEMPLATE _Unwrap_enum AND ALIAS
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
