@@ -41,16 +41,13 @@ decltype(auto) _Scoped_outermost(_Alloc& _Al) { // gets the outermost allocator
     return _Scoped_outermost_helper<_Alloc>::_Fn(_Al);
 }
 
-
 // ALIAS TEMPLATE _Scoped_outermost_t
 template <class _Alloc>
 using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD declval<_Alloc&>()))>;
 
-
 // ALIAS TEMPLATE _Scoped_outermost_traits
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
-
 
 // CLASS TEMPLATE _Scoped_base
 template <class _Outer, class... _Inner>

@@ -664,18 +664,18 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const chrono::duratio
     // Every function calling this one is TRANSITION, ABI
     constexpr chrono::nanoseconds _Ten_days{chrono::hours{24} * 10};
     constexpr chrono::duration<double> _Ten_days_d{_Ten_days};
-    chrono::nanoseconds _T0 = chrono::system_clock::now().time_since_epoch();
-    const bool _Clamped     = _Ten_days_d < _Rel_time;
+    chrono::nanoseconds _Tx0 = chrono::system_clock::now().time_since_epoch();
+    const bool _Clamped      = _Ten_days_d < _Rel_time;
     if (_Clamped) {
-        _T0 += _Ten_days;
+        _Tx0 += _Ten_days;
     } else {
-        _T0 += chrono::duration_cast<chrono::nanoseconds>(_Rel_time);
+        _Tx0 += chrono::duration_cast<chrono::nanoseconds>(_Rel_time);
     }
 
-    const auto _Whole_seconds = chrono::duration_cast<chrono::seconds>(_T0);
+    const auto _Whole_seconds = chrono::duration_cast<chrono::seconds>(_Tx0);
     _Xt.sec                   = _Whole_seconds.count();
-    _T0 -= _Whole_seconds;
-    _Xt.nsec = static_cast<long>(_T0.count());
+    _Tx0 -= _Whole_seconds;
+    _Xt.nsec = static_cast<long>(_Tx0.count());
     return _Clamped;
 }
 
