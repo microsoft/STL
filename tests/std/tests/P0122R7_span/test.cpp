@@ -90,6 +90,22 @@ static_assert(is_trivially_copyable_v<span<const int>::iterator>);
 static_assert(is_trivially_copyable_v<span<const int, 3>>);
 static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
 
+// For portability, our implementation provides an additional guarantee beyond the Standard
+// that span has standard layout
+static_assert(is_standard_layout_v<span<int>>);
+static_assert(is_standard_layout_v<span<int>::iterator>);
+static_assert(is_standard_layout_v<span<int, 3>>);
+static_assert(is_standard_layout_v<span<int, 3>::iterator>);
+static_assert(is_standard_layout_v<span<const int>>);
+static_assert(is_standard_layout_v<span<const int>::iterator>);
+static_assert(is_standard_layout_v<span<const int, 3>>);
+static_assert(is_standard_layout_v<span<const int, 3>::iterator>);
+
+// For performance, our implementation provides an additional guarantee beyond the Standard
+// that fixed size span has only the size of a pointer.
+static_assert(sizeof(span<int, 4>) == sizeof(void*));
+static_assert(sizeof(span<int>) == sizeof(void*) + sizeof(size_t));
+
 struct Base {};
 struct Derived : Base {};
 static_assert(is_convertible_v<Derived*, Base*>);

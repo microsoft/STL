@@ -226,29 +226,38 @@ struct pointer_traits<_Span_iterator<_Ty>> {
 };
 
 // STRUCT TEMPLATE _Span_extent_type
-template <size_t _Extent>
+template <class _Ty, size_t _Extent>
 struct _Span_extent_type {
+    using pointer = _Ty*;
+
     constexpr _Span_extent_type() noexcept = default;
 
-    constexpr explicit _Span_extent_type(size_t) noexcept {}
+    constexpr explicit _Span_extent_type(size_t, const pointer _Data) noexcept : _Mydata{_Data} {}
 
     _NODISCARD constexpr size_t size() const noexcept {
         return _Extent;
     }
+
+protected:
+    pointer _Mydata{nullptr};
 };
 
-template <>
-struct _Span_extent_type<dynamic_extent> {
+template <class _Ty>
+struct _Span_extent_type<_Ty, dynamic_extent> {
+    using pointer = _Ty*;
+
     constexpr _Span_extent_type() noexcept = default;
 
-    constexpr explicit _Span_extent_type(const size_t _Size) noexcept : _Mysize(_Size) {}
+    constexpr explicit _Span_extent_type(const size_t _Size, const pointer _Data) noexcept
+        : _Mysize(_Size), _Mydata{_Data} {}
 
     _NODISCARD constexpr size_t size() const noexcept {
         return _Mysize;
     }
 
-private:
+protected:
     size_t _Mysize{0};
+    pointer _Mydata{nullptr};
 };
 
 template <class _Ty, size_t _Size>
@@ -346,7 +355,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v<
 // [views.span]
 // CLASS TEMPLATE span
 template <class _Ty, size_t _Extent = dynamic_extent>
-class span : public _Span_extent_type<_Extent> {
+class span : public _Span_extent_type<_Ty, _Extent> {
 public:
     using element_type     = _Ty;
     using value_type       = remove_cv_t<_Ty>;
@@ -369,7 +378,7 @@ public:
 
     template <_Span_compatible_iterator<element_type> _It>
     constexpr explicit(_Extent != dynamic_extent) span(_It _First, size_type _Count) noexcept // strengthened
-        : _Mybase(_Count), _Mydata(_STD to_address(_Get_unwrapped_n(_First, _Count))) {
+        : _Mybase(_Count, _STD to_address(_Get_unwrapped_n(_First, _Count))) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent,
@@ -381,7 +390,7 @@ public:
     template <_Span_compatible_iterator<element_type> _It, _Span_compatible_sentinel<_It> _Sentinel>
     constexpr explicit(_Extent != dynamic_extent) span(_It _First, _Sentinel _Last)
         noexcept(noexcept(_Last - _First)) // strengthened
-        : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_STD to_address(_First)) {
+        : _Mybase(static_cast<size_type>(_Last - _First), _STD to_address(_First)) {
         _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
@@ -393,21 +402,21 @@ public:
 
     template <size_t _Size>
         requires (_Extent == dynamic_extent || _Extent == _Size)
-    constexpr span(type_identity_t<element_type> (&_Arr)[_Size]) noexcept : _Mybase(_Size), _Mydata(_Arr) {}
+    constexpr span(type_identity_t<element_type> (&_Arr)[_Size]) noexcept : _Mybase(_Size, _Arr) {}
 
     template <class _OtherTy, size_t _Size>
         requires (_Extent == dynamic_extent || _Extent == _Size)
               && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
-    constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
+    constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size, _Arr.data()) {}
 
     template <class _OtherTy, size_t _Size>
         requires (_Extent == dynamic_extent || _Extent == _Size)
               && is_convertible_v<const _OtherTy (*)[], element_type (*)[]>
-    constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
+    constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size, _Arr.data()) {}
 
     template <_Span_compatible_range<element_type> _Rng>
     constexpr explicit(_Extent != dynamic_extent) span(_Rng&& _Range)
-        : _Mybase(static_cast<size_type>(_RANGES size(_Range))), _Mydata(_RANGES data(_Range)) {
+        : _Mybase(static_cast<size_type>(_RANGES size(_Range)), _RANGES data(_Range)) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_RANGES size(_Range) == _Extent,
@@ -421,7 +430,7 @@ public:
               && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
     constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
     span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
-        : _Mybase(_Other.size()), _Mydata(_Other.data()) {
+        : _Mybase(_Other.size(), _Other.data()) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Other.size() == _Extent,
@@ -437,7 +446,7 @@ public:
     constexpr span() noexcept {}
 
     constexpr explicit(_Extent != dynamic_extent) span(pointer _Ptr, size_type _Count) noexcept // strengthened
-        : _Mybase(_Count), _Mydata(_Ptr) {
+        : _Mybase(_Count, _Ptr) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent,
@@ -447,7 +456,7 @@ public:
     }
 
     constexpr explicit(_Extent != dynamic_extent) span(pointer _First, pointer _Last) noexcept // strengthened
-        : _Mybase(static_cast<size_type>(_Last - _First)), _Mydata(_First) {
+        : _Mybase(static_cast<size_type>(_Last - _First), _First) {
         _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
@@ -458,23 +467,23 @@ public:
     }
 
     template <size_t _Size, enable_if_t<_Extent == dynamic_extent || _Extent == _Size, int> = 0>
-    constexpr span(element_type (&_Arr)[_Size]) noexcept : _Mybase(_Size), _Mydata(_Arr) {}
+    constexpr span(element_type (&_Arr)[_Size]) noexcept : _Mybase(_Size, _Arr) {}
 
     template <class _OtherTy, size_t _Size,
         enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _Size>,
                         is_convertible<_OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
-    constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
+    constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size, _Arr.data()) {}
 
     template <class _OtherTy, size_t _Size,
         enable_if_t<conjunction_v<bool_constant<_Extent == dynamic_extent || _Extent == _Size>,
                         is_convertible<const _OtherTy (*)[], element_type (*)[]>>,
             int> = 0>
-    constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size), _Mydata(_Arr.data()) {}
+    constexpr span(const array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Size, _Arr.data()) {}
 
     template <class _Rng, enable_if_t<_Is_span_compatible_range<_Rng, element_type>, int> = 0>
     constexpr explicit(_Extent != dynamic_extent) span(_Rng& _Range)
-        : _Mybase(static_cast<size_type>(_STD size(_Range))), _Mydata(_STD data(_Range)) {
+        : _Mybase(static_cast<size_type>(_STD size(_Range)), _STD data(_Range)) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_STD size(_Range) == _Extent,
@@ -485,7 +494,7 @@ public:
 
     template <class _Rng, enable_if_t<_Is_span_compatible_range<const _Rng, element_type>, int> = 0>
     constexpr explicit(_Extent != dynamic_extent) span(const _Rng& _Range)
-        : _Mybase(static_cast<size_type>(_STD size(_Range))), _Mydata(_STD data(_Range)) {
+        : _Mybase(static_cast<size_type>(_STD size(_Range)), _STD data(_Range)) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_STD size(_Range) == _Extent,
@@ -501,7 +510,7 @@ public:
             int> = 0>
     constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
         span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
-        : _Mybase(_Other.size()), _Mydata(_Other.data()) {
+        : _Mybase(_Other.size(), _Other.data()) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Other.size() == _Extent,
@@ -660,9 +669,8 @@ public:
     }
 
 private:
-    using _Mybase = _Span_extent_type<_Extent>;
-
-    pointer _Mydata{nullptr};
+    using _Mybase = _Span_extent_type<_Ty, _Extent>;
+    using _Mybase::_Mydata;
 };
 
 // DEDUCTION GUIDES
