@@ -529,7 +529,7 @@ public:
         }
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
-            _STL_VERIFY(_Count <= this->size(), "Count out of range in span::first()");
+            _STL_VERIFY(_Count <= size(), "Count out of range in span::first()");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return span<element_type, _Count>{_Mydata, _Count};
@@ -538,7 +538,7 @@ public:
     _NODISCARD constexpr auto first(const size_type _Count) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Count <= this->size(), "Count out of range in span::first(count)");
+        _STL_VERIFY(_Count <= size(), "Count out of range in span::first(count)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return span<element_type, dynamic_extent>{_Mydata, _Count};
     }
@@ -550,17 +550,17 @@ public:
         }
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
-            _STL_VERIFY(_Count <= this->size(), "Count out of range in span::last()");
+            _STL_VERIFY(_Count <= size(), "Count out of range in span::last()");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return span<element_type, _Count>{_Mydata + (this->size() - _Count), _Count};
+        return span<element_type, _Count>{_Mydata + (size() - _Count), _Count};
     }
 
     _NODISCARD constexpr auto last(const size_type _Count) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Count <= this->size(), "Count out of range in span::last(count)");
+        _STL_VERIFY(_Count <= size(), "Count out of range in span::last(count)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return span<element_type, dynamic_extent>{_Mydata + (this->size() - _Count), _Count};
+        return span<element_type, dynamic_extent>{_Mydata + (size() - _Count), _Count};
     }
 
     template <size_t _Offset, size_t _Count = dynamic_extent>
@@ -572,62 +572,64 @@ public:
         }
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
-            _STL_VERIFY(_Offset <= this->size(), "Offset out of range in span::subspan()");
+            _STL_VERIFY(_Offset <= size(), "Offset out of range in span::subspan()");
 
             if constexpr (_Count != dynamic_extent) {
-                _STL_VERIFY(_Count <= this->size() - _Offset, "Count out of range in span::subspan()");
+                _STL_VERIFY(_Count <= size() - _Offset, "Count out of range in span::subspan()");
             }
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         using _ReturnType = span<element_type,
             _Count != dynamic_extent ? _Count : (_Extent != dynamic_extent ? _Extent - _Offset : dynamic_extent)>;
-        return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
+        return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? size() - _Offset : _Count};
     }
 
     _NODISCARD constexpr auto subspan(const size_type _Offset, const size_type _Count = dynamic_extent) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Offset <= this->size(), "Offset out of range in span::subspan(offset, count)");
-        _STL_VERIFY(_Count == dynamic_extent || _Count <= this->size() - _Offset,
+        _STL_VERIFY(_Offset <= size(), "Offset out of range in span::subspan(offset, count)");
+        _STL_VERIFY(_Count == dynamic_extent || _Count <= size() - _Offset,
             "Count out of range in span::subspan(offset, count)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         using _ReturnType = span<element_type, dynamic_extent>;
-        return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? this->size() - _Offset : _Count};
+        return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? size() - _Offset : _Count};
     }
 
     // [span.obs] Observers
+    using _Span_extent_type<_Ty, _Extent>::size;
+
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->size() <= dynamic_extent / sizeof(element_type),
+        _STL_VERIFY(size() <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return this->size() * sizeof(element_type);
+        return size() * sizeof(element_type);
     }
 
     _NODISCARD constexpr bool empty() const noexcept {
-        return this->size() == 0;
+        return size() == 0;
     }
 
     // [span.elem] Element access
     _NODISCARD constexpr reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Off < this->size(), "span index out of range");
+        _STL_VERIFY(_Off < size(), "span index out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[_Off];
     }
 
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->size() > 0, "front of empty span");
+        _STL_VERIFY(size() > 0, "front of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[0];
     }
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->size() > 0, "back of empty span");
+        _STL_VERIFY(size() > 0, "back of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return _Mydata[this->size() - 1];
+        return _Mydata[size() - 1];
     }
 
     _NODISCARD constexpr pointer data() const noexcept {
@@ -637,14 +639,14 @@ public:
     // [span.iterators] Iterator support
     _NODISCARD constexpr iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
-        return {_Mydata, _Mydata, _Mydata + this->size()};
+        return {_Mydata, _Mydata, _Mydata + size()};
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_Mydata};
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
     _NODISCARD constexpr iterator end() const noexcept {
-        const auto _End = _Mydata + this->size();
+        const auto _End = _Mydata + size();
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return {_End, _Mydata, _End};
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
@@ -665,7 +667,7 @@ public:
     }
 
     _NODISCARD constexpr pointer _Unchecked_end() const noexcept {
-        return _Mydata + this->size();
+        return _Mydata + size();
     }
 
 private:
