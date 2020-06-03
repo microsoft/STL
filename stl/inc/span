@@ -249,7 +249,7 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     constexpr _Span_extent_type() noexcept = default;
 
     constexpr explicit _Span_extent_type(const size_t _Size, const pointer _Data) noexcept
-        : _Mysize(_Size), _Mydata{_Data} {}
+        : _Mysize{_Size}, _Mydata{_Data} {}
 
     _NODISCARD constexpr size_t size() const noexcept {
         return _Mysize;
@@ -356,6 +356,9 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v<
 // CLASS TEMPLATE span
 template <class _Ty, size_t _Extent = dynamic_extent>
 class span : public _Span_extent_type<_Ty, _Extent> {
+    using _Mybase = _Span_extent_type<_Ty, _Extent>;
+    using _Mybase::_Mydata;
+
 public:
     using element_type     = _Ty;
     using value_type       = remove_cv_t<_Ty>;
@@ -596,7 +599,7 @@ public:
     }
 
     // [span.obs] Observers
-    using _Span_extent_type<_Ty, _Extent>::size;
+    using _Mybase::size;
 
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -669,10 +672,6 @@ public:
     _NODISCARD constexpr pointer _Unchecked_end() const noexcept {
         return _Mydata + size();
     }
-
-private:
-    using _Mybase = _Span_extent_type<_Ty, _Extent>;
-    using _Mybase::_Mydata;
 };
 
 // DEDUCTION GUIDES
