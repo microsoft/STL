@@ -91,7 +91,7 @@ static_assert(is_trivially_copyable_v<span<const int, 3>>);
 static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
 
 // For portability, our implementation provides an additional guarantee beyond the Standard
-// that span has standard layout
+// that span and its iterators are standard-layout.
 static_assert(is_standard_layout_v<span<int>>);
 static_assert(is_standard_layout_v<span<int>::iterator>);
 static_assert(is_standard_layout_v<span<int, 3>>);
