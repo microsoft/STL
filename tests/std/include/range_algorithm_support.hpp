@@ -123,6 +123,32 @@ namespace test {
         }
     };
 
+    template <class Category, class Element>
+    class proxy_reference {
+        Element& ref_;
+
+        using ValueType = std::remove_cv_t<Element>;
+
+    public:
+        constexpr explicit proxy_reference(Element& ref) : ref_{ref} {}
+
+        constexpr proxy_reference const& operator=(proxy_reference const& that) const
+            requires assignable_from<Element&, Element&> {
+            ref_ = that.ref_;
+            return *this;
+        }
+
+        // clang-format off
+        constexpr operator ValueType() const requires derived_from<Category, input> && copy_constructible<ValueType> {
+            return ref_;
+        }
+        // clang-format on
+
+        constexpr void operator=(ValueType const& val) const requires assignable_from<Element&, ValueType const&> {
+            ref_ = val;
+        }
+    };
+
     // clang-format off
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
@@ -138,33 +164,10 @@ namespace test {
     class iterator {
         Element* ptr_;
 
-        using ValueType = std::remove_cv_t<Element>;
-
         template <class T>
         static constexpr bool at_least = derived_from<Category, T>;
 
-        class proxy_reference {
-            Element& ref_;
-
-        public:
-            constexpr explicit proxy_reference(Element& ref) : ref_{ref} {}
-
-            constexpr proxy_reference const& operator=(proxy_reference const& that) const
-                requires assignable_from<Element&, Element&> {
-                ref_ = that.ref_;
-                return *this;
-            }
-
-            constexpr operator ValueType() const requires at_least<input> && copy_constructible<ValueType> {
-                return ref_;
-            }
-
-            constexpr void operator=(ValueType const& val) const requires assignable_from<Element&, ValueType const&> {
-                ref_ = val;
-            }
-        };
-
-        using ReferenceType = conditional_t<Proxy, proxy_reference, Element&>;
+        using ReferenceType = conditional_t<Proxy, proxy_reference<Category, Element>, Element&>;
 
     public:
         // output iterator operations
@@ -240,7 +243,7 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend ValueType iter_move(iterator const& i) requires at_least<input> {
+        [[nodiscard]] constexpr friend std::remove_cv_t<Element> iter_move(iterator const& i) requires at_least<input> {
             return ranges::iter_move(i.ptr_);
         }
 
