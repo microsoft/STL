@@ -4,7 +4,7 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  agentPool: 'StlBuild-2020-05-20'
+  agentPool: 'StlBuild-2020-06-03'
   tmpDir: 'D:\Temp'
 
 stages:
