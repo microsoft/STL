@@ -348,7 +348,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v<
 // [views.span]
 // CLASS TEMPLATE span
 template <class _Ty, size_t _Extent = dynamic_extent>
-class span : public _Span_extent_type<_Ty, _Extent> {
+class span : private _Span_extent_type<_Ty, _Extent> {
     using _Mybase = _Span_extent_type<_Ty, _Extent>;
     using _Mybase::_Mydata;
     using _Mybase::_Mysize;
