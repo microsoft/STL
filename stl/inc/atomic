@@ -663,13 +663,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         // non-atomically initialize this atomic
     }
 
-#ifdef _M_IX86 // TRANSITION, DevCom-986061
-    void store(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
-        // store with (effectively) sequential consistency
-        _Check_store_memory_order(_Order);
-        (void) exchange(_Value, _Order);
-    }
-#else // ^^^ x86, TRANSITION, DevCom-986061 / other machines, x86 after DevCom-986061 fix vvv
     void store(const _Ty _Value) noexcept { // store with sequential consistency
         const auto _Mem           = _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _Atomic_reinterpret_as<long long>(_Value);
@@ -708,7 +701,6 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             return;
         }
     }
-#endif // TRANSITION, DevCom-986061
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<const long long>(_Storage);
