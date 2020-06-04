@@ -599,6 +599,7 @@ public:
 
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
+#pragma warning(suppress : 4127) // conditional expression is a constant
         _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -619,6 +620,7 @@ public:
 
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
+#pragma warning(suppress : 4127) // conditional expression is a constant
         _STL_VERIFY(_Mysize > 0, "front of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[0];
@@ -626,6 +628,7 @@ public:
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
+#pragma warning(suppress : 4127) // conditional expression is a constant
         _STL_VERIFY(_Mysize > 0, "back of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[_Mysize - 1];
