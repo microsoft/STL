@@ -53,14 +53,17 @@ protected:
     _THROW(bad_optional_access{});
 }
 
-struct _Nontrivial_Dummy_type {
-    constexpr _Nontrivial_Dummy_type() noexcept {}
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
 };
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
 template <class _Ty, bool = is_trivially_destructible_v<_Ty>>
 struct _Optional_destruct_base { // either contains a value of _Ty or is empty (trivial destructor)
     union {
-        _Nontrivial_Dummy_type _Dummy;
+        char _Dummy;
         remove_const_t<_Ty> _Value;
     };
     bool _Has_value;
@@ -79,7 +82,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
 template <class _Ty>
 struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty or is empty (non-trivial destructor)
     union {
-        _Nontrivial_Dummy_type _Dummy;
+        char _Dummy;
         remove_const_t<_Ty> _Value;
     };
     bool _Has_value;
