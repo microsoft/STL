@@ -4123,6 +4123,10 @@ _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _O
 }
 
 #if _HAS_IF_CONSTEXPR
+// VARIABLE TEMPLATE _Is_vb_iterator
+template <class _It>
+_INLINE_VAR constexpr bool _Is_vb_iterator = false;
+
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
@@ -4535,7 +4539,9 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
+    if constexpr (_Is_vb_iterator<_FwdIt>) {
+        return _Fill_vbool(_First, _Last, _Val);
+    } else if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated

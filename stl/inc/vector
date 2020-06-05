@@ -2882,6 +2882,63 @@ namespace pmr {
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_IF_CONSTEXPR
+// VARIABLE TEMPLATE _Is_vb_iterator
+template <class _Alloc>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>> = true;
+
+template <class _Alloc>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>> = true;
+
+template <class _FwdIt, class _Ty>
+_CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+    // Set [_First, _Last) to _Val
+    if (_First == _Last) {
+        return;
+    }
+
+    _Vbase* _UFirst            = const_cast<_Vbase*>(_First._Myptr);
+    const _Vbase* const _ULast = _Last._Myptr;
+
+    const auto _FirstSourceMask = _Vbase(-1) << _First._Myoff;
+    const auto _LastSourceMask  = _Vbase(-1) >> (_VBITS - _Last._Myoff);
+    const auto _FirstDestMask   = _Vbase(-1) ^ _FirstSourceMask;
+    const auto _LastDestMask    = _Vbase(-1) ^ _LastSourceMask;
+    const auto _FillVal         = _Val ? _Vbase(-1) : _Vbase(0);
+
+    if (_UFirst == _ULast) {
+        const auto _SourceMask = _FirstSourceMask & _LastSourceMask;
+        const auto _DestMask   = _FirstDestMask | _LastDestMask;
+        *_UFirst               = (*_UFirst & _DestMask) | (_FillVal & _SourceMask);
+        return;
+    }
+
+    *_UFirst = (*_UFirst & _FirstDestMask) | (_FillVal & _FirstSourceMask);
+    ++_UFirst;
+
+    if (true
+#ifdef __cpp_lib_is_constant_evaluated
+        && !_STD is_constant_evaluated()
+#endif // __cpp_lib_is_constant_evaluated
+    ) {
+        const auto _UFirst_ch = reinterpret_cast<const char*>(_UFirst);
+        const auto _ULast_ch  = reinterpret_cast<const char*>(_ULast);
+        const auto _Count_ch  = static_cast<size_t>(_ULast_ch - _UFirst_ch);
+        const auto _ValChar   = static_cast<unsigned char>(_Val ? -1 : 0);
+        _CSTD memset(_UFirst, _ValChar, _Count_ch);
+        _UFirst += _ULast - _UFirst;
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            *_UFirst = _FillVal;
+        }
+    }
+
+    if (_Last._Myoff != 0) {
+        *_UFirst = (*_UFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
+    }
+}
+#endif // _HAS_IF_CONSTEXPR
 _STD_END
 
 #pragma pop_macro("new")
