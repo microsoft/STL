@@ -24,6 +24,19 @@ void test_fill_helper(const size_t length) {
         vector<bool> dest_false(length + 3, true);
         fill(dest_false.begin(), prev(dest_false.end(), 3), false);
         assert(dest_false == result_false);
+
+        vector<bool> result_true_n(length, true);
+        result_true_n.resize(length + 3, false);
+        vector<bool> dest_true_n(length + 3, false);
+        const auto res_fill_n = fill_n(dest_true_n.begin(), length, true);
+        assert(dest_true_n == result_true_n);
+        assert(res_fill_n == prev(dest_true_n.end(), 3));
+
+        vector<bool> result_false_n(length, false);
+        result_false_n.resize(length + 3, true);
+        vector<bool> dest_false_n(length + 3, true);
+        fill_n(dest_false_n.begin(), length, false);
+        assert(dest_false_n == result_false_n);
     }
 
     // With offset
@@ -41,6 +54,21 @@ void test_fill_helper(const size_t length) {
         vector<bool> dest_false(length + 4, true);
         fill(next(dest_false.begin()), prev(dest_false.end(), 3), false);
         assert(dest_false == result_false);
+
+        vector<bool> result_true_n(length, true);
+        result_true_n.resize(length + 3, false);
+        result_true_n.insert(result_true_n.begin(), false);
+        vector<bool> dest_true_n(length + 4, false);
+        const auto res_fill_n = fill_n(next(dest_true_n.begin()), length, true);
+        assert(dest_true_n == result_true_n);
+        assert(res_fill_n == prev(dest_true_n.end(), 3));
+
+        vector<bool> result_false_n(length, false);
+        result_false_n.resize(length + 3, true);
+        result_false_n.insert(result_false_n.begin(), true);
+        vector<bool> dest_false_n(length + 4, true);
+        fill_n(next(dest_false_n.begin()), length, false);
+        assert(dest_false_n == result_false_n);
     }
 }
 

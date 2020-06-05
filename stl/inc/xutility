@@ -4596,7 +4596,11 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
+        if constexpr (_Is_vb_iterator<_OutIt>) {
+            const auto _Last = _Dest + static_cast<typename _OutIt::difference_type>(_Count);
+            _Fill_vbool(_Dest, _Last, _Val);
+            return _Last;
+        } else if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
