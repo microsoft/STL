@@ -102,7 +102,7 @@ static_assert(is_standard_layout_v<span<const int, 3>>);
 static_assert(is_standard_layout_v<span<const int, 3>::iterator>);
 
 // For performance, our implementation provides an additional guarantee beyond the Standard
-// that fixed size span has only the size of a pointer.
+// that fixed-size span has only the size of a pointer.
 static_assert(sizeof(span<int, 4>) == sizeof(void*));
 static_assert(sizeof(span<int>) == sizeof(void*) + sizeof(size_t));
 

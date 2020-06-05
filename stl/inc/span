@@ -234,7 +234,6 @@ struct _Span_extent_type {
 
     constexpr explicit _Span_extent_type(size_t, const pointer _Data) noexcept : _Mydata{_Data} {}
 
-protected:
     pointer _Mydata{nullptr};
     static constexpr size_t _Mysize = _Extent;
 };
@@ -248,7 +247,6 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     constexpr explicit _Span_extent_type(const size_t _Size, const pointer _Data) noexcept
         : _Mydata{_Data}, _Mysize{_Size} {}
 
-protected:
     pointer _Mydata{nullptr};
     size_t _Mysize{0};
 };
@@ -349,6 +347,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v<
 // CLASS TEMPLATE span
 template <class _Ty, size_t _Extent = dynamic_extent>
 class span : private _Span_extent_type<_Ty, _Extent> {
+private:
     using _Mybase = _Span_extent_type<_Ty, _Extent>;
     using _Mybase::_Mydata;
     using _Mybase::_Mysize;
@@ -599,7 +598,7 @@ public:
 
     _NODISCARD constexpr size_type size_bytes() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is a constant
+#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -620,7 +619,7 @@ public:
 
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is a constant
+#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize > 0, "front of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[0];
@@ -628,7 +627,7 @@ public:
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-#pragma warning(suppress : 4127) // conditional expression is a constant
+#pragma warning(suppress : 4127) // conditional expression is constant
         _STL_VERIFY(_Mysize > 0, "back of empty span");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Mydata[_Mysize - 1];
