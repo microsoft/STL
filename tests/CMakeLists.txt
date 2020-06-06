@@ -18,8 +18,7 @@ add_subdirectory(tr1)
 # chance to add to the config map and test directory global properties.
 add_subdirectory(utils/stl-lit)
 
-set(Python_FIND_STRATEGY VERSION)
-find_package(Python3)
+find_package(Python "3.8" REQUIRED COMPONENTS Interpreter)
 
 if(NOT DEFINED LIT_FLAGS)
     list(APPEND LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
@@ -30,4 +29,4 @@ list(APPEND STL_LIT_COMMAND "${STL_LIT_OUTPUT}"
                             "${LIT_FLAGS}"
                             "${STL_LIT_TEST_DIRS}")
 
-add_test(NAME stl COMMAND ${Python3_EXECUTABLE} ${STL_LIT_COMMAND} COMMAND_EXPAND_LISTS)
+add_test(NAME stl COMMAND ${Python_EXECUTABLE} ${STL_LIT_COMMAND} COMMAND_EXPAND_LISTS)

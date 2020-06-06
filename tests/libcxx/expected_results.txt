@@ -29,10 +29,11 @@ std/input.output/file.streams/fstreams/ofstream.members/open_path.pass.cpp FAIL
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
 
 # Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
+# rethrow_if_nested.pass.cpp can crash.
 std/language.support/support.exception/propagation/current_exception.pass.cpp FAIL
 std/language.support/support.exception/propagation/make_exception_ptr.pass.cpp FAIL
 std/language.support/support.exception/propagation/rethrow_exception.pass.cpp FAIL
-std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp FAIL
+std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp SKIPPED
 
 # Testing nonstandard behavior
 std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
@@ -53,6 +54,7 @@ std/language.support/support.limits/support.limits.general/istream.version.pass.
 std/language.support/support.limits/support.limits.general/limits.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/locale.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
 # libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
 std/numerics/bit/bit.pow.two/ceil2.pass.cpp FAIL
@@ -194,7 +196,7 @@ std/containers/unord/unord.multimap/max_size.pass.cpp FAIL
 std/containers/unord/unord.multiset/max_size.pass.cpp FAIL
 std/containers/unord/unord.set/max_size.pass.cpp FAIL
 
-# Requires too great a template instantiation depth for C1XX.
+# Extreme compiler memory consumption.
 std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIPPED
 
 # .verify.cpp tests use clang-verify to validate warnings
@@ -480,31 +482,7 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1032R1 "Miscellaneous constexpr"
-std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/move.pass.cpp FAIL
-
 # C++20 P1135R6 "The C++20 Synchronization Library"
-std/atomics/types.pass.cpp FAIL
 std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp FAIL
 std/thread/thread.barrier/arrive.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_drop.pass.cpp FAIL
@@ -629,7 +607,8 @@ std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get
 
 # STL test bug: We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.
-std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp FAIL
+# move.pass.cpp can crash.
+std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp SKIPPED
 std/localization/locale.categories/category.collate/locale.collate.byname/compare.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.ctype.byname/is_1.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.ctype.byname/is_many.pass.cpp FAIL
@@ -677,8 +656,8 @@ std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
-std/depr/depr.c.headers/stdlib_h.pass.cpp SKIPPED
-std/language.support/support.runtime/cstdlib.pass.cpp SKIPPED
+std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
+std/language.support/support.runtime/cstdlib.pass.cpp FAIL
 
 # OS-11107628 "_Exit allows cleanup in other DLLs"
 std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIPPED
@@ -686,12 +665,9 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
-# Test bug. See VSO-521345 "<cmath> We're missing integral overloads for some math.h functions, including isfinite"
+# Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
 std/numerics/c.math/cmath.pass.cpp FAIL
-
-# Test needs to be updated for P1976R2 "Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges".
-std/containers/views/span.cons/assign.pass.cpp FAIL
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
@@ -702,20 +678,14 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 std/language.support/support.limits/support.limits.general/string.version.pass.cpp FAIL
 
-# Test needs to be updated for LWG-3320 removing span::const_iterator.
-std/containers/views/types.pass.cpp FAIL
-std/containers/views/span.iterators/begin.pass.cpp FAIL
-std/containers/views/span.iterators/rbegin.pass.cpp FAIL
-std/containers/views/span.iterators/end.pass.cpp FAIL
-std/containers/views/span.iterators/rend.pass.cpp FAIL
+# libc++ expects an old value for `__cpp_lib_array_constexpr` (`201603L`). We've implemented P0858R0, P1023R0, and P1032R1, increasing the value to `201811L`.
+std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
 
-# Test needs to be removed after P2116R0 removed the tuple interface of span
-std/containers/views/span.tuple/get.fail.cpp PASS
-std/containers/views/span.tuple/get.pass.cpp FAIL
-std/containers/views/span.tuple/tuple_element.fail.cpp PASS
-std/containers/views/span.tuple/tuple_element.pass.cpp FAIL
-std/containers/views/span.tuple/tuple_size.fail.cpp PASS
-std/containers/views/span.tuple/tuple_size.pass.cpp FAIL
+# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_tuple` to have the value `201811L`.
+std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
+
+# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_utility` to have the value `201811L`.
+std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
@@ -779,22 +749,22 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.c
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
 
 # Not yet analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
-std/diagnostics/syserr/syserr.compare/eq_error_code_error_code.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.derived/message.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_const_char_pointer.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_string.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_const_char_pointer.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_string.pass.cpp SKIPPED
-std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category.pass.cpp SKIPPED
+std/diagnostics/syserr/syserr.compare/eq_error_code_error_code.pass.cpp FAIL
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.derived/message.pass.cpp FAIL
+std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp FAIL
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_const_char_pointer.pass.cpp FAIL
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_string.pass.cpp FAIL
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code.pass.cpp FAIL
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_const_char_pointer.pass.cpp FAIL
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_string.pass.cpp FAIL
+std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category.pass.cpp FAIL
 
 # libc++ disagrees with libstdc++ and MSVC on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
 std/input.output/iostream.format/input.streams/istream.unformatted/get_pointer_size_chart.pass.cpp FAIL
 std/input.output/iostream.format/input.streams/istream.unformatted/get_pointer_size.pass.cpp FAIL
 
 # Sensitive to implementation details. Assertion failed: test_alloc_base::count == expected_num_allocs
-std/containers/container.requirements/container.requirements.general/allocator_move.pass.cpp SKIPPED
+std/containers/container.requirements/container.requirements.general/allocator_move.pass.cpp FAIL
 
 # Tests std::weak_equality/strong_equality which were removed by P1959R0
 std/language.support/cmp/cmp.common/common_comparison_category.pass.cpp FAIL
@@ -1027,9 +997,6 @@ std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp:0 FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
-
-# Not yet analyzed. Assertion failed: f16_8.out(mbs, c16, c_c16p, c_c16p, c8, c8+4, c8p) == F32_8::ok
-std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp FAIL
 
 # Not yet analyzed. Frequent timeouts
 std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED

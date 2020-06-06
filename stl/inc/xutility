@@ -377,6 +377,13 @@ struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_ty
 template <_Has_member_element_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
+// clang-format off
+template <_Has_member_value_type _Ty> // Per LWG-3446
+    requires _Has_member_element_type<_Ty>
+        && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
+struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
+// clang-format on
+
 // ALIAS TEMPLATE iter_value_t
 template <class _Ty>
 using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
@@ -1207,7 +1214,6 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
 }
 #endif // _HAS_IF_CONSTEXPR
 
-
 // FUNCTION TEMPLATE _Get_unwrapped
 template <class _Iter, class = void>
 _INLINE_VAR constexpr bool _Unwrappable_v = false;
@@ -1434,14 +1440,12 @@ constexpr void _Seek_wrapped(_Ty*& _It, _Ty* const _UIt) {
 #if _HAS_CXX17
 // STRUCT TEMPLATE _Is_allocator
 template <class _Ty, class = void>
-struct _Is_allocator : false_type { // selected when _Ty can't possibly be an allocator
-};
+struct _Is_allocator : false_type {}; // selected when _Ty can't possibly be an allocator
 
 template <class _Ty>
 struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval<_Ty&>().deallocate(
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
-    : true_type { // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
-};
+    : true_type {}; // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
 
 // ALIAS TEMPLATES FOR DEDUCTION GUIDES, N4687 26.4.1 [associative.general]/2
 template <class _Iter>
@@ -1503,7 +1507,6 @@ _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last)
     return _Idl_distance1<_Checked>(_First, _Last, _Iter_cat_t<_Iter>());
 }
 #endif // _HAS_IF_CONSTEXPR
-
 
 // STRUCT TEMPLATE _Unwrap_enum AND ALIAS
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
@@ -1610,8 +1613,8 @@ struct _Priority_tag<0> { // base case priority tag for tag dispatch
 };
 
 template <class _InIt, class _Pr>
-void _Debug_order_set_unchecked2(_InIt, _InIt, _Pr&, input_iterator_tag,
-    _Priority_tag<0>) { // (don't) test if range is ordered by predicate, input iterators or different types
+void _Debug_order_set_unchecked2(_InIt, _InIt, _Pr&, input_iterator_tag, _Priority_tag<0>) {
+    // (don't) test if range is ordered by predicate, input iterators or different types
 }
 
 template <class _FwdIt, class _Pr>
@@ -4652,55 +4655,93 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE equal
-template <class _Elem1, class _Elem2>
-struct _Value_equality_is_bitwise_equality : bool_constant<static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1)> {
-    // Tests whether the usual arithmetic conversions will preserve the bit-pattern when promoting to int
-    // e.g. short == unsigned short -> false
-    //      int == unsigned int -> true
-};
 
-template <class _Elem1, class _Elem2, class _Pr>
-struct _Equal_memcmp_is_safe_helper : false_type {
-    // determines whether it is safe to call memcmp to compare things; defaults to false
-};
+// _Can_memcmp_elements<_Elem1, _Elem2> reports whether `_Elem1 == _Elem2` can be optimized to memcmp.
+// Here, _Elem1 and _Elem2 aren't top-level const, because we remove_const_t before using _Can_memcmp_elements.
 
-template <class _Elem1, class _Elem2>
-struct _Equal_memcmp_is_safe_helper<_Elem1, _Elem2, equal_to<>>
-    : bool_constant<conjunction_v<bool_constant<sizeof(_Elem1) == sizeof(_Elem2)
-                                                && _Is_nonbool_integral<_Elem1> && _Is_nonbool_integral<_Elem2>>,
-          negation<is_volatile<_Elem1>>, negation<is_volatile<_Elem2>>,
-          // order matters here: being integral is a precondition of _Value_equality_is_bitwise_equality
-          _Value_equality_is_bitwise_equality<_Elem1, _Elem2>>> {
-    // allow memcmping same-size integral non-bool non-volatile bitwise types using equal_to<>
-};
-
-template <class _Elem1, class _Elem2>
-struct _Equal_memcmp_is_safe_helper<_Elem1*, _Elem2*, equal_to<>>
-    : is_same<remove_cv_t<_Elem1>, remove_cv_t<_Elem2>>::type {}; // allow memcmping pointers-to-cv-T with equal_to<>
+// Integral types are eligible for memcmp in very specific cases.
+// * They must be the same size. (`int == long` is eligible; `int == long long` isn't.)
+// * They can't be bool. (Not even `bool == bool`; we're concerned about representations other than 0 and 1.)
+// * They can't be volatile.
+// * Finally, the usual arithmetic conversions must preserve bit patterns. (This is true for `int == unsigned int`,
+//   but false for `short == unsigned short`.)
+template <class _Elem1, class _Elem2,
+    bool = sizeof(_Elem1) == sizeof(_Elem2) //
+           && _Is_nonbool_integral<_Elem1> && !is_volatile_v<_Elem1> //
+           && _Is_nonbool_integral<_Elem2> && !is_volatile_v<_Elem2>>
+_INLINE_VAR constexpr bool _Can_memcmp_elements = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 
 #ifdef __cpp_lib_byte
+// Allow memcmping std::byte.
+// inline is required here as explicit specializations of variable templates are problematic in C++14.
+// However, std::byte is C++17 and above so we are safe.
 template <>
-struct _Equal_memcmp_is_safe_helper<byte, byte, equal_to<>> : true_type {}; // allow memcmping std::byte
+inline constexpr bool _Can_memcmp_elements<byte, byte, false> = true;
 #endif // __cpp_lib_byte
 
+// Pointer elements are eligible for memcmp when they point to the same type, ignoring cv-qualification.
+// This handles pointers to object types, pointers to void, and pointers to function types.
+// Performance note: This doesn't attempt to handle `object* == void*`.
+template <class _Ty1, class _Ty2>
+_INLINE_VAR constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = is_same_v<remove_cv_t<_Ty1>, remove_cv_t<_Ty2>>;
+
+template <class _Elem1, class _Elem2>
+_INLINE_VAR constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
+
+// _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr> reports whether `_Pr(_Elem1, _Elem2)` returns
+// `_Elem1 == _Elem2` without performing any type conversions that could affect the memcmp optimization.
+// (It isn't concerned with whether the elements are actually eligible.)
+// Again, _Elem1 and _Elem2 aren't top-level const here.
+template <class _Elem1, class _Elem2, class _Pr>
+_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp = false;
+
+// When all of the types are the same, equal_to<_Elem> is effectively transparent.
+// Performance note: This doesn't attempt to handle equal_to<long>(int, long) or equal_to<const T*>(T*, const T*).
 template <class _Elem>
-struct _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<_Elem>>
-    : _Equal_memcmp_is_safe_helper<_Elem, _Elem, equal_to<>>::type {
-    // treat equal_to with exact T as equal_to<> this is safe because we only activate the optimization for builtin
-    // _Elem (and std::byte)
-};
+_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem, _Elem, equal_to<_Elem>> = true;
+
+// equal_to<> is transparent.
+template <class _Elem1, class _Elem2>
+_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, equal_to<>> = true;
+
+#ifdef __cpp_lib_concepts
+// ranges::equal_to is also transparent.
+template <class _Elem1, class _Elem2>
+_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _RANGES equal_to> = true;
+#endif // __cpp_lib_concepts
+
+// _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _Pr> reports whether the memcmp optimization is applicable,
+// given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element types.)
+// _Elem1 and _Elem2 aren't top-level const here.
+template <class _Elem1, class _Elem2, class _Pr>
+_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = _Can_memcmp_elements<_Elem1, _Elem2> //
+    && _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr>;
+
+// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
+// (Without concepts, this detection is limited, which will limit when we can activate the memcmp optimization.)
+
+#ifdef __cpp_lib_concepts
+// When concepts are available, we can detect arbitrary contiguous iterators.
+template <class _Iter1, class _Iter2>
+_INLINE_VAR constexpr bool _Iterators_are_contiguous = contiguous_iterator<_Iter1> //
+    && contiguous_iterator<_Iter2>;
+#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
+// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
+template <class _Iter1, class _Iter2>
+_INLINE_VAR constexpr bool _Iterators_are_contiguous = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>;
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+// _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
+// for arbitrary iterators and predicates.
+// It ignores top-level constness on the iterators and on the elements.
+template <class _Iter1, class _Iter2, class _Pr>
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = _Iterators_are_contiguous<_Iter1, _Iter2> //
+    && _Can_memcmp_elements_with_pred<remove_const_t<remove_reference_t<_Iter_ref_t<_Iter1>>>,
+        remove_const_t<remove_reference_t<_Iter_ref_t<_Iter2>>>, _Pr>;
 
 template <class _Iter1, class _Iter2, class _Pr>
-false_type _Equal_memcmp_is_safe(const _Iter1&, const _Iter2&, const _Pr&) {
-    // return equal optimization category for arbitrary iterators
-    return {};
-}
-
-template <class _Obj1, class _Obj2, class _Pr>
-typename _Equal_memcmp_is_safe_helper<remove_const_t<_Obj1>, remove_const_t<_Obj2>, _Pr>::type _Equal_memcmp_is_safe(
-    _Obj1* const&, _Obj2* const&, const _Pr&) { // return equal optimization category for pointers
-    return {};
-}
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
+    _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, _Pr>;
 
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
@@ -4710,7 +4751,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-    if constexpr (decltype(_Equal_memcmp_is_safe(_UFirst1, _UFirst2, _Pred))::value) {
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4731,8 +4772,8 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_unchecked1(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred, false_type) {
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
+bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, ...) using _Pred, no special optimization
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         if (!_Pred(*_First1, *_First2)) {
@@ -4743,19 +4784,13 @@ bool _Equal_unchecked1(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr 
     return true;
 }
 
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_unchecked1(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr, true_type) {
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
+bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr) {
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
     const auto _First1_ch = reinterpret_cast<const char*>(_First1);
     const auto _First2_ch = reinterpret_cast<const char*>(_First2);
     const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-}
-
-template <class _InIt1, class _InIt2, class _Pr>
-bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred, choose optimization
-    return _Equal_unchecked1(_First1, _Last1, _First2, _Pred, _Equal_memcmp_is_safe(_First1, _First2, _Pred));
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
@@ -5043,10 +5078,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 #endif // __cpp_lib_byte
                           conjunction<_Is_character<_Ty1>, is_unsigned<_Ty1>, _Is_character<_Ty2>,
                               is_unsigned<_Ty2>>>>) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
+        if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
             const int _Ans   = _CSTD memcmp(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
@@ -5799,13 +5831,11 @@ private:
 
 // STRUCT TEMPLATE _Has_allocator_type
 template <class _Ty, class _Alloc, class = void>
-struct _Has_allocator_type : false_type { // tests for suitable _Ty::allocator_type
-};
+struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
 
 template <class _Ty, class _Alloc>
 struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
-    : is_convertible<_Alloc, typename _Ty::allocator_type>::type { // tests for suitable _Ty::allocator_type
-};
+    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
 
 // STRUCT allocator_arg_t
 struct allocator_arg_t { // tag type for added allocator argument
@@ -5823,8 +5853,8 @@ _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 
 // STRUCT TEMPLATE uses_allocator
 template <class _Ty, class _Alloc>
-struct uses_allocator
-    : _Has_allocator_type<_Ty, _Alloc>::type { // determine whether _Ty has an allocator_type member type
+struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
+    // determine whether _Ty has an allocator_type member type
 };
 
 template <class _Ty, class _Alloc>

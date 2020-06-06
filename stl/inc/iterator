@@ -38,27 +38,28 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */ : container(_STD addressof(_Cont)) {}
+    _CONSTEXPR20 explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
+        : container(_STD addressof(_Cont)) {}
 
-    back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
+    _CONSTEXPR20 back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
         container->push_back(_Val);
         return *this;
     }
 
-    back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
+    _CONSTEXPR20 back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
         container->push_back(_STD move(_Val));
         return *this;
     }
 
-    _NODISCARD back_insert_iterator& operator*() noexcept /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 back_insert_iterator& operator*() noexcept /* strengthened */ {
         return *this;
     }
 
-    back_insert_iterator& operator++() noexcept /* strengthened */ {
+    _CONSTEXPR20 back_insert_iterator& operator++() noexcept /* strengthened */ {
         return *this;
     }
 
-    back_insert_iterator operator++(int) noexcept /* strengthened */ {
+    _CONSTEXPR20 back_insert_iterator operator++(int) noexcept /* strengthened */ {
         return *this;
     }
 
@@ -68,7 +69,7 @@ protected:
 
 // FUNCTION TEMPLATE back_inserter
 template <class _Container>
-_NODISCARD back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
     // return a back_insert_iterator
     return back_insert_iterator<_Container>(_Cont);
 }
@@ -92,27 +93,28 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
+    _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
-    front_insert_iterator& operator=(const typename _Container::value_type& _Val) { // push value into container
+    _CONSTEXPR20 front_insert_iterator& operator=(const typename _Container::value_type& _Val) {
+        // push value into container
         container->push_front(_Val);
         return *this;
     }
 
-    front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+    _CONSTEXPR20 front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
         container->push_front(_STD move(_Val));
         return *this;
     }
 
-    _NODISCARD front_insert_iterator& operator*() { // pretend to return designated value
+    _NODISCARD _CONSTEXPR20 front_insert_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
-    front_insert_iterator& operator++() { // pretend to preincrement
+    _CONSTEXPR20 front_insert_iterator& operator++() { // pretend to preincrement
         return *this;
     }
 
-    front_insert_iterator operator++(int) { // pretend to postincrement
+    _CONSTEXPR20 front_insert_iterator operator++(int) { // pretend to postincrement
         return *this;
     }
 
@@ -122,10 +124,9 @@ protected:
 
 // FUNCTION TEMPLATE front_inserter
 template <class _Container>
-_NODISCARD front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
+_NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
     return front_insert_iterator<_Container>(_Cont);
 }
-
 
 // CLASS TEMPLATE insert_iterator
 template <class _Container>
@@ -146,32 +147,31 @@ public:
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
-    insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
+    _CONSTEXPR20 insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
         : container(_STD addressof(_Cont)), iter(_Where) {}
 
-    insert_iterator& operator=(
-        const typename _Container::value_type& _Val) { // insert into container and increment stored iterator
+    _CONSTEXPR20 insert_iterator& operator=(const typename _Container::value_type& _Val) {
+        // insert into container and increment stored iterator
         iter = container->insert(iter, _Val);
         ++iter;
         return *this;
     }
 
-    insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
-
+    _CONSTEXPR20 insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
         iter = container->insert(iter, _STD move(_Val));
         ++iter;
         return *this;
     }
 
-    _NODISCARD insert_iterator& operator*() { // pretend to return designated value
+    _NODISCARD _CONSTEXPR20 insert_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
-    insert_iterator& operator++() { // pretend to preincrement
+    _CONSTEXPR20 insert_iterator& operator++() { // pretend to preincrement
         return *this;
     }
 
-    insert_iterator& operator++(int) { // pretend to postincrement
+    _CONSTEXPR20 insert_iterator& operator++(int) { // pretend to postincrement
         return *this;
     }
 
@@ -182,7 +182,7 @@ protected:
 
 // FUNCTION TEMPLATE inserter
 template <class _Container>
-_NODISCARD insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
+_NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
 
@@ -297,7 +297,6 @@ _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
     const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
     return !(_Left == _Right);
 }
-
 
 // CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>

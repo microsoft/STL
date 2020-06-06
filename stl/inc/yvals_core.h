@@ -150,6 +150,7 @@
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
+// P0586R2 Integer Comparison Functions
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
@@ -174,6 +175,7 @@
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
+// P1032R1 Miscellaneous constexpr
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
 // P1207R4 Movability Of Single-Pass Iterators
@@ -1130,10 +1132,12 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
-#define __cpp_lib_atomic_float      201711L
-#define __cpp_lib_atomic_shared_ptr 201711L
-#define __cpp_lib_bind_front        201907L
-#define __cpp_lib_bit_cast          201806L
+#define __cpp_lib_atomic_flag_test              201907L
+#define __cpp_lib_atomic_float                  201711L
+#define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_shared_ptr             201711L
+#define __cpp_lib_bind_front                    201907L
+#define __cpp_lib_bit_cast                      201806L
 
 #ifdef __clang__ // TRANSITION, VSO-1020212
 // a future MSVC update will embed CPU feature detection into <bit> intrinsics
@@ -1150,10 +1154,15 @@
 #define __cpp_lib_concepts 201907L
 #endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
 
-#define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_complex    201711L
-#define __cpp_lib_constexpr_memory     201811L
-#define __cpp_lib_constexpr_numeric    201911L
+#define __cpp_lib_constexpr_algorithms  201806L
+#define __cpp_lib_constexpr_complex     201711L
+#define __cpp_lib_constexpr_functional  201811L
+#define __cpp_lib_constexpr_iterator    201811L
+#define __cpp_lib_constexpr_memory      201811L
+#define __cpp_lib_constexpr_numeric     201911L
+#define __cpp_lib_constexpr_string_view 201811L
+#define __cpp_lib_constexpr_tuple       201811L
+#define __cpp_lib_constexpr_utility     201811L
 
 #ifdef __cpp_impl_destroying_delete
 #define __cpp_lib_destroying_delete 201806L
@@ -1167,23 +1176,24 @@
 #define __cpp_lib_int_pow2 202002L
 #endif
 
-#define __cpp_lib_is_constant_evaluated   201811L
-#define __cpp_lib_is_nothrow_convertible  201806L
-#define __cpp_lib_list_remove_return_type 201806L
-#define __cpp_lib_math_constants          201907L
-#define __cpp_lib_remove_cvref            201711L
-#define __cpp_lib_shift                   201806L
-#define __cpp_lib_span                    202002L
-#define __cpp_lib_ssize                   201902L
-#define __cpp_lib_starts_ends_with        201711L
-#define __cpp_lib_to_address              201711L
-#define __cpp_lib_to_array                201907L
-#define __cpp_lib_type_identity           201806L
-#define __cpp_lib_unwrap_ref              201811L
+#define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_is_constant_evaluated        201811L
+#define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_list_remove_return_type      201806L
+#define __cpp_lib_math_constants               201907L
+#define __cpp_lib_remove_cvref                 201711L
+#define __cpp_lib_shift                        201806L
+#define __cpp_lib_span                         202002L
+#define __cpp_lib_ssize                        201902L
+#define __cpp_lib_starts_ends_with             201711L
+#define __cpp_lib_to_address                   201711L
+#define __cpp_lib_to_array                     201907L
+#define __cpp_lib_type_identity                201806L
+#define __cpp_lib_unwrap_ref                   201811L
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
-#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
 #endif // _HAS_CXX17

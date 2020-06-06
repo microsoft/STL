@@ -226,7 +226,6 @@ concept equality_comparable_with = equality_comparable<_Ty1> && equality_compara
     && equality_comparable<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>>
     && _Weakly_equality_comparable_with<_Ty1, _Ty2>;
 
-
 // CONCEPT _Partially_ordered_with
 template <class _Ty1, class _Ty2>
 concept _Half_ordered = requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {

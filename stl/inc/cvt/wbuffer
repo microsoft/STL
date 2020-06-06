@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 // wostream mywcout(&mybuf); // construct wide ostream object
 // mywcout << static_cast<wchar_t>(0x80); // writes 0xc2 0x80
 
-
 namespace stdext {
     namespace cvt {
 
