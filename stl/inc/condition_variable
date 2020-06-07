@@ -39,14 +39,12 @@ public:
     condition_variable_any& operator=(const condition_variable_any&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
-        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-        lock_guard<mutex> _Guard{*_Ptr};
+        lock_guard<mutex> _Guard{*_Myptr};
         _Cnd_signal(_Mycnd());
     }
 
     void notify_all() noexcept { // wake up all waiters
-        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-        lock_guard<mutex> _Guard{*_Ptr};
+        lock_guard<mutex> _Guard{*_Myptr};
         _Cnd_broadcast(_Mycnd());
     }
 
