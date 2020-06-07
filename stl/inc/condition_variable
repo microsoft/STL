@@ -115,14 +115,13 @@ public:
     }
 
     template <class _Lock>
-    [[deprecated("This extension is deprecated and WILL BE REMOVED.")]] cv_status wait_until(
-        _Lock& _Lck, const xtime* const _Abs_time) { // wait for signal with timeout
+    cv_status wait_until(_Lock& _Lck, const xtime* const _Abs_time) { // wait for signal with timeout
         return _Wait_until(_Lck, _Abs_time);
     }
 
     template <class _Lock, class _Predicate>
-    [[deprecated("This extension is deprecated and WILL BE REMOVED.")]] bool wait_until(_Lock& _Lck,
-        const xtime* const _Abs_time, _Predicate _Pred) { // wait for signal with timeout and check predicate
+    bool wait_until(_Lock& _Lck, const xtime* const _Abs_time, _Predicate _Pred) {
+        // wait for signal with timeout and check predicate
         while (!_Pred()) {
             if (_Wait_until(_Lck, _Abs_time) == cv_status::timeout) {
                 return _Pred();
