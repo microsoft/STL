@@ -1650,8 +1650,27 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
         // argument is zero, INF, or NaN
         if (_Rho == 0) {
             return complex<_Ty>(_Ty{0}, imag(_Left));
+        } else if (_Ctraits<_Ty>::_Isinf(_Rho)) {
+            const _Ty _Re = real(_Left);
+            const _Ty _Im = imag(_Left);
+
+            if (_Ctraits<_Ty>::_Isinf(_Im)) {
+                return complex<_Ty>(_Ctraits<_Ty>::_Infv(), _Im); // (any, +/-Inf)
+            } else if (_Ctraits<_Ty>::_Isnan(_Im)) {
+                if (_Re < 0) {
+                    return complex<_Ty>(_Im, _Re); // (-Inf, NaN)
+                } else {
+                    return _Left; // (+Inf, NaN)
+                }
+            } else {
+                if (_Re < 0) {
+                    return complex<_Ty>(_Ty{0}, _Ctraits<_Ty>::_Copysign(_Re, _Im)); // (-Inf, finite)
+                } else {
+                    return complex<_Ty>(_Re, _Ctraits<_Ty>::_Copysign(_Ty{0}, _Im)); // (+Inf, finite)
+                }
+            }
         } else {
-            return complex<_Ty>(_Rho, _Rho); // TRANSITION, should properly handle INF
+            return complex<_Ty>(_Rho, _Rho);
         }
     } else { // compute in safest quadrant
         _Ty _Realmag = _Ctraits<_Ty>::ldexp(_Ctraits<_Ty>::_Abs(real(_Left)), -_Leftexp);
