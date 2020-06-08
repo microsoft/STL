@@ -66,8 +66,16 @@ public:
         return (numeric_limits<_Ty>::max)();
     }
 
+    static _Ty _Abs(_Ty _Left) {
+        return static_cast<_Ty>(_Left < 0 ? -_Left : _Left);
+    }
+
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
         return static_cast<_Ty>(_CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right)));
+    }
+
+    static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
+        return static_cast<_Ty>(_Sign < 0 ? -_Abs(_Magnitude) : _Abs(_Magnitude));
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -102,14 +110,16 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        if (_Left == 0 || _Isnan(_Left) || _Isinf(_Left)) {
+            return _Left;
+        }
+
         constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658L;
 
-        bool _Neg = _Left < 0;
+        const _Ty _Old_left = _Left;
         _Ty _Ans;
 
-        if (_Neg) {
-            _Left = -_Left;
-        }
+        _Left = _Abs(_Left);
 
         if (_Left < 2 / _Flt_eps()) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -117,7 +127,7 @@ public:
             _Ans = log(_Left) + _Ln2;
         }
 
-        return static_cast<_Ty>(_Neg ? -_Ans : _Ans);
+        return _Copysign(_Ans, _Old_left);
     }
 
     static _Ty atan2(_Ty _Yval, _Ty _Xval) { // return atan(_Yval / _Xval)
@@ -186,8 +196,16 @@ public:
         return (numeric_limits<long double>::max)();
     }
 
+    static _Ty _Abs(_Ty _Left) {
+        return _CSTD fabsl(_Left);
+    }
+
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
         return _CSTD _LCosh(_Left, _Right);
+    }
+
+    static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
+        return _CSTD copysignl(_Magnitude, _Sign);
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -217,14 +235,16 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        if (_Left == 0 || _Isnan(_Left) || _Isinf(_Left)) {
+            return _Left;
+        }
+
         constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658L;
 
-        const bool _Neg = _Left < 0;
+        const _Ty _Old_left = _Left;
         _Ty _Ans;
 
-        if (_Neg) {
-            _Left = -_Left;
-        }
+        _Left = _Abs(_Left);
 
         if (_Left < 2 / _Flt_eps()) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -232,7 +252,7 @@ public:
             _Ans = log(_Left) + _Ln2;
         }
 
-        return _Neg ? -_Ans : _Ans;
+        return _Copysign(_Ans, _Old_left);
     }
 
     static _Ty atan2(_Ty _Yval, _Ty _Xval) { // return atan(_Yval / _Xval)
@@ -301,8 +321,16 @@ public:
         return (numeric_limits<double>::max)();
     }
 
+    static _Ty _Abs(_Ty _Left) {
+        return _CSTD fabs(_Left);
+    }
+
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
         return _CSTD _Cosh(_Left, _Right);
+    }
+
+    static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
+        return _CSTD copysign(_Magnitude, _Sign);
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -333,14 +361,12 @@ public:
 
     static _Ty asinh(_Ty _Left) {
         if (_Isnan(_Left) || _Isinf(_Left) || _Left == 0) {
-            return 0;
+            return _Left;
         } else { // _Left finite nonzero
-            const bool _Neg = _Left < 0;
+            const _Ty _Old_left = _Left;
             _Ty _Ans;
 
-            if (_Neg) {
-                _Left = -_Left;
-            }
+            _Left = _Abs(_Left);
 
             if (_Left < 2 / _Flt_eps()) {
                 _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -349,7 +375,7 @@ public:
                        + static_cast<_Ty>(0.69314718055994530941723212145817658L);
             }
 
-            return _Neg ? -_Ans : _Ans;
+            return _Copysign(_Ans, _Old_left);
         }
     }
 
@@ -423,8 +449,16 @@ public:
         return (numeric_limits<float>::max)();
     }
 
+    static _Ty _Abs(_Ty _Left) {
+        return _CSTD fabsf(_Left);
+    }
+
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
         return _CSTD _FCosh(_Left, _Right);
+    }
+
+    static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
+        return _CSTD copysignf(_Magnitude, _Sign);
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -454,14 +488,16 @@ public:
     }
 
     static _Ty asinh(_Ty _Left) {
+        if (_Left == 0 || _Isnan(_Left) || _Isinf(_Left)) {
+            return _Left;
+        }
+
         constexpr _Ty _Ln2 = 0.69314718055994530941723212145817658F;
 
-        const bool _Neg = _Left < 0;
+        const _Ty _Old_left = _Left;
         _Ty _Ans;
 
-        if (_Neg) {
-            _Left = -_Left;
-        }
+        _Left = _Abs(_Left);
 
         if (_Left < 2 / _Flt_eps()) {
             _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
@@ -469,7 +505,7 @@ public:
             _Ans = log(_Left) + _Ln2;
         }
 
-        return _Neg ? -_Ans : _Ans;
+        return _Copysign(_Ans, _Old_left);
     }
 
     static _Ty atan2(_Ty _Yval, _Ty _Xval) { // return atan(_Yval / _Xval)
@@ -1210,10 +1246,7 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
         } else {
             _Ux = 0; // (+Inf, finite)
         }
-        _Vx = -_Ctraits<_Ty>::_Infv();
-        if (_Im < 0) {
-            _Vx = -_Vx;
-        }
+        _Vx = -_Ctraits<_Ty>::_Copysign(_Ctraits<_Ty>::_Infv(), _Im);
     } else if (_Ctraits<_Ty>::_Isinf(_Im)) { // (finite, finite)
         _Ux = static_cast<_Ty>(0.50) * _Pi; // (finite, +/-Inf)
         _Vx = -_Im;
@@ -1284,12 +1317,10 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
             _Vx = 0; // (+Inf, finite)
         }
 
-        if (_Im < 0) {
-            _Vx = -_Vx;
-        }
+        _Vx = _Ctraits<_Ty>::_Copysign(_Vx, _Im);
     } else if (_Ctraits<_Ty>::_Isinf(_Im)) { // (finite, +/-Inf)
         _Ux = _Ctraits<_Ty>::_Infv();
-        _Vx = _Im < 0 ? -static_cast<_Ty>(0.50) * _Pi : static_cast<_Ty>(0.50) * _Pi;
+        _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * _Pi, _Im);
     } else { // (finite, finite)
         const complex<_Ty> _Wx = sqrt(complex<_Ty>(_Re - 1, -_Im));
         const complex<_Ty> _Zx = sqrt(complex<_Ty>(_Re + 1, _Im));
@@ -1323,17 +1354,7 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
             }
         }
 
-        bool _Neg = true;
-        if (_Im < 0) {
-            _Im = -_Im;
-        } else {
-            _Neg = false;
-        }
-
         _Vx = 2 * _Ctraits<_Ty>::atan2(imag(sqrt(complex<_Ty>(_Re - 1, _Im))), _Zr);
-        if (_Neg) {
-            _Vx = -_Vx;
-        }
     }
     return complex<_Ty>(_Ux, _Vx);
 }
@@ -1357,14 +1378,14 @@ _NODISCARD complex<_Ty> asinh(const complex<_Ty>& _Left) {
 
         if (_Ctraits<_Ty>::_Isinf(_Im)) { // (+/-Inf, +/-Inf)
             _Ux = _Re;
-            _Vx = _Im < 0 ? -static_cast<_Ty>(0.25) * _Pi : static_cast<_Ty>(0.25) * _Pi;
+            _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.25) * _Pi, _Im);
         } else { // (+/-Inf, finite)
             _Ux = _Re;
-            _Vx = _Im < 0 ? -_Ty{0} : _Ty{0};
+            _Vx = _Ctraits<_Ty>::_Copysign(_Ty{0}, _Im);
         }
     } else if (_Ctraits<_Ty>::_Isinf(_Im)) { // (finite, +/-Inf)
-        _Ux = _Im;
-        _Vx = _Im < 0 ? -static_cast<_Ty>(0.50) * _Pi : static_cast<_Ty>(0.50) * _Pi;
+        _Ux = _Ctraits<_Ty>::_Copysign(_Ctraits<_Ty>::_Infv(), _Re);
+        _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * _Pi, _Im);
     } else { // (finite, finite)
         const complex<_Ty> _Wx = sqrt(complex<_Ty>(1 - _Im, _Re));
         const complex<_Ty> _Zx = sqrt(complex<_Ty>(1 + _Im, -_Re));
@@ -1427,28 +1448,24 @@ _NODISCARD complex<_Ty> atanh(const complex<_Ty>& _Left) {
         _Ux = _Ctraits<_Ty>::_Nanv();
         _Vx = _Ux;
     } else if (_Ctraits<_Ty>::_Isinf(_Re)) { // (+/-Inf, not NaN)
-        _Ux = _Re < 0 ? -_Ty{0} : _Ty{0};
-        _Vx = _Im < 0 ? -_Piby2 : _Piby2;
+        _Ux = _Ctraits<_Ty>::_Copysign(_Ty{0}, _Re);
+        _Vx = _Ctraits<_Ty>::_Copysign(_Piby2, _Im);
     } else { // (finite, not _NaN)
-        _Ty _Magim = _Im < 0 ? -_Im : _Im;
-        bool _Neg  = _Re < 0;
+        const _Ty _Magim  = _Ctraits<_Ty>::_Abs(_Im);
+        const _Ty _Old_re = _Re;
 
-        if (_Neg) {
-            _Re = -_Re;
-        } else {
-            _Im = -_Im;
-        }
+        _Re = _Ctraits<_Ty>::_Abs(_Re);
 
         if (_Arcbig < _Re) { // |re| is large
             _Ty _Fx = _Im / _Re;
 
             _Ux = 1 / _Re / (1 + _Fx * _Fx);
-            _Vx = _Im < 0 ? -_Piby2 : _Piby2;
+            _Vx = _Ctraits<_Ty>::_Copysign(_Piby2, _Im);
         } else if (_Arcbig < _Magim) { // |im| is large
             _Ty _Fx = _Re / _Im;
 
             _Ux = _Fx / _Im / (1 + _Fx * _Fx);
-            _Vx = _Im < 0 ? -_Piby2 : _Piby2;
+            _Vx = _Ctraits<_Ty>::_Copysign(_Piby2, _Im);
         } else if (_Re != 1) { // |re| is small
             _Ty _Refrom1 = 1 - _Re;
             _Ty _Imeps2  = _Magim * _Magim;
@@ -1461,17 +1478,10 @@ _NODISCARD complex<_Ty> atanh(const complex<_Ty>& _Left) {
         } else { // {+/-1, nonzero)
             _Ux = _Ctraits<_Ty>::log(
                 _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::sqrt(4 + _Im * _Im)) / _Ctraits<_Ty>::sqrt(_Magim));
-            _Vx = static_cast<_Ty>(0.50) * (_Piby2 + _Ctraits<_Ty>::atan2(_Magim, 2));
-            if (_Im < 0) {
-                _Vx = -_Vx;
-            }
+            _Vx = _Ctraits<_Ty>::_Copysign(static_cast<_Ty>(0.50) * (_Piby2 + _Ctraits<_Ty>::atan2(_Magim, 2)), _Im);
         }
 
-        if (_Neg) {
-            _Ux = -_Ux;
-        } else {
-            _Vx = -_Vx;
-        }
+        _Ux = _Ctraits<_Ty>::_Copysign(_Ux, _Old_re);
     }
     return complex<_Ty>(_Ux, _Vx);
 }
@@ -1514,13 +1524,8 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
     } else if (_Ctraits<_Ty>::_Isnan(_Bv)) {
         return _Bv; // imaginary component is NaN
     } else { // neither component is NaN or INF
-        if (_Av < 0) {
-            _Av = -_Av;
-        }
-
-        if (_Bv < 0) {
-            _Bv = -_Bv;
-        }
+        _Av = _Ctraits<_Ty>::_Abs(_Av);
+        _Bv = _Ctraits<_Ty>::_Abs(_Bv);
 
         if (_Av < _Bv) { // ensure that |_Bv| <= |_Av|
             _Ty _Tmp = _Av;
@@ -1642,17 +1647,21 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
     _Ty _Rho = _Fabs(_Left, &_Leftexp); // get magnitude and scale factor
 
     if (_Leftexp == 0) {
-        return complex<_Ty>(_Rho, _Rho); // argument is zero, INF, or NaN
+        // argument is zero, INF, or NaN
+        if (_Rho == 0) {
+            return complex<_Ty>(_Ty{0}, imag(_Left));
+        } else {
+            return complex<_Ty>(_Rho, _Rho); // TRANSITION, should properly handle INF
+        }
     } else { // compute in safest quadrant
-        _Ty _Realmag = _Ctraits<_Ty>::ldexp(real(_Left) < 0 ? -real(_Left) : real(_Left), -_Leftexp);
+        _Ty _Realmag = _Ctraits<_Ty>::ldexp(_Ctraits<_Ty>::_Abs(real(_Left)), -_Leftexp);
         _Rho         = _Ctraits<_Ty>::ldexp(_Ctraits<_Ty>::sqrt(2 * (_Realmag + _Rho)), _Leftexp / 2 - 1);
 
         if (0 <= real(_Left)) {
             return complex<_Ty>(_Rho, imag(_Left) / (2 * _Rho));
-        } else if (imag(_Left) < 0) {
-            return complex<_Ty>(-imag(_Left) / (2 * _Rho), -_Rho);
         } else {
-            return complex<_Ty>(imag(_Left) / (2 * _Rho), _Rho);
+            return complex<_Ty>(
+                _Ctraits<_Ty>::_Abs(imag(_Left) / (2 * _Rho)), _Ctraits<_Ty>::_Copysign(_Rho, imag(_Left)));
         }
     }
 }
@@ -1696,13 +1705,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> conj(const complex<_Ty>& _Left) { // return
 template <class _Ty>
 _NODISCARD complex<_Ty> proj(const complex<_Ty>& _Left) { // return complex projection
     if (_Ctraits<_Ty>::_Isinf(real(_Left)) || _Ctraits<_Ty>::_Isinf(imag(_Left))) {
-        _Ty _Imag;
-        if (imag(_Left) < 0) {
-            _Imag = -_Ty{0};
-        } else {
-            _Imag = _Ty{0};
-        }
-
+        const _Ty _Imag = _Ctraits<_Ty>::_Copysign(_Ty{0}, imag(_Left));
         return complex<_Ty>(_Ctraits<_Ty>::_Infv(), _Imag);
     }
 
