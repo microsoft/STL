@@ -1285,7 +1285,7 @@ namespace ranges {
             }
 
             _Seek_wrapped(_First, _STD move(_UFirst));
-            return {_STD move(_UFirst), _STD move(_Result)};
+            return {_STD move(_First), _STD move(_Result)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out>
