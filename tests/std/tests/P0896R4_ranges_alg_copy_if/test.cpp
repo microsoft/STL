@@ -17,6 +17,43 @@ struct not_pair {
     U second;
 
     auto operator<=>(const not_pair&) const = default;
+
+    template <std::size_t I>
+    constexpr friend auto&& get(not_pair& np) noexcept {
+        if constexpr (I == 0) {
+            return np.first;
+        } else {
+            STATIC_ASSERT(I == 1);
+            return np.second;
+        }
+    }
+    template <std::size_t I>
+    constexpr friend auto&& get(not_pair const& np) noexcept {
+        if constexpr (I == 0) {
+            return np.first;
+        } else {
+            STATIC_ASSERT(I == 1);
+            return np.second;
+        }
+    }
+    template <std::size_t I>
+    constexpr friend auto&& get(not_pair&& np) noexcept {
+        if constexpr (I == 0) {
+            return std::move(np).first;
+        } else {
+            STATIC_ASSERT(I == 1);
+            return std::move(np).second;
+        }
+    }
+    template <std::size_t I>
+    constexpr friend auto&& get(not_pair const&& np) noexcept {
+        if constexpr (I == 0) {
+            return std::move(np).first;
+        } else {
+            STATIC_ASSERT(I == 1);
+            return std::move(np).second;
+        }
+    }
 };
 
 constexpr void smoke_test() {

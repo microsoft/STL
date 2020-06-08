@@ -259,3 +259,18 @@ STATIC_ASSERT(ranges::input_range<move_only_range<int>>);
 STATIC_ASSERT(!ranges::forward_range<move_only_range<int>>);
 STATIC_ASSERT(movable<move_only_range<int>>);
 STATIC_ASSERT(!copyable<move_only_range<int>>);
+
+struct instantiate {
+    template <class Range1, class Range2>
+    static constexpr void call() {
+        STATIC_ASSERT(ranges::input_range<Range1>);
+        STATIC_ASSERT(same_as<ranges::range_value_t<Range1>, double>);
+        STATIC_ASSERT(indirectly_writable<ranges::iterator_t<Range1>, const double&>);
+
+        STATIC_ASSERT(ranges::input_range<Range2>);
+        STATIC_ASSERT(same_as<ranges::range_value_t<Range2>, void*>);
+        STATIC_ASSERT(!indirectly_writable<ranges::iterator_t<Range2>, void*>);
+    }
+};
+
+template void test_in_in<instantiate, double, void* const>();

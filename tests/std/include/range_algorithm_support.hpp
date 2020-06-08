@@ -49,20 +49,6 @@ struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
 template <>
 inline constexpr bool ranges::enable_borrowed_range<borrowed<true>> = true;
 
-#ifndef __clang__ // TRANSITION, LLVM-45213
-inline
-#endif
-    constexpr auto get_first = [](auto&& x) -> auto&& {
-    return static_cast<decltype(x)>(x).first;
-};
-
-#ifndef __clang__ // TRANSITION, LLVM-45213
-inline
-#endif
-    constexpr auto get_second = [](auto&& x) -> auto&& {
-    return static_cast<decltype(x)>(x).second;
-};
-
 struct boolish {
     bool value_ = true;
 
@@ -76,7 +62,7 @@ struct boolish {
 };
 
 namespace test {
-    using std::assignable_from, std::copy_constructible, std::conditional_t, std::derived_from, std::exchange,
+    using std::assignable_from, std::conditional_t, std::copy_constructible, std::derived_from, std::exchange,
         std::ptrdiff_t, std::span;
 
     using output     = std::output_iterator_tag;
@@ -131,6 +117,7 @@ namespace test {
 
     public:
         constexpr explicit proxy_reference(Element& ref) : ref_{ref} {}
+        proxy_reference(proxy_reference const&) = default;
 
         constexpr proxy_reference const& operator=(proxy_reference const& that) const
             requires assignable_from<Element&, Element&> {
@@ -147,9 +134,26 @@ namespace test {
         constexpr void operator=(ValueType const& val) const requires assignable_from<Element&, ValueType const&> {
             ref_ = val;
         }
+
+        constexpr Element& peek() const noexcept {
+            return ref_;
+        }
     };
 
     // clang-format off
+    template <class Cat1, class Elem1, class Cat2, class Elem2>
+    constexpr boolish operator==(proxy_reference<Cat1, Elem1> x, proxy_reference<Cat2, Elem2> y) requires requires {
+        { x.peek() == y.peek() } -> std::convertible_to<bool>;
+    } {
+        return {x.peek() == y.peek()};
+    }
+    template <class Cat1, class Elem1, class Cat2, class Elem2>
+    constexpr boolish operator!=(proxy_reference<Cat1, Elem1> x, proxy_reference<Cat2, Elem2> y) requires requires {
+        { x.peek() == y.peek() } -> std::convertible_to<bool>;
+    } {
+        return !(x == y);
+    }
+
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
         bool Sized = derived_from<Category, random>,
@@ -175,8 +179,11 @@ namespace test {
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
-        iterator(iterator&&) = default;
-        iterator& operator=(iterator&&) = default;
+        constexpr iterator(iterator&& that) noexcept : ptr_{exchange(that.ptr_, nullptr)} {}
+        constexpr iterator& operator=(iterator&& that) noexcept {
+            ptr_ = exchange(that.ptr_, nullptr);
+            return *this;
+        }
 
         [[nodiscard]] constexpr Element* base() const& noexcept requires Common {
             return ptr_;
@@ -505,238 +512,256 @@ using ProjectedBinaryPredicate = boolish (*)(unique_tag<Tag1>, unique_tag<Tag2>)
 template <class I1, class I2>
 using BinaryPredicateFor = boolish (*)(std::iter_common_reference_t<I1>, std::iter_common_reference_t<I2>);
 
-template <class Continuation>
+template <class Continuation, class Element = int>
 struct with_writable_iterators {
     template <class... Args>
-    static void call() {
+    static constexpr void call() {
         using namespace test;
 
         // Sized and Common are not significant for "lone" single-pass iterators, so we can ignore them here.
-        Continuation::template call<Args..., iterator<output, int, false, false, false>>();
-        Continuation::template call<Args..., iterator<output, int, false, false, true>>();
-        Continuation::template call<Args..., iterator<input, int, false, false, false>>();
-        Continuation::template call<Args..., iterator<input, int, false, false, true>>();
+        Continuation::template call<Args..., iterator<output, Element, false, false, false>>();
+        Continuation::template call<Args..., iterator<output, Element, false, false, true>>();
+        Continuation::template call<Args..., iterator<input, Element, false, false, false>>();
+        Continuation::template call<Args..., iterator<input, Element, false, false, true>>();
         // For forward and bidi, Common is necessarily true but Sized and Proxy may vary.
-        Continuation::template call<Args..., iterator<fwd, int, false, true, false>>();
-        Continuation::template call<Args..., iterator<fwd, int, false, true, true>>();
-        Continuation::template call<Args..., iterator<fwd, int, true, true, false>>();
-        Continuation::template call<Args..., iterator<fwd, int, true, true, true>>();
+        Continuation::template call<Args..., iterator<fwd, Element, false, true, false>>();
+        Continuation::template call<Args..., iterator<fwd, Element, false, true, true>>();
+        Continuation::template call<Args..., iterator<fwd, Element, true, true, false>>();
+        Continuation::template call<Args..., iterator<fwd, Element, true, true, true>>();
 
-        Continuation::template call<Args..., iterator<bidi, int, false, true, false>>();
-        Continuation::template call<Args..., iterator<bidi, int, false, true, true>>();
-        Continuation::template call<Args..., iterator<bidi, int, true, true, false>>();
-        Continuation::template call<Args..., iterator<bidi, int, true, true, true>>();
+        Continuation::template call<Args..., iterator<bidi, Element, false, true, false>>();
+        Continuation::template call<Args..., iterator<bidi, Element, false, true, true>>();
+        Continuation::template call<Args..., iterator<bidi, Element, true, true, false>>();
+        Continuation::template call<Args..., iterator<bidi, Element, true, true, true>>();
         // Random iterators are Sized and Common - only Proxy varies.
-        Continuation::template call<Args..., iterator<random, int, true, true, false>>();
-        Continuation::template call<Args..., iterator<random, int, true, true, true>>();
+        Continuation::template call<Args..., iterator<random, Element, true, true, false>>();
+        Continuation::template call<Args..., iterator<random, Element, true, true, true>>();
         // Contiguous iterators are totally locked down.
-        Continuation::template call<Args..., iterator<contiguous, int>>();
+        Continuation::template call<Args..., iterator<contiguous, Element>>();
     }
 };
 
-template <class Continuation>
+template <class Continuation, class Element = int>
 struct with_input_ranges {
     template <class... Args>
-    static void call() {
+    static constexpr void call() {
         using namespace test;
 
         // For all ranges, Commmon implies CommonIterators.
         // For single-pass ranges, CommonIterators is uninteresting without Common (there's only one valid iterator
         // value at a time, and no reason to compare it with itself for equality).
-        Continuation::template call<Args..., range<input, int, false, false, false, false, false>>();
-        Continuation::template call<Args..., range<input, int, false, false, false, false, true>>();
-        Continuation::template call<Args..., range<input, int, false, false, true, true, false>>();
-        Continuation::template call<Args..., range<input, int, false, false, true, true, true>>();
+        Continuation::template call<Args..., range<input, Element, false, false, false, false, false>>();
+        Continuation::template call<Args..., range<input, Element, false, false, false, false, true>>();
+        Continuation::template call<Args..., range<input, Element, false, false, true, true, false>>();
+        Continuation::template call<Args..., range<input, Element, false, false, true, true, true>>();
 
-        Continuation::template call<Args..., range<input, int, false, true, false, false, false>>();
-        Continuation::template call<Args..., range<input, int, false, true, false, false, true>>();
-        Continuation::template call<Args..., range<input, int, false, true, true, true, false>>();
-        Continuation::template call<Args..., range<input, int, false, true, true, true, true>>();
+        Continuation::template call<Args..., range<input, Element, false, true, false, false, false>>();
+        Continuation::template call<Args..., range<input, Element, false, true, false, false, true>>();
+        Continuation::template call<Args..., range<input, Element, false, true, true, true, false>>();
+        Continuation::template call<Args..., range<input, Element, false, true, true, true, true>>();
 
-        Continuation::template call<Args..., range<input, int, true, false, false, false, false>>();
-        Continuation::template call<Args..., range<input, int, true, false, false, false, true>>();
-        Continuation::template call<Args..., range<input, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<input, int, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<input, Element, true, false, false, false, false>>();
+        Continuation::template call<Args..., range<input, Element, true, false, false, false, true>>();
+        Continuation::template call<Args..., range<input, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<input, Element, true, false, true, true, true>>();
 
-        Continuation::template call<Args..., range<input, int, true, true, false, false, false>>();
-        Continuation::template call<Args..., range<input, int, true, true, false, false, true>>();
-        Continuation::template call<Args..., range<input, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<input, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<input, Element, true, true, false, false, false>>();
+        Continuation::template call<Args..., range<input, Element, true, true, false, false, true>>();
+        Continuation::template call<Args..., range<input, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<input, Element, true, true, true, true, true>>();
 
         // forward always has CommonIterators; !Sized && SizedSentinel is uninteresting (sized_range is sized_range).
-        Continuation::template call<Args..., range<fwd, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, false, false, false, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, false, false, true, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, false, false, true, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, false, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, true, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, false, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, false, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, true, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, true, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, false, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, false, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, true, true, true>>();
 
         // Ditto always CommonIterators; !Sized && SizedSentinel is uninteresting (ranges::size still works).
-        Continuation::template call<Args..., range<bidi, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, false, false, false, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, false, false, true, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, false, false, true, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, false, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, true, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, false, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, false, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, true, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, true, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, false, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, false, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, true, true, true>>();
 
         // Ditto always CommonIterators; !Sized && SizedSentinel is uninteresting (ranges::size still works), as is
         // !Sized && Common.
-        Continuation::template call<Args..., range<random, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<random, int, false, false, false, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, false, false, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, false, true, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, true, false, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<random, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<random, Element, false, false, false, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, false, false, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, true, false, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, true, true, true, true>>();
 
         // Ditto always CommonIterators; !Sized && SizedSentinel is uninteresting (ranges::size still works), as is
         // !Sized && Common. contiguous also implies !Proxy.
-        Continuation::template call<Args..., range<contiguous, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, true, true, true, false>>();
     }
 };
 
-template <class Continuation>
+template <class Continuation, class Element = int>
 struct with_forward_ranges {
     template <class... Args>
-    static void call() {
+    static constexpr void call() {
         using namespace test;
 
         // forward always has CommonIterators; !Sized && SizedSentinel is uninteresting (sized_range is sized_range).
-        Continuation::template call<Args..., range<fwd, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, false, false, false, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, false, false, true, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, false, false, true, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, false, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, false, true, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, false, true, true>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<fwd, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, false, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, true, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, false, false, true, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, false, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, false, true, true>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<fwd, Element, true, true, true, true, true>>();
 
         // Ditto always CommonIterators; !Sized && SizedSentinel is uninteresting (ranges::size still works).
-        Continuation::template call<Args..., range<bidi, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, false, false, false, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, false, false, true, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, false, false, true, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, false, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, false, true, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, false, true, true>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<bidi, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, false, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, true, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, false, false, true, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, false, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, false, true, true>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<bidi, Element, true, true, true, true, true>>();
 
         // Ditto always CommonIterators; !Sized && SizedSentinel is uninteresting (ranges::size still works), as is
         // !Sized && Common.
-        Continuation::template call<Args..., range<random, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<random, int, false, false, false, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, false, false, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, false, true, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, true, false, true, true>>();
-        Continuation::template call<Args..., range<random, int, true, true, true, true, false>>();
-        Continuation::template call<Args..., range<random, int, true, true, true, true, true>>();
+        Continuation::template call<Args..., range<random, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<random, Element, false, false, false, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, false, false, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, false, true, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, true, false, true, true>>();
+        Continuation::template call<Args..., range<random, Element, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<random, Element, true, true, true, true, true>>();
 
         // Ditto always CommonIterators; !Sized && SizedSentinel is uninteresting (ranges::size still works), as is
         // !Sized && Common. contiguous also implies !Proxy.
-        Continuation::template call<Args..., range<contiguous, int, false, false, false, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, false, false, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, false, true, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, true, false, true, false>>();
-        Continuation::template call<Args..., range<contiguous, int, true, true, true, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, false, false, false, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, false, false, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, false, true, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, true, false, true, false>>();
+        Continuation::template call<Args..., range<contiguous, Element, true, true, true, true, false>>();
     }
 };
 
-template <class Continuation>
+template <class Continuation, class Element = int>
 struct with_input_iterators {
     template <class... Args>
-    static void call() {
+    static constexpr void call() {
         using namespace test;
 
         // Sized and Common are not significant for "lone" single-pass iterators, so we can ignore them here.
-        Continuation::template call<Args..., iterator<input, int, false, false, false>>();
-        Continuation::template call<Args..., iterator<input, int, false, false, true>>();
+        Continuation::template call<Args..., iterator<input, Element, false, false, false>>();
+        Continuation::template call<Args..., iterator<input, Element, false, false, true>>();
         // For forward and bidi, Common is necessarily true but Sized and Proxy may vary.
-        Continuation::template call<Args..., iterator<fwd, int, false, true, false>>();
-        Continuation::template call<Args..., iterator<fwd, int, false, true, true>>();
-        Continuation::template call<Args..., iterator<fwd, int, true, true, false>>();
-        Continuation::template call<Args..., iterator<fwd, int, true, true, true>>();
+        Continuation::template call<Args..., iterator<fwd, Element, false, true, false>>();
+        Continuation::template call<Args..., iterator<fwd, Element, false, true, true>>();
+        Continuation::template call<Args..., iterator<fwd, Element, true, true, false>>();
+        Continuation::template call<Args..., iterator<fwd, Element, true, true, true>>();
 
-        Continuation::template call<Args..., iterator<bidi, int, false, true, false>>();
-        Continuation::template call<Args..., iterator<bidi, int, false, true, true>>();
-        Continuation::template call<Args..., iterator<bidi, int, true, true, false>>();
-        Continuation::template call<Args..., iterator<bidi, int, true, true, true>>();
+        Continuation::template call<Args..., iterator<bidi, Element, false, true, false>>();
+        Continuation::template call<Args..., iterator<bidi, Element, false, true, true>>();
+        Continuation::template call<Args..., iterator<bidi, Element, true, true, false>>();
+        Continuation::template call<Args..., iterator<bidi, Element, true, true, true>>();
         // Random iterators are Sized and Common - only Proxy varies.
-        Continuation::template call<Args..., iterator<random, int, true, true, false>>();
-        Continuation::template call<Args..., iterator<random, int, true, true, true>>();
+        Continuation::template call<Args..., iterator<random, Element, true, true, false>>();
+        Continuation::template call<Args..., iterator<random, Element, true, true, true>>();
         // Contiguous iterators are totally locked down.
-        Continuation::template call<Args..., iterator<contiguous, int>>();
+        Continuation::template call<Args..., iterator<contiguous, Element>>();
     }
 };
 
 template <class Continuation>
 struct with_difference {
     template <class Iterator>
-    static void call() {
+    static constexpr void call() {
         Continuation::template call<Iterator, std::iter_difference_t<Iterator>>();
     }
 };
 
-template <class Instantiator>
-void test_in() {
-    with_input_ranges<Instantiator>::call();
+template <class Instantiator, class Element = int>
+constexpr void test_in() {
+    with_input_ranges<Instantiator, Element>::call();
 }
 
-template <class Instantiator>
-void test_fwd() {
-    with_forward_ranges<Instantiator>::call();
+template <class Instantiator, class Element = int>
+constexpr void test_fwd() {
+    with_forward_ranges<Instantiator, Element>::call();
 }
 
-template <class Instantiator>
-void test_in_in() {
-    with_input_ranges<with_input_ranges<Instantiator>>::call();
+template <class Instantiator, class Element1 = int, class Element2 = int>
+constexpr void test_in_in() {
+    with_input_ranges<with_input_ranges<Instantiator, Element2>, Element1>::call();
 }
 
-template <class Instantiator>
-void test_in_fwd() {
-    with_input_ranges<with_forward_ranges<Instantiator>>::call();
+template <class Instantiator, class Element1 = int, class Element2 = int>
+constexpr void test_in_fwd() {
+    with_input_ranges<with_forward_ranges<Instantiator, Element2>, Element1>::call();
 }
 
-template <class Instantiator>
-void test_fwd_fwd() {
-    with_forward_ranges<with_forward_ranges<Instantiator>>::call();
+template <class Instantiator, class Element1 = int, class Element2 = int>
+constexpr void test_fwd_fwd() {
+    with_forward_ranges<with_forward_ranges<Instantiator, Element2>, Element1>::call();
 }
 
-template <class Instantiator>
-void test_in_write() {
-    with_input_ranges<with_writable_iterators<Instantiator>>::call();
+template <class Instantiator, class Element1 = int, class Element2 = int>
+constexpr void test_in_write() {
+    with_input_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
-template <class Instantiator>
-void test_counted_write() {
-    with_input_iterators<with_difference<with_writable_iterators<Instantiator>>>::call();
+template <class Instantiator, class Element1 = int, class Element2 = int>
+constexpr void test_counted_write() {
+    with_input_iterators<with_difference<with_writable_iterators<Instantiator, Element2>>, Element1>::call();
 }
+
+template <size_t I>
+struct get_nth_fn {
+    template <class T>
+    [[nodiscard]] constexpr auto&& operator()(T&& t) const noexcept requires requires {
+        get<I>(std::forward<T>(t));
+    }
+    { return get<I>(std::forward<T>(t)); }
+
+    template <class T, class Elem>
+    [[nodiscard]] constexpr decltype(auto) operator()(test::proxy_reference<T, Elem> ref) const noexcept
+        requires requires {
+        (*this)(ref.peek());
+    }
+    { return (*this)(ref.peek()); }
+};
+inline constexpr get_nth_fn<0> get_first;
+inline constexpr get_nth_fn<1> get_second;
