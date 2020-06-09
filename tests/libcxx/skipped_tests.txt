@@ -884,11 +884,9 @@ numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_scalar_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
-numerics\complex.number\complex.transcendentals\sqrt.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
 numerics\complex.number\complex.value.ops\polar.pass.cpp
-numerics\complex.number\complex.value.ops\proj.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp
