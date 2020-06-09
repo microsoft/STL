@@ -105,6 +105,10 @@ public:
         return numeric_limits<_Ty>::quiet_NaN();
     }
 
+    static bool _Signbit(_Ty _Left) {
+        return _Left < 0;
+    }
+
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
         return static_cast<_Ty>(_CSTD _Sinh(static_cast<double>(_Left), static_cast<double>(_Right)));
     }
@@ -230,6 +234,10 @@ public:
         return numeric_limits<long double>::quiet_NaN();
     }
 
+    static bool _Signbit(_Ty _Left) {
+        return _STD signbit(_Left);
+    }
+
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
         return _CSTD _LSinh(_Left, _Right);
     }
@@ -353,6 +361,10 @@ public:
 
     static constexpr _Ty _Nanv() { // return NaN
         return numeric_limits<double>::quiet_NaN();
+    }
+
+    static bool _Signbit(_Ty _Left) {
+        return _STD signbit(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -481,6 +493,10 @@ public:
 
     static constexpr _Ty _Nanv() { // return NaN
         return numeric_limits<float>::quiet_NaN();
+    }
+
+    static bool _Signbit(_Ty _Left) {
+        return _STD signbit(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -1598,7 +1614,7 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
 template <class _Ty>
 complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) {
     if (0 <= _Left) {
-        return _Ctraits<_Ty>::pow(_Left, _Right);
+        return complex<_Ty>(_Ctraits<_Ty>::pow(_Left, _Right), _Ctraits<_Ty>::_Copysign(_Ty{0}, _Right));
     } else {
         return exp(_Right * log(complex<_Ty>(_Left)));
     }
@@ -1607,7 +1623,11 @@ complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) {
 template <class _Ty>
 _NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const _Ty& _Right) {
     if (imag(_Left) == 0) {
-        return _Pow(real(_Left), _Right);
+        if (_Ctraits<_Ty>::_Signbit(imag(_Left))) {
+            return conj(_Pow(real(_Left), _Right));
+        } else {
+            return _Pow(real(_Left), _Right);
+        }
     } else {
         return exp(_Right * log(_Left));
     }
@@ -1626,8 +1646,10 @@ _NODISCARD complex<_Ty> pow(const _Ty& _Left, const complex<_Ty>& _Right) {
 
 template <class _Ty>
 _NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
-    if (imag(_Left) == 0) {
-        return pow(real(_Left), _Right);
+    if (imag(_Right) == 0) {
+        return pow(_Left, real(_Right));
+    } else if (imag(_Left) == 0 && 0 < real(_Left)) {
+        return exp(_Right * _Ctraits<_Ty>::log(real(_Left)));
     } else {
         return exp(_Right * log(_Left));
     }
