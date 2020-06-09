@@ -2,7 +2,6 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
-#include <iostream>
 #include <utility>
 #include <range_algorithm_support.hpp>
 
