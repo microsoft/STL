@@ -158,6 +158,7 @@ tests\Dev11_1180290_filesystem_error_code
 tests\GH_000457_system_error_message
 tests\GH_000545_include_compare
 tests\GH_000690_overaligned_function
+tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
