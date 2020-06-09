@@ -2901,11 +2901,11 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     _Vbase* _UFirst            = const_cast<_Vbase*>(_First._Myptr);
     const _Vbase* const _ULast = _Last._Myptr;
 
-    const auto _FirstSourceMask = _Vbase(-1) << _First._Myoff;
-    const auto _LastSourceMask  = _Vbase(-1) >> (_VBITS - _Last._Myoff);
-    const auto _FirstDestMask   = _Vbase(-1) ^ _FirstSourceMask;
-    const auto _LastDestMask    = _Vbase(-1) ^ _LastSourceMask;
-    const auto _FillVal         = _Val ? _Vbase(-1) : _Vbase(0);
+    const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
+    const auto _LastSourceMask  = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+    const auto _FirstDestMask   = static_cast<_Vbase>(~_FirstSourceMask);
+    const auto _LastDestMask    = static_cast<_Vbase>(~_LastSourceMask);
+    const auto _FillVal         = static_cast<_Vbase>(_Val ? -1 : 0);
 
     if (_UFirst == _ULast) {
         const auto _SourceMask = _FirstSourceMask & _LastSourceMask;
