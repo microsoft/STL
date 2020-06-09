@@ -49,6 +49,7 @@ std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_
 std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 
 # libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
+std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/filesystem.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/istream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/limits.version.pass.cpp FAIL
@@ -250,9 +251,6 @@ std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKI
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0019R8 "atomic_ref"
-std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp FAIL
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 std/utilities/time/days.pass.cpp FAIL
 std/utilities/time/months.pass.cpp FAIL
