@@ -943,6 +943,7 @@ class complex : public _Complex_base<_Ty, _Complex_value<_Ty>> {
 public:
     using _Mybase = _Complex_base<_Ty, _Complex_value<_Ty>>;
 
+    _DEPRECATE_NONFLOATING_COMPLEX
     constexpr complex(const _Ty& _Realval = _Ty(), const _Ty& _Imagval = _Ty()) : _Mybase(_Realval, _Imagval) {}
 
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {

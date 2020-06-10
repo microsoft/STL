@@ -983,7 +983,18 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4032
+#if _HAS_CXX20 && !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
+#define _DEPRECATE_NONFLOATING_COMPLEX                                                  \
+    [[deprecated("warning STL4032: "                                                    \
+                 "The effect of instantiating the template complex for any type other " \
+                 "than float, double, or long double is unspecified."                   \
+                 "You can define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING "     \
+                 " acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_NONFLOATING_COMPLEX
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
