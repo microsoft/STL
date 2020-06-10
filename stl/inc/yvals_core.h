@@ -987,9 +987,9 @@
 #define _DEPRECATE_NONFLOATING_COMPLEX                                                  \
     [[deprecated("warning STL4032: "                                                    \
                  "The effect of instantiating the template complex for any type other " \
-                 "than float, double, or long double is unspecified."                   \
-                 "You can define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING "     \
-                 " acknowledge that you have received this warning.")]]
+                 "than float, double, or long double is unspecified. "                  \
+                 "You can define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to "  \
+                 "acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _DEPRECATE_NONFLOATING_COMPLEX
 #endif // ^^^ warning disabled ^^^
