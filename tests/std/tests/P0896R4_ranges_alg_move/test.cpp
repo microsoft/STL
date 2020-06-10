@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 #include <algorithm>
 #include <cassert>
 #include <concepts>
@@ -54,7 +57,7 @@ constexpr void smoke_test() {
         auto result = move(wrapped_input.begin(), wrapped_input.end(), move_only_range{actual_output}.begin());
         assert(result.in == wrapped_input.end());
         assert(result.out == move_only_range{actual_output}.end());
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
              assert(input1[i].val == -1);
              assert(actual_output[i].val == expected_output[i]);
         }
@@ -71,7 +74,7 @@ struct instantiator {
     template <class In, class Out>
     static void call(In&& in = {}, Out out = {}) {
         (void) ranges::move(in, std::move(out));
-        (void) ranges::move(ranges::begin(in), ranges::end(in), std::move(out)); // what is this
+        (void) ranges::move(ranges::begin(in), ranges::end(in), std::move(out));
     }
 };
 

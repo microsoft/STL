@@ -1264,18 +1264,20 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #ifdef __cpp_lib_concepts
-
 namespace ranges {
-    // ALIAS TEMPLATE copy_result
+    // ALIAS TEMPLATE move_result
     template <class _In, class _Out>
     using move_result = in_out_result<_In, _Out>;
 
+    // VARIABLE ranges::move
     class _Move_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
 
+        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
-        requires indirectly_movable<_It, _Out> constexpr move_result<_It, _Out> operator()(
+            requires indirectly_movable<_It, _Out> 
+        constexpr move_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
@@ -1289,16 +1291,17 @@ namespace ranges {
         }
 
         template <input_range _Rng, weakly_incrementable _Out>
-        requires indirectly_movable<iterator_t<_Rng>, _Out> constexpr move_result<borrowed_iterator_t<_Rng>, _Out>
+            requires indirectly_movable<iterator_t<_Rng>, _Out> 
+        constexpr move_result<borrowed_iterator_t<_Rng>, _Out>
             operator()(_Rng&& _Range, _Out _Result) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
         }
+        // clang-format on
     };
 
     inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
-
 
 // FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
@@ -5209,8 +5212,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     return _STD clamp(_Val, _Min_val, _Max_val, less<>());
 }
 #endif // _HAS_CXX17
-
-
 
 _STD_END
 #pragma pop_macro("new")
