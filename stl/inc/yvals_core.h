@@ -983,7 +983,7 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX20 && !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
+#if !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
 #define _DEPRECATE_NONFLOATING_COMPLEX                                                  \
     [[deprecated("warning STL4032: "                                                    \
                  "The effect of instantiating the template complex for any type other " \
