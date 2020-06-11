@@ -29,11 +29,20 @@ constexpr void smoke_test() {
             assert(output2[i] == 13);
         }
         assert(result == std::end(output2));
+    int output[] = {13, 42, 1367};
+    {
+        const int value = 7;
+        auto result = fill(output.begin(), output.end(), value);
+        for (int i = 0; i < 3; ++i) {
+            assert(output[i] == 7);
+        }
+        assert(result == output.end());
     }
 }
 
 int main() {
     STATIC_ASSERT((smoke_test(), true));
+    // STATIC_ASSERT((smoke_test(), true));
     smoke_test();
 }
 
@@ -45,4 +54,4 @@ struct instantiator {
     }
 };
 
-template void test_out<instantiator>();
+template void test_in_out<instantiator>();
