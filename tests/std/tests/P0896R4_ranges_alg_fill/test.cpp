@@ -12,15 +12,25 @@ constexpr void smoke_test() {
     using ranges::fill, ranges::iterator_t;
     using std::same_as;
 
-    int output[] = {13, 42, 1367};
+    int output1[] = {13, 42, 1367};
+    int output2[] = {13, 42, 1367};
     {
         const int value = 7;
-        auto result = fill(std::begin(output), std::end(output), value);
+        auto result = fill(std::begin(output1), std::end(output1), value);
         for (int i = 0; i < 3; ++i) {
-            assert(output[i] == 7);
+            assert(output1[i] == 7);
         }
-        assert(result == std::end(output));
+        assert(result == std::end(output1));
     }
+    {
+        const int value = 13;
+        auto result = fill(output2, value);
+        for (int i = 0; i < 3; ++i) {
+            assert(output2[i] == 13);
+        }
+        assert(result == std::end(output2));
+    }
+
 }
 
 int main() {
