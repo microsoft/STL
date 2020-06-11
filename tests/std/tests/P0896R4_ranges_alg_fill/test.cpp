@@ -15,25 +15,25 @@ constexpr void smoke_test() {
     int output[] = {13, 42, 1367};
     {
         const int value = 7;
-        auto result = fill(output.begin(), output.end(), value);
+        auto result = fill(std::begin(output), std::end(output), value);
         for (int i = 0; i < 3; ++i) {
             assert(output[i] == 7);
         }
-        assert(result == output.end());
+        assert(result == std::end(output));
     }
 }
 
 int main() {
-    // STATIC_ASSERT((smoke_test(), true));
+    STATIC_ASSERT((smoke_test(), true));
     smoke_test();
 }
 
 struct instantiator {
-    template <class In>
-    static void call(In&& in = {}) {
-        (void) ranges::fill(in, SOMETHING);
-        (void) ranges::fill(ranges::begin(in), ranges::end(in), SOMETHING);
+    template <class Out>
+    static void call(Out&& out = {}) {
+        (void) ranges::fill(out, 42);
+        (void) ranges::fill(ranges::begin(out), ranges::end(out), 42);
     }
 };
 
-template void test_in_out<instantiator>();
+template void test_out<instantiator>();

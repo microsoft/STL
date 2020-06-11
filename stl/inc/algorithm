@@ -2390,7 +2390,7 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _FwdIt, class _T>
+    // template <class _FwdIt, class _T>
 
     // VARIABLE ranges::fill
     class _Fill_fn : private _Not_quite_object {
@@ -2414,7 +2414,7 @@ namespace ranges {
 
             template <class _T, output_range<const _T&> _Rng>
             constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _T& _Value) const {
-                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Value)
+                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Value);
             }
         // clang-format on
     };
