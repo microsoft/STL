@@ -2388,6 +2388,41 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <class _FwdIt, class _T>
+
+    // VARIABLE ranges::fill
+    class _Fill_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+            template <class _T, output_iterator<const _T&> _O, sentinel_for<_O> _S>
+            constexpr _O operator()(_O _First, _S _Last, const _T& _Value) const {
+                _Adl_verify_range(_First, _Last);
+                auto _UFirst = _Get_unwrapped(_STD move(_First));
+                auto _ULast = _Get_unwrapped(_STD move(_Last));
+                while (_UFirst != _ULast) {
+                    *_UFirst = _Value;
+                    ++_UFirst;
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
+                return _First;
+            }
+
+            template <class _T, output_range<const _T&> _Rng>
+            constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _T& _Value) const {
+                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Value)
+            }
+        // clang-format on
+    };
+
+    inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE generate
 template <class _FwdIt, class _Fn>
 _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
