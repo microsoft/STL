@@ -52,7 +52,7 @@ constexpr void smoke_test() {
     {
         int_wrapper input1[3] = {13, 55, 1234};
         int expected_output[3] = {13, 55, 1234};
-        int_wrapper actual_output[3] = {-1, -1, -1};
+        int_wrapper actual_output[3] = {-2, -2, -2};
         move_only_range wrapped_input{input1};
         auto result = move(wrapped_input.begin(), wrapped_input.end(), move_only_range{actual_output}.begin());
         assert(result.in == wrapped_input.end());
