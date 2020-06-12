@@ -10,8 +10,9 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-#pragma message("The contents of <coroutine> are only available with standard coroutines. Use <experimental/coroutine> with /await.")
-#else // ^^^ _RESUMABLE_FUNCTIONS_SUPPORTED defined (/await) / _RESUMABLE_FUNCTIONS_SUPPORTED not defined (no /await) vvv
+#pragma message(
+    "The contents of <coroutine> are only available with standard coroutines. Use <experimental/coroutine> with /await.")
+#else // ^^^ /await ^^^ / vvv no /await vvv
 #ifndef __cpp_lib_coroutine
 #pragma message("The contents of <coroutine> are only available with C++20 or later.")
 #else // ^^^ __cpp_lib_coroutine not defined / __cpp_lib_coroutine defined vvv
@@ -163,6 +164,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 
 #endif // __cpp_lib_coroutine
-#endif // defined(_MSC_VER) && defined(__cpp_coroutines)
+#endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _COROUTINE_
