@@ -27,8 +27,10 @@ constexpr void smoke_test() {
     STATIC_ASSERT(same_as<move_result<int, double>, ranges::in_out_result<int, double>>);
 
     // Validate dangling story
-    STATIC_ASSERT(same_as<decltype(move(borrowed<false>{}, static_cast<int*>(nullptr))), move_result<ranges::dangling, int*>>);
-    STATIC_ASSERT(same_as<decltype(move(borrowed<true>{}, static_cast<int*>(nullptr))), move_result<int*, int*>>);
+    STATIC_ASSERT(same_as<decltype(move(borrowed<false>{}, static_cast<int*>(nullptr))), 
+        move_result<ranges::dangling, int*>>);
+    STATIC_ASSERT(same_as<decltype(move(borrowed<true>{}, static_cast<int*>(nullptr))), 
+        move_result<int*, int*>>);
 
     int const input[] = {13, 53, 12435};
     {
@@ -51,7 +53,7 @@ constexpr void smoke_test() {
     }
     {
         int_wrapper input1[3] = {13, 55, 1234};
-        int expected_output[3] = {13, 55, 1234};
+        int const expected_output[3] = {13, 55, 1234};
         int_wrapper actual_output[3] = {-2, -2, -2};
         move_only_range wrapped_input{input1};
         auto result = move(wrapped_input.begin(), wrapped_input.end(), move_only_range{actual_output}.begin());

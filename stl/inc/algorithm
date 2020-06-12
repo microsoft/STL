@@ -1261,9 +1261,7 @@ namespace ranges {
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
-#endif // __cpp_lib_concepts
 
-#ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE move_result
     template <class _In, class _Out>
@@ -1277,8 +1275,7 @@ namespace ranges {
         // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_movable<_It, _Out> 
-        constexpr move_result<_It, _Out> operator()(
-            _It _First, _Se _Last, _Out _Result) const {
+        constexpr move_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
