@@ -51,6 +51,13 @@ struct instantiator {
     }
 };
 
+#ifdef TEST_EVERYTHING
+int main() {
+    // No constepxr test here; this test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation
+    test_fwd_fwd<instantiator, const pair<int, int>, const int>();
+}
+#else // ^^^ test all range combinations // test only interesting range combos vvv
+
 template <class Elem, test::Sized IsSized>
 using fwd_test_range = test::range<forward_iterator_tag, Elem, IsSized, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::yes>;
@@ -62,9 +69,6 @@ constexpr bool run_tests() {
     using Elem1 = const pair<int, int>;
     using Elem2 = const int;
 
-#ifdef TEST_EVERYTHING
-    test_fwd_fwd<instantiator, Elem1, Elem2>();
-#else // ^^^ test all range combinations // test only interesting range combos vvv
     // All proxy reference types, since the algorithm doesn't really care.
     using test::Common, test::Sized;
 
@@ -92,14 +96,12 @@ constexpr bool run_tests() {
         bidi_test_range<Elem2, Sized::yes, Common::yes>>();
     instantiator::call<bidi_test_range<Elem1, Sized::yes, Common::yes>,
         bidi_test_range<Elem2, Sized::yes, Common::yes>>();
-#endif // TEST_EVERYTHING
 
     return true;
 }
 
 int main() {
-#ifndef TEST_EVERYTHING // This crushes the constexpr step limit on our compilers
     STATIC_ASSERT(run_tests());
-#endif // TEST_EVERYTHING
     run_tests();
 }
+#endif // TEST_EVERYTHING

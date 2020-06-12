@@ -943,43 +943,40 @@ namespace ranges {
 
 // FUNCTION TEMPLATE is_permutation
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
-    // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
-        if (!_Pred(*_First1, *_First2)) {
-            // found first inequality, check match counts in suffix
-            //
-            // narrowing _Iter_diff_t<_FwdIt1> to _Iter_diff_t<_FwdIt2> is OK because if the second range is shorter
-            // than the first, the user already triggered UB
-            auto _Last2 = _STD next(_First2, static_cast<_Iter_diff_t<_FwdIt2>>(_STD distance(_First1, _Last1)));
-            return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
-        }
-    }
-
-    return true;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
     _Adl_verify_range(_First1, _Last1);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
-    return _Is_permutation_unchecked(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
+    auto _UFirst1      = _Get_unwrapped(_First1);
+    const auto _ULast1 = _Get_unwrapped(_Last1);
+    auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
+
+    for (;; ++_UFirst1, (void) ++_UFirst2) { // trim matching prefix
+        if (_UFirst1 == _ULast1) { // everything matched
+            return true;
+        }
+
+        if (!_Pred(*_UFirst1, *_UFirst2)) { // found first inequality, check match counts in suffix
+            break;
+        }
+    }
+
+    // Narrowing _Iter_diff_t<_FwdIt1> to _Iter_diff_t<_FwdIt2> is OK because the second range must be at least as long
+    // as the first.
+    const auto _Dist2 = static_cast<_Iter_diff_t<_FwdIt2>>(_STD distance(_UFirst1, _ULast1));
+    return _Check_match_counts(_UFirst1, _ULast1, _UFirst2, _STD next(_UFirst2, _Dist2), _Pred);
 }
 
 template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
-    return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
+    return _STD is_permutation(_First1, _Last1, _First2, equal_to<>{});
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
     forward_iterator_tag, forward_iterator_tag) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, arbitrary iterators
-    for (;;) { // trim matching prefix
+    for (;; ++_First1, (void) ++_First2) { // trim matching prefix
         if (_First1 == _Last1) {
             return _First2 == _Last2;
         }
@@ -991,14 +988,11 @@ _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
         if (!_Pred(*_First1, *_First2)) { // found first inequality, check match counts in suffix
             break;
         }
-
-        ++_First1;
-        ++_First2;
     }
 
     auto _Next1 = _First1;
     auto _Next2 = _First2;
-    for (;;) { // check for same lengths
+    for (;; ++_Next1, (void) ++_Next2) { // check for same lengths
         if (_Next1 == _Last1) {
             if (_Next2 == _Last2) {
                 return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
@@ -1010,9 +1004,6 @@ _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
         if (_Next2 == _Last2) {
             return false; // sequence 1 is longer than sequence 2, not a permutation
         }
-
-        ++_Next1;
-        ++_Next2;
     }
 }
 
@@ -1041,13 +1032,13 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     return _Is_permutation_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>(), _Iter_cat_t<_FwdIt2>());
+        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>{}, _Iter_cat_t<_FwdIt2>{});
 }
 
 template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2)
-    return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -1118,7 +1109,7 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _End1) == _Count);
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _End2) == _Count);
 
-            for (;;) { // Trim matching prefixes
+            for (;; ++_First1, (void) ++_First2, --_Count) { // Trim matching prefixes
                 if (_Count == 0) { // Everything matched
                     return true;
                 }
@@ -1130,10 +1121,6 @@ namespace ranges {
 
                     break;
                 }
-
-                ++_First1;
-                ++_First2;
-                --_Count;
             }
             // If we get here, _Count > 1 and initial elements do not match.
 
@@ -1168,7 +1155,7 @@ namespace ranges {
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Unsized_ranges(
             _It1 _First1, _Se1 _End1, _It2 _First2, _Se2 _End2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            for (;;) { // Trim matching prefixes
+            for (;; ++_First1, (void) ++_First2) { // Trim matching prefixes
                 if (_First1 == _End1) { // first range is a (possibly proper?) prefix of the second
                     return _First2 == _End2;
                 } else if (_First2 == _End2) { // second range is a proper prefix of the first
@@ -1178,9 +1165,6 @@ namespace ranges {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) { // mismatch
                     break;
                 }
-
-                ++_First1;
-                ++_First2;
             }
             // If we get here, initial elements do not match.
 
@@ -1196,10 +1180,8 @@ namespace ranges {
                     }
 
                     return false; // different lengths; not a permutation
-                }
-
-                if (_Last2 == _End2) {
-                    return false; // Ditto
+                } else if (_Last2 == _End2) {
+                    return false; // Ditto different lengths
                 }
             }
             // if we get here, initial elements do not match and ranges have equal lengths.

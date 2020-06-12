@@ -1009,6 +1009,10 @@ namespace ranges {
         concept _Can_swap_references = indirectly_readable<remove_reference_t<_Ty1>>
             && indirectly_readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
+
+        template <class _Ty1, class _Ty2>
+        concept _Bi_movable_storable = indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
+            && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>;
         // clang-format on
 
         template <class _Xty, class _Yty>
@@ -1018,6 +1022,7 @@ namespace ranges {
             *_XVal = iter_move(_YVal);
             return _Tmp;
         }
+
 
         class _Cpo {
         private:
@@ -1029,10 +1034,7 @@ namespace ranges {
                     return {_St::_Custom, noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
                 } else if constexpr (_Can_swap_references<_Ty1, _Ty2>) {
                     return {_St::_Swap, noexcept(_RANGES swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
-                } else if constexpr (
-                    indirectly_movable_storable<remove_reference_t<_Ty1>,
-                        remove_reference_t<
-                            _Ty2>> && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>) {
+                } else if constexpr (_Bi_movable_storable<_Ty1, _Ty2>) {
                     constexpr auto _Nothrow = noexcept(
                         *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty1>(), _STD declval<_Ty2>()));
                     return {_St::_Exchange, _Nothrow};
