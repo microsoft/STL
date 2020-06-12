@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <range_algorithm_support.hpp>
 #include <ranges>
 #include <utility>
-#include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
     using ranges::fill, ranges::iterator_t;
@@ -16,7 +16,7 @@ constexpr void smoke_test() {
     int output2[] = {13, 42, 1367};
     {
         const int value = 7;
-        auto result = fill(std::begin(output1), std::end(output1), value);
+        auto result     = fill(std::begin(output1), std::end(output1), value);
         for (int i = 0; i < 3; ++i) {
             assert(output1[i] == 7);
         }
@@ -24,13 +24,12 @@ constexpr void smoke_test() {
     }
     {
         const int value = 13;
-        auto result = fill(output2, value);
+        auto result     = fill(output2, value);
         for (int i = 0; i < 3; ++i) {
             assert(output2[i] == 13);
         }
         assert(result == std::end(output2));
     }
-
 }
 
 int main() {
