@@ -585,9 +585,11 @@ std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
 std/containers/sequences/array/array.cons/default.pass.cpp FAIL
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
+std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
 std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
 std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/begin.pass.cpp FAIL
+std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
 std/strings/string.view/char.bad.fail.cpp:0 FAIL

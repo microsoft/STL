@@ -1400,8 +1400,7 @@ namespace test_subrange {
     STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
             CanCompare::yes, ProxyRef::no>>());
 
-    STATIC_ASSERT(
-        test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>()); // FIXME: look at these
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no>>());

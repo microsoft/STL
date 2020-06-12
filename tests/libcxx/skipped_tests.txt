@@ -585,9 +585,11 @@ containers\sequences\array\array.swap\swap.fail.cpp
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
 containers\sequences\array\array.cons\default.pass.cpp
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
+containers\sequences\array\array.cons\initialization.pass.cpp
 containers\sequences\array\array.data\data_const.pass.cpp
 containers\sequences\array\array.data\data.pass.cpp
 containers\sequences\array\begin.pass.cpp
+containers\sequences\array\iterators.pass.cpp
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
 strings\string.view\char.bad.fail.cpp
