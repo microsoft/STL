@@ -336,7 +336,7 @@ using PFNLCMAPSTRINGEX   = int(WINAPI*)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, in
 
 // Use this macro as a cached function pointer from a DLL
 #define DYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer) \
-    functiontypedef functionpointer = reinterpret_cast<functiontypedef>(__KERNEL32##Functions[e##functionname])
+    const auto functionpointer = reinterpret_cast<functiontypedef>(__KERNEL32##Functions[e##functionname])
 
 #define IFDYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer) \
     DYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer);      \
