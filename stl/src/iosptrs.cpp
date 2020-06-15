@@ -48,7 +48,7 @@ struct _Init_atexit { // controller for atexit processing
         while (atcount_cdecl < _Nats) {
             void(__cdecl * pf)() = (void(__cdecl*)()) DecodePointer(atfuns_cdecl[atcount_cdecl++]);
             if (pf) {
-                (*pf)();
+                pf();
             }
         }
     }
