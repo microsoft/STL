@@ -13,7 +13,7 @@
 #pragma message("The contents of <coroutine> are not available with /await. Use <experimental/coroutine> instead.")
 #else // ^^^ /await ^^^ / vvv no /await vvv
 #ifndef __cpp_lib_coroutine
-#pragma message("The contents of <coroutine> are only available with C++20 or later.")
+#pragma message("The contents of <coroutine> are available only with C++20 or later.")
 #else // ^^^ __cpp_lib_coroutine not defined / __cpp_lib_coroutine defined vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")
