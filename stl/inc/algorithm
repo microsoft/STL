@@ -1676,7 +1676,7 @@ namespace ranges {
                 }
             }
         }
-    }; // namespace ranges
+    };
 
     inline constexpr _Search_fn search{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
