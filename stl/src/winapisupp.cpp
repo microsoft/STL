@@ -19,14 +19,14 @@
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 // GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
-typedef BOOL(WINAPI* PFNGETCURRENTPACKAGEID)(UINT32*, BYTE*);
+using PFNGETCURRENTPACKAGEID = BOOL(WINAPI*)(UINT32*, BYTE*);
 
 #if !defined _CRT_APP
 #if defined _ONECORE
 
 namespace {
     struct HMODULETraits {
-        typedef HMODULE Type;
+        using Type = HMODULE;
 
         static bool Close(Type const h) noexcept {
             return ::FreeLibrary(h) != FALSE;
@@ -37,7 +37,7 @@ namespace {
         }
     };
 
-    typedef Microsoft::WRL::Wrappers::HandleT<HMODULETraits> HMODULEHandle;
+    using HMODULEHandle = Microsoft::WRL::Wrappers::HandleT<HMODULETraits>;
 } // unnamed namespace
 
 extern "C" int __crt_IsPackagedAppHelper() {
