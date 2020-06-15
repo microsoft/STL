@@ -12,13 +12,9 @@
 
 _CRT_BEGIN_C_HEADER
 
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#if defined _M_IX86 || defined _M_X64 || defined _M_ARM64
-void __cdecl __crtTerminateProcess(_In_ UINT uExitCode);
-#endif
-#else // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 _CRTIMP2 BOOL __cdecl __crtIsPackagedApp();
-#endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WS03
 
