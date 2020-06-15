@@ -2179,9 +2179,9 @@ namespace ranges {
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1 = _RANGES begin(_Range1);
             if constexpr (random_access_range<_Rng1> && sized_range<_Rng1>
                 && random_access_range<_Rng2> && sized_range<_Rng2>) {
-                auto _First1 = _RANGES begin(_Range1);
                 auto _UResult = _Random_access_sized_ranges(
                     _Get_unwrapped(_First1), _RANGES distance(_Range1),
                     _Get_unwrapped(_RANGES begin(_Range2)), _RANGES distance(_Range2),
@@ -2189,14 +2189,12 @@ namespace ranges {
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             } else if constexpr (bidirectional_range<_Rng1> && common_range<_Rng1>
                 && bidirectional_range<_Rng2> && common_range<_Rng2>) {
-                auto _First1 = _RANGES begin(_Range1);
                 auto _UResult = _Bidi_common_ranges(
                     _Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
                     _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             } else {
-                auto _First1 = _RANGES begin(_Range1);
                 auto _UResult = _Forward_ranges(
                     _Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
                     _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
