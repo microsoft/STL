@@ -33,8 +33,8 @@ _STD_END
 constexpr int _Nats = 10; // fclose, xgetloc, locks, facet free, etc.
 
 // static data
-__PURE_APPDOMAIN_GLOBAL static void(__cdecl* atfuns_cdecl[_Nats])() = {0};
-__PURE_APPDOMAIN_GLOBAL static size_t atcount_cdecl                 = {_Nats};
+__PURE_APPDOMAIN_GLOBAL static void(__cdecl* atfuns_cdecl[_Nats])() = {};
+__PURE_APPDOMAIN_GLOBAL static size_t atcount_cdecl                 = _Nats;
 _MRTIMP2 void __cdecl _Atexit(void(__cdecl* pf)()) { // add to wrapup list
     if (atcount_cdecl == 0) {
         abort(); // stack full, give up
