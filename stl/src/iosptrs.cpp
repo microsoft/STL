@@ -39,14 +39,15 @@ _MRTIMP2 void __cdecl _Atexit(void(__cdecl* pf)()) { // add to wrapup list
     if (atcount_cdecl == 0) {
         abort(); // stack full, give up
     } else {
-        atfuns_cdecl[--atcount_cdecl] = (void(__cdecl*)()) EncodePointer(pf);
+        atfuns_cdecl[--atcount_cdecl] = reinterpret_cast<void(__cdecl*)()>(EncodePointer(reinterpret_cast<void*>(pf)));
     }
 }
 
 struct _Init_atexit { // controller for atexit processing
     __CLR_OR_THIS_CALL ~_Init_atexit() noexcept { // process wrapup functions
         while (atcount_cdecl < _Nats) {
-            void(__cdecl * pf)() = (void(__cdecl*)()) DecodePointer(atfuns_cdecl[atcount_cdecl++]);
+            const auto pf = reinterpret_cast<void(__cdecl*)()>(
+                DecodePointer(reinterpret_cast<void*>(atfuns_cdecl[atcount_cdecl++])));
             if (pf) {
                 pf();
             }
