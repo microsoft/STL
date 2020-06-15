@@ -109,10 +109,10 @@ BOOL __cdecl __crtFlsSetValue(__in DWORD dwFlsIndex, __in_opt PVOID lpFlsData);
 #define __crtCloseThreadpoolWork(pwk) CloseThreadpoolWork(pwk)
 
 #define __crtCompareStringEx(lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2) \
-    CompareStringEx(lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, NULL, NULL, 0)
+    CompareStringEx(lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0)
 
 #define __crtLCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchStr, lpDestStr, cchDest) \
-    LCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchStr, lpDestStr, cchDest, NULL, NULL, 0)
+    LCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchStr, lpDestStr, cchDest, nullptr, nullptr, 0)
 
 #define __crtGetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData) \
     GetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData)
@@ -340,7 +340,7 @@ using PFNLCMAPSTRINGEX   = int(WINAPI*)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, in
 
 #define IFDYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer) \
     DYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer);      \
-    if (functionpointer != NULL)
+    if (functionpointer != nullptr)
 
 _CRTIMP2 int __cdecl __crtCompareStringA(_In_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
     _In_reads_(_CchCount1) LPCSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCSTR _LpString2,
