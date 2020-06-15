@@ -44,7 +44,7 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
         0,
     };
 
-    FILE* fp                     = 0;
+    FILE* fp                     = nullptr;
     ios_base::openmode atendflag = mode & ios_base::ate;
     ios_base::openmode norepflag = mode & ios_base::_Noreplace;
 
@@ -68,16 +68,16 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
     }
 
     if (norepflag && (mode & (ios_base::out | ios_base::app))
-        && (fp = _Xfsopen(filename, 0, prot)) != 0) { // file must not exist, close and fail
+        && (fp = _Xfsopen(filename, 0, prot)) != nullptr) { // file must not exist, close and fail
         fclose(fp);
         return 0;
     }
 
-    if (fp != 0 && fclose(fp) != 0) {
+    if (fp != nullptr && fclose(fp) != 0) {
         return 0; // can't close after test open
     }
 
-    if ((fp = _Xfsopen(filename, n, prot)) == 0) {
+    if ((fp = _Xfsopen(filename, n, prot)) == nullptr) {
         return 0; // open failed
     }
 
