@@ -1,0 +1,83 @@
+// format standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _FORMAT_
+#define _FORMAT_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX20
+#pragma message("The contents of <format> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+
+#include <locale>
+#include <string_view>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+
+class format_error : public std::runtime_error {};
+
+template <class _CharT>
+class basic_format_parse_context {
+public:
+    using char_type      = _CharT;
+    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+
+public:
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args = 0) noexcept;
+    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
+
+    constexpr const_iterator begin() const noexcept;
+    constexpr const_iterator end() const noexcept;
+    constexpr void advance_to(cosnt_iterator _It);
+
+    constexpr size_t next_arg_id();
+    constexpr void check_arg_id(size_t _Id);
+};
+
+
+template <class _Context>
+class basic_format_arg {
+public:
+    class handle;
+
+    basic_format_arg() noexcept;
+    explicit operator bool() const noexcept;
+
+}
+
+template <class _Out, class _CharT>
+class basic_format_context {
+public:
+    using iterator  = _Out;
+    using char_type = _CharT;
+    template <class _Ty>
+    using formatter_type = formatter<_Ty, _CharT>;
+    basic_format_arg<basic_format_context> arg(size_t _Id) const;
+    _STD locale locale();
+
+    iterator out();
+    void advance_to(iterator _It);
+};
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _HAS_CXX20
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _FORMAT_
