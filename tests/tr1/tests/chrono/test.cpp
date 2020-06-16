@@ -297,7 +297,7 @@ namespace {
         }
     }
 
-} // anonymous namespace
+} // unnamed namespace
 
 void test_main() {
     t_common_type();
