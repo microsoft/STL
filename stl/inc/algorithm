@@ -1260,9 +1260,7 @@ namespace ranges {
     };
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
 
-namespace ranges {
     // ALIAS TEMPLATE move_result
     template <class _In, class _Out>
     using move_result = in_out_result<_In, _Out>;
