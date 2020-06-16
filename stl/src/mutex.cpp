@@ -168,7 +168,7 @@ int _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
         mtx->thread_id = -1;
         mtx->_get_cs()->unlock();
     }
-    return _Thrd_success;
+    return _Thrd_success; // TRANSITION, ABI: always returns _Thrd_success
 }
 
 int _Mtx_lock(_Mtx_t mtx) { // lock mutex
