@@ -13,7 +13,7 @@
 #include <system_error>
 #include <thread>
 
-namespace { // anonymous namespace
+namespace {
     int count;
     int value;
     STD mutex sync_mutex;
@@ -309,7 +309,7 @@ namespace { // anonymous namespace
         my_mutex mtx4;
         t_condition_variables(cnd, mtx4, "my_mutex");
     }
-} // anonymous namespace
+} // unnamed namespace
 
 void test_main() { // test header <condition_variable>
     t_condition_variable();
