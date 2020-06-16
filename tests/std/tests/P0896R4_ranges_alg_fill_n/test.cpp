@@ -13,23 +13,13 @@ constexpr void smoke_test() {
     using std::same_as;
 
     int output1[] = {13, 42, 1367};
-    int output2[] = {13, 42, 1367};
     {
         const int value = 7;
-        auto result     = fill_n(std::begin(output1), 2, value);
-        for (int i = 0; i < 2; ++i) {
+        auto result     = fill_n(std::begin(output1), ranges::distance(output1), value);
+        for (int i = 0; i < 3; ++i) {
             assert(output1[i] == 7);
         }
-        assert(output1[2] == 1367);
-        // assert(result == std::end(output1));
-    }
-    {
-        const int value = 13;
-        auto result     = fill_n(std::begin(output2), -1, value);
-        assert(output2[0] == 13);
-        assert(output2[1] == 42);
-        assert(output2[2] == 1367);
-        assert(result == std::begin(output2));
+        assert(result == std::end(output1));
     }
 }
 
@@ -41,7 +31,7 @@ int main() {
 struct instantiator {
     template <class Out>
     static void call(Out&& out = {}) {
-        (void) ranges::fill_n(out, 1, 42);
+        (void) ranges::fill_n(out, 13, 42);
     }
 };
 
