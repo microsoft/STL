@@ -2479,6 +2479,7 @@ namespace ranges {
         // clang-format off
         template <class _Ty>
         concept _Has_member = _Unchecked_begin::_Has_member<_Ty> && requires(_Ty& __t) {
+            __t._Unchecked_begin();
             { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
         };
 
