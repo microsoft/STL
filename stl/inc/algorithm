@@ -1261,6 +1261,7 @@ namespace ranges {
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
