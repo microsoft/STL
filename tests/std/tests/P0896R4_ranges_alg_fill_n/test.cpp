@@ -31,7 +31,7 @@ int main() {
 struct instantiator {
     template <class Out>
     static void call(Out&& out = {}) {
-        (void) ranges::fill_n(out, 13, 42);
+        (void) ranges::fill_n(ranges::begin(out), 13, 42);
     }
 };
 

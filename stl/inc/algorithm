@@ -2389,7 +2389,7 @@ namespace ranges {
             template <class _T, output_iterator<const _T&> _O>
             constexpr _O operator()(_O _First, iter_difference_t<_O> _Count, const _T& _Value) const {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-                for (; _Count > 0; ++_UFirst, --_Count) {
+                for (; _Count > 0; ++_UFirst, (void) --_Count) {
                     *_UFirst = _Value;
                 }
 

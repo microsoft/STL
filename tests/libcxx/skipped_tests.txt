@@ -540,7 +540,7 @@ containers\views\span.cons\ptr_ptr.pass.cpp
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 thread\macro.pass.cpp
 
-# Clang's tgmath.h interferes with the UCRT's tgmath.h
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
 
 
