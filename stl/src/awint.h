@@ -331,16 +331,16 @@ using PFNGETLOCALEINFOEX = int(WINAPI*)(LPCWSTR, LCTYPE, LPWSTR, int);
 using PFNLCMAPSTRINGEX   = int(WINAPI*)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, int, LPNLSVERSIONINFO, LPVOID, LPARAM);
 
 // Use this macro for caching a function pointer from a DLL
-#define STOREFUNCTIONPOINTER(instance, functionname) \
-    __KERNEL32Functions[e##functionname] = reinterpret_cast<PVOID>(GetProcAddress(instance, #functionname));
+#define STOREFUNCTIONPOINTER(instance, function_name) \
+    __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name));
 
 // Use this macro as a cached function pointer from a DLL
-#define DYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer) \
-    const auto functionpointer = reinterpret_cast<functiontypedef>(__KERNEL32Functions[e##functionname])
+#define DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name) \
+    const auto variable_name = reinterpret_cast<function_pointer_type>(__KERNEL32Functions[e##function_name])
 
-#define IFDYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer) \
-    DYNAMICGETCACHEDFUNCTION(functiontypedef, functionname, functionpointer);      \
-    if (functionpointer != nullptr)
+#define IFDYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name) \
+    DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name);      \
+    if (variable_name != nullptr)
 
 _CRTIMP2 int __cdecl __crtCompareStringA(_In_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
     _In_reads_(_CchCount1) LPCSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCSTR _LpString2,
