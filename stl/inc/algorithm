@@ -2387,7 +2387,6 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _FwdIt, class _T>
 
     // VARIABLE ranges::fill
     class _Fill_fn : private _Not_quite_object {
@@ -2411,12 +2410,88 @@ namespace ranges {
 
             template <class _T, output_range<const _T&> _Rng>
             constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _T& _Value) const {
-                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Value)
+                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Value);
             }
         // clang-format on
     };
 
     inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::fill_n
+    class _Fill_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+            template <class _T, output_iterator<const _T&> _O>
+            constexpr _O operator()(_O _First, iter_difference_t<_O> _Count, const _T& _Value) const {
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+                for (; _Count > 0; ++_UFirst, --_Count) {
+                    *_UFirst = _Value;
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
+                return _First;
+            }
+        // clang-format on
+    };
+
+    inline constexpr _Fill_n_fn fill_n{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::generate
+    class _Generate_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+            template <input_or_output_iterator _O, sentinel_for<_O> _S, copy_constructible _F>
+                requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
+            constexpr _O operator()(_O _First, _S _Last, _F _Gen) const {
+                _Adl_verify_range(_First, _Last);
+                auto _UFirst      = _Get_unwrapped(_First);
+                const auto _ULast = _Get_unwrapped(_Last);
+                for (; _UFirst != _ULast; ++_UFirst) {
+                    *_UFirst = _Gen();
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
+                return _First;
+            }
+
+            template <class _R, copy_constructible _F>
+                requires invocable<_F&> && output_range<_R, invoke_result_t<_F&>>
+            constexpr borrowed_iterator_t<_R> operator()(_R&& _Range, _F _Gen) const {
+                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Gen);
+            }
+        // clang-format on
+    };
+
+    inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::generate_n
+    class _Generate_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+            template <input_or_output_iterator _O, copy_constructible _F>
+                requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
+            constexpr _O operator()(_O _First, iter_difference_t<_O> _Count, _F _Gen) const {
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count); // what if count is larger than num elems
+                for (; _Count > 0; ++_UFirst, --_Count) {
+                    *_UFirst = _Gen();
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
+                return _First;
+            }
+    }
+
+    inline constexpr _Generate_n_fn generate_n{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
