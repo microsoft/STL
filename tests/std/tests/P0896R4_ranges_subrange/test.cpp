@@ -98,13 +98,13 @@ namespace test_view_interface {
     template <class Cat, Common IsCommon, CanDifference Diff, ConstRange HasConstRange>
     struct fake_view : ranges::view_interface<fake_view<Cat, IsCommon, Diff, HasConstRange>> {
         using I = test::iterator<Cat, int, Diff, CanCompare::yes, ProxyRef::no>;
-        using S = std::conditional_t<bool(IsCommon), I, test::sentinel<int>>;
+        using S = std::conditional_t<static_cast<bool>(IsCommon), I, test::sentinel<int>>;
 
         I begin();
-        I begin() const requires (bool(HasConstRange));
+        I begin() const requires (static_cast<bool>(HasConstRange));
 
         S end();
-        S end() const requires (bool(HasConstRange));
+        S end() const requires (static_cast<bool>(HasConstRange));
     };
     // clang-format on
 
