@@ -241,8 +241,6 @@ tests\P0896R4_ranges_alg_copy_n
 tests\P0896R4_ranges_alg_count
 tests\P0896R4_ranges_alg_count_if
 tests\P0896R4_ranges_alg_equal
-tests\P0896R4_ranges_alg_fill
-tests\P0896R4_ranges_alg_fill_n
 tests\P0896R4_ranges_alg_find
 tests\P0896R4_ranges_alg_find_end
 tests\P0896R4_ranges_alg_find_first_of
@@ -250,7 +248,6 @@ tests\P0896R4_ranges_alg_find_if
 tests\P0896R4_ranges_alg_find_if_not
 tests\P0896R4_ranges_alg_for_each
 tests\P0896R4_ranges_alg_for_each_n
-tests\P0896R4_ranges_alg_generate
 tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_none_of
