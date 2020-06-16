@@ -2389,7 +2389,7 @@ namespace ranges {
             template <input_or_output_iterator _O, copy_constructible _F>
                 requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
             constexpr _O operator()(_O _First, iter_difference_t<_O> _Count, _F _Gen) const {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count); // what if count is larger than num elems
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count); 
                 for (; _Count > 0; ++_UFirst, --_Count) {
                     *_UFirst = _Gen();
                 }
@@ -2397,7 +2397,7 @@ namespace ranges {
                 _Seek_wrapped(_First, _STD move(_UFirst));
                 return _First;
             }
-    }
+    };
 
     inline constexpr _Generate_n_fn generate_n{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
