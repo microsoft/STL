@@ -110,7 +110,7 @@ using Elem2 = const int;
 
 #ifdef TEST_EVERYTHING
 int main() {
-    STATIC_ASSERT((test_fwd_fwd<instantiator, Elem1, Elem2>(), true));
+    // No constepxr test here; this test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation
     test_fwd_fwd<instantiator, Elem1, Elem2>();
 }
 #else // ^^^ test all range combinations // test only interesting range combos vvv
