@@ -27,7 +27,7 @@ int main() {
 struct instantiator {
     template <class Out>
     static void call(Out&& out = {}) {
-        (void) ranges::generate_n(out, 13, []() { return 13; });
+        (void) ranges::generate_n(ranges::begin(out), 13, []() { return 13; });
     }
 };
 

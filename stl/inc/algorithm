@@ -2390,7 +2390,7 @@ namespace ranges {
                 requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
             constexpr _O operator()(_O _First, iter_difference_t<_O> _Count, _F _Gen) const {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count); 
-                for (; _Count > 0; ++_UFirst, --_Count) {
+                for (; _Count > 0; ++_UFirst, (void) --_Count) {
                     *_UFirst = _Gen();
                 }
 
