@@ -255,8 +255,9 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend std::remove_cv_t<Element> iter_move(iterator const& i) requires at_least<input> {
-            return ranges::iter_move(i.ptr_);
+        [[nodiscard]] constexpr friend std::remove_cv_t<Element> iter_move(iterator const& i)
+            requires at_least<input> && std::constructible_from<std::remove_cv_t<Element>, Element> {
+            return std::move(*i.ptr_);
         }
 
         constexpr friend void iter_swap(iterator const& x, iterator const& y) requires at_least<input> {
