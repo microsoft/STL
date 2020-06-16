@@ -17,7 +17,7 @@
 #else // ^^^ __cpp_lib_coroutine not defined / __cpp_lib_coroutine defined vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")
-#endif // __ALLOW_COROUTINE_ABI_MISMATCH
+#endif // _ALLOW_COROUTINE_ABI_MISMATCH
 
 #include <compare>
 #include <type_traits>
@@ -96,10 +96,10 @@ struct coroutine_handle : coroutine_handle<> {
     using coroutine_handle<>::coroutine_handle;
 
     _NODISCARD static coroutine_handle from_promise(_Promise& _Prom) noexcept { // strengthened
-        const auto _PromPtr  = const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Prom)));
-        const auto _FramePtr = __builtin_coro_promise(_PromPtr, 0, true);
+        const auto _Prom_ptr  = const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Prom)));
+        const auto _Frame_ptr = __builtin_coro_promise(_Prom_ptr, 0, true);
         coroutine_handle _Result;
-        _Result._Ptr = _FramePtr;
+        _Result._Ptr = _Frame_ptr;
         return _Result;
     }
 
@@ -123,10 +123,10 @@ _NODISCARD constexpr bool operator==(const coroutine_handle<> _Left, const corou
     return _Left.address() == _Right.address();
 }
 
-_NODISCARD constexpr strong_ordering operator<=>(const coroutine_handle<> _Left, const coroutine_handle<> _Right) {
+_NODISCARD constexpr strong_ordering operator<=>(
+    const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
     return compare_three_way()(_Left.address(), _Right.address());
 }
-
 
 template <class _Promise>
 struct hash<coroutine_handle<_Promise>> {

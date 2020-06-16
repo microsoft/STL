@@ -34,7 +34,7 @@ unsupported.
 #if defined(_MSC_VER) && defined(__cpp_impl_coroutine)
 #error The <experimental/coroutine> and <experimental/resumable> headers are only supported \
 with /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
-#endif // defined(_MSC_VER) && defined(__cpp_coroutines)
+#endif // defined(_MSC_VER) && defined(__cpp_impl_coroutine)
 
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*);

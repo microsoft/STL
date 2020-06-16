@@ -1166,10 +1166,9 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8
+#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 1
 #define __cpp_lib_coroutine 197000L
 #endif // __cpp_impl_coroutine
-
 
 #ifdef __cpp_impl_destroying_delete
 #define __cpp_lib_destroying_delete 201806L

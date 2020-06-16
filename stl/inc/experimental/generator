@@ -19,7 +19,7 @@
 #include <memory>
 #ifdef __cpp_coroutines
 #include <experimental/resumable>
-#else
+#else // __cpp_coroutines
 #include <coroutine>
 #endif // __cpp_coroutines
 
