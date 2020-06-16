@@ -1262,44 +1262,6 @@ namespace ranges {
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 
-namespace ranges {
-    // ALIAS TEMPLATE move_result
-    template <class _In, class _Out>
-    using move_result = in_out_result<_In, _Out>;
-
-    // VARIABLE ranges::move
-    class _Move_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
-            requires indirectly_movable<_It, _Out> 
-        constexpr move_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst, (void) ++_Result) {
-                *_Result = _RANGES iter_move(_UFirst);
-            }
-
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return {_STD move(_First), _STD move(_Result)};
-        }
-
-        template <input_range _Rng, weakly_incrementable _Out>
-            requires indirectly_movable<iterator_t<_Rng>, _Out> 
-        constexpr move_result<borrowed_iterator_t<_Rng>, _Out>
-            operator()(_Rng&& _Range, _Out _Result) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
-        }
-        // clang-format on
-    };
-
-    inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
 // FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
 _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
@@ -2437,61 +2399,6 @@ namespace ranges {
     };
 
     inline constexpr _Fill_n_fn fill_n{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // VARIABLE ranges::generate
-    class _Generate_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-            template <input_or_output_iterator _O, sentinel_for<_O> _S, copy_constructible _F>
-                requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
-            constexpr _O operator()(_O _First, _S _Last, _F _Gen) const {
-                _Adl_verify_range(_First, _Last);
-                auto _UFirst      = _Get_unwrapped(_First);
-                const auto _ULast = _Get_unwrapped(_Last);
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    *_UFirst = _Gen();
-                }
-
-                _Seek_wrapped(_First, _STD move(_UFirst));
-                return _First;
-            }
-
-            template <class _R, copy_constructible _F>
-                requires invocable<_F&> && output_range<_R, invoke_result_t<_F&>>
-            constexpr borrowed_iterator_t<_R> operator()(_R&& _Range, _F _Gen) const {
-                return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Gen);
-            }
-        // clang-format on
-    };
-
-    inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
-
-    // VARIABLE ranges::generate_n
-    class _Generate_n_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-            template <input_or_output_iterator _O, copy_constructible _F>
-                requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
-            constexpr _O operator()(_O _First, iter_difference_t<_O> _Count, _F _Gen) const {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count); // what if count is larger than num elems
-                for (; _Count > 0; ++_UFirst, --_Count) {
-                    *_UFirst = _Gen();
-                }
-
-                _Seek_wrapped(_First, _STD move(_UFirst));
-                return _First;
-            }
-    }
-
-    inline constexpr _Generate_n_fn generate_n{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
