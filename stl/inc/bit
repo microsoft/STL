@@ -12,7 +12,8 @@
 #pragma message("The contents of <bit> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
-#include <intrin.h>
+#include <intrin0.h>
+#include <isa_availability.h>
 #include <limits>
 #include <type_traits>
 
@@ -24,6 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+
 template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
@@ -33,6 +35,7 @@ _NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
 }
 
 #ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
+
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
@@ -116,22 +119,20 @@ _NODISCARD constexpr int _Popcount_helper(_Ty _Val) {
 
 #if defined(_M_IX86) || defined(_M_X64)
 
-_NODISCARD inline bool _Is_popcnt_supported() {
-    int cpuinfo[4];
-    __cpuid(cpuinfo, 0x01);
-    return cpuinfo[2] & (1 << 23);
-}
-
-_NODISCARD inline bool _Is_lzcnt_supported() {
-    int cpuinfo[4];
-    __cpuid(cpuinfo, 0x80000001);
-    return cpuinfo[2] & (1 << 5);
+extern "C" {
+__MACHINEX86_X64(unsigned int __lzcnt(unsigned int))
+__MACHINEX86_X64(unsigned short __lzcnt16(unsigned short))
+__MACHINEX64(unsigned __int64 __lzcnt64(unsigned __int64))
+__MACHINEX86_X64(unsigned int __popcnt(unsigned int))
+__MACHINEX86_X64(unsigned short __popcnt16(unsigned short))
+__MACHINEX64(unsigned __int64 __popcnt64(unsigned __int64))
+extern int __isa_available;
 }
 
 template <class _Ty>
 _NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
-    static bool _Have_lzcnt = _Is_lzcnt_supported();
-    constexpr int _Digits   = numeric_limits<_Ty>::digits;
+    const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX;
+    constexpr int _Digits  = numeric_limits<_Ty>::digits;
     // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
     if (!_Have_lzcnt && _Val == 0) {
         return _Digits;
@@ -146,14 +147,14 @@ _NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
     } else {
 #ifdef _M_IX86
         if (_Have_lzcnt) {
-            return (__lzcnt(_Val >> 32) + __lzcnt(static_cast<unsigned int>(_Val)) - (64 - _Digits);
+            return __lzcnt(_Val >> 32) + __lzcnt(static_cast<unsigned int>(_Val)) - (64 - _Digits);
         } else {
             unsigned int _High = _Val >> 32;
             unsigned int _Low  = static_cast<unsigned int>(_Val);
             int _Result        = 0;
             _Result += _High ? __lzcnt(_High) : 0;
             _Result += _Low ? __lzcnt(_Low) : 0;
-            return result;
+            return _Result;
         }
 #else
         return static_cast<int>(__lzcnt64(_Val) - (64 - _Digits));
@@ -165,8 +166,8 @@ _NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
 
 template <class _Ty>
 _NODISCARD inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
-    static bool _Have_popcnt = _Is_popcnt_supported();
-    constexpr int _Digits    = numeric_limits<_Ty>::digits;
+    const bool _Have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    constexpr int _Digits   = numeric_limits<_Ty>::digits;
     if (_Have_popcnt) {
         if constexpr (_Digits <= 16) {
             return static_cast<int>(__popcnt16(_Val));
@@ -248,8 +249,8 @@ _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
 #endif // __cpp_lib_bitops
 
 enum class endian { little = 0, big = 1, native = little };
-_STD_END
 
+_STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
