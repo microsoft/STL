@@ -33,7 +33,7 @@ constexpr void smoke_test() {
 
     int const input[] = {13, 53, 12435};
     {
-        int output[] = {-1, -1, -1};
+        int output[] = {-2, -2, -2};
         auto result  = move(move_only_range{input}, move_only_range{output}.begin());
         STATIC_ASSERT(same_as<decltype(result),
             move_result<iterator_t<move_only_range<int const>>, iterator_t<move_only_range<int>>>>);
@@ -42,7 +42,7 @@ constexpr void smoke_test() {
         assert(ranges::equal(output, input));
     }
     {
-        int output[] = {-1, -1, -1};
+        int output[] = {-2, -2, -2};
         move_only_range wrapped_input{input};
         auto result = move(wrapped_input.begin(), wrapped_input.end(), move_only_range{output}.begin());
         STATIC_ASSERT(same_as<decltype(result),

@@ -1287,8 +1287,7 @@ namespace ranges {
 
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_movable<iterator_t<_Rng>, _Out>
-        constexpr move_result<borrowed_iterator_t<_Rng>, _Out>
-            operator()(_Rng&& _Range, _Out _Result) const {
+        constexpr move_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
             return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
         }
         // clang-format on
