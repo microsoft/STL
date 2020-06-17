@@ -8,10 +8,11 @@
 #include <iterator>
 #include <memory>
 #include <numeric>
-#include <parallel_algorithms_utilities.hpp>
 #include <random>
 #include <utility>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

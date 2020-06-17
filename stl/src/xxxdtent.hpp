@@ -3,7 +3,7 @@
 
 // common _[FL]Dtento functionality
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 #if !defined(MRTDLL)
 _EXTERN_C

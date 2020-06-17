@@ -9,7 +9,7 @@
 #endif
 #endif
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 // macros
 #define NBITS (48 + _DOFF)

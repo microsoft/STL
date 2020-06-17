@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-//
+
 #include "range_algorithm_support.hpp"
 
 #define ASSERT(...) assert((__VA_ARGS__))

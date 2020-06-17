@@ -3,11 +3,12 @@
 
 // _Stoxflt function
 
-#include "xmath.h"
 #include <ctype.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

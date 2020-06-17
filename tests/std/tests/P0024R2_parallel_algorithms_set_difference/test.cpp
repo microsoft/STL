@@ -7,10 +7,11 @@
 #include <functional>
 #include <iostream>
 #include <numeric>
-#include <parallel_algorithms_utilities.hpp>
 #include <random>
 #include <stdlib.h>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

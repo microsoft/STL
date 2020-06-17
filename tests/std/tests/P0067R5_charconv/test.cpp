@@ -3,6 +3,29 @@
 
 #include "test.hpp"
 
+#include <algorithm>
+#include <array>
+#include <assert.h>
+#include <charconv>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <functional>
+#include <limits>
+#include <optional>
+#include <random>
+#include <set>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "double_fixed_precision_to_chars_test_cases_1.hpp"
 #include "double_fixed_precision_to_chars_test_cases_2.hpp"
 #include "double_fixed_precision_to_chars_test_cases_3.hpp"
@@ -21,29 +44,7 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
-#include <algorithm>
-#include <array>
-#include <assert.h>
-#include <charconv>
-#include <chrono>
-#include <cmath>
 #include <floating_point_test_cases.hpp>
-#include <fstream>
-#include <functional>
-#include <limits>
-#include <optional>
-#include <random>
-#include <set>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <string_view>
-#include <system_error>
-#include <type_traits>
-#include <utility>
-#include <vector>
 
 using namespace std;
 
