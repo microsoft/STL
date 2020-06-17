@@ -10,7 +10,8 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-#pragma message("The contents of <coroutine> are not available with /await. Use <experimental/coroutine> instead.")
+#pragma message("The contents of <coroutine> are not available with /await.")
+#pragma message("Remove /await for standard coroutines or use <experimental/coroutine> for legacy /await support.")
 #else // ^^^ /await ^^^ / vvv no /await vvv
 #ifndef __cpp_lib_coroutine
 #pragma message("The contents of <coroutine> are available only with C++20 or later.")
