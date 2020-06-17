@@ -94,6 +94,8 @@ void test_cpp() { // test C++ header
     CHECK(approx((*psqrt)(2.0L), 1.0L / rthalf));
     long double (*ptanh)(long double) = &STDx tanh;
     CHECK(approx((*ptanh)(-1.0L), -(e * e - 1.0L) / (e * e + 1.0L)));
+
+    static_assert(std::is_same<decltype(std::pow(10.0l, 2)), long double>::value);
 }
 
 void test_main() { // test basic workings of cmath definitions
