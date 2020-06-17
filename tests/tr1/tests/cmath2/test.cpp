@@ -8,6 +8,8 @@
 #include "tdefs.h"
 #include <cmath>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 static const float e      = (float) 2.7182818284590452353602874713526625L;
 static const float ln2    = (float) 0.69314718055994530941723212145817657L;
 static const float pi3by4 = (float) 2.35619449019234492884698253745962716L;

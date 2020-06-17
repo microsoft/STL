@@ -44,7 +44,7 @@ class test_std_pow_against_crt {
 
     void single(uint32_t baseCandidate) {
         float input   = reinterpret_as<float>(baseCandidate);
-        float powOut  = std::pow(input, 2);
+        float powOut  = input * input;
         float powfOut = powf(input, 2.0f);
         int powClass  = fpclassify(powOut);
         int powfClass = fpclassify(powfOut);
