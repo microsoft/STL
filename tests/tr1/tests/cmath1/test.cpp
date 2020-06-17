@@ -51,7 +51,7 @@ void test_cpp() { // test C++ header
     double (*pabs)(double) = &STD abs; // C++ overloads
     CHECK((*pabs)(-rthalf) == rthalf);
 
-    static_assert(std::is_same<decltype(std::pow(10.0, 2)), double>::value);
+    STATIC_ASSERT(std::is_same<decltype(std::pow(10.0, 2)), double>::value);
 }
 
 void test_main() { // test basic workings of cmath definitions

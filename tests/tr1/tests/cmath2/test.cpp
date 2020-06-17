@@ -95,7 +95,7 @@ void test_cpp() { // test C++ header
     float (*ptanh)(float) = &STDx tanh;
     CHECK(approx((*ptanh)(-1.0F), -(e * e - 1.0F) / (e * e + 1.0F)));
 
-    static_assert(std::is_same<decltype(std::pow(10.0f, 2)), double>::value);
+    STATIC_ASSERT(std::is_same<decltype(std::pow(10.0f, 2)), double>::value);
 }
 
 void test_main() { // test basic workings of cmath definitions
