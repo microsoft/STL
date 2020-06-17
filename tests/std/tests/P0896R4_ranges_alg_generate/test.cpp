@@ -38,8 +38,8 @@ int main() {
 struct instantiator {
     template <class Out>
     static void call(Out&& out = {}) {
-        (void) ranges::generate(out, []() { return 13; });
-        (void) ranges::generate(ranges::begin(out), ranges::end(out), []() { return 13; });
+        (void) ranges::generate(out, []() { return 42; });
+        (void) ranges::generate(ranges::begin(out), ranges::end(out), []() { return 42; });
     }
 };
 
