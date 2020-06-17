@@ -2360,8 +2360,8 @@ namespace ranges {
                 requires invocable<_F&> && indirectly_writable<_O, invoke_result_t<_F&>>
             constexpr _O operator()(_O _First, _S _Last, _F _Gen) const {
                 _Adl_verify_range(_First, _Last);
-                auto _UFirst      = _Get_unwrapped(_First);
-                const auto _ULast = _Get_unwrapped(_Last);
+                auto _UFirst      = _Get_unwrapped(_STD move(_First));
+                const auto _ULast = _Get_unwrapped(_STD move(_Last));
                 for (; _UFirst != _ULast; ++_UFirst) {
                     *_UFirst = _Gen();
                 }
