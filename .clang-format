@@ -118,7 +118,7 @@ IncludeCategories:
     Priority:        4
   - Regex:           '^<__.*\.hpp>$'
     Priority:        2
-  - Regex:           '\.hpp(>|")$'
+  - Regex:           '\.hpp[>"]$'
     Priority:        5
   - Regex:           '.*'
     Priority:        2
