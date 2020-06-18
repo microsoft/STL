@@ -12,15 +12,13 @@ constexpr void smoke_test() {
     using ranges::fill_n, ranges::iterator_t;
     using std::same_as;
 
-    int output1[] = {13, 42, 1367};
-    {
-        const int value = 7;
-        auto result     = fill_n(std::begin(output1), ranges::distance(output1), value);
-        for (int i = 0; i < 3; ++i) {
-            assert(output1[i] == 7);
-        }
-        assert(result == std::end(output1));
+    int output[]    = {13, 42, 1367};
+    const int value = 7;
+    auto result     = fill_n(ranges::begin(output), ranges::distance(output), value);
+    for (auto elem : output) {
+        assert(elem == value);
     }
+    assert(result == ranges::end(output));
 }
 
 int main() {
