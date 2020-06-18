@@ -198,9 +198,10 @@ namespace indirect_binary_predicate_test {
     template <int FuncSelector, int IterSelector1, int IterSelector2>
     constexpr bool test() {
         using std::indirect_binary_predicate, std::indirect_equivalence_relation, std::indirect_strict_weak_order;
-        using F               = Fn<FuncSelector>;
-        using I1              = simple_iter_archetype<IterSelector1>;
-        using I2              = simple_iter_archetype<IterSelector2>;
+        using F  = Fn<FuncSelector>;
+        using I1 = simple_iter_archetype<IterSelector1>;
+        using I2 = simple_iter_archetype<IterSelector2>;
+
         constexpr bool result = indirect_binary_predicate<F, I1, I2>;
         STATIC_ASSERT(indirect_equivalence_relation<F, I1, I2> == result);
         STATIC_ASSERT(indirect_strict_weak_order<F, I1, I2> == result);
