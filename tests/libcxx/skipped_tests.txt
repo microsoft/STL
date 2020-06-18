@@ -62,6 +62,8 @@ numerics\bit\bit.pow.two\floor2.pass.cpp
 numerics\bit\bit.pow.two\ispow2.pass.cpp
 numerics\bit\bit.pow.two\log2p1.pass.cpp
 
+# test emits warning C4310: cast truncates constant value
+numerics\bit\bitops.rot\rotl.pass.cpp
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
