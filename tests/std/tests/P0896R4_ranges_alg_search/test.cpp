@@ -13,13 +13,13 @@
 
 using namespace std;
 
+using P = pair<int, int>;
+
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::search(borrowed<false>{}, borrowed<true>{})), ranges::dangling>);
 STATIC_ASSERT(same_as<decltype(ranges::search(borrowed<true>{}, borrowed<false>{})), ranges::subrange<int*>>);
 
 struct instantiator {
-    using P = pair<int, int>;
-
     static constexpr array<P, 8> pairs = {
         P{0, 42}, P{1, 42}, P{2, 42}, P{3, 42}, P{4, 42}, P{5, 42}, P{6, 42}, P{7, 42}};
     static constexpr array<int, 3> not_pairs = {2, 3, 4};
@@ -105,12 +105,12 @@ struct instantiator {
     }
 };
 
-using Elem1 = const pair<int, int>;
+using Elem1 = const P;
 using Elem2 = const int;
 
 #ifdef TEST_EVERYTHING
 int main() {
-    // No constepxr test here; this test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation
+    // No constexpr test here; the test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation.
     test_fwd_fwd<instantiator, Elem1, Elem2>();
 }
 #else // ^^^ test all range combinations // test only interesting range combos vvv
@@ -122,17 +122,16 @@ using random_test_range = test::range<random_access_iterator_tag, Elem, IsSized,
     test::CanCompare::yes, test::ProxyRef::no>;
 
 constexpr bool run_tests() {
-    // All (except contiguous) proxy reference types, since the algorithm doesn't really care.
-    // Cases with only 1 range sized are not interesting
-    // common is interesting only in that it's necessary to trigger memcmp optimization
+    // All (except contiguous) proxy reference types, since the algorithm doesn't really care. Cases with only 1 range
+    // sized are not interesting; common is interesting only in that it's necessary to trigger memcmp optimization.
 
     using test::Common, test::Sized;
 
-    // both forward non-common and 0-/2-sized
+    // both forward, non-common, and sized or unsized
     instantiator::call<fwd_test_range<Elem1, Sized::no>, fwd_test_range<Elem2, Sized::no>>();
     instantiator::call<fwd_test_range<Elem1, Sized::yes>, fwd_test_range<Elem2, Sized::yes>>();
 
-    // both random-access, varying common, and 0-/2-sized
+    // both random-access, and sized or unsized; all permutations of common
     instantiator::call<random_test_range<Elem1, Sized::no, Common::no>,
         random_test_range<Elem2, Sized::no, Common::no>>();
     instantiator::call<random_test_range<Elem1, Sized::no, Common::no>,

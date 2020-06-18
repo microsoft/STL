@@ -3154,13 +3154,15 @@ namespace ranges {
         const _It& _First, const _Se& _Last, const iter_difference_t<_It> _Count) {
         // Find the iterator in [_First, _Last) (of length _Count) which equals _Last
         _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
-        auto _Result = _First;
-        if constexpr (assignable_from<_It&, _Se>) {
-            _RANGES advance(_Result, _Last);
+        (void) _First;
+        (void) _Last;
+        (void) _Count;
+
+        if constexpr (is_same_v<_It, _Se>) {
+            return _Last;
         } else {
-            _RANGES advance(_Result, _Count);
+            return _RANGES next(_First, _Count);
         }
-        return _Result;
     }
 
     // STRUCT ranges::equal_to

@@ -222,7 +222,7 @@ namespace ranges {
 
     // FUNCTION TEMPLATE _Rewrap_subrange
     template <class _Result, class _Wrapped, class _Unwrapped>
-    constexpr _Result _Rewrap_subrange(
+    _NODISCARD constexpr _Result _Rewrap_subrange(
         [[maybe_unused]] _Wrapped& _First, [[maybe_unused]] subrange<_Unwrapped>&& _UResult) {
         // conditionally computes a wrapped subrange from a wrapped iterator and unwrapped subrange
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Wrapped>, _Unwrapped>);
@@ -1560,7 +1560,8 @@ namespace ranges {
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr pair<bool, _It1> _Equal_rev_pred(
         _It1 _First1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // compare [_First1, ...) to [_First2, _Last2)
+        // Returns {true, _First1 + (_Last2 - _First2)} if [_First1, ...) equals [_First2, _Last2), and {false, {}}
+        // otherwise.
         constexpr bool _Optimize = _Equal_rev_pred_can_memcmp<_It1, _It2, _Se2, _Pr, _Pj1, _Pj2>;
         if constexpr (_Optimize) {
             if (!_STD is_constant_evaluated()) {
@@ -1568,7 +1569,13 @@ namespace ranges {
                 const auto _First2_ch = reinterpret_cast<const char*>(_STD to_address(_First2));
                 const auto _Count =
                     static_cast<size_t>(reinterpret_cast<const char*>(_STD to_address(_Last2)) - _First2_ch);
-                return {_CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0, _First1 + (_Last2 - _First2)};
+                const bool _Eq = _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+                if (_Eq) {
+                    _First1 += (_Last2 - _First2);
+                    return {true, _STD move(_First1)};
+                } else {
+                    return {false, _It1{}};
+                }
             }
         }
 
@@ -1604,11 +1611,11 @@ namespace ranges {
                 const auto _Count1 = _ULast1 - _UFirst1;
                 const auto _Count2 = _ULast2 - _UFirst2;
                 auto _UResult =
-                    _Sized_ranges(_STD move(_UFirst1), _STD move(_ULast1), _Count1, _STD move(_UFirst2),
+                    _Search_sized(_STD move(_UFirst1), _STD move(_ULast1), _Count1, _STD move(_UFirst2),
                         _STD move(_ULast2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<subrange<_It1>>(_First1, _STD move(_UResult));
             } else {
-                auto _UResult = _Unsized_ranges(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
+                auto _UResult = _Search_unsized(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
                     _STD move(_ULast2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<subrange<_It1>>(_First1, _STD move(_UResult));
             }
@@ -1624,12 +1631,12 @@ namespace ranges {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);
-                auto _UResult = _Sized_ranges(_Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)), _Count1,
+                auto _UResult = _Search_sized(_Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)), _Count1,
                     _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)), _Count2,
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             } else {
-                auto _UResult = _Unsized_ranges(_Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
+                auto _UResult = _Search_unsized(_Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
                     _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
@@ -1639,7 +1646,7 @@ namespace ranges {
 
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr subrange<_It1> _Sized_ranges(_It1 _First1, const _Se1 _Last1,
+        _NODISCARD static constexpr subrange<_It1> _Search_sized(_It1 _First1, const _Se1 _Last1,
             iter_difference_t<_It1> _Count1, _It2 _First2, const _Se2 _Last2, const iter_difference_t<_It2> _Count2,
             _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count1);
@@ -1657,12 +1664,12 @@ namespace ranges {
         }
 
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr subrange<_It1> _Unsized_ranges(
+        _NODISCARD static constexpr subrange<_It1> _Search_unsized(
             _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             for (;; ++_First1) {
                 auto _Mid1 = _First1;
                 for (auto _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-                    if (_Mid2 == _Last2) { // match!
+                    if (_Mid2 == _Last2) { // match
                         return {_STD move(_First1), _STD move(_Mid1)};
                     }
 
@@ -2081,13 +2088,13 @@ namespace ranges {
 
         template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr subrange<_It1> _Bidi_common_ranges(
-            _It1 _First1, _It1 _Last1, _It2 _First2, _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _It1 _First1, _It1 _Last1, _It2 _First2, const _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             for (auto _Candidate = _Last1;; --_Candidate) { // try a match at _Candidate
                 auto _Next1 = _Candidate;
                 auto _Next2 = _Last2;
                 for (;;) { // test if [_First2, _Last2) is a suffix of [_First1, _Candidate)
                     if (_First2 == _Next2) { // match found
-                        return {_First1, _Last1};
+                        return {_STD move(_First1), _STD move(_Last1)};
                     }
 
                     if (_First1 == _Next1) {
@@ -2106,7 +2113,7 @@ namespace ranges {
 
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr subrange<_It1> _Forward_ranges(
-            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             subrange<_It1> _Match{};
             bool _Found = false;
 
