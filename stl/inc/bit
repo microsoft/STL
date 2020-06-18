@@ -34,8 +34,6 @@ _NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
 
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
-
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
@@ -98,18 +96,15 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4640)
-
 template <class _Ty>
 _NODISCARD constexpr int _Popcount_helper(_Ty _Val) {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     // we static cast these bit patterns in order to truncate
     // them to the correct size
-    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555555555555555ull)));
-    _Val = static_cast<_Ty>(
-        (_Val & static_cast<_Ty>(0x3333333333333333ull)) + ((_Val >> 2) & static_cast<_Ty>(0x3333333333333333ull)));
-    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F0F0F0F0F0F0Full));
+    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
+    _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
+                            + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
+    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
     for (int _ShiftDigits = 8; _ShiftDigits < _Digits; _ShiftDigits <<= 1) {
         _Val = static_cast<_Ty>(_Val + static_cast<_Ty>(_Val >> _ShiftDigits));
     }
@@ -130,8 +125,8 @@ extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
-    const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX;
+_NODISCARD inline int _Checked_x86_x86_64_countl_zero(const _Ty _Val) {
+    const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
     constexpr int _Digits  = numeric_limits<_Ty>::digits;
     // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
     if (!_Have_lzcnt && _Val == 0) {
@@ -151,16 +146,16 @@ _NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
         int _Result        = _Checked_x86_x86_64_countl_zero(_High);
         _Result += !_High ? _Checked_x86_x86_64_countl_zero(_Low) : 0;
         return _Result;
-#else
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(__lzcnt64(_Val) - (64 - _Digits));
-#endif
+#endif // _M_IX86
     }
     // note we don't need to call a fallback here because
     // all supported intel processors at least have bsr/bsf
 }
 
 template <class _Ty>
-_NODISCARD inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
+_NODISCARD inline int _Checked_x86_x86_64_popcount(const _Ty _Val) {
     const bool _Have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
     if (_Have_popcnt) {
@@ -171,9 +166,9 @@ _NODISCARD inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
         } else {
 #ifdef _M_IX86
             return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
-#else
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
             return static_cast<int>(__popcnt64(_Val));
-#endif
+#endif // _M_IX86
         }
     } else {
         return _Popcount_helper(_Val);
@@ -184,7 +179,7 @@ _NODISCARD inline int _Checked_x86_x86_64_popcount(_Ty _Val) {
 
 #if defined(_M_ARM) || defined(_M_ARM64)
 template <class _Ty>
-_NODISCARD inline int _Checked_arm_countl_zero(_Ty _Val) {
+_NODISCARD inline int _Checked_arm_countl_zero(const _Ty _Val) {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if (_Val == 0) {
         return _Digits;
@@ -199,19 +194,16 @@ _NODISCARD inline int _Checked_arm_countl_zero(_Ty _Val) {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
-    if (is_constant_evaluated()) {
-        return _Countl_zero_helper(_Val);
-    } else {
+    if (!_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
         return _Checked_x86_x86_64_countl_zero(_Val);
 #elif defined(_M_ARM) || defined(_M_ARM64)
         return _Checked_arm_countl_zero(_Val);
-#else
-        return _Countl_zero_helper(_Val);
 #endif
     }
+    return _Countl_zero_helper(_Val)
 }
-#pragma warning(pop)
+
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
     return _STD countl_zero(static_cast<_Ty>(~_Val));
@@ -229,19 +221,13 @@ _NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
-    if (is_constant_evaluated()) {
-        return _Popcount_helper(_Val);
-    } else {
+    if (!_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
         return _Checked_x86_x86_64_popcount(_Val);
-#else
-        // arm NEON has a popcount instruction, but we're not going to use that
-        // yet.
-        return _Popcount_helper(_Val);
-#endif
+#endif // defined(_M_IX86) || defined(_M_X64)
     }
+    return _Countl_zero_helper(_Val)
 }
-#endif // __cpp_lib_bitops
 
 enum class endian { little = 0, big = 1, native = little };
 

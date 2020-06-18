@@ -1140,9 +1140,8 @@
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
-
-#define __cpp_lib_bitops               201907L
-#define __cpp_lib_bounded_array_traits 201902L
+#define __cpp_lib_bitops                        201907L
+#define __cpp_lib_bounded_array_traits          201902L
 
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201907L

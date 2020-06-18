@@ -105,12 +105,9 @@ constexpr bool test_rotr() {
     return true;
 }
 
-// tests functions for 64bit operands that
-// have either high or low halves as zero
-// these may be split into two operations
-// on 32bit platforms and we need to check
-// if we handle the == zero or == ones cases
-// correctly
+// tests functions for 64bit operands that have either high or low halves as zero
+// these may be split into two operations on 32bit platforms and we need to check
+// if we handle the == zero or == ones case correctly
 constexpr bool test_64bit_split_ops() {
     constexpr unsigned long long zero_one = 0x0000'0000'FFFF'FFFF;
     constexpr unsigned long long one_zero = 0xFFFF'FFFF'0000'0000;
@@ -126,6 +123,7 @@ constexpr bool test_64bit_split_ops() {
     assert(countl_one(one_zero) == 32);
     return true;
 }
+
 template <typename T>
 constexpr bool test_popcount_specialcases() {
     constexpr int digits = numeric_limits<T>::digits;

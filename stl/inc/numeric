@@ -563,21 +563,7 @@ _NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
 // FUNCTION TEMPLATE _Stl_bitscan_forward
 template <class _Unsigned>
 _NODISCARD constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
     return static_cast<unsigned long>(_Countr_zero(_Mask));
-#else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
-    // find the index of the least significant set bit (_BitScanForward isn't constexpr... yet :))
-    static_assert(is_unsigned_v<_Unsigned>, "Bitscan only works on bits");
-    unsigned long _Count = 0;
-    if (_Mask != 0) {
-        while ((_Mask & 1U) == 0) {
-            _Mask >>= 1;
-            ++_Count;
-        }
-    }
-
-    return _Count;
-#endif // !__cpp_lib_bitops
 }
 
 // FUNCTION TEMPLATE gcd
