@@ -201,7 +201,7 @@ _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
         return _Checked_arm_countl_zero(_Val);
 #endif
     }
-    return _Countl_zero_helper(_Val)
+    return _Countl_zero_helper(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
@@ -226,7 +226,7 @@ _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
         return _Checked_x86_x86_64_popcount(_Val);
 #endif // defined(_M_IX86) || defined(_M_X64)
     }
-    return _Countl_zero_helper(_Val)
+    return _Popcount_helper(_Val);
 }
 
 enum class endian { little = 0, big = 1, native = little };
