@@ -8,6 +8,8 @@
 
 #pragma once
 
+#ifndef NO_TEST_ENVIRONMENT_PREPARER
+
 #include <crtdbg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,3 +29,5 @@ struct TestEnvironmentPreparer {
 };
 
 const TestEnvironmentPreparer test_environment_preparer{};
+
+#endif // NO_TEST_ENVIRONMENT_PREPARER
