@@ -454,15 +454,6 @@ std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/width.pass.cpp FAIL
 
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-std/numerics/bit/bitops.count/countl_one.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/countl_zero.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/countr_one.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/countr_zero.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/popcount.pass.cpp:0 FAIL
-std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
-std/numerics/bit/bitops.rot/rotr.pass.cpp:0 FAIL
-
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
