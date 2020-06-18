@@ -18,7 +18,7 @@ using P = pair<int, int>;
 struct instantiator {
     static constexpr array<P, 8> pairs = {
         P{0, 42}, P{0, 42}, P{1, 42}, P{1, 42}, P{0, 42}, P{0, 42}, P{1, 42}, P{1, 42}};
-    static constexpr array<int, 8> not_pairs = {0, 0, 0, 0, 1, 1, 1, 1};
+    static constexpr array<int, 8> not_pairs     = {0, 0, 0, 0, 1, 1, 1, 1};
     static constexpr array<int, 8> too_few_ones  = {0, 0, 0, 0, 0, 1, 1, 1};
     static constexpr array<int, 8> too_many_ones = {0, 0, 0, 1, 1, 1, 1, 1};
 

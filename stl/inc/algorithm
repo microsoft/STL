@@ -1073,10 +1073,10 @@ namespace ranges {
                     return false;
                 }
 
-                return _Is_permutation_with_lengths(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
+                return _Is_permutation_sized(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
                     _STD move(_ULast2), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                return _Is_permutation_without_lengths(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
+                return _Is_permutation_unsized(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
                     _STD move(_ULast2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
@@ -1092,11 +1092,11 @@ namespace ranges {
                     return false;
                 }
 
-                return _Is_permutation_with_lengths(_Get_unwrapped(_RANGES begin(_Range1)),
+                return _Is_permutation_sized(_Get_unwrapped(_RANGES begin(_Range1)),
                     _Get_unwrapped(_RANGES end(_Range1)), _Get_unwrapped(_RANGES begin(_Range2)),
                     _Get_unwrapped(_RANGES end(_Range2)), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                return _Is_permutation_without_lengths(_Get_unwrapped(_RANGES begin(_Range1)),
+                return _Is_permutation_unsized(_Get_unwrapped(_RANGES begin(_Range1)),
                     _Get_unwrapped(_RANGES end(_Range1)), _Get_unwrapped(_RANGES begin(_Range2)),
                     _Get_unwrapped(_RANGES end(_Range2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
@@ -1104,8 +1104,8 @@ namespace ranges {
 
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr bool _Is_permutation_with_lengths(_It1 _First1, _Se1 _Last1, _It2 _First2,
-            _Se2 _Last2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        _NODISCARD static constexpr bool _Is_permutation_sized(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count);
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count);
 
@@ -1153,7 +1153,7 @@ namespace ranges {
         }
 
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr bool _Is_permutation_without_lengths(
+        _NODISCARD static constexpr bool _Is_permutation_unsized(
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             for (;; ++_First1, (void) ++_First2) { // trim matching prefixes
                 if (_First1 == _Last1) { // first range is a prefix of second
