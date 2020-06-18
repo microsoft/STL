@@ -8,8 +8,6 @@
 #include "tdefs.h"
 #include <cmath>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 static const double e      = (double) 2.7182818284590452353602874713526625L;
 static const double ln2    = (double) 0.69314718055994530941723212145817657L;
 static const double pi3by4 = (double) 2.35619449019234492884698253745962716L;
@@ -52,8 +50,6 @@ void test_cpp() { // test C++ header
 
     double (*pabs)(double) = &STD abs; // C++ overloads
     CHECK((*pabs)(-rthalf) == rthalf);
-
-    STATIC_ASSERT(std::is_same<decltype(std::pow(10.0, 2)), double>::value);
 }
 
 void test_main() { // test basic workings of cmath definitions
