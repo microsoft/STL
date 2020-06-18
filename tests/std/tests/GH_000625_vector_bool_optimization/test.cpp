@@ -96,6 +96,59 @@ bool test_fill() {
     return true;
 }
 
+void test_find_helper(const size_t length) {
+    // No offset
+    {
+        vector<bool> input_true(length + 3, false);
+        input_true.resize(length + 6, true);
+        input_true[length + 1].flip();
+        const auto result_true = find(input_true.cbegin(), prev(input_true.cend(), 3), true);
+        assert(result_true == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+
+        vector<bool> input_false(length + 3, true);
+        input_false.resize(length + 6, false);
+        input_false[length + 1].flip();
+        const auto result_false = find(input_false.cbegin(), prev(input_false.cend(), 3), false);
+        assert(result_false == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+    }
+
+    // With offset
+    {
+        vector<bool> input_true(length + 3, false);
+        input_true.resize(length + 6, true);
+        input_true[length + 1].flip();
+        input_true[0].flip();
+        const auto result_true = find(next(input_true.cbegin()), prev(input_true.cend(), 3), true);
+        assert(result_true == next(input_true.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+
+        vector<bool> input_false(length + 3, true);
+        input_false.resize(length + 6, false);
+        input_false[length + 1].flip();
+        input_false[0].flip();
+        const auto result_false = find(next(input_false.cbegin()), prev(input_false.cend(), 3), false);
+        assert(result_false == next(input_false.cbegin(), static_cast<ptrdiff_t>(length + 1)));
+    }
+}
+
+bool test_find() {
+    // Empty range
+    test_find_helper(0);
+
+    // One block, ends within block
+    test_find_helper(15);
+
+    // One block, ends at block boundary
+    test_find_helper(blockSize);
+
+    // Multiple blocks, within block
+    test_find_helper(3 * blockSize + 5);
+
+    // Multiple blocks, ends at block boundary
+    test_find_helper(4 * blockSize);
+    return true;
+}
+
 int main() {
     test_fill();
+    test_find();
 }
