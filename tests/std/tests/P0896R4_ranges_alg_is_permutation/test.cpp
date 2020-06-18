@@ -58,14 +58,14 @@ struct instantiator {
                 ranges::end(range1), ranges::equal_to{}, identity{}, get_first));
         }
         {
-            // negative case [1 appears more in first range than second
+            // negative case [1 appears more in first range than second]
             const Fwd2 r2{too_few_ones};
             assert(!ranges::is_permutation(range1, r2, ranges::equal_to{}, get_first, identity{}));
             assert(!ranges::is_permutation(ranges::begin(range1), ranges::end(range1), ranges::begin(r2),
                 ranges::end(r2), ranges::equal_to{}, get_first, identity{}));
         }
         {
-            // negative case [1 appears more in second range than first
+            // negative case [1 appears more in second range than first]
             const Fwd2 r2{too_many_ones};
             assert(!ranges::is_permutation(range1, r2, ranges::equal_to{}, get_first, identity{}));
             assert(!ranges::is_permutation(ranges::begin(range1), ranges::end(range1), ranges::begin(r2),
@@ -93,7 +93,7 @@ struct instantiator {
 
 #ifdef TEST_EVERYTHING
 int main() {
-    // No constexpr test here; this test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation
+    // No constexpr test here; this test_fwd_fwd call exceeds the maximum number of steps in a constexpr computation.
     test_fwd_fwd<instantiator, const P, const int>();
 }
 #else // ^^^ test all range combinations // test only interesting range combos vvv

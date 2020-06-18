@@ -1192,6 +1192,7 @@ namespace ranges {
                         return false; // initial elements still do not match
                     }
                     --_Final2; // since ranges have equal lengths, _Final2 cannot equal _First2
+
                     if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Final1), _STD invoke(_Proj2, *_Final2))) { // mismatch
                         ++_Final1;
                         ++_Final2;
