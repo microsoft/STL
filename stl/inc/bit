@@ -97,10 +97,9 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD constexpr int _Popcount_helper(_Ty _Val) {
+_NODISCARD constexpr int _Popcount_helper(_Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
-    // we static cast these bit patterns in order to truncate
-    // them to the correct size
+    // we static_cast these bit patterns in order to truncate them to the correct size
     _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
     _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
                             + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
@@ -125,43 +124,44 @@ extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD inline int _Checked_x86_x86_64_countl_zero(const _Ty _Val) {
+_NODISCARD inline int _Checked_x86_x86_64_countl_zero(const _Ty _Val) noexcept {
     const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
     constexpr int _Digits  = numeric_limits<_Ty>::digits;
     // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
+    // bsr has indefined output for zero
     if (!_Have_lzcnt && _Val == 0) {
         return _Digits;
     }
-    // we use lzcnt (actually bsr if lzcnt is not supported) for all cases now we know
+    // We use lzcnt (actually bsr if lzcnt is not supported) now that we know
     // we're not zero. We can do this because lzcnt and bsr share the same instruction
     // encoding.
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__lzcnt16(_Val) - (16 - _Digits));
-    } else if constexpr (_Digits <= 32) {
-        return static_cast<int>(__lzcnt(_Val) - (32 - _Digits));
+    } else if constexpr (_Digits == 32) {
+        return static_cast<int>(__lzcnt(_Val));
     } else {
 #ifdef _M_IX86
-        unsigned int _High = _Val >> 32;
-        unsigned int _Low  = static_cast<unsigned int>(_Val);
-        int _Result        = _Checked_x86_x86_64_countl_zero(_High);
-        _Result += !_High ? _Checked_x86_x86_64_countl_zero(_Low) : 0;
+        const unsigned int _High = _Val >> 32;
+        const auto _Low          = static_cast<unsigned int>(_Val);
+        int _Result              = _Checked_x86_x86_64_countl_zero(_High);
+        _Result += _High == 0 ? _Checked_x86_x86_64_countl_zero(_Low) : 0;
         return _Result;
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
-        return static_cast<int>(__lzcnt64(_Val) - (64 - _Digits));
+        return static_cast<int>(__lzcnt64(_Val);
 #endif // _M_IX86
     }
-    // note we don't need to call a fallback here because
+    // note: we don't need to call a fallback here because
     // all supported intel processors at least have bsr/bsf
 }
 
 template <class _Ty>
-_NODISCARD inline int _Checked_x86_x86_64_popcount(const _Ty _Val) {
+_NODISCARD inline int _Checked_x86_x86_64_popcount(const _Ty _Val) noexcept {
     const bool _Have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
     if (_Have_popcnt) {
         if constexpr (_Digits <= 16) {
             return static_cast<int>(__popcnt16(_Val));
-        } else if constexpr (_Digits <= 32) {
+        } else if constexpr (_Digits == 32) {
             return static_cast<int>(__popcnt(_Val));
         } else {
 #ifdef _M_IX86
@@ -179,7 +179,7 @@ _NODISCARD inline int _Checked_x86_x86_64_popcount(const _Ty _Val) {
 
 #if defined(_M_ARM) || defined(_M_ARM64)
 template <class _Ty>
-_NODISCARD inline int _Checked_arm_countl_zero(const _Ty _Val) {
+_NODISCARD inline int _Checked_arm_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if (_Val == 0) {
         return _Digits;
