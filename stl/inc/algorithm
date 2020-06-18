@@ -3567,6 +3567,77 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::reverse
+    class _Reverse_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se>
+            requires permutable<_It>
+        constexpr _It operator()(_It _First, _Se _Last) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Reverse_unchecked(_STD move(_UFirst), _STD move(_ULast));
+            return _First;
+        }
+
+        template <bidirectional_range _Rng>
+            requires permutable<iterator_t<_Rng>>
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            _Reverse_unchecked(_Ubegin(_Range), _ULast);
+            return _Rewrap_iterator(_Range, _STD move(_ULast));
+        }
+        // clang-format on
+    private:
+        template <class _It>
+        static constexpr void _Reverse_unchecked(_It _First, _It _Last) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            using _Elem = remove_pointer_t<_It>;
+            constexpr bool _Allow_vectorization =
+                contiguous_iterator<_It> && conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+
+            if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
+                if (!_STD is_constant_evaluated()) {
+                    __std_reverse_trivially_swappable_1(_STD to_address(_First), _STD to_address(_Last));
+                    return;
+                }
+            } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
+                if (!_STD is_constant_evaluated()) {
+                    __std_reverse_trivially_swappable_2(_STD to_address(_First), _STD to_address(_Last));
+                    return;
+                }
+            } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
+                if (!_STD is_constant_evaluated()) {
+                    __std_reverse_trivially_swappable_4(_STD to_address(_First), _STD to_address(_Last));
+                    return;
+                }
+            } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
+                if (!_STD is_constant_evaluated()) {
+                    __std_reverse_trivially_swappable_8(_STD to_address(_First), _STD to_address(_Last));
+                    return;
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+            for (; _First != _Last && _First != --_Last; ++_First) {
+                _RANGES iter_swap(_First, _Last);
+            }
+        }
+    };
+
+    inline constexpr _Reverse_fn reverse{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE reverse_copy
 template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
