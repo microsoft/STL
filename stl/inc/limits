@@ -1043,13 +1043,21 @@ constexpr int _Countr_zero_helper(_Ty _Val) {
 #if defined(_M_IX86) || defined(_M_X64)
 
 extern "C" {
-__MACHINEX86_X64(unsigned int _tzcnt_u32(unsigned int))
-__MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64))
 extern int __isa_available;
+#ifdef __clang__
+#define _TZCNT_U32(a) (__builtin_ia32_tzcnt_u32((a)))
+#define _TZCNT_U64(a) (__builtin_ia32_tzcnt_u64((a)))
+#else // ^^^ __clang__ / ! __clang__ vvv
+__MACHINEX86_X64(unsigned int _tzcnt_u32(unsigned int))
+__MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64));
+#define _TZCNT_U32(a) (_tzcnt_u32((a)))
+#define _TZCNT_U64(a) (_tzcnt_u64((a)))
+#endif // __clang__
 }
 
 template <class _Ty>
 inline int _Checked_x86_x86_64_countr_zero(_Ty _Val) {
+
     const bool _Have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX;
     constexpr int _Digits  = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max     = (numeric_limits<_Ty>::max)();
@@ -1058,20 +1066,23 @@ inline int _Checked_x86_x86_64_countr_zero(_Ty _Val) {
     }
     if constexpr (_Digits <= 32) {
         // intended widening to int
-        return static_cast<int>(_tzcnt_u32(static_cast<unsigned int>(~_Max | _Val)));
+        // this operation means that a narrow 0 will widen
+        // to 0xFFFF....FFFF0... instead of 0
+        return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
     } else {
 #ifdef _M_IX86
         unsigned int _High = _Val >> 32;
         unsigned int _Low  = static_cast<unsigned int>(_Val);
-        int _Result        = 0;
-        _Result += _High ? _tzcnt_u32(_High) : 0;
-        _Result += _Low ? _tzcnt_u32(_Low) : 0;
+        int _Result        = _Checked_x86_x86_64_countr_zero(_Low);
+        _Result += !_Low ? _Checked_x86_x86_64_countr_zero(_High) : 0;
         return _Result;
 #else
-        return static_cast<int>(_tzcnt_u64(_Val));
+        return static_cast<int>(_TZCNT_U64(_Val));
 #endif
     }
 }
+#undef _TZCNT_U32
+#undef _TZCNT_U32
 #endif
 #pragma warning(pop)
 template <class _Ty>

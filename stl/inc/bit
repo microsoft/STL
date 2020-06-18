@@ -146,16 +146,11 @@ _NODISCARD inline int _Checked_x86_x86_64_countl_zero(_Ty _Val) {
         return static_cast<int>(__lzcnt(_Val) - (32 - _Digits));
     } else {
 #ifdef _M_IX86
-        if (_Have_lzcnt) {
-            return __lzcnt(_Val >> 32) + __lzcnt(static_cast<unsigned int>(_Val)) - (64 - _Digits);
-        } else {
-            unsigned int _High = _Val >> 32;
-            unsigned int _Low  = static_cast<unsigned int>(_Val);
-            int _Result        = 0;
-            _Result += _High ? __lzcnt(_High) : 0;
-            _Result += _Low ? __lzcnt(_Low) : 0;
-            return _Result;
-        }
+        unsigned int _High = _Val >> 32;
+        unsigned int _Low  = static_cast<unsigned int>(_Val);
+        int _Result        = _Checked_x86_x86_64_countl_zero(_High);
+        _Result += !_High ? _Checked_x86_x86_64_countl_zero(_Low) : 0;
+        return _Result;
 #else
         return static_cast<int>(__lzcnt64(_Val) - (64 - _Digits));
 #endif
