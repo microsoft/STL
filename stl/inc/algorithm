@@ -1106,6 +1106,12 @@ namespace ranges {
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Is_permutation_sized(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
             iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(
+                indirect_equivalence_relation<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count);
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count);
 
@@ -1155,6 +1161,13 @@ namespace ranges {
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Is_permutation_unsized(
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(
+                indirect_equivalence_relation<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
             for (;; ++_First1, (void) ++_First2) { // trim matching prefixes
                 if (_First1 == _Last1) { // first range is a prefix of second
                     return _First2 == _Last2;
@@ -1210,6 +1223,13 @@ namespace ranges {
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Match_counts(const _It1 _First1, const _Se1 _Last1, const _It2 _First2,
             const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(
+                indirect_equivalence_relation<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
             for (auto _Current = _First1; _Current != _Last1; ++_Current) {
                 bool _Found = false;
                 auto _Mid1  = _First1;
