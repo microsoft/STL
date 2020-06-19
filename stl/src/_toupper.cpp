@@ -48,7 +48,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
     }
 
     if (locale_name == nullptr) {
-        if ((c >= 'a') && (c <= 'z')) {
+        if (c >= 'a' && c <= 'z') {
             c = c - ('a' - 'A');
         }
 

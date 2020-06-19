@@ -62,7 +62,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbsta
         }
 
         if (((size = WideCharToMultiByte(ploc->_Page, 0, &wchar, 1, s, ploc->_Mbcurmax, nullptr, &defused)) == 0)
-            || (defused)) {
+            || defused) {
             errno = EILSEQ;
             return -1;
         }
