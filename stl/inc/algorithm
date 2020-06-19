@@ -1649,6 +1649,11 @@ namespace ranges {
         _NODISCARD static constexpr subrange<_It1> _Search_sized(_It1 _First1, const _Se1 _Last1,
             iter_difference_t<_It1> _Count1, _It2 _First2, const _Se2 _Last2, const iter_difference_t<_It2> _Count2,
             _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count1);
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count2);
 
@@ -1666,6 +1671,12 @@ namespace ranges {
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr subrange<_It1> _Search_unsized(
             _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
             for (;; ++_First1) {
                 auto _Mid1 = _First1;
                 for (auto _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
@@ -2066,6 +2077,12 @@ namespace ranges {
         _NODISCARD static constexpr subrange<_It1> _Random_access_sized_ranges(_It1 _First1,
             const iter_difference_t<_It1> _Count1, _It2 _First2, const iter_difference_t<_It2> _Count2, _Pr _Pred,
             _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+            // pre: _First1 + [0, _Count1) is a valid counted range
+            // pre: _First2 + [0, _Count2) is a valid counted range
+
             if (_Count2 > 0 && _Count2 <= _Count1) {
                 const auto _Count2_as1 = static_cast<iter_difference_t<_It1>>(_Count2);
 
@@ -2089,6 +2106,10 @@ namespace ranges {
         template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr subrange<_It1> _Bidi_common_ranges(
             _It1 _First1, _It1 _Last1, _It2 _First2, const _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
             for (auto _Candidate = _Last1;; --_Candidate) { // try a match at _Candidate
                 auto _Next1 = _Candidate;
                 auto _Next2 = _Last2;
@@ -2114,6 +2135,12 @@ namespace ranges {
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr subrange<_It1> _Forward_ranges(
             _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
             subrange<_It1> _Match{};
             bool _Found = false;
 
