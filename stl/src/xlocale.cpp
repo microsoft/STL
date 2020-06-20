@@ -18,7 +18,7 @@ using _Outiter = ostreambuf_iterator<char, _Traits>;
 #define ADDFAC(Facet, cat, ptrimp, ptrloc)                                            \
     if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                    \
         ;                                                                             \
-    } else if (ptrloc == 0) {                                                         \
+    } else if (ptrloc == nullptr) {                                                   \
         ptrimp->_Addfac(new Facet(lobj), Facet::id);                                  \
     } else {                                                                          \
         ptrimp->_Addfac((locale::facet*) &_STD use_facet<Facet>(*ptrloc), Facet::id); \

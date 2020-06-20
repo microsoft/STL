@@ -2370,6 +2370,62 @@ namespace ranges {
     template <class _Ty>
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
+    // CUSTOMIZATION POINT OBJECT ranges::_Ubegin
+    namespace _Unchecked_begin {
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = requires(_Ty& __t) {
+            { __t._Unchecked_begin() } -> input_or_output_iterator;
+        };
+
+        template <class _Ty>
+        concept _Can_begin = requires(_Ty& __t) {
+            _Get_unwrapped(_RANGES begin(__t));
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Unwrap };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
+                if constexpr (_Has_member<_Ty>) {
+                    _STL_INTERNAL_STATIC_ASSERT(
+                        same_as<decltype(_STD declval<_Ty>()._Unchecked_begin()), _Unwrapped_t<iterator_t<_Ty>>>);
+                    return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_begin())};
+                } else if constexpr (_Can_begin<_Ty>) {
+                    return {_St::_Unwrap, noexcept(_Get_unwrapped(_RANGES begin(_STD declval<_Ty>())))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <_Should_range_access _Ty>
+                requires (_Choice<_Ty&>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                    return _Val._Unchecked_begin();
+                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                    return _Get_unwrapped(_RANGES begin(_Val));
+                } else {
+                    static_assert(_Always_false<_Ty>, "Should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Unchecked_begin
+
+    inline namespace _Cpos {
+        inline constexpr _Unchecked_begin::_Cpo _Ubegin;
+    }
+
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
         template <class _Ty>
@@ -2442,6 +2498,63 @@ namespace ranges {
 
     inline namespace _Cpos {
         inline constexpr _End::_Cpo end;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::_Uend
+    namespace _Unchecked_end {
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = _Unchecked_begin::_Has_member<_Ty> && requires(_Ty& __t) {
+            __t._Unchecked_begin(); // required explicitly for better diagnostics
+            { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
+        };
+
+        template <class _Ty>
+        concept _Can_end = requires(_Ty& __t) {
+            _Get_unwrapped(_RANGES end(__t));
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Unwrap };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
+                if constexpr (_Has_member<_Ty>) {
+                    _STL_INTERNAL_STATIC_ASSERT(same_as<decltype(_STD declval<_Ty>()._Unchecked_end()),
+                        decltype(_Get_unwrapped(_RANGES end(_STD declval<_Ty>())))>);
+                    return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_end())};
+                } else if constexpr (_Can_end<_Ty>) {
+                    return {_St::_Unwrap, noexcept(_Get_unwrapped(_RANGES end(_STD declval<_Ty>())))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <_Should_range_access _Ty>
+                requires (_Choice<_Ty&>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                    return _Val._Unchecked_end();
+                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                    return _Get_unwrapped(_RANGES end(_Val));
+                } else {
+                    static_assert(_Always_false<_Ty>, "Should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Unchecked_end
+
+    inline namespace _Cpos {
+        inline constexpr _Unchecked_end::_Cpo _Uend;
     }
 
     // CONCEPT ranges::range
