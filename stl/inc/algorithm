@@ -5314,6 +5314,54 @@ _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* 
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD max_element(_First, _Last);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::max_element
+    template <class _It, class _Se, class _Pr, class _Pj>
+    _NODISCARD constexpr _It _Max_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+        auto _Found = _First;
+        if (_First != _Last) {
+            while (++_First != _Last) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Found), _STD invoke(_Proj, *_First))) {
+                    _Found = _First;
+                }
+            }
+        }
+
+        return _Found;
+    }
+
+    class _Max_element_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            _Seek_wrapped(_First, _RANGES _Max_element_unchecked(_Get_unwrapped(_STD move(_First)),
+                                      _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _RANGES _Max_element_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                                      _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            return _First;
+        }
+    };
+
+    inline constexpr _Max_element_fn max_element{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE min_element
@@ -5357,6 +5405,54 @@ _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* 
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD min_element(_First, _Last);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::min_element
+    template <class _It, class _Se, class _Pr, class _Pj>
+    _NODISCARD constexpr _It _Min_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+        auto _Found = _First;
+        if (_First != _Last) {
+            while (++_First != _Last) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found))) {
+                    _Found = _First;
+                }
+            }
+        }
+
+        return _Found;
+    }
+
+    class _Min_element_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            _Seek_wrapped(_First, _Min_element_unchecked(_Get_unwrapped(_STD move(_First)),
+                                      _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _Min_element_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                                      _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            return _First;
+        }
+    };
+
+    inline constexpr _Min_element_fn min_element{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE minmax_element
@@ -5429,6 +5525,96 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD minmax_element(_First, _Last);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE minmax_element_result
+    template <class _It>
+    using minmax_element_result = min_max_result<_It>;
+
+    // VARIABLE ranges::minmax_element
+    template <class _It, class _Se, class _Pr, class _Pj>
+    constexpr min_max_result<_It> _Minmax_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+        min_max_result<_It> _Found{_First, _First};
+
+        if (_First == _Last) {
+            return _Found;
+        }
+
+        while (++_First != _Last) { // process one or two elements
+            _It _Prev = _First;
+            if (++_First == _Last) { // process last element
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.min))) {
+                    _Found.min = _Prev;
+                } else if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.max))) {
+                    _Found.max = _Prev;
+                }
+
+                break;
+            }
+
+            // process next two elements
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
+                // test _First for new smallest
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.min))) {
+                    _Found.min = _First;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.max))) {
+                    _Found.max = _Prev;
+                }
+            } else { // test _Prev for new smallest
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Prev), _STD invoke(_Proj, *_Found.min))) {
+                    _Found.min = _Prev;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.max))) {
+                    _Found.max = _First;
+                }
+            }
+        }
+
+        return _Found;
+    }
+
+    class _Minmax_element_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr minmax_element_result<_It> operator()(
+            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Minmax_element_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Second = _First;
+            _Seek_wrapped(_First, _STD move(_UResult.min));
+            _Seek_wrapped(_Second, _STD move(_UResult.max));
+            return {_STD move(_First), _STD move(_Second)};
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr minmax_element_result<borrowed_iterator_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Minmax_element_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Second = _First;
+            _Seek_wrapped(_First, _STD move(_UResult.min));
+            _Seek_wrapped(_Second, _STD move(_UResult.max));
+            return {_STD move(_First), _STD move(_Second)};
+        }
+    };
+
+    inline constexpr _Minmax_element_fn minmax_element{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE max (for initializer_list)
@@ -5445,6 +5631,72 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     return (_STD max)(_Ilist, less<>());
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::max
+    // clang-format off
+    template <class _It>
+    concept _Prefer_iterator_copies = // When we have a choice, should we copy iterators or copy elements?
+        // pre: input_iterator<_It>
+        sizeof(_It) <= 2 * sizeof(iter_value_t<_It>)
+        && (is_trivially_copyable_v<_It> || !is_trivially_copyable_v<iter_value_t<_It>>);
+    // clang-format on
+
+    class _Max_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr const _Ty& operator()(
+            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Left), _STD invoke(_Proj, _Right))) {
+                return _Right;
+            } else {
+                return _Left;
+            }
+        }
+
+        template <copyable _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _Ty operator()(initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _First = _Range.begin();
+            const auto _Last  = _Range.end();
+            _STL_ASSERT(_First != _Last,
+                "An initializer_list passed to std::ranges::max must not be empty. (N4861 [alg.min.max]/13)");
+            return *_RANGES _Max_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+        // clang-format off
+        template <input_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+            requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
+        _NODISCARD constexpr const range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UFirst = _Ubegin(_Range);
+            auto _ULast  = _Uend(_Range);
+            _STL_ASSERT(
+                _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4861 [alg.min.max]/13)");
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+                return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            } else {
+                range_value_t<_Rng> _Found(*_UFirst);
+                while (++_UFirst != _ULast) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, _Found), _STD invoke(_Proj, *_UFirst))) {
+                        _Found = *_UFirst;
+                    }
+                }
+
+                return _Found;
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Max_fn(max){_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE min (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
@@ -5458,6 +5710,64 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
     return (_STD min)(_Ilist, less<>());
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::min
+    class _Min_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr const _Ty& operator()(
+            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Right), _STD invoke(_Proj, _Left))) {
+                return _Right;
+            } else {
+                return _Left;
+            }
+        }
+
+        template <copyable _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _Ty operator()(initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _First = _Range.begin();
+            const auto _Last  = _Range.end();
+            _STL_ASSERT(_First != _Last,
+                "An initializer_list passed to std::ranges::min must not be empty. (N4861 [alg.min.max]/5)");
+            return *_RANGES _Min_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+        // clang-format off
+        template <input_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+            requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
+        _NODISCARD constexpr const range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UFirst = _Ubegin(_Range);
+            auto _ULast  = _Uend(_Range);
+            _STL_ASSERT(
+                _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4861 [alg.min.max]/5)");
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+                return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            } else {
+                range_value_t<_Rng> _Found(*_UFirst);
+                while (++_UFirst != _ULast) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, _Found))) {
+                        _Found = *_UFirst;
+                    }
+                }
+
+                return _Found;
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Min_fn(min){_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE minmax
 template <class _Ty, class _Pr>
@@ -5495,6 +5805,102 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
     // return {leftmost/smallest, rightmost/largest}
     return _STD minmax(_Ilist, less<>());
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE minmax_result
+    template <class _Ty>
+    using minmax_result = min_max_result<_Ty>;
+
+    // VARIABLE ranges::minmax
+    class _Minmax_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr minmax_result<const _Ty&> operator()(
+            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Right), _STD invoke(_Proj, _Left))) {
+                return {_Right, _Left};
+            } else {
+                return {_Left, _Right};
+            }
+        }
+
+        template <copyable _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr minmax_result<_Ty> operator()(
+            initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _First = _Range.begin();
+            const auto _Last  = _Range.end();
+            _STL_ASSERT(_First != _Last,
+                "An initializer_list passed to std::ranges::minmax must not be empty. (N4861 [alg.min.max]/21)");
+            const auto _Found = _RANGES _Minmax_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {static_cast<_Ty>(*_Found.min), static_cast<_Ty>(*_Found.max)};
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
+            _NODISCARD constexpr const minmax_result<range_value_t<_Rng>> operator()(
+                _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UFirst = _Ubegin(_Range);
+            auto _ULast  = _Uend(_Range);
+            _STL_ASSERT(
+                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4861 [alg.min.max]/21)");
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+                const auto _Found = _RANGES _Minmax_element_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return {static_cast<range_value_t<_Rng>>(*_Found.min), static_cast<range_value_t<_Rng>>(*_Found.max)};
+            } else {
+                minmax_result<range_value_t<_Rng>> _Found = {
+                    static_cast<range_value_t<_Rng>>(*_UFirst), static_cast<range_value_t<_Rng>>(*_UFirst)};
+                if (_UFirst == _ULast) {
+                    return _Found;
+                }
+
+                while (++_UFirst != _ULast) { // process one or two elements
+                    auto _Prev = *_UFirst;
+                    if (++_UFirst == _ULast) { // process last element
+                        if (_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.min))) {
+                            _Found.min = _STD move(_Prev);
+                        } else if (!_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.max))) {
+                            _Found.max = _STD move(_Prev);
+                        }
+
+                        break;
+                    }
+
+                    // process next two elements
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, _Prev))) {
+                        // test _UFirst for new smallest
+                        if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, _Found.min))) {
+                            _Found.min = *_UFirst;
+                        }
+
+                        if (!_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.max))) {
+                            _Found.max = _STD move(_Prev);
+                        }
+                    } else { // test _Prev for new smallest
+                        if (_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.min))) {
+                            _Found.min = _STD move(_Prev);
+                        }
+
+                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, _Found.max))) {
+                            _Found.max = *_UFirst;
+                        }
+                    }
+                }
+
+                return _Found;
+            }
+        }
+    };
+
+    inline constexpr _Minmax_fn minmax{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE next_permutation
 template <class _BidIt, class _Pr>
@@ -5662,8 +6068,39 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 template <class _Ty>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
     // returns _Val constrained to [_Min_val, _Max_val]
-    return _STD clamp(_Val, _Min_val, _Max_val, less<>());
+    return _STD clamp(_Val, _Min_val, _Max_val, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::clamp
+    class _Clamp_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr const _Ty& operator()(
+            const _Ty& _Val, const _Ty& _Lo, const _Ty& _Hi, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _STL_ASSERT(!_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Lo)),
+                "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
+                "(N4861 [alg.clamp]/2).");
+
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, _Lo))) {
+                return _Lo;
+            }
+
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Val))) {
+                return _Hi;
+            }
+
+            return _Val;
+        }
+    };
+
+    inline constexpr _Clamp_fn clamp{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 _STD_END
