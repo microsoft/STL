@@ -27,7 +27,7 @@ namespace {
     using _Thrd_callback_t = unsigned int(__stdcall*)(void*);
 
     unsigned int __stdcall _Thrd_runner(void* d) { // call thread function
-        _Thrd_binder b = *(_Thrd_binder*) d;
+        _Thrd_binder b = *static_cast<_Thrd_binder*>(d);
         _Mtx_lock(*b.mtx);
         *b.started = 1;
         _Cnd_signal(*b.cond);

@@ -79,7 +79,7 @@ _STD_END
 _EXTERN_C
 
 void __CLRCALL_OR_CDECL _Deletegloballocale(void* ptr) { // delete a global locale reference
-    std::locale::_Locimp* locptr = *(std::locale::_Locimp**) ptr;
+    std::locale::_Locimp* locptr = *static_cast<std::locale::_Locimp**>(ptr);
     if (locptr != nullptr) {
         delete locptr->_Decref();
     }
@@ -116,7 +116,7 @@ _MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL std::locale::_Setgloballocale(void* p
         _atexit_m_appdomain(tidy_global);
 #endif
     }
-    global_locale = (std::locale::_Locimp*) ptr;
+    global_locale = static_cast<std::locale::_Locimp*>(ptr);
 }
 
 __PURE_APPDOMAIN_GLOBAL static locale classic_locale(_Noinit); // "C" locale object, uninitialized

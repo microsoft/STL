@@ -42,7 +42,7 @@ void _Cnd_register_at_thread_exit(
     while (block != 0) { // loop through list of blocks
         if (block->num_used == _Nitems) { // block is full; move to next block and allocate
             if (block->next == 0) {
-                block->next = (_At_thread_exit_block*) calloc(1, sizeof(_At_thread_exit_block));
+                block->next = static_cast<_At_thread_exit_block*>(calloc(1, sizeof(_At_thread_exit_block)));
             }
 
             block = block->next;
