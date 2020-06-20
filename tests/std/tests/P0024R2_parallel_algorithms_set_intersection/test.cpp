@@ -18,10 +18,10 @@ using namespace std::execution;
 template <class T>
 void assert_message_vector(const bool b, const char* const msg, const T seedValue) {
     if (!b) {
-        cout << msg << " failed for seed value: " << seedValue << "\n";
-        cout << "This is a randomized test.\n";
-        cout << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
-        cout << "You must report it to the STL maintainers.\n";
+        cerr << msg << " failed for seed value: " << seedValue << "\n";
+        cerr << "This is a randomized test.\n";
+        cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+        cerr << "You must report it to the STL maintainers.\n";
         abort();
     }
 }
