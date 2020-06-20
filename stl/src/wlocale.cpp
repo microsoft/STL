@@ -16,13 +16,15 @@ using _Winiter  = istreambuf_iterator<wchar_t, _Wtraits>;
 using _Woutiter = ostreambuf_iterator<wchar_t, _Wtraits>;
 
 // facets associated with C categories
-#define ADDFAC(Facet, cat, ptrimp, ptrloc)                                            \
-    if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                    \
-        ;                                                                             \
-    } else if (ptrloc == nullptr) {                                                   \
-        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                  \
-    } else {                                                                          \
-        ptrimp->_Addfac((locale::facet*) &_STD use_facet<Facet>(*ptrloc), Facet::id); \
+#define ADDFAC(Facet, cat, ptrimp, ptrloc)                                                                  \
+    if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                                          \
+        ;                                                                                                   \
+    } else if (ptrloc == nullptr) {                                                                         \
+        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                                        \
+    } else {                                                                                                \
+        ptrimp->_Addfac(                                                                                    \
+            const_cast<locale::facet*>(static_cast<const locale::facet*>(&_STD use_facet<Facet>(*ptrloc))), \
+            Facet::id);                                                                                     \
     }
 
 // moved from locale to ease subsetting

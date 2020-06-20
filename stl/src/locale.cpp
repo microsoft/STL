@@ -49,13 +49,15 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) {
 
 #if STDCPP_IMPLIB || !defined(_M_CEE_PURE)
 // facets associated with C categories
-#define ADDFAC(Facet, cat, ptrimp, ptrloc)                                            \
-    if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                    \
-        ;                                                                             \
-    } else if (ptrloc == nullptr) {                                                   \
-        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                  \
-    } else {                                                                          \
-        ptrimp->_Addfac((locale::facet*) &_STD use_facet<Facet>(*ptrloc), Facet::id); \
+#define ADDFAC(Facet, cat, ptrimp, ptrloc)                                                                  \
+    if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                                          \
+        ;                                                                                                   \
+    } else if (ptrloc == nullptr) {                                                                         \
+        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                                        \
+    } else {                                                                                                \
+        ptrimp->_Addfac(                                                                                    \
+            const_cast<locale::facet*>(static_cast<const locale::facet*>(&_STD use_facet<Facet>(*ptrloc))), \
+            Facet::id);                                                                                     \
     }
 
 using _T1 = ctype<char>;
