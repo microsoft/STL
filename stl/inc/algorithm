@@ -1665,13 +1665,13 @@ namespace ranges {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);
-                auto _UResult = _Search_sized(_Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)), _Count1,
-                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)), _Count2,
+                auto _UResult = _Search_sized(_Get_unwrapped(_First1), _Uend(_Range1), _Count1,
+                    _Ubegin(_Range2), _Uend(_Range2), _Count2,
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             } else {
-                auto _UResult = _Search_unsized(_Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
-                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
+                auto _UResult = _Search_unsized(_Get_unwrapped(_First1), _Uend(_Range1),
+                    _Ubegin(_Range2), _Uend(_Range2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             }
@@ -2250,23 +2250,17 @@ namespace ranges {
             auto _First1 = _RANGES begin(_Range1);
             if constexpr (random_access_range<_Rng1> && sized_range<_Rng1>
                 && random_access_range<_Rng2> && sized_range<_Rng2>) {
-                auto _UResult = _Random_access_sized_ranges(
-                    _Get_unwrapped(_First1), _RANGES distance(_Range1),
-                    _Get_unwrapped(_RANGES begin(_Range2)), _RANGES distance(_Range2),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                auto _UResult = _Random_access_sized_ranges(_Get_unwrapped(_First1), _RANGES distance(_Range1),
+                    _Ubegin(_Range2), _RANGES distance(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             } else if constexpr (bidirectional_range<_Rng1> && common_range<_Rng1>
                 && bidirectional_range<_Rng2> && common_range<_Rng2>) {
-                auto _UResult = _Bidi_common_ranges(
-                    _Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
-                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                auto _UResult = _Bidi_common_ranges(_Get_unwrapped(_First1), _Uend(_Range1),
+                    _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             } else {
-                auto _UResult = _Forward_ranges(
-                    _Get_unwrapped(_First1), _Get_unwrapped(_RANGES end(_Range1)),
-                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                auto _UResult = _Forward_ranges(_Get_unwrapped(_First1), _Uend(_Range1),
+                    _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
             }
         }
