@@ -51,4 +51,4 @@ struct instantiator {
     }
 };
 
-template void test_counted_out<instantiator>();
+template void test_counted_write<instantiator>();

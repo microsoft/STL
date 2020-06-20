@@ -51,7 +51,6 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>, _Pr); // implemented in <al
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorithm>
 
-
 // FUNCTION TEMPLATE min
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
@@ -75,7 +74,6 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>, _Pr); // implemented in <al
 
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorithm>
-
 
 // FUNCTION TEMPLATE iter_swap (from <algorithm>)
 template <class _FwdIt1, class _FwdIt2>
@@ -265,10 +263,10 @@ struct pair { // store a pair of values
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
     template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-    pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>);
+    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>);
 
     template <class... _Types1, class... _Types2>
-    pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2);
+    _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2);
 
     pair& operator=(const volatile pair&) = delete;
 
@@ -276,7 +274,7 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<_Is_copy_assignable_no_precondition_check<typename _Myself::first_type>,
                         _Is_copy_assignable_no_precondition_check<typename _Myself::second_type>>,
             int>            = 0>
-    pair& operator=(_Identity_t<const _Myself&> _Right) noexcept(
+    _CONSTEXPR20 pair& operator=(_Identity_t<const _Myself&> _Right) noexcept(
         conjunction_v<is_nothrow_copy_assignable<_Ty1>, is_nothrow_copy_assignable<_Ty2>>) /* strengthened */ {
         first  = _Right.first;
         second = _Right.second;
@@ -287,7 +285,7 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<_Is_move_assignable_no_precondition_check<typename _Myself::first_type>,
                         _Is_move_assignable_no_precondition_check<typename _Myself::second_type>>,
             int>            = 0>
-    pair& operator=(_Identity_t<_Myself&&> _Right) noexcept(
+    _CONSTEXPR20 pair& operator=(_Identity_t<_Myself&&> _Right) noexcept(
         conjunction_v<is_nothrow_move_assignable<_Ty1>, is_nothrow_move_assignable<_Ty2>>) /* strengthened */ {
         first  = _STD forward<_Ty1>(_Right.first);
         second = _STD forward<_Ty2>(_Right.second);
@@ -298,7 +296,8 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<negation<is_same<pair, pair<_Other1, _Other2>>>, is_assignable<_Ty1&, const _Other1&>,
                         is_assignable<_Ty2&, const _Other2&>>,
             int> = 0>
-    pair& operator=(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_assignable_v<_Ty1&, const _Other1&>&&
+    _CONSTEXPR20 pair& operator=(const pair<_Other1, _Other2>& _Right) noexcept(
+        is_nothrow_assignable_v<_Ty1&, const _Other1&>&&
             is_nothrow_assignable_v<_Ty2&, const _Other2&>) /* strengthened */ {
         first  = _Right.first;
         second = _Right.second;
@@ -309,14 +308,15 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<negation<is_same<pair, pair<_Other1, _Other2>>>, is_assignable<_Ty1&, _Other1>,
                         is_assignable<_Ty2&, _Other2>>,
             int> = 0>
-    pair& operator=(pair<_Other1, _Other2>&& _Right) noexcept(
+    _CONSTEXPR20 pair& operator=(pair<_Other1, _Other2>&& _Right) noexcept(
         is_nothrow_assignable_v<_Ty1&, _Other1>&& is_nothrow_assignable_v<_Ty2&, _Other2>) /* strengthened */ {
         first  = _STD forward<_Other1>(_Right.first);
         second = _STD forward<_Other2>(_Right.second);
         return *this;
     }
 
-    void swap(pair& _Right) noexcept(_Is_nothrow_swappable<_Ty1>::value&& _Is_nothrow_swappable<_Ty2>::value) {
+    _CONSTEXPR20 void swap(pair& _Right) noexcept(
+        _Is_nothrow_swappable<_Ty1>::value&& _Is_nothrow_swappable<_Ty2>::value) {
         if (this != _STD addressof(_Right)) {
             _Swap_adl(first, _Right.first);
             _Swap_adl(second, _Right.second);
@@ -333,7 +333,7 @@ pair(_Ty1, _Ty2) -> pair<_Ty1, _Ty2>;
 #endif // _HAS_CXX17
 
 template <class _Ty1, class _Ty2, enable_if_t<_Is_swappable<_Ty1>::value && _Is_swappable<_Ty2>::value, int> = 0>
-void swap(pair<_Ty1, _Ty2>& _Left, pair<_Ty1, _Ty2>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
+_CONSTEXPR20 void swap(pair<_Ty1, _Ty2>& _Left, pair<_Ty1, _Ty2>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
@@ -476,7 +476,6 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
 
     using type = _Ty;
 };
-
 
 // TUPLE INTERFACE TO tuple
 template <class... _Types>

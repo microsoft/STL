@@ -60,7 +60,6 @@ using _Pchar = wchar_t; // UTF16
 #define _FS_SLASH  L'/'
 #define _FS_BSLASH L'\\'
 
-
 struct _Char8_t; // flag for UTF8
 
 // ENUM file_type
@@ -197,7 +196,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t*, uintmax_t);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms);
-
 
 // STRUCT TEMPLATE _Path_cvt
 template <class _Inchar, class _Outchar, class _Outtraits = char_traits<_Outchar>,

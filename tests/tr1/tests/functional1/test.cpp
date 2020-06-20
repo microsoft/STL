@@ -10,7 +10,7 @@
 #define _SILENCE_CXX17_NEGATORS_DEPRECATION_WARNING
 
 #pragma warning(disable : 4242) // conversion from 'X' to 'Y', possible loss of data
-#pragma warning(disable : 4244) // conversion from 'X' to 'Y', possible loss of data
+#pragma warning(disable : 4244) // conversion from 'X' to 'Y', possible loss of data (Yes, duplicated message.)
 
 #include "tdefs.h"
 #include <algorithm>

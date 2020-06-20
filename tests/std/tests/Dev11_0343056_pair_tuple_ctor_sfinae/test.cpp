@@ -142,12 +142,14 @@ void test_alloc() {
 
         // template <class Alloc> tuple(allocator_arg_t, const Alloc& a);
         tuple<A*> t1(allocator_arg, al);
+        (void) t1;
 
         // template <class Alloc> tuple(allocator_arg_t, const Alloc& a, const Types&...);
         tuple<A*> t2(allocator_arg, al, 0);
 
         // template <class Alloc, class... UTypes> tuple(allocator_arg_t, const Alloc& a, const UTypes&&...);
         tuple<A*> t3(allocator_arg, al, nullptr);
+        (void) t3;
 
         // template <class Alloc> tuple(allocator_arg_t, const Alloc& a, const tuple&);
         tuple<A*> t4(allocator_arg, al, t2);

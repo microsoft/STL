@@ -915,7 +915,6 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
     }
 };
 
-
 template <class _Ty>
 struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral operations using 2-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;

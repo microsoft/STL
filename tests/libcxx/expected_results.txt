@@ -54,6 +54,7 @@ std/language.support/support.limits/support.limits.general/istream.version.pass.
 std/language.support/support.limits/support.limits.general/limits.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/locale.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
 # libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
 std/numerics/bit/bit.pow.two/ceil2.pass.cpp FAIL
@@ -481,29 +482,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1032R1 "Miscellaneous constexpr"
-std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char16_t/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char32_t/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char8_t/move.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/assign3.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/copy.pass.cpp FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.wchar.t/move.pass.cpp FAIL
-
 # C++20 P1135R6 "The C++20 Synchronization Library"
 std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp FAIL
 std/thread/thread.barrier/arrive.pass.cpp FAIL
@@ -562,7 +540,7 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 std/thread/macro.pass.cpp:1 FAIL
 
-# Clang's tgmath.h interferes with the UCRT's tgmath.h
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
 
@@ -699,6 +677,15 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp
 
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 std/language.support/support.limits/support.limits.general/string.version.pass.cpp FAIL
+
+# libc++ expects an old value for `__cpp_lib_array_constexpr` (`201603L`). We've implemented P0858R0, P1023R0, and P1032R1, increasing the value to `201811L`.
+std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
+
+# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_tuple` to have the value `201811L`.
+std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
+
+# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_utility` to have the value `201811L`.
+std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED

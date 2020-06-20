@@ -82,7 +82,7 @@ _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_lock(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_trylock(_Mtx_t);
 _CRTIMP2_PURE int __cdecl _Mtx_timedlock(_Mtx_t, const xtime*);
-_CRTIMP2_PURE int __cdecl _Mtx_unlock(_Mtx_t);
+_CRTIMP2_PURE int __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: always returns _Thrd_success
 
 _CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t);
 _CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
@@ -103,10 +103,10 @@ _CRTIMP2_PURE int __cdecl _Cnd_init(_Cnd_t*);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
-_CRTIMP2_PURE int __cdecl _Cnd_wait(_Cnd_t, _Mtx_t);
+_CRTIMP2_PURE int __cdecl _Cnd_wait(_Cnd_t, _Mtx_t); // TRANSITION, ABI: Always returns _Thrd_success
 _CRTIMP2_PURE int __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const xtime*);
-_CRTIMP2_PURE int __cdecl _Cnd_broadcast(_Cnd_t);
-_CRTIMP2_PURE int __cdecl _Cnd_signal(_Cnd_t);
+_CRTIMP2_PURE int __cdecl _Cnd_broadcast(_Cnd_t); // TRANSITION, ABI: Always returns _Thrd_success
+_CRTIMP2_PURE int __cdecl _Cnd_signal(_Cnd_t); // TRANSITION, ABI: Always returns _Thrd_success
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*);
 _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t);
 _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit();

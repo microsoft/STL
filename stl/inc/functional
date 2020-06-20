@@ -1599,7 +1599,7 @@ struct _Global_delete {
 
 // CLASS TEMPLATE default_searcher
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
+_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
     _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, forward_iterator_tag, forward_iterator_tag) {
     // find first [_First2, _Last2) satisfying _Eq, arbitrary iterators
     for (;; ++_First1) { // loop until match or end of a sequence
@@ -1621,7 +1621,7 @@ pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _Firs
 }
 
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
+_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
     _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, random_access_iterator_tag, random_access_iterator_tag) {
     // find first [_First2, _Last2) satisfying _Eq, random-access iterators
     _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
@@ -1646,14 +1646,15 @@ pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _Firs
 template <class _FwdItPat, class _Pred_eq = equal_to<>>
 class default_searcher { // functor to search haystacks for needles
 public:
-    default_searcher(_FwdItPat _First, _FwdItPat _Last, _Pred_eq _Eq = _Pred_eq())
+    _CONSTEXPR20 default_searcher(_FwdItPat _First, _FwdItPat _Last, _Pred_eq _Eq = _Pred_eq())
         : _Data{_One_then_variadic_args_t{}, _STD move(_Eq), pair<_FwdItPat, _FwdItPat>{_First, _Last}} {
         const auto& _Pat = _Data._Myval2;
         _Adl_verify_range(_Pat.first, _Pat.second);
     }
 
     template <class _FwdItHaystack>
-    _NODISCARD pair<_FwdItHaystack, _FwdItHaystack> operator()(_FwdItHaystack _First, _FwdItHaystack _Last) const {
+    _NODISCARD _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> operator()(
+        _FwdItHaystack _First, _FwdItHaystack _Last) const {
         // search [_First, _Last) for the searcher's pattern
         _Adl_verify_range(_First, _Last);
         const auto& _Eq  = _Data._Get_first();
