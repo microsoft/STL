@@ -54,7 +54,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     sign = *sc == '-' || *sc == '+' ? *sc++ : '+';
     if (base < 0 || base == 1 || _Base_max < base) { // silly base
         if (endptr != 0) {
-            *endptr = (char*) s;
+            *endptr = const_cast<char*>(s);
         }
 
         return 0;
@@ -88,7 +88,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
 
     if (s1 == sc) { // check string validity
         if (endptr != 0) {
-            *endptr = (char*) s;
+            *endptr = const_cast<char*>(s);
         }
 
         return 0;
@@ -110,7 +110,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     }
 
     if (endptr != 0) {
-        *endptr = (char*) sc;
+        *endptr = const_cast<char*>(sc);
     }
 
     return x;

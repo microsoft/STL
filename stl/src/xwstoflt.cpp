@@ -125,7 +125,7 @@ int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
     }
 
     if (endptr) {
-        *endptr = (wchar_t*) (seen ? s : s0); // roll back if bad parse
+        *endptr = const_cast<wchar_t*>(seen ? s : s0); // roll back if bad parse
     }
 
     return word;

@@ -121,7 +121,7 @@ int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
     }
 
     if (endptr) {
-        *endptr = (char*) (seen ? s : s0); // roll back if bad parse
+        *endptr = const_cast<char*>(seen ? s : s0); // roll back if bad parse
     }
 
     return word;

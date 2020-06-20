@@ -34,7 +34,7 @@ _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
     sign = *sc == '-' || *sc == '+' ? *sc++ : '+';
     x    = _Stoulx(sc, endptr, base, perr);
     if (sc == *endptr) {
-        *endptr = (char*) s;
+        *endptr = const_cast<char*>(s);
     }
 
     if (s == *endptr && x != 0 || sign == '+' && LONG_MAX < x

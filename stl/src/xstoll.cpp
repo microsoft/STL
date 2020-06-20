@@ -32,7 +32,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     sign = static_cast<char>(*sc == '-' || *sc == '+' ? *sc++ : '+');
     x    = _Stoullx(sc, endptr, base, perr);
     if (sc == *endptr) {
-        *endptr = (char*) s;
+        *endptr = const_cast<char*>(s);
     }
 
     if (s == *endptr && x != 0 || sign == '+' && LLONG_MAX < x

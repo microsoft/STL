@@ -42,7 +42,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
             }
         }
         if (endptr != 0) {
-            *endptr = (char*) s;
+            *endptr = const_cast<char*>(s);
         }
     } else if (*s == 'i' || *s == 'I') { // parse "inf" or fail
         if ((*++s != 'n' && *s != 'N') || (*++s != 'f' && *s != 'F')) { // parse failed, roll back pointer
@@ -62,7 +62,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
         }
 
         if (endptr != 0) {
-            *endptr = (char*) s;
+            *endptr = const_cast<char*>(s);
         }
     } else if (*s == '0' && (s[1] == 'x' || s[1] == 'X')) { // test for valid hex field following 0x or 0X
         const char* s1 = s + 2;
