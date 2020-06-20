@@ -52,7 +52,7 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) {
 #define ADDFAC(Facet, cat, ptrimp, ptrloc)                                            \
     if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                    \
         ;                                                                             \
-    } else if (ptrloc == 0) {                                                         \
+    } else if (ptrloc == nullptr) {                                                   \
         ptrimp->_Addfac(new Facet(lobj), Facet::id);                                  \
     } else {                                                                          \
         ptrimp->_Addfac((locale::facet*) &_STD use_facet<Facet>(*ptrloc), Facet::id); \
@@ -92,12 +92,12 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_ctor(
         _BEGIN_LOCK(_LOCK_LOCALE)
         if (0 < _This->_Facetcount) { // copy over nonempty facet vector
             if ((_This->_Facetvec = (locale::facet**) _malloc_crt(_This->_Facetcount * sizeof(locale::facet*)))
-                == 0) { // report no memory
+                == nullptr) { // report no memory
                 _Xbad_alloc();
             }
             for (size_t count = _This->_Facetcount; 0 < count;) { // copy over facet pointers
                 locale::facet* ptrfac = imp._Facetvec[--count];
-                if ((_This->_Facetvec[count] = ptrfac) != 0) {
+                if ((_This->_Facetvec[count] = ptrfac) != nullptr) {
                     ptrfac->_Incref();
                 }
             }
@@ -120,16 +120,16 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
         }
 
         locale::facet** ptrnewvec = (locale::facet**) _realloc_crt(_This->_Facetvec, count * sizeof(locale::facet**));
-        if (ptrnewvec == 0) { // report no memory
+        if (ptrnewvec == nullptr) { // report no memory
             _Xbad_alloc();
         }
         _This->_Facetvec = ptrnewvec;
         for (; _This->_Facetcount < count; ++_This->_Facetcount) {
-            _This->_Facetvec[_This->_Facetcount] = 0;
+            _This->_Facetvec[_This->_Facetcount] = nullptr;
         }
     }
     ptrfac->_Incref();
-    if (_This->_Facetvec[id] != 0) {
+    if (_This->_Facetvec[id] != nullptr) {
         delete _This->_Facetvec[id]->_Decref();
     }
 
@@ -139,23 +139,23 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
 
 void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_ctor(
     _Locinfo* pLocinfo, int cat, const char* locname) { // capture a named locale
-    const char* oldlocname = setlocale(LC_ALL, 0);
+    const char* oldlocname = setlocale(LC_ALL, nullptr);
 
-    pLocinfo->_Oldlocname = oldlocname == 0 ? "" : oldlocname;
+    pLocinfo->_Oldlocname = oldlocname == nullptr ? "" : oldlocname;
     _Locinfo_Addcats(pLocinfo, cat, locname);
 }
 
 _Locinfo& __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_Addcats(
     _Locinfo* pLocinfo, int cat, const char* locname) { // merge in another named locale
-    const char* oldlocname = 0;
+    const char* oldlocname = nullptr;
 
-    if (locname == 0) {
+    if (locname == nullptr) {
         _Xruntime_error("bad locale name");
     }
 
     if (locname[0] != '*' || locname[1] != '\0') {
         if (cat == 0) {
-            oldlocname = setlocale(LC_ALL, 0);
+            oldlocname = setlocale(LC_ALL, nullptr);
         } else if (cat == _M_ALL) {
             oldlocname = setlocale(LC_ALL, locname);
         } else { // alter selected categories
@@ -169,7 +169,7 @@ _Locinfo& __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_Addcats(
         }
     }
 
-    if (oldlocname == 0) {
+    if (oldlocname == nullptr) {
         pLocinfo->_Newlocname = "*";
     } else if (strcmp(pLocinfo->_Newlocname._C_str(), "*") != 0) {
         pLocinfo->_Newlocname = oldlocname;

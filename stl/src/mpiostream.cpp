@@ -15,16 +15,16 @@
 _STD_BEGIN
 
 // OBJECT DECLARATIONS
-__PURE_APPDOMAIN_GLOBAL extern istream* _Ptr_cin  = 0;
-__PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_cout = 0;
-__PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_cerr = 0;
-__PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_clog = 0;
+__PURE_APPDOMAIN_GLOBAL extern istream* _Ptr_cin  = nullptr;
+__PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_cout = nullptr;
+__PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_cerr = nullptr;
+__PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_clog = nullptr;
 
 // WIDE OBJECTS
-__PURE_APPDOMAIN_GLOBAL extern wistream* _Ptr_wcin  = 0;
-__PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout = 0;
-__PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr = 0;
-__PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wclog = 0;
+__PURE_APPDOMAIN_GLOBAL extern wistream* _Ptr_wcin  = nullptr;
+__PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout = nullptr;
+__PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr = nullptr;
+__PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wclog = nullptr;
 
 __PURE_APPDOMAIN_GLOBAL int ios_base::Init::_Init_cnt = -1;
 _STD_END
