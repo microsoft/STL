@@ -12,11 +12,11 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double* px) { // catego
 }
 
 unsigned short* _LPlsw(long double* px) { // get pointer to lsw
-    return &((_Lval*) (char*) px)->_Sh[_L3];
+    return &reinterpret_cast<_Lval*>(reinterpret_cast<char*>(px))->_Sh[_L3];
 }
 
 unsigned short* _LPmsw(long double* px) { // get pointer to msw
-    return &((_Lval*) (char*) px)->_Sh[_L0];
+    return &reinterpret_cast<_Lval*>(reinterpret_cast<char*>(px))->_Sh[_L0];
 }
 
 _END_EXTERN_C_UNLESS_PURE

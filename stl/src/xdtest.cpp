@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double* px) { // categorize *px
-    _Dval* ps = (_Dval*) (char*) px;
+    _Dval* ps = reinterpret_cast<_Dval*>(reinterpret_cast<char*>(px));
 
     if ((ps->_Sh[_D0] & _DMASK) == _DMAX << _DOFF) {
         return static_cast<short>(
@@ -22,11 +22,11 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double* px) { // categorize *
 }
 
 unsigned short* _Plsw(double* px) { // get pointer to lsw
-    return &((_Dval*) (char*) px)->_Sh[_Dg];
+    return &reinterpret_cast<_Dval*>(reinterpret_cast<char*>(px))->_Sh[_Dg];
 }
 
 unsigned short* _Pmsw(double* px) { // get pointer to msw
-    return &((_Dval*) (char*) px)->_Sh[_D0];
+    return &reinterpret_cast<_Dval*>(reinterpret_cast<char*>(px))->_Sh[_D0];
 }
 
 _END_EXTERN_C_UNLESS_PURE

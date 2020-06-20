@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 short _FDscale(float* px, long lexp) { // scale *px by 2^xexp with checking
-    _Fval* ps   = (_Fval*) (char*) px;
+    _Fval* ps   = reinterpret_cast<_Fval*>(reinterpret_cast<char*>(px));
     short xchar = static_cast<short>((ps->_Sh[_F0] & _FMASK) >> _FOFF);
 
     if (xchar == _FMAX) {

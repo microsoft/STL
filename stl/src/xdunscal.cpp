@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 short _Dunscale(short* pex, double* px) { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
-    _Dval* ps   = (_Dval*) (char*) px;
+    _Dval* ps   = reinterpret_cast<_Dval*>(reinterpret_cast<char*>(px));
     short xchar = (ps->_Sh[_D0] & _DMASK) >> _DOFF;
 
     if (xchar == _DMAX) { // NaN or INF

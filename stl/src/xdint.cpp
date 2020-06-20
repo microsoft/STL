@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 short _Dint(double* px, short xexp) { // test and drop (scaled) fraction bits
-    _Dval* ps = (_Dval*) (char*) px;
+    _Dval* ps = reinterpret_cast<_Dval*>(reinterpret_cast<char*>(px));
     unsigned short frac;
     short xchar = (ps->_Sh[_D0] & _DMASK) >> _DOFF;
 

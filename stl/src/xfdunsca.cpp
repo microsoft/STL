@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 short _FDunscale(short* pex, float* px) { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
-    _Fval* ps   = (_Fval*) (char*) px;
+    _Fval* ps   = reinterpret_cast<_Fval*>(reinterpret_cast<char*>(px));
     short xchar = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
 
     if (xchar == _FMAX) { // NaN or INF

@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 short _FDint(float* px, short xexp) { // test and drop (scaled) fraction bits
-    _Fval* ps = (_Fval*) (char*) px;
+    _Fval* ps = reinterpret_cast<_Fval*>(reinterpret_cast<char*>(px));
     unsigned short frac;
     short xchar = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
 
