@@ -12,7 +12,7 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
-using test::CanDifference, test::CanCompare, test::ProxyRef, test::IsWrapped;
+using test::CanCompare, test::CanDifference, test::IsWrapped, test::ProxyRef, test::to_bool;
 
 // Validate test::iterator and test::sentinel
 template <class Category, class Element, CanDifference Diff, CanCompare Eq, ProxyRef Proxy, IsWrapped Wrapped>
@@ -39,11 +39,11 @@ constexpr bool iter_test() {
 
     using S = sentinel<Element, Wrapped>;
     STATIC_ASSERT(sentinel_for<S, I>);
-    STATIC_ASSERT(!bool(Diff) || sized_sentinel_for<S, I>);
-    STATIC_ASSERT(!bool(Eq) || sentinel_for<I, I>);
-    STATIC_ASSERT(!bool(Eq) || !bool(Diff) || sized_sentinel_for<I, I>);
+    STATIC_ASSERT(!to_bool(Diff) || sized_sentinel_for<S, I>);
+    STATIC_ASSERT(!to_bool(Eq) || sentinel_for<I, I>);
+    STATIC_ASSERT(!to_bool(Eq) || !to_bool(Diff) || sized_sentinel_for<I, I>);
 
-    if constexpr (bool(Wrapped)) {
+    if constexpr (to_bool(Wrapped)) {
         STATIC_ASSERT(same_as<_Unwrapped_t<I>, iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>>);
         STATIC_ASSERT(same_as<_Unwrapped_t<S>, sentinel<Element, IsWrapped::no>>);
     }
@@ -170,18 +170,18 @@ constexpr bool range_test() {
     STATIC_ASSERT(!derived_from<Category, random_access_iterator_tag> || ranges::random_access_range<R>);
     STATIC_ASSERT(!derived_from<Category, contiguous_iterator_tag> || ranges::contiguous_range<R>);
 
-    if constexpr (bool(IsCommon)) {
-        STATIC_ASSERT(bool(Eq));
+    if constexpr (to_bool(IsCommon)) {
+        STATIC_ASSERT(to_bool(Eq));
         STATIC_ASSERT(ranges::common_range<R>);
     } else {
         STATIC_ASSERT(same_as<S, test::sentinel<Element, IsWrapped::yes>>);
     }
 
-    STATIC_ASSERT(!bool(Eq) || sentinel_for<I, I>);
+    STATIC_ASSERT(!to_bool(Eq) || sentinel_for<I, I>);
 
-    constexpr bool is_sized = bool(IsSized) || (bool(Diff) && derived_from<Category, forward_iterator_tag>);
+    constexpr bool is_sized = to_bool(IsSized) || (to_bool(Diff) && derived_from<Category, forward_iterator_tag>);
     STATIC_ASSERT(ranges::sized_range<R> == is_sized);
-    if constexpr (bool(IsSized)) {
+    if constexpr (to_bool(IsSized)) {
         STATIC_ASSERT(has_member_size<R>);
     }
 
