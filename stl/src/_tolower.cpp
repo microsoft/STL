@@ -104,7 +104,7 @@ _CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype() {
 
     ctype._Page  = ___lc_codepage_func();
     ctype._Table = static_cast<const short*>(_calloc_crt(256, sizeof(*__pctype_func())));
-    if (ctype._Table != 0) {
+    if (ctype._Table != nullptr) {
         memcpy(const_cast<short*>(ctype._Table), __pctype_func(), 256 * sizeof(*__pctype_func()));
         ctype._Delfl = 1;
     } else {

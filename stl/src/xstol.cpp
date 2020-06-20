@@ -22,7 +22,7 @@ _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
     char sign;
     unsigned long x;
 
-    if (endptr == 0) {
+    if (endptr == nullptr) {
         endptr = &se;
     }
 
@@ -40,7 +40,7 @@ _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
     if (s == *endptr && x != 0 || sign == '+' && LONG_MAX < x
         || sign == '-' && 0 - static_cast<unsigned long>(LONG_MIN) < x) { // overflow
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr = 1;
         }
 

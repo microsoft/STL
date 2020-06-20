@@ -20,7 +20,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     char sign;
     unsigned long long x;
 
-    if (endptr == 0) {
+    if (endptr == nullptr) {
         endptr = &se;
     }
 
@@ -38,7 +38,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     if (s == *endptr && x != 0 || sign == '+' && LLONG_MAX < x
         || sign == '-' && 0 - static_cast<unsigned long long>(LLONG_MIN) < x) { // overflow
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr = 1;
         }
 
@@ -50,7 +50,7 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
 
 _CRTIMP2_PURE long long(__CLRCALL_PURE_OR_CDECL _Stoll)(
     const char* s, char** endptr, int base) { // convert string, discard error code
-    return _Stollx(s, endptr, base, 0);
+    return _Stollx(s, endptr, base, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

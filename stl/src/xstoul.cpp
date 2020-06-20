@@ -42,7 +42,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     unsigned long x;
     unsigned long y;
 
-    if (perr != 0) {
+    if (perr != nullptr) {
         *perr = 0;
     }
 
@@ -53,7 +53,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
 
     sign = *sc == '-' || *sc == '+' ? *sc++ : '+';
     if (base < 0 || base == 1 || _Base_max < base) { // silly base
-        if (endptr != 0) {
+        if (endptr != nullptr) {
             *endptr = const_cast<char*>(s);
         }
 
@@ -87,7 +87,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     }
 
     if (s1 == sc) { // check string validity
-        if (endptr != 0) {
+        if (endptr != nullptr) {
             *endptr = const_cast<char*>(s);
         }
 
@@ -97,7 +97,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     n = sc - s2 - ndigs[base];
     if (n >= 0 && (0 < n || x < x - dig || (x - dig) / base != y)) { // overflow
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr = 1;
         }
 
@@ -109,7 +109,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
         x = 0 - x;
     }
 
-    if (endptr != 0) {
+    if (endptr != nullptr) {
         *endptr = const_cast<char*>(sc);
     }
 
@@ -118,7 +118,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoul(
     const char* s, char** endptr, int base) { // convert string, discard error code
-    return _Stoulx(s, endptr, base, 0);
+    return _Stoulx(s, endptr, base, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

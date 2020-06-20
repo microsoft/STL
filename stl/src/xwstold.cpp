@@ -15,7 +15,7 @@ _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _WStoldx(const CTYPE* s, CTYPE** end
 
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _WStold(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code
-    return _WStoldx(s, endptr, pten, 0);
+    return _WStoldx(s, endptr, pten, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

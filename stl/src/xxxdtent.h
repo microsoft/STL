@@ -81,7 +81,7 @@ FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) { // compute *px * 10**n
     x = FNAME(Xp_getw)(xpx, ACSIZE);
     if (x == FLIT(0.0) || x == FCONST(Inf) || x == -FCONST(Inf)) { // report error and set errno
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr |= 1;
         }
     }

@@ -113,7 +113,7 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     if (_Handle == INVALID_HANDLE_VALUE) { // report failure
         _Errno = ERROR_BAD_PATHNAME;
         *_Dest = L'\0';
-        return 0;
+        return nullptr;
     }
 
     // success, get first directory entry
@@ -128,7 +128,7 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
 
         // no entries, release handle
         _Close_dir(_Handle);
-        return 0;
+        return nullptr;
     }
 
     // get file type and return handle
@@ -144,7 +144,7 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_
 #ifdef _CRT_APP
     return false; // no support
 #else // _CRT_APP
-    return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != 0;
+    return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != nullptr;
 #endif // _CRT_APP
 }
 

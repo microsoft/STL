@@ -72,7 +72,7 @@ long _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
 }
 
 int xtime_get(xtime* xt, int type) { // get current time
-    if (type != TIME_UTC || xt == 0) {
+    if (type != TIME_UTC || xt == nullptr) {
         type = 0;
     } else {
         sys_get_time(xt);

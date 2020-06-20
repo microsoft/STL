@@ -40,7 +40,7 @@ int _WStopfx(const wchar_t** ps, wchar_t** endptr) { // parse prefix of floating
             }
         }
 
-        if (endptr != 0) {
+        if (endptr != nullptr) {
             *endptr = const_cast<wchar_t*>(s);
         }
     } else if (*s == L'i' || *s == L'I') { // parse "inf" or fail
@@ -59,7 +59,7 @@ int _WStopfx(const wchar_t** ps, wchar_t** endptr) { // parse prefix of floating
             }
         }
 
-        if (endptr != 0) {
+        if (endptr != nullptr) {
             *endptr = const_cast<wchar_t*>(s);
         }
     } else if (*s == L'0' && (s[1] == L'x' || s[1] == L'X')) { // test for valid hex field following 0x or 0X
