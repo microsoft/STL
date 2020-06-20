@@ -946,11 +946,11 @@ namespace ranges {
                 if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
                     return false;
                 }
-                return _Equal_count(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES begin(_Range2)),
+                return _Equal_count(_RANGES _Ubegin(_Range1), _RANGES _Ubegin(_Range2),
                     _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                return _Equal_4(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES end(_Range1)),
-                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
+                return _Equal_4(_RANGES _Ubegin(_Range1), _RANGES _Uend(_Range1),
+                    _RANGES _Ubegin(_Range2), _RANGES _Uend(_Range2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
