@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double* px) { // categorize *px -- 64-bit
-    return _Dtest((double*) px);
+    return _Dtest(reinterpret_cast<double*>(px));
 }
 
 unsigned short* _LPlsw(long double* px) { // get pointer to lsw

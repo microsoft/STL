@@ -108,7 +108,7 @@ _CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype() {
         memcpy((void*) ctype._Table, __pctype_func(), 256 * sizeof(*__pctype_func()));
         ctype._Delfl = 1;
     } else {
-        ctype._Table = (const short*) __pctype_func();
+        ctype._Table = reinterpret_cast<const short*>(__pctype_func());
         ctype._Delfl = 0;
     }
     ctype._LocaleName = ___lc_locale_name_func()[LC_COLLATE];
