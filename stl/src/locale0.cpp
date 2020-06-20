@@ -47,11 +47,11 @@ struct _Fac_node { // node for lazy facet recording
     _Facet_base* _Facptr;
 };
 
-__PURE_APPDOMAIN_GLOBAL static _Fac_node* _Fac_head = 0;
+__PURE_APPDOMAIN_GLOBAL static _Fac_node* _Fac_head = nullptr;
 
 struct _Fac_tidy_reg_t {
     ~_Fac_tidy_reg_t() noexcept { // destroy lazy facets
-        while (_Fac_head != 0) { // destroy a lazy facet node
+        while (_Fac_head != nullptr) { // destroy a lazy facet node
             _Fac_node* nodeptr = _Fac_head;
             _Fac_head          = nodeptr->_Next;
             delete nodeptr;
@@ -80,12 +80,12 @@ _EXTERN_C
 
 void __CLRCALL_OR_CDECL _Deletegloballocale(void* ptr) { // delete a global locale reference
     std::locale::_Locimp* locptr = *(std::locale::_Locimp**) ptr;
-    if (locptr != 0) {
+    if (locptr != nullptr) {
         delete locptr->_Decref();
     }
 }
 
-__PURE_APPDOMAIN_GLOBAL static std::locale::_Locimp* global_locale = 0; // pointer to current locale
+__PURE_APPDOMAIN_GLOBAL static std::locale::_Locimp* global_locale = nullptr; // pointer to current locale
 
 static void __CLRCALL_PURE_OR_CDECL tidy_global() { // delete static global locale reference
     _BEGIN_LOCK(_LOCK_LOCALE) // prevent double delete
@@ -121,7 +121,7 @@ _MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL std::locale::_Setgloballocale(void* p
 
 __PURE_APPDOMAIN_GLOBAL static locale classic_locale(_Noinit); // "C" locale object, uninitialized
 
-__PURE_APPDOMAIN_GLOBAL locale::_Locimp* locale::_Locimp::_Clocptr = 0; // pointer to classic_locale
+__PURE_APPDOMAIN_GLOBAL locale::_Locimp* locale::_Locimp::_Clocptr = nullptr; // pointer to classic_locale
 
 __PURE_APPDOMAIN_GLOBAL int locale::id::_Id_cnt = 0; // unique id counter for facets
 
@@ -149,13 +149,13 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::empty() { // make empty tra
 }
 
 _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_incref) { // setup global and "C" locales
-    locale::_Locimp* ptr = 0;
+    locale::_Locimp* ptr = nullptr;
 
     _BEGIN_LOCK(_LOCK_LOCALE) // prevent double initialization
 
     ptr = _Getgloballocale();
 
-    if (ptr == 0) { // create new locales
+    if (ptr == nullptr) { // create new locales
         _Setgloballocale(ptr = _Locimp::_New_Locimp());
         ptr->_Catmask = all; // set current locale to "C"
         ptr->_Name    = "C";
@@ -185,7 +185,7 @@ locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Locimp::_New_Locimp(const _Loc
 void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_dtor(_Locimp* _This) { // destruct a _Locimp
     _BEGIN_LOCK(_LOCK_LOCALE) // prevent double delete
     for (size_t count = _This->_Facetcount; 0 < count;) {
-        if (_This->_Facetvec[--count] != 0) {
+        if (_This->_Facetvec[--count] != nullptr) {
             delete _This->_Facetvec[count]->_Decref();
         }
     }
@@ -196,14 +196,14 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_dtor(_Locimp* _This) { // 
 
 void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_ctor(
     _Locinfo* pLocinfo, const char* locname) { // switch to a named locale
-    const char* oldlocname = setlocale(LC_ALL, 0);
+    const char* oldlocname = setlocale(LC_ALL, nullptr);
 
-    pLocinfo->_Oldlocname = oldlocname == 0 ? "" : oldlocname;
-    if (locname != 0) {
+    pLocinfo->_Oldlocname = oldlocname == nullptr ? "" : oldlocname;
+    if (locname != nullptr) {
         locname = setlocale(LC_ALL, locname);
     }
 
-    pLocinfo->_Newlocname = locname == 0 ? "*" : locname;
+    pLocinfo->_Newlocname = locname == nullptr ? "*" : locname;
 }
 
 void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_dtor(_Locinfo* pLocinfo) { // destroy a _Locinfo object, revert locale
