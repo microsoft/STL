@@ -25,16 +25,11 @@
 #include <utility>
 #include <valarray>
 #include <vector>
-
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-namespace ranges = std::ranges;
+//
+#include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
 STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
-
-template <class>
-constexpr bool always_false = false;
 
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
@@ -1838,6 +1833,57 @@ namespace poison_pill_test {
     STATIC_ASSERT(!CanSize<some_type const&>);
 } // namespace poison_pill_test
 
+namespace unwrapped_begin_end {
+    // Validate the iterator-unwrapping range access CPOs ranges::_Ubegin and ranges::_Uend
+    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::Sized, test::IsWrapped;
+
+    template <IsWrapped Wrapped>
+    struct range {
+        using I =
+            test::iterator<std::forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, Wrapped>;
+        using S = test::sentinel<int, Wrapped>;
+
+        I begin() const;
+        S end() const;
+    };
+
+    struct with_unchecked : range<IsWrapped::yes> {
+        bool begin_called_ = false;
+        bool end_called_   = false;
+
+        [[nodiscard]] constexpr range<IsWrapped::no>::I _Unchecked_begin() {
+            begin_called_ = true;
+            return {};
+        }
+        [[nodiscard]] constexpr range<IsWrapped::no>::S _Unchecked_end() {
+            end_called_ = true;
+            return {};
+        }
+    };
+
+    constexpr bool test() {
+        using std::same_as, ranges::_Ubegin, ranges::_Uend;
+
+        range<IsWrapped::no> not_wrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(not_wrapped)), range<IsWrapped::no>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(not_wrapped)), range<IsWrapped::no>::S>);
+
+        range<IsWrapped::yes> wrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<IsWrapped::no>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<IsWrapped::no>::S>);
+
+        with_unchecked uncheckable;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(uncheckable)), range<IsWrapped::no>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(uncheckable)), range<IsWrapped::no>::S>);
+        (void) _Ubegin(uncheckable);
+        assert(uncheckable.begin_called_);
+        (void) _Uend(uncheckable);
+        assert(uncheckable.end_called_);
+
+        return true;
+    }
+} // namespace unwrapped_begin_end
+
 int main() {
     // Validate conditional constexpr
 #ifdef __clang__ // TRANSITION, VSO-977008
@@ -1854,4 +1900,7 @@ int main() {
 
     STATIC_ASSERT(complicated_algorithm_test());
     complicated_algorithm_test();
+
+    STATIC_ASSERT(unwrapped_begin_end::test());
+    unwrapped_begin_end::test();
 }
