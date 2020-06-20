@@ -15,7 +15,7 @@ _CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(
     if (_Ch != WEOF) {
         if (_Ctype->_LocaleName == nullptr && _Ch < 256) { // handle ASCII character in C locale
             if (L'a' <= _Ch && _Ch <= L'z') {
-                _Res = (wchar_t)(_Ch - L'a' + L'A');
+                _Res = static_cast<wchar_t>(_Ch - L'a' + L'A');
             }
         } else if (__crtLCMapStringW(_Ctype->_LocaleName, LCMAP_UPPERCASE, &_Ch, 1, &_Res, 1) == 0) {
             _Res = _Ch;
@@ -27,7 +27,7 @@ _CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(
 
 #ifdef MRTDLL
 _CRTIMP2_PURE unsigned short __CLRCALL_PURE_OR_CDECL _Towupper(unsigned short _Ch, const _Ctypevec* _Ctype) {
-    return _Towupper((wchar_t) _Ch, _Ctype);
+    return _Towupper(static_cast<wchar_t>(_Ch), _Ctype);
 }
 #endif
 

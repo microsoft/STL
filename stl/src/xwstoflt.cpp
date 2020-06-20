@@ -36,7 +36,7 @@ int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
 
     while (iswdigit(*s)) {
         if (nsig <= maxsig) {
-            buf[nsig++] = (char) (*s - L'0'); // accumulate a digit
+            buf[nsig++] = static_cast<char>(*s - L'0'); // accumulate a digit
         } else {
             ++lo[0]; // too many digits, just scale exponent
         }
@@ -59,7 +59,7 @@ int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
 
     while (iswdigit(*s)) {
         if (nsig <= maxsig) { // accumulate a fraction digit
-            buf[nsig++] = (char) (*s - L'0');
+            buf[nsig++] = static_cast<char>(*s - L'0');
             --lo[0];
         }
 

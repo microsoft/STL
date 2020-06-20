@@ -58,7 +58,7 @@ int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread termina
     }
 
     if (code) {
-        *code = (int) res;
+        *code = static_cast<int>(res);
     }
 
     return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;

@@ -27,7 +27,7 @@ _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
     }
 
     sc = s;
-    while (isspace((unsigned char) *sc)) {
+    while (isspace(static_cast<unsigned char>(*sc))) {
         ++sc;
     }
 
@@ -38,7 +38,7 @@ _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
     }
 
     if (s == *endptr && x != 0 || sign == '+' && LONG_MAX < x
-        || sign == '-' && 0 - (unsigned long) LONG_MIN < x) { // overflow
+        || sign == '-' && 0 - static_cast<unsigned long>(LONG_MIN) < x) { // overflow
         errno = ERANGE;
         if (perr != 0) {
             *perr = 1;
@@ -47,7 +47,7 @@ _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
         return sign == '-' ? LONG_MIN : LONG_MAX;
     }
 
-    return (long) (sign == '-' ? 0 - x : x);
+    return static_cast<long>(sign == '-' ? 0 - x : x);
 }
 
 _END_EXTERN_C_UNLESS_PURE

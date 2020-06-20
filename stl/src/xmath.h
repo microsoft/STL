@@ -15,16 +15,16 @@
 #define _D3 0
 
 // IEEE 754 double properties
-#define HUGE_EXP (int) (_DMAX * 900L / 1000)
+#define HUGE_EXP static_cast<int>(_DMAX * 900L / 1000)
 
 // IEEE 754 float properties
-#define FHUGE_EXP (int) (_FMAX * 900L / 1000)
+#define FHUGE_EXP static_cast<int>(_FMAX * 900L / 1000)
 
 #define _F0 1 // little-endian
 #define _F1 0
 
 // IEEE 754 long double properties
-#define LHUGE_EXP (int) (_LMAX * 900L / 1000)
+#define LHUGE_EXP static_cast<int>(_LMAX * 900L / 1000)
 
 #define _L0 3 // little-endian, 64-bit long doubles
 #define _L1 2

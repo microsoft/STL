@@ -39,11 +39,11 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     }
 
     sc = s;
-    while (isspace((unsigned char) *sc)) {
+    while (isspace(static_cast<unsigned char>(*sc))) {
         ++sc;
     }
 
-    sign = (char) (*sc == '-' || *sc == '+' ? *sc++ : '+');
+    sign = static_cast<char>(*sc == '-' || *sc == '+' ? *sc++ : '+');
     if (base < 0 || base == 1 || _Base_max < base) { // silly base
         if (endptr != 0) {
             *endptr = (char*) s;
@@ -72,7 +72,7 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     for (s2 = sc, y = 0, dig = 0; (sd = (char*) memchr(&digits[0], tolower(*sc), base)) != 0;
          ++sc) { // accumulate digits
         y   = x;
-        dig = (char) (sd - digits); // for overflow checking
+        dig = static_cast<char>(sd - digits); // for overflow checking
         x   = x * base + dig;
     }
 

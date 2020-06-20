@@ -47,7 +47,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     }
 
     sc = s;
-    while (isspace((unsigned char) *sc)) {
+    while (isspace(static_cast<unsigned char>(*sc))) {
         ++sc;
     }
 
@@ -81,7 +81,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     x = 0;
     for (s2 = sc, y = 0; (sd = (char*) memchr(&digits[0], tolower(*sc), base)) != 0; ++sc) { // accumulate digits
         y   = x;
-        dig = (char) (sd - digits); // for overflow checking
+        dig = static_cast<char>(sd - digits); // for overflow checking
         x   = x * base + dig;
     }
 

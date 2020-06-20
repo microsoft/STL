@@ -12,7 +12,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
     const char* s = *ps;
     int code      = 0;
 
-    while (isspace((unsigned char) *s)) {
+    while (isspace(static_cast<unsigned char>(*s))) {
         ++s;
     }
 
@@ -34,7 +34,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
             if (*q == '(') { // got '(', skip through ')'
                 do {
                     ++q;
-                } while (isalnum((unsigned char) *q) || *q == '_');
+                } while (isalnum(static_cast<unsigned char>(*q)) || *q == '_');
 
                 if (*q == ')') {
                     s = ++q;
@@ -70,7 +70,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
             ++s1;
         }
 
-        if (isxdigit((unsigned char) *s1)) {
+        if (isxdigit(static_cast<unsigned char>(*s1))) {
             s += 2;
             code |= FL_HEX;
         } else {

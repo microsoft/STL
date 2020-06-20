@@ -15,19 +15,19 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(wchar_t _Ch,
     const _Ctypevec* _Ctype) { // return character classification flags for _Ch
     _CRT_UNUSED(_Ctype);
     short _Mask;
-    return (short) (GetStringTypeW(CT_CTYPE1, &_Ch, 1, (LPWORD) &_Mask) == 0 ? 0 : _Mask);
+    return static_cast<short>(GetStringTypeW(CT_CTYPE1, &_Ch, 1, (LPWORD) &_Mask) == 0 ? 0 : _Mask);
 }
 
 _CRTIMP2_PURE const wchar_t* __CLRCALL_PURE_OR_CDECL _Getwctypes(const wchar_t* _First, const wchar_t* _Last,
     short* _Dest, const _Ctypevec* _Ctype) { // get mask sequence for elements in [_First, _Last)
     _CRT_UNUSED(_Ctype);
-    GetStringTypeW(CT_CTYPE1, _First, (int) (_Last - _First), (LPWORD) _Dest);
+    GetStringTypeW(CT_CTYPE1, _First, static_cast<int>(_Last - _First), (LPWORD) _Dest);
     return _Last;
 }
 
 #ifdef MRTDLL
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(unsigned short _Ch, const _Ctypevec* _Ctype) {
-    return _Getwctype((wchar_t) _Ch, _Ctype);
+    return _Getwctype(static_cast<wchar_t>(_Ch), _Ctype);
 }
 
 _CRTIMP2_PURE const unsigned short* __CLRCALL_PURE_OR_CDECL _Getwctypes(

@@ -49,7 +49,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbsta
             return -1;
         }
 
-        *s = (char) wchar;
+        *s = static_cast<char>(wchar);
         return sizeof(char);
     } else {
         int size;
@@ -73,7 +73,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbsta
 
 #ifdef MRTDLL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, unsigned short wchar, mbstate_t* pst, const _Cvtvec* ploc) {
-    return _Wcrtomb(s, (wchar_t) wchar, pst, ploc);
+    return _Wcrtomb(s, static_cast<wchar_t>(wchar), pst, ploc);
 }
 #endif // MRTDLL
 

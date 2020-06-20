@@ -105,9 +105,9 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
             int eseen        = 0;
             long lexp        = 0;
 
-            for (; isdigit((unsigned char) *s); ++s, eseen = 1) {
+            for (; isdigit(static_cast<unsigned char>(*s)); ++s, eseen = 1) {
                 if (lexp < 100000000) { // else overflow
-                    lexp = lexp * 10 + (unsigned char) *s - '0';
+                    lexp = lexp * 10 + static_cast<unsigned char>(*s) - '0';
                 }
             }
 
