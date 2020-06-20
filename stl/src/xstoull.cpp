@@ -69,7 +69,7 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     }
 
     x = 0;
-    for (s2 = sc, y = 0, dig = 0; (sd = (char*) memchr(&digits[0], tolower(*sc), base)) != 0;
+    for (s2 = sc, y = 0, dig = 0; (sd = static_cast<const char*>(memchr(&digits[0], tolower(*sc), base))) != 0;
          ++sc) { // accumulate digits
         y   = x;
         dig = static_cast<char>(sd - digits); // for overflow checking

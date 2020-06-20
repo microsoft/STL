@@ -40,7 +40,7 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
         seen = 1;
     }
 
-    while ((pd = (char*) memchr(&digits[0], *s, 22)) != 0) {
+    while ((pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != 0) {
         if (nsig <= maxsig) {
             buf[nsig++] = vals[pd - digits]; // accumulate a digit
         } else {
@@ -61,7 +61,7 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
         }
     }
 
-    for (; (pd = (char*) memchr(&digits[0], *s, 22)) != 0; ++s, seen = 1) {
+    for (; (pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != 0; ++s, seen = 1) {
         if (nsig <= maxsig) { // accumulate a fraction digit
             buf[nsig++] = vals[pd - digits];
             --lo[0];
