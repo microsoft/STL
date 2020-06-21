@@ -213,4 +213,4 @@ void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_dtor(_Locinfo* pLocinfo) { // de
 }
 _STD_END
 
-#endif // !STDCPP_IMPLIB
+#endif // !STDCPP_IMPLIB || defined(_M_CEE_PURE)
