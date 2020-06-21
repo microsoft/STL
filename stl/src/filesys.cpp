@@ -160,7 +160,7 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) {
 
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t*) {
     // get symlink -- DUMMY
-    _Dest[0] = wchar_t(0);
+    _Dest[0] = L'\0';
     return &_Dest[0];
 }
 
