@@ -17,11 +17,6 @@
 
 _STD_BEGIN
 
-using _Traits  = char_traits<char>;
-using _Initer  = istreambuf_iterator<char, _Traits>;
-using _Outiter = ostreambuf_iterator<char, _Traits>;
-
-
 _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) { // change global locale
     locale _Oldglobal;
     _BEGIN_LOCK(_LOCK_LOCALE)
@@ -60,20 +55,20 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) {
             Facet::id);                                                                                     \
     }
 
-using _T1 = ctype<char>;
-using _T2 = num_get<char, _Initer>;
-using _T3 = num_put<char, _Outiter>;
-using _T4 = numpunct<char>;
-using _T5 = codecvt<char, char, _Mbstatet>;
+using _Tc1 = ctype<char>;
+using _Tc2 = num_get<char>;
+using _Tc3 = num_put<char>;
+using _Tc4 = numpunct<char>;
+using _Tc5 = codecvt<char, char, _Mbstatet>;
 // others moved to wlocale and xlocale to ease subsetting
 
 locale::_Locimp* __CLRCALL_OR_CDECL locale::_Locimp::_Makeloc(
     const _Locinfo& lobj, locale::category cat, _Locimp* ptrimp, const locale* ptrloc) { // setup a new locale
-    ADDFAC(_T1, cat, ptrimp, ptrloc);
-    ADDFAC(_T2, cat, ptrimp, ptrloc);
-    ADDFAC(_T3, cat, ptrimp, ptrloc);
-    ADDFAC(_T4, cat, ptrimp, ptrloc);
-    ADDFAC(_T5, cat, ptrimp, ptrloc);
+    ADDFAC(_Tc1, cat, ptrimp, ptrloc);
+    ADDFAC(_Tc2, cat, ptrimp, ptrloc);
+    ADDFAC(_Tc3, cat, ptrimp, ptrloc);
+    ADDFAC(_Tc4, cat, ptrimp, ptrloc);
+    ADDFAC(_Tc5, cat, ptrimp, ptrloc);
     _Locimp::_Makexloc(lobj, cat, ptrimp, ptrloc);
     _Locimp::_Makewloc(lobj, cat, ptrimp, ptrloc);
 #ifdef _NATIVE_WCHAR_T_DEFINED
