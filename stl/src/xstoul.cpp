@@ -20,15 +20,9 @@ constexpr int _Base_max = 36; // largest valid base
 static const char digits[] = // valid digits
     "0123456789abcdefghijklmnopqrstuvwxyz";
 
-#if (ULONG_MAX >> 16) >> 16 == 0xffffffff
-// 64-bits!
-static const char ndigs[_Base_max + 1] = {0, 0, 65, 41, 33, 28, 25, 23, 22, 21, 20, 19, 18, 18, 17, 17, 17, 16, 16, 16,
-    15, 15, 15, 15, 14, 14, 14, 14, 14, 14, 14, 13, 13, 13, 13, 13, 13};
-#else // (ULONG_MAX >> 16) >> 16 == 0xffffffff
 // 32-bits!
 static const char ndigs[_Base_max + 1] = {0, 0, 33, 21, 17, 14, 13, 12, 11, 11, 10, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8,
     8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
-#endif // (ULONG_MAX >> 16) >> 16 == 0xffffffff
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     const char* s, char** endptr, int base, int* perr) { // convert string to unsigned long, with checking
