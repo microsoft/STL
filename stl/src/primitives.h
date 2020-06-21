@@ -348,8 +348,8 @@ namespace Concurrency {
 #if defined _CRT_WINDOWS
         const size_t stl_critical_section_max_size        = sizeof(stl_critical_section_win7);
         const size_t stl_condition_variable_max_size      = sizeof(stl_condition_variable_win7);
-        const size_t stl_critical_section_max_alignment   = __alignof(stl_critical_section_win7);
-        const size_t stl_condition_variable_max_alignment = __alignof(stl_condition_variable_win7);
+        const size_t stl_critical_section_max_alignment   = alignof(stl_critical_section_win7);
+        const size_t stl_condition_variable_max_alignment = alignof(stl_condition_variable_win7);
 #elif defined _STL_CONCRT_SUPPORT
         const size_t stl_critical_section_max_size =
             __max(__max(sizeof(stl_critical_section_concrt), sizeof(stl_critical_section_vista)),
@@ -358,20 +358,20 @@ namespace Concurrency {
             __max(__max(sizeof(stl_condition_variable_concrt), sizeof(stl_condition_variable_vista)),
                 sizeof(stl_condition_variable_win7));
         const size_t stl_critical_section_max_alignment =
-            __max(__max(__alignof(stl_critical_section_concrt), __alignof(stl_critical_section_vista)),
-                __alignof(stl_critical_section_win7));
+            __max(__max(alignof(stl_critical_section_concrt), alignof(stl_critical_section_vista)),
+                alignof(stl_critical_section_win7));
         const size_t stl_condition_variable_max_alignment =
-            __max(__max(__alignof(stl_condition_variable_concrt), __alignof(stl_condition_variable_vista)),
-                __alignof(stl_condition_variable_win7));
+            __max(__max(alignof(stl_condition_variable_concrt), alignof(stl_condition_variable_vista)),
+                alignof(stl_condition_variable_win7));
 #else
         const size_t stl_critical_section_max_size =
             __max(sizeof(stl_critical_section_vista), sizeof(stl_critical_section_win7));
         const size_t stl_condition_variable_max_size =
             __max(sizeof(stl_condition_variable_vista), sizeof(stl_condition_variable_win7));
         const size_t stl_critical_section_max_alignment =
-            __max(__alignof(stl_critical_section_vista), __alignof(stl_critical_section_win7));
+            __max(alignof(stl_critical_section_vista), alignof(stl_critical_section_win7));
         const size_t stl_condition_variable_max_alignment =
-            __max(__alignof(stl_condition_variable_vista), __alignof(stl_condition_variable_win7));
+            __max(alignof(stl_condition_variable_vista), alignof(stl_condition_variable_win7));
 #endif
     } // namespace details
 } // namespace Concurrency
