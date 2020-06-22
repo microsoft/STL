@@ -946,11 +946,11 @@ namespace ranges {
                 if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
                     return false;
                 }
-                return _Equal_count(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES begin(_Range2)),
+                return _Equal_count(_RANGES _Ubegin(_Range1), _RANGES _Ubegin(_Range2),
                     _Count, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                return _Equal_4(_Get_unwrapped(_RANGES begin(_Range1)), _Get_unwrapped(_RANGES end(_Range1)),
-                    _Get_unwrapped(_RANGES begin(_Range2)), _Get_unwrapped(_RANGES end(_Range2)),
+                return _Equal_4(_RANGES _Ubegin(_Range1), _RANGES _Uend(_Range1),
+                    _RANGES _Ubegin(_Range2), _RANGES _Uend(_Range2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
@@ -1260,6 +1260,40 @@ namespace ranges {
     };
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE move_result
+    template <class _In, class _Out>
+    using move_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::move
+    class _Move_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+            requires indirectly_movable<_It, _Out>
+        constexpr move_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            for (; _UFirst != _ULast; ++_UFirst, (void) ++_Result) {
+                *_Result = _RANGES iter_move(_UFirst);
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out>
+            requires indirectly_movable<iterator_t<_Rng>, _Out>
+        constexpr move_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 

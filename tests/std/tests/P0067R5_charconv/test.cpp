@@ -565,20 +565,20 @@ void all_integer_tests() {
 
 void assert_message_bits(const bool b, const char* const msg, const uint32_t bits) {
     if (!b) {
-        printf("%s failed for 0x%08X\n", msg, bits);
-        puts("This is a randomized test.");
-        puts("DO NOT IGNORE/RERUN THIS FAILURE.");
-        puts("You must report it to the STL maintainers.");
+        fprintf(stderr, "%s failed for 0x%08X\n", msg, bits);
+        fprintf(stderr, "This is a randomized test.\n");
+        fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
+        fprintf(stderr, "You must report it to the STL maintainers.\n");
         abort();
     }
 }
 
 void assert_message_bits(const bool b, const char* const msg, const uint64_t bits) {
     if (!b) {
-        printf("%s failed for 0x%016llX\n", msg, bits);
-        puts("This is a randomized test.");
-        puts("DO NOT IGNORE/RERUN THIS FAILURE.");
-        puts("You must report it to the STL maintainers.");
+        fprintf(stderr, "%s failed for 0x%016llX\n", msg, bits);
+        fprintf(stderr, "This is a randomized test.\n");
+        fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
+        fprintf(stderr, "You must report it to the STL maintainers.\n");
         abort();
     }
 }

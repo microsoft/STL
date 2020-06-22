@@ -17,35 +17,16 @@
 #include <intrin.h>
 #include <stdint.h>
 
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-// __crtTerminateProcess() - Terminates the current process.
-//
-// Purpose:
-//        Terminates the current process.
-//        This function is not needed for ARM and Windows 8, which call __fastfail() instead.
-// Entry:
-//        The exit code to be used by the process and threads terminated
-#if !defined _CRT_APP && (defined _M_IX86 || defined _M_X64)
-
-extern "C" void __cdecl __crtTerminateProcess(UINT const uExitCode) {
-    // Terminate the current process - the return code is currently unusable in
-    // the CRT, so we ignore it.
-    TerminateProcess(GetCurrentProcess(), uExitCode);
-}
-
-#endif // !defined _CRT_APP && (defined _M_IX86 || defined _M_X64)
-
-#else // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 // GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
-typedef BOOL(WINAPI* PFNGETCURRENTPACKAGEID)(UINT32*, BYTE*);
+using PFNGETCURRENTPACKAGEID = BOOL(WINAPI*)(UINT32*, BYTE*);
 
 #if !defined _CRT_APP
 #if defined _ONECORE
 
 namespace {
     struct HMODULETraits {
-        typedef HMODULE Type;
+        using Type = HMODULE;
 
         static bool Close(Type const h) noexcept {
             return ::FreeLibrary(h) != FALSE;
@@ -56,7 +37,7 @@ namespace {
         }
     };
 
-    typedef Microsoft::WRL::Wrappers::HandleT<HMODULETraits> HMODULEHandle;
+    using HMODULEHandle = Microsoft::WRL::Wrappers::HandleT<HMODULETraits>;
 } // unnamed namespace
 
 extern "C" int __crt_IsPackagedAppHelper() {
@@ -145,7 +126,7 @@ extern "C" BOOL __cdecl __crtIsPackagedApp() {
 #endif
 }
 
-#endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WS03

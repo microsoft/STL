@@ -33,7 +33,8 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(unsigned short _Ch, const
 
 _CRTIMP2_PURE const unsigned short* __CLRCALL_PURE_OR_CDECL _Getwctypes(
     const unsigned short* _First, const unsigned short* _Last, short* _Dest, const _Ctypevec* _Ctype) {
-    return (const unsigned short*) _Getwctypes((wchar_t*) _First, (wchar_t*) _Last, _Dest, _Ctype);
+    return reinterpret_cast<const unsigned short*>(
+        _Getwctypes(reinterpret_cast<const wchar_t*>(_First), reinterpret_cast<const wchar_t*>(_Last), _Dest, _Ctype));
 }
 #endif
 
