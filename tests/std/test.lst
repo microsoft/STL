@@ -237,6 +237,7 @@ tests\P0896R4_ranges_algorithm_machinery
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
 tests\P0896R4_ranges_alg_any_of
+tests\P0896R4_ranges_alg_binary_search
 tests\P0896R4_ranges_alg_copy
 tests\P0896R4_ranges_alg_copy_if
 tests\P0896R4_ranges_alg_copy_n
