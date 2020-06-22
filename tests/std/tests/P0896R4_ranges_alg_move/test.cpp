@@ -4,9 +4,10 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
-#include <range_algorithm_support.hpp>
 #include <ranges>
 #include <utility>
+
+#include <range_algorithm_support.hpp>
 
 struct int_wrapper {
     int val                 = 10;
