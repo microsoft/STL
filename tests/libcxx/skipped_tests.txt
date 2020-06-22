@@ -456,15 +456,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-numerics\bit\bitops.count\countl_one.pass.cpp
-numerics\bit\bitops.count\countl_zero.pass.cpp
-numerics\bit\bitops.count\countr_one.pass.cpp
-numerics\bit\bitops.count\countr_zero.pass.cpp
-numerics\bit\bitops.count\popcount.pass.cpp
-numerics\bit\bitops.rot\rotl.pass.cpp
-numerics\bit\bitops.rot\rotr.pass.cpp
-
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
 utilities\variant\variant.variant\variant.assign\T.pass.cpp
