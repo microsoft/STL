@@ -3293,10 +3293,6 @@ namespace ranges {
         const _It& _First, const _Se& _Last, const iter_difference_t<_It> _Count) {
         // Find the iterator in [_First, _Last) (of length _Count) which equals _Last
         _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
-        (void) _First;
-        (void) _Last;
-        (void) _Count;
-
         if constexpr (is_same_v<_It, _Se>) {
             return _Last;
         } else {
