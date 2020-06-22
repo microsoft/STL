@@ -2358,7 +2358,7 @@ namespace ranges {
         template <class _Ty, output_iterator<const _Ty&> _It, sentinel_for<_It> _Se>
         constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Value) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
