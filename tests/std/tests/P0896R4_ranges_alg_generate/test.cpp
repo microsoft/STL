@@ -15,16 +15,18 @@ constexpr void smoke_test() {
     int output1[] = {13, 42, 1367};
     int output2[] = {13, 42, 1367};
     {
-        auto result = generate(std::begin(output1), std::end(output1), []() { return 7; });
-        for (int i = 0; i < 3; ++i) {
-            assert(output1[i] == 7);
+        const int value = 7;
+        auto result     = generate(std::begin(output1), std::end(output1), []() { return value; });
+        for (auto elem : output1) {
+            assert(elem == value);
         }
         assert(result == std::end(output1));
     }
     {
-        auto result = generate(output2, []() { return 13; });
-        for (int i = 0; i < 3; ++i) {
-            assert(output2[i] == 13);
+        const int value = 13;
+        auto result     = generate(output2, []() { return value; });
+        for (auto elem : output2) {
+            assert(elem == value);
         }
         assert(result == std::end(output2));
     }
