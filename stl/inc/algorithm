@@ -2181,8 +2181,8 @@ namespace ranges {
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE swap_ranges_result
-    template <class _In, class _Out>
-    using swap_ranges_result = in_out_result<_In, _Out>;
+    template <class _In1, class _In2>
+    using swap_ranges_result = in_in_result<_In1, _In2>;
 
     // VARIABLE ranges::swap_ranges
     class _Swap_ranges_fn : private _Not_quite_object {
