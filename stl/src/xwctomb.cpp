@@ -52,7 +52,6 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbsta
         *s = static_cast<char>(wchar);
         return sizeof(char);
     } else {
-        int size;
         BOOL defused = 0;
         _Cvtvec cvtvec;
 
@@ -61,8 +60,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbsta
             ploc   = &cvtvec;
         }
 
-        if (((size = WideCharToMultiByte(ploc->_Page, 0, &wchar, 1, s, ploc->_Mbcurmax, nullptr, &defused)) == 0)
-            || defused) {
+        const int size = WideCharToMultiByte(ploc->_Page, 0, &wchar, 1, s, ploc->_Mbcurmax, nullptr, &defused);
+        if (size == 0 || defused) {
             errno = EILSEQ;
             return -1;
         }

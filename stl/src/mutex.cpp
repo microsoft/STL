@@ -66,10 +66,11 @@ void _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
 }
 
 int _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
-    _Mtx_t mutex;
-    *mtx = 0;
+    *mtx = nullptr;
 
-    if ((mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(struct _Mtx_internal_imp_t)))) == nullptr) {
+    _Mtx_t mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(_Mtx_internal_imp_t)));
+
+    if (mutex == nullptr) {
         return _Thrd_nomem; // report alloc failed
     }
 

@@ -88,11 +88,11 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_ctor(
     } else { // lock to keep facets from disappearing
         _BEGIN_LOCK(_LOCK_LOCALE)
         if (0 < _This->_Facetcount) { // copy over nonempty facet vector
-            if ((_This->_Facetvec =
-                        static_cast<locale::facet**>(_malloc_crt(_This->_Facetcount * sizeof(locale::facet*))))
-                == nullptr) { // report no memory
+            _This->_Facetvec = static_cast<locale::facet**>(_malloc_crt(_This->_Facetcount * sizeof(locale::facet*)));
+            if (_This->_Facetvec == nullptr) { // report no memory
                 _Xbad_alloc();
             }
+
             for (size_t count = _This->_Facetcount; 0 < count;) { // copy over facet pointers
                 locale::facet* ptrfac = imp._Facetvec[--count];
                 if ((_This->_Facetvec[count] = ptrfac) != nullptr) {
