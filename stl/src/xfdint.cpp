@@ -9,8 +9,7 @@ _EXTERN_C_UNLESS_PURE
 
 short _FDint(float* px, short xexp) { // test and drop (scaled) fraction bits
     const auto ps = reinterpret_cast<_Fval*>(px);
-    unsigned short frac;
-    short xchar = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
+    short xchar   = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
 
     if (xchar == _FMAX) {
         return (ps->_Sh[_F0] & _FFRAC) == 0 && ps->_Sh[_F1] == 0 ? _INFCODE : _NANCODE;
@@ -33,7 +32,7 @@ short _FDint(float* px, short xexp) { // test and drop (scaled) fraction bits
             0x0fff, 0x1fff, 0x3fff, 0x7fff};
         static const size_t sub[]          = {_F1, _F0};
 
-        frac = mask[xchar & 0xf];
+        unsigned short frac = mask[xchar & 0xf];
         xchar >>= 4;
         frac &= ps->_Sh[sub[xchar]];
         ps->_Sh[sub[xchar]] ^= frac;
