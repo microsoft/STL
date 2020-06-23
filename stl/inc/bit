@@ -153,7 +153,7 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #endif // _M_IX86
     }
     // note: we don't need to call a fallback here because
-    // all supported intel processors at least have bsr/bsf
+    // all supported x86 processors at least have bsr/bsf
 }
 
 template <class _Ty>
