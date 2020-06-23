@@ -30,7 +30,7 @@ int main() {
 
     STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, ld)), long double>);
     STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, d)), double>);
-    STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, f)), double>);
+    STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, f)), float>);
     STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, ll)), double>);
     STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, i)), double>);
     STATIC_ASSERT(std::is_same_v<decltype(std::pow(f, s)), double>);
