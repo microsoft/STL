@@ -293,7 +293,7 @@ STATIC_ASSERT(test_compare_three_way<compares_as<strong_ordering>, compares_as<s
 
 // Validate dynamic properties of compare_three_way, ranges::equal_to, ranges::not_equal_to, ranges::less,
 // ranges::less_equal, ranges::greater, ranges::greater_equal
-#define assert_three_way(t, u, result) assert((compare_three_way{}(t, u) == result))
+#define assert_three_way(t, u, result) assert(compare_three_way{}((t), (u)) == (result))
 
 template <class T, class U>
 constexpr void test_equality_comparable(T const& t, U const& u, strong_ordering const o) {
