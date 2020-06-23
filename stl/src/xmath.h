@@ -31,9 +31,9 @@
 #define _L2 1
 #define _L3 0
 
-#define DSIGN(x) (reinterpret_cast<_Dval*>(reinterpret_cast<char*>(&(x)))->_Sh[_D0] & _DSIGN)
-#define FSIGN(x) (reinterpret_cast<_Fval*>(reinterpret_cast<char*>(&(x)))->_Sh[_F0] & _FSIGN)
-#define LSIGN(x) (reinterpret_cast<_Lval*>(reinterpret_cast<char*>(&(x)))->_Sh[_L0] & _LSIGN)
+#define DSIGN(x) (reinterpret_cast<_Dval*>(&(x))->_Sh[_D0] & _DSIGN)
+#define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
+#define LSIGN(x) (reinterpret_cast<_Lval*>(&(x))->_Sh[_L0] & _LSIGN)
 
 #define _Fg _F1 // least-significant 16-bit word
 #define _Dg _D3

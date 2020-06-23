@@ -8,7 +8,7 @@
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) { // categorize *px
-    _Fval* ps = reinterpret_cast<_Fval*>(reinterpret_cast<char*>(px));
+    const auto ps = reinterpret_cast<_Fval*>(px);
 
     if ((ps->_Sh[_F0] & _FMASK) == _FMAX << _FOFF) {
         return static_cast<short>((ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : _INFCODE);
@@ -20,11 +20,11 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) { // categorize *
 }
 
 unsigned short* _FPlsw(float* px) { // get pointer to lsw
-    return &reinterpret_cast<_Fval*>(reinterpret_cast<char*>(px))->_Sh[_Fg];
+    return &reinterpret_cast<_Fval*>(px)->_Sh[_Fg];
 }
 
 unsigned short* _FPmsw(float* px) { // get pointer to msw
-    return &reinterpret_cast<_Fval*>(reinterpret_cast<char*>(px))->_Sh[_F0];
+    return &reinterpret_cast<_Fval*>(px)->_Sh[_F0];
 }
 
 _END_EXTERN_C_UNLESS_PURE
