@@ -64,7 +64,7 @@ public:
     }
 
     void unlock() {
-        _Check_C_return(_Mtx_unlock(_Mymtx()));
+        _Mtx_unlock(_Mymtx());
     }
 
     using native_handle_type = void*;
@@ -587,16 +587,16 @@ public:
     condition_variable& operator=(const condition_variable&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
-        _Check_C_return(_Cnd_signal(_Mycnd()));
+        _Cnd_signal(_Mycnd());
     }
 
     void notify_all() noexcept { // wake up all waiters
-        _Check_C_return(_Cnd_broadcast(_Mycnd()));
+        _Cnd_broadcast(_Mycnd());
     }
 
     void wait(unique_lock<mutex>& _Lck) { // wait for signal
         // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        _Check_C_return(_Cnd_wait(_Mycnd(), _Lck.mutex()->_Mymtx()));
+        _Cnd_wait(_Mycnd(), _Lck.mutex()->_Mymtx());
     }
 
     template <class _Predicate>

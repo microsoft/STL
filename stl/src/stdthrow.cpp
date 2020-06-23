@@ -16,7 +16,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Debug_message(
 
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Debug_message(
     const unsigned short* message, const unsigned short* file, unsigned int line) { // report error and die
-    _Debug_message((wchar_t*) message, (wchar_t*) file, line);
+    _Debug_message(reinterpret_cast<const wchar_t*>(message), reinterpret_cast<const wchar_t*>(file), line);
 }
 #endif
 _STD_END

@@ -626,7 +626,7 @@ extern "C" int __cdecl __crtCompareStringEx(
     LPCWSTR lpLocaleName, DWORD dwCmpFlags, LPCWSTR lpString1, int cchCount1, LPCWSTR lpString2, int cchCount2) {
     // use CompareStringEx if it is available (only on Windows Vista+)...
     IFDYNAMICGETCACHEDFUNCTION(PFNCOMPARESTRINGEX, CompareStringEx, pfCompareStringEx) {
-        return (*pfCompareStringEx)(
+        return pfCompareStringEx(
             lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
     }
 
@@ -640,7 +640,7 @@ extern "C" int __cdecl __crtLCMapStringEx(
     LPCWSTR lpLocaleName, DWORD dwMapFlags, LPCWSTR lpSrcStr, int cchSrc, LPWSTR lpDestStr, int cchDest) {
     // use LCMapStringEx if it is available (only on Windows Vista+)...
     IFDYNAMICGETCACHEDFUNCTION(PFNLCMAPSTRINGEX, LCMapStringEx, pfLCMapStringEx) {
-        return (*pfLCMapStringEx)(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
+        return pfLCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
     }
 
     // ...otherwise fall back to using LCMapString.
