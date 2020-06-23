@@ -30,18 +30,18 @@ constexpr void smoke_test() {
         }
         assert(result == std::end(output));
     }
-    // {
-    //     int output[] = {13, 42, 1367};
-    //     auto result  = generate(output, []() {
-    //         static int calls_to_generate = 0;
-    //         calls_to_generate++;
-    //         return calls_to_generate;
-    //     });
-    //     // for (auto elem : output) {
-    //     //     assert(elem == value);
-    //     // }
-    //     assert(result == std::end(output));
-    // }
+    {
+        int output[]          = {13, 42, 1367};
+        int calls_to_generate = -1;
+        auto result           = generate(output, [&calls_to_generate]() {
+            calls_to_generate++;
+            return calls_to_generate;
+        });
+        for (int i = 0; i < 3; i++) {
+            assert(i == output[i]);
+        }
+        assert(result == std::end(output));
+    }
 }
 
 int main() {
