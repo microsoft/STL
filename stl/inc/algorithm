@@ -2201,12 +2201,13 @@ namespace ranges {
             auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
             auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
             while ((_UFirst1 != _ULast1) && (_UFirst2 != _ULast2)) {
-                *_UFirst1 = *_UFirst2;
+                ranges::iter_swap(_UFirst1, _UFirst2);
                 ++_UFirst1; ++_UFirst2;
             }
 
+            _Seek_wrapped(_First1, _STD move(_UFirst1));
             _Seek_wrapped(_First2, _STD move(_UFirst2));
-            return _First2;
+            return {_STD move(_First1), _STD move(_First2)};
         }
 
         template <input_range _Rng1, input_range _Rng2>
