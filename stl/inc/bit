@@ -96,6 +96,8 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
+// Implementation of popcount without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
 template <class _Ty>
 _NODISCARD constexpr int _Popcount_helper(_Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
@@ -124,7 +126,7 @@ extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD inline int _Checked_x86_x86_64_countl_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
     const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
     constexpr int _Digits  = numeric_limits<_Ty>::digits;
     // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
@@ -143,8 +145,8 @@ _NODISCARD inline int _Checked_x86_x86_64_countl_zero(const _Ty _Val) noexcept {
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
         const auto _Low          = static_cast<unsigned int>(_Val);
-        int _Result              = _Checked_x86_x86_64_countl_zero(_High);
-        _Result += _High == 0 ? _Checked_x86_x86_64_countl_zero(_Low) : 0;
+        int _Result              = _Checked_x86_x64_countl_zero(_High);
+        _Result += _High == 0 ? _Checked_x86_x64_countl_zero(_Low) : 0;
         return _Result;
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(__lzcnt64(_Val));
@@ -155,7 +157,7 @@ _NODISCARD inline int _Checked_x86_x86_64_countl_zero(const _Ty _Val) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD inline int _Checked_x86_x86_64_popcount(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
     const bool _Have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
     if (_Have_popcnt) {
@@ -179,7 +181,7 @@ _NODISCARD inline int _Checked_x86_x86_64_popcount(const _Ty _Val) noexcept {
 
 #if defined(_M_ARM) || defined(_M_ARM64)
 template <class _Ty>
-_NODISCARD inline int _Checked_arm_countl_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_arm_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if (_Val == 0) {
         return _Digits;
@@ -196,7 +198,7 @@ template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabl
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
     if (!_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
-        return _Checked_x86_x86_64_countl_zero(_Val);
+        return _Checked_x86_x64_countl_zero(_Val);
 #elif defined(_M_ARM) || defined(_M_ARM64)
         return _Checked_arm_countl_zero(_Val);
 #endif
@@ -223,7 +225,7 @@ template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabl
 _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
     if (!_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
-        return _Checked_x86_x86_64_popcount(_Val);
+        return _Checked_x86_x64_popcount(_Val);
 #endif // defined(_M_IX86) || defined(_M_X64)
     }
     return _Popcount_helper(_Val);

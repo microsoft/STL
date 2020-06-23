@@ -1012,6 +1012,8 @@ public:
     static constexpr int min_exponent10 = LDBL_MIN_10_EXP;
 };
 
+// Implementation of countl_zero without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-3
 template <class _Ty>
 _NODISCARD constexpr int _Countl_zero_helper(_Ty _Val) noexcept {
@@ -1030,6 +1032,8 @@ _NODISCARD constexpr int _Countl_zero_helper(_Ty _Val) noexcept {
     return static_cast<int>(_Nn) - static_cast<int>(_Val);
 }
 
+// Implementation of countr_zero without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-4
 template <class _Ty>
 _NODISCARD constexpr int _Countr_zero_helper(const _Ty _Val) noexcept {
@@ -1053,7 +1057,7 @@ __MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64));
 }
 
 template <class _Ty>
-inline int _Checked_x86_x86_64_countr_zero(const _Ty _Val) noexcept {
+int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     const bool _Have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
     constexpr int _Digits  = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max     = (numeric_limits<_Ty>::max)();
@@ -1070,8 +1074,8 @@ inline int _Checked_x86_x86_64_countr_zero(const _Ty _Val) noexcept {
 #ifdef _M_IX86
         unsigned int _High = _Val >> 32;
         unsigned int _Low  = static_cast<unsigned int>(_Val);
-        int _Result        = _Checked_x86_x86_64_countr_zero(_Low);
-        _Result += !_Low ? _Checked_x86_x86_64_countr_zero(_High) : 0;
+        int _Result        = _Checked_x86_x64_countr_zero(_Low);
+        _Result += !_Low ? _Checked_x86_x64_countr_zero(_High) : 0;
         return _Result;
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));
@@ -1093,7 +1097,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #endif // __cpp_lib_is_constant_evaluated
     {
 #if defined(_M_IX86) || defined(_M_X64)
-        return _Checked_x86_x86_64_countr_zero(_Val);
+        return _Checked_x86_x64_countr_zero(_Val);
 #endif // _M_IX86
     }
     return _Countr_zero_helper(_Val);
