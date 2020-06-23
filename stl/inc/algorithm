@@ -2192,7 +2192,7 @@ namespace ranges {
         // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2>
             requires indirectly_swappable<_It1, _It2>
-        constexpr swap_ranges_result<_It1, _It2> 
+        constexpr swap_ranges_result<_It1, _It2>
         operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
@@ -2391,83 +2391,6 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
     return _STD replace_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred), _Val);
 }
 #endif // _HAS_CXX17
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // VARIABLE ranges::fill
-    class _Fill_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        template <class _Ty, output_iterator<const _Ty&> _It, sentinel_for<_It> _Se>
-        constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Value) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-#ifdef __cpp_lib_is_constant_evaluated
-                if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-                {
-                    _CSTD memset(_UFirst, static_cast<unsigned char>(_Value), static_cast<size_t>(_ULast - _UFirst));
-                    _UFirst += static_cast<size_t>(_ULast - _UFirst);
-                    _Seek_wrapped(_First, _UFirst);
-                    return _First;
-                }
-            }
-
-            while (_UFirst != _ULast) {
-                *_UFirst = _Value;
-                ++_UFirst;
-            }
-
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return _First;
-        }
-
-        template <class _Ty, output_range<const _Ty&> _Rng>
-        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Value) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Value);
-        }
-    };
-
-    inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
-
-    // VARIABLE ranges::fill_n
-    class _Fill_n_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        template <class _Ty, output_iterator<const _Ty&> _It>
-        constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) const {
-            if (0 < _Count) {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-                if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-#ifdef __cpp_lib_is_constant_evaluated
-                    if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-                    {
-                        _CSTD memset(_UFirst, static_cast<unsigned char>(_Value), static_cast<size_t>(_Count));
-                        _UFirst += _Count;
-                        _Seek_wrapped(_First, _UFirst);
-                        return _First;
-                    }
-                }
-
-                for (; _Count > 0; ++_UFirst, (void) --_Count) {
-                    *_UFirst = _Value;
-                }
-
-                _Seek_wrapped(_First, _STD move(_UFirst));
-            }
-
-            return _First;
-        }
-    };
-
-    inline constexpr _Fill_n_fn fill_n{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
-#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE generate
 template <class _FwdIt, class _Fn>
