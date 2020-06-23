@@ -13,7 +13,6 @@
 #include <cwchar>
 #include <intrin0.h>
 #include <isa_availability.h>
-#include <type_traits>
 #include <xstddef>
 
 #pragma pack(push, _CRT_PACKING)
@@ -1093,7 +1092,7 @@ constexpr bool _Is_standard_unsigned_integer =
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #ifdef __cpp_lib_is_constant_evaluated
-    if (!__builtin_is_constant_evaluated())
+    if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
     {
 #if defined(_M_IX86) || defined(_M_X64)
