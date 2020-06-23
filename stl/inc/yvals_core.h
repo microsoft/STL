@@ -1169,14 +1169,10 @@
 #define __cpp_lib_destroying_delete 201806L
 #endif // __cpp_impl_destroying_delete
 
-#define __cpp_lib_endian                   201907L
-#define __cpp_lib_erase_if                 202002L
-#define __cpp_lib_generic_unordered_lookup 201811L
-
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
-#define __cpp_lib_int_pow2 202002L
-#endif
-
+#define __cpp_lib_endian                       201907L
+#define __cpp_lib_erase_if                     202002L
+#define __cpp_lib_generic_unordered_lookup     201811L
+#define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L

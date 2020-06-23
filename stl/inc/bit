@@ -181,11 +181,12 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 
 #if defined(_M_ARM) || defined(_M_ARM64)
 template <class _Ty>
-_NODISCARD int _Checked_arm_countl_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if (_Val == 0) {
         return _Digits;
     }
+
     if constexpr (_Digits <= 32) {
         return _CountLeadingZeros(_Val);
     } else {
@@ -200,7 +201,9 @@ _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
         return _Checked_x86_x64_countl_zero(_Val);
 #elif defined(_M_ARM) || defined(_M_ARM64)
-        return _Checked_arm_countl_zero(_Val);
+        return _Checked_arm_arm64_countl_zero(_Val);
+#else
+#error Unsupported Hardware
 #endif
     }
     return _Countl_zero_helper(_Val);

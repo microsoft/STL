@@ -105,9 +105,9 @@ constexpr bool test_rotr() {
     return true;
 }
 
-// tests functions for 64bit operands that have either high or low halves as zero
-// these may be split into two operations on 32bit platforms and we need to check
-// if we handle the == zero or == ones case correctly
+// Tests functions for 64-bit operands that have either high or low halves as zero.
+// These may be split into two operations on 32-bit platforms and we need to check
+// if we handle the == zero or == ones case correctly.
 constexpr bool test_64bit_split_ops() {
     constexpr unsigned long long zero_one = 0x0000'0000'FFFF'FFFF;
     constexpr unsigned long long one_zero = 0xFFFF'FFFF'0000'0000;
