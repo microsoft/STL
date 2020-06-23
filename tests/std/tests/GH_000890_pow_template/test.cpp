@@ -10,7 +10,7 @@ int main() {
     long double ld = 10.0l;
     double d       = 10.0;
     float f        = 10.0f;
-    long long ll   = 2ll;
+    long long ll   = 2;
     int i          = 2;
     short s        = 2;
 
