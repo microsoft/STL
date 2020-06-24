@@ -4154,11 +4154,10 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
-            auto _First       = _RANGES begin(_Range);
-            auto _UFirst      = _Upper_bound_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return _First;
+            auto _UResult     = _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Result      = _RANGES begin(_Range);
+            _Seek_wrapped(_Result, _STD move(_UResult));
+            return _Result;
         }
     };
 
@@ -4233,10 +4232,9 @@ namespace ranges {
         _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
-            auto _First       = _RANGES begin(_Range);
-            auto _UResult     = _Equal_range_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
+            auto _UResult     = _Equal_range_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Result      = _RANGES begin(_Range);
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Result, _STD move(_UResult));
         }
 
     private:
