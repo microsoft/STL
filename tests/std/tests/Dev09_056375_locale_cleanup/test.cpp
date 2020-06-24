@@ -4,7 +4,8 @@
 #include <assert.h>
 #include <locale>
 #include <stdio.h>
-#include <test_windows.h>
+
+#include <test_windows.hpp>
 
 using namespace std;
 

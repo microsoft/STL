@@ -3,11 +3,12 @@
 
 // xtime functions
 
-#include "awint.h"
 #include <atomic>
 #include <stdlib.h>
 #include <time.h>
 #include <xtimec.h>
+
+#include "awint.hpp"
 
 constexpr long _Nsec_per_sec  = 1000000000L;
 constexpr long _Nsec_per_msec = 1000000L;
@@ -72,7 +73,7 @@ long _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
 }
 
 int xtime_get(xtime* xt, int type) { // get current time
-    if (type != TIME_UTC || xt == 0) {
+    if (type != TIME_UTC || xt == nullptr) {
         type = 0;
     } else {
         sys_get_time(xt);

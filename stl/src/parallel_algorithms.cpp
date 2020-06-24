@@ -82,7 +82,7 @@ namespace {
     void _Atomic_store_uint(volatile unsigned int* _Tgt, unsigned int _Value) {
         // atomic store of unsigned int, copied from <atomic>
 #if defined(_M_IX86) || defined(_M_X64)
-        _InterlockedExchange((volatile long*) _Tgt, static_cast<long>(_Value));
+        _InterlockedExchange(reinterpret_cast<volatile long*>(_Tgt), static_cast<long>(_Value));
 #else // architecture, ditto no ARM support
 #error Unsupported architecture
 #endif // architecture

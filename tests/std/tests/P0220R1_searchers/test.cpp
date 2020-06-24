@@ -358,10 +358,10 @@ void test_case_BM_unicode32() {
 }
 
 void report_randomized_failure(const string_view searcher, const string_view needle, const string_view haystack) {
-    cout << searcher << " failed for needle \"" << needle << "\" and haystack \"" << haystack << "\".\n";
-    cout << "This is a randomized test.\n";
-    cout << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
-    cout << "You must report it to the STL maintainers.\n";
+    cerr << searcher << " failed for needle \"" << needle << "\" and haystack \"" << haystack << "\".\n";
+    cerr << "This is a randomized test.\n";
+    cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+    cerr << "You must report it to the STL maintainers.\n";
     assert(false);
 }
 

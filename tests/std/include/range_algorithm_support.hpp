@@ -87,6 +87,12 @@ namespace test {
     enum class ProxyRef : bool { no, yes };
     enum class IsWrapped : bool { no, yes };
 
+    template <class T>
+    [[nodiscard]] constexpr bool to_bool(T const t) noexcept {
+        STATIC_ASSERT(std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, bool>);
+        return static_cast<bool>(t);
+    }
+
     template <class Element, IsWrapped Wrapped = IsWrapped::yes>
     class sentinel {
         Element* ptr_ = nullptr;
@@ -103,13 +109,13 @@ namespace test {
 
         using unwrap = sentinel<Element, IsWrapped::no>;
 
-        [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires(bool(Wrapped)) {
+        [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires(to_bool(Wrapped)) {
             return unwrap{ptr_};
         }
 
         static constexpr bool _Unwrap_when_unverified = true;
 
-        constexpr void _Seek_to(unwrap const& s) noexcept requires(bool(Wrapped)) {
+        constexpr void _Seek_to(unwrap const& s) noexcept requires(to_bool(Wrapped)) {
             ptr_ = s.base();
         }
     };
@@ -168,15 +174,15 @@ namespace test {
         ProxyRef Proxy = ProxyRef{!derived_from<Category, contiguous>},
         // Interact with the STL's iterator unwrapping machinery?
         IsWrapped Wrapped = IsWrapped::yes>
-        requires (bool(Eq) || !derived_from<Category, fwd>)
-            && (!bool(Proxy) || !derived_from<Category, contiguous>)
+        requires (to_bool(Eq) || !derived_from<Category, fwd>)
+            && (!to_bool(Proxy) || !derived_from<Category, contiguous>)
     class iterator {
         Element* ptr_;
 
         template <class T>
         static constexpr bool at_least = derived_from<Category, T>;
 
-        using ReferenceType = conditional_t<bool(Proxy), proxy_reference<Category, Element>, Element&>;
+        using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
 
     public:
         // output iterator operations
@@ -190,7 +196,7 @@ namespace test {
             return *this;
         }
 
-        [[nodiscard]] constexpr Element* base() const& noexcept requires (bool(Eq)) {
+        [[nodiscard]] constexpr Element* base() const& noexcept requires (to_bool(Eq)) {
             return ptr_;
         }
         [[nodiscard]] constexpr Element* base() && noexcept {
@@ -265,12 +271,12 @@ namespace test {
         }
 
         // sentinel operations (implied by forward iterator):
-        iterator(iterator const&) requires (bool(Eq)) = default;
-        iterator& operator=(iterator const&) requires (bool(Eq)) = default;
-        [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires (bool(Eq)) {
+        iterator(iterator const&) requires (to_bool(Eq)) = default;
+        iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
+        [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires (to_bool(Eq)) {
             return {ptr_ == that.ptr_};
         }
-        [[nodiscard]] constexpr boolish operator!=(iterator const& that) const noexcept requires (bool(Eq)) {
+        [[nodiscard]] constexpr boolish operator!=(iterator const& that) const noexcept requires (to_bool(Eq)) {
             return !(*this == that);
         }
 
@@ -327,15 +333,15 @@ namespace test {
 
         // sized_sentinel_for operations:
         [[nodiscard]] constexpr ptrdiff_t operator-(iterator const& that) const noexcept
-            requires (bool(Diff) && bool(Eq)) || at_least<random> {
+            requires (to_bool(Diff) && to_bool(Eq)) || at_least<random> {
             return ptr_ - that.ptr_;
         }
         [[nodiscard]] constexpr ptrdiff_t operator-(sentinel<Element, Wrapped> const& s) const noexcept
-            requires (bool(Diff)) {
+            requires (to_bool(Diff)) {
             return ptr_ - s.base();
         }
         [[nodiscard]] friend constexpr ptrdiff_t operator-(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept requires (bool(Diff)) {
+            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept requires (to_bool(Diff)) {
             return -(i - s);
         }
 
@@ -344,21 +350,21 @@ namespace test {
 
         using unwrap = iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>;
 
-        [[nodiscard]] constexpr auto _Unwrapped() const& noexcept requires (bool(Wrapped) && bool(Eq)) {
+        [[nodiscard]] constexpr auto _Unwrapped() const& noexcept requires (to_bool(Wrapped) && to_bool(Eq)) {
             return unwrap{ptr_};
         }
 
-        [[nodiscard]] constexpr auto _Unwrapped() && noexcept requires (bool(Wrapped)) {
+        [[nodiscard]] constexpr auto _Unwrapped() && noexcept requires (to_bool(Wrapped)) {
             return unwrap{exchange(ptr_, nullptr)};
         }
 
         static constexpr bool _Unwrap_when_unverified = true;
 
-        constexpr void _Seek_to(unwrap const& i) noexcept requires (bool(Wrapped) && bool(Eq)) {
+        constexpr void _Seek_to(unwrap const& i) noexcept requires (to_bool(Wrapped) && to_bool(Eq)) {
             ptr_ = i.base();
         }
 
-        constexpr void _Seek_to(unwrap&& i) noexcept requires (bool(Wrapped)) {
+        constexpr void _Seek_to(unwrap&& i) noexcept requires (to_bool(Wrapped)) {
             ptr_ = std::move(i).base();
         }
     };
@@ -370,8 +376,8 @@ template <class Category, class Element, ::test::CanDifference Diff, ::test::Can
 struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>> {
     using iterator_concept  = Category;
     using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
-        conditional_t<bool(Proxy), input_iterator_tag, Category>, //
-        conditional_t<bool(Eq), Category, void>>; // TRANSITION, LWG-3289
+        conditional_t<static_cast<bool>(Proxy), input_iterator_tag, Category>, //
+        conditional_t<static_cast<bool>(Eq), Category, void>>; // TRANSITION, LWG-3289
     using value_type        = remove_cv_t<Element>;
     using difference_type   = ptrdiff_t;
     using pointer           = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
@@ -407,16 +413,16 @@ namespace test {
         CanCompare Eq = CanCompare{derived_from<Category, fwd>},
         // Use a ProxyRef reference type?
         ProxyRef Proxy = ProxyRef{!derived_from<Category, contiguous>}>
-        requires (!bool(IsCommon) || bool(Eq))
-            && (bool(Eq) || !derived_from<Category, fwd>)
-            && (!bool(Proxy) || !derived_from<Category, contiguous>)
+        requires (!to_bool(IsCommon) || to_bool(Eq))
+            && (to_bool(Eq) || !derived_from<Category, fwd>)
+            && (!to_bool(Proxy) || !derived_from<Category, contiguous>)
     class range : ranges::view_base {
         span<Element> elements_;
         mutable bool begin_called_ = false;
 
     public:
         using I = iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::yes>;
-        using S = conditional_t<bool(IsCommon), I, sentinel<Element, IsWrapped::yes>>;
+        using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, IsWrapped::yes>>;
 
         range() = default;
         constexpr explicit range(span<Element> elements) noexcept : elements_{elements} {}
@@ -444,7 +450,7 @@ namespace test {
             return S{elements_.data() + elements_.size()};
         }
 
-        [[nodiscard]] constexpr ptrdiff_t size() const noexcept requires (bool(IsSized)) {
+        [[nodiscard]] constexpr ptrdiff_t size() const noexcept requires (to_bool(IsSized)) {
             if constexpr (!derived_from<Category, fwd>) {
                 assert(!begin_called_);
             }
@@ -456,7 +462,7 @@ namespace test {
         }
 
         using UI = iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>;
-        using US = conditional_t<bool(IsCommon), I, sentinel<Element, IsWrapped::no>>;
+        using US = conditional_t<to_bool(IsCommon), I, sentinel<Element, IsWrapped::no>>;
 
         [[nodiscard]] constexpr UI _Unchecked_begin() const noexcept {
             return UI{elements_.data()};
