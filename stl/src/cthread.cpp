@@ -28,7 +28,7 @@ namespace {
     using _Thrd_callback_t = unsigned int(__stdcall*)(void*);
 
     unsigned int __stdcall _Thrd_runner(void* d) { // call thread function
-        _Thrd_binder b = *(_Thrd_binder*) d;
+        _Thrd_binder b = *static_cast<_Thrd_binder*>(d);
         _Mtx_lock(*b.mtx);
         *b.started = 1;
         _Cnd_signal(*b.cond);
@@ -59,7 +59,7 @@ int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread termina
     }
 
     if (code) {
-        *code = (int) res;
+        *code = static_cast<int>(res);
     }
 
     return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;

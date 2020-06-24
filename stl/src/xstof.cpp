@@ -18,7 +18,7 @@ _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _Stofx(const CTYPE* s, CTYPE** endpt
 
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _Stof(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code
-    return _Stofx(s, endptr, pten, 0);
+    return _Stofx(s, endptr, pten, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

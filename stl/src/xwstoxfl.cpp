@@ -43,7 +43,7 @@ int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
         seen = 1;
     }
 
-    while ((pd = (wchar_t*) wmemchr(&digits[0], *s, 22)) != 0) {
+    while ((pd = wmemchr(&digits[0], *s, 22)) != nullptr) {
         if (nsig <= maxsig) {
             buf[nsig++] = vals[pd - digits]; // accumulate a digit
         } else {
@@ -64,7 +64,7 @@ int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
         }
     }
 
-    while ((pd = (wchar_t*) wmemchr(&digits[0], *s, 22)) != 0) {
+    while ((pd = wmemchr(&digits[0], *s, 22)) != nullptr) {
         if (nsig <= maxsig) { // accumulate a fraction digit
             buf[nsig++] = vals[pd - digits];
             --lo[0];
@@ -133,7 +133,7 @@ int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
     }
 
     if (endptr) {
-        *endptr = (wchar_t*) (seen ? s : s0); // roll back if bad parse
+        *endptr = const_cast<wchar_t*>(seen ? s : s0); // roll back if bad parse
     }
 
     return word;

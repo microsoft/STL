@@ -67,10 +67,11 @@ void _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
 }
 
 int _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
-    _Mtx_t mutex;
-    *mtx = 0;
+    *mtx = nullptr;
 
-    if ((mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(struct _Mtx_internal_imp_t)))) == 0) {
+    _Mtx_t mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(_Mtx_internal_imp_t)));
+
+    if (mutex == nullptr) {
         return _Thrd_nomem; // report alloc failed
     }
 
@@ -98,7 +99,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
         return _Thrd_success;
     } else { // handle timed or recursive mutex
         int res = WAIT_TIMEOUT;
-        if (target == 0) { // no target --> plain wait (i.e. infinite timeout)
+        if (target == nullptr) { // no target --> plain wait (i.e. infinite timeout)
             if (mtx->thread_id != static_cast<long>(GetCurrentThreadId())) {
                 mtx->_get_cs()->lock();
             }
@@ -149,7 +150,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
             return _Thrd_success;
 
         case WAIT_TIMEOUT:
-            if (target == 0 || (target->sec == 0 && target->nsec == 0)) {
+            if (target == nullptr || (target->sec == 0 && target->nsec == 0)) {
                 return _Thrd_busy;
             } else {
                 return _Thrd_timedout;
@@ -173,7 +174,7 @@ int _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
 }
 
 int _Mtx_lock(_Mtx_t mtx) { // lock mutex
-    return mtx_do_lock(mtx, 0);
+    return mtx_do_lock(mtx, nullptr);
 }
 
 int _Mtx_trylock(_Mtx_t mtx) { // attempt to lock try_mutex
