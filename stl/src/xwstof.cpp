@@ -16,7 +16,7 @@ _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _WStofx(const CTYPE* s, CTYPE** endp
 
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _WStof(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code
-    return _WStofx(s, endptr, pten, 0);
+    return _WStofx(s, endptr, pten, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

@@ -10,14 +10,6 @@
 _EXTERN_C
 #endif // defined(MRTDLL)
 
-#ifndef ldexpf
-#define ldexpf(x, y) ldexp((double) (x), (y))
-#endif // ldexp
-
-#ifndef sqrtf
-#define sqrtf(x) sqrt((double) (x))
-#endif // sqrtf
-
 #define BIG_EXP   (2 * FMAXEXP) // very large, as exponents go
 #define BITS_WORD (FBITS / 2) // all words same for now
 #define NBUF      4 // size of delay line for mulh
@@ -37,7 +29,7 @@ static void printit(const char* s, FTYPE* p, int n) { // print xp array
     int i;
     printf(s);
     for (i = 0; i < n && (p[i] != FLIT(0.0) || i == 0); ++i) {
-        printf(" %La", (long double) p[i]);
+        printf(" %La", static_cast<long double>(p[i]));
     }
     printf("\n");
 }
@@ -141,7 +133,7 @@ FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
                     break;
                 }
 
-                if ((diff = (long) yexp - xexp) <= -mybits
+                if ((diff = static_cast<long>(yexp) - xexp) <= -mybits
                     && x0 != FLIT(0.0)) { // insert nonzero x0 and loop to renormalize
                     int j = k;
 
@@ -175,7 +167,7 @@ FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
                     x0 = p[k];
                     FNAME(Dunscale)(&xexp, &x0);
                     if (prevexp - mybits < xexp) { // propagate bits up
-                        FNAME(Dint)(&x0, (short) (xexp - (prevexp - mybits)));
+                        FNAME(Dint)(&x0, static_cast<short>(xexp - (prevexp - mybits)));
                         FNAME(Dscale)(&x0, xexp);
                         if ((p[k] -= x0) == FLIT(0.0)) { // all bits carry, copy up words
                             COPY_UP(k, n)
@@ -274,12 +266,11 @@ FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precisi
 FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) { // load a long integer
 
 #if 27 <= FBITS
-    FNAME(Xp_setw)(p, n, (FTYPE) x);
-
+    FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x));
 #else // 27 <= FBITS
-    FNAME(Xp_setw)(p, n, (FTYPE)(x / 10000));
-    FNAME(Xp_mulh)(p, n, (FTYPE) 10000);
-    FNAME(Xp_addh)(p, n, (FTYPE)(x % 10000));
+    FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x / 10000));
+    FNAME(Xp_mulh)(p, n, static_cast<FTYPE>(10000));
+    FNAME(Xp_addh)(p, n, static_cast<FTYPE>(x % 10000));
 #endif // 27 <= FBITS
 
     return p;

@@ -84,8 +84,8 @@ extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, L
 
             // do string mapping
             if (0
-                == __crtLCMapStringEx(
-                    LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, (LPWSTR) lpDestStr, cchDest)) {
+                == __crtLCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size,
+                    reinterpret_cast<LPWSTR>(lpDestStr), cchDest)) {
                 return retval;
             }
         }

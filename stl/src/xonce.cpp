@@ -14,7 +14,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     static_assert(sizeof(_Flag._Opaque) == sizeof(INIT_ONCE), "invalid size");
 
     return __crtInitOnceExecuteOnce(
-        reinterpret_cast<PINIT_ONCE>(&_Flag._Opaque), reinterpret_cast<PINIT_ONCE_FN>(_Callback), _Pv, 0);
+        reinterpret_cast<PINIT_ONCE>(&_Flag._Opaque), reinterpret_cast<PINIT_ONCE_FN>(_Callback), _Pv, nullptr);
 }
 
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL

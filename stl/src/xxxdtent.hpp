@@ -20,10 +20,10 @@ _EXTERN_C
 
 static const FTYPE tenth[] = {
     // 53-bit: 0.100000
-    (FTYPE)(FLIT(6710886.0) / FRAC_BITS),
-    (FTYPE)(FLIT(26843545.0) / FRAC_BITS_2),
-    (FTYPE)(FLIT(40265318.0) / FRAC_BITS_2 / FRAC_BITS),
-    (FTYPE)(FLIT(26843545.0) / FRAC_BITS_2 / FRAC_BITS_2),
+    static_cast<FTYPE>(FLIT(6710886.0) / FRAC_BITS),
+    static_cast<FTYPE>(FLIT(26843545.0) / FRAC_BITS_2),
+    static_cast<FTYPE>(FLIT(40265318.0) / FRAC_BITS_2 / FRAC_BITS),
+    static_cast<FTYPE>(FLIT(26843545.0) / FRAC_BITS_2 / FRAC_BITS_2),
 };
 
 #elif FBITS == 24
@@ -31,10 +31,10 @@ static const FTYPE tenth[] = {
 
 static const FTYPE tenth[] = {
     // 24-bit: 0.100000
-    (FTYPE)(FLIT(409.0) / FRAC_BITS),
-    (FTYPE)(FLIT(2457.0) / FRAC_BITS_2),
-    (FTYPE)(FLIT(2457.0) / FRAC_BITS_2 / FRAC_BITS),
-    (FTYPE)(FLIT(2457.0) / FRAC_BITS_2 / FRAC_BITS_2),
+    static_cast<FTYPE>(FLIT(409.0) / FRAC_BITS),
+    static_cast<FTYPE>(FLIT(2457.0) / FRAC_BITS_2),
+    static_cast<FTYPE>(FLIT(2457.0) / FRAC_BITS_2 / FRAC_BITS),
+    static_cast<FTYPE>(FLIT(2457.0) / FRAC_BITS_2 / FRAC_BITS_2),
 };
 
 #else // FBITS
@@ -81,7 +81,7 @@ FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) { // compute *px * 10**n
     x = FNAME(Xp_getw)(xpx, ACSIZE);
     if (x == FLIT(0.0) || x == FCONST(Inf) || x == -FCONST(Inf)) { // report error and set errno
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr |= 1;
         }
     }

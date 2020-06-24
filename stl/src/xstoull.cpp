@@ -35,19 +35,19 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     unsigned long long x;
     unsigned long long y;
 
-    if (perr != 0) {
+    if (perr != nullptr) {
         *perr = 0;
     }
 
     sc = s;
-    while (isspace((unsigned char) *sc)) {
+    while (isspace(static_cast<unsigned char>(*sc))) {
         ++sc;
     }
 
-    sign = (char) (*sc == '-' || *sc == '+' ? *sc++ : '+');
+    sign = static_cast<char>(*sc == '-' || *sc == '+' ? *sc++ : '+');
     if (base < 0 || base == 1 || _Base_max < base) { // silly base
-        if (endptr != 0) {
-            *endptr = (char*) s;
+        if (endptr != nullptr) {
+            *endptr = const_cast<char*>(s);
         }
 
         return 0;
@@ -70,16 +70,16 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     }
 
     x = 0;
-    for (s2 = sc, y = 0, dig = 0; (sd = (char*) memchr(&digits[0], tolower(*sc), base)) != 0;
+    for (s2 = sc, y = 0, dig = 0; (sd = static_cast<const char*>(memchr(&digits[0], tolower(*sc), base))) != 0;
          ++sc) { // accumulate digits
         y   = x;
-        dig = (char) (sd - digits); // for overflow checking
+        dig = static_cast<char>(sd - digits); // for overflow checking
         x   = x * base + dig;
     }
 
     if (s1 == sc) { // check string validity
-        if (endptr != 0) {
-            *endptr = (char*) s;
+        if (endptr != nullptr) {
+            *endptr = const_cast<char*>(s);
         }
 
         return 0;
@@ -88,7 +88,7 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     n = sc - s2 - ndigs[base];
     if (n >= 0 && (0 < n || x < x - dig || (x - dig) / base != y)) { // overflow
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr = 1;
         }
 
@@ -100,8 +100,8 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
         x = 0 - x;
     }
 
-    if (endptr != 0) {
-        *endptr = (char*) sc;
+    if (endptr != nullptr) {
+        *endptr = const_cast<char*>(sc);
     }
 
     return x;
@@ -109,7 +109,7 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
 
 _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoull(
     const char* s, char** endptr, int base) { // convert string, discard error code
-    return _Stoullx(s, endptr, base, 0);
+    return _Stoullx(s, endptr, base, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

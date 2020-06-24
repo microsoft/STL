@@ -64,21 +64,21 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
     }
 
     if (valid[n] == 0) {
-        return 0; // no valid mode
+        return nullptr; // no valid mode
     }
 
     if (norepflag && (mode & (ios_base::out | ios_base::app))
         && (fp = _Xfsopen(filename, 0, prot)) != nullptr) { // file must not exist, close and fail
         fclose(fp);
-        return 0;
+        return nullptr;
     }
 
     if (fp != nullptr && fclose(fp) != 0) {
-        return 0; // can't close after test open
+        return nullptr; // can't close after test open
     }
 
     if ((fp = _Xfsopen(filename, n, prot)) == nullptr) {
-        return 0; // open failed
+        return nullptr; // open failed
     }
 
     if (!atendflag || fseek(fp, 0, SEEK_END) == 0) {
@@ -86,7 +86,7 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
     }
 
     fclose(fp); // can't position at end
-    return 0;
+    return nullptr;
 }
 
 _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(
