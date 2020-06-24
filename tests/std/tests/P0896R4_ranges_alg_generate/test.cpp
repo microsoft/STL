@@ -37,7 +37,7 @@ constexpr void smoke_test() {
             calls_to_generate++;
             return calls_to_generate;
         });
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
             assert(i == output[i]);
         }
         assert(result == std::end(output));
