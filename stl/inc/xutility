@@ -1671,7 +1671,7 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
             _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
         }
 
-        auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+        decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
         constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
         if constexpr (is_signed_v<_Diff> && _Is_bidi_iter_v<_InIt>) {
@@ -1695,7 +1695,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
     // increment iterator by offset, input iterators
     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
 
-    auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -1710,7 +1710,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
 template <class _BidIt, class _Diff>
 _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_tag) {
     // increment iterator by offset, bidirectional iterators
-    auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -3111,7 +3111,7 @@ namespace ranges {
                     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
                 }
 
-                auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+                decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
                 constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
                 if constexpr (bidirectional_iterator<_It>) {
@@ -3139,9 +3139,9 @@ namespace ranges {
             } else {
                 _Adl_verify_range(_Where, _Last);
 
-                auto&& _UWhere              = _Get_unwrapped(static_cast<_It&&>(_Where));
+                decltype(auto) _UWhere      = _Get_unwrapped(static_cast<_It&&>(_Where));
                 constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped(static_cast<_It&&>(_Where)))>;
-                auto&& _ULast               = _Get_unwrapped(static_cast<_Se&&>(_Last));
+                decltype(auto) _ULast       = _Get_unwrapped(static_cast<_Se&&>(_Last));
 
                 while (_UWhere != _ULast) {
                     ++_UWhere;
