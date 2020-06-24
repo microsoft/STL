@@ -3,11 +3,12 @@
 
 // _Stoll function
 
-#include "xmath.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

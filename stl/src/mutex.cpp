@@ -3,13 +3,14 @@
 
 // mutex functions
 
-#include "primitives.h"
 #include <internal_shared.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>
+
+#include "primitives.hpp"
 
 extern "C" _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precondition failure
     fputs(msg, stderr);

@@ -6,13 +6,14 @@
 #pragma warning(disable : 4201) // nonstandard extension used: nameless struct/union
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
-#include "awint.h"
 #include <crtdefs.h>
 #include <exception>
 #include <new>
 #include <stdlib.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 #ifdef _STL_CONCRT_SUPPORT
 #include <concrt.h>

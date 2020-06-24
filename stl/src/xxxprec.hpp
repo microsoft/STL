@@ -3,8 +3,9 @@
 
 // common extended precision functionality
 
-#include "xmath.h"
 #include <string.h>
+
+#include "xmath.hpp"
 #if !defined(MRTDLL)
 _EXTERN_C
 #endif // defined(MRTDLL)

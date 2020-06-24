@@ -5,13 +5,14 @@
 
 #include <yvals.h>
 
-#include "awint.h"
 #include <ctype.h>
 #include <internal_shared.h>
 #include <locale.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <xlocinfo.h>
+
+#include "awint.hpp"
 
 // remove macro definitions of _tolower() and tolower()
 #undef _tolower

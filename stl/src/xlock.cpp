@@ -5,9 +5,10 @@
 
 #include <yvals.h>
 
-#include "xmtx.h"
 #include <locale.h>
 #include <stdlib.h>
+
+#include "xmtx.hpp"
 
 _STD_BEGIN
 

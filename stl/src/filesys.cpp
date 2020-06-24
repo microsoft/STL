@@ -8,13 +8,14 @@
 
 #include <yvals.h>
 
-#include "awint.h"
 #include <direct.h>
 #include <experimental/filesystem>
 #include <io.h>
 #include <string.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 _FS_BEGIN
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status

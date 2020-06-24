@@ -5,10 +5,11 @@
 // This header contains all code for the instantiate_algorithms_nontrivial* test cases.
 // The instantiate_algorithm* tests take too long individually, so must be split into two parts.
 
-#include <input_iterator.hpp>
-#include <instantiate_algorithms.hpp>
 #include <random>
 #include <type_traits>
+
+#include <input_iterator.hpp>
+#include <instantiate_algorithms.hpp>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 

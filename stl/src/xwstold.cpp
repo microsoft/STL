@@ -3,15 +3,16 @@
 
 // _WStold function
 
-#include "xmath.h"
-#include "xxlftype.h"
-#include "xxwctype.h"
 #include <wchar.h>
+
+#include "xmath.hpp"
+#include "xxlftype.hpp"
+#include "xxwctype.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _WStoldx(const CTYPE* s, CTYPE** endptr, long pten, int* perr)
-#include "xxstod.h"
+#include "xxstod.hpp"
 
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _WStold(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code

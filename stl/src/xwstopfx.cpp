@@ -3,8 +3,9 @@
 
 // _WStopfx function
 
-#include "xmath.h"
 #include <wctype.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
