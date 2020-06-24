@@ -2694,7 +2694,7 @@ namespace ranges {
             auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
             auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
             while ((_UFirst1 != _ULast1) && (_UFirst2 != _ULast2)) {
-                ranges::iter_swap(_UFirst1, _UFirst2);
+                _RANGES iter_swap(_UFirst1, _UFirst2);
                 ++_UFirst1; ++_UFirst2;
             }
 

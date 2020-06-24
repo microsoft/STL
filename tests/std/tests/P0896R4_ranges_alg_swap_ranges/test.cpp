@@ -5,9 +5,10 @@
 #include <array>
 #include <cassert>
 #include <concepts>
-#include <range_algorithm_support.hpp>
 #include <ranges>
 #include <utility>
+
+#include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
     using ranges::swap_ranges, ranges::swap_ranges_result, ranges::iterator_t;
