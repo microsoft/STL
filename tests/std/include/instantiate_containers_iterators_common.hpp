@@ -7,13 +7,14 @@
 #include <forward_list>
 #include <functional>
 #include <initializer_list>
-#include <input_iterator.hpp>
 #include <iterator>
 #include <list>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <input_iterator.hpp>
 
 // lets INSTANTIATE macro be used for types that aren't default constructible.
 // Doesn't actually instantiate the type if not default constructible,

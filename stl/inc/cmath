@@ -19,14 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_NODISCARD _Check_return_ inline double pow(_In_ double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
-    if (_Yx == 2) {
-        return _Xx * _Xx;
-    }
-
-    return _CSTD pow(_Xx, static_cast<double>(_Yx));
-}
-
 _NODISCARD _Check_return_ inline float acos(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD acosf(_Xx);
 }
@@ -197,14 +189,6 @@ _NODISCARD _Check_return_ inline float nexttoward(_In_ float _Xx, _In_ long doub
 
 _NODISCARD _Check_return_ inline float pow(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
     return _CSTD powf(_Xx, _Yx);
-}
-
-_NODISCARD _Check_return_ inline float pow(_In_ float _Xx, _In_ int _Yx) noexcept /* strengthened */ {
-    if (_Yx == 2) {
-        return _Xx * _Xx;
-    }
-
-    return _CSTD powf(_Xx, static_cast<float>(_Yx));
 }
 
 _NODISCARD _Check_return_ inline float remainder(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
@@ -442,14 +426,6 @@ _NODISCARD _Check_return_ inline long double pow(_In_ long double _Xx, _In_ long
     return _CSTD powl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double pow(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
-    if (_Yx == 2) {
-        return _Xx * _Xx;
-    }
-
-    return _CSTD powl(_Xx, static_cast<long double>(_Yx));
-}
-
 _NODISCARD _Check_return_ inline long double remainder(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD remainderl(_Xx, _Yx);
@@ -515,13 +491,6 @@ _STD_END
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 double frexp(_Ty _Value, _Out_ int* const _Exp) noexcept /* strengthened */ {
     return _CSTD frexp(static_cast<double>(_Value), _Exp);
-}
-
-// FUNCTION TEMPLATE pow
-template <class _Ty1, class _Ty2, _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>
-_NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> pow(const _Ty1 _Left, const _Ty2 _Right) noexcept /* strengthened */ {
-    using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
-    return _CSTD pow(static_cast<_Common>(_Left), static_cast<_Common>(_Right));
 }
 
 // FUNCTION TEMPLATE fma
@@ -643,7 +612,7 @@ _GENERIC_MATH1(cbrt)
 _GENERIC_MATH1(fabs)
 _GENERIC_MATH2(hypot)
 // 3-arg hypot() is hand-crafted
-// pow() is hand-crafted
+_GENERIC_MATH2(pow)
 _GENERIC_MATH1(sqrt)
 _GENERIC_MATH1(erf)
 _GENERIC_MATH1(erfc)

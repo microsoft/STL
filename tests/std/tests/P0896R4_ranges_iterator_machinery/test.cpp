@@ -796,7 +796,7 @@ namespace iterator_traits_test {
     };
 
     // clang-format off
-    template<class T>
+    template <class T>
     concept has_empty_traits = !(requires { typename iterator_traits<T>::iterator_concept; }
         || requires { typename iterator_traits<T>::iterator_category; }
         || requires { typename iterator_traits<T>::value_type; }
@@ -1700,7 +1700,7 @@ namespace unreachable_sentinel_test {
     STATIC_ASSERT(std::is_nothrow_move_assignable_v<unreachable_sentinel_t>);
 
     // clang-format off
-    template<class T>
+    template <class T>
     concept Comparable = requires(T const& t) {
         { t == unreachable_sentinel } -> std::same_as<bool>;
         { t != unreachable_sentinel } -> std::same_as<bool>;

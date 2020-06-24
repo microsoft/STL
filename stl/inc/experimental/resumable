@@ -31,6 +31,11 @@ support Clang. You can define _SILENCE_CLANG_COROUTINE_MESSAGE to silence this m
 unsupported.
 #endif // defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
 
+#if defined(_MSC_VER) && defined(__cpp_impl_coroutine)
+#error The <experimental/coroutine> and <experimental/resumable> headers are only supported \
+with /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
+#endif // defined(_MSC_VER) && defined(__cpp_impl_coroutine)
+
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*);
 extern "C" void _coro_destroy(void*);
@@ -38,6 +43,10 @@ extern "C" size_t _coro_done(void*);
 #pragma intrinsic(_coro_resume)
 #pragma intrinsic(_coro_destroy)
 #pragma intrinsic(_coro_done)
+
+#ifndef _ALLOW_COROUTINE_ABI_MISMATCH
+#pragma detect_mismatch("_COROUTINE_ABI", "1")
+#endif // _ALLOW_COROUTINE_ABI_MISMATCH
 
 _STD_BEGIN
 

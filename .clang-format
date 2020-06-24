@@ -116,6 +116,10 @@ IncludeCategories:
     Priority:        3
   - Regex:           '^<WinIoCtl\.h>$'
     Priority:        4
+  - Regex:           '^<__.*\.hpp>$'
+    Priority:        2
+  - Regex:           '\.hpp[>"]$'
+    Priority:        5
   - Regex:           '.*'
     Priority:        2
 

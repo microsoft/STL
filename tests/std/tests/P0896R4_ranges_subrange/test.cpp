@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-//
+
 #include "range_algorithm_support.hpp"
 
 #define ASSERT(...) assert((__VA_ARGS__))
@@ -91,20 +91,20 @@ namespace test_view_interface {
         t[42];
     };
 
-    using test::Common, test::CanDifference, test::CanCompare, test::ProxyRef;
+    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::to_bool;
     enum class ConstRange : bool { no, yes };
 
     // clang-format off
     template <class Cat, Common IsCommon, CanDifference Diff, ConstRange HasConstRange>
     struct fake_view : ranges::view_interface<fake_view<Cat, IsCommon, Diff, HasConstRange>> {
         using I = test::iterator<Cat, int, Diff, CanCompare::yes, ProxyRef::no>;
-        using S = std::conditional_t<bool(IsCommon), I, test::sentinel<int>>;
+        using S = std::conditional_t<to_bool(IsCommon), I, test::sentinel<int>>;
 
         I begin();
-        I begin() const requires (bool(HasConstRange));
+        I begin() const requires (to_bool(HasConstRange));
 
         S end();
-        S end() const requires (bool(HasConstRange));
+        S end() const requires (to_bool(HasConstRange));
     };
     // clang-format on
 
@@ -1400,8 +1400,7 @@ namespace test_subrange {
     STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
             CanCompare::yes, ProxyRef::no>>());
 
-    STATIC_ASSERT(
-        test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>()); // FIXME: look at these
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no>>());

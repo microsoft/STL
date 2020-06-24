@@ -15,25 +15,25 @@
 #define _D3 0
 
 // IEEE 754 double properties
-#define HUGE_EXP (int) (_DMAX * 900L / 1000)
+#define HUGE_EXP static_cast<int>(_DMAX * 900L / 1000)
 
 // IEEE 754 float properties
-#define FHUGE_EXP (int) (_FMAX * 900L / 1000)
+#define FHUGE_EXP static_cast<int>(_FMAX * 900L / 1000)
 
 #define _F0 1 // little-endian
 #define _F1 0
 
 // IEEE 754 long double properties
-#define LHUGE_EXP (int) (_LMAX * 900L / 1000)
+#define LHUGE_EXP static_cast<int>(_LMAX * 900L / 1000)
 
 #define _L0 3 // little-endian, 64-bit long doubles
 #define _L1 2
 #define _L2 1
 #define _L3 0
 
-#define DSIGN(x) (((_Dval*) (char*) &(x))->_Sh[_D0] & _DSIGN)
-#define FSIGN(x) (((_Fval*) (char*) &(x))->_Sh[_F0] & _FSIGN)
-#define LSIGN(x) (((_Lval*) (char*) &(x))->_Sh[_L0] & _LSIGN)
+#define DSIGN(x) (reinterpret_cast<_Dval*>(&(x))->_Sh[_D0] & _DSIGN)
+#define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
+#define LSIGN(x) (reinterpret_cast<_Lval*>(&(x))->_Sh[_L0] & _LSIGN)
 
 #define _Fg _F1 // least-significant 16-bit word
 #define _Dg _D3

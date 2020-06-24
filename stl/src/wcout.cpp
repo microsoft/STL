@@ -24,15 +24,15 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wcout(&wfout);
 struct _Init_wcout { // ensures that wcout is initialized
     __CLR_OR_THIS_CALL _Init_wcout() { // initialize wcout
         _Ptr_wcout = &wcout;
-        if (_Ptr_wcin != 0) {
+        if (_Ptr_wcin != nullptr) {
             _Ptr_wcin->tie(_Ptr_wcout);
         }
 
-        if (_Ptr_wcerr != 0) {
+        if (_Ptr_wcerr != nullptr) {
             _Ptr_wcerr->tie(_Ptr_wcout);
         }
 
-        if (_Ptr_wclog != 0) {
+        if (_Ptr_wclog != nullptr) {
             _Ptr_wclog->tie(_Ptr_wcout);
         }
     }

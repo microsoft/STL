@@ -3,14 +3,13 @@
 
 // _Dint function -- IEEE 754 version
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 short _Dint(double* px, short xexp) { // test and drop (scaled) fraction bits
-    _Dval* ps = (_Dval*) (char*) px;
-    unsigned short frac;
-    short xchar = (ps->_Sh[_D0] & _DMASK) >> _DOFF;
+    const auto ps = reinterpret_cast<_Dval*>(px);
+    short xchar   = (ps->_Sh[_D0] & _DMASK) >> _DOFF;
 
     if (xchar == _DMAX) {
         return (ps->_Sh[_D0] & _DFRAC) == 0 && ps->_Sh[_D1] == 0 && ps->_Sh[_D2] == 0 && ps->_Sh[_D3] == 0 ? _INFCODE
@@ -36,7 +35,7 @@ short _Dint(double* px, short xexp) { // test and drop (scaled) fraction bits
             0x0fff, 0x1fff, 0x3fff, 0x7fff};
         static const size_t sub[]          = {_D3, _D2, _D1, _D0};
 
-        frac = mask[xchar & 0xf];
+        unsigned short frac = mask[xchar & 0xf];
         xchar >>= 4;
         frac &= ps->_Sh[sub[xchar]];
         ps->_Sh[sub[xchar]] ^= frac;
