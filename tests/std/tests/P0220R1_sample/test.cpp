@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "adapterator.hpp"
 #include <algorithm>
 #include <array>
 #include <assert.h>
@@ -10,6 +9,8 @@
 #include <random>
 #include <stdio.h>
 #include <type_traits>
+
+#include "adapterator.hpp"
 
 using namespace std;
 

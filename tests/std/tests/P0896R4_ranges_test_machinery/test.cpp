@@ -3,7 +3,7 @@
 
 #include <concepts>
 #include <ranges>
-//
+
 #include <range_algorithm_support.hpp>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)

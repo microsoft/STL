@@ -3,11 +3,12 @@
 
 // xtime functions
 
-#include "awint.h"
 #include <atomic>
 #include <stdlib.h>
 #include <time.h>
 #include <xtimec.h>
+
+#include "awint.hpp"
 
 constexpr long _Nsec_per_sec  = 1000000000L;
 constexpr long _Nsec_per_msec = 1000000L;

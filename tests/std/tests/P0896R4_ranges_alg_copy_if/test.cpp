@@ -8,7 +8,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 template <class T, class U>

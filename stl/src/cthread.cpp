@@ -3,7 +3,6 @@
 
 // thread functions
 
-#include "awint.h"
 #include <process.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -12,6 +11,8 @@
 #include <xthreads.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 namespace {
     using _Thrd_start_t = int (*)(void*);

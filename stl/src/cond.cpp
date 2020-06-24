@@ -3,13 +3,14 @@
 
 // condition variable functions
 
-#include "primitives.h"
 #include <internal_shared.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>
+
+#include "primitives.hpp"
 
 struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     std::aligned_storage_t<Concurrency::details::stl_condition_variable_max_size,

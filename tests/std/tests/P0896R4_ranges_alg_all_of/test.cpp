@@ -6,7 +6,7 @@
 #include <cassert>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };

@@ -3,9 +3,10 @@
 
 // _Towlower -- convert wchar_t to lower case
 
-#include "awint.h"
 #include <wchar.h>
 #include <xlocinfo.h>
+
+#include "awint.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
