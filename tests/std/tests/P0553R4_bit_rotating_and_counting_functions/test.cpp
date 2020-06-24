@@ -6,7 +6,6 @@
 
 using namespace std;
 
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 template <typename T>
 constexpr bool test_countl_zero() {
     constexpr int digits = numeric_limits<T>::digits;
@@ -177,14 +176,11 @@ void test_all() {
     static_assert(test_64bit_split_ops());
     test_64bit_split_ops();
 }
-#endif // __cpp_lib_bitops
 
 int main() {
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
     test_all<unsigned char>();
     test_all<unsigned short>();
     test_all<unsigned int>();
     test_all<unsigned long>();
     test_all<unsigned long long>();
-#endif // __cpp_lib_bitops
 }
