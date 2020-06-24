@@ -18,7 +18,7 @@ constexpr void smoke_test() {
     // Validate that swap_ranges_result aliases in_in_result
     STATIC_ASSERT(same_as<ranges::swap_ranges_result<int, double>, ranges::in_in_result<int, double>>);
 
-    { // Validate range overload
+    { // Validate ranges overload
         using R                      = std::array<int, 3>;
         R range1                     = {13, 53, 1876};
         R range2                     = {34, 243, 9366};
