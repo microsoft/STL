@@ -5,7 +5,7 @@
 // Prevent clang-format from reordering <AppModel.h> before <Windows.h>
 #include <Windows.h>
 #include <AppModel.h>
-#include "awint.h"
+#include "awint.hpp"
 #include <internal_shared.h>
 #include <stdlib.h>
 // clang-format on
@@ -415,51 +415,51 @@ extern "C" VOID __cdecl __crtInitializeConditionVariable(PCONDITION_VARIABLE con
     DYNAMICGETCACHEDFUNCTION(
         PFNINITIALIZECONDITIONVARIABLE, InitializeConditionVariable, pfInitializeConditionVariable);
     pfInitializeConditionVariable(pCond);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtWakeConditionVariable(PCONDITION_VARIABLE const pCond) {
     DYNAMICGETCACHEDFUNCTION(PFNWAKECONDITIONVARIABLE, WakeConditionVariable, pfWakeConditionVariable);
     pfWakeConditionVariable(pCond);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtWakeAllConditionVariable(PCONDITION_VARIABLE const pCond) {
     DYNAMICGETCACHEDFUNCTION(PFNWAKEALLCONDITIONVARIABLE, WakeAllConditionVariable, pfWakeAllConditionVariable);
     pfWakeAllConditionVariable(pCond);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" BOOL __cdecl __crtSleepConditionVariableCS(
     PCONDITION_VARIABLE const pCond, PCRITICAL_SECTION const pLock, DWORD const dwMs) {
     DYNAMICGETCACHEDFUNCTION(PFNSLEEPCONDITIONVARIABLECS, SleepConditionVariableCS, pfSleepConditionVariableCS);
     return pfSleepConditionVariableCS(pCond, pLock, dwMs);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtInitializeSRWLock(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNINITIALIZESRWLOCK, InitializeSRWLock, pfInitializeSRWLock);
     pfInitializeSRWLock(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtAcquireSRWLockExclusive(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNACQUIRESRWLOCKEXCLUSIVE, AcquireSRWLockExclusive, pfAcquireSRWLockExclusive);
     pfAcquireSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtReleaseSRWLockExclusive(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNRELEASESRWLOCKEXCLUSIVE, ReleaseSRWLockExclusive, pfReleaseSRWLockExclusive);
     pfReleaseSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" BOOL __cdecl __crtSleepConditionVariableSRW(
     PCONDITION_VARIABLE const pCond, PSRWLOCK const pLock, DWORD const dwMs, ULONG const flags) {
     DYNAMICGETCACHEDFUNCTION(PFNSLEEPCONDITIONVARIABLESRW, SleepConditionVariableSRW, pfSleepConditionVariableSRW);
     return pfSleepConditionVariableSRW(pCond, pLock, dwMs, flags);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" PTP_WORK __cdecl __crtCreateThreadpoolWork(
@@ -494,7 +494,7 @@ extern "C" BOOL __cdecl __crtQueueUserWorkItem(LPTHREAD_START_ROUTINE, PVOID, UL
 extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNTRYACQUIRESRWLOCKEXCLUSIVE, TryAcquireSRWLockExclusive, pfTryAcquireSRWLockExclusive);
     return pfTryAcquireSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7

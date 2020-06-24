@@ -3,7 +3,7 @@
 
 // _Dunscale function -- IEEE 754 version
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

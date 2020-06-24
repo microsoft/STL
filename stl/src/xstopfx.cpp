@@ -3,8 +3,9 @@
 
 // _Stopfx function
 
-#include "xmath.h"
 #include <ctype.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

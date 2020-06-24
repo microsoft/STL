@@ -3,11 +3,12 @@
 
 // _WStoxflt function
 
-#include "xmath.h"
 #include <ctype.h>
 #include <locale.h>
 #include <wchar.h>
 #include <wctype.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

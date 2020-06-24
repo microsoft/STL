@@ -3,5 +3,5 @@
 
 // _FDtento function -- IEEE 754 version
 
-#include "xxfftype.h"
-#include "xxxdtent.h"
+#include "xxfftype.hpp"
+#include "xxxdtent.hpp"

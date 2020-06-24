@@ -3,8 +3,9 @@
 
 // _Execute_once function
 
-#include "awint.h"
 #include <mutex>
+
+#include "awint.hpp"
 
 _STD_BEGIN
 // TRANSITION, ABI

@@ -8,7 +8,7 @@
 #include <functional>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {

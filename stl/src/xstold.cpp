@@ -5,15 +5,16 @@
 
 #include <yvals.h> // include first, for native shared
 
-#include "xmath.h"
-#include "xxcctype.h"
-#include "xxlftype.h"
 #include <stdlib.h>
+
+#include "xmath.hpp"
+#include "xxcctype.hpp"
+#include "xxlftype.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _Stoldx(const CTYPE* s, CTYPE** endptr, long pten, int* perr)
-#include "xxstod.h"
+#include "xxstod.hpp"
 
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _Stold(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code

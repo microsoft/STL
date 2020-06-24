@@ -5,9 +5,10 @@
 
 #include <yvals.h>
 
-#include "awint.h"
 #include <wchar.h>
 #include <xlocinfo.h>
+
+#include "awint.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
