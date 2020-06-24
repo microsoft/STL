@@ -50,7 +50,9 @@ constexpr void smoke_test() {
 }
 
 int main() {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((smoke_test(), true));
+#endif // TRANSITION
     smoke_test();
 }
 
