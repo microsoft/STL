@@ -164,8 +164,7 @@ namespace indirect_unary_predicate_test {
 } // namespace indirect_unary_predicate_test
 
 namespace indirect_binary_predicate_test {
-    // Also validate indirect_result_t
-    using std::indirect_binary_predicate;
+    // Also validate indirect_equivalence_relation, indirect_strict_weak_order, and indirect_result_t
 
     template <int>
     struct base {};
@@ -196,15 +195,29 @@ namespace indirect_binary_predicate_test {
         std::false_type operator()(simple_common_reference, simple_common_reference) const requires(I != 5);
     };
 
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<0>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<1>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<2>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<3>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<4>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<5>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<6>, simple_iter_archetype<0>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_binary_predicate<Fn<6>, simple_iter_archetype<1>, simple_iter_archetype<0>>);
-    STATIC_ASSERT(indirect_binary_predicate<Fn<6>, simple_iter_archetype<1>, simple_iter_archetype<1>>);
+    template <int FuncSelector, int IterSelector1, int IterSelector2>
+    constexpr bool test() {
+        using std::indirect_binary_predicate, std::indirect_equivalence_relation, std::indirect_strict_weak_order;
+        using F  = Fn<FuncSelector>;
+        using I1 = simple_iter_archetype<IterSelector1>;
+        using I2 = simple_iter_archetype<IterSelector2>;
+
+        constexpr bool result = indirect_binary_predicate<F, I1, I2>;
+        STATIC_ASSERT(indirect_equivalence_relation<F, I1, I2> == result);
+        STATIC_ASSERT(indirect_strict_weak_order<F, I1, I2> == result);
+        return result;
+    }
+
+    STATIC_ASSERT(!test<0, 1, 1>());
+    STATIC_ASSERT(!test<1, 1, 1>());
+    STATIC_ASSERT(!test<2, 1, 1>());
+    STATIC_ASSERT(!test<3, 1, 1>());
+    STATIC_ASSERT(!test<4, 1, 1>());
+    STATIC_ASSERT(!test<5, 1, 1>());
+
+    STATIC_ASSERT(!test<6, 0, 1>());
+    STATIC_ASSERT(!test<6, 1, 0>());
+    STATIC_ASSERT(test<6, 1, 1>());
 
     STATIC_ASSERT(std::same_as<std::indirect_result_t<Fn<6>, simple_iter_archetype<1>, simple_iter_archetype<1>>,
         std::true_type>);
