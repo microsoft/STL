@@ -139,7 +139,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
         (void) _InterlockedIncrement(&_Guard);
         _Compiler_barrier();
     }
-#endif // hardware
+#endif // x86/x64
 }
 
 extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
