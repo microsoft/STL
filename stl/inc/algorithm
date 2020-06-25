@@ -5325,11 +5325,13 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
         auto _Found = _First;
-        if (_First != _Last) {
-            while (++_First != _Last) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Found), _STD invoke(_Proj, *_First))) {
-                    _Found = _First;
-                }
+        if (_First == _Last) {
+            return _Found;
+        }
+
+        while (++_First != _Last) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Found), _STD invoke(_Proj, *_First))) {
+                _Found = _First;
             }
         }
 
@@ -5416,11 +5418,13 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
         auto _Found = _First;
-        if (_First != _Last) {
-            while (++_First != _Last) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found))) {
-                    _Found = _First;
-                }
+        if (_First == _Last) {
+            return _Found;
+        }
+
+        while (++_First != _Last) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found))) {
+                _Found = _First;
             }
         }
 
@@ -5592,8 +5596,8 @@ namespace ranges {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Minmax_element_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _Second = _First;
             _Seek_wrapped(_First, _STD move(_UResult.min));
+            auto _Second = _First;
             _Seek_wrapped(_Second, _STD move(_UResult.max));
             return {_STD move(_First), _STD move(_Second)};
         }
@@ -5605,8 +5609,8 @@ namespace ranges {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Minmax_element_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _Second = _First;
             _Seek_wrapped(_First, _STD move(_UResult.min));
+            auto _Second = _First;
             _Seek_wrapped(_Second, _STD move(_UResult.max));
             return {_STD move(_First), _STD move(_Second)};
         }
