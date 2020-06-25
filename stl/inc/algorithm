@@ -208,8 +208,7 @@ namespace ranges {
 
     // FUNCTION TEMPLATE _Rewrap_subrange
     template <class _Result, class _Wrapped, class _Unwrapped>
-    _NODISCARD constexpr _Result _Rewrap_subrange(
-        [[maybe_unused]] _Wrapped& _First, [[maybe_unused]] subrange<_Unwrapped>&& _UResult) {
+    _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _First, subrange<_Unwrapped>&& _UResult) {
         // conditionally computes a wrapped subrange from a wrapped iterator and unwrapped subrange
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Wrapped>, _Unwrapped>);
         if constexpr (is_same_v<_Result, dangling>) {
