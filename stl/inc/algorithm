@@ -5643,11 +5643,13 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
-        if (_First != _Last) {
-            for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
-                    break;
-                }
+        if (_First == _Last) {
+            return _First;
+        }
+
+        for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
+                break;
             }
         }
 
