@@ -123,9 +123,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
         return;
     }
 
-#if defined(_M_ARM) || defined(_M_ARM64)
-    _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+#if defined(_M_IX86) || defined(_M_X64)
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
         volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
@@ -139,7 +137,11 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
         (void) _InterlockedIncrement(&_Guard);
         _Compiler_barrier();
     }
-#endif // hardware
+#elif defined(_M_ARM) || defined(_M_ARM64)
+    _Memory_barrier();
+#else // ^^^ ARM32/ARM64 / unsupported hardware vvv
+#error Unsupported hardware
+#endif // ARM32/ARM64  / x86/x64 
 }
 
 extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
@@ -151,7 +153,11 @@ extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
 // FUNCTION TEMPLATE kill_dependency
 template <class _Ty>
 _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependency ordering when called
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
     return _Arg;
+#else
+#error Unsupported hardware
+#endif
 }
 
 // FUNCTION _Check_memory_order
