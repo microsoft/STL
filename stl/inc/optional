@@ -53,10 +53,17 @@ protected:
     _THROW(bad_optional_access{});
 }
 
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+
 template <class _Ty, bool = is_trivially_destructible_v<_Ty>>
 struct _Optional_destruct_base { // either contains a value of _Ty or is empty (trivial destructor)
     union {
-        char _Dummy;
+        _Nontrivial_dummy_type _Dummy;
         remove_const_t<_Ty> _Value;
     };
     bool _Has_value;
@@ -75,7 +82,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
 template <class _Ty>
 struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty or is empty (non-trivial destructor)
     union {
-        char _Dummy;
+        _Nontrivial_dummy_type _Dummy;
         remove_const_t<_Ty> _Value;
     };
     bool _Has_value;
@@ -164,8 +171,8 @@ public:
     using value_type = _Ty;
 
     // constructors [optional.object.ctor]
-    constexpr optional() noexcept : _Mybase{} {}
-    constexpr optional(nullopt_t) noexcept : _Mybase{} {}
+    constexpr optional() noexcept {}
+    constexpr optional(nullopt_t) noexcept {}
 
     template <class... _Types, enable_if_t<is_constructible_v<_Ty, _Types...>, int> = 0>
     constexpr explicit optional(in_place_t, _Types&&... _Args) : _Mybase(in_place, _STD forward<_Types>(_Args)...) {}

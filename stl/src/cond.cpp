@@ -15,7 +15,9 @@ struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     std::aligned_storage_t<Concurrency::details::stl_condition_variable_max_size,
         Concurrency::details::stl_condition_variable_max_alignment>
         cv;
-    Concurrency::details::stl_condition_variable_interface* _get_cv() { // get pointer to implementation
+
+    [[nodiscard]] Concurrency::details::stl_condition_variable_interface* _get_cv() noexcept {
+        // get pointer to implementation
         return reinterpret_cast<Concurrency::details::stl_condition_variable_interface*>(&cv);
     }
 };
@@ -24,38 +26,46 @@ static_assert(sizeof(_Cnd_internal_imp_t) <= _Cnd_internal_imp_size, "incorrect 
 static_assert(std::alignment_of<_Cnd_internal_imp_t>::value <= _Cnd_internal_imp_alignment,
     "incorrect _Cnd_internal_imp_alignment");
 
-void _Cnd_init_in_situ(_Cnd_t cond) { // initialize condition variable in situ
+void _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in situ
     Concurrency::details::create_stl_condition_variable(cond->_get_cv());
 }
 
-void _Cnd_destroy_in_situ(_Cnd_t cond) { // destroy condition variable in situ
+void _Cnd_destroy_in_situ(const _Cnd_t cond) { // destroy condition variable in situ
     cond->_get_cv()->destroy();
 }
 
-int _Cnd_init(_Cnd_t* pcond) { // initialize
-    _Cnd_t cond;
-    *pcond = 0;
+int _Cnd_init(_Cnd_t* const pcond) { // initialize
+    *pcond = nullptr;
 
-    if ((cond = static_cast<_Cnd_t>(_calloc_crt(1, sizeof(struct _Cnd_internal_imp_t)))) == 0) {
+    const auto cond = static_cast<_Cnd_t>(_calloc_crt(1, sizeof(_Cnd_internal_imp_t)));
+    if (cond == nullptr) {
         return _Thrd_nomem; // report alloc failed
-    } else { // report success
-        _Cnd_init_in_situ(cond);
-        *pcond = cond;
-        return _Thrd_success;
     }
+
+    _Cnd_init_in_situ(cond);
+    *pcond = cond;
+    return _Thrd_success;
 }
 
-void _Cnd_destroy(_Cnd_t cond) { // clean up
+void _Cnd_destroy(const _Cnd_t cond) { // clean up
     if (cond) { // something to do, do it
         _Cnd_destroy_in_situ(cond);
         _free_crt(cond);
     }
 }
 
-static int do_wait(_Cnd_t cond, _Mtx_t mtx, const xtime* target) { // wait for signal or timeout
-    int res = _Thrd_success;
-    auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
-    if (target == 0) { // no target time specified, wait on mutex
+int _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
+    const auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
+    _Mtx_clear_owner(mtx);
+    cond->_get_cv()->wait(cs);
+    _Mtx_reset_owner(mtx);
+    return _Thrd_success; // TRANSITION, ABI: Always returns _Thrd_success
+}
+
+int _Cnd_timedwait(const _Cnd_t cond, const _Mtx_t mtx, const xtime* const target) { // wait until signaled or timeout
+    int res       = _Thrd_success;
+    const auto cs = static_cast<Concurrency::details::stl_critical_section_interface*>(_Mtx_getconcrtcs(mtx));
+    if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
         cond->_get_cv()->wait(cs);
         _Mtx_reset_owner(mtx);
@@ -74,30 +84,14 @@ static int do_wait(_Cnd_t cond, _Mtx_t mtx, const xtime* target) { // wait for s
     return res;
 }
 
-static int do_signal(_Cnd_t cond, int all) { // release threads
-    if (all) {
-        cond->_get_cv()->notify_all();
-    } else {
-        cond->_get_cv()->notify_one();
-    }
-
-    return _Thrd_success;
+int _Cnd_signal(const _Cnd_t cond) { // release one waiting thread
+    cond->_get_cv()->notify_one();
+    return _Thrd_success; // TRANSITION, ABI: Always returns _Thrd_success
 }
 
-int _Cnd_wait(_Cnd_t cond, _Mtx_t mtx) { // wait until signaled
-    return do_wait(cond, mtx, 0);
-}
-
-int _Cnd_timedwait(_Cnd_t cond, _Mtx_t mtx, const xtime* xt) { // wait until signaled or timeout
-    return do_wait(cond, mtx, xt);
-}
-
-int _Cnd_signal(_Cnd_t cond) { // release one waiting thread
-    return do_signal(cond, 0);
-}
-
-int _Cnd_broadcast(_Cnd_t cond) { // release all waiting threads
-    return do_signal(cond, 1);
+int _Cnd_broadcast(const _Cnd_t cond) { // release all waiting threads
+    cond->_get_cv()->notify_all();
+    return _Thrd_success; // TRANSITION, ABI: Always returns _Thrd_success
 }
 
 /*
