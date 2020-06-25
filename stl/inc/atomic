@@ -125,7 +125,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
 
 #if defined(_M_ARM) || defined(_M_ARM64)
     _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+#else // ^^^ ARM32/ARM64 / x86/x64 vvv
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
         volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
