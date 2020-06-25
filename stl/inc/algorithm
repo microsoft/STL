@@ -2866,7 +2866,7 @@ namespace ranges {
         template <class _Rng, copy_constructible _Fn>
             requires invocable<_Fn&> && output_range<_Rng, invoke_result_t<_Fn&>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Fn _Gen) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Gen);
+            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Gen));
         }
         // clang-format on
     };
@@ -2882,12 +2882,14 @@ namespace ranges {
         template <input_or_output_iterator _Out, copy_constructible _Fn>
             requires invocable<_Fn&> && indirectly_writable<_Out, invoke_result_t<_Fn&>>
         constexpr _Out operator()(_Out _First, iter_difference_t<_Out> _Count, _Fn _Gen) const {
-            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-            for (; _Count > 0; ++_UFirst, (void) --_Count) {
-                *_UFirst = _Gen();
-            }
+            if (0 <= _Count) {
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+                for (; _Count > 0; ++_UFirst, (void) --_Count) {
+                    *_UFirst = _Gen();
+                }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+                _Seek_wrapped(_First, _STD move(_UFirst));
+            }
             return _First;
         }
     };
