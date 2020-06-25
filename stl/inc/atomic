@@ -141,7 +141,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
     _Memory_barrier();
 #else // ^^^ ARM32/ARM64 / unsupported hardware vvv
 #error Unsupported hardware
-#endif // ARM32/ARM64  / x86/x64 
+#endif // ARM32/ARM64  / x86/x64
 }
 
 extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
