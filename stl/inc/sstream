@@ -42,7 +42,7 @@ public:
     explicit basic_stringbuf(const _Alloc& _Al) : basic_stringbuf(ios_base::in | ios_base::out, _Al) {}
 
     basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al)
-        : _Seekhigh(nullptr), _Mystate(_GetState(_Mode)), _Al(_Al) {}
+        : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al) {}
 
     explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out) : _Al() {
         auto _Pair = _Str._Release_to_buffer();
@@ -50,14 +50,14 @@ public:
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc _Al)
+    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Al(_Al) {
         _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc _Al)
-        : basic_stringbuf(s, ios_base::in | ios_base::out, a) {}
+    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
+        : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al) {}
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
     explicit basic_stringbuf(
@@ -66,14 +66,14 @@ public:
         _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
     }
 
-    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc _Al) : _Al(_Al) {
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al) : _Al(_Al) {
         _Assign_rv(_STD move(_Right));
     }
+#endif // _HAS_CXX20
 
     basic_stringbuf(basic_stringbuf&& _Right) {
         _Assign_rv(_STD move(_Right));
     }
-#endif // _HAS_CXX20
 
     basic_stringbuf& operator=(basic_stringbuf&& _Right) {
         _Assign_rv(_STD move(_Right));
@@ -121,13 +121,15 @@ public:
     using off_type = typename _Traits::off_type;
 
     _NODISCARD pair<_Elem*, _Mysize_type> _View_pair() const noexcept {
+        pair<_Elem*, _Mysize_type> _Result = {};
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable, make string view from write buffer
             const auto _Base = _Mysb::pbase();
-            return make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
+            _Result = make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
         } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable, make string view from read buffer
             const auto _Base = _Mysb::eback();
-            return make_pair(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
+            _Result          = make_pair(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
         }
+        return _Result;
     }
 
     _NODISCARD _Mystr str() const
@@ -137,7 +139,8 @@ public:
     {
         _Mystr _Result(_Al);
         auto _Pair = _View_pair();
-        _Result.assign(_Pair.first, _Pair.second);
+        if (_Pair.first)
+            _Result.assign(_Pair.first, _Pair.second);
         return _Result;
     }
 
@@ -158,22 +161,22 @@ public:
     _NODISCARD _Mystr str() && {
         _Mystr _Result(_Al);
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable
-            const auto _Base = _Mysb::pbase();
-            const auto _Ptr  = _Mysb::pptr();
-            const auto _Eptr = _Mysb::epptr();
+            const auto _Base   = _Mysb::pbase();
+            const auto _Ptr    = _Mysb::pptr();
+            const auto _Eptr   = _Mysb::epptr();
+            const auto _Mysize = static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base);
             if (_Ptr == _Eptr
                 && !_Traits::eq(*(_Ptr - 1), _Elem())) { // the buffer is full and terminating char is not \0
-                _Result.assign(_Base, static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base));
+                _Result.assign(_Base, _Mysize);
             } else {
-                _Result._Move_assign_from_buffer(_Base, static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base),
-                    static_cast<_Mysize_type>(_Eptr - _Base));
+                _Result._Move_assign_from_buffer(_Base, _Mysize, static_cast<_Mysize_type>(_Eptr - _Base));
                 _Mystate &= ~_Allocated;
             }
             return make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
         } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable
-            const auto _Base           = _Mysb::eback();
-            const auto _Eptr           = _Mysb::egptr();
-            const _Mysize_type _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
+            const auto _Base   = _Mysb::eback();
+            const auto _Eptr   = _Mysb::egptr();
+            const auto _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
             if (!_Traits::eq(*(_Eptr - 1), _Elem())) { // the buffer is full and terminating char is not \0
                 _Result.assign(_Base, _Mysize);
             } else {
@@ -187,7 +190,10 @@ public:
 
     _NODISCARD basic_string_view<_Elem, _Traits> view() const noexcept {
         auto _Pair = _View_pair();
-        return basic_string_view<_Elem, _Traits>{_Pair.first, _Pair.second};
+        if (_Pair.first)
+            return basic_string_view<_Elem, _Traits>{_Pair.first, _Pair.second};
+        else
+            return {};
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>

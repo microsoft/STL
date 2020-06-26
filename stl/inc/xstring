@@ -2641,10 +2641,12 @@ private:
         }
     }
 
+#if _HAS_CXX20
 public:
     // Move assign from a buffer, used by basic_stringbuf
     void _Move_assign_from_buffer(_Elem* _Right, size_type _Size, size_type _Res) noexcept {
         _Tidy_deallocate();
+        _Right[_Size]  = _Elem();
         auto& _My_data = _Mypair._Myval2;
         _Construct_in_place(_My_data._Bx._Ptr, _Right);
         _My_data._Mysize = _Size;
@@ -2660,13 +2662,14 @@ public:
             _My_data._Mysize = 0;
             _Tidy_init();
         } else {
-            _Elem* _Result_ptr = _Al.allocate(_BUF_SIZE);
+            _Elem* _Result_ptr = _Getal().allocate(_BUF_SIZE);
             _Traits::copy(_Result_ptr, _My_data._Bx._Buf, _BUF_SIZE);
             _Result = make_pair(_Result_ptr, _BUF_SIZE);
             _Tidy_deallocate();
         }
         return _Result;
     }
+#endif // _HAS_CXX20
 
 public:
     basic_string& operator=(basic_string&& _Right) noexcept(noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {

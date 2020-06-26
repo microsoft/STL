@@ -211,6 +211,7 @@ tests\P0220R1_string_view
 tests\P0325R4_to_array
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
+tests\P0408R7_efficient_access_to_stringbuf_buffer
 tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
