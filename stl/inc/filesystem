@@ -1663,6 +1663,18 @@ namespace filesystem {
             return _Result;
         }
 
+        for (const auto& _File_name : relative_path()) {
+            if (!_Parse_root_name(_File_name.native()).empty()) {
+                return _Result;
+            }
+        }
+
+        for (const auto& _File_name : _Base.relative_path()) {
+            if (!_Parse_root_name(_File_name.native()).empty()) {
+                return _Result;
+            }
+        }
+
         const iterator _This_end   = end();
         const iterator _Base_begin = _Base.begin();
         const iterator _Base_end   = _Base.end();
