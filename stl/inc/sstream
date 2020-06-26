@@ -27,8 +27,11 @@ public:
     using allocator_type = _Alloc;
     using _Mysb          = basic_streambuf<_Elem, _Traits>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
-    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
     using _Mysize_type   = typename _Mystr::size_type;
+
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
 
     basic_stringbuf() : _Seekhigh(nullptr), _Mystate(_Getstate(ios_base::in | ios_base::out)), _Al() {}
 
@@ -503,7 +506,10 @@ public:
     using allocator_type = _Alloc;
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
-    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
+
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
 
     basic_istringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in) {}
 
@@ -618,7 +624,10 @@ public:
     using allocator_type = _Alloc;
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
-    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
+
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
 
     basic_ostringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::out) {}
 
@@ -739,7 +748,10 @@ public:
     using off_type       = typename _Traits::off_type;
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
-    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
+
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
 
     basic_stringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in | ios_base::out) {}
 
