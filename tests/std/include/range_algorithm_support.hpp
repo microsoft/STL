@@ -510,8 +510,8 @@ namespace test {
         range() = default;
         constexpr explicit range(span<Element> elements) noexcept : elements_{elements} {}
 
-        range(const range&) = delete;
-        range& operator=(const range&) = delete;
+        range(range const&) = delete;
+        range& operator=(range const&) = delete;
 
         [[nodiscard]] constexpr I begin() const noexcept {
             if constexpr (!derived_from<Category, fwd>) {
@@ -593,7 +593,7 @@ struct with_writable_iterators {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
-        using test::iterator; // Hello, one-phase legacy name lookup!
+        using test::iterator;
 
         // Diff and Eq are not significant for "lone" single-pass iterators, so we can ignore them here.
         Continuation::template call<Args...,
