@@ -567,8 +567,8 @@ namespace permutable_test {
 
         // Ideally we'd have a "not reflexively indirectly_swappable" case as well, but there's no way for a class to
         // satisfy indirectly_movable_storable<T, T> without satisfying indirectly_swappable<T, T> thanks to N4861
-        // [iterator.cust.swap]/4.3. permutable requires indirectly_swappable<T, T> only to ensure that a user type
-        // doesn't define an iter_swap overload that doesn't meet the semantic requirements.
+        // [iterator.cust.swap]/4.3. permutable requires indirectly_swappable<T, T> only to forbid a user type to define
+        // an iter_swap overload that doesn't meet the semantic requirements.
     };
     STATIC_ASSERT(std::input_iterator<archetype<0>>);
     STATIC_ASSERT(!std::forward_iterator<archetype<0>>);
@@ -592,17 +592,30 @@ namespace sortable_test {
     using ranges::less;
     using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::sortable;
 
-    // not permutable
-    STATIC_ASSERT(!permutable<int const*>);
-    STATIC_ASSERT(indirect_strict_weak_order<less, projected<int const*, identity>>);
-    STATIC_ASSERT(!sortable<int const*, less, identity>);
+    {
+        using I = int const*; // not permutable
+        using C = less;
+        using P = identity;
+        STATIC_ASSERT(!permutable<I>);
+        STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
+        STATIC_ASSERT(!sortable<I, C, P>);
+    }
 
-    // not indirect_strict_weak_order
-    STATIC_ASSERT(permutable<int*>);
-    STATIC_ASSERT(!indirect_strict_weak_order<void, projected<int const*, identity>>);
-    STATIC_ASSERT(!sortable<int*, int, identity>);
+    {
+        using I = int*;
+        using C = void; // not an indirect_strict_weak_order
+        using P = identity;
+        STATIC_ASSERT(permutable<I>);
+        STATIC_ASSERT(!indirect_strict_weak_order<C, projected<I, P>>);
+        STATIC_ASSERT(!sortable<I, C, P>);
+    }
 
-    STATIC_ASSERT(permutable<int*>);
-    STATIC_ASSERT(indirect_strict_weak_order<less, projected<int*, identity>>);
-    STATIC_ASSERT(sortable<int*, less, identity>);
+    {
+        using I = int*;
+        using C = less;
+        using P = identity;
+        STATIC_ASSERT(permutable<I>);
+        STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
+        STATIC_ASSERT(sortable<I, C, P>);
+    }
 } // namespace sortable_test
