@@ -5673,7 +5673,7 @@ namespace ranges {
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr bool operator()(_Rng _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _ULast  = _Uend(_Range);
             const auto _UFirst = _Is_sorted_until_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _UFirst == _ULast;
