@@ -9,12 +9,12 @@
 using namespace std;
 
 template <typename T>
-void check(T x, T y) {
-    constexpr T tol = 2 * numeric_limits<T>::epsilon();
+void check(const T x, const T y) {
+    constexpr T tolerance = 2 * numeric_limits<T>::epsilon();
 
     if (isfinite(x) && isfinite(y)) {
         assert(signbit(x) == signbit(y));
-        assert(abs(x - y) <= tol * fmax(abs(x), abs(y)));
+        assert(abs(x - y) <= tolerance * fmax(abs(x), abs(y)));
     } else if (isnan(x) || isnan(y)) {
         assert(isnan(x) == isnan(y));
     } else {
@@ -30,10 +30,10 @@ void check_part(const complex<T>& x, const complex<T>& y) {
 
 template <typename T>
 void check_norm(const complex<T>& x, const complex<T>& y) {
-    constexpr T tol = 4 * numeric_limits<T>::epsilon();
+    constexpr T tolerance = 4 * numeric_limits<T>::epsilon();
 
     if (isfinite(x.real()) && isfinite(x.imag()) && isfinite(y.real()) && isfinite(y.imag())) {
-        assert(abs(x - y) <= tol * fmax(abs(x), abs(y)));
+        assert(abs(x - y) <= tolerance * fmax(abs(x), abs(y)));
     } else {
         const bool x_is_inf = isinf(x.real()) || isinf(x.imag());
         const bool y_is_inf = isinf(y.real()) || isinf(y.imag());
@@ -47,14 +47,14 @@ void test() {
 
     constexpr T zero     = T{0};
     constexpr T tiny     = numeric_limits<T>::denorm_min();
-    constexpr T log10_e  = T{0.43429448190325182765};
+    constexpr T log10_e  = T{0.4342944819032518};
     constexpr T half     = T{0.5};
     constexpr T one_down = T{1} - numeric_limits<T>::epsilon() / T{numeric_limits<T>::radix};
     constexpr T one      = T{1};
     constexpr T one_up   = T{1} + numeric_limits<T>::epsilon();
-    constexpr T pi_2     = T{1.5707963267948966192};
+    constexpr T pi_2     = T{1.5707963267948966};
     constexpr T two      = T{2};
-    constexpr T pi       = T{3.1415926535897932385};
+    constexpr T pi       = T{3.141592653589793};
     constexpr T huge     = (numeric_limits<T>::max)();
     constexpr T inf      = numeric_limits<T>::infinity();
 
