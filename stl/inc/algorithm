@@ -223,6 +223,19 @@ namespace ranges {
         }
     }
 
+    // FUNCTION TEMPLATE _Get_final_iterator_unwrapped
+    template <forward_range _Rng>
+    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range) {
+        // Find the (unwrapped) iterator in _Range which equals _Uend(_Range), possibly O(N)
+        if constexpr (common_range<_Rng>) {
+            return _Uend(_Range);
+        } else if constexpr (sized_range<_Rng>) {
+            return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
+        } else {
+            return _RANGES next(_Ubegin(_Range), _Uend(_Range));
+        }
+    }
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
@@ -3836,6 +3849,93 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
     _STD push_heap(_First, _Last, less<>());
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::push_heap
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Push_heap_by_index(const _It _First, iter_difference_t<_It> _Hole,
+        const iter_difference_t<_It> _Top, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
+        // percolate _Hole to _Top or where _Val belongs, using _Pred
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+        while (_Top < _Hole) {
+            const auto _Idx = static_cast<iter_difference_t<_It>>((_Hole - 1) >> 1); // shift for codegen
+            if (!_STD invoke(_Pred, _STD invoke(_Proj, *(_First + _Idx)), _STD invoke(_Proj, _Val))) {
+                break;
+            }
+
+            // move _Hole up to parent
+            *(_First + _Hole) = _RANGES iter_move(_First + _Idx);
+            _Hole             = _Idx;
+        }
+
+        *(_First + _Hole) = _STD move(_Val); // drop _Val into final hole
+    }
+
+    class _Push_heap_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_unwrapped(_STD move(_Last));
+            if constexpr (is_same_v<_It, _Se>) {
+                _Seek_wrapped(_First, _ULast);
+                _Push_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else if constexpr (sized_sentinel_for<_Se, _It>) {
+                auto _UFinal = _UFirst + (_ULast - _UFirst);
+                _Seek_wrapped(_First, _UFinal);
+                _Push_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else {
+                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
+                _Seek_wrapped(_First, _UFinal);
+                _Push_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            }
+
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if constexpr (common_range<_Rng>) {
+                _Push_heap_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _RANGES end(_Range);
+            } else {
+                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                _Push_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _First = _RANGES begin(_Range);
+                _Seek_wrapped(_First, _STD move(_ULast));
+                return _First;
+            }
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Push_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            const auto _Count = _Last - _First;
+            if (_Count < 2) {
+                return;
+            }
+
+            --_Last;
+            iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+            _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj);
+        }
+    };
+
+    inline constexpr _Push_heap_fn push_heap{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE pop_heap
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Pop_heap_hole_by_index(
@@ -3899,6 +3999,118 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
     _STD pop_heap(_First, _Last, less<>());
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::pop_heap
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Pop_heap_hole_by_index(_It _First, iter_difference_t<_It> _Hole,
+        const iter_difference_t<_It> _Bottom, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
+        // percolate _Hole to _Bottom, then push _Val, using _Pred
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+        _STL_INTERNAL_CHECK(_Bottom != 0);
+        using _Diff      = iter_difference_t<_It>;
+        const _Diff _Top = _Hole;
+        _Diff _Idx       = _Hole;
+
+        // Check whether _Idx can have a child before calculating that child's index, since
+        // calculating the child's index can trigger integer overflows
+        const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
+        while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
+            _Idx            = 2 * _Idx + 2;
+            const auto _Mid = _First + _Idx;
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *(_Mid - 1)))) {
+                --_Idx;
+            }
+            *(_First + _Hole) = _RANGES iter_move(_First + _Idx);
+            _Hole             = _Idx;
+        }
+
+        if (_Idx == _Max_sequence_non_leaf && _Bottom % 2 == 0) { // only child at bottom, move _Hole down to it
+            *(_First + _Hole) = _RANGES iter_move(_First + (_Bottom - 1));
+            _Hole             = _Bottom - 1;
+        }
+
+        _RANGES _Push_heap_by_index(_STD move(_First), _Hole, _Top, _STD move(_Val), _Pred, _Proj);
+    }
+
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Pop_heap_hole_unchecked(
+        _It _First, const _It _Last, const _It _Dest, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
+        // pop *_First to *_Dest and reheap, using _Pred
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+        _STL_INTERNAL_CHECK(_First != _Last);
+        _STL_INTERNAL_CHECK(_First != _Dest);
+
+        *_Dest            = _RANGES iter_move(_First);
+        const auto _Count = _Last - _First;
+        _RANGES _Pop_heap_hole_by_index(_STD move(_First), 0, _Count, _STD move(_Val), _Pred, _Proj);
+    }
+
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Pop_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // pop *_First to *(_Last - 1) and reheap, using _Pred
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+        if (_Last - _First < 2) {
+            return;
+        }
+
+        --_Last;
+        iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+        _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj);
+    }
+
+    class _Pop_heap_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_unwrapped(_STD move(_Last));
+            if constexpr (is_same_v<_It, _Se>) {
+                _Seek_wrapped(_First, _ULast);
+                _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else if constexpr (sized_sentinel_for<_Se, _It>) {
+                auto _UFinal = _UFirst + (_ULast - _UFirst);
+                _Seek_wrapped(_First, _UFinal);
+                _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else {
+                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
+                _Seek_wrapped(_First, _UFinal);
+                _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            }
+
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if constexpr (common_range<_Rng>) {
+                _RANGES _Pop_heap_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _RANGES end(_Range);
+            } else {
+                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                _RANGES _Pop_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _First = _RANGES begin(_Range);
+                _Seek_wrapped(_First, _STD move(_ULast));
+                return _First;
+            }
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Pop_heap_fn pop_heap{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE make_heap
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
@@ -3923,6 +4135,73 @@ template <class _RanIt>
 _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap, using operator<
     _STD make_heap(_First, _Last, less<>());
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::make_heap
+    class _Make_heap_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_unwrapped(_STD move(_Last));
+            if constexpr (is_same_v<_It, _Se>) {
+                _Seek_wrapped(_First, _ULast);
+                _Make_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else if constexpr (sized_sentinel_for<_Se, _It>) {
+                auto _UFinal = _UFirst + (_ULast - _UFirst);
+                _Seek_wrapped(_First, _UFinal);
+                _Make_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else {
+                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
+                _Seek_wrapped(_First, _UFinal);
+                _Make_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            }
+
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if constexpr (common_range<_Rng>) {
+                _Make_heap_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _RANGES end(_Range);
+            } else {
+                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                _Make_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _First = _RANGES begin(_Range);
+                _Seek_wrapped(_First, _STD move(_ULast));
+                return _First;
+            }
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Make_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            // make nontrivial [_First, _Last) into a heap, using _Pred
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            using _Diff         = iter_difference_t<_It>;
+            const _Diff _Bottom = _Last - _First;
+            for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
+                // reheap top half, bottom to top
+                --_Hole;
+                iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
+                _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj);
+            }
+        }
+    };
+
+    inline constexpr _Make_heap_fn make_heap{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATES is_heap AND is_heap_until
 template <class _RanIt, class _Pr>
@@ -3988,6 +4267,94 @@ _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* 
     // test if range is a heap ordered by operator<
     return _STD is_heap(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::is_heap
+    template <class _It, class _Pr, class _Pj>
+    _NODISCARD constexpr _It _Is_heap_until_unchecked(
+        _It _First, const iter_difference_t<_It> _Size, _Pr _Pred, _Pj _Proj) {
+        // find extent of counted range that is a heap ordered by _Pred
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+        if (_Size == 0) {
+            return _First;
+        }
+
+        using _Diff = iter_difference_t<_It>;
+        _Diff _Off  = 1;
+        for (; _Off < _Size; ++_Off) {
+            const auto _Mid1 = _First + static_cast<_Diff>((_Off - 1) >> 1); // shift for codegen
+            auto _Mid2       = _First + _Off;
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid1), _STD invoke(_Proj, *_Mid2))) {
+                return _Mid2;
+            }
+        }
+
+        return _First + _Off;
+    }
+
+    class _Is_heap_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            const auto _Size  = _RANGES distance(_UFirst, _ULast);
+            const auto _UResult =
+                _RANGES _Is_heap_until_unchecked(_STD move(_UFirst), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _UResult == _ULast;
+        }
+
+        template <random_access_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _Size = _RANGES distance(_Range);
+            const auto _UResult =
+                _RANGES _Is_heap_until_unchecked(_Ubegin(_Range), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _UResult == _Uend(_Range);
+        }
+    };
+
+    inline constexpr _Is_heap_fn is_heap{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::is_heap_until
+    class _Is_heap_until_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst     = _Get_unwrapped(_STD move(_First));
+            auto _ULast      = _Get_unwrapped(_STD move(_Last));
+            const auto _Size = _RANGES distance(_UFirst, _STD move(_ULast));
+            auto _UResult =
+                _RANGES _Is_heap_until_unchecked(_STD move(_UFirst), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _Size = _RANGES distance(_Range);
+            auto _UResult = _RANGES _Is_heap_until_unchecked(_Ubegin(_Range), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _First   = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+    };
+
+    inline constexpr _Is_heap_until_fn is_heap_until{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE sort_heap
@@ -4017,6 +4384,68 @@ template <class _RanIt>
 _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping, using operator<
     _STD sort_heap(_First, _Last, less<>());
 }
+
+#if __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::sort_heap
+    class _Sort_heap_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_unwrapped(_STD move(_Last));
+            if constexpr (is_same_v<_It, _Se>) {
+                _Seek_wrapped(_First, _ULast);
+                _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else if constexpr (sized_sentinel_for<_Se, _It>) {
+                auto _UFinal = _UFirst + (_ULast - _UFirst);
+                _Seek_wrapped(_First, _UFinal);
+                _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else {
+                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
+                _Seek_wrapped(_First, _UFinal);
+                _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            }
+
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            if constexpr (common_range<_Rng>) {
+                _Sort_heap_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _RANGES end(_Range);
+            } else {
+                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                _Sort_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _First  = _RANGES begin(_Range);
+                _Seek_wrapped(_First, _STD move(_ULast));
+                return _First;
+            }
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Sort_heap_unchecked(const _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            // order heap by repeatedly popping, using _Pred and _Proj
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            for (; 2 <= _Last - _First; --_Last) {
+                _RANGES _Pop_heap_unchecked(_First, _Last, _Pred, _Proj);
+            }
+        }
+    };
+
+    inline constexpr _Sort_heap_fn sort_heap{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE upper_bound
 template <class _FwdIt, class _Ty, class _Pr>
