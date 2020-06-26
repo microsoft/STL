@@ -578,8 +578,9 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
         return static_cast<_Common>(_Mx_magnitude);
     }
 
-    const auto _Mx_trailing_zeroes  = static_cast<unsigned long>(_Countr_zero(_Mx_magnitude));
-    const auto _Common_factors_of_2 = (_STD min)(_Mx_trailing_zeroes, _Countr_zero(_Nx_magnitude));
+    const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero(_Mx_magnitude));
+    const auto _Common_factors_of_2 =
+        (_STD min)(_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero(_Nx_magnitude)));
     _Nx_magnitude >>= _Common_factors_of_2;
     _Mx_magnitude >>= _Mx_trailing_zeroes;
     do {
