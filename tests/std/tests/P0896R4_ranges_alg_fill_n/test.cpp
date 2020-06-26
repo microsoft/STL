@@ -4,9 +4,10 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
-#include <range_algorithm_support.hpp>
 #include <ranges>
 #include <utility>
+
+#include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
     using ranges::fill_n, ranges::iterator_t;
