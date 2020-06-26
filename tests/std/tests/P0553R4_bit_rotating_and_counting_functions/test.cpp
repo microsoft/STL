@@ -177,7 +177,6 @@ void test_all() {
     test_popcount_specialcases<T>();
 }
 
-
 int main() {
     test_all<unsigned char>();
     test_all<unsigned short>();
