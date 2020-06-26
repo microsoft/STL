@@ -2290,38 +2290,41 @@ namespace ranges {
             // pre: _First + [0, _Dist) is a valid counted range
 
             if constexpr (bidirectional_iterator<_It>) {
-                if (_Dist >= _Count) {
-                    auto _Last = _RANGES next(_First, _Count);
-                    auto _Mid1 = _First;
-                    auto _Mid2 = _Last;
-                    for (;;) {
-                        // Invariants: _Last - _First == _Count, [_First, _Mid1) and [_Mid2, _Last) match _Val:
-                        //
-                        // _First  _Mid1    _Mid2    _Last
-                        // |=======|????????|========|??????...
+                if (_Dist < _Count) {
+                    _RANGES advance(_First, _Dist);
+                    return {_First, _First};
+                }
 
-                        --_Mid2;
-                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid2), _Val)) { // mismatch; skip past it
-                            ++_Mid2;
-                            const auto _Delta = _RANGES distance(_First, _Mid2);
+                auto _Last = _RANGES next(_First, _Count);
+                auto _Mid1 = _First;
+                auto _Mid2 = _Last;
+                for (;;) {
+                    // Invariants: _Last - _First == _Count, [_First, _Mid1) and [_Mid2, _Last) match _Val:
+                    //
+                    // _First  _Mid1    _Mid2    _Last
+                    // |=======|????????|========|??????...
 
-                            if (_Dist - _Delta < _Count) { // not enough space left
-                                _First = _STD move(_Last);
-                                _Dist -= _Count;
-                                break;
-                            }
+                    --_Mid2;
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid2), _Val)) { // mismatch; skip past it
+                        ++_Mid2;
+                        const auto _Delta = _RANGES distance(_First, _Mid2);
 
-                            _First = _STD move(_Mid2);
-                            _Dist -= _Delta;
-                            _Mid1 = _Last;
-                            _RANGES advance(_Last, _Delta);
-                            _Mid2 = _Last;
-                            continue;
+                        if (_Dist - _Delta < _Count) { // not enough space left
+                            _First = _STD move(_Last);
+                            _Dist -= _Count;
+                            break;
                         }
 
-                        if (_Mid2 == _Mid1) { // [_Mid1, _Mid2) is empty, so [_First, _Last) all match
-                            return {_STD move(_First), _STD move(_Last)};
-                        }
+                        _First = _STD move(_Mid2);
+                        _Dist -= _Delta;
+                        _Mid1 = _Last;
+                        _RANGES advance(_Last, _Delta);
+                        _Mid2 = _Last;
+                        continue;
+                    }
+
+                    if (_Mid2 == _Mid1) { // [_Mid1, _Mid2) is empty, so [_First, _Last) all match
+                        return {_STD move(_First), _STD move(_Last)};
                     }
                 }
             } else {

@@ -55,7 +55,7 @@ struct instantiator {
             assert(result.end() == ranges::next(range.begin(), 3));
         }
 
-        // explicit predicate and one projection
+        // explicit predicate and projection
         constexpr auto cmp = [](auto&& x, auto&& y) { return x == y + 1; };
         {
             const auto result = ranges::search_n(range, 3, 0, cmp, get_first);
