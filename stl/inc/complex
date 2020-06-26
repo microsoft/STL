@@ -201,8 +201,7 @@ public:
     }
 
     static _Ty _Abs(_Ty _Left) {
-        // this always returns the correct value
-        // _Left < 0 ? -_Left : _Left is incorrect when _Left is -0.0
+        // testing _Left < 0 would be incorrect when _Left is -0.0
         return _CSTD fabsl(_Left);
     }
 
@@ -211,8 +210,7 @@ public:
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
-        // this always returns the correct value
-        // _Sign < 0 ? -_Abs(_Magnitude) : _Abs(_Magnitude) is incorrect when _Sign is -0.0
+        // testing _Sign < 0 would be incorrect when _Sign is -0.0
         return _CSTD copysignl(_Magnitude, _Sign);
     }
 
@@ -239,8 +237,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        // this always returns the correct value
-        // _Left < 0 is incorrect when _Left is -0.0
+        // testing _Left < 0 would be incorrect when _Left is -0.0
         return _STD signbit(_Left);
     }
 
@@ -336,8 +333,7 @@ public:
     }
 
     static _Ty _Abs(_Ty _Left) {
-        // this always returns the correct value
-        // _Left < 0 ? -_Left : _Left is incorrect when _Left is -0.0
+        // testing _Left < 0 would be incorrect when _Left is -0.0
         return _CSTD fabs(_Left);
     }
 
@@ -346,8 +342,7 @@ public:
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
-        // this always returns the correct value
-        // _Sign < 0 ? -_Abs(_Magnitude) : _Abs(_Magnitude) is incorrect when _Sign is -0.0
+        // testing _Sign < 0 would be incorrect when _Sign is -0.0
         return _CSTD copysign(_Magnitude, _Sign);
     }
 
@@ -374,8 +369,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        // this always returns the correct value
-        // _Left < 0 is incorrect when _Left is -0.0
+        // testing _Left < 0 would be incorrect when _Left is -0.0
         return _STD signbit(_Left);
     }
 
@@ -474,8 +468,7 @@ public:
     }
 
     static _Ty _Abs(_Ty _Left) {
-        // this always returns the correct value
-        // _Left < 0 ? -_Left : _Left is incorrect when _Left is -0.0
+        // testing _Left < 0 would be incorrect when _Left is -0.0
         return _CSTD fabsf(_Left);
     }
 
@@ -484,8 +477,7 @@ public:
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
-        // this always returns the correct value
-        // _Sign < 0 ? -_Abs(_Magnitude) : _Abs(_Magnitude) is incorrect when _Sign is -0.0
+        // testing _Sign < 0 would be incorrect when _Sign is -0.0
         return _CSTD copysignf(_Magnitude, _Sign);
     }
 
@@ -512,8 +504,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        // this always returns the correct value
-        // _Left < 0 is incorrect when _Left is -0.0
+        // testing _Left < 0 would be incorrect when _Left is -0.0
         return _STD signbit(_Left);
     }
 
