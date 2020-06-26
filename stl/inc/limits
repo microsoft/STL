@@ -1015,7 +1015,7 @@ public:
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-3
 template <class _Ty>
-_NODISCARD constexpr int _Countl_zero_helper(_Ty _Val) noexcept {
+_NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
     _Ty _Yy = 0;
 
     unsigned int _Nn = numeric_limits<_Ty>::digits;
@@ -1023,10 +1023,10 @@ _NODISCARD constexpr int _Countl_zero_helper(_Ty _Val) noexcept {
     do {
         _Yy = static_cast<_Ty>(_Val >> _Cc);
         if (_Yy != 0) {
-            _Nn  = _Nn - _Cc;
+            _Nn -= _Cc;
             _Val = _Yy;
         }
-        _Cc = _Cc >> 1;
+        _Cc >>= 1;
     } while (_Cc != 0);
     return static_cast<int>(_Nn) - static_cast<int>(_Val);
 }
@@ -1035,9 +1035,9 @@ _NODISCARD constexpr int _Countl_zero_helper(_Ty _Val) noexcept {
 // Used at compile time and when said instructions are not supported.
 // see "Hacker's Delight" section 5-4
 template <class _Ty>
-_NODISCARD constexpr int _Countr_zero_helper(const _Ty _Val) noexcept {
+_NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
     constexpr int _Digits = std::numeric_limits<_Ty>::digits;
-    return _Digits - _Countl_zero_helper(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
+    return _Digits - _Countl_zero_fallback(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
 }
 
 #if defined(_M_IX86) || defined(_M_X64)
@@ -1047,7 +1047,7 @@ extern int __isa_available;
 #ifdef __clang__
 #define _TZCNT_U32 __builtin_ia32_tzcnt_u32
 #define _TZCNT_U64 __builtin_ia32_tzcnt_u64
-#else // ^^^ __clang__ / ! __clang__ vvv
+#else // ^^^ __clang__ / !__clang__ vvv
 __MACHINEX86_X64(unsigned int _tzcnt_u32(unsigned int))
 __MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64));
 #define _TZCNT_U32 _tzcnt_u32
@@ -1099,7 +1099,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
         return _Checked_x86_x64_countr_zero(_Val);
 #endif // _M_IX86
     }
-    return _Countr_zero_helper(_Val);
+    return _Countr_zero_fallback(_Val);
 }
 
 _STD_END
