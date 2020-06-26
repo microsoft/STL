@@ -32,7 +32,11 @@ template <typename T>
 void check_norm(const complex<T>& x, const complex<T>& y) {
     constexpr T tolerance = 4 * numeric_limits<T>::epsilon();
 
-    if (isfinite(x.real()) && isfinite(x.imag()) && isfinite(y.real()) && isfinite(y.imag())) {
+    const bool x_is_finite = isfinite(x.real()) && isfinite(x.imag());
+    const bool y_is_finite = isfinite(y.real()) && isfinite(y.imag());
+    assert(x_is_finite == y_is_finite);
+
+    if (x_is_finite) {
         assert(abs(x - y) <= tolerance * fmax(abs(x), abs(y)));
     } else {
         const bool x_is_inf = isinf(x.real()) || isinf(x.imag());
