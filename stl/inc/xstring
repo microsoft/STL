@@ -2642,6 +2642,26 @@ private:
     }
 
 public:
+    // Move assign from a buffer, used by basic_stringbuf
+    void _Move_assign_from_buffer(_Elem* _Right, size_type _Size, size_type _Res) noexcept {
+        _Tidy_deallocate();
+        auto& _My_data = _Mypair._Myval2;
+        _Construct_in_place(_My_data._Bx._Ptr, _Right);
+        _My_data._Mysize = _Size;
+        _My_data._Myres  = _Res;
+    }
+
+    // Release to a buffer, or allocate a new one if in small string mode
+    template <class Alloc2>
+    pair<_Elem*, size_type> _Release_to_buffer(const Alloc2& _Al) {
+        // TODO
+    }
+
+    pair<_Elem*, size_type> _Release_to_buffer() {
+        return _Release_to_buffer(_Getal());
+    }
+
+public:
     basic_string& operator=(basic_string&& _Right) noexcept(noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {
         if (this != _STD addressof(_Right)) {
             _Move_assign(_Right, _Choose_pocma<_Alty>{});

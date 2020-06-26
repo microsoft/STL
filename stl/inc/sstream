@@ -44,8 +44,9 @@ public:
     basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al)
         : _Seekhigh(nullptr), _Mystate(_GetState(_Mode)), _Al(_Al) {}
 
-    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out) {
-        // TODO: move init
+    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out) : _Al() {
+        auto _Pair = _Str._Release_to_buffer();
+        _Init(_Pair.first, _Pair.second, _Getstate(_Mode));
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
@@ -151,8 +152,37 @@ public:
         return basic_string<_Elem, _Traits, _Alloc2>{view(), _Al};
     }
 
+    // The buffer cannot be moved to string directly, because
+    // the buffer maybe already full, and the terminating char is not \0.
+    // In that case, copy the string as usual.
     _NODISCARD _Mystr str() && {
-        // TODO: move out
+        _Mystr _Result(_Al);
+        if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable
+            const auto _Base = _Mysb::pbase();
+            const auto _Ptr  = _Mysb::pptr();
+            const auto _Eptr = _Mysb::epptr();
+            if (_Ptr == _Eptr
+                && !_Traits::eq(*(_Ptr - 1), _Elem())) { // the buffer is full and terminating char is not \0
+                _Result.assign(_Base, static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base));
+            } else {
+                _Result._Move_assign_from_buffer(_Base, static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base),
+                    static_cast<_Mysize_type>(_Eptr - _Base));
+                _Mystate &= ~_Allocated;
+            }
+            return make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
+        } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable
+            const auto _Base           = _Mysb::eback();
+            const auto _Eptr           = _Mysb::egptr();
+            const _Mysize_type _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
+            if (!_Traits::eq(*(_Eptr - 1), _Elem())) { // the buffer is full and terminating char is not \0
+                _Result.assign(_Base, _Mysize);
+            } else {
+                _Result._Move_assign_from_buffer(_Base, _Mysize, _Mysize);
+                _Mystate &= ~_Allocated;
+            }
+        }
+        _Tidy();
+        return _Result;
     }
 
     _NODISCARD basic_string_view<_Elem, _Traits> view() const noexcept {
@@ -167,7 +197,9 @@ public:
     }
 
     void str(_Mystr&& _Newstr) {
-        // TODO: move init
+        _Tidy();
+        auto _Pair = _Newstr._Release_to_buffer();
+        _Init(_Pair.first, _Pair.second, _Mystate);
     }
 
     allocator_type get_allocator() const noexcept {
