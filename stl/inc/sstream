@@ -27,6 +27,7 @@ public:
     using allocator_type = _Alloc;
     using _Mysb          = basic_streambuf<_Elem, _Traits>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
+    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
     using _Mysize_type   = typename _Mystr::size_type;
 
     basic_stringbuf() : _Seekhigh(nullptr), _Mystate(_Getstate(ios_base::in | ios_base::out)), _Al() {}
@@ -188,10 +189,10 @@ public:
         return _Result;
     }
 
-    _NODISCARD basic_string_view<_Elem, _Traits> view() const noexcept {
+    _NODISCARD _Mystr_view view() const noexcept {
         auto _Pair = _View_pair();
         if (_Pair.first)
-            return basic_string_view<_Elem, _Traits>{_Pair.first, _Pair.second};
+            return _Mystr_view{_Pair.first, _Pair.second};
         else
             return {};
     }
@@ -502,6 +503,7 @@ public:
     using allocator_type = _Alloc;
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
+    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
 
     basic_istringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in) {}
 
@@ -585,7 +587,7 @@ public:
         return move(_Stringbuffer).str();
     }
 
-    basic_string_view<_Elem, _Traits> view() const noexcept {
+    _Mystr_view view() const noexcept {
         return _Stringbuffer.view();
     }
 
@@ -616,6 +618,7 @@ public:
     using allocator_type = _Alloc;
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
+    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
 
     basic_ostringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::out) {}
 
@@ -699,7 +702,7 @@ public:
         return move(_Stringbuffer).str();
     }
 
-    basic_string_view<_Elem, _Traits> view() const noexcept {
+    _Mystr_view view() const noexcept {
         return _Stringbuffer.view();
     }
 
@@ -736,6 +739,7 @@ public:
     using off_type       = typename _Traits::off_type;
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
+    using _Mystr_view    = basic_string_view<_Elem, _Traits>;
 
     basic_stringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in | ios_base::out) {}
 
@@ -820,7 +824,7 @@ public:
         return move(_Stringbuffer).str();
     }
 
-    basic_string_view<_Elem, _Traits> view() const noexcept {
+    _Mystr_view view() const noexcept {
         return _Stringbuffer.view();
     }
 
