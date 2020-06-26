@@ -40,11 +40,24 @@ public:
 
     constexpr const_iterator begin() const noexcept;
     constexpr const_iterator end() const noexcept;
-    constexpr void advance_to(cosnt_iterator _It);
+    constexpr void advance_to(const_iterator _It);
 
     constexpr size_t next_arg_id();
     constexpr void check_arg_id(size_t _Id);
 };
+
+
+template <class _CharT, class _Ty>
+struct _Named_arg {
+    const _CharT* _Name;
+    const _Ty& _Val;
+};
+
+template <class>
+constexpr bool _Is_named_arg_v = false;
+
+template <class _Ty, class _CharT>
+constexpr bool _Is_named_arg_v<_Named_arg<_CharT, _Ty>> = true;
 
 
 template <class _Context>
@@ -54,8 +67,27 @@ public:
 
     basic_format_arg() noexcept;
     explicit operator bool() const noexcept;
+};
 
-}
+template <class _Context, class... _Args>
+class _Format_arg_store {
+    static constexpr size_t _Num_args       = sizeof...(_Args);
+    static constexpr size_t _Num_named_args = (... + _Is_named_arg_v<_Args>);
+
+    // TODO: no arg packing yet
+
+    using _Value_type = basic_format_arg<_Context>;
+};
+
+template <class _Context>
+class basic_format_args {
+public:
+    basic_format_args() noexcept;
+    template <class... _Args>
+    basic_format_args(const _Format_arg_store<_Context, _Args...>& store) noexcept;
+
+    basic_format_arg<_Context> get(size_t _Index) const noexcept;
+};
 
 template <class _Out, class _CharT>
 class basic_format_context {
@@ -63,13 +95,14 @@ public:
     using iterator  = _Out;
     using char_type = _CharT;
     template <class _Ty>
-    using formatter_type = formatter<_Ty, _CharT>;
+    // using formatter_type = formatter<_Ty, _CharT>;
     basic_format_arg<basic_format_context> arg(size_t _Id) const;
     _STD locale locale();
 
     iterator out();
     void advance_to(iterator _It);
 };
+
 
 _STD_END
 
