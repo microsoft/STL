@@ -4,8 +4,9 @@
 #include <assert.h>
 #include <chrono>
 #include <ratio>
-#include <test_thread_support.hpp>
 #include <thread>
+
+#include <test_thread_support.hpp>
 
 using namespace std;
 using namespace std::chrono;

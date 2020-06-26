@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "test.hpp"
 #include <charconv>
+
+#include "test.hpp"
 using namespace std;
 
 inline constexpr DoublePrecisionToCharsTestCase double_scientific_precision_to_chars_test_cases_4[] = {

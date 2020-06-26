@@ -6,7 +6,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -56,4 +56,4 @@ struct instantiator {
     }
 };
 
-template void test_in_out<instantiator>();
+template void test_in_write<instantiator>();

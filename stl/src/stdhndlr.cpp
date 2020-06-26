@@ -21,7 +21,7 @@ _CRTIMP2 new_handler __cdecl set_new_handler(new_handler pnew) noexcept { // rem
     _BEGIN_LOCK(_LOCK_MALLOC) // lock thread to ensure atomicity
     new_handler pold = _New_handler;
     _New_handler     = pnew;
-    _set_new_handler(pnew ? _New_handler_interface : 0);
+    _set_new_handler(pnew ? _New_handler_interface : nullptr);
     return pold;
     _END_LOCK()
 }

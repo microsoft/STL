@@ -3,7 +3,7 @@
 
 // _LExp function
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
@@ -26,7 +26,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(
         return _INFCODE;
     } else { // xexp won't overflow
         long double g = *px * invln2;
-        short xexp    = (short) (g + (g < 0 ? -0.5L : +0.5L));
+        short xexp    = static_cast<short>(g + (g < 0 ? -0.5L : +0.5L));
 
         g = xexp;
         g = (*px - g * c1) - g * c2;
@@ -40,7 +40,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(
             *px = (w + g) / (w - g) * 2.0L * y;
             --xexp;
         }
-        return _LDscale(px, (long) xexp + eoff);
+        return _LDscale(px, static_cast<long>(xexp) + eoff);
     }
 }
 

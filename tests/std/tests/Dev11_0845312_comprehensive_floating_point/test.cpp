@@ -9,13 +9,14 @@
 
 #include <assert.h>
 #include <float.h>
-#include <floating_point_test_cases.hpp>
 #include <iomanip>
 #include <ios>
 #include <math.h>
 #include <sstream>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <floating_point_test_cases.hpp>
 
 template <typename FloatingType>
 static FloatingType parse_as(char const*);

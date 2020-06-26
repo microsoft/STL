@@ -170,6 +170,8 @@
 // P0896R4 Ranges
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
+// P0912R5 Library Support For Coroutines
+//     (partially implemented, missing noop coroutines)
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
@@ -487,7 +489,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202005L
+#define _MSVC_STL_UPDATE  202006L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -497,8 +499,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1926 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.26 or newer.
+#if _MSC_VER < 1927 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.27 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1165,6 +1167,10 @@
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
+
+#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 1
+#define __cpp_lib_coroutine 197000L
+#endif // __cpp_impl_coroutine
 
 #ifdef __cpp_impl_destroying_delete
 #define __cpp_lib_destroying_delete 201806L
