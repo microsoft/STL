@@ -592,30 +592,32 @@ namespace sortable_test {
     using ranges::less;
     using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::sortable;
 
-    {
-        using I = int const*; // not permutable
-        using C = less;
-        using P = identity;
-        STATIC_ASSERT(!permutable<I>);
-        STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
-        STATIC_ASSERT(!sortable<I, C, P>);
-    }
+    void test() {
+        {
+            using I = int const*; // not permutable
+            using C = less;
+            using P = identity;
+            STATIC_ASSERT(!permutable<I>);
+            STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
+            STATIC_ASSERT(!sortable<I, C, P>);
+        }
 
-    {
-        using I = int*;
-        using C = void; // not an indirect_strict_weak_order
-        using P = identity;
-        STATIC_ASSERT(permutable<I>);
-        STATIC_ASSERT(!indirect_strict_weak_order<C, projected<I, P>>);
-        STATIC_ASSERT(!sortable<I, C, P>);
-    }
+        {
+            using I = int*;
+            using C = void; // not an indirect_strict_weak_order
+            using P = identity;
+            STATIC_ASSERT(permutable<I>);
+            STATIC_ASSERT(!indirect_strict_weak_order<C, projected<I, P>>);
+            STATIC_ASSERT(!sortable<I, C, P>);
+        }
 
-    {
-        using I = int*;
-        using C = less;
-        using P = identity;
-        STATIC_ASSERT(permutable<I>);
-        STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
-        STATIC_ASSERT(sortable<I, C, P>);
+        {
+            using I = int*;
+            using C = less;
+            using P = identity;
+            STATIC_ASSERT(permutable<I>);
+            STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
+            STATIC_ASSERT(sortable<I, C, P>);
+        }
     }
 } // namespace sortable_test
