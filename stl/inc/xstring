@@ -2652,13 +2652,20 @@ public:
     }
 
     // Release to a buffer, or allocate a new one if in small string mode
-    template <class Alloc2>
-    pair<_Elem*, size_type> _Release_to_buffer(const Alloc2& _Al) {
-        // TODO
-    }
-
     pair<_Elem*, size_type> _Release_to_buffer() {
-        return _Release_to_buffer(_Getal());
+        pair<_Elem*, size_type> _Result;
+        auto& _My_data = _Mypair._Myval2;
+        if (_My_data._Large_string_engaged()) {
+            _Result          = make_pair(exchange(_My_data._Bx._Ptr, nullptr), exchange(_My_data._Myres, 0));
+            _My_data._Mysize = 0;
+            _Tidy_init();
+        } else {
+            _Elem* _Result_ptr = _Al.allocate(_BUF_SIZE);
+            _Traits::copy(_Result_ptr, _My_data._Bx._Buf, _BUF_SIZE);
+            _Result = make_pair(_Result_ptr, _BUF_SIZE);
+            _Tidy_deallocate();
+        }
+        return _Result;
     }
 
 public:
