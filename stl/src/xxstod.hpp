@@ -29,7 +29,7 @@
 
     extern FTYPE FNAME(Dtento)(FTYPE*, long, int*);
 
-    if (perr != 0) {
+    if (perr != nullptr) {
         *perr = 0;
     }
 

@@ -8,8 +8,9 @@
 #include <iterator>
 #include <stdexcept>
 #include <stdlib.h>
-#include <test_death.hpp>
 #include <vector>
+
+#include <test_death.hpp>
 
 using namespace std;
 

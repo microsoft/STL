@@ -3,12 +3,12 @@
 
 // _LDscale function -- IEEE 754 version
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 short _LDscale(long double* px, long lexp) { // scale *px by 2^lexp with checking -- 64-bit
-    return _Dscale((double*) px, lexp);
+    return _Dscale(reinterpret_cast<double*>(px), lexp);
 }
 
 _END_EXTERN_C_UNLESS_PURE

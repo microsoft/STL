@@ -8,13 +8,14 @@
 
 #include <yvals.h>
 
-#include "awint.h"
 #include <direct.h>
 #include <experimental/filesystem>
 #include <io.h>
 #include <string.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 _FS_BEGIN
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
@@ -113,7 +114,7 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     if (_Handle == INVALID_HANDLE_VALUE) { // report failure
         _Errno = ERROR_BAD_PATHNAME;
         *_Dest = L'\0';
-        return 0;
+        return nullptr;
     }
 
     // success, get first directory entry
@@ -128,7 +129,7 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
 
         // no entries, release handle
         _Close_dir(_Handle);
-        return 0;
+        return nullptr;
     }
 
     // get file type and return handle
@@ -144,7 +145,7 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_
 #ifdef _CRT_APP
     return false; // no support
 #else // _CRT_APP
-    return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != 0;
+    return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != nullptr;
 #endif // _CRT_APP
 }
 
@@ -160,7 +161,7 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) {
 
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t*) {
     // get symlink -- DUMMY
-    _Dest[0] = wchar_t(0);
+    _Dest[0] = L'\0';
     return &_Dest[0];
 }
 
