@@ -2917,21 +2917,20 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     *_UFirst = (*_UFirst & _FirstDestMask) | (_FillVal & _FirstSourceMask);
     ++_UFirst;
 
-    if (true
 #ifdef __cpp_lib_is_constant_evaluated
-        && !_STD is_constant_evaluated()
+    if (_STD is_constant_evaluated()) {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            *_UFirst = _FillVal;
+        }
+    } else
 #endif // __cpp_lib_is_constant_evaluated
-    ) {
+    {
         const auto _UFirst_ch = reinterpret_cast<const char*>(_UFirst);
         const auto _ULast_ch  = reinterpret_cast<const char*>(_ULast);
         const auto _Count_ch  = static_cast<size_t>(_ULast_ch - _UFirst_ch);
         const auto _ValChar   = static_cast<unsigned char>(_Val ? -1 : 0);
         _CSTD memset(_UFirst, _ValChar, _Count_ch);
         _UFirst += _ULast - _UFirst;
-    } else {
-        for (; _UFirst != _ULast; ++_UFirst) {
-            *_UFirst = _FillVal;
-        }
     }
 
     if (_Last._Myoff != 0) {
