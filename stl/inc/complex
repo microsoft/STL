@@ -1612,7 +1612,7 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
         } else if (_Ctraits<_Ty>::_Isinf(_Rho)) {
             _Real = _Rho; // log(INF) == INF
         } else {
-            _Real = static_cast<_Ty>(_Ctraits<_Ty>::log(_Rho)); // These non-extraneous casts are TRANSITION, DevCom-1093507
+            _Real = static_cast<_Ty>(_Ctraits<_Ty>::log(_Rho)); // These casts are TRANSITION, DevCom-1093507
             _Real += static_cast<_Ty>(_Leftn * _Cl);
             _Real += static_cast<_Ty>(_Leftn * _Cm);
         }
