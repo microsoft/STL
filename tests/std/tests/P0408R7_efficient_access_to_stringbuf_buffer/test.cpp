@@ -32,12 +32,12 @@ template <typename Stream>
 void test_allocator_util(const pmr::string& init_value) {
     Stream stream{init_value};
     assert(stream.view() == init_value);
-    assert(stream.str<polymorphic_allocator<char>>() == init_value);
+    assert(stream.str(init_value.get_allocator()) == init_value);
     // Clear the stream
     stream.str("");
     stream.str(init_value);
     assert(stream.view() == init_value);
-    assert(stream.str<polymorphic_allocator<char>>() == init_value);
+    assert(stream.str(init_value.get_allocator()) == init_value);
 }
 
 template <typename Stream>

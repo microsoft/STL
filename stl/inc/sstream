@@ -524,7 +524,7 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode | ios_base::in, _Al) {}
 
     explicit basic_istringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(move(_Str), _Mode | ios_base::in) {}
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::in) {}
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
@@ -585,15 +585,15 @@ public:
 
 #if _HAS_CXX20
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
 
-    _Mystr str() && {
-        return move(_Stringbuffer).str();
+    _NODISCARD _Mystr str() && {
+        return _STD move(_Stringbuffer).str();
     }
 
-    _Mystr_view view() const noexcept {
+    _NODISCARD _Mystr_view view() const noexcept {
         return _Stringbuffer.view();
     }
 
@@ -603,7 +603,7 @@ public:
     }
 
     void str(_Mystr&& _Newstr) {
-        _Stringbuffer.str(move(_Newstr));
+        _Stringbuffer.str(_STD move(_Newstr));
     }
 #endif // _HAS_CXX20
 
@@ -642,7 +642,7 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode | ios_base::out, _Al) {}
 
     explicit basic_ostringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::out)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(move(_Str), _Mode | ios_base::out) {}
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::out) {}
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
@@ -703,15 +703,15 @@ public:
 
 #if _HAS_CXX20
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
 
-    _Mystr str() && {
-        return move(_Stringbuffer).str();
+    _NODISCARD _Mystr str() && {
+        return _STD move(_Stringbuffer).str();
     }
 
-    _Mystr_view view() const noexcept {
+    _NODISCARD _Mystr_view view() const noexcept {
         return _Stringbuffer.view();
     }
 
@@ -721,7 +721,7 @@ public:
     }
 
     void str(_Mystr&& _Newstr) {
-        _Stringbuffer.str(move(_Newstr));
+        _Stringbuffer.str(_STD move(_Newstr));
     }
 #endif // _HAS_CXX20
 
@@ -766,7 +766,7 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode, _Al) {}
 
     explicit basic_stringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(move(_Str), _Mode) {}
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode) {}
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
@@ -828,15 +828,15 @@ public:
 
 #if _HAS_CXX20
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
 
-    _Mystr str() && {
-        return move(_Stringbuffer).str();
+    _NODISCARD _Mystr str() && {
+        return _STD move(_Stringbuffer).str();
     }
 
-    _Mystr_view view() const noexcept {
+    _NODISCARD _Mystr_view view() const noexcept {
         return _Stringbuffer.view();
     }
 
@@ -846,7 +846,7 @@ public:
     }
 
     void str(_Mystr&& _Newstr) {
-        _Stringbuffer.str(move(_Newstr));
+        _Stringbuffer.str(_STD move(_Newstr));
     }
 #endif // _HAS_CXX20
 
