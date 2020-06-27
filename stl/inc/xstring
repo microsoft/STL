@@ -17,6 +17,10 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#include <tuple>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -2654,17 +2658,17 @@ public:
     }
 
     // Release to a buffer, or allocate a new one if in small string mode
-    pair<_Elem*, size_type> _Release_to_buffer() {
-        pair<_Elem*, size_type> _Result;
+    tuple<_Elem*, size_type, size_type> _Release_to_buffer() {
+        tuple<_Elem*, size_type, size_type> _Result;
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
-            _Result          = make_pair(exchange(_My_data._Bx._Ptr, nullptr), exchange(_My_data._Myres, size_type()));
-            _My_data._Mysize = 0;
+            _Result = make_tuple(exchange(_My_data._Bx._Ptr, nullptr), exchange(_My_data._Mysize, size_type()),
+                exchange(_My_data._Myres, size_type()));
             _Tidy_init();
         } else {
             _Elem* _Result_ptr = _Getal().allocate(_BUF_SIZE);
             _Traits::copy(_Result_ptr, _My_data._Bx._Buf, _BUF_SIZE);
-            _Result = make_pair(_Result_ptr, _BUF_SIZE);
+            _Result = make_tuple(_Result_ptr, _My_data._Mysize, _BUF_SIZE);
             _Tidy_deallocate();
         }
         return _Result;

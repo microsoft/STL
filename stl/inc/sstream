@@ -48,9 +48,10 @@ public:
     basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al)
         : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al) {}
 
-    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out) : _Al() {
-        auto _Pair = _Str._Release_to_buffer();
-        _Init(_Pair.first, _Pair.second, _Getstate(_Mode));
+    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
+        : _Al(_Str.get_allocator()) {
+        auto _Buffer = _Str._Release_to_buffer();
+        _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Getstate(_Mode));
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
@@ -66,9 +67,7 @@ public:
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
     explicit basic_stringbuf(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
-        : _Al() {
-        _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
-    }
+        : basic_stringbuf(_Str, _Mode, _Alloc()) {}
 
     basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al) : _Al(_Al) {
         _Assign_rv(_STD move(_Right));
@@ -207,8 +206,8 @@ public:
 
     void str(_Mystr&& _Newstr) {
         _Tidy();
-        auto _Pair = _Newstr._Release_to_buffer();
-        _Init(_Pair.first, _Pair.second, _Mystate);
+        auto _Buffer = _Newstr._Release_to_buffer();
+        _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Getstate(_Mode));
     }
 
     allocator_type get_allocator() const noexcept {
@@ -441,6 +440,35 @@ protected:
 
         _Mystate = _State;
     }
+
+#if _HAS_CXX20
+    void _Init_inplace(const _Elem* _Pnew, _Mysize_type _Length, _Mysize_type _Count, int _State) {
+        if (_Length != 0
+            && (_State & (_Noread | _Constant))
+                   != (_Noread | _Constant)) { // finite buffer that can be read or written, set it up
+            _Seekhigh              = _Pnew + _Length;
+            const auto _End_buffer = _Pnew + _Count;
+
+            if (!(_State & _Noread)) {
+                _Mysb::setg(_Pnew, _Pnew, _End_buffer); // setup read buffer
+            }
+
+            if (!(_State & _Constant)) { // setup write buffer, and maybe read buffer
+                _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
+
+                if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
+                    _Mysb::setg(_Pnew, nullptr, _Pnew);
+                }
+            }
+
+            _State |= _Allocated;
+        } else {
+            _Seekhigh = nullptr;
+        }
+
+        _Mystate = _State;
+    }
+#endif // _HAS_CXX20
 
     void _Tidy() noexcept { // discard any allocated buffer and clear pointers
         if (_Mystate & _Allocated) {
