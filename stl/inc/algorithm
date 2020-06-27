@@ -4031,9 +4031,9 @@ namespace ranges {
 
         while (_Count > 0) { // divide and conquer, check midpoint
             const auto _Half = static_cast<_Diff>(_Count / 2);
-            auto Mid         = _RANGES next(_First, _Half);
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *Mid), _Val)) { // try top half
-                _First = _STD move(Mid);
+            auto _Mid        = _RANGES next(_First, _Half);
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _Val)) { // try top half
+                _First = _STD move(_Mid);
                 ++_First;
                 _Count -= static_cast<_Diff>(_Half + 1);
             } else { // try bottom half
@@ -4120,11 +4120,11 @@ namespace ranges {
 
         while (_Count > 0) { // divide and conquer: find half that contains answer
             const auto _Half = static_cast<_Diff>(_Count / 2);
-            auto Mid         = _RANGES next(_First, _Half);
-            if (_STD invoke(_Pred, _Val, _STD invoke(_Proj, *Mid))) {
+            auto _Mid        = _RANGES next(_First, _Half);
+            if (_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_Mid))) {
                 _Count = _Half;
             } else { // try top half
-                _First = _STD move(Mid);
+                _First = _STD move(_Mid);
                 ++_First;
                 _Count -= static_cast<_Diff>(_Half + 1);
             }
@@ -4303,7 +4303,7 @@ namespace ranges {
             _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_Last);
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
             const auto _Count = _RANGES distance(_UFirst, _ULast);
             _UFirst =
                 _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
@@ -4314,7 +4314,7 @@ namespace ranges {
             indirect_strict_weak_order<const _Ty*, projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
-            auto _UFirst =
+            const auto _UFirst =
                 _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _UFirst != _Uend(_Range) && !_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_UFirst));
         }
