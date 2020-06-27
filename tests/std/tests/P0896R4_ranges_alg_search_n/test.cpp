@@ -70,6 +70,20 @@ struct instantiator {
             assert(result.end() == ranges::next(range.begin(), 10));
         }
 
+        // negative case
+        {
+            const auto result = ranges::search_n(range, 4, 0, cmp, get_first);
+            STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<ranges::iterator_t<Fwd>>>);
+            assert(result.begin() == range.end());
+            assert(result.end() == range.end());
+        }
+        {
+            const auto result = ranges::search_n(ranges::begin(range), ranges::end(range), 4, 0, cmp, get_first);
+            STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<ranges::iterator_t<Fwd>>>);
+            assert(result.begin() == range.end());
+            assert(result.end() == range.end());
+        }
+
         // trivial case: empty needle
         {
             const auto result = ranges::search_n(range, 0, 0, cmp, get_first);
@@ -98,18 +112,18 @@ struct instantiator {
             assert(result.end() == range.end());
         }
 
-        // negative case
+        // trivial case: negative count
         {
-            const auto result = ranges::search_n(range, 2, -1, cmp, get_first);
+            const auto result = ranges::search_n(range, -42, 0, cmp, get_first);
             STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<ranges::iterator_t<Fwd>>>);
-            assert(result.begin() == range.end());
-            assert(result.end() == range.end());
+            assert(result.begin() == range.begin());
+            assert(result.end() == range.begin());
         }
         {
-            const auto result = ranges::search_n(ranges::begin(range), ranges::end(range), 2, -1, cmp, get_first);
+            const auto result = ranges::search_n(ranges::begin(range), ranges::end(range), -42, 0, cmp, get_first);
             STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<ranges::iterator_t<Fwd>>>);
-            assert(result.begin() == range.end());
-            assert(result.end() == range.end());
+            assert(result.begin() == range.begin());
+            assert(result.end() == range.begin());
         }
     }
 };
