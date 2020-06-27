@@ -205,6 +205,7 @@ public:
 
     void str(_Mystr&& _Newstr) {
         _Tidy();
+        _Al = _Newstr.get_allocator();
         _Init_inplace(_STD move(_Newstr), _Mystate);
     }
 
@@ -461,6 +462,8 @@ protected:
 
             if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
                 _Mysb::setg(_Pnew, nullptr, _Pnew);
+            } else {
+                _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
             }
 
             _State |= _Allocated;
