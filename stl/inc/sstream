@@ -445,7 +445,7 @@ protected:
             _Init(_Str.c_str(), _Str.size(), _State);
         } else { // writeable, construct in place
             auto _Buffer = _Str._Release_to_buffer();
-            _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Getstate(_Mode));
+            _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _State);
         }
     }
 
