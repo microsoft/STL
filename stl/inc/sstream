@@ -207,7 +207,7 @@ public:
     void str(_Mystr&& _Newstr) {
         _Tidy();
         auto _Buffer = _Newstr._Release_to_buffer();
-        _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Getstate(_Mode));
+        _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Mystate);
     }
 
     allocator_type get_allocator() const noexcept {
