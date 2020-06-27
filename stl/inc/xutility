@@ -3159,7 +3159,7 @@ namespace ranges {
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, static_cast<_It&&>(_UWhere));
+                    _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }
