@@ -5439,7 +5439,7 @@ namespace ranges {
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            _Seek_wrapped(_First, _Min_element_unchecked(_Get_unwrapped(_STD move(_First)),
+            _Seek_wrapped(_First, _RANGES _Min_element_unchecked(_Get_unwrapped(_STD move(_First)),
                                       _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj)));
             return _First;
         }
@@ -5448,7 +5448,7 @@ namespace ranges {
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _Min_element_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+            _Seek_wrapped(_First, _RANGES _Min_element_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
                                       _Pass_fn(_Pred), _Pass_fn(_Proj)));
             return _First;
         }
@@ -5594,7 +5594,7 @@ namespace ranges {
         _NODISCARD constexpr minmax_element_result<_It> operator()(
             _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Minmax_element_unchecked(
+            auto _UResult = _RANGES _Minmax_element_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
             _Seek_wrapped(_First, _STD move(_UResult.min));
             auto _Second = _First;
@@ -5607,7 +5607,7 @@ namespace ranges {
         _NODISCARD constexpr minmax_element_result<borrowed_iterator_t<_Rng>> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Minmax_element_unchecked(
+            auto _UResult = _RANGES _Minmax_element_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
             _Seek_wrapped(_First, _STD move(_UResult.min));
             auto _Second = _First;
@@ -5675,7 +5675,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD constexpr const range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -5697,7 +5697,7 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Max_fn(max){_Not_quite_object::_Construct_tag{}};
+    inline constexpr _Max_fn max{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -5747,7 +5747,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD constexpr const range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -5769,7 +5769,7 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Min_fn(min){_Not_quite_object::_Construct_tag{}};
+    inline constexpr _Min_fn min{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -5847,19 +5847,19 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-            _NODISCARD constexpr const minmax_result<range_value_t<_Rng>> operator()(
+            _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
                 _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4861 [alg.min.max]/21)");
+            using _Vty = range_value_t<_Rng>;
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 const auto _Found = _RANGES _Minmax_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return {static_cast<range_value_t<_Rng>>(*_Found.min), static_cast<range_value_t<_Rng>>(*_Found.max)};
+                return {static_cast<_Vty>(*_Found.min), static_cast<_Vty>(*_Found.max)};
             } else {
-                minmax_result<range_value_t<_Rng>> _Found = {
-                    static_cast<range_value_t<_Rng>>(*_UFirst), static_cast<range_value_t<_Rng>>(*_UFirst)};
+                minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), static_cast<_Vty>(*_UFirst)};
                 if (_UFirst == _ULast) {
                     return _Found;
                 }

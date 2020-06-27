@@ -293,7 +293,7 @@ constexpr void init_list_constexpr_tests() {
 }
 
 constexpr void mm_element_constexpr_tests() {
-    // (min|max|minmax)_element don't care about size, or iterator difference, refinements of forward, commonality,
+    // (min|max|minmax)_element don't care about size, iterator difference, refinements of forward, commonality,
     // _or_ proxy vs. non-proxy reference. Let's take a couple variations of forward, and one
     // variation of each stronger category.
 
@@ -312,7 +312,7 @@ constexpr void mm_element_constexpr_tests() {
 }
 
 constexpr void mm_constexpr_tests() {
-    // Range overloads of (min|max|minmax) don't care about size, or iterator difference, commonality, _or_ proxy vs.
+    // Range overloads of (min|max|minmax) don't care about size, iterator difference, commonality, _or_ proxy vs.
     // non-proxy reference. They _do_ distinguish input vs. forward. Let's take a couple variations of input and
     // forward, and one variation of each stronger category.
 
