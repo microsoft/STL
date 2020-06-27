@@ -238,7 +238,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return _STD signbit(_Left);
+        return (_STD signbit)(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -370,7 +370,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return _STD signbit(_Left);
+        return (_STD signbit)(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -505,7 +505,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return _STD signbit(_Left);
+        return (_STD signbit)(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -1612,7 +1612,9 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
         } else if (_Ctraits<_Ty>::_Isinf(_Rho)) {
             _Real = _Rho; // log(INF) == INF
         } else {
-            _Real = _Ctraits<_Ty>::log(_Rho) + _Leftn * _Cl + _Leftn * _Cm;
+            _Real = static_cast<_Ty>(_Ctraits<_Ty>::log(_Rho));
+            _Real += static_cast<_Ty>(_Leftn * _Cl);
+            _Real += static_cast<_Ty>(_Leftn * _Cm);
         }
 
         return complex<_Ty>(_Real, _Theta);
