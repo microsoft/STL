@@ -74,24 +74,24 @@ constexpr void smoke_test() {
 
     std::array<P, 3> const input    = {{{1, 99}, {4, 98}, {5, 97}}};
     std::array<P, 2> const expected = {{{1, 99}, {5, 97}}};
-    using I                         = iterator_t<move_only_range<P const>>;
-    using O                         = iterator_t<move_only_range<P>>;
+    using I                         = iterator_t<basic_borrowed_range<P const>>;
+    using O                         = iterator_t<basic_borrowed_range<P>>;
     { // Validate range overload
         std::array<P, 2> output = {};
-        auto result             = copy_if(move_only_range{input}, move_only_range{output}.begin(), is_odd, get_first);
+        auto result = copy_if(basic_borrowed_range{input}, basic_borrowed_range{output}.begin(), is_odd, get_first);
         STATIC_ASSERT(same_as<decltype(result), copy_if_result<I, O>>);
-        assert(result.in == move_only_range{input}.end());
-        assert(result.out == move_only_range{output}.end());
+        assert(result.in == basic_borrowed_range{input}.end());
+        assert(result.out == basic_borrowed_range{output}.end());
         assert(ranges::equal(output, expected));
     }
     { // Validate iterator + sentinel overload
         std::array<P, 2> output = {};
-        move_only_range wrapped_input{input};
-        auto result =
-            copy_if(wrapped_input.begin(), wrapped_input.end(), move_only_range{output}.begin(), is_odd, get_first);
+        basic_borrowed_range wrapped_input{input};
+        auto result = copy_if(
+            wrapped_input.begin(), wrapped_input.end(), basic_borrowed_range{output}.begin(), is_odd, get_first);
         STATIC_ASSERT(same_as<decltype(result), copy_if_result<I, O>>);
         assert(result.in == wrapped_input.end());
-        assert(result.out == move_only_range{output}.end());
+        assert(result.out == basic_borrowed_range{output}.end());
         assert(ranges::equal(output, expected));
     }
 }

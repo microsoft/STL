@@ -694,3 +694,92 @@ namespace result_test {
     STATIC_ASSERT(test_convertible_3<in_in_out_result>());
     STATIC_ASSERT(test_convertible_3<in_out_out_result>());
 } // namespace result_test
+
+namespace permutable_test {
+    using std::forward_iterator, std::input_iterator, std::indirectly_movable_storable, std::indirectly_swappable,
+        std::permutable;
+
+    template <int I>
+    struct archetype {
+        using value_type      = int;
+        using difference_type = int;
+
+        struct proxy {
+            proxy()             = default;
+            proxy(proxy const&) = delete;
+            proxy& operator=(proxy const&) = delete;
+
+            operator int() const;
+            // 1: not indirectly_movable_storable<archetype, archetype>
+            void operator=(int) const requires(I != 1);
+        };
+
+        proxy operator*() const;
+
+        archetype& operator++();
+        archetype operator++(int);
+
+        // 0: not forward_iterator (input only)
+        bool operator==(archetype const&) const requires(I != 0) = default;
+
+        friend int iter_move(archetype const&) {
+            return 42;
+        }
+        friend void iter_swap(archetype const&, archetype const&) {}
+
+        // Ideally we'd have a "not reflexively indirectly_swappable" case as well, but there's no way for a class to
+        // satisfy indirectly_movable_storable<T, T> without satisfying indirectly_swappable<T, T> thanks to N4861
+        // [iterator.cust.swap]/4.3. permutable requires indirectly_swappable<T, T> only to forbid a user type from
+        // defining an iter_swap overload that doesn't meet the semantic requirements.
+    };
+    STATIC_ASSERT(input_iterator<archetype<0>>);
+    STATIC_ASSERT(!forward_iterator<archetype<0>>);
+    STATIC_ASSERT(indirectly_movable_storable<archetype<0>, archetype<0>>);
+    STATIC_ASSERT(indirectly_swappable<archetype<0>, archetype<0>>);
+
+    STATIC_ASSERT(forward_iterator<archetype<1>>);
+    STATIC_ASSERT(!indirectly_movable_storable<archetype<1>, archetype<1>>);
+    STATIC_ASSERT(indirectly_swappable<archetype<1>, archetype<1>>);
+
+    STATIC_ASSERT(forward_iterator<archetype<2>>);
+    STATIC_ASSERT(indirectly_movable_storable<archetype<2>, archetype<2>>);
+    STATIC_ASSERT(indirectly_swappable<archetype<2>, archetype<2>>);
+
+    STATIC_ASSERT(!permutable<archetype<0>>);
+    STATIC_ASSERT(!permutable<archetype<1>>);
+    STATIC_ASSERT(permutable<archetype<2>>);
+} // namespace permutable_test
+
+namespace sortable_test {
+    using ranges::less;
+    using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::sortable;
+
+    void test() {
+        {
+            using I = int const*; // not permutable
+            using C = less;
+            using P = identity;
+            STATIC_ASSERT(!permutable<I>);
+            STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
+            STATIC_ASSERT(!sortable<I, C, P>);
+        }
+
+        {
+            using I = int*;
+            using C = void; // not an indirect_strict_weak_order
+            using P = identity;
+            STATIC_ASSERT(permutable<I>);
+            STATIC_ASSERT(!indirect_strict_weak_order<C, projected<I, P>>);
+            STATIC_ASSERT(!sortable<I, C, P>);
+        }
+
+        {
+            using I = int*;
+            using C = less;
+            using P = identity;
+            STATIC_ASSERT(permutable<I>);
+            STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
+            STATIC_ASSERT(sortable<I, C, P>);
+        }
+    }
+} // namespace sortable_test

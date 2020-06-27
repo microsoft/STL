@@ -30,9 +30,9 @@ constexpr void smoke_test() {
 
     {
         auto pairs  = values;
-        auto result = for_each(move_only_range{pairs}, incr, get_first);
-        STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<move_only_range<P>>, decltype(incr)>>);
-        assert(result.in == move_only_range{pairs}.end());
+        auto result = for_each(basic_borrowed_range{pairs}, incr, get_first);
+        STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<basic_borrowed_range<P>>, decltype(incr)>>);
+        assert(result.in == basic_borrowed_range{pairs}.end());
         int some_value = 1729;
         result.fun(some_value);
         assert(some_value == 1730);
@@ -41,9 +41,9 @@ constexpr void smoke_test() {
     }
     {
         auto pairs = values;
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         auto result = for_each(wrapped_pairs.begin(), wrapped_pairs.end(), incr, get_second);
-        STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<move_only_range<P>>, decltype(incr)>>);
+        STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<basic_borrowed_range<P>>, decltype(incr)>>);
         assert(result.in == wrapped_pairs.end());
         int some_value = 1729;
         result.fun(some_value);
