@@ -535,7 +535,8 @@ namespace result_test {
 } // namespace result_test
 
 namespace permutable_test {
-    using std::forward_iterator, std::indirectly_movable_storable, std::indirectly_swappable, std::permutable;
+    using std::forward_iterator, std::input_iterator, std::indirectly_movable_storable, std::indirectly_swappable,
+        std::permutable;
 
     template <int I>
     struct archetype {
@@ -548,7 +549,7 @@ namespace permutable_test {
             proxy& operator=(proxy const&) = delete;
 
             operator int() const;
-            // 1: not reflexively indirectly_movable_storable
+            // 1: not indirectly_movable_storable<archetype, archetype>
             void operator=(int) const requires(I != 1);
         };
 
@@ -567,19 +568,19 @@ namespace permutable_test {
 
         // Ideally we'd have a "not reflexively indirectly_swappable" case as well, but there's no way for a class to
         // satisfy indirectly_movable_storable<T, T> without satisfying indirectly_swappable<T, T> thanks to N4861
-        // [iterator.cust.swap]/4.3. permutable requires indirectly_swappable<T, T> only to forbid a user type to define
-        // an iter_swap overload that doesn't meet the semantic requirements.
+        // [iterator.cust.swap]/4.3. permutable requires indirectly_swappable<T, T> only to forbid a user type from
+        // defining an iter_swap overload that doesn't meet the semantic requirements.
     };
-    STATIC_ASSERT(std::input_iterator<archetype<0>>);
-    STATIC_ASSERT(!std::forward_iterator<archetype<0>>);
+    STATIC_ASSERT(input_iterator<archetype<0>>);
+    STATIC_ASSERT(!forward_iterator<archetype<0>>);
     STATIC_ASSERT(indirectly_movable_storable<archetype<0>, archetype<0>>);
     STATIC_ASSERT(indirectly_swappable<archetype<0>, archetype<0>>);
 
-    STATIC_ASSERT(std::forward_iterator<archetype<1>>);
+    STATIC_ASSERT(forward_iterator<archetype<1>>);
     STATIC_ASSERT(!indirectly_movable_storable<archetype<1>, archetype<1>>);
     STATIC_ASSERT(indirectly_swappable<archetype<1>, archetype<1>>);
 
-    STATIC_ASSERT(std::forward_iterator<archetype<2>>);
+    STATIC_ASSERT(forward_iterator<archetype<2>>);
     STATIC_ASSERT(indirectly_movable_storable<archetype<2>, archetype<2>>);
     STATIC_ASSERT(indirectly_swappable<archetype<2>, archetype<2>>);
 
