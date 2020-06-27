@@ -50,8 +50,7 @@ public:
 
     explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Al(_Str.get_allocator()) {
-        auto _Buffer = _Str._Release_to_buffer();
-        _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Getstate(_Mode));
+        _Init_inplace(_STD move(_Str), _Getstate(_Mode));
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
@@ -206,8 +205,7 @@ public:
 
     void str(_Mystr&& _Newstr) {
         _Tidy();
-        auto _Buffer = _Newstr._Release_to_buffer();
-        _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Mystate);
+        _Init_inplace(_STD move(_Newstr), _Mystate);
     }
 
     allocator_type get_allocator() const noexcept {
@@ -442,23 +440,27 @@ protected:
     }
 
 #if _HAS_CXX20
-    void _Init_inplace(const _Elem* _Pnew, _Mysize_type _Length, _Mysize_type _Count, int _State) {
-        if (_Length != 0
+    void _Init_inplace(_Mystr&& _Str, int _State) {
+        if ((_State & _Constant) && !(_State & _Noread)) { // readonly, copy the string
+            _Init(_Str.c_str(), _Str.size(), _State);
+        } else { // writeable, construct in place
+            auto _Buffer = _Str._Release_to_buffer();
+            _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _Getstate(_Mode));
+        }
+    }
+
+    // Call this method only when writeable
+    void _Init_inplace(_Elem* _Pnew, _Mysize_type _Length, _Mysize_type _Count, int _State) {
+        if (_Count != 0
             && (_State & (_Noread | _Constant))
                    != (_Noread | _Constant)) { // finite buffer that can be read or written, set it up
-            _Seekhigh              = _Pnew + _Length;
-            const auto _End_buffer = _Pnew + _Count;
+            _Seekhigh        = _Pnew + _Length;
+            auto _End_buffer = _Pnew + _Count;
 
-            if (!(_State & _Noread)) {
-                _Mysb::setg(_Pnew, _Pnew, _End_buffer); // setup read buffer
-            }
+            _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
 
-            if (!(_State & _Constant)) { // setup write buffer, and maybe read buffer
-                _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
-
-                if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-                    _Mysb::setg(_Pnew, nullptr, _Pnew);
-                }
+            if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
+                _Mysb::setg(_Pnew, nullptr, _Pnew);
             }
 
             _State |= _Allocated;
