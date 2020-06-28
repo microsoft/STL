@@ -4385,7 +4385,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
     _STD sort_heap(_First, _Last, less<>());
 }
 
-#if __cpp_lib_concepts
+#ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::sort_heap
     class _Sort_heap_fn : private _Not_quite_object {
