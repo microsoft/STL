@@ -224,9 +224,22 @@ namespace ranges {
     }
 
     // FUNCTION TEMPLATE _Get_final_iterator_unwrapped
+    template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
+    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
+        // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
+        auto _ULast = _Get_unwrapped(_STD move(_Last));
+        if constexpr (is_same_v<_Se, _Wrapped>) {
+            return _ULast;
+        } else if constexpr (sized_sentinel_for<_Se, _Wrapped>) {
+            return _RANGES next(_UFirst, _ULast - _UFirst);
+        } else {
+            return _RANGES next(_UFirst, _STD move(_ULast));
+        }
+    }
+
     template <forward_range _Rng>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range) {
-        // Find the (unwrapped) iterator in _Range which equals _Uend(_Range), possibly O(N)
+        // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
         if constexpr (common_range<_Rng>) {
             return _Uend(_Range);
         } else if constexpr (sized_range<_Rng>) {
@@ -3883,20 +3896,9 @@ namespace ranges {
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst = _Get_unwrapped(_STD move(_First));
-            auto _ULast  = _Get_unwrapped(_STD move(_Last));
-            if constexpr (is_same_v<_It, _Se>) {
-                _Seek_wrapped(_First, _ULast);
-                _Push_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else if constexpr (sized_sentinel_for<_Se, _It>) {
-                auto _UFinal = _UFirst + (_ULast - _UFirst);
-                _Seek_wrapped(_First, _UFinal);
-                _Push_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else {
-                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
-                _Seek_wrapped(_First, _UFinal);
-                _Push_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            }
-
+            auto _ULast = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Push_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _First;
         }
 
@@ -3909,9 +3911,9 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _Push_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _First = _RANGES begin(_Range);
-                _Seek_wrapped(_First, _STD move(_ULast));
-                return _First;
+                auto _Result = _RANGES begin(_Range);
+                _Seek_wrapped(_Result, _STD move(_ULast));
+                return _Result;
             }
         }
         // clang-format on
@@ -3941,7 +3943,8 @@ template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Pop_heap_hole_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Bottom, _Ty&& _Val, _Pr _Pred) {
     // percolate _Hole to _Bottom, then push _Val, using _Pred
-    _STL_INTERNAL_CHECK(_Bottom != 0);
+    _STL_INTERNAL_CHECK(_Bottom > 0);
+
     using _Diff      = _Iter_diff_t<_RanIt>;
     const _Diff _Top = _Hole;
     _Diff _Idx       = _Hole;
@@ -4008,7 +4011,9 @@ namespace ranges {
         // percolate _Hole to _Bottom, then push _Val, using _Pred
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-        _STL_INTERNAL_CHECK(_Bottom != 0);
+        _STL_INTERNAL_CHECK(_Hole >= 0);
+        _STL_INTERNAL_CHECK(_Bottom > 0);
+
         using _Diff      = iter_difference_t<_It>;
         const _Diff _Top = _Hole;
         _Diff _Idx       = _Hole;
@@ -4073,20 +4078,9 @@ namespace ranges {
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst = _Get_unwrapped(_STD move(_First));
-            auto _ULast  = _Get_unwrapped(_STD move(_Last));
-            if constexpr (is_same_v<_It, _Se>) {
-                _Seek_wrapped(_First, _ULast);
-                _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else if constexpr (sized_sentinel_for<_Se, _It>) {
-                auto _UFinal = _UFirst + (_ULast - _UFirst);
-                _Seek_wrapped(_First, _UFinal);
-                _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else {
-                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
-                _Seek_wrapped(_First, _UFinal);
-                _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            }
-
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _RANGES _Pop_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _First;
         }
 
@@ -4099,9 +4093,9 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _RANGES _Pop_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _First = _RANGES begin(_Range);
-                _Seek_wrapped(_First, _STD move(_ULast));
-                return _First;
+                auto _Result = _RANGES begin(_Range);
+                _Seek_wrapped(_Result, _STD move(_ULast));
+                return _Result;
             }
         }
         // clang-format on
@@ -4149,20 +4143,9 @@ namespace ranges {
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst = _Get_unwrapped(_STD move(_First));
-            auto _ULast  = _Get_unwrapped(_STD move(_Last));
-            if constexpr (is_same_v<_It, _Se>) {
-                _Seek_wrapped(_First, _ULast);
-                _Make_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else if constexpr (sized_sentinel_for<_Se, _It>) {
-                auto _UFinal = _UFirst + (_ULast - _UFirst);
-                _Seek_wrapped(_First, _UFinal);
-                _Make_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else {
-                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
-                _Seek_wrapped(_First, _UFinal);
-                _Make_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            }
-
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Make_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _First;
         }
 
@@ -4175,9 +4158,9 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _Make_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _First = _RANGES begin(_Range);
-                _Seek_wrapped(_First, _STD move(_ULast));
-                return _First;
+                auto _Result = _RANGES begin(_Range);
+                _Seek_wrapped(_Result, _STD move(_ULast));
+                return _Result;
             }
         }
         // clang-format on
@@ -4346,9 +4329,9 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Size = _RANGES distance(_Range);
             auto _UResult = _RANGES _Is_heap_until_unchecked(_Ubegin(_Range), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _First   = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _STD move(_UResult));
-            return _First;
+            auto _Result  = _RANGES begin(_Range);
+            _Seek_wrapped(_Result, _STD move(_UResult));
+            return _Result;
         }
     };
 
@@ -4398,20 +4381,9 @@ namespace ranges {
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst = _Get_unwrapped(_STD move(_First));
-            auto _ULast  = _Get_unwrapped(_STD move(_Last));
-            if constexpr (is_same_v<_It, _Se>) {
-                _Seek_wrapped(_First, _ULast);
-                _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else if constexpr (sized_sentinel_for<_Se, _It>) {
-                auto _UFinal = _UFirst + (_ULast - _UFirst);
-                _Seek_wrapped(_First, _UFinal);
-                _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            } else {
-                auto _UFinal = _RANGES next(_UFirst, _STD move(_ULast));
-                _Seek_wrapped(_First, _UFinal);
-                _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            }
-
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _First;
         }
 
@@ -4424,9 +4396,9 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _Sort_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _First  = _RANGES begin(_Range);
-                _Seek_wrapped(_First, _STD move(_ULast));
-                return _First;
+                auto _Result  = _RANGES begin(_Range);
+                _Seek_wrapped(_Result, _STD move(_ULast));
+                return _Result;
             }
         }
         // clang-format on
