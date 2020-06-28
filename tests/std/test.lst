@@ -261,6 +261,9 @@ tests\P0896R4_ranges_alg_minmax
 tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_none_of
+tests\P0896R4_ranges_alg_partition
+tests\P0896R4_ranges_alg_partition_copy
+tests\P0896R4_ranges_alg_partition_point
 tests\P0896R4_ranges_alg_search
 tests\P0896R4_ranges_alg_search_n
 tests\P0896R4_ranges_alg_swap_ranges
