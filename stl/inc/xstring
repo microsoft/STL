@@ -2652,7 +2652,7 @@ public:
         _Tidy_deallocate();
         _Right[_Size]  = _Elem();
         auto& _My_data = _Mypair._Myval2;
-        _Construct_in_place(_My_data._Bx._Ptr, _Right);
+        _Construct_in_place(_My_data._Bx._Ptr, pointer_traits<pointer>::pointer_to(*_Right));
         _My_data._Mysize = _Size;
         _My_data._Myres  = _Res;
     }
@@ -2662,11 +2662,12 @@ public:
         tuple<_Elem*, size_type, size_type> _Result;
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
-            _Result = make_tuple(exchange(_My_data._Bx._Ptr, nullptr), exchange(_My_data._Mysize, size_type()),
+            _Result           = make_tuple(_Unfancy(_My_data._Bx._Ptr), exchange(_My_data._Mysize, size_type()),
                 exchange(_My_data._Myres, size_type()));
+            _My_data._Bx._Ptr = nullptr;
             _Tidy_init();
         } else {
-            _Elem* _Result_ptr = _Getal().allocate(_BUF_SIZE);
+            _Elem* _Result_ptr = _Unfancy(_Getal().allocate(_BUF_SIZE));
             _Traits::copy(_Result_ptr, _My_data._Bx._Buf, _BUF_SIZE);
             _Result = make_tuple(_Result_ptr, _My_data._Mysize, _BUF_SIZE);
             _Tidy_deallocate();

@@ -205,7 +205,6 @@ public:
 
     void str(_Mystr&& _Newstr) {
         _Tidy();
-        _Al = _Newstr.get_allocator();
         _Init_inplace(_STD move(_Newstr), _Mystate);
     }
 
