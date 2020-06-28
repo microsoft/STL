@@ -1650,6 +1650,15 @@ namespace filesystem {
         return _Val;
     }
 
+    _NODISCARD inline bool _Relative_path_contains_root_name(const path& _Path) {
+        for (const auto& _File_name : _Path.relative_path()) {
+            if (!_Parse_root_name(_File_name.native()).empty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     _NODISCARD inline path path::lexically_relative(const path& _Base) const {
         using namespace _STD string_view_literals; // TRANSITION, VSO-571749
 
@@ -1659,20 +1668,9 @@ namespace filesystem {
         path _Result;
 
         if (root_name() != _Base.root_name() || is_absolute() != _Base.is_absolute()
-            || (!has_root_directory() && _Base.has_root_directory())) {
+            || (!has_root_directory() && _Base.has_root_directory()) || _Relative_path_contains_root_name(*this)
+            || _Relative_path_contains_root_name(_Base)) {
             return _Result;
-        }
-
-        for (const auto& _File_name : relative_path()) {
-            if (!_Parse_root_name(_File_name.native()).empty()) {
-                return _Result;
-            }
-        }
-
-        for (const auto& _File_name : _Base.relative_path()) {
-            if (!_Parse_root_name(_File_name.native()).empty()) {
-                return _Result;
-            }
         }
 
         const iterator _This_end   = end();
