@@ -2858,7 +2858,7 @@ namespace ranges {
                 if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
                 {
-                    const int distance = static_cast<size_t>(_ULast - _UFirst);
+                    const auto distance = static_cast<size_t>(_ULast - _UFirst);
                     _CSTD memset(_UFirst, static_cast<unsigned char>(_Value), distance);
                     _UFirst += distance;
                     _Seek_wrapped(_First, _UFirst);
@@ -2900,7 +2900,7 @@ namespace ranges {
                     {
                         _CSTD memset(_UFirst, static_cast<unsigned char>(_Value), static_cast<size_t>(_Count));
                         _UFirst += _Count;
-                        _Seek_wrapped(_First, _UFirst);
+                        _Seek_wrapped(_First, _UFirst); // no need to move since _UFirst is a pointer
                         return _First;
                     }
                 }
