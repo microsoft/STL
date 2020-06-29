@@ -604,6 +604,9 @@ namespace chrono {
         using time_point                = chrono::time_point<steady_clock>;
         static constexpr bool is_steady = true;
 
+#pragma warning(push)
+#pragma warning(disable : 28112) // A variable which is accessed via an Interlocked function must
+                                 // always be accessed via an Interlocked function.
         _NODISCARD static time_point now() noexcept { // get current time
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
             // Implement atomics avoiding <atomic> header dependency
@@ -636,6 +639,7 @@ namespace chrono {
             return time_point(duration(_Scale_large_counter(_Ctr, _Freq)));
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
         }
+#pragma warning(pop)
 
     private:
         _NODISCARD static long long _Scale_large_counter(const long long _Ctr, const long long _Freq) noexcept {
