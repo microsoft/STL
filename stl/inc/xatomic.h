@@ -111,13 +111,6 @@ _NODISCARD inline long long _Atomic_load_ll_relaxed(volatile long long* _Mem) no
     return __iso_volatile_load64(_Mem);
 #endif
 }
-
-// FUNCTION TEMPLATE _Atomic_compare_exchange_strong_ll_seq_cst
-inline bool _Atomic_compare_exchange_strong_ll_seq_cst(
-    volatile long long* _Mem, long long _Value, long long _Comparand) noexcept {
-    // Copy from _Atomic_storage<_Ty, 8>::compare_exchange_strong
-    return _InterlockedCompareExchange64(_Mem, _Value, _Comparand) == _Comparand;
-}
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
 
 _STD_END

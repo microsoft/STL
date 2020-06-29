@@ -623,10 +623,10 @@ namespace chrono {
             const long long _Freq   = _Query_perf_frequency();
             const long long _Ctr    = _Query_perf_counter();
             const long long _Result = _Scale_large_counter(_Ctr, _Freq);
-            if (_Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_freq, _Freq, LLONG_MAX)) {
+            if (_InterlockedCompareExchange64(&_Cached_freq, _Freq, LLONG_MAX) == LLONG_MAX) {
                 // This is the first result, save current result as base for fast path
-                _Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_ctr_base, _Ctr, LLONG_MAX);
-                _Atomic_compare_exchange_strong_ll_seq_cst(&_Cached_result_base, _Result, LLONG_MAX);
+                _InterlockedCompareExchange64(&_Cached_ctr_base, _Ctr, LLONG_MAX);
+                _InterlockedCompareExchange64(&_Cached_result_base, _Result, LLONG_MAX);
             }
             // if _Result is not saved as first, it is still compatible with fast result
             return time_point(duration(_Result));
