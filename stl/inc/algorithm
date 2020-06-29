@@ -216,7 +216,7 @@ namespace ranges {
             return _STD move(_UResult);
         } else if constexpr (range<_Wrapped>) {
             _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<iterator_t<_Wrapped>>, _Unwrapped>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<iterator_t<_Wrapped>>>);
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<iterator_t<_Wrapped>>>);
 
             auto _First = _RANGES begin(_Val);
@@ -225,7 +225,7 @@ namespace ranges {
             _Last._Seek_to(_UResult.end());
             return _Result{_STD move(_First), _STD move(_Last)};
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Wrapped>, _Unwrapped>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<_Wrapped>>);
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<_Wrapped>>);
 
             auto _Last = _Val;
@@ -4130,7 +4130,7 @@ _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // make nontrivial [_First, _Last) into a heap, using _Pred
     using _Diff   = _Iter_diff_t<_RanIt>;
     _Diff _Bottom = _Last - _First;
-    for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
+    for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
         _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
@@ -4190,7 +4190,7 @@ namespace ranges {
 
             using _Diff         = iter_difference_t<_It>;
             const _Diff _Bottom = _Last - _First;
-            for (_Diff _Hole = _Bottom >> 1; 0 < _Hole;) { // shift for codegen
+            for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
                 // reheap top half, bottom to top
                 --_Hole;
                 iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
@@ -4333,8 +4333,7 @@ namespace ranges {
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UFirst     = _Get_unwrapped(_STD move(_First));
-            auto _ULast      = _Get_unwrapped(_STD move(_Last));
-            const auto _Size = _RANGES distance(_UFirst, _STD move(_ULast));
+            const auto _Size = _RANGES distance(_UFirst, _Get_unwrapped(_STD move(_Last)));
             auto _UResult =
                 _RANGES _Is_heap_until_unchecked(_STD move(_UFirst), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
             _Seek_wrapped(_First, _STD move(_UResult));
