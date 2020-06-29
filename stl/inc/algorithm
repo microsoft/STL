@@ -208,18 +208,44 @@ namespace ranges {
 
     // FUNCTION TEMPLATE _Rewrap_subrange
     template <class _Result, class _Wrapped, class _Unwrapped>
-    _NODISCARD constexpr _Result _Rewrap_subrange(
-        [[maybe_unused]] _Wrapped& _First, [[maybe_unused]] subrange<_Unwrapped>&& _UResult) {
-        // conditionally computes a wrapped subrange from a wrapped iterator and unwrapped subrange
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Wrapped>, _Unwrapped>);
+    _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _Val, subrange<_Unwrapped>&& _UResult) {
+        // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
         if constexpr (is_same_v<_Result, dangling>) {
             return dangling{};
-        } else {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<_Wrapped>>);
-            auto _Last = _First;
-            _Seek_wrapped(_First, _UResult.begin());
-            _Seek_wrapped(_Last, _UResult.end());
+        } else if constexpr (is_same_v<subrange<_Unwrapped>, _Result>) {
+            return _STD move(_UResult);
+        } else if constexpr (range<_Wrapped>) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<iterator_t<_Wrapped>>, _Unwrapped>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<iterator_t<_Wrapped>>>);
+
+            auto _First = _RANGES begin(_Val);
+            auto _Last  = _First;
+            _First._Seek_to(_UResult.begin());
+            _Last._Seek_to(_UResult.end());
             return _Result{_STD move(_First), _STD move(_Last)};
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Wrapped>, _Unwrapped>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<_Wrapped>>);
+
+            auto _Last = _Val;
+            _Val._Seek_to(_UResult.begin());
+            _Last._Seek_to(_UResult.end());
+            return _Result{_STD move(_Val), _STD move(_Last)};
+        }
+    }
+
+    // FUNCTION TEMPLATE _Rewrap_iterator
+    template <forward_range _Rng, class _It>
+    _NODISCARD constexpr iterator_t<_Rng> _Rewrap_iterator(_Rng&& _Range, _It&& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_It>, _Unwrapped_t<iterator_t<_Rng>>>);
+
+        if constexpr (is_same_v<remove_cvref_t<_It>, iterator_t<_Rng>>) {
+            return _STD forward<_It>(_Val);
+        } else {
+            auto _Result = _RANGES begin(_Range);
+            _Result._Seek_to(_STD forward<_It>(_Val));
+            return _Result;
         }
     }
 
@@ -1999,20 +2025,18 @@ namespace ranges {
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            auto _First1 = _RANGES begin(_Range1);
-
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);
-                auto _UResult = _Search_sized(_Get_unwrapped(_First1), _Uend(_Range1), _Count1,
+                auto _UResult = _Search_sized(_Ubegin(_Range1), _Uend(_Range1), _Count1,
                     _Ubegin(_Range2), _Uend(_Range2), _Count2,
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             } else {
-                auto _UResult = _Search_unsized(_Get_unwrapped(_First1), _Uend(_Range1),
+                auto _UResult = _Search_unsized(_Ubegin(_Range1), _Uend(_Range1),
                     _Ubegin(_Range2), _Uend(_Range2),
                     _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             }
         }
         // clang-format on
@@ -2585,20 +2609,19 @@ namespace ranges {
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            auto _First1 = _RANGES begin(_Range1);
             if constexpr (random_access_range<_Rng1> && sized_range<_Rng1>
                 && random_access_range<_Rng2> && sized_range<_Rng2>) {
-                auto _UResult = _Random_access_sized_ranges(_Get_unwrapped(_First1), _RANGES distance(_Range1),
+                auto _UResult = _Random_access_sized_ranges(_Ubegin(_Range1), _RANGES distance(_Range1),
                     _Ubegin(_Range2), _RANGES distance(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             } else if constexpr (_Bidi_common_range<_Rng1> && _Bidi_common_range<_Rng2>) {
-                auto _UResult = _Bidi_common_ranges(_Get_unwrapped(_First1), _Uend(_Range1),
+                auto _UResult = _Bidi_common_ranges(_Ubegin(_Range1), _Uend(_Range1),
                     _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             } else {
-                auto _UResult = _Forward_ranges(_Get_unwrapped(_First1), _Uend(_Range1),
+                auto _UResult = _Forward_ranges(_Ubegin(_Range1), _Uend(_Range1),
                     _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_First1, _STD move(_UResult));
+                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             }
         }
         // clang-format on
@@ -3911,9 +3934,7 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _Push_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _Result = _RANGES begin(_Range);
-                _Seek_wrapped(_Result, _STD move(_ULast));
-                return _Result;
+                return _Rewrap_iterator(_Range, _STD move(_ULast));
             }
         }
         // clang-format on
@@ -4093,9 +4114,7 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _RANGES _Pop_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _Result = _RANGES begin(_Range);
-                _Seek_wrapped(_Result, _STD move(_ULast));
-                return _Result;
+                return _Rewrap_iterator(_Range, _STD move(_ULast));
             }
         }
         // clang-format on
@@ -4158,9 +4177,7 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _Make_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _Result = _RANGES begin(_Range);
-                _Seek_wrapped(_Result, _STD move(_ULast));
-                return _Result;
+                return _Rewrap_iterator(_Range, _STD move(_ULast));
             }
         }
         // clang-format on
@@ -4329,9 +4346,7 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Size = _RANGES distance(_Range);
             auto _UResult = _RANGES _Is_heap_until_unchecked(_Ubegin(_Range), _Size, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            auto _Result  = _RANGES begin(_Range);
-            _Seek_wrapped(_Result, _STD move(_UResult));
-            return _Result;
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -4396,9 +4411,7 @@ namespace ranges {
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
                 _Sort_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                auto _Result  = _RANGES begin(_Range);
-                _Seek_wrapped(_Result, _STD move(_ULast));
-                return _Result;
+                return _Rewrap_iterator(_Range, _STD move(_ULast));
             }
         }
         // clang-format on
