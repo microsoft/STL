@@ -153,11 +153,7 @@ extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
 // FUNCTION TEMPLATE kill_dependency
 template <class _Ty>
 _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependency ordering when called
-#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
     return _Arg;
-#else
-#error Unsupported hardware
-#endif
 }
 
 // FUNCTION _Check_memory_order
