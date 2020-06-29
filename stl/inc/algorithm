@@ -5713,9 +5713,84 @@ _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /
     return _STD is_sorted(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 
-#endif // _HAS_CXX17
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // FUNCTION TEMPLATE _Is_sorted_until_unchecked
+    template <class _It, class _Se, class _Pr, class _Pj>
+    _NODISCARD constexpr _It _Is_sorted_until_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
-#if _HAS_CXX17
+        if (_First == _Last) {
+            return _First;
+        }
+
+        for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
+                break;
+            }
+        }
+
+        return _First;
+    }
+
+    // VARIABLE ranges::is_sorted
+    class _Is_sorted_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            const auto _UFirst =
+                _Is_sorted_until_unchecked(_Get_unwrapped(_STD move(_First)), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _UFirst == _ULast;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _ULast  = _Uend(_Range);
+            const auto _UFirst = _Is_sorted_until_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _UFirst == _ULast;
+        }
+    };
+
+    inline constexpr _Is_sorted_fn is_sorted{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::is_sorted_until
+    class _Is_sorted_until_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Is_sorted_until_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _First = _RANGES begin(_Range);
+            auto _UFirst =
+                _Is_sorted_until_unchecked(_Get_unwrapped(_First), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+    };
+
+    inline constexpr _Is_sorted_until_fn is_sorted_until{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE clamp
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {

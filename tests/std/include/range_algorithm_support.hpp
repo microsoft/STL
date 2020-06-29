@@ -499,7 +499,7 @@ namespace test {
         requires (!to_bool(IsCommon) || to_bool(Eq))
             && (to_bool(Eq) || !derived_from<Category, fwd>)
             && (!to_bool(Proxy) || !derived_from<Category, contiguous>)
-    class range : ranges::view_base {
+    class range {
         span<Element> elements_;
         mutable bool begin_called_ = false;
 
@@ -510,17 +510,8 @@ namespace test {
         range() = default;
         constexpr explicit range(span<Element> elements) noexcept : elements_{elements} {}
 
-        range(const range&) requires derived_from<Category, fwd> = default;
-        range& operator=(const range&) requires derived_from<Category, fwd> = default;
-
-        constexpr range(range&& that) noexcept
-            : elements_{exchange(that.elements_, {})}, begin_called_{that.begin_called_} {}
-
-        constexpr range& operator=(range&& that) noexcept {
-            elements_     = exchange(that.elements_, {});
-            begin_called_ = that.begin_called_;
-            return *this;
-        }
+        range(range const&) = delete;
+        range& operator=(range const&) = delete;
 
         [[nodiscard]] constexpr I begin() const noexcept {
             if constexpr (!derived_from<Category, fwd>) {
@@ -566,25 +557,17 @@ namespace test {
 } // namespace test
 
 template <class T>
-class move_only_range : public test::range<test::input, T, test::Sized::no, test::CanDifference::no, test::Common::no,
-                            test::CanCompare::no, test::ProxyRef::no> {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1132704
+class basic_borrowed_range : public test::range<test::input, T, test::Sized::no, test::CanDifference::no,
+                                 test::Common::no, test::CanCompare::no, test::ProxyRef::no> {
     using test::range<test::input, T, test::Sized::no, test::CanDifference::no, test::Common::no, test::CanCompare::no,
         test::ProxyRef::no>::range;
-#else // ^^^ no workaround / workaround vvv
-public:
-    constexpr move_only_range() = default;
-    constexpr explicit move_only_range(std::span<T> elements) noexcept : move_only_range::range{elements} {}
-    constexpr move_only_range(move_only_range&&) = default;
-    constexpr move_only_range& operator=(move_only_range&&) = default;
-#endif // TRANSITION, VSO-1132704
 };
 
 template <ranges::contiguous_range R>
-move_only_range(R&) -> move_only_range<std::remove_reference_t<ranges::range_reference_t<R>>>;
+basic_borrowed_range(R&) -> basic_borrowed_range<std::remove_reference_t<ranges::range_reference_t<R>>>;
 
 template <class T>
-inline constexpr bool ranges::enable_borrowed_range<::move_only_range<T>> = true;
+inline constexpr bool ranges::enable_borrowed_range<::basic_borrowed_range<T>> = true;
 
 template <int>
 struct unique_tag {};
@@ -610,6 +593,7 @@ struct with_writable_iterators {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::iterator;
 
         // Diff and Eq are not significant for "lone" single-pass iterators, so we can ignore them here.
         Continuation::template call<Args...,
