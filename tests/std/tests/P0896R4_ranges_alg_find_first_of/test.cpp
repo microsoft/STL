@@ -7,7 +7,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -25,32 +25,32 @@ constexpr void smoke_test() {
     const array good_needle = {29, 1};
     {
         // Validate range overload [found case]
-        auto result = find_first_of(move_only_range{pairs}, good_needle, pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<const P>>>);
+        auto result = find_first_of(basic_borrowed_range{pairs}, good_needle, pred, get_first);
+        STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<const P>>>);
         assert(to_address(std::move(result).base()) == pairs.data() + 2);
     }
     {
         // Validate iterator + sentinel overload [found case]
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         auto result = find_first_of(
             wrapped_pairs.begin(), wrapped_pairs.end(), good_needle.begin(), good_needle.end(), pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<const P>>>);
+        STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<const P>>>);
         assert(to_address(std::move(result).base()) == pairs.data() + 2);
     }
 
     const array bad_needle = {29, 17};
     {
         // Validate range overload [not found case]
-        auto result = find_first_of(move_only_range{pairs}, bad_needle, pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<const P>>>);
+        auto result = find_first_of(basic_borrowed_range{pairs}, bad_needle, pred, get_first);
+        STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<const P>>>);
         assert(to_address(std::move(result).base()) == pairs.data() + pairs.size());
     }
     {
         // Validate iterator + sentinel overload [not found case]
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         auto result = find_first_of(
             wrapped_pairs.begin(), wrapped_pairs.end(), bad_needle.begin(), bad_needle.end(), pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<const P>>>);
+        STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<const P>>>);
         assert(to_address(std::move(result).base()) == pairs.data() + pairs.size());
     }
 }

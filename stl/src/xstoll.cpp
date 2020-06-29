@@ -3,11 +3,12 @@
 
 // _Stoll function
 
-#include "xmath.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
@@ -20,37 +21,37 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     char sign;
     unsigned long long x;
 
-    if (endptr == 0) {
+    if (endptr == nullptr) {
         endptr = &se;
     }
 
     sc = s;
-    while (isspace((unsigned char) *sc)) {
+    while (isspace(static_cast<unsigned char>(*sc))) {
         ++sc;
     }
 
-    sign = (char) (*sc == '-' || *sc == '+' ? *sc++ : '+');
+    sign = static_cast<char>(*sc == '-' || *sc == '+' ? *sc++ : '+');
     x    = _Stoullx(sc, endptr, base, perr);
     if (sc == *endptr) {
-        *endptr = (char*) s;
+        *endptr = const_cast<char*>(s);
     }
 
     if (s == *endptr && x != 0 || sign == '+' && LLONG_MAX < x
-        || sign == '-' && 0 - (unsigned long long) LLONG_MIN < x) { // overflow
+        || sign == '-' && 0 - static_cast<unsigned long long>(LLONG_MIN) < x) { // overflow
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr = 1;
         }
 
         return sign == '-' ? LLONG_MIN : LLONG_MAX;
     }
 
-    return (long long) (sign == '-' ? 0 - x : x);
+    return static_cast<long long>(sign == '-' ? 0 - x : x);
 }
 
 _CRTIMP2_PURE long long(__CLRCALL_PURE_OR_CDECL _Stoll)(
     const char* s, char** endptr, int base) { // convert string, discard error code
-    return _Stollx(s, endptr, base, 0);
+    return _Stollx(s, endptr, base, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

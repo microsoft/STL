@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-//
+
 #include "range_algorithm_support.hpp"
 
 #define ASSERT(...) assert((__VA_ARGS__))
@@ -1400,8 +1400,7 @@ namespace test_subrange {
     STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
             CanCompare::yes, ProxyRef::no>>());
 
-    STATIC_ASSERT(
-        test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>()); // FIXME: look at these
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no>>());
     STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no>>());

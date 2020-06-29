@@ -3,7 +3,7 @@
 
 #include <concepts>
 #include <ranges>
-//
+
 #include <range_algorithm_support.hpp>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -378,11 +378,10 @@ STATIC_ASSERT(range_test<contiguous_iterator_tag, int, Sized::yes, CanDifference
 STATIC_ASSERT(range_test<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes,
     ProxyRef::no>());
 
-// Validate move_only_range
-STATIC_ASSERT(ranges::input_range<move_only_range<int>>);
-STATIC_ASSERT(!ranges::forward_range<move_only_range<int>>);
-STATIC_ASSERT(movable<move_only_range<int>>);
-STATIC_ASSERT(!copyable<move_only_range<int>>);
+// Validate basic_borrowed_range
+STATIC_ASSERT(ranges::input_range<basic_borrowed_range<int>>);
+STATIC_ASSERT(!ranges::forward_range<basic_borrowed_range<int>>);
+STATIC_ASSERT(!movable<basic_borrowed_range<int>>);
 
 struct instantiate {
     template <class Range1, class Range2>

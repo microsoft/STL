@@ -3,7 +3,7 @@
 
 // _FExp function
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
@@ -24,10 +24,10 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
         return _INFCODE;
     } else { // xexp won't overflow
         float g    = *px * invln2;
-        short xexp = (short) (g + (g < 0.0F ? -0.5F : +0.5F));
+        short xexp = static_cast<short>(g + (g < 0.0F ? -0.5F : +0.5F));
 
         g = xexp;
-        g = (float) ((*px - g * c1) - g * c2);
+        g = static_cast<float>((*px - g * c1) - g * c2);
         if (-_FEps._Float < g && g < _FEps._Float) {
             *px = y;
         } else { // g * g worth computing
@@ -38,7 +38,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
             *px = (w + g) / (w - g) * 2.0F * y;
             --xexp;
         }
-        return _FDscale(px, (long) xexp + eoff);
+        return _FDscale(px, static_cast<long>(xexp) + eoff);
     }
 }
 

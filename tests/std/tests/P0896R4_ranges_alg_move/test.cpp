@@ -4,9 +4,10 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
-#include <range_algorithm_support.hpp>
 #include <ranges>
 #include <utility>
+
+#include <range_algorithm_support.hpp>
 
 struct int_wrapper {
     int val                 = 10;
@@ -34,31 +35,31 @@ constexpr void smoke_test() {
     int const input[] = {13, 53, 12435};
     {
         int output[] = {-2, -2, -2};
-        auto result  = move(move_only_range{input}, move_only_range{output}.begin());
+        auto result  = move(basic_borrowed_range{input}, basic_borrowed_range{output}.begin());
         STATIC_ASSERT(same_as<decltype(result),
-            move_result<iterator_t<move_only_range<int const>>, iterator_t<move_only_range<int>>>>);
-        assert(result.in == move_only_range{input}.end());
-        assert(result.out == move_only_range{output}.end());
+            move_result<iterator_t<basic_borrowed_range<int const>>, iterator_t<basic_borrowed_range<int>>>>);
+        assert(result.in == basic_borrowed_range{input}.end());
+        assert(result.out == basic_borrowed_range{output}.end());
         assert(ranges::equal(output, input));
     }
     {
         int output[] = {-2, -2, -2};
-        move_only_range wrapped_input{input};
-        auto result = move(wrapped_input.begin(), wrapped_input.end(), move_only_range{output}.begin());
+        basic_borrowed_range wrapped_input{input};
+        auto result = move(wrapped_input.begin(), wrapped_input.end(), basic_borrowed_range{output}.begin());
         STATIC_ASSERT(same_as<decltype(result),
-            move_result<iterator_t<move_only_range<int const>>, iterator_t<move_only_range<int>>>>);
+            move_result<iterator_t<basic_borrowed_range<int const>>, iterator_t<basic_borrowed_range<int>>>>);
         assert(result.in == wrapped_input.end());
-        assert(result.out == move_only_range{output}.end());
+        assert(result.out == basic_borrowed_range{output}.end());
         assert(ranges::equal(output, input));
     }
     {
         int_wrapper input1[3]        = {13, 55, 1234};
         int const expected_output[3] = {13, 55, 1234};
         int_wrapper actual_output[3] = {-2, -2, -2};
-        move_only_range wrapped_input{input1};
-        auto result = move(wrapped_input.begin(), wrapped_input.end(), move_only_range{actual_output}.begin());
+        basic_borrowed_range wrapped_input{input1};
+        auto result = move(wrapped_input.begin(), wrapped_input.end(), basic_borrowed_range{actual_output}.begin());
         assert(result.in == wrapped_input.end());
-        assert(result.out == move_only_range{actual_output}.end());
+        assert(result.out == basic_borrowed_range{actual_output}.end());
         for (int i = 0; i < 3; ++i) {
             assert(input1[i].val == -1);
             assert(actual_output[i].val == expected_output[i]);
