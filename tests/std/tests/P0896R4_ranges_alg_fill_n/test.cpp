@@ -28,17 +28,13 @@ struct instantiator {
         {
             int output[] = {13, 42, 1367};
             auto result  = fill_n(ranges::begin(output), 0, value);
-            for (int i = 0; i < 3; ++i) {
-                assert(output[i] == expected_output[i]);
-            }
+            assert(ranges::equal(output, expected_output));
             assert(result == ranges::begin(output));
         }
         {
             int output[] = {13, 42, 1367};
             auto result  = fill_n(ranges::begin(output), -1, value);
-            for (int i = 0; i < 3; ++i) {
-                assert(output[i] == expected_output[i]);
-            }
+            assert(ranges::equal(output, expected_output));
             assert(result == ranges::begin(output));
         }
     }
