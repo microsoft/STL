@@ -170,6 +170,7 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
         return _Popcount_fallback(_Val);
     }
 #endif // !defined(__AVX__)
+
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__popcnt16(_Val));
     } else if constexpr (_Digits == 32) {
@@ -203,7 +204,9 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
-    if (!_STD is_constant_evaluated()) {
+    if (_STD is_constant_evaluated()) {
+        return _Countl_zero_fallback(_Val);
+    } else {
 #if defined(_M_IX86) || defined(_M_X64)
         return _Checked_x86_x64_countl_zero(_Val);
 #elif defined(_M_ARM) || defined(_M_ARM64)
@@ -212,7 +215,6 @@ _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 #error Unsupported Hardware
 #endif
     }
-    return _Countl_zero_fallback(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>

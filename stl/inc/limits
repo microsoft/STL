@@ -1057,13 +1057,17 @@ __MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64));
 }
 
 template <class _Ty>
-int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
+
+#ifndef __AVX2__
     const bool _Have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    constexpr int _Digits  = numeric_limits<_Ty>::digits;
-    constexpr _Ty _Max     = (numeric_limits<_Ty>::max)();
     if (!_Have_tzcnt && _Val == 0) {
         return _Digits;
     }
+#endif // __AVX2__
 
     if constexpr (_Digits <= 32) {
         // Intended widening to int. This operation means that a narrow 0 will widen
@@ -1072,9 +1076,9 @@ int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
         return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
     } else {
 #ifdef _M_IX86
-        unsigned int _High = _Val >> 32;
-        unsigned int _Low  = static_cast<unsigned int>(_Val);
-        int _Result        = _Checked_x86_x64_countr_zero(_Low);
+        const unsigned int _High = _Val >> 32;
+        const unsigned int _Low  = static_cast<unsigned int>(_Val);
+        int _Result              = _Checked_x86_x64_countr_zero(_Low);
         _Result += !_Low ? _Checked_x86_x64_countr_zero(_High) : 0;
         return _Result;
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
@@ -1093,14 +1097,16 @@ constexpr bool _Is_standard_unsigned_integer =
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #ifdef __cpp_lib_is_constant_evaluated
-    if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-    {
+    if (_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
         return _Checked_x86_x64_countr_zero(_Val);
-#endif // _M_IX86
+#endif // defined(_M_IX86 ) || defined(_M_X64)
+    } else {
+        return _Countr_zero_fallback(_Val);
     }
+#else // ^^^ defined(__cpp_lib_is_constant_evaluated) / !defined(__cpp_lib_is_constant_evaluated) vvv
     return _Countr_zero_fallback(_Val);
+#endif // defined(__cpp_lib_is_constant_evaluated)
 }
 
 _STD_END
