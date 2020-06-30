@@ -43,10 +43,10 @@ public:
     }
 
 #if _HAS_CXX20
-    explicit basic_stringbuf(const _Alloc& _Al) : basic_stringbuf(ios_base::in | ios_base::out, _Al) {}
+    explicit basic_stringbuf(const _Alloc& _Al_) : basic_stringbuf(ios_base::in | ios_base::out, _Al_) {}
 
-    basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al)
-        : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al) {}
+    basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al_)
+        : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al_) {}
 
     explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Al(_Str.get_allocator()) {
@@ -54,21 +54,21 @@ public:
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
-        : _Al(_Al) {
+    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al_)
+        : _Al(_Al_) {
         _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
-    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
-        : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al) {}
+    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al_)
+        : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al_) {}
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
     explicit basic_stringbuf(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc()) {}
 
-    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al) : _Al(_Al) {
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_) {
         _Assign_rv(_STD move(_Right));
     }
 #endif // _HAS_CXX20
@@ -89,12 +89,8 @@ public:
         }
     }
 
-    void swap(basic_stringbuf& _Right)
-#if _HAS_CXX20
-        noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
-                 || allocator_traits<_Alloc>::is_always_equal::value)
-#endif // _HAS_CXX20
-    {
+    void swap(basic_stringbuf& _Right) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
+                                                || allocator_traits<_Alloc>::is_always_equal::value) {
         if (this != _STD addressof(_Right)) {
             _Mysb::swap(_Right);
             _STD swap(_Seekhigh, _Right._Seekhigh);
@@ -123,13 +119,13 @@ public:
     using off_type = typename _Traits::off_type;
 
     _NODISCARD pair<_Elem*, _Mysize_type> _View_pair() const noexcept {
-        pair<_Elem*, _Mysize_type> _Result = {};
+        pair<_Elem*, _Mysize_type> _Result{};
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable, make string view from write buffer
             const auto _Base = _Mysb::pbase();
-            _Result = make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
+            _Result = _STD make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
         } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable, make string view from read buffer
             const auto _Base = _Mysb::eback();
-            _Result          = make_pair(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
+            _Result          = _STD make_pair(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
         }
         return _Result;
     }
@@ -141,8 +137,9 @@ public:
     {
         _Mystr _Result(_Al);
         auto _Pair = _View_pair();
-        if (_Pair.first)
+        if (_Pair.first) {
             _Result.assign(_Pair.first, _Pair.second);
+        }
         return _Result;
     }
 
@@ -157,8 +154,8 @@ public:
         return basic_string<_Elem, _Traits, _Alloc2>{view(), _Al};
     }
 
-    // The buffer cannot be moved to string directly, because
-    // the buffer maybe already full, and the terminating char is not \0.
+    // The buffer cannot be moved to a string directly, because
+    // the buffer may already be full, and the terminating char is not '\0'.
     // In that case, copy the string as usual.
     _NODISCARD _Mystr str() && {
         _Mystr _Result(_Al);
@@ -168,7 +165,7 @@ public:
             const auto _Eptr   = _Mysb::epptr();
             const auto _Mysize = static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base);
             if (_Ptr == _Eptr
-                && !_Traits::eq(*(_Ptr - 1), _Elem())) { // the buffer is full and terminating char is not \0
+                && !_Traits::eq(*(_Ptr - 1), _Elem())) { // the buffer is full and terminating char is not '\0'
                 _Result.assign(_Base, _Mysize);
             } else {
                 _Result._Move_assign_from_buffer(_Base, _Mysize, static_cast<_Mysize_type>(_Eptr - _Base));
@@ -178,7 +175,7 @@ public:
             const auto _Base   = _Mysb::eback();
             const auto _Eptr   = _Mysb::egptr();
             const auto _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
-            if (!_Traits::eq(*(_Eptr - 1), _Elem())) { // the buffer is full and terminating char is not \0
+            if (!_Traits::eq(*(_Eptr - 1), _Elem())) { // the buffer is full and terminating char is not '\0'
                 _Result.assign(_Base, _Mysize);
             } else {
                 _Result._Move_assign_from_buffer(_Base, _Mysize, _Mysize);
@@ -190,11 +187,12 @@ public:
     }
 
     _NODISCARD _Mystr_view view() const noexcept {
-        auto _Pair = _View_pair();
-        if (_Pair.first)
+        const auto _Pair = _View_pair();
+        if (_Pair.first) {
             return _Mystr_view{_Pair.first, _Pair.second};
-        else
+        } else {
             return {};
+        }
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
@@ -208,7 +206,7 @@ public:
         _Init_inplace(_STD move(_Newstr), _Mystate);
     }
 
-    allocator_type get_allocator() const noexcept {
+    _NODISCARD allocator_type get_allocator() const noexcept {
         return static_cast<allocator_type>(_Al);
     }
 #endif // _HAS_CXX20
@@ -440,20 +438,19 @@ protected:
     }
 
 #if _HAS_CXX20
-    void _Init_inplace(_Mystr&& _Str, int _State) {
+    void _Init_inplace(_Mystr&& _Str, const int _State) {
         if ((_State & _Constant) && !(_State & _Noread)) { // readonly, copy the string
             _Init(_Str.c_str(), _Str.size(), _State);
         } else { // writeable, construct in place
-            auto _Buffer = _Str._Release_to_buffer();
-            _Init_inplace(_STD get<0>(_Buffer), _STD get<1>(_Buffer), _STD get<2>(_Buffer), _State);
+            const auto _Buffer = _Str._Release_to_buffer();
+            _Init_inplace(_Buffer._Ptr, _Buffer._Size, _Buffer._Res, _State);
         }
     }
 
     // Call this method only when writeable
-    void _Init_inplace(_Elem* _Pnew, _Mysize_type _Length, _Mysize_type _Count, int _State) {
-        if (_Count != 0
-            && (_State & (_Noread | _Constant))
-                   != (_Noread | _Constant)) { // finite buffer that can be read or written, set it up
+    void _Init_inplace(_Elem* const _Pnew, const _Mysize_type _Length, const _Mysize_type _Count, int _State) {
+        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+            // finite buffer that can be read or written, set it up
             _Seekhigh        = _Pnew + _Length;
             auto _End_buffer = _Pnew + _Count;
 
@@ -515,17 +512,15 @@ private:
         return _State;
     }
 
+    // TRANSITION, GH-938
     _Elem* _Seekhigh; // the high-water pointer in character array
     int _Mystate; // the stream state
     allocator_type _Al; // the allocator object
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right)
-#if _HAS_CXX20
-    noexcept(noexcept(_Left.swap(_Right)))
-#endif // _HAS_CXX20
-{
+void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right) noexcept(
+    noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 

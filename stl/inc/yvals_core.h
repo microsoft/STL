@@ -96,7 +96,6 @@
 // P0393R3 Making Variant Greater Equal
 // P0394R4 Parallel Algorithms Should terminate() For Exceptions
 // P0403R1 UDLs For <string_view> ("meow"sv, etc.)
-// P0408R7 Efficient Access To basic_stringbuf's Buffer
 // P0426R1 constexpr For char_traits
 // P0433R2 Deduction Guides For The STL
 // P0452R1 Unifying <numeric> Parallel Algorithms
@@ -139,6 +138,7 @@
 // P0325R4 to_array()
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
+// P0408R7 Efficient Access To basic_stringbuf's Buffer
 // P0415R1 constexpr For <complex> (Again)
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
