@@ -46,16 +46,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _MT_INCR(x) _INTRIN_RELAXED(_InterlockedIncrement)(reinterpret_cast<volatile long*>(&x))
 #define _MT_DECR(x) _INTRIN_ACQ_REL(_InterlockedDecrement)(reinterpret_cast<volatile long*>(&x))
 
-#if defined(_M_CEE_PURE) || defined(_M_IX86) || defined(_M_X64)
-#define _ISO_VOLATILE_LOAD32(_Storage) (*_Atomic_address_as<const long>(_Storage))
-
-#elif defined(_M_ARM) || defined(_M_ARM64)
-#define _ISO_VOLATILE_LOAD32(_Storage) __iso_volatile_load32(_Atomic_address_as<const int>(_Storage))
-
-#else // ^^^ ARM32/ARM64 / unsupported hardware vvv
-#error Unsupported hardware
-#endif // hardware
-
 _STD_BEGIN
 
 #if _HAS_CXX20
@@ -104,24 +94,22 @@ _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {
     return &reinterpret_cast<volatile _Integral&>(_Source);
 }
 
+template <class _Integral, class _Ty>
+_NODISCARD const volatile _Integral* _Atomic_address_as(const _Ty& _Source) noexcept {
+    // gets a pointer to the argument as an integral type (to pass to intrinsics)
+    static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
+    return &reinterpret_cast<const volatile _Integral&>(_Source);
+}
+
 // FUNCTION TEMPLATE _Atomic_load_ll_relaxed
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
 _NODISCARD inline long long _Atomic_load_ll_relaxed(volatile long long* _Mem) noexcept {
     // Copy from _Atomic_storage<_Ty, 8>::load
-#if defined(_M_IX86) || defined(_M_ARM64)
-    return __iso_volatile_load64(_Mem);
-#elif defined(_M_X64)
-    return *_Mem;
-#else // _M_ARM
+#ifdef _M_ARM
     return __ldrexd(_Mem);
-#endif // hardware
-}
-
-// FUNCTION TEMPLATE _Atomic_compare_exchange_strong_ll_seq_cst
-inline bool _Atomic_compare_exchange_strong_ll_seq_cst(
-    volatile long long* _Mem, long long _Value, long long _Comparand) noexcept {
-    // Copy from _Atomic_storage<_Ty, 8>::store
-    return _InterlockedCompareExchange64(_Mem, _Value, _Comparand) == _Comparand;
+#else
+    return __iso_volatile_load64(_Mem);
+#endif
 }
 #endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
 
