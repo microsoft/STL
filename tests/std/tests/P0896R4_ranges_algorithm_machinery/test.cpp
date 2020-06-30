@@ -46,34 +46,35 @@ struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
 template <>
 inline constexpr bool std::ranges::enable_borrowed_range<borrowed<true>> = true;
 
+template <class T>
 struct simple_reference {
-    operator int() const;
+    operator T() const;
 };
 
+template <class T>
 struct simple_common_reference {
-    simple_common_reference(simple_reference);
-    simple_common_reference(int);
+    simple_common_reference(simple_reference<T>);
+    simple_common_reference(T const&);
 };
 
-template <int I>
+template <int I, class T = int>
 struct simple_iter_archetype {
-    using value_type = int;
+    using value_type = T;
 
-    // 0: not indirectly_readable
-    simple_reference operator*() const requires(I != 0);
+    simple_reference<T> operator*() const requires(I != 0); // 0: not indirectly_readable
 
     friend void iter_swap(simple_iter_archetype const&, simple_iter_archetype const&) {}
 };
 STATIC_ASSERT(!std::indirectly_readable<simple_iter_archetype<0>>);
 STATIC_ASSERT(std::indirectly_readable<simple_iter_archetype<1>>);
 
-template <template <class> class TQuals, template <class> class UQuals>
-struct std::basic_common_reference<int, ::simple_reference, TQuals, UQuals> {
-    using type = ::simple_common_reference;
+template <class T, template <class> class TQuals, template <class> class UQuals>
+struct std::basic_common_reference<T, ::simple_reference<T>, TQuals, UQuals> {
+    using type = ::simple_common_reference<T>;
 };
-template <template <class> class TQuals, template <class> class UQuals>
-struct std::basic_common_reference<::simple_reference, int, TQuals, UQuals> {
-    using type = ::simple_common_reference;
+template <class T, template <class> class TQuals, template <class> class UQuals>
+struct std::basic_common_reference<::simple_reference<T>, T, TQuals, UQuals> {
+    using type = ::simple_common_reference<T>;
 };
 
 namespace indirectly_unary_invocable_test {
@@ -94,18 +95,18 @@ namespace indirectly_unary_invocable_test {
         // 1: not invocable<Fn&, iter_value_t<simple_iter_archetype>&>
         void operator()(int&) const requires(I == 1) = delete;
         // 2: not invocable<Fn&, iter_reference_t<simple_iter_archetype>>
-        void operator()(simple_reference) const requires(I == 2) = delete;
+        void operator()(simple_reference<int>) const requires(I == 2) = delete;
         // 3: not invocable<Fn&, iter_common_reference_t<simple_iter_archetype>>
-        void operator()(simple_common_reference) const requires(I == 3) = delete;
+        void operator()(simple_common_reference<int>) const requires(I == 3) = delete;
 
         // 4 : not common_reference_with<invoke_result_t<Fn&, iter_value_t<simple_iter_archetype>&>,
         //                               invoke_result_t<Fn&, iter_reference_t<simple_iter_archetype>>>;
         void operator()(int&) const requires(I == 4);
-        int operator()(simple_reference) const requires(I == 4);
+        int operator()(simple_reference<int>) const requires(I == 4);
 
         int operator()(int&) const requires(I != 1 && I != 4);
-        int operator()(simple_reference) const requires(I != 2 && I != 4);
-        int operator()(simple_common_reference) const requires(I != 3 && I != 4);
+        int operator()(simple_reference<int>) const requires(I != 2 && I != 4);
+        int operator()(simple_common_reference<int>) const requires(I != 3 && I != 4);
     };
 
     template <class F, class I>
@@ -143,13 +144,14 @@ namespace indirect_unary_predicate_test {
         // 1: not predicate<Fn&, iter_value_t<simple_iter_archetype>&>
         void operator()(int&) const requires(I == 1);
         // 2: not predicate<Fn&, iter_reference_t<simple_iter_archetype>>
-        void operator()(simple_reference) const requires(I == 2) = delete;
+        void operator()(simple_reference<int>) const requires(I == 2) = delete;
         // 3: not predicate<Fn&, iter_common_reference_t<simple_iter_archetype>>
-        void operator()(simple_common_reference) const requires(I == 3) = delete;
+        void operator()(simple_common_reference<int>) const requires(I == 3) = delete;
 
+        // 4: all of the above
         int operator()(int&) const requires(I != 1 && I != 4);
-        int operator()(simple_reference) const requires(I != 2 && I != 4);
-        int operator()(simple_common_reference) const requires(I != 3 && I != 4);
+        int operator()(simple_reference<int>) const requires(I != 2 && I != 4);
+        int operator()(simple_common_reference<int>) const requires(I != 3 && I != 4);
     };
 
     STATIC_ASSERT(!indirect_unary_predicate<Fn<0>, simple_iter_archetype<1>>);
@@ -180,19 +182,19 @@ namespace indirect_binary_predicate_test {
         // 1: not predicate<Fn&, iter_value_t<simple_iter_archetype>&, iter_value_t<simple_iter_archetype>&>
         void operator()(int&, int&) const requires(I == 1);
         // 2: not predicate<Fn&, iter_value_t<simple_iter_archetype>&, iter_reference_t<simple_iter_archetype>>
-        void operator()(int&, simple_reference) const requires(I == 2);
+        void operator()(int&, simple_reference<int>) const requires(I == 2);
         // 3: not predicate<Fn&, iter_reference_t<simple_iter_archetype>, iter_value_t<simple_iter_archetype>&>
-        void operator()(simple_reference, int&) const requires(I == 3);
+        void operator()(simple_reference<int>, int&) const requires(I == 3);
         // 4: not predicate<Fn&, iter_reference_t<simple_iter_archetype>, iter_reference_t<simple_iter_archetype>>
-        void operator()(simple_reference, simple_reference) const requires(I == 4);
+        void operator()(simple_reference<int>, simple_reference<int>) const requires(I == 4);
         // 5: not predicate<Fn&, iter_common_reference_t</**/>, iter_common_reference_t</**/>>
-        void operator()(simple_common_reference, simple_common_reference) const requires(I == 5);
+        void operator()(simple_common_reference<int>, simple_common_reference<int>) const requires(I == 5);
 
         bool operator()(int&, int&) const requires(I != 1);
-        int operator()(int&, simple_reference) const requires(I != 2);
-        int* operator()(simple_reference, int&) const requires(I != 3);
-        std::true_type operator()(simple_reference, simple_reference) const requires(I != 4);
-        std::false_type operator()(simple_common_reference, simple_common_reference) const requires(I != 5);
+        int operator()(int&, simple_reference<int>) const requires(I != 2);
+        int* operator()(simple_reference<int>, int&) const requires(I != 3);
+        std::true_type operator()(simple_reference<int>, simple_reference<int>) const requires(I != 4);
+        std::false_type operator()(simple_common_reference<int>, simple_common_reference<int>) const requires(I != 5);
     };
 
     template <int FuncSelector, int IterSelector1, int IterSelector2>
@@ -252,19 +254,178 @@ namespace projected_test {
     STATIC_ASSERT(test<iter, double (*)(int), double, double>());
 } // namespace projected_test
 
-namespace indirectly_copyable_test {
-    using std::indirectly_copyable;
+namespace indirectly_movable_test { // also covers indirectly_movable_storable
+    using std::assignable_from, std::constructible_from, std::indirectly_writable, std::movable;
+    using std::indirectly_movable, std::indirectly_movable_storable;
 
     template <int I>
+    struct value_type {
+        value_type()             = default;
+        value_type(value_type&&) = default;
+        value_type& operator=(value_type&&) requires(I != 0) = default; // 0: not movable
+        // 1: not constructible_from<iter_rvalue_reference_t<In>>:
+        template <class T>
+        value_type(simple_reference<T>) requires(I == 1) = delete;
+        // 2: not assignable_from<iter_rvalue_reference_t<In>>:
+        template <class T>
+        value_type& operator=(simple_reference<T>) requires(I != 2);
+        template <class T>
+        void operator=(simple_reference<T>) requires(I == 2) = delete;
+    };
+    // Ensure specializations of value_type have the intended properties
+    STATIC_ASSERT(!movable<value_type<0>>);
+    STATIC_ASSERT(constructible_from<value_type<0>, simple_reference<value_type<0>>>);
+    STATIC_ASSERT(assignable_from<value_type<0>&, simple_reference<value_type<0>>>);
+    STATIC_ASSERT(movable<value_type<1>>);
+    STATIC_ASSERT(!constructible_from<value_type<1>, simple_reference<value_type<1>>>);
+    STATIC_ASSERT(assignable_from<value_type<1>&, simple_reference<value_type<1>>>);
+    STATIC_ASSERT(movable<value_type<2>>);
+    STATIC_ASSERT(constructible_from<value_type<2>, simple_reference<value_type<2>>>);
+    STATIC_ASSERT(!assignable_from<value_type<2>&, simple_reference<value_type<2>>>);
+    STATIC_ASSERT(movable<value_type<3>>);
+    STATIC_ASSERT(constructible_from<value_type<3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(assignable_from<value_type<3>&, simple_reference<value_type<3>>>);
+
+    template <int I, int J>
     struct out_archetype {
+        // clang-format off
         out_archetype& operator*() const;
         // 0: not indirectly_writable<simple_reference>
-        void operator=(int) const requires(I != 0);
+        void operator=(simple_reference<value_type<J>>&&) const requires(I == 0) = delete;
+        void operator=(simple_reference<value_type<J>>&&) const requires(I != 0);
+        // 1: not indirectly_writable<value_type>
+        void operator=(value_type<J>&&) const requires(I == 1) = delete;
+        void operator=(value_type<J>&&) const requires(I != 1);
+        // clang-format on
     };
+    // Ensure specializations of out_archetype have the intended properties
+    STATIC_ASSERT(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, value_type<3>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(!indirectly_writable<out_archetype<1, 3>, value_type<3>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, value_type<3>>);
 
-    STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<0>, out_archetype<1>>);
-    STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<1>, out_archetype<0>>);
-    STATIC_ASSERT(indirectly_copyable<simple_iter_archetype<1>, out_archetype<1>>);
+    // Validate indirectly_movable
+    STATIC_ASSERT(!indirectly_movable<simple_iter_archetype<0, value_type<3>>, out_archetype<1, 3>>);
+    STATIC_ASSERT(!indirectly_movable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    STATIC_ASSERT(indirectly_movable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
+
+    // Validate indirectly_movable_storable
+    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<0, value_type<3>>, out_archetype<2, 3>>);
+    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<0>>, out_archetype<2, 0>>);
+    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<1>>, out_archetype<2, 1>>);
+    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<2>>, out_archetype<2, 2>>);
+    STATIC_ASSERT(indirectly_movable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<2, 3>>);
+} // namespace indirectly_movable_test
+
+namespace indirectly_copyable_test { // also covers indirectly_copyable_storable
+    using std::assignable_from, std::constructible_from, std::copyable, std::indirectly_writable;
+    using std::indirectly_copyable, std::indirectly_copyable_storable;
+
+    template <int I>
+    struct value_type {
+        value_type()                  = default;
+        value_type(value_type const&) = default;
+        value_type& operator=(value_type const&) requires(I != 0) = default; // 0: not copyable
+        // 1: not constructible_from<iter_reference_t<In>>:
+        template <class T>
+        value_type(simple_reference<T>) requires(I == 1) = delete;
+        // 2: not assignable_from<iter_reference_t<In>>:
+        template <class T>
+        value_type& operator=(simple_reference<T>) requires(I != 2);
+        template <class T>
+        void operator=(simple_reference<T>) requires(I == 2) = delete;
+    };
+    // Ensure specializations of value_type have the intended properties
+    STATIC_ASSERT(!copyable<value_type<0>>);
+    STATIC_ASSERT(constructible_from<value_type<0>, simple_reference<value_type<0>>>);
+    STATIC_ASSERT(assignable_from<value_type<0>&, simple_reference<value_type<0>>>);
+    STATIC_ASSERT(copyable<value_type<1>>);
+    STATIC_ASSERT(!constructible_from<value_type<1>, simple_reference<value_type<1>>>);
+    STATIC_ASSERT(assignable_from<value_type<1>&, simple_reference<value_type<1>>>);
+    STATIC_ASSERT(copyable<value_type<2>>);
+    STATIC_ASSERT(constructible_from<value_type<2>, simple_reference<value_type<2>>>);
+    STATIC_ASSERT(!assignable_from<value_type<2>&, simple_reference<value_type<2>>>);
+    STATIC_ASSERT(copyable<value_type<3>>);
+    STATIC_ASSERT(constructible_from<value_type<3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(assignable_from<value_type<3>&, simple_reference<value_type<3>>>);
+
+    template <int I, int J>
+    struct out_archetype {
+        // clang-format off
+        out_archetype& operator*() const;
+        // 0: not indirectly_writable<simple_reference>
+        void operator=(simple_reference<value_type<J>>&&) const requires(I == 0) = delete;
+        void operator=(simple_reference<value_type<J>>&&) const requires(I != 0);
+        // 1: not indirectly_writable<value_type&>
+        void operator=(value_type<J>&) const requires(I == 1) = delete;
+        void operator=(value_type<J>&) const requires(I != 1);
+        // 2: not indirectly_writable<value_type&&>
+        void operator=(value_type<J>&&) const requires(I == 2) = delete;
+        void operator=(value_type<J>&&) const requires(I != 2);
+        // 3: not indirectly_writable<const value_type&&>
+        void operator=(value_type<J> const&&) const requires(I == 3) = delete;
+        void operator=(value_type<J> const&&) const requires(I != 3);
+        // 4: not indirectly_writable<const value_type&>
+        void operator=(value_type<J> const&) const requires(I == 4) = delete;
+        void operator=(value_type<J> const&) const requires(I != 4);
+        // clang-format on
+    };
+    // Ensure specializations of out_archetype have the intended properties
+    STATIC_ASSERT(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, value_type<3>&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, const value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, const value_type<3>&>);
+
+    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(!indirectly_writable<out_archetype<1, 3>, value_type<3>&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, const value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, const value_type<3>&>);
+
+    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, value_type<3>&>);
+    STATIC_ASSERT(!indirectly_writable<out_archetype<2, 3>, value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, const value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, const value_type<3>&>);
+
+    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, value_type<3>&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, value_type<3>&&>);
+    STATIC_ASSERT(!indirectly_writable<out_archetype<3, 3>, const value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, const value_type<3>&>);
+
+    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, value_type<3>&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, const value_type<3>&&>);
+    STATIC_ASSERT(!indirectly_writable<out_archetype<4, 3>, const value_type<3>&>);
+
+    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, simple_reference<value_type<3>>>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, value_type<3>&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, const value_type<3>&&>);
+    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, const value_type<3>&>);
+
+    // Validate indirectly_copyable
+    STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<0, value_type<3>>, out_archetype<1, 3>>);
+    STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    STATIC_ASSERT(indirectly_copyable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
+
+    // Validate indirectly_copyable_storable
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<0, value_type<3>>, out_archetype<5, 3>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<2, 3>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<3, 3>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<4, 3>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<0>>, out_archetype<5, 0>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<1>>, out_archetype<5, 1>>);
+    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<2>>, out_archetype<5, 2>>);
+    STATIC_ASSERT(indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<5, 3>>);
 } // namespace indirectly_copyable_test
 
 namespace indirectly_swappable_test {
@@ -328,8 +489,8 @@ namespace indirectly_comparable_test {
     // Also validate indirect_result_t
     using std::indirectly_comparable;
 
-    using Proj    = int (&)(simple_common_reference);
-    using BadProj = char const* (&) (simple_common_reference);
+    using Proj    = int (&)(simple_common_reference<int>);
+    using BadProj = char const* (&) (simple_common_reference<int>);
 
     template <int>
     struct base {};
