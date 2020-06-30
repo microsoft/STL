@@ -2643,7 +2643,8 @@ private:
 
 public:
 #if _HAS_CXX20
-    void _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) noexcept {
+    void _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) noexcept(
+        _STD is_nothrow_constructible_v<pointer, pointer&&>) {
         // Move assign from a buffer, used by basic_stringbuf
         _Tidy_deallocate();
         _Right[_Size]  = _Elem();
