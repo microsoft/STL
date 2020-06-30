@@ -1347,7 +1347,7 @@ public:
     }
 
     template <class _Pr2>
-    void sort(_Pr2 _Pred) { // order sequence, using _Pred
+    void sort(_Pr2 _Pred) { // order sequence
         _Scary_val::_Sort(_Mypair._Myval2._Before_head(), _Pass_fn(_Pred));
     }
 
