@@ -2878,7 +2878,7 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
                 if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
                     // extent_v<remove_cvref_t<_Ty&>> reuses specializations from _Choose
                     return extent_v<remove_cvref_t<_Ty&>>;
@@ -2950,7 +2950,7 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr bool operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
                 if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
                     return static_cast<bool>(_Val.empty());
                 } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Size) {
