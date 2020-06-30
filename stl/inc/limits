@@ -1042,7 +1042,7 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
 
 #if defined(_M_IX86) || defined(_M_X64)
 
-// TRANSITION, VS 2019 16.8 Preview 1
+// TRANSITION, VS 2019 16.8 Preview 1, intrin0.h will declare _tzcnt*
 extern "C" {
 extern int __isa_available;
 #ifdef __clang__
