@@ -12,8 +12,7 @@
 struct instantiator {
     template <class Out>
     static constexpr void call() {
-        using ranges::fill_n, ranges::iterator_t;
-        using std::same_as;
+        using ranges::fill_n;
 
         const int expected_output[] = {13, 42, 1367};
         const int value             = 7;

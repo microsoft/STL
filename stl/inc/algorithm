@@ -2858,9 +2858,9 @@ namespace ranges {
                 if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
                 {
-                    const auto distance = static_cast<size_t>(_ULast - _UFirst);
-                    _CSTD memset(_UFirst, static_cast<unsigned char>(_Value), distance);
-                    _UFirst += distance;
+                    const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
+                    _CSTD memset(_UFirst, static_cast<unsigned char>(_Value), _Distance);
+                    _UFirst += _Distance;
                     _Seek_wrapped(_First, _UFirst);
                     return _First;
                 }
@@ -2891,7 +2891,7 @@ namespace ranges {
 
         template <class _Ty, output_iterator<const _Ty&> _It>
         constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) const {
-            if (_Count >= 0) {
+            if (_Count > 0) {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
                 if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
