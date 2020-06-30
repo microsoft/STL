@@ -1072,14 +1072,14 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     if constexpr (_Digits <= 32) {
         // Intended widening to int. This operation means that a narrow 0 will widen
         // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
-        // of the wider type
+        // of the wider type.
         return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
     } else {
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
         const unsigned int _Low  = static_cast<unsigned int>(_Val);
         int _Result              = _Checked_x86_x64_countr_zero(_Low);
-        _Result += !_Low ? _Checked_x86_x64_countr_zero(_High) : 0;
+        _Result += _Low == 0 ? _Checked_x86_x64_countr_zero(_High) : 0;
         return _Result;
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));

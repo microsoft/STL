@@ -115,7 +115,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 
 #if defined(_M_IX86) || defined(_M_X64)
 
-// TRANSITION, VS 2019 16.8 Preview 1
+// TRANSITION, VS 2019 16.8 Preview 1, intrin0.h will declare __lzcnt* and __popcnt*
 extern "C" {
 __MACHINEX86_X64(unsigned int __lzcnt(unsigned int))
 __MACHINEX86_X64(unsigned short __lzcnt16(unsigned short))
