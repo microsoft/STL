@@ -165,7 +165,7 @@ public:
             const auto _Eptr   = _Mysb::epptr();
             const auto _Mysize = static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base);
             if (_Ptr == _Eptr
-                && !_Traits::eq(*(_Ptr - 1), _Elem())) { // the buffer is full and terminating char is not '\0'
+                && !_Traits::eq(*_Prev_iter(_Ptr), _Elem())) { // the buffer is full and terminating char is not '\0'
                 _Result.assign(_Base, _Mysize);
             } else {
                 _Result._Move_assign_from_buffer(_Base, _Mysize, static_cast<_Mysize_type>(_Eptr - _Base));
@@ -175,7 +175,7 @@ public:
             const auto _Base   = _Mysb::eback();
             const auto _Eptr   = _Mysb::egptr();
             const auto _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
-            if (!_Traits::eq(*(_Eptr - 1), _Elem())) { // the buffer is full and terminating char is not '\0'
+            if (!_Traits::eq(*_Prev_iter(_Eptr), _Elem())) { // the buffer is full and terminating char is not '\0'
                 _Result.assign(_Base, _Mysize);
             } else {
                 _Result._Move_assign_from_buffer(_Base, _Mysize, _Mysize);
