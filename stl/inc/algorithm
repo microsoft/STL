@@ -212,7 +212,7 @@ namespace ranges {
         // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
         if constexpr (is_same_v<_Result, dangling>) {
             return dangling{};
-        } else if constexpr (is_same_v<subrange<_Unwrapped>, _Result>) {
+        } else if constexpr (is_same_v<_Result, subrange<_Unwrapped>>) {
             return _STD move(_UResult);
         } else if constexpr (range<_Wrapped>) {
             _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
@@ -3891,7 +3891,7 @@ namespace ranges {
     template <class _It, class _Pr, class _Pj>
     constexpr void _Push_heap_by_index(const _It _First, iter_difference_t<_It> _Hole,
         const iter_difference_t<_It> _Top, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
-        // percolate _Hole to _Top or where _Val belongs, using _Pred
+        // percolate _Hole to _Top or where _Val belongs, using _Pred and _Proj
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
@@ -4029,7 +4029,7 @@ namespace ranges {
     template <class _It, class _Pr, class _Pj>
     constexpr void _Pop_heap_hole_by_index(_It _First, iter_difference_t<_It> _Hole,
         const iter_difference_t<_It> _Bottom, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
-        // percolate _Hole to _Bottom, then push _Val, using _Pred
+        // percolate _Hole to _Bottom, then push _Val, using _Pred and _Proj
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
         _STL_INTERNAL_CHECK(_Hole >= 0);
@@ -4043,12 +4043,13 @@ namespace ranges {
         // calculating the child's index can trigger integer overflows
         const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
         while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
-            _Idx            = 2 * _Idx + 2;
-            const auto _Mid = _First + _Idx;
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *(_Mid - 1)))) {
+            _Idx      = 2 * _Idx + 2;
+            auto _Mid = _First + _Idx;
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_RANGES prev(_Mid)))) {
                 --_Idx;
+                --_Mid;
             }
-            *(_First + _Hole) = _RANGES iter_move(_First + _Idx);
+            *(_First + _Hole) = _RANGES iter_move(_Mid);
             _Hole             = _Idx;
         }
 
@@ -4063,7 +4064,7 @@ namespace ranges {
     template <class _It, class _Pr, class _Pj>
     constexpr void _Pop_heap_hole_unchecked(
         _It _First, const _It _Last, const _It _Dest, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
-        // pop *_First to *_Dest and reheap, using _Pred
+        // pop *_First to *_Dest and reheap, using _Pred and _Proj
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
         _STL_INTERNAL_CHECK(_First != _Last);
@@ -4076,7 +4077,7 @@ namespace ranges {
 
     template <class _It, class _Pr, class _Pj>
     constexpr void _Pop_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
-        // pop *_First to *(_Last - 1) and reheap, using _Pred
+        // pop *_First to *(_Last - 1) and reheap, using _Pred and _Proj
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
@@ -4184,7 +4185,7 @@ namespace ranges {
     private:
         template <class _It, class _Pr, class _Pj>
         static constexpr void _Make_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
-            // make nontrivial [_First, _Last) into a heap, using _Pred
+            // make nontrivial [_First, _Last) into a heap, using _Pred and _Proj
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
@@ -4274,7 +4275,7 @@ namespace ranges {
     template <class _It, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Is_heap_until_unchecked(
         _It _First, const iter_difference_t<_It> _Size, _Pr _Pred, _Pj _Proj) {
-        // find extent of counted range that is a heap ordered by _Pred
+        // find extent of counted range that is a heap ordered with respect to _Pred and _Proj
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
