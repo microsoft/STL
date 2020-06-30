@@ -671,7 +671,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if defined(_M_IX86)
         _Compiler_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
-        atomic_thread_fence(memory_order_seq_cst);
+        _STD atomic_thread_fence(memory_order_seq_cst);
 #elif defined(_M_ARM64)
         _Memory_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
@@ -705,7 +705,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
     _NODISCARD _Ty load() const noexcept { // load with sequential consistency
-        const auto _Mem = _Atomic_address_as<const long long>(_Storage);
+        const auto _Mem = _Atomic_address_as<long long>(_Storage);
         long long _As_bytes;
 #ifdef _M_ARM
         _As_bytes = __ldrexd(_Mem);
@@ -718,7 +718,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
     _NODISCARD _Ty load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<const long long>(_Storage);
+        const auto _Mem = _Atomic_address_as<long long>(_Storage);
 #ifdef _M_ARM
         long long _As_bytes = __ldrexd(_Mem);
 #else
