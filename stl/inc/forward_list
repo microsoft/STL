@@ -1342,7 +1342,7 @@ private:
     }
 
 public:
-    void sort() { // order sequence, using operator<
+    void sort() { // order sequence
         _Scary_val::_Sort(_Mypair._Myval2._Before_head(), less<>{});
     }
 

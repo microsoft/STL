@@ -1706,7 +1706,7 @@ private:
     }
 
 public:
-    void sort() { // order sequence, using operator<
+    void sort() { // order sequence
         sort(less<>());
     }
 

@@ -4163,7 +4163,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 
 template <class _RanIt>
 _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
-    // push *(_Last - 1) onto heap at [_First, _Last - 1), using operator<
+    // push *(_Last - 1) onto heap at [_First, _Last - 1)
     _STD push_heap(_First, _Last, less<>());
 }
 
@@ -4301,7 +4301,7 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 
 template <class _RanIt>
 _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
-    // pop *_First to *(_Last - 1) and reheap, using operator<
+    // pop *_First to *(_Last - 1) and reheap
     _STD pop_heap(_First, _Last, less<>());
 }
 
@@ -4428,7 +4428,7 @@ _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // make [_
 }
 
 template <class _RanIt>
-_CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap, using operator<
+_CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap
     _STD make_heap(_First, _Last, less<>());
 }
 
@@ -4661,7 +4661,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order h
 }
 
 template <class _RanIt>
-_CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping, using operator<
+_CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping
     _STD sort_heap(_First, _Last, less<>());
 }
 
@@ -4795,7 +4795,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
 
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // find first element that _Val is before, using operator<
+    // find first element that _Val is before
     return _STD upper_bound(_First, _Last, _Val, less<>());
 }
 
@@ -4897,7 +4897,7 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
 
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // find range equivalent to _Val, using operator<
+    // find range equivalent to _Val
     return _STD equal_range(_First, _Last, _Val, less<>());
 }
 
@@ -4978,7 +4978,7 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
 
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // test if _Val equivalent to some element, using operator<
+    // test if _Val equivalent to some element
     return _STD binary_search(_First, _Last, _Val, less<>());
 }
 
@@ -5079,7 +5079,7 @@ _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 
 
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
-    // copy merging ranges, both using operator<
+    // copy merging ranges, both
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
@@ -5098,7 +5098,7 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest) noexcept
 /* terminates */ {
-    // copy merging ranges, both using operator<
+    // copy merging ranges
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -5351,7 +5351,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
 
 template <class _BidIt>
 void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last) {
-    // merge [_First, _Mid) with [_Mid, _Last), using operator<
+    // merge [_First, _Mid) with [_Mid, _Last)
     _STD inplace_merge(_First, _Mid, _Last, less<>());
 }
 
@@ -5365,7 +5365,7 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred)
 
 template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /* terminates */ {
-    // merge [_First, _Mid) with [_Mid, _Last), using operator<
+    // merge [_First, _Mid) with [_Mid, _Last)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _STD inplace_merge(_First, _Mid, _Last);
 }
@@ -5536,7 +5536,7 @@ _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // 
 }
 
 template <class _RanIt>
-_CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last), using operator<
+_CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last)
     _STD sort(_First, _Last, less<>());
 }
 
@@ -5546,7 +5546,7 @@ void sort(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept; // te
 
 template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* terminates */ {
-    // order [_First, _Last), using operator<
+    // order [_First, _Last)
     _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less<>{});
 }
 #endif // _HAS_CXX17
@@ -5733,14 +5733,14 @@ void stable_sort(_ExPo&& _Exec, const _BidIt _First, const _BidIt _Last, _Pr _Pr
 #endif // _HAS_CXX17
 
 template <class _BidIt>
-void stable_sort(const _BidIt _First, const _BidIt _Last) { // sort preserving order of equivalents, using operator<
+void stable_sort(const _BidIt _First, const _BidIt _Last) { // sort preserving order of equivalents
     _STD stable_sort(_First, _Last, less<>());
 }
 
 #if _HAS_CXX17
 template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
-    // sort preserving order of equivalents, using operator<
+    // sort preserving order of equivalents
     _STD stable_sort(_STD forward<_ExPo>(_Exec), _First, _Last, less<>());
 }
 #endif // _HAS_CXX17
@@ -5772,7 +5772,7 @@ _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pr
 
 template <class _RanIt>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last) {
-    // order [_First, _Last) up to _Mid, using operator<
+    // order [_First, _Last) up to _Mid
     _STD partial_sort(_First, _Mid, _Last, less<>());
 }
 
@@ -5786,7 +5786,7 @@ void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) 
 
 template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /* terminates */ {
-    // order [_First, _Last) up to _Mid, using operator<
+    // order [_First, _Last) up to _Mid
     // parallelism suspected to be infeasible
     return _STD partial_sort(_First, _Mid, _Last);
 }
@@ -5827,7 +5827,7 @@ _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First
 
 template <class _InIt, class _RanIt>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2) {
-    // copy [_First1, _Last1) into [_First2, _Last2), using operator<
+    // copy [_First1, _Last1) into [_First2, _Last2)
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, less<>());
 }
 
@@ -5844,7 +5844,7 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 template <class _ExPo, class _FwdIt, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2, _RanIt _Last2) noexcept
 /* terminates */ {
-    // copy [_First1, _Last1) into [_First2, _Last2), using operator<
+    // copy [_First1, _Last1) into [_First2, _Last2)
     // parallelism suspected to be infeasible
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2);
@@ -5880,7 +5880,7 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
 }
 
 template <class _RanIt>
-_CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element, using operator<
+_CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element
     _STD nth_element(_First, _Nth, _Last, less<>());
 }
 
@@ -5894,7 +5894,7 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) n
 
 template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* terminates */ {
-    // order Nth element, using operator<
+    // order Nth element
     // not parallelized at present, parallelism expected to be feasible in a future release
     _STD nth_element(_First, _Nth, _Last);
 }
@@ -5927,7 +5927,7 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
 
 template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
-    // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1), using operator<
+    // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     return _STD includes(_First1, _Last1, _First2, _Last2, less<>());
 }
 
@@ -5946,7 +5946,7 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept
 /* terminates */ {
-    // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1), using operator<
+    // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -5988,7 +5988,7 @@ _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _In
 
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
-    // OR sets [_First1, _Last1) and [_First2, _Last2), using operator<
+    // OR sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
@@ -6007,7 +6007,7 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest) noexcept
 /* terminates */ {
-    // OR sets [_First1, _Last1) and [_First2, _Last2), using operator<
+    // OR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -6049,7 +6049,7 @@ _CONSTEXPR20 _OutIt set_intersection(
 
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), using operator<
+    // AND sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
@@ -6061,7 +6061,7 @@ _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), using operator<
+    // AND sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
 #endif // _HAS_CXX17
@@ -6100,7 +6100,7 @@ _CONSTEXPR20 _OutIt set_difference(
 
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
-    // take set [_First2, _Last2) from [_First1, _Last1), using operator<
+    // take set [_First2, _Last2) from [_First1, _Last1)
     return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
@@ -6112,7 +6112,7 @@ _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
-    // take set [_First2, _Last2) from [_First1, _Last1), using operator<
+    // take set [_First2, _Last2) from [_First1, _Last1)
     return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
 #endif // _HAS_CXX17
@@ -6154,7 +6154,7 @@ _CONSTEXPR20 _OutIt set_symmetric_difference(
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
-    // XOR sets [_First1, _Last1) and [_First2, _Last2), using operator<
+    // XOR sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
@@ -6173,7 +6173,7 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2,
     _FwdIt3 _Dest) noexcept /* terminates */ {
-    // XOR sets [_First1, _Last1) and [_First2, _Last2), using operator<
+    // XOR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -6205,7 +6205,7 @@ _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 }
 
 template <class _FwdIt>
-_NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last) { // find largest element, using operator<
+_NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last) { // find largest element
     return _STD max_element(_First, _Last, less<>());
 }
 
@@ -6219,7 +6219,7 @@ _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) n
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
-    // find largest element, using operator<
+    // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD max_element(_First, _Last);
 }
@@ -6298,7 +6298,7 @@ _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 }
 
 template <class _FwdIt>
-_NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last) { // find smallest element, using operator<
+_NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last) { // find smallest element
     return _STD min_element(_First, _Last, less<>());
 }
 
@@ -6312,7 +6312,7 @@ _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) n
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
-    // find smallest element, using operator<
+    // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD min_element(_First, _Last);
 }
@@ -6419,7 +6419,7 @@ _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _
 
 template <class _FwdIt>
 _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _Last) {
-    // find smallest and largest elements, using operator<
+    // find smallest and largest elements
     return _STD minmax_element(_First, _Last, less<>());
 }
 
@@ -6434,7 +6434,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
-    // find smallest and largest elements, using operator<
+    // find smallest and largest elements
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD minmax_element(_First, _Last);
 }
@@ -6849,7 +6849,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 
 template <class _BidIt>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
-    // permute and test for pure ascending, using operator<
+    // permute and test for pure ascending
     return _STD next_permutation(_First, _Last, less<>());
 }
 
@@ -6887,7 +6887,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 
 template <class _BidIt>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
-    // reverse permute and test for pure descending, using operator<
+    // reverse permute and test for pure descending
     return _STD prev_permutation(_First, _Last, less<>());
 }
 

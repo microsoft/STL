@@ -5794,7 +5794,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, co
 
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // find first element not before _Val, using operator<
+    // find first element not before _Val
     return _STD lower_bound(_First, _Last, _Val, less<>());
 }
 
