@@ -34,11 +34,13 @@ struct test_allocator {
         Stream stream{init_value};
         assert(stream.view() == init_value);
         assert(stream.str(init_value.get_allocator()) == init_value);
-        // Clear the stream
-        stream.str("");
+        assert(stream.str() == string_view{init_value});
+        assert(move(stream).str() == string_view{init_value});
+        assert(stream.view().empty());
         stream.str(init_value);
         assert(stream.view() == init_value);
         assert(stream.str(init_value.get_allocator()) == init_value);
+        assert(stream.str() == string_view{init_value});
     }
 };
 
