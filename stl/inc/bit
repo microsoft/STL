@@ -137,7 +137,7 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
     if (!_Have_lzcnt && _Val == 0) {
         return _Digits;
     }
-#endif // !defined(__AVX2__
+#endif // __AVX2__
 
     // We use lzcnt (actually bsr if lzcnt is not supported) now that we know
     // we're not zero. We can do this because lzcnt and bsr share the same instruction
