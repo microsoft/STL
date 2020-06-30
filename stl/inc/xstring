@@ -2659,7 +2659,7 @@ public:
         size_type _Res;
     };
 
-    _Released_buffer _Release_to_buffer() {
+    _NODISCARD _Released_buffer _Release_to_buffer() {
         // Release to a buffer, or allocate a new one if in small string mode
         _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
@@ -2680,7 +2680,6 @@ public:
     }
 #endif // _HAS_CXX20
 
-public:
     basic_string& operator=(basic_string&& _Right) noexcept(noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {
         if (this != _STD addressof(_Right)) {
             _Move_assign(_Right, _Choose_pocma<_Alty>{});

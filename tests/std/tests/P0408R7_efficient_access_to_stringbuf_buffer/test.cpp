@@ -11,53 +11,53 @@
 using namespace std;
 
 template <typename Stream>
-void test_rvalue_util(const string& init_value) {
-    Stream stream{string{init_value}};
-    assert(stream.view() == init_value);
-    assert(stream.str() == init_value);
-    assert(stream.view() == init_value);
-    // Move out the buffer, the underlying buffer should be empty.
-    assert(move(stream).str() == init_value);
-    assert(stream.view().empty());
-    assert(stream.str().empty());
-    // Move in the buffer string
-    stream.str(string{init_value});
-    assert(stream.view() == init_value);
-    assert(stream.str() == init_value);
-}
+struct test_rvalue {
+    void operator()(const string& init_value) {
+        Stream stream{string{init_value}};
+        assert(stream.view() == init_value);
+        assert(stream.str() == init_value);
+        assert(stream.view() == init_value);
+        // Move out the buffer, the underlying buffer should be empty.
+        assert(move(stream).str() == init_value);
+        assert(stream.view().empty());
+        assert(stream.str().empty());
+        // Move in the buffer string
+        stream.str(string{init_value});
+        assert(stream.view() == init_value);
+        assert(stream.str() == init_value);
+    }
+};
 
 template <typename Stream>
-void test_rvalue() {
-    test_rvalue_util<Stream>("a");
-    test_rvalue_util<Stream>(
-        "This is a long long long long long long long long string to avoid small string optimization.");
+struct test_allocator {
+    void operator()(const pmr::string& init_value) {
+        Stream stream{init_value};
+        assert(stream.view() == init_value);
+        assert(stream.str(init_value.get_allocator()) == init_value);
+        // Clear the stream
+        stream.str("");
+        stream.str(init_value);
+        assert(stream.view() == init_value);
+        assert(stream.str(init_value.get_allocator()) == init_value);
+    }
+};
+
+template <typename Test>
+void run_test_util() {
+    Test test{};
+    test("");
+    test("a");
+    test("This is a long long long long long long long long string to avoid small string optimization.");
 }
 
-template <typename Stream>
-void test_allocator_util(const pmr::string& init_value) {
-    Stream stream{init_value};
-    assert(stream.view() == init_value);
-    assert(stream.str(init_value.get_allocator()) == init_value);
-    // Clear the stream
-    stream.str("");
-    stream.str(init_value);
-    assert(stream.view() == init_value);
-    assert(stream.str(init_value.get_allocator()) == init_value);
-}
-
-template <typename Stream>
-void test_allocator() {
-    test_allocator_util<Stream>("a");
-    test_allocator_util<Stream>(
-        "This is a long long long long long long long long string to avoid small string optimization.");
+template <template <typename> typename Test>
+void run_test() {
+    run_test_util<Test<stringstream>>();
+    run_test_util<Test<istringstream>>();
+    run_test_util<Test<ostringstream>>();
 }
 
 int main() {
-    test_rvalue<stringstream>();
-    test_rvalue<istringstream>();
-    test_rvalue<ostringstream>();
-
-    test_allocator<stringstream>();
-    test_allocator<istringstream>();
-    test_allocator<ostringstream>();
+    run_test<test_rvalue>();
+    run_test<test_allocator>();
 }

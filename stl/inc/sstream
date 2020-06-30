@@ -120,10 +120,12 @@ public:
 
     _NODISCARD pair<_Elem*, _Mysize_type> _View_pair() const noexcept {
         pair<_Elem*, _Mysize_type> _Result{};
-        if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable, make string view from write buffer
+        if (!(_Mystate & _Constant) && _Mysb::pptr()) {
+            // writable, make string view from write buffer
             const auto _Base = _Mysb::pbase();
             _Result = _STD make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
-        } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable, make string view from read buffer
+        } else if (!(_Mystate & _Noread) && _Mysb::gptr()) {
+            // readable, make string view from read buffer
             const auto _Base = _Mysb::eback();
             _Result          = _STD make_pair(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
         }
@@ -161,11 +163,11 @@ public:
         _Mystr _Result(_Al);
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable
             const auto _Base   = _Mysb::pbase();
-            const auto _Ptr    = _Mysb::pptr();
+            const auto _Ptr    = (_STD max)(_Mysb::pptr(), _Seekhigh);
             const auto _Eptr   = _Mysb::epptr();
-            const auto _Mysize = static_cast<_Mysize_type>((_STD max)(_Ptr, _Seekhigh) - _Base);
-            if (_Ptr == _Eptr
-                && !_Traits::eq(*_Prev_iter(_Ptr), _Elem())) { // the buffer is full and terminating char is not '\0'
+            const auto _Mysize = static_cast<_Mysize_type>(_Ptr - _Base);
+            if (_Mysize > 0 && !_Traits::eq(*_Prev_iter(_Ptr), _Elem())) {
+                // the buffer is full and terminating char is not '\0'
                 _Result.assign(_Base, _Mysize);
             } else {
                 _Result._Move_assign_from_buffer(_Base, _Mysize, static_cast<_Mysize_type>(_Eptr - _Base));
@@ -175,7 +177,8 @@ public:
             const auto _Base   = _Mysb::eback();
             const auto _Eptr   = _Mysb::egptr();
             const auto _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
-            if (!_Traits::eq(*_Prev_iter(_Eptr), _Elem())) { // the buffer is full and terminating char is not '\0'
+            if (_Mysize > 0 && !_Traits::eq(*_Prev_iter(_Eptr), _Elem())) {
+                // the buffer is full and terminating char is not '\0'
                 _Result.assign(_Base, _Mysize);
             } else {
                 _Result._Move_assign_from_buffer(_Base, _Mysize, _Mysize);
