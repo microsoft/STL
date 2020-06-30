@@ -4181,6 +4181,66 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
     _STD sort_heap(_First, _Last, less<>());
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::lower_bound
+    template <class _It, class _Ty, class _Pr, class _Pj>
+    _NODISCARD constexpr _It _Lower_bound_unchecked(
+        _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+
+        using _Diff = iter_difference_t<_It>;
+
+        while (_Count > 0) { // divide and conquer, check midpoint
+            const auto _Half = static_cast<_Diff>(_Count / 2);
+            auto _Mid        = _RANGES next(_First, _Half);
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _Val)) { // try top half
+                _First = _STD move(_Mid);
+                ++_First;
+                _Count -= static_cast<_Diff>(_Half + 1);
+            } else { // try bottom half
+                _Count = _Half;
+            }
+        }
+
+        return _First;
+    }
+
+    class _Lower_bound_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _It operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _Count = _RANGES distance(_UFirst, _Get_unwrapped(_STD move(_Last)));
+            _UFirst =
+                _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _Count = _RANGES distance(_Range);
+            auto _UResult =
+                _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Result = _RANGES begin(_Range);
+            _Seek_wrapped(_Result, _STD move(_UResult));
+            return _Result;
+        }
+    };
+
+    inline constexpr _Lower_bound_fn lower_bound{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE upper_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
@@ -4209,6 +4269,64 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
     // find first element that _Val is before, using operator<
     return _STD upper_bound(_First, _Last, _Val, less<>());
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::upper_bound
+    template <class _It, class _Ty, class _Pr, class _Pj>
+    _NODISCARD constexpr _It _Upper_bound_unchecked(
+        _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+
+        using _Diff = iter_difference_t<_It>;
+
+        while (_Count > 0) { // divide and conquer: find half that contains answer
+            const auto _Half = static_cast<_Diff>(_Count / 2);
+            auto _Mid        = _RANGES next(_First, _Half);
+            if (_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_Mid))) {
+                _Count = _Half;
+            } else { // try top half
+                _First = _STD move(_Mid);
+                ++_First;
+                _Count -= static_cast<_Diff>(_Half + 1);
+            }
+        }
+
+        return _First;
+    }
+
+    class _Upper_bound_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr _It operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _Count = _RANGES distance(_UFirst, _Get_unwrapped(_STD move(_Last)));
+            _UFirst = _Upper_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _Count = _RANGES distance(_Range);
+            auto _UResult     = _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Result      = _RANGES begin(_Range);
+            _Seek_wrapped(_Result, _STD move(_UResult));
+            return _Result;
+        }
+    };
+
+    inline constexpr _Upper_bound_fn upper_bound{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE equal_range
 template <class _FwdIt, class _Ty, class _Pr>
@@ -4254,6 +4372,70 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
     return _STD equal_range(_First, _Last, _Val, less<>());
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::equal_range
+    class _Equal_range_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr subrange<_It> operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _Count = _RANGES distance(_UFirst, _Get_unwrapped(_STD move(_Last)));
+            auto _UResult = _Equal_range_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        template <forward_range _Rng, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _Count = _RANGES distance(_Range);
+            auto _UResult     = _Equal_range_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _Result      = _RANGES begin(_Range);
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Result, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Ty, class _Pr, class _Pj>
+        _NODISCARD static constexpr subrange<_It> _Equal_range_unchecked(
+            _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+
+            using _Diff = iter_difference_t<_It>;
+
+            while (_Count > 0) { // divide and conquer, check midpoint
+                const auto _Half = static_cast<_Diff>(_Count / 2);
+                auto _Mid        = _RANGES next(_First, _Half);
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _Val)) { // range in second half
+                    _First = _STD move(_Mid);
+                    ++_First;
+                    _Count -= static_cast<_Diff>(_Half + 1);
+                } else if (_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_Mid))) {
+                    _Count = _Half; // range in first half
+                } else { // range straddles _Mid, find the ends
+                    _First = _RANGES _Lower_bound_unchecked(_STD move(_First), _Half, _Val, _Pred, _Proj);
+                    ++_Mid;
+                    _Count -= static_cast<_Diff>(_Half + 1);
+                    _Mid = _RANGES _Upper_bound_unchecked(_STD move(_Mid), _Count, _Val, _Pred, _Proj);
+                    return {_STD move(_First), _STD move(_Mid)};
+                }
+            }
+
+            return {_First, _First};
+        }
+    };
+
+    inline constexpr _Equal_range_fn equal_range{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE binary_search
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
@@ -4270,6 +4452,40 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
     // test if _Val equivalent to some element, using operator<
     return _STD binary_search(_First, _Last, _Val, less<>());
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::binary_search
+    class _Binary_search_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _Get_unwrapped(_STD move(_First));
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            const auto _Count = _RANGES distance(_UFirst, _ULast);
+            _UFirst =
+                _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _UFirst != _ULast && !_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_UFirst));
+        }
+
+        template <forward_range _Rng, class _Ty, class _Pj = identity,
+            indirect_strict_weak_order<const _Ty*, projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            const auto _Count = _RANGES distance(_Range);
+            const auto _UFirst =
+                _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _UFirst != _Uend(_Range) && !_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_UFirst));
+        }
+    };
+
+    inline constexpr _Binary_search_fn binary_search{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE merge
 _NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
