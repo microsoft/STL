@@ -921,6 +921,28 @@ concept indirect_binary_predicate = indirectly_readable<_It1>
     && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
+// CONCEPT indirect_equivalence_relation
+template <class _Fn, class _It1, class _It2 = _It1>
+concept indirect_equivalence_relation = indirectly_readable<_It1>
+    && indirectly_readable<_It2>
+    && copy_constructible<_Fn>
+    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
+    && equivalence_relation<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
+    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+    && equivalence_relation<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+
+// CONCEPT indirect_strict_weak_order
+template <class _Fn, class _It1, class _It2 = _It1>
+concept indirect_strict_weak_order = indirectly_readable<_It1>
+    && indirectly_readable<_It2>
+    && copy_constructible<_Fn>
+    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_value_t<_It2>&>
+    && strict_weak_order<_Fn&, iter_value_t<_It1>&, iter_reference_t<_It2>>
+    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_value_t<_It2>&>
+    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
+    && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+
 // ALIAS TEMPLATE indirect_result_t
 template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...)
@@ -987,6 +1009,11 @@ namespace ranges {
         concept _Can_swap_references = indirectly_readable<remove_reference_t<_Ty1>>
             && indirectly_readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
+
+        template <class _Ty1, class _Ty2>
+        concept _Symmetric_indirectly_movable_storable =
+               indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
+            && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>;
         // clang-format on
 
         template <class _Xty, class _Yty>
@@ -1001,15 +1028,13 @@ namespace ranges {
         private:
             enum class _St { _None, _Custom, _Swap, _Exchange };
 
-            // clang-format off
             template <class _Ty1, class _Ty2>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (_Has_ADL<_Ty1, _Ty2>) {
                     return {_St::_Custom, noexcept(iter_swap(_STD declval<_Ty1>(), _STD declval<_Ty2>()))};
                 } else if constexpr (_Can_swap_references<_Ty1, _Ty2>) {
                     return {_St::_Swap, noexcept(_RANGES swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
-                } else if constexpr (indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
-                    && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>) {
+                } else if constexpr (_Symmetric_indirectly_movable_storable<_Ty1, _Ty2>) {
                     constexpr auto _Nothrow = noexcept(
                         *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty1>(), _STD declval<_Ty2>()));
                     return {_St::_Exchange, _Nothrow};
@@ -1022,6 +1047,7 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty1, _Ty2>();
 
         public:
+            // clang-format off
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
             constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
@@ -1062,6 +1088,17 @@ concept indirectly_comparable =
     indirect_binary_predicate<_Rel,
         projected<_It1, _Proj1>,
         projected<_It2, _Proj2>>;
+
+// CONCEPT permutable
+template <class _It>
+concept permutable = forward_iterator<_It>
+    && indirectly_movable_storable<_It, _It>
+    && indirectly_swappable<_It, _It>;
+
+// CONCEPT sortable
+namespace ranges { struct less; }
+template <class _It, class _Pr = ranges::less, class _Proj = identity>
+concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
 // clang-format on
 
 // ALIAS TEMPLATE _Iter_ref_t
@@ -1645,7 +1682,7 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
             _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
         }
 
-        auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+        decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
         constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
         if constexpr (is_signed_v<_Diff> && _Is_bidi_iter_v<_InIt>) {
@@ -1669,7 +1706,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
     // increment iterator by offset, input iterators
     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
 
-    auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -1684,7 +1721,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
 template <class _BidIt, class _Diff>
 _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_tag) {
     // increment iterator by offset, bidirectional iterators
-    auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -2344,6 +2381,62 @@ namespace ranges {
     template <class _Ty>
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
+    // CUSTOMIZATION POINT OBJECT ranges::_Ubegin
+    namespace _Unchecked_begin {
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = requires(_Ty& __t) {
+            { __t._Unchecked_begin() } -> input_or_output_iterator;
+        };
+
+        template <class _Ty>
+        concept _Can_begin = requires(_Ty& __t) {
+            _Get_unwrapped(_RANGES begin(__t));
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Unwrap };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
+                if constexpr (_Has_member<_Ty>) {
+                    _STL_INTERNAL_STATIC_ASSERT(
+                        same_as<decltype(_STD declval<_Ty>()._Unchecked_begin()), _Unwrapped_t<iterator_t<_Ty>>>);
+                    return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_begin())};
+                } else if constexpr (_Can_begin<_Ty>) {
+                    return {_St::_Unwrap, noexcept(_Get_unwrapped(_RANGES begin(_STD declval<_Ty>())))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <_Should_range_access _Ty>
+                requires (_Choice<_Ty&>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                    return _Val._Unchecked_begin();
+                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                    return _Get_unwrapped(_RANGES begin(_Val));
+                } else {
+                    static_assert(_Always_false<_Ty>, "Should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Unchecked_begin
+
+    inline namespace _Cpos {
+        inline constexpr _Unchecked_begin::_Cpo _Ubegin;
+    }
+
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
         template <class _Ty>
@@ -2416,6 +2509,63 @@ namespace ranges {
 
     inline namespace _Cpos {
         inline constexpr _End::_Cpo end;
+    }
+
+    // CUSTOMIZATION POINT OBJECT ranges::_Uend
+    namespace _Unchecked_end {
+        // clang-format off
+        template <class _Ty>
+        concept _Has_member = _Unchecked_begin::_Has_member<_Ty> && requires(_Ty& __t) {
+            __t._Unchecked_begin(); // required explicitly for better diagnostics
+            { __t._Unchecked_end() } -> sentinel_for<decltype(__t._Unchecked_begin())>;
+        };
+
+        template <class _Ty>
+        concept _Can_end = requires(_Ty& __t) {
+            _Get_unwrapped(_RANGES end(__t));
+        };
+        // clang-format on
+
+        class _Cpo {
+        private:
+            enum class _St { _None, _Member, _Unwrap };
+
+            template <class _Ty>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
+                if constexpr (_Has_member<_Ty>) {
+                    _STL_INTERNAL_STATIC_ASSERT(same_as<decltype(_STD declval<_Ty>()._Unchecked_end()),
+                        decltype(_Get_unwrapped(_RANGES end(_STD declval<_Ty>())))>);
+                    return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_end())};
+                } else if constexpr (_Can_end<_Ty>) {
+                    return {_St::_Unwrap, noexcept(_Get_unwrapped(_RANGES end(_STD declval<_Ty>())))};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Ty>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
+
+        public:
+            // clang-format off
+            template <_Should_range_access _Ty>
+                requires (_Choice<_Ty&>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                    return _Val._Unchecked_end();
+                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                    return _Get_unwrapped(_RANGES end(_Val));
+                } else {
+                    static_assert(_Always_false<_Ty>, "Should be unreachable");
+                }
+            }
+            // clang-format on
+        };
+    } // namespace _Unchecked_end
+
+    inline namespace _Cpos {
+        inline constexpr _Unchecked_end::_Cpo _Uend;
     }
 
     // CONCEPT ranges::range
@@ -2972,7 +3122,7 @@ namespace ranges {
                     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
                 }
 
-                auto&& _UWhere              = _Get_unwrapped_n(_STD move(_Where), _Off);
+                decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
                 constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
                 if constexpr (bidirectional_iterator<_It>) {
@@ -3000,16 +3150,16 @@ namespace ranges {
             } else {
                 _Adl_verify_range(_Where, _Last);
 
-                auto&& _UWhere              = _Get_unwrapped(static_cast<_It&&>(_Where));
+                decltype(auto) _UWhere      = _Get_unwrapped(static_cast<_It&&>(_Where));
                 constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped(static_cast<_It&&>(_Where)))>;
-                auto&& _ULast               = _Get_unwrapped(static_cast<_Se&&>(_Last));
+                decltype(auto) _ULast       = _Get_unwrapped(static_cast<_Se&&>(_Last));
 
                 while (_UWhere != _ULast) {
                     ++_UWhere;
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, static_cast<_It&&>(_UWhere));
+                    _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }
@@ -3147,6 +3297,19 @@ namespace ranges {
 
     // VARIABLE ranges::prev
     inline constexpr _Prev_fn prev{_Not_quite_object::_Construct_tag{}};
+
+    // FUNCTION TEMPLATE _Find_last_iterator
+    template <forward_iterator _It, sentinel_for<_It> _Se>
+    _NODISCARD constexpr _It _Find_last_iterator(
+        const _It& _First, const _Se& _Last, const iter_difference_t<_It> _Count) {
+        // Find the iterator in [_First, _Last) (of length _Count) which equals _Last
+        _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
+        if constexpr (is_same_v<_It, _Se>) {
+            return _Last;
+        } else {
+            return _RANGES next(_First, _Count);
+        }
+    }
 
     // STRUCT ranges::equal_to
     struct equal_to {
@@ -5233,7 +5396,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE is_permutation
+// FUNCTION TEMPLATE _Check_match_counts
 template <class _InIt, class _Ty, class _Pr>
 _NODISCARD constexpr _InIt _Find_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
     for (; _First != _Last; ++_First) {
@@ -5312,114 +5475,6 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
     }
 
     return true;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
-    // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
-        if (!_Pred(*_First1, *_First2)) {
-            // found first inequality, check match counts in suffix
-            //
-            // narrowing _Iter_diff_t<_FwdIt1> to _Iter_diff_t<_FwdIt2> is OK because if the second range is shorter
-            // than the first, the user already triggered UB
-            auto _Last2 = _STD next(_First2, static_cast<_Iter_diff_t<_FwdIt2>>(_STD distance(_First1, _Last1)));
-            return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
-        }
-    }
-
-    return true;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
-    // test if [_First1, _Last1) == permuted [_First2, ...), using _Pred
-    _Adl_verify_range(_First1, _Last1);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
-    return _Is_permutation_unchecked(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
-}
-
-template <class _FwdIt1, class _FwdIt2>
-_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2) {
-    // test if [_First1, _Last1) == permuted [_First2, ...)
-    return _STD is_permutation(_First1, _Last1, _First2, equal_to<>());
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
-    forward_iterator_tag, forward_iterator_tag) {
-    // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, arbitrary iterators
-    for (;;) { // trim matching prefix
-        if (_First1 == _Last1) {
-            return _First2 == _Last2;
-        }
-
-        if (_First2 == _Last2) {
-            return false;
-        }
-
-        if (!_Pred(*_First1, *_First2)) { // found first inequality, check match counts in suffix
-            break;
-        }
-
-        ++_First1;
-        ++_First2;
-    }
-
-    auto _Next1 = _First1;
-    auto _Next2 = _First2;
-    for (;;) { // check for same lengths
-        if (_Next1 == _Last1) {
-            if (_Next2 == _Last2) {
-                return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
-            }
-
-            return false; // sequence 1 is shorter than sequence 2, not a permutation
-        }
-
-        if (_Next2 == _Last2) {
-            return false; // sequence 1 is longer than sequence 2, not a permutation
-        }
-
-        ++_Next1;
-        ++_Next2;
-    }
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
-    random_access_iterator_tag, random_access_iterator_tag) {
-    // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred, random-access iterators
-    if (_Last1 - _First1 != _Last2 - _First2) {
-        return false;
-    }
-
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
-        if (!_Pred(*_First1, *_First2)) {
-            // found first inequality, check match counts in suffix
-            return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
-        }
-    }
-
-    return true;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _CONSTEXPR20 bool is_permutation(
-    _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
-    // test if [_First1, _Last1) == permuted [_First2, _Last2), using _Pred
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    return _Is_permutation_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>(), _Iter_cat_t<_FwdIt2>());
-}
-
-template <class _FwdIt1, class _FwdIt2>
-_NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
-    // test if [_First1, _Last1) == permuted [_First2, _Last2)
-    return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>());
 }
 
 // FUNCTION TEMPLATE reverse

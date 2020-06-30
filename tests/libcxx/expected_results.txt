@@ -539,7 +539,7 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 std/thread/macro.pass.cpp:1 FAIL
 
-# Clang's tgmath.h interferes with the UCRT's tgmath.h
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
 
@@ -582,11 +582,11 @@ std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
-std/containers/sequences/array/array.cons/default.pass.cpp FAIL
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
+std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
 std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
 std/containers/sequences/array/array.data/data.pass.cpp FAIL
-std/containers/sequences/array/begin.pass.cpp FAIL
+std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
 std/strings/string.view/char.bad.fail.cpp:0 FAIL
@@ -883,11 +883,9 @@ std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp 
 std/numerics/complex.number/complex.transcendentals/pow_scalar_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/sqrt.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/proj.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL

@@ -3,10 +3,11 @@
 
 // TRANSITION, ABI: The functions in this file are preserved for binary compatibility
 
-#include "awint.h"
 #include <stdexcept>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 namespace stdext {
     namespace threads {

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "awint.h"
 #include <crtdbg.h>
 #include <internal_shared.h>
 #include <string.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 // int __cdecl __crtCompareStringW - Get type information about a wide string.
 //
