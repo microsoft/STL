@@ -9,9 +9,10 @@
 #include <functional>
 #include <iterator>
 #include <list>
-#include <parallel_algorithms_utilities.hpp>
 #include <random>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

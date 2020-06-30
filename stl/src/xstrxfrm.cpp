@@ -3,7 +3,6 @@
 
 // Transform a string using the locale information as set by LC_COLLATE.
 
-#include "awint.h"
 #include <limits.h>
 #include <locale.h>
 #include <malloc.h>
@@ -12,6 +11,8 @@
 #include <xlocinfo.h> // for _Collvec
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

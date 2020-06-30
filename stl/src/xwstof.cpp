@@ -3,19 +3,20 @@
 
 // _WStof function
 
-#include "xmath.h"
-#include "xxfftype.h"
-#include "xxwctype.h"
 #include <wchar.h>
+
+#include "xmath.hpp"
+#include "xxfftype.hpp"
+#include "xxwctype.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL _WStofx(const CTYPE* s, CTYPE** endptr, long pten, int* perr)
-#include "xxstod.h"
+#include "xxstod.hpp"
 
     _CRTIMP2_PURE FTYPE __CLRCALL_PURE_OR_CDECL
     _WStof(const CTYPE* s, CTYPE** endptr, long pten) { // convert string, discard error code
-    return _WStofx(s, endptr, pten, 0);
+    return _WStofx(s, endptr, pten, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

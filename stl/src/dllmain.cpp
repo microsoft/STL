@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "awint.h"
 #include <internal_shared.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 #ifdef _CRT_APP
 // free static resource used by causality

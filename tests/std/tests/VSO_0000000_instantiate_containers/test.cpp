@@ -22,7 +22,6 @@
 #include <hash_map>
 #include <hash_set>
 #include <initializer_list>
-#include <instantiate_containers_iterators_common.hpp>
 #include <iterator>
 #include <list>
 #include <map>
@@ -39,6 +38,8 @@
 #include <unordered_set>
 #include <valarray>
 #include <vector>
+
+#include <instantiate_containers_iterators_common.hpp>
 
 using namespace std;
 

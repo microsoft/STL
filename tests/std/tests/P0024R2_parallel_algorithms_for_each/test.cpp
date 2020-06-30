@@ -8,8 +8,9 @@
 #include <forward_list>
 #include <iterator>
 #include <list>
-#include <parallel_algorithms_utilities.hpp>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

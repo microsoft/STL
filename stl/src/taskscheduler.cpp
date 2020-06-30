@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "awint.h"
 #include <condition_variable>
 #include <mutex>
 #include <ppltaskscheduler.h>
 #include <stddef.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
