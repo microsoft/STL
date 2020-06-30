@@ -447,8 +447,10 @@ protected:
         }
     }
 
-    // Call this method only when writeable
     void _Init_inplace(_Elem* const _Pnew, const _Mysize_type _Length, const _Mysize_type _Count, int _State) {
+        // Call this method only when writeable
+        _STL_INTERNAL_CHECK(!((_State & _Constant) && !(_State & _Noread)));
+
         if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
             // finite buffer that can be read or written, set it up
             _Seekhigh        = _Pnew + _Length;
