@@ -1103,6 +1103,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
     }
 #endif // defined(__cpp_lib_is_constant_evaluated)
 #endif // defined(_M_IX86) || defined(_M_X64)
+    // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
     return _Countr_zero_fallback(_Val);
 }
 
