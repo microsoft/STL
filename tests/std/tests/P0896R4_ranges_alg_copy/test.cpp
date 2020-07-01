@@ -31,9 +31,7 @@ struct instantiator {
             auto result = copy(wrapped_input.begin(), wrapped_input.end(), Write{output});
             STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<In>, Write>>);
             assert(result.in == wrapped_input.end());
-            if constexpr (std::equality_comparable<Write>) {
-                assert(result.out == Write{output + 3});
-            }
+            assert(result.out.base() == output + 3);
             assert(ranges::equal(output, input));
         }
         { // Validate range overload
