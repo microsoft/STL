@@ -2689,7 +2689,7 @@ namespace ranges {
             auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
             auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
             auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
-            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; (void) ++_UFirst1, (void) ++_UFirst2) {
+            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
                 _RANGES iter_swap(_UFirst1, _UFirst2);
             }
 
@@ -2699,9 +2699,9 @@ namespace ranges {
         }
 
         template <input_range _Rng1, input_range _Rng2>
-        requires indirectly_swappable<iterator_t<_Rng1>,
-            iterator_t<_Rng2>> constexpr swap_ranges_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
-            operator()(_Rng1&& _Range1, _Rng2&& _Range2) const {
+            requires indirectly_swappable<iterator_t<_Rng1>, iterator_t<_Rng2>>
+        constexpr swap_ranges_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) const {
             return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2));
         }
         // clang-format on
