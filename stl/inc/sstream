@@ -444,7 +444,7 @@ protected:
         if (_Assign) {
             _Pocma(_Al, _Al_);
         } else {
-            _Al = _STD move(_Al_);
+            _Construct_in_place(_Al, _STD move(_Al_));
         }
     }
 
@@ -453,7 +453,7 @@ protected:
             _Init(_Str.c_str(), _Str.size(), _State);
             _Init_allocator(_Str.get_allocator(), _Assign);
         } else { // writeable, construct in place
-            auto _Buffer = _Str._Release_to_buffer(_Assign);
+            auto _Buffer = _Str._Release_to_buffer();
             _Init_inplace(_Unfancy(_Buffer._Ptr), _Buffer._Size, _Buffer._Res, _State);
             _Init_allocator(_STD move(_Buffer._Al), _Assign);
         }

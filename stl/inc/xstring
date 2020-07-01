@@ -2663,30 +2663,23 @@ public:
         pointer _Ptr;
         size_type _Size;
         size_type _Res;
-        allocator_type _Al;
+        allocator_type& _Al;
     };
 
-    _NODISCARD _Released_buffer _Release_to_buffer(const bool _Assign) {
+    _NODISCARD _Released_buffer _Release_to_buffer() {
         // Release to a buffer, or allocate a new one if in small string mode
-        _Released_buffer _Result{};
         auto& _My_data = _Mypair._Myval2;
+        pointer _Result_ptr;
+        size_type _Result_size = _My_data._Mysize;
+        size_type _Result_res  = _My_data._Myres;
         if (_My_data._Large_string_engaged()) {
-            _Result._Ptr  = _My_data._Bx._Ptr;
-            _Result._Size = _My_data._Mysize;
-            _Result._Res  = _My_data._Myres;
+            _Construct_in_place(_Result_ptr, _STD move(_My_data._Bx._Ptr));
             _Tidy_init();
         } else {
-            _Result._Ptr = _Getal().allocate(_BUF_SIZE);
-            _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Result._Size = _My_data._Mysize;
-            _Result._Res  = _BUF_SIZE;
+            _Construct_in_place(_Result_ptr, _STD move(_Getal().allocate(_BUF_SIZE)));
+            _Traits::copy(_Unfancy(_Result_ptr), _My_data._Bx._Buf, _BUF_SIZE);
         }
-        if (_Assign) {
-            _Pocma(_Result._Al, _Getal());
-        } else {
-            _Result._Al = _STD move(_Getal());
-        }
-        return _Result;
+        return _Released_buffer{_Result_ptr, _Result_size, _Result_res, _Getal()};
     }
 #endif // _HAS_CXX20
 
