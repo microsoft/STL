@@ -1058,7 +1058,6 @@ __MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64));
 
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
-
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
 
@@ -1078,9 +1077,11 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
         const unsigned int _Low  = static_cast<unsigned int>(_Val);
-        int _Result              = _Checked_x86_x64_countr_zero(_Low);
-        _Result += _Low == 0 ? _Checked_x86_x64_countr_zero(_High) : 0;
-        return _Result;
+        if (_Low == 0) {
+            return 32 + _Checked_x86_x64_countr_zero(_High);
+        } else {
+            return _Checked_x86_x64_countr_zero(_Low);
+        }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));
 #endif // _M_IX86

@@ -150,9 +150,11 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
         const auto _Low          = static_cast<unsigned int>(_Val);
-        int _Result              = _Checked_x86_x64_countl_zero(_High);
-        _Result += _High == 0 ? _Checked_x86_x64_countl_zero(_Low) : 0;
-        return _Result;
+        if (_High == 0) {
+            return 32 + _Checked_x86_x64_countl_zero(_Low);
+        } else {
+            return _Checked_x86_x64_countl_zero(_High);
+        }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(__lzcnt64(_Val));
 #endif // _M_IX86
