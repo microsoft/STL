@@ -9,8 +9,9 @@
 
 #include <range_algorithm_support.hpp>
 
+using namespace std;
+using same_as;
 using ranges::copy, ranges::copy_result, ranges::iterator_t;
-using std::same_as;
 
 // Validate that copy_result aliases in_out_result
 STATIC_ASSERT(same_as<copy_result<int, double>, ranges::in_out_result<int, double>>);
@@ -40,15 +41,13 @@ struct instantiator {
             auto result = copy(wrapped_input, Write{output});
             STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<In>, Write>>);
             assert(result.in == wrapped_input.end());
-            if constexpr (std::equality_comparable<Write>) {
-                assert(result.out == Write{output + 3});
-            }
+            assert(result.out.base() == output + 3);
             assert(ranges::equal(output, input));
         }
     }
 };
 
 int main() {
-    STATIC_ASSERT((test_in_write<instantiator, const int, int>(), true));
-    test_in_write<instantiator, const int, int>();
+    STATIC_ASSERT((test_in_write<instantiator, int const, int>(), true));
+    test_in_write<instantiator, int const, int>();
 }

@@ -1516,23 +1516,25 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
             _Adl_verify_range(_First, _Last);
-            auto _Res = _Copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
-            _Seek_wrapped(_First, _STD move(_Res.in));
-            return {_STD move(_First), _STD move(_Res.out)};
+            auto _UResult = _Copy_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out>
-            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        //    requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _Res = _Copy_unchecked(_Ubegin(_Range), _Uend(_Range), _STD move(_Result));
-            auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, _STD move(_Res.in));
-            return {_STD move(_First), _STD move(_Res.out)};
+            auto _UResult = _Copy_unchecked(_Ubegin(_Range), _Uend(_Range), _STD move(_Result));
+            auto _First   = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
         // clang-format on
+
     private:
         template <class _It, class _Se, class _Out>
-        _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) const {
+        _NODISCARD static constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, const _Se _Last, _Out _Result) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
@@ -1541,6 +1543,7 @@ namespace ranges {
             for (; _First != _Last; ++_First, (void) ++_Result) {
                 *_Result = *_First;
             }
+
             return {_STD move(_First), _STD move(_Result)};
         }
     };
