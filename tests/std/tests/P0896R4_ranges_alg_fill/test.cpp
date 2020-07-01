@@ -35,6 +35,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_out<instantiator>(), true));
-    test_out<instantiator>();
+    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    test_out<instantiator, int>();
 }

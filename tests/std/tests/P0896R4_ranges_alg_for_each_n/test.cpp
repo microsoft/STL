@@ -39,7 +39,7 @@ int main() {
 }
 
 struct instantiator {
-    template <class In, class, class>
+    template <class In>
     static void call(In in = {}) {
         using std::iter_difference_t;
 
@@ -51,4 +51,4 @@ struct instantiator {
     }
 };
 
-template void test_counted_write<instantiator>();
+template void test_read<instantiator, const int>();

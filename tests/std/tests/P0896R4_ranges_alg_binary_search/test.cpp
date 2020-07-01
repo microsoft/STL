@@ -70,11 +70,9 @@ struct lower_bound_instantiator {
 
         for (int i = 0; i < 8; ++i) {
             const P* const target = pairs.data() + i + (i > 3 ? 2 : 0);
-            ASSERT(to_address(ranges::lower_bound(range, i, ranges::less{}, get_first).base()) == target);
-            ASSERT(
-                to_address(
-                    ranges::lower_bound(ranges::begin(range), ranges::end(range), i, ranges::less{}, get_first).base())
-                == target);
+            ASSERT(ranges::lower_bound(range, i, ranges::less{}, get_first).peek() == target);
+            ASSERT(ranges::lower_bound(ranges::begin(range), ranges::end(range), i, ranges::less{}, get_first).peek()
+                   == target);
         }
 
         ASSERT(ranges::lower_bound(range, 8, ranges::less{}, get_first) == ranges::end(range));
@@ -95,11 +93,9 @@ struct upper_bound_instantiator {
         for (int i = 0; i < 8; ++i) {
             const P* const target = pairs.data() + i + 1 + (i >= 3 ? 2 : 0);
 
-            ASSERT(to_address(ranges::upper_bound(range, i, ranges::less{}, get_first).base()) == target);
-            ASSERT(
-                to_address(
-                    ranges::upper_bound(ranges::begin(range), ranges::end(range), i, ranges::less{}, get_first).base())
-                == target);
+            ASSERT(ranges::upper_bound(range, i, ranges::less{}, get_first).peek() == target);
+            ASSERT(ranges::upper_bound(ranges::begin(range), ranges::end(range), i, ranges::less{}, get_first).peek()
+                   == target);
         }
 
         ASSERT(ranges::upper_bound(range, 8, ranges::less{}, get_first) == ranges::end(range));
@@ -130,14 +126,14 @@ struct equal_range_instantiator {
 
             {
                 auto result = ranges::equal_range(range, i, ranges::less{}, get_first);
-                ASSERT(to_address(result.begin().base()) == lo);
-                ASSERT(to_address(result.end().base()) == hi);
+                ASSERT(result.begin().peek() == lo);
+                ASSERT(result.end().peek() == hi);
             }
             {
                 auto result =
                     ranges::equal_range(ranges::begin(range), ranges::end(range), i, ranges::less{}, get_first);
-                ASSERT(to_address(result.begin().base()) == lo);
-                ASSERT(to_address(result.end().base()) == hi);
+                ASSERT(result.begin().peek() == lo);
+                ASSERT(result.end().peek() == hi);
             }
         }
 
