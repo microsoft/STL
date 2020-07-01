@@ -22,9 +22,7 @@ struct instantiator {
         int output[3] = {-1, -1, -1};
         auto result   = copy_n(In{input}, ranges::distance(input), Write{output});
         STATIC_ASSERT(same_as<decltype(result), copy_n_result<In, Write>>);
-        if constexpr (std::equality_comparable<In>) {
-            assert(result.in == In{input + 3});
-        }
+        assert(result.in.base() == input + 3);
         if constexpr (std::equality_comparable<Write>) {
             assert(result.out == Write{output + 3});
         }
