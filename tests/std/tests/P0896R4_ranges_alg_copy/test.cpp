@@ -22,6 +22,7 @@ STATIC_ASSERT(same_as<decltype(copy(borrowed<true>{}, static_cast<int*>(nullptr)
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
+
     template <class In, class Write>
     static constexpr void call() {
         { // Validate iterator + sentinel overload
