@@ -13,18 +13,22 @@ using namespace std;
 template <typename Stream>
 struct test_rvalue {
     void operator()(const string& init_value) {
-        Stream stream{string{init_value}};
+        string buffer{init_value};
+        Stream stream{move(buffer)};
         assert(stream.view() == init_value);
         assert(stream.str() == init_value);
         assert(stream.view() == init_value);
+        assert(stream.rdbuf()->get_allocator() == init_value.get_allocator());
         // Move out the buffer, the underlying buffer should be empty.
-        assert(move(stream).str() == init_value);
+        buffer = move(stream).str();
+        assert(buffer == init_value);
         assert(stream.view().empty());
         assert(stream.str().empty());
         // Move in the buffer string
-        stream.str(string{init_value});
+        stream.str(move(buffer));
         assert(stream.view() == init_value);
         assert(stream.str() == init_value);
+        assert(stream.rdbuf()->get_allocator() == init_value.get_allocator());
     }
 };
 
