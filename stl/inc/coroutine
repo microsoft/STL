@@ -136,6 +136,47 @@ struct hash<coroutine_handle<_Promise>> {
     }
 };
 
+// STRUCT noop_coroutine_promise
+struct noop_coroutine_promise {};
+
+// STRUCT coroutine_handle<noop_coroutine_promise>
+template <>
+struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
+    friend coroutine_handle noop_coroutine() noexcept;
+
+    constexpr explicit operator bool() const noexcept {
+        return true;
+    }
+    _NODISCARD constexpr bool done() const noexcept {
+        return false;
+    }
+
+    constexpr void operator()() const noexcept {}
+    constexpr void resume() const noexcept {}
+    constexpr void destroy() const noexcept {}
+
+    using _Promise = noop_coroutine_promise;
+
+    _NODISCARD _Promise& promise() const noexcept {
+        // Returns a reference to the associated promise
+        return *reinterpret_cast<_Promise*>(__builtin_coro_promise(_Ptr, 0, false));
+    }
+
+private:
+    coroutine_handle() noexcept {
+        _Ptr = __builtin_coro_noop();
+    }
+};
+
+// ALIAS noop_coroutine_handle
+using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+// FUNCTION noop_coroutine
+_NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
+    // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
+    return noop_coroutine_handle{};
+}
+
 // STRUCT suspend_never
 struct suspend_never {
     _NODISCARD constexpr bool await_ready() const noexcept {
