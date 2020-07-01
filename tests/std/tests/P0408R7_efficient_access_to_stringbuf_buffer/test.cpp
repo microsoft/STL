@@ -29,6 +29,10 @@ struct test_rvalue {
         assert(stream.view() == init_value);
         assert(stream.str() == init_value);
         assert(stream.rdbuf()->get_allocator() == init_value.get_allocator());
+        // Move to another stream
+        Stream stream2 = move(stream);
+        assert(stream.view().empty());
+        assert(stream2.view() == init_value);
     }
 };
 
