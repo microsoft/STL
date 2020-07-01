@@ -14,10 +14,9 @@ constexpr void smoke_test() {
     using ranges::swap_ranges, ranges::swap_ranges_result, ranges::iterator_t;
     using std::same_as;
     using I1 = iterator_t<move_only_range<int>>;
-    using I2 = iterator_t<move_only_range<int>>;
 
     // Validate that swap_ranges_result aliases in_in_result
-    STATIC_ASSERT(same_as<ranges::swap_ranges_result<int, double>, ranges::in_in_result<int, double>>);
+    STATIC_ASSERT(same_as<swap_ranges_result<int, double>, ranges::in_in_result<int, double>>);
 
     { // Validate ranges overload
         using R                      = std::array<int, 3>;
@@ -26,7 +25,7 @@ constexpr void smoke_test() {
         int const expected_output1[] = {34, 243, 9366};
         int const expected_output2[] = {13, 53, 1876};
         auto result                  = swap_ranges(move_only_range{range1}, move_only_range{range2});
-        STATIC_ASSERT(same_as<decltype(result), swap_ranges_result<I1, I2>>);
+        STATIC_ASSERT(same_as<decltype(result), swap_ranges_result<I1, I1>>);
         assert(result.in1 == move_only_range{range1}.end());
         assert(result.in2 == move_only_range{range2}.end());
         assert(ranges::equal(range1, expected_output1));
@@ -41,7 +40,7 @@ constexpr void smoke_test() {
         int const expected_output2[] = {13, 53, 1876};
         auto result =
             swap_ranges(wrapped_range1.begin(), wrapped_range1.end(), wrapped_range2.begin(), wrapped_range2.end());
-        STATIC_ASSERT(same_as<decltype(result), swap_ranges_result<I1, I2>>);
+        STATIC_ASSERT(same_as<decltype(result), swap_ranges_result<I1, I1>>);
         assert(result.in1 == wrapped_range1.end());
         assert(result.in2 == wrapped_range2.end());
         assert(ranges::equal(range1, expected_output1));
@@ -52,7 +51,7 @@ constexpr void smoke_test() {
 int main() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((smoke_test(), true));
-#endif // TRANSITION
+#endif // TRANSITION, VSO-938163
     smoke_test();
 }
 
