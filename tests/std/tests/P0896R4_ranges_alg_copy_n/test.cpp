@@ -9,8 +9,9 @@
 
 #include <range_algorithm_support.hpp>
 
+using namespace std;
+using same_as;
 using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
-using std::same_as;
 
 // Validate that copy_n_result aliases in_out_result
 STATIC_ASSERT(same_as<copy_n_result<int, double>, ranges::in_out_result<int, double>>);
@@ -29,6 +30,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_counted_write<instantiator>(), true));
-    test_counted_write<instantiator>();
+    STATIC_ASSERT((test_counted_write<instantiator, const int, int>(), true));
+    test_counted_write<instantiator, const int, int>();
 }
