@@ -14,6 +14,7 @@
 
 #include <locale>
 #include <string_view>
+#include <variant>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -59,7 +60,6 @@ constexpr bool _Is_named_arg_v = false;
 template <class _Ty, class _CharT>
 constexpr bool _Is_named_arg_v<_Named_arg<_CharT, _Ty>> = true;
 
-
 template <class _Context>
 class basic_format_arg {
 public:
@@ -103,6 +103,14 @@ public:
     void advance_to(iterator _It);
 };
 
+template <typename _Context>
+struct _Custom_value {
+    const void* _Value;
+    void (*_Format)(const void*, basic_format_parse_context<_Context::char_type>&, _Context&);
+};
+template <typename _Context>
+using _Format_arg_value = _STD variant<int, unsigned, long long, unsigned long long, bool, _Context::char_type, float,
+    double, const void*, _STD basic_string_view<_Context::char_type>, _Custom_value<_Context>>;
 
 _STD_END
 
