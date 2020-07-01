@@ -1100,7 +1100,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
     if (_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
         return _Checked_x86_x64_countr_zero(_Val);
-#endif // defined(_M_IX86 ) || defined(_M_X64)
+#endif // defined(_M_IX86) || defined(_M_X64)
     } else {
         return _Countr_zero_fallback(_Val);
     }
