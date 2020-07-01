@@ -9,34 +9,30 @@
 
 #include <range_algorithm_support.hpp>
 
-constexpr void smoke_test() {
-    using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
-    using std::same_as;
+using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
+using std::same_as;
 
-    // Validate that copy_n_result aliases in_out_result
-    STATIC_ASSERT(same_as<copy_n_result<int, double>, ranges::in_out_result<int, double>>);
-
-    int const input[] = {13, 42, 1729};
-    int output[]      = {-1, -1, -1};
-    basic_borrowed_range wrapped_input{input};
-    auto result = copy_n(wrapped_input.begin(), ranges::distance(input), basic_borrowed_range{output}.begin());
-    STATIC_ASSERT(same_as<decltype(result),
-        copy_n_result<iterator_t<basic_borrowed_range<int const>>, iterator_t<basic_borrowed_range<int>>>>);
-    assert(result.in == wrapped_input.end());
-    assert(result.out == basic_borrowed_range{output}.end());
-    assert(ranges::equal(output, input));
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
+// Validate that copy_n_result aliases in_out_result
+STATIC_ASSERT(same_as<copy_n_result<int, double>, ranges::in_out_result<int, double>>);
 
 struct instantiator {
-    template <class In, class Out>
-    static void call(In in = {}, std::iter_difference_t<In> const count = 42, Out out = {}) {
-        (void) ranges::copy_n(std::move(in), count, std::move(out));
+    static constexpr int input[3] = {13, 42, 1729};
+    template <class In, class, class Write>
+    static constexpr void call() {
+        int output[3] = {-1, -1, -1};
+        auto result   = copy_n(In{input}, ranges::distance(input), Write{output});
+        STATIC_ASSERT(same_as<decltype(result), copy_n_result<In, Write>>);
+        if constexpr (std::equality_comparable<In>) {
+            assert(result.in == In{input + 3});
+        }
+        if constexpr (std::equality_comparable<Write>) {
+            assert(result.out == Write{output + 3});
+        }
+        assert(ranges::equal(output, input));
     }
 };
 
-template void test_read_write<instantiator, const int, int>();
+int main() {
+    STATIC_ASSERT((test_counted_write<instantiator>(), true));
+    test_counted_write<instantiator>();
+}
