@@ -4522,7 +4522,7 @@ namespace ranges {
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // order heap by repeatedly popping, using _Pred
-    for (; 2 <= _Last - _First; --_Last) {
+    for (; _Last - _First >= 2; --_Last) {
         _Pop_heap_unchecked(_First, _Last, _Pred);
     }
 }
@@ -4585,7 +4585,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
-            for (; 2 <= _Last - _First; --_Last) {
+            for (; _Last - _First >= 2; --_Last) {
                 _RANGES _Pop_heap_unchecked(_First, _Last, _Pred, _Proj);
             }
         }
