@@ -1617,17 +1617,10 @@ namespace ranges {
         constexpr copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    *_Result = *_UFirst;
-                    ++_Result;
-                }
-            }
-
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return {_STD move(_First), _STD move(_Result)};
+            auto _UResult = _Copy_if_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
+                _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out, class _Pj = identity,
@@ -1635,10 +1628,32 @@ namespace ranges {
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(
-                _RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Copy_if_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
         // clang-format on
+
+    private:
+        template <class _It, class _Se, class _Out, class _Pj, class _Pr>
+        _NODISCARD static constexpr copy_if_result<_It, _Out> _Copy_if_unchecked(
+            _It _First, const _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    *_Result = *_First;
+                    ++_Result;
+                }
+            }
+
+            return {_STD move(_First), _STD move(_Result)};
+        }
     };
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
