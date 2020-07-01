@@ -2646,35 +2646,45 @@ public:
     void _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used by basic_stringbuf
         _Tidy_deallocate();
-        _Right[_Size]  = _Elem();
-        auto& _My_data = _Mypair._Myval2;
-        _Construct_in_place(_My_data._Bx._Ptr, pointer_traits<pointer>::pointer_to(*_Right));
-        _My_data._Mysize = _Size;
-        _My_data._Myres  = _Res;
+        _Traits::assign(_Right[_Size], _Elem());
+        pointer _Fancy_right = pointer_traits<pointer>::pointer_to(*_Right);
+        auto& _My_data       = _Mypair._Myval2;
+        _My_data._Mysize     = _Size;
+        _My_data._Myres      = _Res;
+        if (_My_data._Large_string_engaged()) {
+            _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
+        } else {
+            _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
+            _Getal().deallocate(_Fancy_right, _Res);
+        }
     }
 
     struct _Released_buffer {
-        _Elem* _Ptr;
+        pointer _Ptr;
         size_type _Size;
         size_type _Res;
+        allocator_type _Al;
     };
 
-    _NODISCARD _Released_buffer _Release_to_buffer() {
+    _NODISCARD _Released_buffer _Release_to_buffer(const bool _Assign) {
         // Release to a buffer, or allocate a new one if in small string mode
-        _Released_buffer _Result;
+        _Released_buffer _Result{};
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
-            _Result._Ptr      = _Unfancy(_My_data._Bx._Ptr);
-            _My_data._Bx._Ptr = nullptr;
-            _Result._Size     = _STD exchange(_My_data._Mysize, size_type{0});
-            _Result._Res      = _STD exchange(_My_data._Myres, size_type{0});
+            _Result._Ptr  = _My_data._Bx._Ptr;
+            _Result._Size = _My_data._Mysize;
+            _Result._Res  = _My_data._Myres;
             _Tidy_init();
         } else {
-            _Result._Ptr = _Unfancy(_Getal().allocate(_BUF_SIZE));
-            _Traits::copy(_Result._Ptr, _My_data._Bx._Buf, _BUF_SIZE);
+            _Result._Ptr = _Getal().allocate(_BUF_SIZE);
+            _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
             _Result._Size = _My_data._Mysize;
             _Result._Res  = _BUF_SIZE;
-            _Tidy_deallocate();
+        }
+        if (_Assign) {
+            _Pocma(_Result._Al, _Getal());
+        } else {
+            _Result._Al = _STD move(_Getal());
         }
         return _Result;
     }

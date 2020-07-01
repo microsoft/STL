@@ -48,9 +48,8 @@ public:
     basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al_)
         : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al_) {}
 
-    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
-        : _Al(_Str.get_allocator()) {
-        _Init_inplace(_STD move(_Str), _Getstate(_Mode));
+    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out) : _Al() {
+        _Init_string_inplace(_STD move(_Str), _Getstate(_Mode), false);
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
@@ -160,7 +159,7 @@ public:
     // the buffer may already be full, and the terminating char is not '\0'.
     // In that case, copy the string as usual.
     _NODISCARD _Mystr str() && {
-        _Mystr _Result(_Al);
+        _Mystr _Result{_STD move(_Al)};
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable
             const auto _Base   = _Mysb::pbase();
             const auto _Ptr    = (_STD max)(_Mysb::pptr(), _Seekhigh);
@@ -206,7 +205,7 @@ public:
 
     void str(_Mystr&& _Newstr) {
         _Tidy();
-        _Init_inplace(_STD move(_Newstr), _Mystate);
+        _Init_string_inplace(_STD move(_Newstr), _Mystate, true);
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
@@ -441,12 +440,22 @@ protected:
     }
 
 #if _HAS_CXX20
-    void _Init_inplace(_Mystr&& _Str, const int _State) {
+    void _Init_allocator(_Alloc&& _Al_, const bool _Assign) {
+        if (_Assign) {
+            _Pocma(_Al, _Al_);
+        } else {
+            _Al = _STD move(_Al_);
+        }
+    }
+
+    void _Init_string_inplace(_Mystr&& _Str, const int _State, const bool _Assign) {
         if ((_State & _Constant) && !(_State & _Noread)) { // readonly, copy the string
             _Init(_Str.c_str(), _Str.size(), _State);
+            _Init_allocator(_Str.get_allocator(), _Assign);
         } else { // writeable, construct in place
-            const auto _Buffer = _Str._Release_to_buffer();
-            _Init_inplace(_Buffer._Ptr, _Buffer._Size, _Buffer._Res, _State);
+            auto _Buffer = _Str._Release_to_buffer(_Assign);
+            _Init_inplace(_Unfancy(_Buffer._Ptr), _Buffer._Size, _Buffer._Res, _State);
+            _Init_allocator(_STD move(_Buffer._Al), _Assign);
         }
     }
 
