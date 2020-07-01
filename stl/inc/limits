@@ -1096,17 +1096,14 @@ constexpr bool _Is_standard_unsigned_integer =
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
-#ifdef __cpp_lib_is_constant_evaluated
-    if (_STD is_constant_evaluated()) {
 #if defined(_M_IX86) || defined(_M_X64)
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated()) {
         return _Checked_x86_x64_countr_zero(_Val);
-#endif // defined(_M_IX86) || defined(_M_X64)
-    } else {
-        return _Countr_zero_fallback(_Val);
     }
-#else // ^^^ defined(__cpp_lib_is_constant_evaluated) / !defined(__cpp_lib_is_constant_evaluated) vvv
-    return _Countr_zero_fallback(_Val);
 #endif // defined(__cpp_lib_is_constant_evaluated)
+#endif // defined(_M_IX86) || defined(_M_X64)
+    return _Countr_zero_fallback(_Val);
 }
 
 _STD_END
