@@ -1533,6 +1533,11 @@ namespace ranges {
     private:
         template <class _It, class _Se, class _Out>
         _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) const {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
             for (; _First != _Last; ++_First, (void) ++_Result) {
                 *_Result = *_First;
             }
