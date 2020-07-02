@@ -2174,24 +2174,39 @@ _CONSTEXPR20 bool test_more_bind() {
     struct PossiblyThrowingInt {
         int i;
         PossiblyThrowingInt() = default;
-        PossiblyThrowingInt(int j) : i(j) {}
+        constexpr PossiblyThrowingInt(int j) : i(j) {}
         operator int() {
             return i;
         }
     };
+    PossiblyThrowingInt possibly_throwing_int{1729};
 
     static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, ref(n)))>);
     static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), int>);
     static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, ref(n)))>);
     static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), int>);
     static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, ref(n)))>);
     static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, _1)), int>);
     static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, ref(possibly_throwing_int)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), PossiblyThrowingInt>);
     static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, ref(possibly_throwing_int)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), PossiblyThrowingInt>);
     static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, ref(n)))>);
     static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, _1)), int>);
     static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, ref(n)))>);
     static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, _1)), int>);
+
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, bind(NothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, bind(NotNothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, bind(NothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, bind(NotNothrowInvocable{}, _1))), int>);
 #endif // _HAS_CXX17
 
     return true;
