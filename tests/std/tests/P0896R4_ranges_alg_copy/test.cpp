@@ -10,38 +10,40 @@
 #include <range_algorithm_support.hpp>
 
 using namespace std;
-using same_as;
-using ranges::copy, ranges::copy_result, ranges::iterator_t;
 
 // Validate that copy_result aliases in_out_result
 STATIC_ASSERT(same_as<copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
+STATIC_ASSERT(same_as<decltype(ranges::copy(borrowed<false>{}, static_cast<int*>(nullptr))),
+    ranges::copy_result<ranges::dangling, int*>>);
 STATIC_ASSERT(
-    same_as<decltype(copy(borrowed<false>{}, static_cast<int*>(nullptr))), copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(copy(borrowed<true>{}, static_cast<int*>(nullptr))), copy_result<int*, int*>>);
+    same_as<decltype(cranges::opy(borrowed<true>{}, static_cast<int*>(nullptr))), ranges::copy_result<int*, int*>>);
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
 
-    template <class In, class Write>
+    template <class Read, class Write>
     static constexpr void call() {
+        using ranges::copy, ranges::copy_result, ranges::iterator_t;
         { // Validate iterator + sentinel overload
             int output[3] = {-1, -1, -1};
-            In wrapped_input{input};
+            Read wrapped_input{input};
+
             auto result = copy(wrapped_input.begin(), wrapped_input.end(), Write{output});
-            STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<In>, Write>>);
+            STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
-            assert(result.out.base() == output + 3);
+            assert(result.out.peek() == output + 3);
             assert(ranges::equal(output, input));
         }
         { // Validate range overload
             int output[3] = {-1, -1, -1};
-            In wrapped_input{input};
+            Read wrapped_input{input};
+
             auto result = copy(wrapped_input, Write{output});
-            STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<In>, Write>>);
+            STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
-            assert(result.out.base() == output + 3);
+            assert(result.out.peek() == output + 3);
             assert(ranges::equal(output, input));
         }
     }
