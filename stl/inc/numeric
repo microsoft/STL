@@ -10,9 +10,9 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <xutility>
 
-#if _HAS_CXX20
+#if _HAS_CXX17
 #include <limits>
-#endif // _HAS_CXX20
+#endif // _HAS_CXX17
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
