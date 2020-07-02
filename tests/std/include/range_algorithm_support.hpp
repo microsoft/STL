@@ -810,7 +810,7 @@ struct with_input_ranges {
 template <class Continuation, class Element = int>
 struct with_output_ranges {
     template <class... Args>
-    static void call() {
+    static constexpr void call() {
         using namespace test;
 
         // For all ranges, IsCommon implies Eq.
