@@ -10,21 +10,22 @@
 #include <range_algorithm_support.hpp>
 
 using namespace std;
-using same_as;
-using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
 
 // Validate that copy_n_result aliases in_out_result
-STATIC_ASSERT(same_as<copy_n_result<int, double>, ranges::in_out_result<int, double>>);
+STATIC_ASSERT(same_as<ranges::copy_n_result<int, double>, ranges::in_out_result<int, double>>);
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
-    template <class In, class, class Write>
+    template <class Read, class, class Write>
     static constexpr void call() {
+        using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
         int output[3] = {-1, -1, -1};
-        auto result   = copy_n(In{input}, ranges::distance(input), Write{output});
-        STATIC_ASSERT(same_as<decltype(result), copy_n_result<In, Write>>);
-        assert(result.in.base() == input + 3);
-        assert(result.out.base() == output + 3);
+        Read wrapped_input{input};
+
+        auto result = copy_n(wrapped_input, ranges::distance(input), Write{output});
+        STATIC_ASSERT(same_as<decltype(result), copy_n_result<Read, Write>>);
+        assert(result.in == wrapped_input.end());
+        assert(result.out.peek() == output + 3);
         assert(ranges::equal(output, input));
     }
 };
