@@ -90,8 +90,8 @@ namespace experimental {
             return _Ptr;
         }
 
-        __declspec(
-            deprecated("is deprecated. Use coroutine_handle::address() instead")) void* to_address() const noexcept {
+        __declspec(deprecated("is deprecated. Use coroutine_handle::address() instead")) void* to_address() const
+            noexcept {
             return _Ptr;
         }
 
