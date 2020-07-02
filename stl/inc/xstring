@@ -1033,8 +1033,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Myoff >= -static_cast<size_t>(_Off), "cannot seek string_view iterator before begin");
+            _STL_VERIFY(
+                _Myoff >= size_t{0} - static_cast<size_t>(_Off), "cannot seek string_view iterator before begin");
         }
 
         if (_Off > 0) {
@@ -1073,8 +1073,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Mysize - _Myoff >= -static_cast<size_t>(_Off), "cannot seek string_view iterator after end");
+            _STL_VERIFY(_Mysize - _Myoff >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek string_view iterator after end");
         }
 
         _Myoff -= _Off;
@@ -1903,7 +1903,6 @@ public:
         const auto _Rawptr  = _Unfancy(_Ptr);
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
             _STL_VERIFY(_Contptr - _Rawptr <= _Off, "cannot seek string iterator before begin");
         }
 
