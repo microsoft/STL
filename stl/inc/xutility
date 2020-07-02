@@ -990,6 +990,17 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out>
 // CONCEPT indirectly_copyable
 template <class _In, class _Out>
 concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
+
+// CONCEPT indirectly_copyable_storable
+template <class _In, class _Out>
+concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
+    && indirectly_writable<_Out, iter_value_t<_In>&>
+    && indirectly_writable<_Out, const iter_value_t<_In>&>
+    && indirectly_writable<_Out, iter_value_t<_In>&&>
+    && indirectly_writable<_Out, const iter_value_t<_In>&&>
+    && copyable<iter_value_t<_In>>
+    && constructible_from<iter_value_t<_In>, iter_reference_t<_In>>
+    && assignable_from<iter_value_t<_In>&, iter_reference_t<_In>>;
 // clang-format on
 
 // CUSTOMIZATION POINT OBJECT iter_swap
@@ -1088,6 +1099,17 @@ concept indirectly_comparable =
     indirect_binary_predicate<_Rel,
         projected<_It1, _Proj1>,
         projected<_It2, _Proj2>>;
+
+// CONCEPT permutable
+template <class _It>
+concept permutable = forward_iterator<_It>
+    && indirectly_movable_storable<_It, _It>
+    && indirectly_swappable<_It, _It>;
+
+// CONCEPT sortable
+namespace ranges { struct less; }
+template <class _It, class _Pr = ranges::less, class _Proj = identity>
+concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
 // clang-format on
 
 // ALIAS TEMPLATE _Iter_ref_t
@@ -2856,7 +2878,7 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
                 if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
                     // extent_v<remove_cvref_t<_Ty&>> reuses specializations from _Choose
                     return extent_v<remove_cvref_t<_Ty&>>;
@@ -2928,7 +2950,7 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr bool operator()([[maybe_unused]] _Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
                 if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
                     return static_cast<bool>(_Val.empty());
                 } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Size) {
@@ -3148,7 +3170,7 @@ namespace ranges {
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, static_cast<_It&&>(_UWhere));
+                    _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }

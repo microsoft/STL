@@ -160,6 +160,7 @@ tests\GH_000545_include_compare
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
+tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
@@ -237,6 +238,7 @@ tests\P0896R4_ranges_algorithm_machinery
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
 tests\P0896R4_ranges_alg_any_of
+tests\P0896R4_ranges_alg_binary_search
 tests\P0896R4_ranges_alg_copy
 tests\P0896R4_ranges_alg_copy_if
 tests\P0896R4_ranges_alg_copy_n
@@ -253,10 +255,13 @@ tests\P0896R4_ranges_alg_for_each_n
 tests\P0896R4_ranges_alg_generate
 tests\P0896R4_ranges_alg_generate_n
 tests\P0896R4_ranges_alg_is_permutation
+tests\P0896R4_ranges_alg_is_sorted
+tests\P0896R4_ranges_alg_minmax
 tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_search
+tests\P0896R4_ranges_alg_search_n
 tests\P0896R4_ranges_iterator_machinery
 tests\P0896R4_ranges_range_machinery
 tests\P0896R4_ranges_subrange
