@@ -176,6 +176,7 @@ _NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
     // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
     return noop_coroutine_handle{};
 }
+
 // STRUCT suspend_never
 struct suspend_never {
     _NODISCARD constexpr bool await_ready() const noexcept {
