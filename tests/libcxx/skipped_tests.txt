@@ -62,6 +62,8 @@ numerics\bit\bit.pow.two\floor2.pass.cpp
 numerics\bit\bit.pow.two\ispow2.pass.cpp
 numerics\bit\bit.pow.two\log2p1.pass.cpp
 
+# test emits warning C4310: cast truncates constant value
+numerics\bit\bitops.rot\rotl.pass.cpp
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -453,15 +455,6 @@ utilities\time\time.hms\time.hms.members\seconds.pass.cpp
 utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
-
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-numerics\bit\bitops.count\countl_one.pass.cpp
-numerics\bit\bitops.count\countl_zero.pass.cpp
-numerics\bit\bitops.count\countr_one.pass.cpp
-numerics\bit\bitops.count\countr_zero.pass.cpp
-numerics\bit\bitops.count\popcount.pass.cpp
-numerics\bit\bitops.rot\rotl.pass.cpp
-numerics\bit\bitops.rot\rotr.pass.cpp
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
@@ -884,11 +877,9 @@ numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_scalar_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
-numerics\complex.number\complex.transcendentals\sqrt.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
 numerics\complex.number\complex.value.ops\polar.pass.cpp
-numerics\complex.number\complex.value.ops\proj.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp
