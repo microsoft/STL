@@ -94,6 +94,13 @@ _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {
     return &reinterpret_cast<volatile _Integral&>(_Source);
 }
 
+template <class _Integral, class _Ty>
+_NODISCARD const volatile _Integral* _Atomic_address_as(const _Ty& _Source) noexcept {
+    // gets a pointer to the argument as an integral type (to pass to intrinsics)
+    static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
+    return &reinterpret_cast<const volatile _Integral&>(_Source);
+}
+
 _STD_END
 
 #pragma pop_macro("new")
