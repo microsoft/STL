@@ -730,15 +730,14 @@ public:
 
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_function_call();
 
-template <class _Rx, bool = is_void_v<_Rx>>
-struct _Invoker_ret {}; // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
-
 struct _Unforced { // tag to distinguish bind() from bind<R>()
     explicit _Unforced() = default;
 };
 
-template <class _Cv_void>
-struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
+// STRUCT TEMPLATE _Invoker_ret
+// helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
+template <class _Rx, bool = is_void_v<_Rx>>
+struct _Invoker_ret { // selected for _Rx being cv void
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 void _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
         _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
