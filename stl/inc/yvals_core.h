@@ -1140,13 +1140,8 @@
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
-
-#ifdef __clang__ // TRANSITION, VSO-1020212
-// a future MSVC update will embed CPU feature detection into <bit> intrinsics
-#define __cpp_lib_bitops 201907L
-#endif // __clang__
-
-#define __cpp_lib_bounded_array_traits 201902L
+#define __cpp_lib_bitops                        201907L
+#define __cpp_lib_bounded_array_traits          201902L
 
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201907L
@@ -1174,14 +1169,10 @@
 #define __cpp_lib_destroying_delete 201806L
 #endif // __cpp_impl_destroying_delete
 
-#define __cpp_lib_endian                   201907L
-#define __cpp_lib_erase_if                 202002L
-#define __cpp_lib_generic_unordered_lookup 201811L
-
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
-#define __cpp_lib_int_pow2 202002L
-#endif
-
+#define __cpp_lib_endian                       201907L
+#define __cpp_lib_erase_if                     202002L
+#define __cpp_lib_generic_unordered_lookup     201811L
+#define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
