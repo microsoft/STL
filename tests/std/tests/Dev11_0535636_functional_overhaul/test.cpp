@@ -2221,7 +2221,7 @@ struct BoolWrapper {
 struct TestNotFn {
     int m_x;
 
-    explicit constexpr TestNotFn(const int x) : m_x(x) {}
+    constexpr explicit TestNotFn(const int x) : m_x(x) {}
 
     TestNotFn(const TestNotFn&) = delete;
     TestNotFn(TestNotFn&&)      = default;
@@ -2246,7 +2246,7 @@ struct TestNotFn {
 };
 
 struct EmptyTestNotFn {
-    explicit constexpr EmptyTestNotFn(int) {}
+    constexpr explicit EmptyTestNotFn(int) {}
 
     EmptyTestNotFn(const EmptyTestNotFn&)      = delete;
     constexpr EmptyTestNotFn(EmptyTestNotFn&&) = default;
