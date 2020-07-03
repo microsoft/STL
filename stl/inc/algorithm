@@ -682,7 +682,7 @@ namespace ranges {
             _It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr >);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
             iter_difference_t<_It> _Count = 0;
             for (; _First != _Last; ++_First) {
