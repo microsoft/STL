@@ -336,7 +336,7 @@ public:
         unsigned int _Ix = 0;
         for (; _Names[_Ix]._Get<_Elem>(); ++_Ix) {
             if (_STD equal(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Names[_Ix]._Get<_Elem>(),
-                    _Names[_Ix]._Get<_Elem>() + _Names[_Ix]._Len, _Cmp_icase<_Regex_traits<_Elem>>(*this))) {
+                    _Names[_Ix]._Get<_Elem>() + _Names[_Ix]._Len, _Cmp_icase<_Regex_traits<_Elem>>{*this})) {
                 break;
             }
         }
@@ -3292,11 +3292,11 @@ _BidIt1 _Compare(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2,
     regex_constants::syntax_option_type _Sflags) { // compare character ranges
     _BidIt1 _Res = _End1;
     if (_Sflags & regex_constants::icase) {
-        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>(_Traits));
+        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
     } else if (_Sflags & regex_constants::collate) {
-        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>(_Traits));
+        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
     } else {
-        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_cs<_RxTraits>());
+        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_cs<_RxTraits>{});
     }
 
     return _Res;
