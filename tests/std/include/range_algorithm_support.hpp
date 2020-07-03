@@ -637,6 +637,7 @@ struct with_contiguous_ranges {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::range;
 
         // Ditto always Eq; !IsSized && SizedSentinel is uninteresting (ranges::size still works), as is
         // !IsSized && IsCommon. contiguous also implies !Proxy.
@@ -658,6 +659,7 @@ struct with_random_ranges {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::range;
 
         // Ditto always Eq; !IsSized && SizedSentinel is uninteresting (ranges::size works either way), as is
         // !IsSized && IsCommon.
@@ -691,6 +693,7 @@ struct with_bidirectional_ranges {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::range;
 
         // Ditto always Eq; !IsSized && Diff is uninteresting (ranges::size still works).
         Continuation::template call<Args...,
@@ -727,6 +730,7 @@ struct with_forward_ranges {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::range;
 
         // forward always has Eq; !IsSized && Diff is uninteresting (sized_range is sized_range).
         Continuation::template call<Args...,
@@ -763,6 +767,7 @@ struct with_input_ranges {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::range;
 
         // For all ranges, IsCommon implies Eq.
         // For single-pass ranges, Eq is uninteresting without IsCommon (there's only one valid iterator
@@ -812,6 +817,7 @@ struct with_output_ranges {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::range;
 
         // For all ranges, IsCommon implies Eq.
         // For single-pass ranges, Eq is uninteresting without IsCommon (there's only one valid iterator
@@ -861,6 +867,7 @@ struct with_input_iterators {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
+        using test::iterator;
 
         // IsSized and Eq are not significant for "lone" single-pass iterators, so we can ignore them here.
         Continuation::template call<Args...,
