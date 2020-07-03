@@ -12,18 +12,18 @@
 using namespace std;
 
 // Validate that copy_result aliases in_out_result
-STATIC_ASSERT(same_as<copy_result<int, double>, ranges::in_out_result<int, double>>);
+STATIC_ASSERT(same_as<ranges::copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::copy(borrowed<false>{}, static_cast<int*>(nullptr))),
     ranges::copy_result<ranges::dangling, int*>>);
 STATIC_ASSERT(
-    same_as<decltype(cranges::opy(borrowed<true>{}, static_cast<int*>(nullptr))), ranges::copy_result<int*, int*>>);
+    same_as<decltype(ranges::copy(borrowed<true>{}, static_cast<int*>(nullptr))), ranges::copy_result<int*, int*>>);
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
 
-    template <class Read, class Write>
+    template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
     static constexpr void call() {
         using ranges::copy, ranges::copy_result, ranges::iterator_t;
         { // Validate iterator + sentinel overload

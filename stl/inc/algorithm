@@ -1525,8 +1525,10 @@ namespace ranges {
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _UResult = _Copy_unchecked(_Ubegin(_Range), _Uend(_Range), _STD move(_Result));
-            return {_Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_UResult.out)};
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
         // clang-format on
 
