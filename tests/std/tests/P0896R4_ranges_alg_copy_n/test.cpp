@@ -23,7 +23,7 @@ struct instantiator {
         int output[3] = {-1, -1, -1};
         Read wrapped_input{input};
 
-        auto result = copy_n(wrapped_input.begin(), ranges::distance(wrapped_input), Write{output});
+        auto result = copy_n(wrapped_input.begin(), 3, Write{output});
         STATIC_ASSERT(same_as<decltype(result), copy_n_result<iterator_t<Read>, Write>>);
         assert(result.in == wrapped_input.end());
         assert(result.out.peek() == output + 3);
