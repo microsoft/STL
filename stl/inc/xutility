@@ -1106,8 +1106,16 @@ concept permutable = forward_iterator<_It>
     && indirectly_movable_storable<_It, _It>
     && indirectly_swappable<_It, _It>;
 
-// CONCEPT sortable
+// CONCEPT mergeable
 namespace ranges { struct less; }
+template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+concept mergeable = input_iterator<_It1> && input_iterator<_It2>
+    && weakly_incrementable<_Out>
+    && indirectly_copyable<_It1, _Out>
+    && indirectly_copyable<_It2, _Out>
+    && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
+
+// CONCEPT sortable
 template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
 // clang-format on
