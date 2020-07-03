@@ -1552,7 +1552,7 @@ _NODISCARD constexpr _Iter_diff_t<_Checked> _Idl_distance1(
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     // tries to get the distance between _First and _Last if they are random-access iterators
-    return _Idl_distance1<_Checked>(_First, _Last, _Iter_cat_t<_Iter>());
+    return _Idl_distance1<_Checked>(_First, _Last, _Iter_cat_t<_Iter>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1636,7 +1636,7 @@ constexpr void _Debug_order_unchecked2(_FwdIt _First, _Sentinel _Last, _Pr& _Pre
 template <class _InIt, class _Sentinel, class _Pr>
 constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
-    _Debug_order_unchecked2(_First, _Last, _Pred, _Iter_cat_t<_InIt>());
+    _Debug_order_unchecked2(_First, _Last, _Pred, _Iter_cat_t<_InIt>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1675,7 +1675,7 @@ constexpr void _Debug_order_set_unchecked2(
 template <class _OtherIt, class _InIt, class _Pr>
 constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
-    _Debug_order_set_unchecked2(_First, _Last, _Pred, _Iter_cat_t<_InIt>(),
+    _Debug_order_set_unchecked2(_First, _Last, _Pred, _Iter_cat_t<_InIt>{},
         _Priority_tag<is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>>>());
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -1758,7 +1758,7 @@ template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) {
     // increment iterator by offset, arbitrary iterators
     // we remove_const_t before _Iter_cat_t for better diagnostics if the user passes an iterator that is const
-    _Advance1(_Where, _Off, _Iter_cat_t<remove_const_t<_InIt>>());
+    _Advance1(_Where, _Off, _Iter_cat_t<remove_const_t<_InIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1803,7 +1803,7 @@ _CONSTEXPR17 _Iter_diff_t<_RanIt> _Distance1(_RanIt _First, _RanIt _Last, random
 
 template <class _InIt>
 _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) {
-    return _Distance1(_First, _Last, _Iter_cat_t<_InIt>());
+    return _Distance1(_First, _Last, _Iter_cat_t<_InIt>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -5075,7 +5075,7 @@ _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     return _Equal_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_InIt1>(), _Iter_cat_t<_InIt2>());
+        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_InIt1>{}, _Iter_cat_t<_InIt2>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -5468,7 +5468,7 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
         ++_Last2;
     }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    _Trim_matching_suffixes(_Last1, _Last2, _Pred, _Iter_cat_t<_FwdIt1>(), _Iter_cat_t<_FwdIt2>());
+    _Trim_matching_suffixes(_Last1, _Last2, _Pred, _Iter_cat_t<_FwdIt1>{}, _Iter_cat_t<_FwdIt2>{});
 #endif // _HAS_IF_CONSTEXPR
     for (_FwdIt1 _Next1 = _First1; _Next1 != _Last1; ++_Next1) {
         if (_Next1 == _Find_pr(_First1, _Next1, *_Next1, _Pred)) { // new value, compare match counts
@@ -5729,7 +5729,7 @@ _FwdIt _Rotate_unchecked(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
         return _First;
     }
 
-    return _Rotate_unchecked1(_First, _Mid, _Last, _Iter_cat_t<_FwdIt>());
+    return _Rotate_unchecked1(_First, _Mid, _Last, _Iter_cat_t<_FwdIt>{});
 }
 
 template <class _FwdIt>

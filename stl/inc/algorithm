@@ -792,7 +792,7 @@ _NODISCARD pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     const auto _Result = _Mismatch_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_InIt1>(), _Iter_cat_t<_InIt2>());
+        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_InIt1>{}, _Iter_cat_t<_InIt2>{});
     _Seek_wrapped(_First2, _Result.second);
     _Seek_wrapped(_First1, _Result.first);
     return {_First1, _First2};
@@ -1913,7 +1913,7 @@ _NODISCARD _FwdItHaystack search(_FwdItHaystack _First1, const _FwdItHaystack _L
     _Adl_verify_range(_First2, _Last2);
     _Seek_wrapped(
         _First1, _Search_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-                     _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdItHaystack>(), _Iter_cat_t<_FwdItPat>()));
+                     _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdItHaystack>{}, _Iter_cat_t<_FwdItPat>{}));
     return _First1;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -2247,7 +2247,7 @@ _NODISCARD _FwdIt search_n(_FwdIt _First, const _FwdIt _Last, const _Diff _Count
 
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First, _Search_n_unchecked1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Count, _Val,
-                              _Pass_fn(_Pred), _Iter_cat_t<_FwdIt>()));
+                              _Pass_fn(_Pred), _Iter_cat_t<_FwdIt>{}));
 
     return _First;
 }
@@ -2603,7 +2603,7 @@ _NODISCARD _FwdIt1 find_end(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2
     _Adl_verify_range(_First2, _Last2);
     _Seek_wrapped(
         _First1, _Find_end_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-                     _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>(), _Iter_cat_t<_FwdIt2>()));
+                     _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>{}, _Iter_cat_t<_FwdIt2>{}));
 
     return _First1;
 }
@@ -3639,7 +3639,7 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
     _Adl_verify_range(_First, _Last);
     if (0 < _Count) {
         _Rng_from_urng<_Iter_diff_t<_PopIt>, remove_reference_t<_Urng>> _RngFunc(_Func);
-        _Dest = _Sample1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Dest, _Count, _RngFunc, _Iter_cat_t<_PopIt>());
+        _Dest = _Sample1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Dest, _Count, _RngFunc, _Iter_cat_t<_PopIt>{});
     }
 
     return _Dest;
@@ -3949,7 +3949,7 @@ _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
     _Adl_verify_range(_First, _Last);
     _Seek_wrapped(_First,
-        _Partition_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt>()));
+        _Partition_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt>{}));
 
     return _First;
 }

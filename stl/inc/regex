@@ -1822,13 +1822,13 @@ public:
     template <class _InIt>
     basic_regex(_InIt _First, _InIt _Last, flag_type _Flags) : _Rep(nullptr) {
         _Adl_verify_range(_First, _Last);
-        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags, _Iter_cat_t<_InIt>());
+        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags, _Iter_cat_t<_InIt>{});
     }
 
     template <class _InIt>
     basic_regex(_InIt _First, _InIt _Last) : _Rep(nullptr) {
         _Adl_verify_range(_First, _Last);
-        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), regex_constants::ECMAScript, _Iter_cat_t<_InIt>());
+        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), regex_constants::ECMAScript, _Iter_cat_t<_InIt>{});
     }
 
     basic_regex(const basic_regex& _Right)
@@ -1939,7 +1939,7 @@ public:
     template <class _InIt>
     basic_regex& assign(_InIt _First, _InIt _Last, flag_type _Flags = regex_constants::ECMAScript) {
         _Adl_verify_range(_First, _Last);
-        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags, _Iter_cat_t<_InIt>());
+        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags, _Iter_cat_t<_InIt>{});
         return *this;
     }
 
