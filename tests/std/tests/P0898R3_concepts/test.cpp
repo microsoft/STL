@@ -1433,9 +1433,7 @@ namespace test_constructible_from {
     };
     STATIC_ASSERT(!test<Multiparameter>());
     STATIC_ASSERT(test<Multiparameter, int>());
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1927 // TRANSITION, VS 2019 16.7 Preview 1
     STATIC_ASSERT(!test<Multiparameter, long>() || is_permissive);
-#endif // TRANSITION, VS 2019 16.7 Preview 1
     STATIC_ASSERT(!test<Multiparameter, double>());
     STATIC_ASSERT(!test<Multiparameter, char>());
     STATIC_ASSERT(!test<Multiparameter, void>());

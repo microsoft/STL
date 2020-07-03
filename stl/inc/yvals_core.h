@@ -1167,10 +1167,7 @@
 #define __cpp_lib_coroutine 197000L
 #endif // __cpp_impl_coroutine
 
-#ifdef __cpp_impl_destroying_delete
-#define __cpp_lib_destroying_delete 201806L
-#endif // __cpp_impl_destroying_delete
-
+#define __cpp_lib_destroying_delete            201806L
 #define __cpp_lib_endian                       201907L
 #define __cpp_lib_erase_if                     202002L
 #define __cpp_lib_generic_unordered_lookup     201811L
