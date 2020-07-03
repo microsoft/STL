@@ -35,9 +35,9 @@ struct range_overloads {
             assert(ranges::is_sorted(range, ranges::less{}, get_first) == sorted);
 
             const auto addr = elements.data() + (N - offset);
-            assert(to_address(ranges::is_sorted_until(range).base()) == addr);
-            assert(to_address(ranges::is_sorted_until(range, ranges::less{}).base()) == addr);
-            assert(to_address(ranges::is_sorted_until(range, ranges::less{}, get_first).base()) == addr);
+            assert(ranges::is_sorted_until(range).peek() == addr);
+            assert(ranges::is_sorted_until(range, ranges::less{}).peek() == addr);
+            assert(ranges::is_sorted_until(range, ranges::less{}, get_first).peek() == addr);
 
             const auto next = ranges::next(ranges::begin(elements));
             rotate(ranges::begin(elements), next, ranges::end(elements));
@@ -59,10 +59,9 @@ struct iterator_overloads {
             assert(ranges::is_sorted(begin(range), end(range), ranges::less{}, get_first) == sorted);
 
             const auto addr = elements.data() + (N - offset);
-            assert(to_address(ranges::is_sorted_until(begin(range), end(range)).base()) == addr);
-            assert(to_address(ranges::is_sorted_until(begin(range), end(range), ranges::less{}).base()) == addr);
-            assert(to_address(ranges::is_sorted_until(begin(range), end(range), ranges::less{}, get_first).base())
-                   == addr);
+            assert(ranges::is_sorted_until(begin(range), end(range)).peek() == addr);
+            assert(ranges::is_sorted_until(begin(range), end(range), ranges::less{}).peek() == addr);
+            assert(ranges::is_sorted_until(begin(range), end(range), ranges::less{}, get_first).peek() == addr);
 
             const auto next = ranges::next(begin(elements));
             rotate(begin(elements), next, end(elements));

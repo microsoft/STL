@@ -102,4 +102,4 @@ struct instantiator {
     }
 };
 
-template void test_in_in<instantiator>();
+template void test_in_in<instantiator, const int, const int>();

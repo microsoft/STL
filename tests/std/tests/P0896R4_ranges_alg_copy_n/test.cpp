@@ -33,10 +33,10 @@ int main() {
 }
 
 struct instantiator {
-    template <class In, class, class Out>
+    template <class In, class Out>
     static void call(In in = {}, std::iter_difference_t<In> const count = 42, Out out = {}) {
         (void) ranges::copy_n(std::move(in), count, std::move(out));
     }
 };
 
-template void test_counted_write<instantiator>();
+template void test_read_write<instantiator, const int, int>();
