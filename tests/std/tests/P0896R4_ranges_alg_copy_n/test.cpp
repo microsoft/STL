@@ -16,14 +16,15 @@ STATIC_ASSERT(same_as<ranges::copy_n_result<int, double>, ranges::in_out_result<
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
-    template <class Read, class, class Write>
+
+    template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
     static constexpr void call() {
         using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
         int output[3] = {-1, -1, -1};
         Read wrapped_input{input};
 
-        auto result = copy_n(wrapped_input, ranges::distance(input), Write{output});
-        STATIC_ASSERT(same_as<decltype(result), copy_n_result<Read, Write>>);
+        auto result = copy_n(wrapped_input.begin(), ranges::distance(wrapped_input), Write{output});
+        STATIC_ASSERT(same_as<decltype(result), copy_n_result<iterator_t<Read>, Write>>);
         assert(result.in == wrapped_input.end());
         assert(result.out.peek() == output + 3);
         assert(ranges::equal(output, input));
@@ -31,6 +32,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_counted_write<instantiator, const int, int>(), true));
-    test_counted_write<instantiator, const int, int>();
+    STATIC_ASSERT((test_read_write<instantiator, int const, int>(), true));
+    test_read_write<instantiator, int const, int>();
 }
