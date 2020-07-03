@@ -1624,38 +1624,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 }
 #pragma warning(pop) // TRANSITION, DevCom-936696
 
-template <class _Rx, bool = is_void_v<_Rx>>
-struct _Invoker_ret {}; // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
-
-struct _Unforced {
-    explicit _Unforced() = default;
-}; // tag to distinguish bind() from bind<R>()
-
-template <class _Cv_void>
-struct _Invoker_ret<_Cv_void, true> { // selected for _Rx being cv void
-    template <class... _Valtys>
-    static void _Call(_Valtys&&... _Vals) { // INVOKE, "implicitly" converted to void
-        _STD invoke(static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
-template <class _Rx>
-struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
-    template <class... _Valtys>
-    static _Rx _Call(_Valtys&&... _Vals) { // INVOKE, implicitly converted to _Rx
-        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
-template <>
-struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
-    template <class... _Valtys>
-    static auto _Call(_Valtys&&... _Vals)
-        -> decltype(_STD invoke(static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
-        return _STD invoke(static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
 // TYPE TRAITS FOR invoke()
 #pragma warning(push)
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
@@ -1912,25 +1880,25 @@ public:
     template <class _Uty, enable_if_t<conjunction_v<negation<is_same<_Remove_cvref_t<_Uty>, reference_wrapper>>,
                                           _Refwrap_has_ctor_from<_Ty, _Uty>>,
                               int> = 0>
-    reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) {
+    _CONSTEXPR20 reference_wrapper(_Uty&& _Val) noexcept(noexcept(_Refwrap_ctor_fun<_Ty>(_STD declval<_Uty>()))) {
         _Ty& _Ref = static_cast<_Uty&&>(_Val);
         _Ptr      = _STD addressof(_Ref);
     }
 
-    operator _Ty&() const noexcept {
+    _CONSTEXPR20 operator _Ty&() const noexcept {
         return *_Ptr;
     }
 
-    _NODISCARD _Ty& get() const noexcept {
+    _NODISCARD _CONSTEXPR20 _Ty& get() const noexcept {
         return *_Ptr;
     }
 
 private:
-    _Ty* _Ptr;
+    _Ty* _Ptr{};
 
 public:
     template <class... _Types>
-    auto operator()(_Types&&... _Args) const
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) const
         noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) // strengthened
         -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
         return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
@@ -1944,7 +1912,7 @@ reference_wrapper(_Ty&) -> reference_wrapper<_Ty>;
 
 // FUNCTION TEMPLATES ref AND cref
 template <class _Ty>
-_NODISCARD reference_wrapper<_Ty> ref(_Ty& _Val) noexcept {
+_NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(_Ty& _Val) noexcept {
     return reference_wrapper<_Ty>(_Val);
 }
 
@@ -1952,12 +1920,12 @@ template <class _Ty>
 void ref(const _Ty&&) = delete;
 
 template <class _Ty>
-_NODISCARD reference_wrapper<_Ty> ref(reference_wrapper<_Ty> _Val) noexcept {
+_NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(reference_wrapper<_Ty> _Val) noexcept {
     return _STD ref(_Val.get());
 }
 
 template <class _Ty>
-_NODISCARD reference_wrapper<const _Ty> cref(const _Ty& _Val) noexcept {
+_NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(const _Ty& _Val) noexcept {
     return reference_wrapper<const _Ty>(_Val);
 }
 
@@ -1965,7 +1933,7 @@ template <class _Ty>
 void cref(const _Ty&&) = delete;
 
 template <class _Ty>
-_NODISCARD reference_wrapper<const _Ty> cref(reference_wrapper<_Ty> _Val) noexcept {
+_NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(reference_wrapper<_Ty> _Val) noexcept {
     return _STD cref(_Val.get());
 }
 

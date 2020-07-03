@@ -358,10 +358,10 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_functional
 #error __cpp_lib_constexpr_functional is not defined
-#elif __cpp_lib_constexpr_functional != 201811L
-#error __cpp_lib_constexpr_functional is not 201811L
+#elif __cpp_lib_constexpr_functional != 201907L
+#error __cpp_lib_constexpr_functional is not 201907L
 #else
-STATIC_ASSERT(__cpp_lib_constexpr_functional == 201811L);
+STATIC_ASSERT(__cpp_lib_constexpr_functional == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_constexpr_functional

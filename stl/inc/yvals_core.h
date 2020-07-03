@@ -110,7 +110,7 @@
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
 // P1065R2 constexpr INVOKE
-//   (the std::invoke function only; other components like bind and reference_wrapper will be C++20 only)
+//     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -178,6 +178,8 @@
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
+// P1065R2 constexpr INVOKE
+//     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
 // P1207R4 Movability Of Single-Pass Iterators
@@ -1153,7 +1155,7 @@
 
 #define __cpp_lib_constexpr_algorithms  201806L
 #define __cpp_lib_constexpr_complex     201711L
-#define __cpp_lib_constexpr_functional  201811L
+#define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
 #define __cpp_lib_constexpr_memory      201811L
 #define __cpp_lib_constexpr_numeric     201911L
