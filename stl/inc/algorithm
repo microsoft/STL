@@ -680,8 +680,11 @@ namespace ranges {
         template <class _It, class _Se, class _Pj, class _Pr>
         _NODISCARD static constexpr iter_difference_t<_It> _Count_if_unchecked(
             _It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
-            iter_difference_t<_It> _Count = 0;
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr >);
 
+            iter_difference_t<_It> _Count = 0;
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                     ++_Count;

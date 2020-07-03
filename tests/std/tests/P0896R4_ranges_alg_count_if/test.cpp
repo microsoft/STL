@@ -18,14 +18,14 @@ using P = pair<int, int>;
 struct instantiator {
     static constexpr P input[5] = {{0, 47}, {1, 99}, {2, 99}, {3, 47}, {4, 99}};
 
-    template <class Read>
+    template <ranges::input_range Read>
     static constexpr void call() {
         using ranges::count_if;
         { // Validate iterator + sentinel overload
             Read wrapped_input{input};
 
             auto result = count_if(wrapped_input.begin(), wrapped_input.end(), is_odd, get_first);
-            STATIC_ASSERT(same_as<decltype(result), iter_difference_t<decltype(wrapped_input.begin())>>);
+            STATIC_ASSERT(same_as<decltype(result), ranges::range_difference_t<Read>>);
             assert(result == 2);
         }
         { // Validate range overload
