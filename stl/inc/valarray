@@ -1278,7 +1278,7 @@ public:
 
     indirect_array(const indirect_array&) = default;
 
-    indirect_array& operator=(const indirect_array _Right) {
+    indirect_array& operator=(const indirect_array& _Right) {
         valarray<_Ty> _Tmp = _Right;
         *this              = _Tmp;
         return *this;
