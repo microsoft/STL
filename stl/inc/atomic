@@ -728,7 +728,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
-#if defined(_M_IX86) && !defined(_MSC_VER)
+#if defined(_M_IX86) && defined(__clang__)
     _Ty exchange(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with (effectively) sequential consistency
         _Ty _Temp{load()};
@@ -1067,7 +1067,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
 
-#if defined(_M_IX86) && !defined(_MSC_VER)
+#if defined(_M_IX86) && defined(__clang__)
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         // effectively sequential consistency
         _Ty _Temp{this->load()};
