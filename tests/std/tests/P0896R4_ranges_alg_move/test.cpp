@@ -68,6 +68,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in_write<instantiator, int_wrapper const, int_wrapper>(), true));
-    test_in_write<instantiator, int_wrapper const, int_wrapper>();
+    STATIC_ASSERT((test_in_write<instantiator, int_wrapper, int_wrapper>(), true));
+    test_in_write<instantiator, int_wrapper, int_wrapper>();
 }
