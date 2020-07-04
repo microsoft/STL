@@ -35,7 +35,7 @@ void test_gslice() {
     std::gslice_array<int> gslice_array      = v[gslice];
     std::gslice_array<int> gslice_array_copy = gslice_array;
     (void) gslice_array_copy;
-    
+
     assert(v[0] == 0);
     assert(v[1] == 1);
     assert(v[2] == 2);
