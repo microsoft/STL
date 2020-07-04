@@ -941,8 +941,11 @@ public:
     slice_array(const slice_array&) = default;
 
     slice_array& operator=(const slice_array& _Right) {
-        valarray<_Ty> _Tmp = _Right;
-        *this              = _Tmp;
+        size_t _Dst_off = _Start;
+        size_t _Src_off = _Right._Start;
+        for (size_t _Idx = 0; _Idx < _Len; ++_Idx, _Dst_off += _Stride, _Src_off += _Right._Stride) {
+            _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
+        }
         return *this;
     }
 
@@ -1086,8 +1089,12 @@ public:
     gslice_array(const gslice_array&) = default;
 
     gslice_array& operator=(const gslice_array& _Right) {
-        valarray<_Ty> _Tmp = _Right;
-        *this              = _Tmp;
+        _Sizarray _Dst_indexarray(size_t{0}, _Nslice());
+        _Sizarray _Src_indexarray(size_t{0}, _Right._Nslice());
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Off(_Dst_indexarray)] = _Right._Myptr[_Right._Off(_Src_indexarray)];
+        }
         return *this;
     }
 
@@ -1187,8 +1194,18 @@ public:
     mask_array(const mask_array&) = default;
 
     mask_array& operator=(const mask_array& _Right) {
-        valarray<_Ty> _Tmp = _Right;
-        *this              = _Tmp;
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0, _Dst_off = 0, _Src_off = 0; _Idx < _Size; ++_Idx, ++_Src_off, ++_Dst_off) {
+            while (!_Mask(_Dst_off)) {
+                ++_Dst_off;
+            }
+
+            while (!_Right._Mask(_Src_off)) {
+                ++_Src_off;
+            }
+
+            _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
+        }
         return *this;
     }
 
@@ -1279,8 +1296,10 @@ public:
     indirect_array(const indirect_array&) = default;
 
     indirect_array& operator=(const indirect_array& _Right) {
-        valarray<_Ty> _Tmp = _Right;
-        *this              = _Tmp;
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] = _Right._Myptr[_Right._Indir(_Idx)];
+        }
         return *this;
     }
 
