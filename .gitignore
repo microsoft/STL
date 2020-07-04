@@ -7,3 +7,7 @@ __pycache__/
 /build/
 /out/
 /tools/out/
+
+# Ignore submodules in other branches.
+/llvm-project/
+/vcpkg/
