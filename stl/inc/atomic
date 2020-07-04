@@ -728,6 +728,16 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
 
+#if defined(_M_IX86) && !defined(_MSC_VER)
+    _Ty exchange(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
+        // exchange with (effectively) sequential consistency
+        _Ty _Temp{load()};
+        while (!compare_exchange_strong(_Temp, _Value, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+#else // ^^^ _M_IX86 on clang / !_M_IX86 on clang vvv
     _Ty exchange(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long long _As_bytes;
@@ -735,6 +745,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             _Atomic_reinterpret_as<long long>(_Value));
         return reinterpret_cast<_Ty&>(_As_bytes);
     }
+#endif // _M_IX86
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
@@ -1056,6 +1067,60 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
 
+#if defined(_M_IX86) && !defined(_MSC_VER)
+    _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
+        // effectively sequential consistency
+        _Ty _Temp{this->load()};
+        while (!this->compare_exchange_strong(_Temp, _Temp + _Operand, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+
+    _Ty fetch_and(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
+        // effectively sequential consistency
+        _Ty _Temp{this->load()};
+        while (!this->compare_exchange_strong(_Temp, _Temp & _Operand, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+
+    _Ty fetch_or(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
+        // effectively sequential consistency
+        _Ty _Temp{this->load()};
+        while (!this->compare_exchange_strong(_Temp, _Temp | _Operand, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+
+    _Ty fetch_xor(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
+        // effectively sequential consistency
+        _Ty _Temp{this->load()};
+        while (!this->compare_exchange_strong(_Temp, _Temp ^ _Operand, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+
+    _Ty operator++(int) noexcept {
+        return fetch_add(static_cast<_Ty>(1));
+    }
+
+    _Ty operator++() noexcept {
+        return fetch_add(static_cast<_Ty>(1)) + static_cast<_Ty>(1);
+    }
+
+    _Ty operator--(int) noexcept {
+        return fetch_add(static_cast<_Ty>(-1));
+    }
+
+    _Ty operator--() noexcept {
+        return fetch_add(static_cast<_Ty>(-1)) - static_cast<_Ty>(1);
+    }
+
+#else // ^^^ _M_IX86 on clang / !_M_IX86 on clang vvv
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd64,
@@ -1105,6 +1170,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     _Ty operator--() noexcept {
         return static_cast<_Ty>(_InterlockedDecrement64(_Atomic_address_as<long long>(this->_Storage)));
     }
+#endif // _M_IX86
 };
 
 #if 1 // TRANSITION, ABI
