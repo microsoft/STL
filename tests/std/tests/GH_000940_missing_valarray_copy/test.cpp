@@ -26,8 +26,8 @@ int main() {
     std::mask_array<int> mask_array      = v[mask];
     std::mask_array<int> mask_array_copy = mask_array;
 
-    std::valarray<bool> ohter_mask({false, false, true, false, false});
-    std::mask_array<int> other_mask_array = v[ohter_mask];
+    std::valarray<bool> other_mask({false, true, true, true, false});
+    std::mask_array<int> other_mask_array = v[other_mask];
     other_mask_array                      = mask_array;
 
     std::valarray<std::size_t> indices({2, 4});

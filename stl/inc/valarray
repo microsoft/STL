@@ -940,7 +940,11 @@ public:
 
     slice_array(const slice_array&) = default;
 
-    slice_array& operator=(const slice_array&) = default;
+    slice_array& operator=(const slice_array& _Right) {
+        valarray<_Ty> _Tmp = _Right;
+        *this              = _Tmp;
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
@@ -1081,7 +1085,11 @@ public:
 
     gslice_array(const gslice_array&) = default;
 
-    gslice_array& operator=(const gslice_array&) = default;
+    gslice_array& operator=(const gslice_array& _Right) {
+        valarray<_Ty> _Tmp = _Right;
+        *this              = _Tmp;
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
@@ -1178,7 +1186,11 @@ public:
 
     mask_array(const mask_array&) = default;
 
-    mask_array& operator=(const mask_array&) = default;
+    mask_array& operator=(const mask_array& _Right) {
+        valarray<_Ty> _Tmp = _Right;
+        *this              = _Tmp;
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
@@ -1266,7 +1278,11 @@ public:
 
     indirect_array(const indirect_array&) = default;
 
-    indirect_array& operator=(const indirect_array&) = default;
+    indirect_array& operator=(const indirect_array _Right) {
+        valarray<_Ty> _Tmp = _Right;
+        *this              = _Tmp;
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
