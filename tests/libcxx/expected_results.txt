@@ -567,10 +567,6 @@ std/re/re.traits/transform.pass.cpp FAIL
 # STL bug: Incorrect return types.
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
 
-# STL bug: Missing <valarray> assignment operators.
-std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
-std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp FAIL
-
 # STL bug: We allow fill() and swap() for array<const T, 0>.
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
