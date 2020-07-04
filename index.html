@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <!-- Copyright (c) Microsoft Corporation. -->
+    <!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
+    <title>STL Status Chart</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js"
+        integrity="sha256-TQq84xX6vkwR0Qs1qH5ADkP+MvH0W+9E7TdHJsoIQiM=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <canvas id="statusChart"></canvas>
+    <script>
+        let table = [
+            { date: '2017-06-09', cxx17: 17, lwg: 44, bugs: 247, libcxx: 526 },
+            { date: '2017-06-16', cxx17: 17, lwg: 43, bugs: 246, libcxx: 526 },
+            { date: '2017-06-23', cxx17: 17, lwg: 43, bugs: 249, libcxx: 517 },
+            { date: '2017-06-30', cxx17: 16, lwg: 42, bugs: 247, libcxx: 518 },
+            { date: '2017-07-07', cxx17: 15, lwg: 44, bugs: 251, libcxx: 518 },
+            { date: '2017-07-14', cxx17: 13, cxx20: 0, lwg: 42, bugs: 254, libcxx: 519 },
+            { date: '2017-07-21', cxx17: 12, cxx20: 2, lwg: 48, bugs: 257, libcxx: 524 },
+            { date: '2017-07-28', cxx17: 12, cxx20: 2, lwg: 48, bugs: 261, libcxx: 525 },
+            { date: '2017-08-04', cxx17: 10, cxx20: 2, lwg: 46, bugs: 263, libcxx: 524 },
+            { date: '2017-08-11', cxx17: 10, cxx20: 2, lwg: 46, bugs: 263, libcxx: 494 },
+            { date: '2017-08-18', cxx17: 10, cxx20: 2, lwg: 46, bugs: 267, libcxx: 494 },
+            { date: '2017-08-25', cxx17: 10, cxx20: 2, lwg: 46, bugs: 266, libcxx: 494 },
+            { date: '2017-09-01', cxx17: 10, cxx20: 2, lwg: 46, bugs: 271, libcxx: 494 },
+            { date: '2017-09-08', cxx17: 9, cxx20: 2, lwg: 46, bugs: 274, libcxx: 494 },
+            { date: '2017-09-15', cxx17: 9, cxx20: 2, lwg: 46, bugs: 278, libcxx: 494 },
+            { date: '2017-09-22', cxx17: 8, cxx20: 2, lwg: 46, bugs: 279, libcxx: 494 },
+            { date: '2017-09-29', cxx17: 8, cxx20: 2, lwg: 46, bugs: 279, libcxx: 479 },
+            { date: '2017-10-06', cxx17: 8, cxx20: 2, lwg: 46, bugs: 281, libcxx: 481 },
+            { date: '2017-10-13', cxx17: 8, cxx20: 2, lwg: 46, bugs: 282, libcxx: 480 },
+            { date: '2017-10-20', cxx17: 7, cxx20: 2, lwg: 46, bugs: 284, libcxx: 485 },
+            { date: '2017-10-27', cxx17: 7, cxx20: 2, lwg: 46, bugs: 285, libcxx: 486 },
+            { date: '2017-11-03', cxx17: 6, cxx20: 2, lwg: 46, bugs: 283, libcxx: 487 },
+            { date: '2017-11-10', cxx17: 6, cxx20: 2, lwg: 55, bugs: 284, libcxx: 487 },
+            { date: '2017-11-17', cxx17: 6, cxx20: 15, lwg: 55, bugs: 285, libcxx: 487 },
+            { date: '2017-11-24', cxx17: 5, cxx20: 15, lwg: 52, bugs: 291, libcxx: 489 },
+            { date: '2017-12-01', cxx17: 5, cxx20: 15, lwg: 52, bugs: 288, libcxx: 489 },
+            { date: '2017-12-08', cxx17: 5, cxx20: 15, lwg: 52, bugs: 289, libcxx: 515 },
+            { date: '2017-12-15', cxx17: 5, cxx20: 15, lwg: 52, bugs: 287, libcxx: 506 },
+            { date: '2018-01-05', cxx17: 5, cxx20: 15, lwg: 52, bugs: 271, libcxx: 507 },
+            { date: '2018-01-12', cxx17: 5, cxx20: 15, lwg: 52, bugs: 266, libcxx: 497 },
+            { date: '2018-01-19', cxx17: 5, cxx20: 15, lwg: 52, bugs: 268, libcxx: 497 },
+            { date: '2018-01-26', cxx17: 5, cxx20: 15, lwg: 52, bugs: 269, libcxx: 497 },
+            { date: '2018-02-02', cxx17: 5, cxx20: 15, lwg: 52, bugs: 268, libcxx: 497 },
+            { date: '2018-02-09', cxx17: 5, cxx20: 15, lwg: 52, bugs: 271, libcxx: 497 },
+            { date: '2018-02-16', cxx17: 4, cxx20: 15, lwg: 49, bugs: 269, libcxx: 497 },
+            { date: '2018-02-23', cxx17: 4, cxx20: 15, lwg: 49, bugs: 264, libcxx: 497 },
+            { date: '2018-03-02', cxx17: 4, cxx20: 15, lwg: 49, bugs: 263, libcxx: 506 },
+            { date: '2018-03-09', cxx17: 2, cxx20: 15, lwg: 22, bugs: 263, libcxx: 505 },
+            { date: '2018-03-16', cxx17: 1, cxx20: 15, lwg: 19, bugs: 261, libcxx: 505 },
+            { date: '2018-03-23', cxx17: 1, cxx20: 20, lwg: 20, bugs: 263, libcxx: 490 },
+            { date: '2018-03-30', cxx17: 1, cxx20: 20, lwg: 15, bugs: 249, libcxx: 477 },
+            { date: '2018-04-06', cxx17: 1, cxx20: 20, lwg: 15, bugs: 241, libcxx: 477 },
+            { date: '2018-04-13', cxx17: 1, cxx20: 20, lwg: 13, bugs: 234, libcxx: 458 },
+            { date: '2018-04-20', cxx17: 1, cxx20: 20, lwg: 12, bugs: 210, libcxx: 454 },
+            { date: '2018-04-27', cxx17: 1, cxx20: 20, lwg: 6, bugs: 208, libcxx: 419 },
+            { date: '2018-05-04', cxx17: 1, cxx20: 20, lwg: 6, bugs: 208, libcxx: 418 },
+            { date: '2018-05-11', cxx17: 1, cxx20: 20, lwg: 6, bugs: 206, libcxx: 420 },
+            { date: '2018-05-18', cxx17: 1, cxx20: 20, lwg: 3, bugs: 203, libcxx: 411 },
+            { date: '2018-05-25', cxx17: 1, cxx20: 20, lwg: 2, bugs: 205, libcxx: 410 },
+            { date: '2018-06-01', cxx17: 1, cxx20: 20, lwg: 1, bugs: 205, libcxx: 409 },
+            { date: '2018-06-08', cxx17: 1, cxx20: 20, lwg: 1, bugs: 205, libcxx: 409 },
+            { date: '2018-06-15', cxx17: 1, cxx20: 35, lwg: 2, bugs: 206, libcxx: 410 },
+            { date: '2018-06-22', cxx17: 1, cxx20: 35, lwg: 2, bugs: 208, libcxx: 410 },
+            { date: '2018-06-29', cxx17: 1, cxx20: 35, lwg: 2, bugs: 210, libcxx: 410 },
+            { date: '2018-07-06', cxx17: 1, cxx20: 35, lwg: 2, bugs: 212, libcxx: 410 },
+            { date: '2018-07-13', cxx17: 1, cxx20: 35, lwg: 2, bugs: 213, libcxx: 410 },
+            { date: '2018-07-20', cxx17: 1, cxx20: 35, lwg: 2, bugs: 215, libcxx: 410 },
+            { date: '2018-07-27', cxx17: 1, cxx20: 34, lwg: 2, bugs: 216, libcxx: 410 },
+            { date: '2018-08-03', cxx17: 1, cxx20: 34, lwg: 2, bugs: 216, libcxx: 410 },
+            { date: '2018-08-10', cxx17: 1, cxx20: 34, lwg: 2, bugs: 216, libcxx: 533 },
+            { date: '2018-08-17', cxx17: 1, cxx20: 34, lwg: 2, bugs: 216, libcxx: 535 },
+            { date: '2018-08-24', cxx17: 1, cxx20: 34, lwg: 2, bugs: 217, libcxx: 535 },
+            { date: '2018-08-31', cxx17: 1, cxx20: 34, lwg: 2, bugs: 218, libcxx: 530 },
+            { date: '2018-09-07', cxx17: 1, cxx20: 34, lwg: 2, bugs: 219, libcxx: 530 },
+            { date: '2018-09-14', cxx17: 1, cxx20: 34, lwg: 2, bugs: 220, libcxx: 530 },
+            { date: '2018-09-21', cxx17: 1, cxx20: 34, lwg: 2, bugs: 220, libcxx: 530 },
+            { date: '2018-09-28', cxx17: 1, cxx20: 34, lwg: 2, bugs: 220, libcxx: 530 },
+            { date: '2018-10-05', cxx17: 1, cxx20: 34, lwg: 2, bugs: 220, libcxx: 530 },
+            { date: '2018-10-12', cxx17: 1, cxx20: 34, lwg: 2, bugs: 221, libcxx: 530 },
+            { date: '2018-10-19', cxx17: 1, cxx20: 34, lwg: 2, bugs: 223, libcxx: 530 },
+            { date: '2018-10-26', cxx17: 1, cxx20: 34, lwg: 2, bugs: 225, libcxx: 533 },
+            { date: '2018-11-02', cxx17: 1, cxx20: 34, lwg: 2, bugs: 227, libcxx: 533 },
+            { date: '2018-11-09', cxx17: 1, cxx20: 34, lwg: 2, bugs: 229, libcxx: 533 },
+            { date: '2018-11-16', cxx17: 1, cxx20: 51, lwg: 10, bugs: 230, libcxx: 535 },
+            { date: '2018-11-23', cxx17: 1, cxx20: 51, lwg: 10, bugs: 232, libcxx: 535 },
+            { date: '2018-11-30', cxx17: 1, cxx20: 51, lwg: 9, bugs: 233, libcxx: 538 },
+            { date: '2018-12-07', cxx17: 1, cxx20: 51, lwg: 9, bugs: 235, libcxx: 538 },
+            { date: '2018-12-14', cxx17: 1, cxx20: 51, lwg: 9, bugs: 238, libcxx: 538 },
+            { date: '2018-12-21', cxx17: 1, cxx20: 51, lwg: 9, bugs: 238, libcxx: 538 },
+            { date: '2018-12-28', cxx17: 1, cxx20: 51, lwg: 9, bugs: 238, libcxx: 538 },
+            { date: '2019-01-04', cxx17: 1, cxx20: 51, lwg: 9, bugs: 238, libcxx: 538 },
+            { date: '2019-01-11', cxx17: 1, cxx20: 51, lwg: 9, bugs: 235, libcxx: 538 },
+            { date: '2019-01-18', cxx17: 1, cxx20: 50, lwg: 9, bugs: 233, libcxx: 538 },
+            { date: '2019-01-25', cxx17: 1, cxx20: 49, lwg: 9, bugs: 233, libcxx: 541 },
+            { date: '2019-02-01', cxx17: 1, cxx20: 48, lwg: 9, bugs: 233, libcxx: 540 },
+            { date: '2019-02-08', cxx17: 1, cxx20: 48, lwg: 9, bugs: 233, libcxx: 540 },
+            { date: '2019-02-15', cxx17: 1, cxx20: 48, lwg: 9, bugs: 232, libcxx: 540 },
+            { date: '2019-02-22', cxx17: 1, cxx20: 48, lwg: 9, bugs: 234, libcxx: 540 },
+            { date: '2019-03-01', cxx17: 1, cxx20: 57, lwg: 10, bugs: 236, libcxx: 540 },
+            { date: '2019-03-08', cxx17: 1, cxx20: 55, lwg: 10, bugs: 237, libcxx: 540 },
+            { date: '2019-03-15', cxx17: 1, cxx20: 54, lwg: 8, bugs: 235, libcxx: 540 },
+            { date: '2019-03-22', cxx17: 1, cxx20: 53, lwg: 8, bugs: 236, libcxx: 577 },
+            { date: '2019-03-29', cxx17: 1, cxx20: 52, lwg: 8, bugs: 237, libcxx: 577 },
+            { date: '2019-04-05', cxx17: 1, cxx20: 50, lwg: 8, bugs: 238, libcxx: 578 },
+            { date: '2019-04-12', cxx17: 1, cxx20: 50, lwg: 8, bugs: 238, libcxx: 578 },
+            { date: '2019-04-19', cxx17: 1, cxx20: 50, lwg: 8, bugs: 240, libcxx: 578 },
+            { date: '2019-04-26', cxx17: 1, cxx20: 50, lwg: 8, bugs: 243, libcxx: 578 },
+            { date: '2019-05-03', cxx17: 1, cxx20: 48, lwg: 8, bugs: 230, libcxx: 573 },
+            { date: '2019-05-10', cxx17: 1, cxx20: 47, lwg: 8, bugs: 229, libcxx: 541 },
+            { date: '2019-05-17', cxx17: 1, cxx20: 46, lwg: 8, bugs: 232, libcxx: 541 },
+            { date: '2019-05-24', cxx17: 1, cxx20: 44, lwg: 8, bugs: 224, libcxx: 531 },
+            { date: '2019-05-31', cxx17: 1, cxx20: 44, lwg: 7, bugs: 226, libcxx: 531 },
+            { date: '2019-06-07', cxx17: 1, cxx20: 43, lwg: 1, bugs: 223, libcxx: 531 },
+            { date: '2019-06-14', cxx17: 1, cxx20: 43, lwg: 1, bugs: 197, libcxx: 531 },
+            { date: '2019-06-21', cxx17: 1, cxx20: 43, lwg: 1, bugs: 195, libcxx: 531 },
+            { date: '2019-06-28', cxx17: 1, cxx20: 42, lwg: 1, bugs: 196, libcxx: 531 },
+            { date: '2019-07-05', cxx17: 1, cxx20: 42, lwg: 1, bugs: 197, libcxx: 531 },
+            { date: '2019-07-12', cxx17: 1, cxx20: 42, lwg: 1, bugs: 198, libcxx: 531 },
+            { date: '2019-07-19', cxx17: 1, cxx20: 42, lwg: 1, bugs: 199, libcxx: 531 },
+            { date: '2019-07-26', cxx17: 1, cxx20: 59, lwg: 5, bugs: 195, libcxx: 531 },
+            { date: '2019-08-02', cxx17: 1, cxx20: 59, lwg: 5, bugs: 196, libcxx: 531 },
+            { date: '2019-08-09', cxx17: 1, cxx20: 60, lwg: 6, bugs: 198, libcxx: 474 },
+            { date: '2019-08-16', cxx17: 0, cxx20: 60, lwg: 5, bugs: 198, libcxx: 474 },
+            { date: '2019-08-23', cxx20: 60, lwg: 5, bugs: 199, libcxx: 474 },
+            { date: '2019-08-30', cxx20: 60, lwg: 5, bugs: 201, libcxx: 474 },
+            { date: '2019-09-06', cxx20: 60, lwg: 5, bugs: 202, libcxx: 474 },
+            { date: '2019-09-13', cxx20: 60, lwg: 5, bugs: 201, libcxx: 474 },
+            { date: '2019-09-20', cxx20: 60, lwg: 5, bugs: 201, libcxx: 474 },
+            { date: '2019-09-27', cxx20: 56, lwg: 5, bugs: 200, libcxx: 474 },
+            { date: '2019-10-04', cxx20: 56, lwg: 5, bugs: 201, libcxx: 474 },
+            { date: '2019-10-11', cxx20: 56, lwg: 5, bugs: 203, libcxx: 485 },
+            { date: '2019-10-18', cxx20: 55, lwg: 5, bugs: 201, libcxx: 485 },
+            { date: '2019-10-25', cxx20: 53, lwg: 3, bugs: 202, libcxx: 490 },
+            { date: '2019-11-01', cxx20: 52, lwg: 3, bugs: 201, libcxx: 494 },
+            { date: '2019-11-08', cxx20: 51, lwg: 3, bugs: 201, libcxx: 494 },
+            { date: '2019-11-15', cxx20: 49, lwg: 3, bugs: 193, libcxx: 494 },
+            { date: '2019-11-22', cxx20: 46, lwg: 3, bugs: 188, libcxx: 494 },
+            { date: '2019-11-29', cxx20: 50, lwg: 7, bugs: 188, libcxx: 494 },
+            { date: '2019-12-06', cxx20: 47, lwg: 4, bugs: 186, libcxx: 496 },
+            { date: '2019-12-13', cxx20: 47, lwg: 4, bugs: 184, libcxx: 502 },
+            { date: '2019-12-20', cxx20: 47, lwg: 4, bugs: 187, libcxx: 494 },
+            { date: '2019-12-27', cxx20: 47, lwg: 4, bugs: 187, libcxx: 494 },
+            { date: '2020-01-03', cxx20: 47, lwg: 4, bugs: 187, libcxx: 494 },
+            { date: '2020-01-10', cxx20: 44, lwg: 4, bugs: 183, libcxx: 495 },
+            { date: '2020-01-17', cxx20: 43, lwg: 4, bugs: 182, libcxx: 501 },
+            { date: '2020-01-24', cxx20: 39, lwg: 4, bugs: 180, libcxx: 498 },
+            { date: '2020-01-31', cxx20: 37, lwg: 4, bugs: 181, libcxx: 503 },
+            { date: '2020-02-07', cxx20: 36, lwg: 4, bugs: 182, libcxx: 504 },
+            { date: '2020-02-14', cxx20: 36, lwg: 4, bugs: 183, libcxx: 504 },
+            { date: '2020-02-21', cxx20: 44, lwg: 14, bugs: 182, libcxx: 503 },
+            { date: '2020-02-28', cxx20: 43, lwg: 14, bugs: 182, libcxx: 503 },
+            { date: '2020-03-06', cxx20: 39, lwg: 7, bugs: 181, libcxx: 528 },
+            { date: '2020-03-13', cxx20: 37, lwg: 6, bugs: 182, libcxx: 538 },
+            { date: '2020-03-20', cxx20: 37, lwg: 6, bugs: 184, libcxx: 542 },
+            { date: '2020-03-27', cxx20: 37, lwg: 5, bugs: 185, libcxx: 544 },
+            { date: '2020-04-03', cxx20: 36, lwg: 5, bugs: 184, libcxx: 546 },
+            { date: '2020-04-10', cxx20: 34, lwg: 5, bugs: 182, libcxx: 545 },
+            { date: '2020-04-17', cxx20: 34, lwg: 5, bugs: 181, libcxx: 538 },
+            { date: '2020-04-24', cxx20: 33, lwg: 5, bugs: 178, libcxx: 538 },
+            { date: '2020-05-01', cxx20: 32, lwg: 5, bugs: 176, libcxx: 578 },
+            { date: '2020-05-08', cxx20: 32, lwg: 5, bugs: 178, libcxx: 558 },
+            { date: '2020-05-15', cxx20: 31, lwg: 5, bugs: 178, libcxx: 558 },
+            { date: '2020-05-22', cxx20: 30, lwg: 5, bugs: 175, libcxx: 545 },
+            { date: '2020-05-29', cxx20: 30, lwg: 4, bugs: 175, libcxx: 545 },
+            { date: '2020-06-05', cxx20: 30, lwg: 4, bugs: 176, libcxx: 545 },
+            { date: '2020-06-12', cxx20: 30, lwg: 4, bugs: 176, libcxx: 545 },
+            { date: '2020-06-19', cxx20: 30, lwg: 4, bugs: 178, libcxx: 545 },
+            { date: '2020-06-26', cxx20: 30, lwg: 3, bugs: 176, libcxx: 547 },
+            { date: '2020-07-03', cxx20: 29, lwg: 2, bugs: 169, libcxx: 548 },
+        ]
+
+        function get_values(key) {
+            return table.filter(row => row[key] != null).map(row => ({ x: row.date, y: row[key] }));
+        }
+
+        let date_values = table.map(row => row.date)
+        let cxx17_values = get_values('cxx17')
+        let cxx20_values = get_values('cxx20')
+        let lwg_values = get_values('lwg')
+        let bugs_values = get_values('bugs')
+        let libcxx_values = get_values('libcxx')
+
+        let ctx = 'statusChart';
+        let statusChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: date_values,
+                datasets: [
+                    {
+                        data: cxx17_values,
+                        label: 'C++17 Features',
+                        borderColor: '#00B050',
+                        backgroundColor: '#00B050',
+                        yAxisID: 'small-axis',
+                    },
+                    {
+                        data: cxx20_values,
+                        label: 'C++20 Features',
+                        borderColor: '#7030A0',
+                        backgroundColor: '#7030A0',
+                        yAxisID: 'small-axis',
+                    },
+                    {
+                        data: lwg_values,
+                        label: 'LWG Issues',
+                        borderColor: '#0070C0',
+                        backgroundColor: '#0070C0',
+                        yAxisID: 'small-axis',
+                    },
+                    {
+                        data: bugs_values,
+                        label: 'Bugs',
+                        borderColor: '#FF0000',
+                        backgroundColor: '#FF0000',
+                        yAxisID: 'large-axis',
+                    },
+                    {
+                        data: libcxx_values,
+                        label: 'Libcxx Skips',
+                        borderColor: '#FFC000',
+                        backgroundColor: '#FFC000',
+                        yAxisID: 'large-axis',
+                    },
+                ],
+            },
+            options: {
+                title: {
+                    display: true,
+                    fontSize: 24,
+                    text: 'STL Status Chart',
+                },
+                animation: {
+                    duration: 0,
+                },
+                elements: {
+                    line: {
+                        fill: false,
+                        tension: 0,
+                    },
+                    point: {
+                        radius: 0,
+                    },
+                },
+                hover: {
+                    mode: 'x',
+                },
+                tooltips: {
+                    mode: 'x',
+                    position: 'nearest',
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            parser: 'YYYY-MM-DD',
+                            tooltipFormat: 'll',
+                            unit: 'quarter',
+                            displayFormats: {
+                                quarter: 'MMM YYYY',
+                            },
+                        },
+                    }],
+                    yAxes: [
+                        {
+                            type: 'linear',
+                            display: 'auto',
+                            id: 'large-axis',
+                            position: 'left',
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Bugs, Skips',
+                            },
+                            ticks: {
+                                min: 0,
+                                max: 650,
+                                stepSize: 100,
+                            },
+                        },
+                        {
+                            type: 'linear',
+                            display: 'auto',
+                            id: 'small-axis',
+                            position: 'right',
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Features, Issues',
+                            },
+                            ticks: {
+                                min: 0,
+                                max: 65,
+                                stepSize: 10,
+                            },
+                        },
+                    ],
+                },
+            },
+        });
+    </script>
+
+    <h1>Explanation</h1>
+    <p>See the <a href="https://github.com/microsoft/STL">microsoft/STL</a> wiki page
+        <a href="https://github.com/microsoft/STL/wiki/Status-Chart">Status Chart</a> for an explanation.</p>
+</body>
+
+</html>
