@@ -10,6 +10,7 @@ void test_slice() {
 
     std::slice_array<int> slice_array      = v[std::slice(2, 2, 2)];
     std::slice_array<int> slice_array_copy = slice_array;
+    (void) slice_array_copy;
 
     assert(v[0] == 0);
     assert(v[1] == 1);
@@ -33,7 +34,8 @@ void test_gslice() {
     std::gslice gslice(2, std::valarray<std::size_t>({2}), std::valarray<std::size_t>({2}));
     std::gslice_array<int> gslice_array      = v[gslice];
     std::gslice_array<int> gslice_array_copy = gslice_array;
-
+    (void) gslice_array_copy;
+    
     assert(v[0] == 0);
     assert(v[1] == 1);
     assert(v[2] == 2);
@@ -57,6 +59,7 @@ void test_mask() {
     std::valarray<bool> mask({true, false, false, false, true});
     std::mask_array<int> mask_array      = v[mask];
     std::mask_array<int> mask_array_copy = mask_array;
+    (void) mask_array_copy;
 
     assert(v[0] == 0);
     assert(v[1] == 1);
@@ -81,6 +84,7 @@ void test_indirect() {
     std::valarray<std::size_t> indices({2, 3});
     std::indirect_array<int> indirect_array      = v[indices];
     std::indirect_array<int> indirect_array_copy = indirect_array;
+    (void) indirect_array_copy;
 
     assert(v[0] == 0);
     assert(v[1] == 1);
