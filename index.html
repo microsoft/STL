@@ -178,133 +178,137 @@
             { date: '2020-06-19', cxx20: 30, lwg: 4, bugs: 178, libcxx: 545 },
             { date: '2020-06-26', cxx20: 30, lwg: 3, bugs: 176, libcxx: 547 },
             { date: '2020-07-03', cxx20: 29, lwg: 2, bugs: 169, libcxx: 548 },
-        ]
+        ];
 
         function get_values(key) {
             return table.filter(row => row[key] != null).map(row => ({ x: row.date, y: row[key] }));
         }
 
-        let date_values = table.map(row => row.date)
-        let cxx17_values = get_values('cxx17')
-        let cxx20_values = get_values('cxx20')
-        let lwg_values = get_values('lwg')
-        let bugs_values = get_values('bugs')
-        let libcxx_values = get_values('libcxx')
+        let date_values = table.map(row => row.date);
+        let cxx17_values = get_values('cxx17');
+        let cxx20_values = get_values('cxx20');
+        let lwg_values = get_values('lwg');
+        let bugs_values = get_values('bugs');
+        let libcxx_values = get_values('libcxx');
 
-        let ctx = 'statusChart';
-        let statusChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: date_values,
-                datasets: [
+        let chart_data = {
+            labels: date_values,
+            datasets: [
+                {
+                    data: cxx17_values,
+                    label: 'C++17 Features',
+                    borderColor: '#00B050',
+                    backgroundColor: '#00B050',
+                    yAxisID: 'small-axis',
+                },
+                {
+                    data: cxx20_values,
+                    label: 'C++20 Features',
+                    borderColor: '#7030A0',
+                    backgroundColor: '#7030A0',
+                    yAxisID: 'small-axis',
+                },
+                {
+                    data: lwg_values,
+                    label: 'LWG Issues',
+                    borderColor: '#0070C0',
+                    backgroundColor: '#0070C0',
+                    yAxisID: 'small-axis',
+                },
+                {
+                    data: bugs_values,
+                    label: 'Bugs',
+                    borderColor: '#FF0000',
+                    backgroundColor: '#FF0000',
+                    yAxisID: 'large-axis',
+                },
+                {
+                    data: libcxx_values,
+                    label: 'Libcxx Skips',
+                    borderColor: '#FFC000',
+                    backgroundColor: '#FFC000',
+                    yAxisID: 'large-axis',
+                },
+            ],
+        };
+
+        let chart_options = {
+            title: {
+                display: true,
+                fontSize: 24,
+                text: 'STL Status Chart',
+            },
+            animation: {
+                duration: 0,
+            },
+            elements: {
+                line: {
+                    fill: false,
+                    tension: 0,
+                },
+                point: {
+                    radius: 0,
+                },
+            },
+            hover: {
+                mode: 'x',
+            },
+            tooltips: {
+                mode: 'x',
+                position: 'nearest',
+            },
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        parser: 'YYYY-MM-DD',
+                        tooltipFormat: 'll',
+                        unit: 'quarter',
+                        displayFormats: {
+                            quarter: 'MMM YYYY',
+                        },
+                    },
+                }],
+                yAxes: [
                     {
-                        data: cxx17_values,
-                        label: 'C++17 Features',
-                        borderColor: '#00B050',
-                        backgroundColor: '#00B050',
-                        yAxisID: 'small-axis',
+                        type: 'linear',
+                        display: 'auto',
+                        id: 'large-axis',
+                        position: 'left',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Bugs, Skips',
+                        },
+                        ticks: {
+                            min: 0,
+                            max: 650,
+                            stepSize: 100,
+                        },
                     },
                     {
-                        data: cxx20_values,
-                        label: 'C++20 Features',
-                        borderColor: '#7030A0',
-                        backgroundColor: '#7030A0',
-                        yAxisID: 'small-axis',
-                    },
-                    {
-                        data: lwg_values,
-                        label: 'LWG Issues',
-                        borderColor: '#0070C0',
-                        backgroundColor: '#0070C0',
-                        yAxisID: 'small-axis',
-                    },
-                    {
-                        data: bugs_values,
-                        label: 'Bugs',
-                        borderColor: '#FF0000',
-                        backgroundColor: '#FF0000',
-                        yAxisID: 'large-axis',
-                    },
-                    {
-                        data: libcxx_values,
-                        label: 'Libcxx Skips',
-                        borderColor: '#FFC000',
-                        backgroundColor: '#FFC000',
-                        yAxisID: 'large-axis',
+                        type: 'linear',
+                        display: 'auto',
+                        id: 'small-axis',
+                        position: 'right',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Features, Issues',
+                        },
+                        ticks: {
+                            min: 0,
+                            max: 65,
+                            stepSize: 10,
+                        },
                     },
                 ],
             },
-            options: {
-                title: {
-                    display: true,
-                    fontSize: 24,
-                    text: 'STL Status Chart',
-                },
-                animation: {
-                    duration: 0,
-                },
-                elements: {
-                    line: {
-                        fill: false,
-                        tension: 0,
-                    },
-                    point: {
-                        radius: 0,
-                    },
-                },
-                hover: {
-                    mode: 'x',
-                },
-                tooltips: {
-                    mode: 'x',
-                    position: 'nearest',
-                },
-                scales: {
-                    xAxes: [{
-                        type: 'time',
-                        time: {
-                            parser: 'YYYY-MM-DD',
-                            tooltipFormat: 'll',
-                            unit: 'quarter',
-                            displayFormats: {
-                                quarter: 'MMM YYYY',
-                            },
-                        },
-                    }],
-                    yAxes: [
-                        {
-                            type: 'linear',
-                            display: 'auto',
-                            id: 'large-axis',
-                            position: 'left',
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Bugs, Skips',
-                            },
-                            ticks: {
-                                min: 0,
-                                max: 650,
-                                stepSize: 100,
-                            },
-                        },
-                        {
-                            type: 'linear',
-                            display: 'auto',
-                            id: 'small-axis',
-                            position: 'right',
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Features, Issues',
-                            },
-                            ticks: {
-                                min: 0,
-                                max: 65,
-                                stepSize: 10,
-                            },
-                        },
-                    ],
-                },
-            },
+        };
+
+        let ctx = 'statusChart';
+        let status_chart = new Chart(ctx, {
+            type: 'line',
+            data: chart_data,
+            options: chart_options,
         });
     </script>
 
