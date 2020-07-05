@@ -9,6 +9,7 @@
     <style>
         body {
             font-family: sans-serif;
+            line-height: 1.5;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js"
@@ -343,8 +344,52 @@
     </script>
 
     <h1>Explanation</h1>
-    <p>See the <a href="https://github.com/microsoft/STL">microsoft/STL</a> wiki page
-        <a href="https://github.com/microsoft/STL/wiki/Status-Chart">Status Chart</a> for an explanation.</p>
+    <p>This tracks the progress of the <a href="https://github.com/microsoft/STL">microsoft/STL</a> repo.
+        For more info, read the <a href="https://github.com/microsoft/STL/wiki/Changelog">Changelog</a>.</p>
+
+    <p>This chart has two vertical axes. For all lines, fewer is better.</p>
+
+    <ul>
+        <li>Left axis:
+            <ul>
+                <li>
+                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">Open bugs.</a>
+                    Note: we're still porting bugs from our Microsoft-internal database to GitHub.</li>
+                <li>
+                    <a href="https://github.com/microsoft/STL/blob/master/tests/libcxx/skipped_tests.txt">Skipped tests
+                        in the libcxx test suite.</a> There are many reasons for skipped tests: STL bugs, test bugs,
+                    compiler bugs, missing STL features, missing compiler features, etc. Note: to avoid double-counting,
+                    this chart excludes skipped tests due to missing STL features.</li>
+            </ul>
+        </li>
+        <li>Right axis:
+            <ul>
+                <li>C++17 STL features remaining to be implemented. This reached zero when we implemented
+                    <a href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
+                        rel="nofollow"><code>&lt;charconv&gt;</code>, C++17's final boss</a>.</li>
+                <li>
+                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
+                        C++20 STL features remaining to be implemented.</a>
+                    This increases when more features are voted into the Working Paper at
+                    <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.</li>
+                <li>
+                    <a
+                        href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext+-label%3Ablocked">
+                        LWG issue resolutions remaining to be implemented.</a>
+                    This also increases after each WG21 meeting.
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+    <p>We don't count "patch papers" as extra work when one paper adds a feature
+        and another paper modifies that feature before we've implemented it.</p>
+
+    <p>This chart weights features equally, instead of weighting
+        by usefulness for users or difficulty for implementers.</p>
+
+    <p>Powered by <a href="https://www.chartjs.org/">Chart.js</a>.</p>
+
 </body>
 
 </html>
