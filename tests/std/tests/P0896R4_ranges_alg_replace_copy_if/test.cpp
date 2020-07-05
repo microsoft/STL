@@ -26,11 +26,12 @@ struct instantiator {
     static constexpr P input[5]    = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
     static constexpr P expected[5] = {{0, 99}, {47, 1}, {2, 99}, {47, 1}, {4, 99}};
 
-    template <ranges::input_range Read>
+    template <ranges::input_range Read, ranges::indirectly_writable<ranges::range_reference_t<Read>> Write>
     static constexpr void call() {
-        using ranges::replace_copy_if;
+        using ranges::replace_copy_if, ranges::replace_copy_if_result, ranges::iterator_t;
         { // Validate iterator + sentinel overload
             Read wrapped_input{input};
+            P input[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
 
             auto result = replace_copy_if(
                 wrapped_input.begin(), wrapped_input.end(), Write{output}, matches, P{47, 1}, get_second);
@@ -41,6 +42,7 @@ struct instantiator {
         }
         { // Validate range overload
             Read wrapped_input{input};
+            P input[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
 
             auto result = replace_copy_if(wrapped_input, Write{output}, matches, P{47, 1}, get_second);
             STATIC_ASSERT(same_as<decltype(result), replace_copy_if_result<iterator_t<Read>, Write>>);
