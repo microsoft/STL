@@ -1214,7 +1214,7 @@ public:
         size_t _Size    = _Mybool.size();
         size_t _Dst_off = _Start_off();
         size_t _Src_off = _Right._Start_off();
-        for (; _Dst_off < _Size; _Src_off = _Next_off(_Src_off), _Dst_off = _Next_off(_Dst_off)) {
+        for (; _Dst_off < _Size; _Src_off = _Right._Next_off(_Src_off), _Dst_off = _Next_off(_Dst_off)) {
             _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
         }
         return *this;
