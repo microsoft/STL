@@ -1179,7 +1179,7 @@ public:
     }
 
     size_t _Start_off() const {
-        size_t _Off = 0;
+        size_t _Off  = 0;
         size_t _Size = _Mybool.size();
         while (_Off < _Size && !_Mybool[_Off]) {
             ++_Off;
@@ -1194,7 +1194,6 @@ public:
         } while (_Off < _Size && !_Mybool[_Off]);
         return _Off;
     }
-
 
     size_t _Totlen() const {
         size_t _Count = 0;
