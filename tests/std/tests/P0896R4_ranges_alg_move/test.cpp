@@ -15,6 +15,8 @@ struct int_wrapper {
     int val                 = 10;
     constexpr int_wrapper() = default;
     constexpr int_wrapper(int x) : val{x} {}
+    int_wrapper(const int_wrapper&) = default;
+    int_wrapper& operator=(const int_wrapper&) = default;
     constexpr int_wrapper(int_wrapper&& that) : val{std::exchange(that.val, -1)} {}
     constexpr int_wrapper& operator=(int_wrapper&& that) {
         val = std::exchange(that.val, -1);
@@ -34,7 +36,6 @@ STATIC_ASSERT(
 
 
 struct instantiator {
-    static constexpr int_wrapper input[3]           = {13, 55, 12345};
     static constexpr int_wrapper expected_output[3] = {13, 55, 12345};
     static constexpr int_wrapper expected_input[3]  = {-1, -1, -1};
 
