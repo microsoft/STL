@@ -3102,8 +3102,8 @@ namespace ranges {
         // clang-format on
     private:
         template <class _It, class _Se, class _Ty1, class _Ty2, class _Out, class _Pj>
-        _NODISCARD constexpr replace_copy_result<_It, _Out> _Replace_copy_unchecked(
-            _It _First, const _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj) const {
+        _NODISCARD static constexpr replace_copy_result<_It, _Out> _Replace_copy_unchecked(
+            _It _First, const _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj) {
             // copy [_First, _Last) to _Out while replacing projected _Oldval with _Newval
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
