@@ -1909,8 +1909,9 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
+    // clang-format off
     _NODISCARD constexpr pointer operator->() const
-        requires(is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); }) {
+        requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); }) {
         _BidIt _Tmp = current;
         --_Tmp;
         if constexpr (is_pointer_v<_BidIt>) {
@@ -1919,6 +1920,7 @@ public:
             return _Tmp.operator->();
         }
     }
+    // clang-format on
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     _NODISCARD _CONSTEXPR17 pointer operator->() const {
         _BidIt _Tmp = current;

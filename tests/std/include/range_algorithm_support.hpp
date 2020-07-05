@@ -109,15 +109,19 @@ namespace test {
 
         using unwrap = sentinel<Element, IsWrapped::no>;
 
-        [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires(to_bool(Wrapped)) {
+        // clang-format off
+        [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires (to_bool(Wrapped)) {
             return unwrap{ptr_};
         }
+        // clang-format on
 
         static constexpr bool _Unwrap_when_unverified = true;
 
-        constexpr void _Seek_to(unwrap const& s) noexcept requires(to_bool(Wrapped)) {
+        // clang-format off
+        constexpr void _Seek_to(unwrap const& s) noexcept requires (to_bool(Wrapped)) {
             ptr_ = s.peek();
         }
+        // clang-format on
     };
 
     // clang-format off

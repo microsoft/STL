@@ -180,7 +180,9 @@ template <class First, class Second = IncompleteClass>
 struct ConvertsFrom {
     ConvertsFrom() = default;
     constexpr ConvertsFrom(First) noexcept {}
-    constexpr ConvertsFrom(Second) noexcept requires(!std::is_same_v<IncompleteClass, Second>) {}
+    // clang-format off
+    constexpr ConvertsFrom(Second) noexcept requires (!std::is_same_v<IncompleteClass, Second>) {}
+    // clang-format on
 };
 
 template <int>
