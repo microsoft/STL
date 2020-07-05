@@ -1508,7 +1508,7 @@ namespace ranges {
 
     // VARIABLE ranges::copy
     // clang-format off
-    template <input_iterator _It, sentinel_for<It> _Se, weakly_incrementable _Out>
+    template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, const _Se _Last, _Out _Result) {
         for (; _First != _Last; ++_First, (void) ++_Result) {
