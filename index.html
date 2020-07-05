@@ -17,6 +17,7 @@
 
 <body>
     <canvas id="statusChart"></canvas>
+    <button id="toggleTimeframe">Toggle Timeframe: All/GitHub</button>
     <script>
         let table = [
             { date: '2017-06-09', cxx17: 17, lwg: 44, bugs: 247, libcxx: 526 },
@@ -232,6 +233,18 @@
             ],
         };
 
+        let timeframe_idx = 0;
+        let timeframes = [
+            {
+                ticks: { min: '2017-06-09' },
+                time: { unit: 'quarter' },
+            },
+            {
+                ticks: { min: '2019-09-20' }, // first Friday after 2019-09-16
+                time: { unit: 'month' },
+            },
+        ];
+
         let chart_options = {
             title: {
                 display: true,
@@ -260,10 +273,13 @@
             scales: {
                 xAxes: [{
                     type: 'time',
+                    ticks: {
+                        min: timeframes[0].ticks.min,
+                    },
                     time: {
                         parser: 'YYYY-MM-DD',
                         tooltipFormat: 'll',
-                        unit: 'quarter',
+                        unit: timeframes[0].time.unit,
                         displayFormats: {
                             quarter: 'MMM YYYY',
                         },
@@ -304,11 +320,25 @@
             },
         };
 
-        let ctx = 'statusChart';
-        let status_chart = new Chart(ctx, {
-            type: 'line',
-            data: chart_data,
-            options: chart_options,
+        window.onload = function () {
+            let ctx = 'statusChart';
+            window.status_chart = new Chart(ctx, {
+                type: 'line',
+                data: chart_data,
+                options: chart_options,
+            });
+        };
+
+        document.getElementById('toggleTimeframe').addEventListener('click', function () {
+            timeframe_idx = (timeframe_idx + 1) % timeframes.length;
+
+            let xAxis = window.status_chart.options.scales.xAxes[0];
+            let new_timeframe = timeframes[timeframe_idx];
+
+            xAxis.ticks.min = new_timeframe.ticks.min;
+            xAxis.time.unit = new_timeframe.time.unit;
+
+            window.status_chart.update();
         });
     </script>
 
