@@ -5079,7 +5079,7 @@ _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 
 
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
-    // copy merging ranges, both
+    // copy merging ranges
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
 }
 
