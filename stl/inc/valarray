@@ -1178,6 +1178,24 @@ public:
         return _Mybool[_Idx];
     }
 
+    size_t _Start_off() const {
+        size_t _Off = 0;
+        size_t _Size = _Mybool.size();
+        while (_Off < _Size && !_Mybool[_Off]) {
+            ++_Off;
+        }
+        return _Off;
+    }
+
+    size_t _Next_off(size_t _Off) const {
+        size_t _Size = _Mybool.size();
+        do {
+            ++_Off;
+        } while (_Off < _Size && !_Mybool[_Off]);
+        return _Off;
+    }
+
+
     size_t _Totlen() const {
         size_t _Count = 0;
         for (size_t _Idx = 0; _Idx < _Mybool.size(); ++_Idx) {
@@ -1194,16 +1212,10 @@ public:
     mask_array(const mask_array&) = default;
 
     mask_array& operator=(const mask_array& _Right) {
-        size_t _Size = _Totlen();
-        for (size_t _Idx = 0, _Dst_off = 0, _Src_off = 0; _Idx < _Size; ++_Idx, ++_Src_off, ++_Dst_off) {
-            while (!_Mask(_Dst_off)) {
-                ++_Dst_off;
-            }
-
-            while (!_Right._Mask(_Src_off)) {
-                ++_Src_off;
-            }
-
+        size_t _Size    = _Mybool.size();
+        size_t _Dst_off = _Start_off();
+        size_t _Src_off = _Right._Start_off();
+        for (; _Dst_off < _Size; _Src_off = _Next_off(_Src_off), _Dst_off = _Next_off(_Dst_off)) {
             _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
         }
         return *this;
