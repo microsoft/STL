@@ -3029,7 +3029,6 @@ template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_if_execution_
 void replace_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
-
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::replace_if
