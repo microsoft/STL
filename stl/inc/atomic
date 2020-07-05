@@ -737,7 +737,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
         return _Temp;
     }
-#else // ^^^ _M_IX86 on clang / !_M_IX86 on clang vvv
+#else // ^^^ defined(_M_IX86) && defined(__clang__) / !defined(_M_IX86) || !defined(__clang__) vvv
     _Ty exchange(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long long _As_bytes;
