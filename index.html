@@ -186,46 +186,39 @@
             return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
         }
 
-        const date_values = table.map(row => row.date);
-        const cxx17_values = get_values('cxx17');
-        const cxx20_values = get_values('cxx20');
-        const lwg_values = get_values('lwg');
-        const bugs_values = get_values('bugs');
-        const libcxx_values = get_values('libcxx');
-
         const chart_data = {
-            labels: date_values,
+            labels: table.map(row => row.date),
             datasets: [
                 {
-                    data: cxx17_values,
+                    data: get_values('cxx17'),
                     label: 'C++17 Features',
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'small-axis',
                 },
                 {
-                    data: cxx20_values,
+                    data: get_values('cxx20'),
                     label: 'C++20 Features',
                     borderColor: '#7030A0',
                     backgroundColor: '#7030A0',
                     yAxisID: 'small-axis',
                 },
                 {
-                    data: lwg_values,
+                    data: get_values('lwg'),
                     label: 'LWG Issues',
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
                     yAxisID: 'small-axis',
                 },
                 {
-                    data: bugs_values,
+                    data: get_values('bugs'),
                     label: 'Bugs',
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'large-axis',
                 },
                 {
-                    data: libcxx_values,
+                    data: get_values('libcxx'),
                     label: 'Libcxx Skips',
                     borderColor: '#FFC000',
                     backgroundColor: '#FFC000',
@@ -322,8 +315,7 @@
         };
 
         window.onload = function () {
-            const ctx = 'statusChart';
-            window.status_chart = new Chart(ctx, {
+            window.status_chart = new Chart('statusChart', {
                 type: 'line',
                 data: chart_data,
                 options: chart_options,
