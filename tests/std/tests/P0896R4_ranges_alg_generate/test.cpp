@@ -10,8 +10,7 @@
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
-    using ranges::generate, ranges::iterator_t;
-    using std::same_as;
+    using ranges::generate;
 
     {
         int output[]    = {13, 42, 1367};

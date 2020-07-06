@@ -3044,7 +3044,7 @@ namespace ranges {
         template <input_or_output_iterator _Out, copy_constructible _Fn>
             requires invocable<_Fn&> && indirectly_writable<_Out, invoke_result_t<_Fn&>>
         constexpr _Out operator()(_Out _First, iter_difference_t<_Out> _Count, _Fn _Gen) const {
-            if (0 <= _Count) {
+            if (_Count > 0) {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
                 for (; _Count > 0; ++_UFirst, (void) --_Count) {
                     *_UFirst = _Gen();

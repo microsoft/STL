@@ -10,18 +10,38 @@
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
-    using ranges::generate_n, ranges::iterator_t;
-    using std::same_as;
-
-    int output[] = {13, 42, 1367};
-    auto result  = generate_n(ranges::begin(output), ranges::distance(output), [calls_to_generate = -1]() mutable {
-        ++calls_to_generate;
-        return calls_to_generate;
-    });
-    for (int i = 0; i < 3; ++i) {
-        assert(i == output[i]);
+    using ranges::generate_n, ranges::equal;
+    {
+        int output[] = {13, 42, 1367};
+        auto result  = generate_n(ranges::begin(output), ranges::distance(output), [calls_to_generate = -1]() mutable {
+            ++calls_to_generate;
+            return calls_to_generate;
+        });
+        for (int i = 0; i < 3; ++i) {
+            assert(i == output[i]);
+        }
+        assert(result == ranges::end(output));
     }
-    assert(result == ranges::end(output));
+    {
+        int expected_output[] = {13, 42, 1367};
+        int output[]          = {13, 42, 1367};
+        auto result           = generate_n(ranges::begin(output), 0, [calls_to_generate = -1]() mutable {
+            ++calls_to_generate;
+            return calls_to_generate;
+        });
+        assert(ranges::equal(output, expected_output));
+        assert(result == ranges::begin(output));
+    }
+    {
+        int expected_output[] = {13, 42, 1367};
+        int output[]          = {13, 42, 1367};
+        auto result           = generate_n(ranges::begin(output), -1, [calls_to_generate = -1]() mutable {
+            ++calls_to_generate;
+            return calls_to_generate;
+        });
+        assert(ranges::equal(output, expected_output));
+        assert(result == ranges::begin(output));
+    }
 }
 
 int main() {
