@@ -1210,7 +1210,7 @@ public:
 
     mask_array(const mask_array&) = default;
 
-    mask_array& operator=(const mask_array& _Right) {
+    const mask_array& operator=(const mask_array& _Right) const {
         size_t _Size    = _Mybool.size();
         size_t _Dst_off = _Start_off();
         size_t _Src_off = _Right._Start_off();
