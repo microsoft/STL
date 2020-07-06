@@ -205,7 +205,7 @@
                 },
                 {
                     data: get_values('lwg'),
-                    label: 'LWG Issues',
+                    label: 'LWG Resolutions',
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
                     yAxisID: 'small-axis',
@@ -219,7 +219,7 @@
                 },
                 {
                     data: get_values('libcxx'),
-                    label: 'Libcxx Skips',
+                    label: 'Skipped Libcxx Tests',
                     borderColor: '#FFC000',
                     backgroundColor: '#FFC000',
                     yAxisID: 'large-axis',
@@ -287,7 +287,7 @@
                         position: 'left',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Bugs, Skips',
+                            labelString: 'Bugs, Skipped Libcxx Tests',
                         },
                         ticks: {
                             min: 0,
@@ -302,7 +302,7 @@
                         position: 'right',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Features, Issues',
+                            labelString: 'Features, LWG Resolutions',
                         },
                         ticks: {
                             min: 0,
