@@ -3075,8 +3075,8 @@ namespace ranges {
         // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out,
             class _Pj = identity>
-            requires indirectly_copyable<_It, _Out> &&
-                     indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
+            requires indirectly_copyable<_It, _Out>
+                  && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr replace_copy_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
@@ -3088,8 +3088,8 @@ namespace ranges {
         }
 
         template <input_range _Rng, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out, class _Pj = identity>
-            requires indirectly_copyable<iterator_t<_Rng>, _Out> &&
-                     indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+                  && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
         constexpr replace_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
