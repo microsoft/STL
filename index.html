@@ -20,7 +20,7 @@
     <canvas id="statusChart"></canvas>
     <button id="toggleTimeframe">Toggle Timeframe: All/GitHub</button>
     <script>
-        let table = [
+        const table = [
             { date: '2017-06-09', cxx17: 17, lwg: 44, bugs: 247, libcxx: 526 },
             { date: '2017-06-16', cxx17: 17, lwg: 43, bugs: 246, libcxx: 526 },
             { date: '2017-06-23', cxx17: 17, lwg: 43, bugs: 249, libcxx: 517 },
@@ -186,14 +186,14 @@
             return table.filter(row => row[key] != null).map(row => ({ x: row.date, y: row[key] }));
         }
 
-        let date_values = table.map(row => row.date);
-        let cxx17_values = get_values('cxx17');
-        let cxx20_values = get_values('cxx20');
-        let lwg_values = get_values('lwg');
-        let bugs_values = get_values('bugs');
-        let libcxx_values = get_values('libcxx');
+        const date_values = table.map(row => row.date);
+        const cxx17_values = get_values('cxx17');
+        const cxx20_values = get_values('cxx20');
+        const lwg_values = get_values('lwg');
+        const bugs_values = get_values('bugs');
+        const libcxx_values = get_values('libcxx');
 
-        let chart_data = {
+        const chart_data = {
             labels: date_values,
             datasets: [
                 {
@@ -235,7 +235,7 @@
         };
 
         let timeframe_idx = 0;
-        let timeframes = [
+        const timeframes = [
             {
                 ticks: { min: '2017-06-09' },
                 time: { unit: 'quarter' },
@@ -246,7 +246,7 @@
             },
         ];
 
-        let chart_options = {
+        const chart_options = {
             title: {
                 display: true,
                 fontSize: 24,
@@ -322,7 +322,7 @@
         };
 
         window.onload = function () {
-            let ctx = 'statusChart';
+            const ctx = 'statusChart';
             window.status_chart = new Chart(ctx, {
                 type: 'line',
                 data: chart_data,
@@ -333,8 +333,8 @@
         document.getElementById('toggleTimeframe').addEventListener('click', function () {
             timeframe_idx = (timeframe_idx + 1) % timeframes.length;
 
-            let xAxis = window.status_chart.options.scales.xAxes[0];
-            let new_timeframe = timeframes[timeframe_idx];
+            const xAxis = window.status_chart.options.scales.xAxes[0];
+            const new_timeframe = timeframes[timeframe_idx];
 
             xAxis.ticks.min = new_timeframe.ticks.min;
             xAxis.time.unit = new_timeframe.time.unit;
