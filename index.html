@@ -183,7 +183,7 @@
         ];
 
         function get_values(key) {
-            return table.filter(row => row[key] != null).map(row => ({ x: row.date, y: row[key] }));
+            return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
         }
 
         const date_values = table.map(row => row.date);
