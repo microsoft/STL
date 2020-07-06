@@ -353,7 +353,7 @@ struct weakly_incrementable_archetype : destructible_archetype<I>,
                                         increment_ops<I, weakly_incrementable_archetype<I>, void> {
     // clang-format off
     weakly_incrementable_archetype() requires (I != 1) {}
-    weakly_incrementable_archetype(weakly_incrementable_archetype const&)                      = delete;
+    weakly_incrementable_archetype(weakly_incrementable_archetype const&)                       = delete;
     weakly_incrementable_archetype(weakly_incrementable_archetype&&) requires (I < 2 || I >= 4) = default;
 
     weakly_incrementable_archetype& operator=(weakly_incrementable_archetype const&) = delete;
