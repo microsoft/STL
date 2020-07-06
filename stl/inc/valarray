@@ -1088,7 +1088,7 @@ public:
 
     gslice_array(const gslice_array&) = default;
 
-    gslice_array& operator=(const gslice_array& _Right) {
+    const gslice_array& operator=(const gslice_array& _Right) const {
         _Sizarray _Dst_indexarray(size_t{0}, _Nslice());
         _Sizarray _Src_indexarray(size_t{0}, _Right._Nslice());
         size_t _Size = _Totlen();
