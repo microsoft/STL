@@ -1306,7 +1306,7 @@ public:
 
     indirect_array(const indirect_array&) = default;
 
-    indirect_array& operator=(const indirect_array& _Right) {
+    const indirect_array& operator=(const indirect_array& _Right) const {
         size_t _Size = _Totlen();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Indir(_Idx)] = _Right._Myptr[_Right._Indir(_Idx)];
