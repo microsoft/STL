@@ -737,7 +737,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
         return _Temp;
     }
-#else // ^^^ defined(_M_IX86) && defined(__clang__), TRANSITION, LLVM-46595 / !defined(_M_IX86) || !defined(__clang__) vvv
+#else // ^^^ defined(_M_IX86) && defined(__clang__), LLVM-46595 / !defined(_M_IX86) || !defined(__clang__) vvv
     _Ty exchange(const _Ty _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long long _As_bytes;
@@ -1120,7 +1120,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
         return fetch_add(static_cast<_Ty>(-1)) - static_cast<_Ty>(1);
     }
 
-#else // ^^^ defined(_M_IX86) && defined(__clang__), TRANSITION, LLVM-46595 / !defined(_M_IX86) || !defined(__clang__) vvv
+#else // ^^^ defined(_M_IX86) && defined(__clang__), LLVM-46595 / !defined(_M_IX86) || !defined(__clang__) vvv
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd64,
