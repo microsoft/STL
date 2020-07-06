@@ -940,7 +940,7 @@ public:
 
     slice_array(const slice_array&) = default;
 
-    slice_array& operator=(const slice_array& _Right) {
+    const slice_array& operator=(const slice_array& _Right) const {
         size_t _Dst_off = _Start;
         size_t _Src_off = _Right._Start;
         for (size_t _Idx = 0; _Idx < _Len; ++_Idx, _Dst_off += _Stride, _Src_off += _Right._Stride) {
