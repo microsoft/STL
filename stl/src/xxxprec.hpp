@@ -75,8 +75,9 @@ FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
 
             p[0] = x0; // ms bits
             p[1] = x - x0; // ls bits
-#pragma warning(suppress : 4127)
-            if ((FBITS & 1) != 0 && 2 < n && p[1] != FLIT(0.0)) { // may need a third word
+
+            constexpr bool _Fbits_odd = (FBITS & 1) != 0;
+            if (_Fbits_odd && 2 < n && p[1] != FLIT(0.0)) { // may need a third word
                 x = p[1];
                 FNAME(Dunscale)(&xexp, &p[1]);
                 FNAME(Dint)(&p[1], BITS_WORD);
