@@ -439,38 +439,32 @@ protected:
     }
 
 #if _HAS_CXX20
-    void _Init_string_inplace(_Mystr&& _Str, const int _State) {
+    void _Init_string_inplace(_Mystr&& _Str, int _State) {
         if ((_State & _Constant) && !(_State & _Noread)) { // readonly, copy the string
             _Init(_Str.c_str(), _Str.size(), _State);
         } else { // writeable, construct in place
-            auto _Buffer = _Str._Release_to_buffer(_Al);
-            _Init_inplace(_Unfancy(_Buffer._Ptr), _Buffer._Size, _Buffer._Res, _State);
-        }
-    }
+            auto [_Ptr, _Length, _Count] = _Str._Release_to_buffer(_Al);
+            _Elem* const _Pnew           = _Unfancy(_Ptr);
+            if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+                // finite buffer that can be read or written, set it up
+                _Seekhigh        = _Pnew + _Length;
+                auto _End_buffer = _Pnew + _Count;
 
-    void _Init_inplace(_Elem* const _Pnew, const _Mysize_type _Length, const _Mysize_type _Count, int _State) {
-        // Call this method only when writeable
-        _STL_INTERNAL_CHECK(!((_State & _Constant) && !(_State & _Noread)));
+                _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
 
-        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
-            // finite buffer that can be read or written, set it up
-            _Seekhigh        = _Pnew + _Length;
-            auto _End_buffer = _Pnew + _Count;
+                if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
+                    _Mysb::setg(_Pnew, nullptr, _Pnew);
+                } else {
+                    _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
+                }
 
-            _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
-
-            if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-                _Mysb::setg(_Pnew, nullptr, _Pnew);
+                _State |= _Allocated;
             } else {
-                _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
+                _Seekhigh = nullptr;
             }
 
-            _State |= _Allocated;
-        } else {
-            _Seekhigh = nullptr;
+            _Mystate = _State;
         }
-
-        _Mystate = _State;
     }
 #endif // _HAS_CXX20
 
