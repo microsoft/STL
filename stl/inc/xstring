@@ -2666,13 +2666,13 @@ public:
         // Release to a buffer, or allocate a new one if in small string mode
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
-            _Released_buffer result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres, _Getal()};
+            _Released_buffer _Result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres, _Getal()};
             _Tidy_init();
-            return result;
+            return _Result;
         } else {
-            _Released_buffer result{_Getal().allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1, _Getal()};
-            _Traits::copy(_Unfancy(result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            return result;
+            _Released_buffer _Result{_Getal().allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1, _Getal()};
+            _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
+            return _Result;
         }
     }
 #endif // _HAS_CXX20
