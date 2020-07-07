@@ -396,12 +396,8 @@
 // warning C4412: function signature contains type 'meow'; C++ objects are unsafe to pass between pure code
 //                and mixed or native. (/Wall)
 // warning C4455: literal suffix identifiers that do not start with an underscore are reserved
-// warning C4472: 'meow' is a native enum: add an access specifier (private/public)
-//                to declare a managed enum (/Wall)
 // warning C4494: Ignoring __declspec(allocator) because the function return type is not a pointer or reference
 // warning C4514: unreferenced inline function has been removed (/Wall)
-// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1;
-//                structured exceptions (SEH) are no longer caught (/Wall)
 // warning C4574: 'MACRO' is defined to be '0': did you mean to use '#if MACRO'? (/Wall)
 // warning C4582: 'union': constructor is not implicitly called (/Wall)
 // warning C4583: 'union': destructor is not implicitly called (/Wall)
@@ -425,9 +421,9 @@
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
-    4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
-    4820 4988 5026 5027 5045 6294                     \
+    4180 4412 4455 4494 4514 4574 4582 4583 4587 4588 \
+    4619 4623 4625 4626 4643 4648 4702 4793 4820 4988 \
+    5026 5027 5045 6294                               \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -1167,10 +1163,7 @@
 #define __cpp_lib_coroutine 197000L
 #endif // __cpp_impl_coroutine
 
-#ifdef __cpp_impl_destroying_delete
-#define __cpp_lib_destroying_delete 201806L
-#endif // __cpp_impl_destroying_delete
-
+#define __cpp_lib_destroying_delete            201806L
 #define __cpp_lib_endian                       201907L
 #define __cpp_lib_erase_if                     202002L
 #define __cpp_lib_generic_unordered_lookup     201811L

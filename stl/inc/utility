@@ -522,7 +522,7 @@ template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(
     pair<_Ty1, _Ty2>& _Pr) noexcept { // get reference to element at _Idx in pair _Pr
     using _Rtype = tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&;
-    return _Pair_get<_Rtype>(_Pr, integral_constant<size_t, _Idx>());
+    return _Pair_get<_Rtype>(_Pr, integral_constant<size_t, _Idx>{});
 }
 
 template <class _Ty1, class _Ty2>
@@ -539,7 +539,7 @@ template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(
     const pair<_Ty1, _Ty2>& _Pr) noexcept { // get const reference to element at _Idx in pair _Pr
     using _Ctype = const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&;
-    return _Pair_get<_Ctype>(_Pr, integral_constant<size_t, _Idx>());
+    return _Pair_get<_Ctype>(_Pr, integral_constant<size_t, _Idx>{});
 }
 
 template <class _Ty1, class _Ty2>

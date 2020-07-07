@@ -453,7 +453,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_destroying_delete) // TRANSITION, EDG and VS 2019 16.7p1
+#if _HAS_CXX20
 #ifndef __cpp_lib_destroying_delete
 #error __cpp_lib_destroying_delete is not defined
 #elif __cpp_lib_destroying_delete != 201806L

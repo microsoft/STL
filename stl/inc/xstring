@@ -2436,7 +2436,7 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
         _Adl_verify_range(_First, _Last);
-        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>());
+        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
         _Proxy._Release();
     }
 
