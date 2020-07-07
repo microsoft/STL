@@ -15,11 +15,9 @@ struct int_wrapper {
     int val                 = 10;
     constexpr int_wrapper() = default;
     constexpr int_wrapper(int x) : val{x} {}
-    int_wrapper(const int_wrapper&) = default;
-    int_wrapper& operator=(const int_wrapper&) = default;
-    constexpr int_wrapper(int_wrapper&& that) : val{std::exchange(that.val, -1)} {}
+    constexpr int_wrapper(int_wrapper&& that) : val{exchange(that.val, -1)} {}
     constexpr int_wrapper& operator=(int_wrapper&& that) {
-        val = std::exchange(that.val, -1);
+        val = exchange(that.val, -1);
         return *this;
     }
     auto operator<=>(const int_wrapper&) const = default;
