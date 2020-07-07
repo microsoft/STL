@@ -4920,7 +4920,7 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
+    // compare [_First1, _Last1) to [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
@@ -4948,7 +4948,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
 bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred, no special optimization
+    // compare [_First1, _Last1) to [_First2, ...), no special optimization
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         if (!_Pred(*_First1, *_First2)) {
             return false;
@@ -4969,7 +4969,7 @@ bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
 
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
+    // compare [_First1, _Last1) to [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
     const auto _UFirst1 = _Get_unwrapped(_First1);
     const auto _ULast1  = _Get_unwrapped(_Last1);
@@ -5003,7 +5003,7 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool equal(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred
+    // compare [_First1, _Last1) to [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1      = _Get_unwrapped(_First1);
@@ -5039,7 +5039,7 @@ _NODISCARD _CONSTEXPR20 bool equal(
 template <class _InIt1, class _InIt2, class _Pr>
 bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred,
     input_iterator_tag, input_iterator_tag) {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred, arbitrary iterators
+    // compare [_First1, _Last1) to [_First2, _Last2), arbitrary iterators
     for (;;) {
         if (_First1 == _Last1) {
             return _First2 == _Last2;
@@ -5061,7 +5061,7 @@ bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, const
 template <class _InIt1, class _InIt2, class _Pr>
 bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred,
     random_access_iterator_tag, random_access_iterator_tag) {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred, random-access iterators
+    // compare [_First1, _Last1) to [_First2, _Last2), random-access iterators
     if (_Last1 - _First1 != _Last2 - _First2) {
         return false;
     }
@@ -5071,7 +5071,7 @@ bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
 
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred
+    // compare [_First1, _Last1) to [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     return _Equal_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
@@ -5159,7 +5159,7 @@ constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const 
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD constexpr bool _Lex_compare_unchecked(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<void>) {
-    // order [_First1, _Last1) vs. [_First2, _Last2) using _Pred, no special optimization
+    // order [_First1, _Last1) vs. [_First2, _Last2), no special optimization
     for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) { // something to compare, do it
         if (_DEBUG_LT_PRED(_Pred, *_First1, *_First2)) {
             return true;
@@ -5190,7 +5190,7 @@ _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
-    // order [_First1, _Last1) vs. [_First2, _Last2) using _Pred
+    // order [_First1, _Last1) vs. [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     const auto _UFirst1 = _Get_unwrapped(_First1);
@@ -5211,7 +5211,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(_InIt1 _First1, _InIt1 _Las
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool lexicographical_compare(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
-    // order [_First1, _Last1) vs. [_First2, _Last2) using _Pred
+    // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -5772,7 +5772,7 @@ _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred
 // FUNCTION TEMPLATE lower_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
-    // find first element not before _Val, using _Pred
+    // find first element not before _Val
     _Adl_verify_range(_First, _Last);
     auto _UFirst                = _Get_unwrapped(_First);
     _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
@@ -5794,7 +5794,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, co
 
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // find first element not before _Val, using operator<
+    // find first element not before _Val
     return _STD lower_bound(_First, _Last, _Val, less<>());
 }
 
