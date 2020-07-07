@@ -160,6 +160,7 @@ tests\GH_000545_include_compare
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
+tests\GH_001010_filesystem_error_encoding
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0024R2_parallel_algorithms_adjacent_difference
