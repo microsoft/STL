@@ -39,12 +39,11 @@ struct partition_point_test {
     template <ranges::forward_range R>
     static constexpr void call() {
         using ranges::partition_point;
-        constexpr int N = 200;
-        int elements[N];
-        iota(elements, elements + N, 0);
+        int elements[200];
+        iota(ranges::begin(elements), ranges::end(elements), 0);
 
         // to avoid constant expression step limits
-        int bound = is_constant_evaluated() ? 10 : N;
+        int bound = is_constant_evaluated() ? 10 : static_cast<int>(ranges::size(elements));
 
         for (int i = 0; i < bound; ++i) {
             const R range{span<const int>{elements, elements + i}};

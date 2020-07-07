@@ -84,18 +84,18 @@ namespace ranges {
 #endif // __clang__
 
     // STRUCT TEMPLATE in_fun_result
-    template <class _In, class _Fn>
+    template <class _In, class _Fun>
     struct in_fun_result {
         [[no_unique_address]] _In in;
-        [[no_unique_address]] _Fn fun;
+        [[no_unique_address]] _Fun fun;
 
-        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fn&> _FFn>
-        constexpr operator in_fun_result<_IIn, _FFn>() const& {
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fun&> _FFun>
+        constexpr operator in_fun_result<_IIn, _FFun>() const& {
             return {in, fun};
         }
 
-        template <_Convertible_from<_In> _IIn, _Convertible_from<_Fn> _FFn>
-        constexpr operator in_fun_result<_IIn, _FFn>() && {
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Fun> _FFun>
+        constexpr operator in_fun_result<_IIn, _FFun>() && {
             return {_STD move(in), _STD move(fun)};
         }
     };
@@ -324,8 +324,8 @@ _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noe
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE for_each_result
-    template <class _It, class _Fn>
-    using for_each_result = in_fun_result<_It, _Fn>;
+    template <class _In, class _Fun>
+    using for_each_result = in_fun_result<_In, _Fun>;
 
     // VARIABLE ranges::for_each
     class _For_each_fn : private _Not_quite_object {
@@ -357,8 +357,8 @@ namespace ranges {
     inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
 
     // ALIAS TEMPLATE for_each_n_result
-    template <class _It, class _Fn>
-    using for_each_n_result = in_fun_result<_It, _Fn>;
+    template <class _In, class _Fun>
+    using for_each_n_result = in_fun_result<_In, _Fun>;
 
     // VARIABLE ranges::for_each_n
     class _For_each_n_fn : private _Not_quite_object {
@@ -1719,8 +1719,8 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE partition_copy_result
-    template <class _It, class _Out1, class _Out2>
-    using partition_copy_result = in_out_out_result<_It, _Out1, _Out2>;
+    template <class _In, class _Out1, class _Out2>
+    using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
 
     // VARIABLE ranges::partition_copy
     class _Partition_copy_fn : private _Not_quite_object {
@@ -1731,7 +1731,7 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out1, weakly_incrementable _Out2,
             class _Pj = identity, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
             requires indirectly_copyable<_It, _Out1> && indirectly_copyable<_It, _Out2>
-        _NODISCARD constexpr partition_copy_result<_It, _Out1, _Out2> operator()(
+        constexpr partition_copy_result<_It, _Out1, _Out2> operator()(
             _It _First, _Se _Last, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Partition_copy_unchecked(_Get_unwrapped(_STD move(_First)),
@@ -1746,7 +1746,7 @@ namespace ranges {
         template <input_range _Rng, weakly_incrementable _Out1, weakly_incrementable _Out2, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires indirectly_copyable<iterator_t<_Rng>, _Out1> && indirectly_copyable<iterator_t<_Rng>, _Out2>
-        _NODISCARD constexpr partition_copy_result<borrowed_iterator_t<_Rng>, _Out1, _Out2> operator()(
+        constexpr partition_copy_result<borrowed_iterator_t<_Rng>, _Out1, _Out2> operator()(
             _Rng&& _Range, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Partition_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
@@ -1909,18 +1909,17 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
             if constexpr (sized_sentinel_for<_Se, _It>) {
-                auto _UFirst       = _Get_unwrapped(_STD move(_First));
                 const auto _Length = _Get_unwrapped(_STD move(_Last)) - _UFirst;
-                _UFirst = _Partition_point_with_length(_STD move(_UFirst), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                _Seek_wrapped(_First, _STD move(_UFirst));
-                return _First;
+                _UFirst = _Partition_point_n_unchecked(_STD move(_UFirst), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
             } else {
-                auto _UFirst = _Partition_point_without_length(_Get_unwrapped(_STD move(_First)),
-                    _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                _Seek_wrapped(_First, _STD move(_UFirst));
-                return _First;
+                _UFirst = _Partition_point_unchecked(
+                    _STD move(_UFirst), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
             }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
@@ -1928,18 +1927,18 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             if constexpr (sized_range<_Rng>) {
                 const auto _Length = _RANGES distance(_Range);
-                auto _UFirst = _Partition_point_with_length(_Ubegin(_Range), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _UFirst = _Partition_point_n_unchecked(_Ubegin(_Range), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_iterator(_Range, _STD move(_UFirst));
             } else {
                 auto _UFirst =
-                    _Partition_point_without_length(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                    _Partition_point_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_iterator(_Range, _STD move(_UFirst));
             }
         }
 
     private:
         template <class _It, class _Pr, class _Pj>
-        _NODISCARD static constexpr _It _Partition_point_with_length(
+        _NODISCARD static constexpr _It _Partition_point_n_unchecked(
             _It _First, iter_difference_t<_It> _Length, _Pr _Pred, _Pj _Proj) {
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
@@ -1962,8 +1961,7 @@ namespace ranges {
         }
 
         template <class _It, class _Se, class _Pr, class _Pj>
-        _NODISCARD static constexpr _It _Partition_point_without_length(
-            _It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        _NODISCARD static constexpr _It _Partition_point_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
@@ -1991,7 +1989,7 @@ namespace ranges {
                 }
             }
 
-            return _Partition_point_with_length(_STD move(_First), _Skip, _Pred, _Proj);
+            return _Partition_point_n_unchecked(_STD move(_First), _Skip, _Pred, _Proj);
         }
     };
 
@@ -4193,7 +4191,7 @@ namespace ranges {
 
         template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+        constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Partition_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
@@ -4203,7 +4201,7 @@ namespace ranges {
         // clang-format off
         template <forward_range _Rng, class _Pj = identity, indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             auto _UResult = _Partition_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
@@ -6749,8 +6747,8 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE minmax_element_result
-    template <class _It>
-    using minmax_element_result = min_max_result<_It>;
+    template <class _Ty>
+    using minmax_element_result = min_max_result<_Ty>;
 
     // VARIABLE ranges::minmax_element
     template <class _It, class _Se, class _Pr, class _Pj>
