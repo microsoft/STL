@@ -63,21 +63,31 @@ FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
     short errx;
     short xexp;
 
-    if (n > 0) {
-        if (n == 1 || (errx = FNAME(Dunscale)(&xexp, &x0)) == 0) {
-            p[0] = x0; // zero or no extra room, store original value
-        } else if (0 < errx) { // store Inf or NaN with backstop for safety
-            p[0] = x0;
-            p[1] = FLIT(0.0);
-        } else { // finite, unpack it
-            FNAME(Dint)(&x0, BITS_WORD);
-            FNAME(Dscale)(&x0, xexp);
+    if (n <= 0) {
+        return p;
+    }
 
-            p[0] = x0; // ms bits
-            p[1] = x - x0; // ls bits
+    if (n == 1 || (errx = FNAME(Dunscale)(&xexp, &x0)) == 0) {
+        p[0] = x0; // zero or no extra room, store original value
+        return p;
+    }
 
-            constexpr bool _Fbits_odd = (FBITS & 1) != 0;
-            if (_Fbits_odd && 2 < n && p[1] != FLIT(0.0)) { // may need a third word
+    if (0 < errx) { // store Inf or NaN with backstop for safety
+        p[0] = x0;
+        p[1] = FLIT(0.0);
+        return p;
+    }
+
+    // finite, unpack it
+    FNAME(Dint)(&x0, BITS_WORD);
+    FNAME(Dscale)(&x0, xexp);
+
+    p[0] = x0; // ms bits
+    p[1] = x - x0; // ls bits
+
+    if (2 < n) {
+        if constexpr ((FBITS & 1) != 0) {
+            if (p[1] != FLIT(0.0)) { // may need a third word
                 x = p[1];
                 FNAME(Dunscale)(&xexp, &p[1]);
                 FNAME(Dint)(&p[1], BITS_WORD);
@@ -86,10 +96,12 @@ FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
                 if (3 < n && p[2] != FLIT(0.0)) {
                     p[3] = FLIT(0.0);
                 }
-            } else if (2 < n) {
-                p[2] = FLIT(0.0);
+
+                return p;
             }
         }
+
+        p[2] = FLIT(0.0);
     }
 
     return p;
