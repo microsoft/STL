@@ -472,9 +472,9 @@ namespace {
         _Dy = _STD abs(_Dy);
         _Dz = _STD abs(_Dz);
 
-        constexpr _Ty _Inf = _STD numeric_limits<_Ty>::infinity();
-        if (_Dx == _Inf || _Dy == _Inf || _Dz == _Inf) {
-            return _Inf;
+        constexpr _Ty _Infinity = _STD numeric_limits<_Ty>::infinity();
+        if (_Dx == _Infinity || _Dy == _Infinity || _Dz == _Infinity) {
+            return _Infinity;
         }
 
         if (_Dy > _Dx) {
