@@ -29,8 +29,9 @@
 // Exit:
 //        Success: number of chars written to lpDestStr (including null terminator)
 //        Failure: 0
-extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, LPCSTR lpSrcStr, int cchSrc,
-    LPSTR lpDestStr, int cchDest, int code_page, BOOL bError) {
+extern "C" int __cdecl __crtLCMapStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwMapFlags,
+    _In_reads_(cchSrc) LPCSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) char* lpDestStr, _In_ int cchDest,
+    _In_ int code_page, _In_ BOOL bError) {
     // LCMapString will map past the null terminator.  We must find the null
     // terminator if it occurs in the string before cchSrc characters
     // and cap the number of characters to be considered.
@@ -94,6 +95,7 @@ extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, L
         int outbuff_size = retval;
 
         // allocate enough space for wide chars (includes null terminator if any)
+#pragma warning(suppress : 6386) // TRANSITION, VSO-1152705 false buffer overrun report in _malloca_crt_t
         const __crt_scoped_stack_ptr<wchar_t> outwbuffer(_malloca_crt_t(wchar_t, outbuff_size));
         if (!outwbuffer) {
             return retval;
