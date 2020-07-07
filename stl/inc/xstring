@@ -2693,7 +2693,7 @@ public:
         }
     }
 
-    _NODISCARD _Alloc& _Get_allocator_reference() {
+    _NODISCARD _Alty& _Get_allocator_reference() {
         return _Getal();
     }
 #endif // _HAS_CXX20
