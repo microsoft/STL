@@ -891,7 +891,7 @@ struct alignas(long long) _Aligned_file_attrs {
 };
 
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, _Out_ __std_fs_stats* const _Stats,
+    __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats,
         _In_ __std_fs_stats_flags _Flags, _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
     static_assert((offsetof(_Aligned_file_attrs, _Data._Last_write_time) % 8) == 0, "_Last_write_time not aligned");
     static_assert(sizeof(_File_attr_data) == sizeof(WIN32_FILE_ATTRIBUTE_DATA));

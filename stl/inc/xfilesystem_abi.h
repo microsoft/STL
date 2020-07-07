@@ -261,7 +261,7 @@ _NODISCARD __std_win_error __stdcall __std_fs_directory_iterator_open(_In_z_ con
 void __stdcall __std_fs_directory_iterator_close(_In_ __std_fs_dir_handle _Handle) noexcept;
 
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_fs_get_stats(
-    _In_z_ const wchar_t* _Path, _Out_ __std_fs_stats* _Stats, _In_ __std_fs_stats_flags _Flags,
+    _In_z_ const wchar_t* _Path, __std_fs_stats* _Stats, _In_ __std_fs_stats_flags _Flags,
     _In_ __std_fs_file_attr _Symlink_attribute_hint = __std_fs_file_attr::_Invalid) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_directory_iterator_advance(

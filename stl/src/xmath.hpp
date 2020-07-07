@@ -49,7 +49,8 @@
 _EXTERN_C_UNLESS_PURE
 
 int _Stopfx(const char**, char**);
-_In_range_(0, maxsig) int _Stoflt(const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
+_In_range_(0, maxsig) int _Stoflt(
+    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
 _In_range_(0, maxsig) int _Stoxflt(
     const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
 int _WStopfx(const wchar_t**, wchar_t**);
