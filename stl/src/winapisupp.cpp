@@ -196,8 +196,7 @@ extern "C" BOOL __cdecl __crtInitializeCriticalSectionEx(
     }
 
     // ...otherwise fall back to using InitializeCriticalSectionAndSpinCount.
-    InitializeCriticalSectionAndSpinCount(lpCriticalSection, dwSpinCount);
-    return TRUE;
+    return InitializeCriticalSectionAndSpinCount(lpCriticalSection, dwSpinCount);
 }
 
 extern "C" BOOL __cdecl __crtInitOnceExecuteOnce(_Inout_ PINIT_ONCE const InitOnce, _In_ PINIT_ONCE_FN const InitFn,
@@ -535,6 +534,7 @@ extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {0};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
+    _Analysis_assume_(hKernel32);
 
     STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
     STOREFUNCTIONPOINTER(hKernel32, FlsFree);

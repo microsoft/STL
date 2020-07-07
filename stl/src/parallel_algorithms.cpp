@@ -94,6 +94,7 @@ namespace {
 #endif // !(defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64))
 
         HMODULE _Kernel32 = GetModuleHandleW(L"kernel32.dll");
+        _Analysis_assume_(_Kernel32);
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
         _Parallel_info._Pfn_CreateThreadpoolWork =
             reinterpret_cast<decltype(CreateThreadpoolWork)*>(GetProcAddress(_Kernel32, "CreateThreadpoolWork"));
