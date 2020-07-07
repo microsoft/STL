@@ -50,7 +50,6 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
     size_t n1              = end1 - string1;
     size_t n2              = end2 - string2;
     size_t size            = static_cast<size_t>(-1);
-    unsigned char* bbuffer = nullptr;
     const wchar_t* locale_name;
 
     if (ploc == nullptr) {
@@ -72,11 +71,12 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
         // compared using wcscmp(). User's buffer is n1 wide chars, so
         // use an internal buffer of n1 bytes.
 
-        bbuffer = static_cast<unsigned char*>(_malloc_crt(n1));
+        auto bbuffer = _malloc_crt_t(unsigned char, n1);
 
-        if (bbuffer != nullptr) {
+        if (bbuffer) {
+#pragma warning(suppress : 6386) // PREfast doesn't understand LCMAP_SORTKEY
             size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2),
-                reinterpret_cast<wchar_t*>(bbuffer), static_cast<int>(n1));
+                reinterpret_cast<wchar_t*>(bbuffer.get()), static_cast<int>(n1));
 
             if (size == 0) {
                 // buffer not big enough, get size required.
@@ -89,14 +89,10 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
                 // string successfully mapped, convert to wide char
 
                 for (size_t i = 0; i < size; ++i) {
-                    string1[i] = static_cast<wchar_t>(bbuffer[i]);
+                    string1[i] = static_cast<wchar_t>(bbuffer.get()[i]);
                 }
             }
         }
-    }
-
-    if (bbuffer) {
-        _free_crt(bbuffer);
     }
 
     return size;
