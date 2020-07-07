@@ -39,7 +39,7 @@ struct instantiator {
     static constexpr int_wrapper expected_input[3]  = {-1, -1, -1};
 
     static constexpr void eq(int_wrapper const (&output)[3], int_wrapper const (&input)[3]) {
-        // Extracted into a separate function to keep /analyze from blowing the compiler heap
+        // Extracted into a separate function to keep /analyze from exhausting the compiler heap
         assert(ranges::equal(output, expected_output));
         assert(ranges::equal(input, expected_input));
     }
