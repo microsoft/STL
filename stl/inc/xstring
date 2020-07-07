@@ -2658,14 +2658,18 @@ public:
 #if _HAS_CXX20
     void _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used by basic_stringbuf
-        _STL_INTERNAL_CHECK(_Res > _BUF_SIZE);
         _Tidy_deallocate();
         _Traits::assign(_Right[_Size], _Elem());
         pointer _Fancy_right = pointer_traits<pointer>::pointer_to(*_Right);
         auto& _My_data       = _Mypair._Myval2;
         _My_data._Mysize     = _Size;
         _My_data._Myres      = _Res;
-        _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
+        if (_My_data._Large_string_engaged()) {
+            _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
+        } else {
+            _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
+            _Getal().deallocate(_Fancy_right, _Res);
+        }
     }
 
     struct _Released_buffer {
@@ -2674,7 +2678,7 @@ public:
         size_type _Res;
     };
 
-    _NODISCARD _Released_buffer _Release_to_buffer(allocator_type& _Al) {
+    _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
         // Release to a buffer, or allocate a new one if in small string mode
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
@@ -2682,13 +2686,14 @@ public:
             _Tidy_init();
             return _Result;
         } else {
+            // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
             _Released_buffer _Result{_Al.allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1};
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
             return _Result;
         }
     }
 
-    _NODISCARD allocator_type& _Get_allocator_reference() {
+    _NODISCARD _Alloc& _Get_allocator_reference() {
         return _Getal();
     }
 #endif // _HAS_CXX20

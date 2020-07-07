@@ -121,16 +121,26 @@ public:
     using pos_type = typename _Traits::pos_type;
     using off_type = typename _Traits::off_type;
 
-    _NODISCARD pair<_Elem*, _Mysize_type> _View_pair() const noexcept {
-        pair<_Elem*, _Mysize_type> _Result{};
+    struct _Buffer_view {
+        _Elem* _Ptr;
+        _Mysize_type _Size;
+        _Mysize_type _Res;
+    };
+
+    _NODISCARD _Buffer_view _Get_buffer_view() const noexcept {
+        _Buffer_view _Result{};
         if (!(_Mystate & _Constant) && _Mysb::pptr()) {
             // writable, make string view from write buffer
             const auto _Base = _Mysb::pbase();
-            _Result = _STD make_pair(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
+            _Result._Ptr     = _Base;
+            _Result._Size    = static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base);
+            _Result._Res     = static_cast<_Mysize_type>(_Mysb::epptr() - _Base);
         } else if (!(_Mystate & _Noread) && _Mysb::gptr()) {
             // readable, make string view from read buffer
             const auto _Base = _Mysb::eback();
-            _Result          = _STD make_pair(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
+            _Result._Ptr     = _Base;
+            _Result._Size    = static_cast<_Mysize_type>(_Mysb::egptr() - _Base);
+            _Result._Res     = _Result._Size;
         }
         return _Result;
     }
@@ -141,9 +151,9 @@ public:
 #endif // _HAS_CXX20
     {
         _Mystr _Result(_Al);
-        auto _Pair = _View_pair();
-        if (_Pair.first) {
-            _Result.assign(_Pair.first, _Pair.second);
+        const auto _View = _Get_buffer_view();
+        if (_View._Ptr) {
+            _Result.assign(_View._Ptr, _View._Size);
         }
         return _Result;
     }
@@ -164,38 +174,22 @@ public:
     // In that case, copy the string as usual.
     _NODISCARD _Mystr str() && {
         _Mystr _Result{_String_constructor_rvalue_allocator_tag{}, _STD move(_Al)};
-        if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable
-            const auto _Base   = _Mysb::pbase();
-            const auto _Ptr    = (_STD max)(_Mysb::pptr(), _Seekhigh);
-            const auto _Eptr   = _Mysb::epptr();
-            const auto _Mysize = static_cast<_Mysize_type>(_Ptr - _Base);
-            if (_Mysize > 0 && !_Traits::eq(*_Prev_iter(_Ptr), _Elem())) {
-                // the buffer is full and terminating char is not '\0'
-                _Result.assign(_Base, _Mysize);
-            } else {
-                _Result._Move_assign_from_buffer(_Base, _Mysize, static_cast<_Mysize_type>(_Eptr - _Base));
-                _Mystate &= ~_Allocated;
-            }
-        } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable
-            const auto _Base   = _Mysb::eback();
-            const auto _Eptr   = _Mysb::egptr();
-            const auto _Mysize = static_cast<_Mysize_type>(_Eptr - _Base);
-            if (_Mysize > 0 && !_Traits::eq(*_Prev_iter(_Eptr), _Elem())) {
-                // the buffer is full and terminating char is not '\0'
-                _Result.assign(_Base, _Mysize);
-            } else {
-                _Result._Move_assign_from_buffer(_Base, _Mysize, _Mysize);
-                _Mystate &= ~_Allocated;
-            }
+        const auto _View = _Get_buffer_view();
+        if (_View._Size >= _View._Res) {
+            // the buffer is full
+            _Result.assign(_View._Ptr, _View._Size);
+        } else {
+            _Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res);
+            _Mystate &= ~_Allocated;
         }
         _Tidy();
         return _Result;
     }
 
     _NODISCARD _Mystr_view view() const noexcept {
-        const auto _Pair = _View_pair();
-        if (_Pair.first) {
-            return _Mystr_view{_Pair.first, _Pair.second};
+        const auto _View = _Get_buffer_view();
+        if (_View._Ptr) {
+            return _Mystr_view{_View._Ptr, _View._Size};
         } else {
             return {};
         }
