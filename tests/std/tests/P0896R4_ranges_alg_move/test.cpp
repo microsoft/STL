@@ -34,10 +34,15 @@ STATIC_ASSERT(same_as<decltype(ranges::move(borrowed<false>{}, static_cast<int*>
 STATIC_ASSERT(
     same_as<decltype(ranges::move(borrowed<true>{}, static_cast<int*>(nullptr))), ranges::move_result<int*, int*>>);
 
-
 struct instantiator {
     static constexpr int_wrapper expected_output[3] = {13, 55, 12345};
     static constexpr int_wrapper expected_input[3]  = {-1, -1, -1};
+
+    static constexpr void eq(int_wrapper const (&output)[3], int_wrapper const (&input)[3]) {
+        // Extracted into a separate function to keep /analyze from blowing the compiler heap
+        assert(ranges::equal(output, expected_output));
+        assert(ranges::equal(input, expected_input));
+    }
 
     template <ranges::input_range Read, indirectly_writable<ranges::range_rvalue_reference_t<Read>> Write>
     static constexpr void call() {
@@ -51,8 +56,7 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 3);
-            assert(ranges::equal(output, expected_output));
-            assert(ranges::equal(input, expected_input));
+            eq(output, input);
         }
         {
             int_wrapper input[3]  = {13, 55, 12345};
@@ -62,8 +66,7 @@ struct instantiator {
             auto result = move(wrapped_input.begin(), wrapped_input.end(), Write{output});
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 3);
-            assert(ranges::equal(output, expected_output));
-            assert(ranges::equal(input, expected_input));
+            eq(output, input);
         }
     }
 };

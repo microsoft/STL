@@ -169,14 +169,16 @@ namespace test {
         }
 
         // clang-format off
-        constexpr operator Value() const requires derived_from<Category, input> && copy_constructible<Value> {
+        constexpr operator Element&() const requires derived_from<Category, input> {
             return ref_;
         }
-        // clang-format on
 
-        constexpr void operator=(Value const& val) const requires assignable_from<Element&, Value const&> {
-            ref_ = val;
+        template <class T>
+            requires (!std::same_as<std::remove_cvref_t<T>, proxy_reference> && assignable_from<Element&, T>)
+        constexpr void operator=(T&& val) const {
+            ref_ = std::forward<T>(val);
         }
+        // clang-format on
 
         template <class Cat, class Elem>
         constexpr boolish operator==(proxy_reference<Cat, Elem> that) const requires CanEq<Element, Elem> {
@@ -247,6 +249,35 @@ namespace test {
         }
     };
 
+    template <class Ref>
+    struct common_reference {
+        Ref ref_;
+
+        common_reference(Ref ref) : ref_{static_cast<Ref>(ref)} {}
+
+        // clang-format off
+        template <class Cat, class Elem>
+            requires convertible_to<Elem&, Ref>
+        common_reference(proxy_reference<Cat, Elem> pref) : ref_{pref.peek()} {}
+        // clang-format on
+    };
+} // namespace test
+
+// clang-format off
+template <class Cat, class Elem, class U, template <class> class TQuals, template <class> class UQuals>
+    requires std::common_reference_with<Elem&, UQuals<U>>
+struct std::basic_common_reference<::test::proxy_reference<Cat, Elem>, U, TQuals, UQuals> {
+    using type = common_reference_t<Elem&, UQuals<U>>;
+};
+
+template <class T, class Cat, class Elem, template <class> class TQuals, template <class> class UQuals>
+    requires std::common_reference_with<TQuals<T>, Elem&>
+struct std::basic_common_reference<T, ::test::proxy_reference<Cat, Elem>, TQuals, UQuals> {
+    using type = common_reference_t<TQuals<T>, Elem&>;
+};
+// clang-format on
+
+namespace test {
     // clang-format off
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
