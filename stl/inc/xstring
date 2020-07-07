@@ -2645,18 +2645,14 @@ public:
 #if _HAS_CXX20
     void _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used by basic_stringbuf
+        _STL_INTERNAL_CHECK(_Res > _BUF_SIZE);
         _Tidy_deallocate();
         _Traits::assign(_Right[_Size], _Elem());
         pointer _Fancy_right = pointer_traits<pointer>::pointer_to(*_Right);
         auto& _My_data       = _Mypair._Myval2;
         _My_data._Mysize     = _Size;
         _My_data._Myres      = _Res;
-        if (_My_data._Large_string_engaged()) {
-            _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
-        } else {
-            _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
-            _Getal().deallocate(_Fancy_right, _Res);
-        }
+        _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
     }
 
     struct _Released_buffer {
@@ -2669,17 +2665,15 @@ public:
     _NODISCARD _Released_buffer _Release_to_buffer() {
         // Release to a buffer, or allocate a new one if in small string mode
         auto& _My_data = _Mypair._Myval2;
-        pointer _Result_ptr;
-        size_type _Result_size = _My_data._Mysize;
-        size_type _Result_res  = _My_data._Myres;
         if (_My_data._Large_string_engaged()) {
-            _Construct_in_place(_Result_ptr, _STD move(_My_data._Bx._Ptr));
+            _Released_buffer result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres, _Getal()};
             _Tidy_init();
+            return result;
         } else {
-            _Construct_in_place(_Result_ptr, _STD move(_Getal().allocate(_BUF_SIZE)));
-            _Traits::copy(_Unfancy(_Result_ptr), _My_data._Bx._Buf, _BUF_SIZE);
+            _Released_buffer result{_Getal().allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1, _Getal()};
+            _Traits::copy(_Unfancy(result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
+            return result;
         }
-        return _Released_buffer{_Result_ptr, _Result_size, _Result_res, _Getal()};
     }
 #endif // _HAS_CXX20
 
