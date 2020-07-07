@@ -29,7 +29,7 @@
 // Exit:
 //        Success: number of chars written to lpDestStr (including null terminator)
 //        Failure: 0
-extern "C" int __cdecl __crtLCMapStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwMapFlags,
+extern "C" int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR LocaleName, _In_ DWORD dwMapFlags,
     _In_reads_(cchSrc) LPCSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) char* lpDestStr, _In_ int cchDest,
     _In_ int code_page, _In_ BOOL bError) {
     // LCMapString will map past the null terminator.  We must find the null

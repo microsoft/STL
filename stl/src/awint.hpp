@@ -122,8 +122,9 @@ BOOL __cdecl __crtFlsSetValue(__in DWORD dwFlsIndex, __in_opt PVOID lpFlsData);
 _CRTIMP2 BOOL __cdecl __crtInitializeCriticalSectionEx(
     __out LPCRITICAL_SECTION lpCriticalSection, __in DWORD dwSpinCount, __in DWORD Flags);
 
+// N.B. Context is not used
 _CRTIMP2 BOOL __cdecl __crtInitOnceExecuteOnce(
-    _Inout_ PINIT_ONCE InitOnce, _In_ PINIT_ONCE_FN InitFn, _Inout_opt_ PVOID Parameter, _Out_opt_ LPVOID* Context);
+    _Inout_ PINIT_ONCE InitOnce, _In_ PINIT_ONCE_FN InitFn, _Inout_opt_ PVOID Parameter, LPVOID* Context);
 
 _CRTIMP2 HANDLE __cdecl __crtCreateEventExW(__in_opt LPSECURITY_ATTRIBUTES lpEventAttributes, __in_opt LPCWSTR lpName,
     __reserved DWORD dwFlags, __in DWORD dwDesiredAccess);
@@ -158,7 +159,7 @@ _CRTIMP2 DWORD __cdecl __crtGetCurrentProcessorNumber();
 _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     __in LPCWSTR lpSymlinkFileName, __in LPCWSTR lpTargetFileName, __in DWORD dwFlags);
 
-_CRTIMP2 BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile,
+_CRTIMP2 _Success_(return ) BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile,
     _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _Out_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize);
 
 _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE hFile,
@@ -350,11 +351,11 @@ _CRTIMP2 int __cdecl __crtCompareStringW(_In_z_ LPCWSTR _LocaleName, _In_ DWORD 
     _In_reads_(_CchCount1) LPCWSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCWSTR _LpString2,
     _In_ int _CchCount2);
 
-_CRTIMP2 int __cdecl __crtLCMapStringA(_In_z_ LPCWSTR _LocaleName, _In_ DWORD _DwMapFlag,
+_CRTIMP2 int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR _LocaleName, _In_ DWORD _DwMapFlag,
     _In_reads_(_CchSrc) LPCSTR _LpSrcStr, _In_ int _CchSrc, _Out_writes_opt_(_CchDest) char* _LpDestStr,
     _In_ int _CchDest, _In_ int _CodePage, _In_ BOOL _BError);
 
-_CRTIMP2 int __cdecl __crtLCMapStringW(_In_z_ LPCWSTR _LocaleName, _In_ DWORD _DWMapFlag,
+_CRTIMP2 int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR _LocaleName, _In_ DWORD _DWMapFlag,
     _In_reads_(_CchSrc) LPCWSTR _LpSrcStr, _In_ int _CchSrc, _Out_writes_opt_(_CchDest) wchar_t* _LpDestStr,
     _In_ int _CchDest);
 

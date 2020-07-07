@@ -31,7 +31,7 @@
 //                 else
 //                    number of wide characters written to destination (including null terminator)
 //        Failure: 0
-extern "C" int __cdecl __crtLCMapStringW(_In_z_ LPCWSTR const locale_name, _In_ DWORD const map_flags,
+extern "C" int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR const locale_name, _In_ DWORD const map_flags,
     _In_reads_(source_count) LPCWSTR const source, _In_ int source_count,
     _Out_writes_opt_(destination_count) wchar_t* const destination, _In_ int const destination_count) {
     // LCMapString will map past the null terminator.  We must find the null terminator if it occurs in the string
