@@ -56,4 +56,4 @@ struct instantiator {
     }
 };
 
-template void test_in_write<instantiator>();
+template void test_in_write<instantiator, const int, int>();

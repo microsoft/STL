@@ -101,18 +101,6 @@ _NODISCARD const volatile _Integral* _Atomic_address_as(const _Ty& _Source) noex
     return &reinterpret_cast<const volatile _Integral&>(_Source);
 }
 
-// FUNCTION TEMPLATE _Atomic_load_ll_relaxed
-#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
-_NODISCARD inline long long _Atomic_load_ll_relaxed(volatile long long* _Mem) noexcept {
-    // Copy from _Atomic_storage<_Ty, 8>::load
-#ifdef _M_ARM
-    return __ldrexd(_Mem);
-#else
-    return __iso_volatile_load64(_Mem);
-#endif
-}
-#endif // (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_M_CEE_PURE)
-
 _STD_END
 
 #pragma pop_macro("new")

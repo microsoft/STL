@@ -582,8 +582,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
+            _STL_VERIFY(
+                _Myindex >= size_t{0} - static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
         }
 
         if (_Off > 0) {
@@ -619,9 +619,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(
-                _Mysize - _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator after end");
+            _STL_VERIFY(_Mysize - _Myindex >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator after end");
         }
 
         _Myindex -= _Off;
@@ -681,9 +680,8 @@ public:
 
     constexpr void _Verify_offset(const difference_type _Off) const noexcept {
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(
-                _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator iterator before begin");
+            _STL_VERIFY(_Myindex >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator iterator before begin");
         }
 
         if (_Off > 0) {
