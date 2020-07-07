@@ -17,7 +17,7 @@
 
 #ifdef _STL_CONCRT_SUPPORT
 #pragma warning(push)
-#pragma warning(disable : 6385 6386 6504 28204)
+#pragma warning(disable : 6297 6385 6386 6504 28204)
 #include <concrt.h>
 #include <concrtinternal.h>
 #pragma warning(pop)

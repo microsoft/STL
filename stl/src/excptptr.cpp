@@ -84,7 +84,8 @@ namespace {
 
 #if _EH_RELATIVE_TYPEINFO
         void* _ThrowImageBase =
-            RtlPcToFileHeader(const_cast<void*>(static_cast<const void*>(_PThrow)), &_ThrowImageBase);
+            _PThrow ? RtlPcToFileHeader(const_cast<void*>(static_cast<const void*>(_PThrow)), &_ThrowImageBase)
+                    : nullptr;
         _Record.ExceptionInformation[3] = reinterpret_cast<ULONG_PTR>(_ThrowImageBase); // params.pThrowImageBase
 #endif // _EH_RELATIVE_TYPEINFO
 
