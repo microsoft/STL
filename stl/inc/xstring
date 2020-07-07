@@ -2659,21 +2659,24 @@ public:
         pointer _Ptr;
         size_type _Size;
         size_type _Res;
-        allocator_type& _Al;
     };
 
-    _NODISCARD _Released_buffer _Release_to_buffer() {
+    _NODISCARD _Released_buffer _Release_to_buffer(const allocator_type& _Al) {
         // Release to a buffer, or allocate a new one if in small string mode
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
-            _Released_buffer _Result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres, _Getal()};
+            _Released_buffer _Result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres};
             _Tidy_init();
             return _Result;
         } else {
-            _Released_buffer _Result{_Getal().allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1, _Getal()};
+            _Released_buffer _Result{_Al.allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1};
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
             return _Result;
         }
+    }
+
+    _NODISCARD allocator_type& _Get_allocator_reference() {
+        return _Getal();
     }
 #endif // _HAS_CXX20
 
