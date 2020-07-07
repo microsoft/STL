@@ -163,7 +163,7 @@ public:
     // the buffer may already be full, and the terminating char is not '\0'.
     // In that case, copy the string as usual.
     _NODISCARD _Mystr str() && {
-        _Mystr _Result{_STD move(_Al)};
+        _Mystr _Result{_String_constructor_rvalue_allocator_tag{}, _STD move(_Al)};
         if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable
             const auto _Base   = _Mysb::pbase();
             const auto _Ptr    = (_STD max)(_Mysb::pptr(), _Seekhigh);
