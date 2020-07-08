@@ -20,7 +20,7 @@
     <canvas id="statusChart"></canvas>
     <button id="toggleTimeframe">Toggle Timeframe: All/GitHub</button>
     <script>
-        let table = [
+        const table = [
             { date: '2017-06-09', cxx17: 17, lwg: 44, bugs: 247, libcxx: 526 },
             { date: '2017-06-16', cxx17: 17, lwg: 43, bugs: 246, libcxx: 526 },
             { date: '2017-06-23', cxx17: 17, lwg: 43, bugs: 249, libcxx: 517 },
@@ -183,50 +183,43 @@
         ];
 
         function get_values(key) {
-            return table.filter(row => row[key] != null).map(row => ({ x: row.date, y: row[key] }));
+            return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
         }
 
-        let date_values = table.map(row => row.date);
-        let cxx17_values = get_values('cxx17');
-        let cxx20_values = get_values('cxx20');
-        let lwg_values = get_values('lwg');
-        let bugs_values = get_values('bugs');
-        let libcxx_values = get_values('libcxx');
-
-        let chart_data = {
-            labels: date_values,
+        const chart_data = {
+            labels: table.map(row => row.date),
             datasets: [
                 {
-                    data: cxx17_values,
+                    data: get_values('cxx17'),
                     label: 'C++17 Features',
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'small-axis',
                 },
                 {
-                    data: cxx20_values,
+                    data: get_values('cxx20'),
                     label: 'C++20 Features',
                     borderColor: '#7030A0',
                     backgroundColor: '#7030A0',
                     yAxisID: 'small-axis',
                 },
                 {
-                    data: lwg_values,
-                    label: 'LWG Issues',
+                    data: get_values('lwg'),
+                    label: 'LWG Resolutions',
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
                     yAxisID: 'small-axis',
                 },
                 {
-                    data: bugs_values,
+                    data: get_values('bugs'),
                     label: 'Bugs',
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'large-axis',
                 },
                 {
-                    data: libcxx_values,
-                    label: 'Libcxx Skips',
+                    data: get_values('libcxx'),
+                    label: 'Skipped Libcxx Tests',
                     borderColor: '#FFC000',
                     backgroundColor: '#FFC000',
                     yAxisID: 'large-axis',
@@ -235,7 +228,7 @@
         };
 
         let timeframe_idx = 0;
-        let timeframes = [
+        const timeframes = [
             {
                 ticks: { min: '2017-06-09' },
                 time: { unit: 'quarter' },
@@ -246,7 +239,7 @@
             },
         ];
 
-        let chart_options = {
+        const chart_options = {
             title: {
                 display: true,
                 fontSize: 24,
@@ -294,7 +287,7 @@
                         position: 'left',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Bugs, Skips',
+                            labelString: 'Bugs, Skipped Libcxx Tests',
                         },
                         ticks: {
                             min: 0,
@@ -309,7 +302,7 @@
                         position: 'right',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Features, Issues',
+                            labelString: 'Features, LWG Resolutions',
                         },
                         ticks: {
                             min: 0,
@@ -322,8 +315,7 @@
         };
 
         window.onload = function () {
-            let ctx = 'statusChart';
-            window.status_chart = new Chart(ctx, {
+            window.status_chart = new Chart('statusChart', {
                 type: 'line',
                 data: chart_data,
                 options: chart_options,
@@ -333,8 +325,8 @@
         document.getElementById('toggleTimeframe').addEventListener('click', function () {
             timeframe_idx = (timeframe_idx + 1) % timeframes.length;
 
-            let xAxis = window.status_chart.options.scales.xAxes[0];
-            let new_timeframe = timeframes[timeframe_idx];
+            const xAxis = window.status_chart.options.scales.xAxes[0];
+            const new_timeframe = timeframes[timeframe_idx];
 
             xAxis.ticks.min = new_timeframe.ticks.min;
             xAxis.time.unit = new_timeframe.time.unit;
