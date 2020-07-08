@@ -1018,6 +1018,11 @@ constexpr void test_read_write() {
     with_input_iterators<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
+template <class Instantiator, class Element1, class Element2, class Element3>
+constexpr void test_in_in_write() {
+    with_input_ranges<with_input_ranges<with_writable_iterators<Instantiator, Element3>, Element2>, Element1>::call();
+}
+
 template <size_t I>
 struct get_nth_fn {
     template <class T>
