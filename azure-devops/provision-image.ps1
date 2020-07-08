@@ -353,6 +353,30 @@ Function InstallCuda {
   }
 }
 
+<#
+.SYNOPSIS
+Install or upgrade a pip package.
+
+.DESCRIPTION
+Installs or upgrades a pip package specified in $Package.
+
+.PARAMETER Package
+The name of the package to be installed or upgraded.
+#>
+Function PipInstall {
+  Param(
+    [String]$Package
+  )
+
+  try {
+    Write-Host 'Installing or upgrading $Package...'
+    python.exe -m pip install --upgrade $Package
+    Write-Host 'Done installing or upgrading $Package'
+  }
+  catch {
+    Write-Error "Failed to install or upgrade $Package"
+  }
+}
 
 Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
 
@@ -369,6 +393,8 @@ InstallMSI 'CMake' $CMakeUrl
 InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
 InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
+PipInstall pip
+PipInstall psutil
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Host 'Updating PATH...'
