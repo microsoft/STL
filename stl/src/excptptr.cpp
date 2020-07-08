@@ -48,11 +48,9 @@ namespace {
     struct _Constexpr_excptptr_immortalize_impl {
         union {
             _Ty _Storage;
-        }
+        };
 
-        constexpr _Constexpr_excptptr_immortalize_impl()
-            : _Storage() {
-        }
+        constexpr _Constexpr_excptptr_immortalize_impl() : _Storage() {}
 
         [[msvc::noop_dtor]] ~_Constexpr_excptptr_immortalize_impl() {
             // do nothing to allow _Ty to be used during shutdown

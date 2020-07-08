@@ -553,9 +553,9 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
 #elif defined(__cpp_constexpr_dynamic_alloc)
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
-#ifdef __clang__
-    [[clang::require_constant_initialization]]
-#endif // __clang__
+#ifdef __cpp_constinit
+    constinit
+#endif // __cpp_constinit
     static constexpr _Ty _Static;
     return _Static;
 }
