@@ -547,82 +547,78 @@ protected:
 #pragma warning(disable : 4127) // conditional expression is constant
     virtual streamsize __CLR_OR_THIS_CALL xsgetn(_Elem* _Ptr, streamsize _Count) override {
         // get _Count characters from stream
-        if
-            _CONSTEXPR_IF(sizeof(_Elem) == 1) {
-                if (_Count <= 0) {
-                    return 0;
-                }
-
-                if (_Pcvt) { // if we need a nontrivial codecvt transform, do the default expensive thing
-                    return _Mysb::xsgetn(_Ptr, _Count);
-                }
-
-                // assuming this is OK because _Ptr + _Count must be valid
-                auto _Count_s           = static_cast<size_t>(_Count);
-                const auto _Start_count = _Count;
-                const auto _Available   = static_cast<size_t>(_Mysb::_Gnavail());
-                if (0 < _Available) { // copy from get area
-                    const auto _Read_size = _Min_value(_Count_s, _Available);
-                    _Traits::copy(_Ptr, _Mysb::gptr(), _Read_size);
-                    _Ptr += _Read_size;
-                    _Count_s -= _Read_size;
-                    _Mysb::gbump(static_cast<int>(_Read_size));
-                }
-
-                if (_Myfile) { // open C stream, attempt read
-                    _Reset_back(); // revert from _Mychar buffer
-                    // process in 4k - 1 chunks to avoid tripping over fread's clobber-the-end behavior when
-                    // doing \r\n -> \n translation
-                    constexpr size_t _Read_size = 4095; // _INTERNAL_BUFSIZ - 1
-                    while (_Read_size < _Count_s) {
-                        const auto _Actual_read = _CSTD fread(_Ptr, sizeof(_Elem), _Read_size, _Myfile);
-                        _Ptr += _Actual_read;
-                        _Count_s -= _Actual_read;
-                        if (_Actual_read != _Read_size) {
-                            return static_cast<streamsize>(_Start_count - _Count_s);
-                        }
-                    }
-
-                    if (0 < _Count_s) {
-                        _Count_s -= _CSTD fread(_Ptr, sizeof(_Elem), _Count_s, _Myfile);
-                    }
-                }
-
-                return static_cast<streamsize>(_Start_count - _Count_s);
+        if _CONSTEXPR_IF (sizeof(_Elem) == 1) {
+            if (_Count <= 0) {
+                return 0;
             }
-        else { // non-chars always get element-by-element processing
+
+            if (_Pcvt) { // if we need a nontrivial codecvt transform, do the default expensive thing
+                return _Mysb::xsgetn(_Ptr, _Count);
+            }
+
+            // assuming this is OK because _Ptr + _Count must be valid
+            auto _Count_s           = static_cast<size_t>(_Count);
+            const auto _Start_count = _Count;
+            const auto _Available   = static_cast<size_t>(_Mysb::_Gnavail());
+            if (0 < _Available) { // copy from get area
+                const auto _Read_size = (_STD min)(_Count_s, _Available);
+                _Traits::copy(_Ptr, _Mysb::gptr(), _Read_size);
+                _Ptr += _Read_size;
+                _Count_s -= _Read_size;
+                _Mysb::gbump(static_cast<int>(_Read_size));
+            }
+
+            if (_Myfile) { // open C stream, attempt read
+                _Reset_back(); // revert from _Mychar buffer
+                // process in 4k - 1 chunks to avoid tripping over fread's clobber-the-end behavior when
+                // doing \r\n -> \n translation
+                constexpr size_t _Read_size = 4095; // _INTERNAL_BUFSIZ - 1
+                while (_Read_size < _Count_s) {
+                    const auto _Actual_read = _CSTD fread(_Ptr, sizeof(_Elem), _Read_size, _Myfile);
+                    _Ptr += _Actual_read;
+                    _Count_s -= _Actual_read;
+                    if (_Actual_read != _Read_size) {
+                        return static_cast<streamsize>(_Start_count - _Count_s);
+                    }
+                }
+
+                if (0 < _Count_s) {
+                    _Count_s -= _CSTD fread(_Ptr, sizeof(_Elem), _Count_s, _Myfile);
+                }
+            }
+
+            return static_cast<streamsize>(_Start_count - _Count_s);
+        } else { // non-chars always get element-by-element processing
             return _Mysb::xsgetn(_Ptr, _Count);
         }
     }
 
     virtual streamsize __CLR_OR_THIS_CALL xsputn(const _Elem* _Ptr, streamsize _Count) override {
         // put _Count characters to stream
-        if
-            _CONSTEXPR_IF(sizeof(_Elem) == 1) {
-                if (_Pcvt) { // if we need a nontrivial codecvt transform, do the default expensive thing
-                    return _Mysb::xsputn(_Ptr, _Count);
-                }
-
-                const streamsize _Start_count = _Count;
-                streamsize _Size              = _Mysb::_Pnavail();
-                if (0 < _Count && 0 < _Size) { // copy to write buffer
-                    if (_Count < _Size) {
-                        _Size = _Count;
-                    }
-
-                    _Traits::copy(_Mysb::pptr(), _Ptr, static_cast<size_t>(_Size));
-                    _Ptr += _Size;
-                    _Count -= _Size;
-                    _Mysb::pbump(static_cast<int>(_Size));
-                }
-
-                if (0 < _Count && _Myfile) { // open C stream, attempt write
-                    _Count -= _CSTD fwrite(_Ptr, sizeof(_Elem), static_cast<size_t>(_Count), _Myfile);
-                }
-
-                return _Start_count - _Count;
+        if _CONSTEXPR_IF (sizeof(_Elem) == 1) {
+            if (_Pcvt) { // if we need a nontrivial codecvt transform, do the default expensive thing
+                return _Mysb::xsputn(_Ptr, _Count);
             }
-        else { // non-chars always get element-by-element processing
+
+            const streamsize _Start_count = _Count;
+            streamsize _Size              = _Mysb::_Pnavail();
+            if (0 < _Count && 0 < _Size) { // copy to write buffer
+                if (_Count < _Size) {
+                    _Size = _Count;
+                }
+
+                _Traits::copy(_Mysb::pptr(), _Ptr, static_cast<size_t>(_Size));
+                _Ptr += _Size;
+                _Count -= _Size;
+                _Mysb::pbump(static_cast<int>(_Size));
+            }
+
+            if (0 < _Count && _Myfile) { // open C stream, attempt write
+                _Count -= _CSTD fwrite(_Ptr, sizeof(_Elem), static_cast<size_t>(_Count), _Myfile);
+            }
+
+            return _Start_count - _Count;
+        } else { // non-chars always get element-by-element processing
             return _Mysb::xsputn(_Ptr, _Count);
         }
     }

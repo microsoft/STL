@@ -85,8 +85,7 @@ struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocati
         return _Ptr;
     }
 
-    void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept { // imitate True Placement Delete
-    }
+    void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept {} // imitate True Placement Delete
 #endif // _DEBUG
 };
 
@@ -776,13 +775,9 @@ protected:
         _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const { // convert bytes [_First1, _Last1) to [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if
-            _CONSTEXPR_IF(is_same_v<_Byte, _Elem>) {
-                (void) _Last1;
-                (void) _Last2;
-                return noconv; // convert nothing
-            }
-        else {
+        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+            return noconv; // convert nothing
+        } else {
             // types differ, copy one for one
             for (; _Mid1 != _Last1; ++_Mid1, ++_Mid2) {
                 if (_Mid2 == _Last2) {
@@ -799,13 +794,9 @@ protected:
         _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const { // convert [_First1, _Last1) to bytes [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if
-            _CONSTEXPR_IF(is_same_v<_Byte, _Elem>) {
-                (void) _Last1;
-                (void) _Last2;
-                return noconv; // convert nothing
-            }
-        else {
+        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+            return noconv; // convert nothing
+        } else {
             // types differ, copy one for one
             for (; _Mid1 != _Last1; ++_Mid1, ++_Mid2) {
                 if (_Mid2 == _Last2) {
@@ -829,8 +820,8 @@ protected:
         // return p - _First1, for the largest value p in [_First1, _Last1] such that [_First1, p) successfully
         // converts to at most _Count _Elems
         // assumes 1:1 conversion
-        const auto _Dist = static_cast<size_t>(_Min_value(_Last1 - _First1, ptrdiff_t{INT_MAX}));
-        return static_cast<int>(_Min_value(_Count, _Dist));
+        const auto _Dist = static_cast<size_t>((_STD min)(_Last1 - _First1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_Count, _Dist));
     }
 };
 
@@ -874,7 +865,7 @@ _NODISCARD int _Codecvt_do_length(
 
         if (_Result != codecvt_base::ok) {
             if (_Result == codecvt_base::noconv) {
-                _First1 += _Min_value(static_cast<size_t>(_Last1 - _First1), _Count);
+                _First1 += (_STD min)(static_cast<size_t>(_Last1 - _First1), _Count);
             }
 
             break; // error, noconv, or partial
@@ -887,7 +878,7 @@ _NODISCARD int _Codecvt_do_length(
         _First1 = _Mid1;
     }
 
-    return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+    return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
 }
 
 // ENUM _Codecvt_mode
@@ -1710,7 +1701,7 @@ protected:
             _First1 = _Peek;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -1953,7 +1944,7 @@ protected:
             _First1 = _Peek;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2150,7 +2141,7 @@ protected:
             _First1 += _Bytes;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2352,7 +2343,7 @@ protected:
             _First1 += _Bytes;
         }
 
-        return static_cast<int>(_Min_value(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -3263,12 +3254,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit __CLR_OR_THIS_CALL ctype_byname(const char* _Locname, size_t _Refs = 0)
-        : ctype<_Elem>(_Locinfo(_Locname), _Refs) { // construct for named locale
-    }
+        : ctype<_Elem>(_Locinfo(_Locname), _Refs) {} // construct for named locale
 
     explicit __CLR_OR_THIS_CALL ctype_byname(const string& _Str, size_t _Refs = 0)
-        : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) { // construct for named locale
-    }
+        : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}

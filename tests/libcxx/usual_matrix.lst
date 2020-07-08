@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-PM_CL="/nologo /Od /W4 /w14061 /w14242 /w14582 /w14583 /w14587 /w14588 /w14265 /w14749 /w14841 /w14842 /w15038 /wd4643 /sdl /WX /Zc:strictStrings /D_ENABLE_STL_INTERNAL_CHECK /bigobj /FImsvc_stdlib_force_include.h /permissive-"
+RUNALL_INCLUDE ..\universal_prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /analyze"
-PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MTd /std:c++latest"
+PM_CL="/EHsc /MTd /std:c++latest /permissive- /FImsvc_stdlib_force_include.h /wd4643"
+RUNALL_CROSSLIST
+PM_CL="/analyze /Zc:preprocessor"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing"

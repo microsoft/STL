@@ -37,6 +37,33 @@ extern "C" _CRTIMP2 void* __cdecl __AdjustPointer(void*, const PMD&); // defined
 using namespace std;
 
 namespace {
+#ifdef _M_CEE_PURE
+    template <class _Ty>
+    _Ty& _Immortalize() { // return a reference to an object that will live forever
+        /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
+        return reinterpret_cast<_Ty&>(_Static._Storage);
+    }
+#else // ^^^ _M_CEE_PURE ^^^ // vvv !_M_CEE_PURE vvv
+    template <class _Ty>
+    int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
+        // adapt True Placement New to _Execute_once
+        ::new (_Storage_ptr) _Ty();
+        return 1;
+    }
+
+    template <class _Ty>
+    _Ty& _Immortalize() { // return a reference to an object that will live forever
+        static once_flag _Flag;
+        alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
+        if (_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage) == 0) {
+            // _Execute_once should never fail if the callback never fails
+            _STD terminate();
+        }
+
+        return reinterpret_cast<_Ty&>(_Storage);
+    }
+#endif // _M_CEE_PURE
+
     void _PopulateCppExceptionRecord(
         _EXCEPTION_RECORD& _Record, const void* const _PExcept, ThrowInfo* _PThrow) noexcept {
         _Record.ExceptionCode           = EH_EXCEPTION_NUMBER;
@@ -90,7 +117,7 @@ namespace {
 
         // copy the number of parameters in use
         constexpr auto _Max_parameters = static_cast<DWORD>(EXCEPTION_MAXIMUM_PARAMETERS);
-        const auto _In_use             = _Min_value(_Parameters, _Max_parameters);
+        const auto _In_use             = (_STD min)(_Parameters, _Max_parameters);
         _CSTD memcpy(_Dest.ExceptionInformation, _Src.ExceptionInformation, _In_use * sizeof(ULONG_PTR));
         _CSTD memset(&_Dest.ExceptionInformation[_In_use], 0, (_Max_parameters - _In_use) * sizeof(ULONG_PTR));
     }
@@ -136,7 +163,7 @@ namespace {
 #endif // _M_CEE_PURE
         }
     }
-}
+} // unnamed namespace
 
 // All exception_ptr implementations are out-of-line because <memory> depends on <exception>,
 // which means <exception> cannot include <memory> -- and shared_ptr is defined in <memory>.
@@ -369,7 +396,7 @@ namespace {
             _Exception_ptr_access::_Set_ptr_rep(_Dest, &_Rx->_ExRecord, _Rx);
         }
     }
-}
+} // unnamed namespace
 
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(void* _Ptr) noexcept {
     ::new (_Ptr) shared_ptr<const _EXCEPTION_RECORD>();

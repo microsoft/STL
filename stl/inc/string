@@ -84,7 +84,6 @@ basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr,
     return getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
 }
 
-
 // sto* NARROW CONVERSIONS
 inline int stoi(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
     // convert string to int
@@ -459,18 +458,17 @@ _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVal into buff
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
 
     constexpr bool _Big_uty = sizeof(_UTy) > 4;
-    if
-        _CONSTEXPR_IF(_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
-            while (_UVal > 0xFFFFFFFFU) {
-                auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
-                _UVal /= 1000000000;
+    if _CONSTEXPR_IF (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+        while (_UVal > 0xFFFFFFFFU) {
+            auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
+            _UVal /= 1000000000;
 
-                for (int _Idx = 0; _Idx != 9; ++_Idx) {
-                    *--_RNext = static_cast<_Elem>('0' + _UVal_chunk % 10);
-                    _UVal_chunk /= 10;
-                }
+            for (int _Idx = 0; _Idx != 9; ++_Idx) {
+                *--_RNext = static_cast<_Elem>('0' + _UVal_chunk % 10);
+                _UVal_chunk /= 10;
             }
         }
+    }
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
 #endif // _WIN64
@@ -500,13 +498,24 @@ basic_string<_Elem> _Integral_to_string(const _Ty _Val) { // convert _Val to str
     return basic_string<_Elem>(_RNext, _Buff_end);
 }
 
+// TRANSITION, CUDA - warning: pointless comparison of unsigned integer with zero
+template <class _Elem, class _Ty>
+basic_string<_Elem> _UIntegral_to_string(const _Ty _Val) { // convert _Val to string
+    static_assert(is_integral_v<_Ty>, "_Ty must be integral");
+    static_assert(is_unsigned_v<_Ty>, "_Ty must be unsigned");
+    _Elem _Buff[21]; // can hold 2^64 - 1, plus NUL
+    _Elem* const _Buff_end = _STD end(_Buff);
+    _Elem* const _RNext    = _UIntegral_to_buff(_Buff_end, _Val);
+    return basic_string<_Elem>(_RNext, _Buff_end);
+}
+
 // to_string NARROW CONVERSIONS
 _NODISCARD inline string to_string(int _Val) { // convert int to string
     return _Integral_to_string<char>(_Val);
 }
 
 _NODISCARD inline string to_string(unsigned int _Val) { // convert unsigned int to string
-    return _Integral_to_string<char>(_Val);
+    return _UIntegral_to_string<char>(_Val);
 }
 
 _NODISCARD inline string to_string(long _Val) { // convert long to string
@@ -514,7 +523,7 @@ _NODISCARD inline string to_string(long _Val) { // convert long to string
 }
 
 _NODISCARD inline string to_string(unsigned long _Val) { // convert unsigned long to string
-    return _Integral_to_string<char>(_Val);
+    return _UIntegral_to_string<char>(_Val);
 }
 
 _NODISCARD inline string to_string(long long _Val) { // convert long long to string
@@ -522,7 +531,7 @@ _NODISCARD inline string to_string(long long _Val) { // convert long long to str
 }
 
 _NODISCARD inline string to_string(unsigned long long _Val) { // convert unsigned long long to string
-    return _Integral_to_string<char>(_Val);
+    return _UIntegral_to_string<char>(_Val);
 }
 
 _NODISCARD inline string to_string(double _Val) { // convert double to string
@@ -546,7 +555,7 @@ _NODISCARD inline wstring to_wstring(int _Val) { // convert int to wstring
 }
 
 _NODISCARD inline wstring to_wstring(unsigned int _Val) { // convert unsigned int to wstring
-    return _Integral_to_string<wchar_t>(_Val);
+    return _UIntegral_to_string<wchar_t>(_Val);
 }
 
 _NODISCARD inline wstring to_wstring(long _Val) { // convert long to wstring
@@ -554,7 +563,7 @@ _NODISCARD inline wstring to_wstring(long _Val) { // convert long to wstring
 }
 
 _NODISCARD inline wstring to_wstring(unsigned long _Val) { // convert unsigned long to wstring
-    return _Integral_to_string<wchar_t>(_Val);
+    return _UIntegral_to_string<wchar_t>(_Val);
 }
 
 _NODISCARD inline wstring to_wstring(long long _Val) { // convert long long to wstring
@@ -562,7 +571,7 @@ _NODISCARD inline wstring to_wstring(long long _Val) { // convert long long to w
 }
 
 _NODISCARD inline wstring to_wstring(unsigned long long _Val) { // convert unsigned long long to wstring
-    return _Integral_to_string<wchar_t>(_Val);
+    return _UIntegral_to_string<wchar_t>(_Val);
 }
 
 _NODISCARD inline wstring to_wstring(double _Val) { // convert double to wstring

@@ -168,12 +168,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
              (controlled by IncludeInLink and IncludeInImportLib). -->
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\filesystem.cpp;
-            $(CrtRoot)\github\stl\src\filesystem_space.cpp;
             $(CrtRoot)\github\stl\src\locale0_implib.cpp;
             $(CrtRoot)\github\stl\src\nothrow.cpp;
             $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
             $(CrtRoot)\github\stl\src\sharedmutex.cpp;
+            $(CrtRoot)\github\stl\src\syserror_import_lib.cpp;
             $(CrtRoot)\github\stl\src\vector_algorithms.cpp;
+            $(CrtRoot)\github\stl\src\xonce2.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
             <IncludeInLink>false</IncludeInLink>
@@ -189,6 +190,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             ">
             <BuildAs>nativecpp</BuildAs>
         </BuildFiles>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(CrtBuildModelIsDll)' != 'true'">
+      <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_begin_initialize.obj" />
+      <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_complete.obj" />
     </ItemGroup>
 
     <Choose>

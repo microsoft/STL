@@ -1,0 +1,18 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+config.cxx_archive_root            = "@CMAKE_ARCHIVE_OUTPUT_DIRECTORY@"
+config.cxx_headers                 = "@STL_TESTED_HEADERS_DIR@"
+config.cxx_library_root            = "@CMAKE_LIBRARY_OUTPUT_DIRECTORY@"
+config.cxx_runtime_root            = "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@"
+config.expected_results_list_path  = "@TR1_EXPECTED_RESULTS@"
+config.include_dirs                = ["@STL_SOURCE_DIR@/tests/tr1/include", "@STL_SOURCE_DIR@/tests/std/include"]
+config.msvc_toolset_libs_root      = "@TOOLSET_LIB@"
+config.stl_build_root              = "@STL_BUILD_ROOT@"
+config.stl_src_root                = "@STL_SOURCE_DIR@"
+config.target_arch                 = "@VCLIBS_TARGET_ARCHITECTURE@"
+config.test_exec_root              = "@TR1_TEST_OUTPUT_DIR@"
+config.test_subdirs_file           = "@TR1_TEST_SUBDIRS_FILE@"
+config.test_subdirs_root           = "@TR1_TEST_SUBDIRS_ROOT@"
+
+lit_config.load_config(config, "@CMAKE_CURRENT_SOURCE_DIR@/lit.cfg")

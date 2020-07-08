@@ -3,5 +3,5 @@
 
 // _LDtento function -- IEEE 754 version
 
-#include "xxlftype.h"
-#include "xxxdtent.h"
+#include "xxlftype.hpp"
+#include "xxxdtent.hpp"

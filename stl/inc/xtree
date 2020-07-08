@@ -874,60 +874,64 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    struct _Copy_tag {};
-    struct _Move_tag {};
+    struct _Copy_tag {
+        explicit _Copy_tag() = default;
+    };
 
-    _Tree(const key_compare& _Parg) : _Mypair(_One_then_variadic_args_t(), _Parg, _Zero_then_variadic_args_t()) {
+    struct _Move_tag {
+        explicit _Move_tag() = default;
+    };
+
+    _Tree(const key_compare& _Parg) : _Mypair(_One_then_variadic_args_t{}, _Parg, _Zero_then_variadic_args_t{}) {
         _Alloc_sentinel_and_proxy();
     }
 
     _Tree(const key_compare& _Parg, const allocator_type& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Parg, _One_then_variadic_args_t(), _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Parg, _One_then_variadic_args_t{}, _Al) {
         _Alloc_sentinel_and_proxy();
     }
 
     template <class _Any_alloc>
     _Tree(const _Tree& _Right, _Any_alloc&& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Right.key_comp(), _One_then_variadic_args_t(),
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{},
             _STD forward<_Any_alloc>(_Al)) {
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy(_Right, _Copy_tag());
+        _Copy(_Right, _Copy_tag{});
         _Sentinel._Release();
         _Proxy._Release();
     }
 
     _Tree(_Tree&& _Right)
         : _Mypair(
-            _One_then_variadic_args_t(), _Right.key_comp(), _One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+            _One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
     }
 
 private:
     void _Different_allocator_move_construct(_Tree&& _Right) {
-        // TRANSITION, VSO-675959 (inline into only caller when that is fixed)
+        // TRANSITION, VSO-761321 (inline into only caller when that is fixed)
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy(_Right, _Move_tag());
+        _Copy(_Right, _Move_tag{});
         _Sentinel._Release();
         _Proxy._Release();
     }
 
 public:
     _Tree(_Tree&& _Right, const allocator_type& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Right.key_comp(), _One_then_variadic_args_t(), _Al) {
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    _Different_allocator_move_construct(_STD move(_Right));
-                    return;
-                }
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _Al) {
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                _Different_allocator_move_construct(_STD move(_Right));
+                return;
             }
+        }
 
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
@@ -969,7 +973,7 @@ private:
         } else {
             clear();
             _Getcomp() = _Right._Getcomp();
-            _Copy(_Right, _Move_tag());
+            _Copy(_Right, _Move_tag{});
         }
     }
 
@@ -1058,11 +1062,9 @@ protected:
         {
             _Tree_temp_node<_Alnode> _Newnode(_Getal(), _Scary->_Myhead, _STD forward<_Valtys>(_Vals)...);
             const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-            if
-                _CONSTEXPR_IF(_Multi) { // duplicate check if unique
-                    _Loc = _Find_upper_bound(_Keyval);
-                }
-            else {
+            if _CONSTEXPR_IF (_Multi) { // duplicate check if unique
+                _Loc = _Find_upper_bound(_Keyval);
+            } else {
                 _Loc = _Find_lower_bound(_Keyval);
                 if (_Lower_bound_duplicate(_Loc._Bound, _Keyval)) {
                     return {_Loc._Bound, false};
@@ -1198,7 +1200,7 @@ private:
         clear();
         _Getcomp() = _Right._Getcomp();
         _Pocca(_Getal(), _Right._Getal());
-        _Copy(_Right, _Copy_tag());
+        _Copy(_Right, _Copy_tag{});
     }
 
     void _Copy_assign(const _Tree& _Right, true_type) {
@@ -1220,7 +1222,7 @@ private:
             _Scary->_Myhead = _Newhead;
             _Proxy._Bind(_Alproxy, _Scary);
             _Getcomp() = _Right._Getcomp();
-            _Copy(_Right, _Copy_tag());
+            _Copy(_Right, _Copy_tag{});
         }
     }
 
@@ -1306,7 +1308,7 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return _Min_value(
+        return (_STD min)(
             static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
     }
 
@@ -1492,13 +1494,11 @@ public:
 #endif // _HAS_CXX20
 
     _NODISCARD size_type count(const key_type& _Keyval) const {
-        if
-            _CONSTEXPR_IF(_Multi) {
-                const auto _Ans = _Eqrange(_Keyval);
-                return static_cast<size_type>(_STD distance(
-                    _Unchecked_const_iterator(_Ans.first, nullptr), _Unchecked_const_iterator(_Ans.second, nullptr)));
-            }
-        else {
+        if _CONSTEXPR_IF (_Multi) {
+            const auto _Ans = _Eqrange(_Keyval);
+            return static_cast<size_type>(_STD distance(
+                _Unchecked_const_iterator(_Ans.first, nullptr), _Unchecked_const_iterator(_Ans.second, nullptr)));
+        } else {
             return _Lower_bound_duplicate(_Find_lower_bound(_Keyval)._Bound, _Keyval);
         }
     }
@@ -1584,49 +1584,46 @@ protected:
     _Tree_find_hint_result<_Nodeptr> _Find_hint(const _Nodeptr _Hint, const _Keyty& _Keyval) const {
         const auto& _Comp = _Getcomp();
         const auto _Head  = _Get_scary()->_Myhead;
-        if
-            _CONSTEXPR_IF(_Multi) { // insert even if duplicate
-                if (_Hint->_Isnil) {
-                    // insert at end if greater than or equal to last element
-                    if (_Head->_Parent->_Isnil
-                        || !_DEBUG_LT_PRED(_Comp, _Keyval, _Traits::_Kfn(_Head->_Right->_Myval))) {
-                        return {{_Head->_Right, _Tree_child::_Right}, false};
-                    }
-
-                    // _Hint is end(); it must be closer to the end of equivalents
-                    return {_Find_upper_bound(_Keyval)._Location, false};
+        if _CONSTEXPR_IF (_Multi) { // insert even if duplicate
+            if (_Hint->_Isnil) {
+                // insert at end if greater than or equal to last element
+                if (_Head->_Parent->_Isnil || !_DEBUG_LT_PRED(_Comp, _Keyval, _Traits::_Kfn(_Head->_Right->_Myval))) {
+                    return {{_Head->_Right, _Tree_child::_Right}, false};
                 }
 
-                if (_Hint == _Head->_Left) {
-                    // insert at beginning if less than or equal to first element
-                    if (!_DEBUG_LT_PRED(_Comp, _Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-                        return {{_Hint, _Tree_child::_Left}, false};
-                    }
+                // _Hint is end(); it must be closer to the end of equivalents
+                return {_Find_upper_bound(_Keyval)._Location, false};
+            }
 
-                    // _Hint is begin(); it must be closer to the beginning of equivalents
-                    return {_Find_lower_bound(_Keyval)._Location, false};
-                }
-
+            if (_Hint == _Head->_Left) {
+                // insert at beginning if less than or equal to first element
                 if (!_DEBUG_LT_PRED(_Comp, _Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-                    // _Val <= *_Hint
-                    const auto _Prev = (--(_Unchecked_const_iterator(_Hint, nullptr)))._Ptr;
-                    if (!_DEBUG_LT_PRED(_Comp, _Keyval, _Traits::_Kfn(_Prev->_Myval))) {
-                        // _Val <= *_Hint and _Val >= *prev(_Hint); insert here
-                        if (_Prev->_Right->_Isnil) {
-                            return {{_Prev, _Tree_child::_Right}, false};
-                        } else {
-                            return {{_Hint, _Tree_child::_Left}, false};
-                        }
-                    }
-
-                    // _Val goes before *_Hint; _Hint must be closer to the end of equivalents
-                    return {_Find_upper_bound(_Keyval)._Location, false};
+                    return {{_Hint, _Tree_child::_Left}, false};
                 }
 
-                // _Val goes after *_Hint; _Hint must be closer to the beginning of equivalents
+                // _Hint is begin(); it must be closer to the beginning of equivalents
                 return {_Find_lower_bound(_Keyval)._Location, false};
             }
-        else { // insert only if unique
+
+            if (!_DEBUG_LT_PRED(_Comp, _Traits::_Kfn(_Hint->_Myval), _Keyval)) {
+                // _Val <= *_Hint
+                const auto _Prev = (--(_Unchecked_const_iterator(_Hint, nullptr)))._Ptr;
+                if (!_DEBUG_LT_PRED(_Comp, _Keyval, _Traits::_Kfn(_Prev->_Myval))) {
+                    // _Val <= *_Hint and _Val >= *prev(_Hint); insert here
+                    if (_Prev->_Right->_Isnil) {
+                        return {{_Prev, _Tree_child::_Right}, false};
+                    } else {
+                        return {{_Hint, _Tree_child::_Left}, false};
+                    }
+                }
+
+                // _Val goes before *_Hint; _Hint must be closer to the end of equivalents
+                return {_Find_upper_bound(_Keyval)._Location, false};
+            }
+
+            // _Val goes after *_Hint; _Hint must be closer to the beginning of equivalents
+            return {_Find_lower_bound(_Keyval)._Location, false};
+        } else { // insert only if unique
             if (_Hint->_Isnil) { // insert at end if after last element
                 // insert at end if greater than last element
                 if (_Head->_Parent->_Isnil || _DEBUG_LT_PRED(_Comp, _Traits::_Kfn(_Head->_Right->_Myval), _Keyval)) {

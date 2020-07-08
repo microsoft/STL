@@ -8,9 +8,7 @@
 #define _ARRAY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <algorithm>
-#include <iterator>
-#include <tuple>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -20,6 +18,400 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+// CLASS TEMPLATE _Array_const_iterator
+#if _ITERATOR_DEBUG_LEVEL != 0
+struct _Iterator_base12_compatible { // TRANSITION, for binary compatibility
+    _Container_proxy* _Myproxy{};
+    _Iterator_base12* _Mynextiter{};
+};
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+template <class _Ty, size_t _Size>
+class _Array_const_iterator
+#if _ITERATOR_DEBUG_LEVEL != 0
+    : private _Iterator_base12_compatible
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+{
+public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = _Ty;
+    using difference_type   = ptrdiff_t;
+    using pointer           = const _Ty*;
+    using reference         = const _Ty&;
+
+    enum { _EEN_SIZE = _Size }; // helper for expression evaluator
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+    _CONSTEXPR17 _Array_const_iterator() noexcept : _Ptr() {}
+
+    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Ptr(_Parg + _Off) {}
+
+    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
+        return *_Ptr;
+    }
+
+    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
+        return _Ptr;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator++() noexcept {
+        ++_Ptr;
+        return *this;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator operator++(int) noexcept {
+        _Array_const_iterator _Tmp = *this;
+        ++_Ptr;
+        return _Tmp;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator--() noexcept {
+        --_Ptr;
+        return *this;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator operator--(int) noexcept {
+        _Array_const_iterator _Tmp = *this;
+        --_Ptr;
+        return _Tmp;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator+=(const ptrdiff_t _Off) noexcept {
+        _Ptr += _Off;
+        return *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
+        _Array_const_iterator _Tmp = *this;
+        return _Tmp += _Off;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
+        _Ptr -= _Off;
+        return *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
+        _Array_const_iterator _Tmp = *this;
+        return _Tmp -= _Off;
+    }
+
+    _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
+        return _Ptr - _Right._Ptr;
+    }
+
+    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
+        return _Ptr[_Off];
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator==(const _Array_const_iterator& _Right) const noexcept {
+        return _Ptr == _Right._Ptr;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
+        return _Ptr < _Right._Ptr;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+    using _Prevent_inheriting_unwrap = _Array_const_iterator;
+
+    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
+        return _Ptr;
+    }
+
+    static constexpr bool _Unwrap_when_unverified = true;
+
+    constexpr void _Seek_to(pointer _It) noexcept {
+        _Ptr = _It;
+    }
+
+private:
+    pointer _Ptr; // beginning of array
+
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
+    _CONSTEXPR17 _Array_const_iterator() noexcept : _Ptr(), _Idx(0) {}
+
+    _CONSTEXPR17 explicit _Array_const_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Ptr(_Parg), _Idx(_Off) {}
+
+    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
+        return *operator->();
+    }
+
+    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
+        _STL_VERIFY(_Ptr, "cannot dereference value-initialized array iterator");
+        _STL_VERIFY(_Idx < _Size, "cannot dereference out of range array iterator");
+        return _Ptr + _Idx;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator++() noexcept {
+        _STL_VERIFY(_Ptr, "cannot increment value-initialized array iterator");
+        _STL_VERIFY(_Idx < _Size, "cannot increment array iterator past end");
+        ++_Idx;
+        return *this;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator operator++(int) noexcept {
+        _Array_const_iterator _Tmp = *this;
+        ++*this;
+        return _Tmp;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator--() noexcept {
+        _STL_VERIFY(_Ptr, "cannot decrement value-initialized array iterator");
+        _STL_VERIFY(_Idx != 0, "cannot decrement array iterator before begin");
+        --_Idx;
+        return *this;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator operator--(int) noexcept {
+        _Array_const_iterator _Tmp = *this;
+        --*this;
+        return _Tmp;
+    }
+
+    constexpr void _Verify_offset(const ptrdiff_t _Off) const noexcept {
+        if (_Off != 0) {
+            _STL_VERIFY(_Ptr, "cannot seek value-initialized array iterator");
+        }
+
+        if (_Off < 0) {
+            _STL_VERIFY(_Idx >= size_t{0} - static_cast<size_t>(_Off), "cannot seek array iterator before begin");
+        }
+
+        if (_Off > 0) {
+            _STL_VERIFY(_Size - _Idx >= static_cast<size_t>(_Off), "cannot seek array iterator after end");
+        }
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator+=(const ptrdiff_t _Off) noexcept {
+        _Verify_offset(_Off);
+        _Idx += static_cast<size_t>(_Off);
+        return *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
+        _Array_const_iterator _Tmp = *this;
+        return _Tmp += _Off;
+    }
+
+    _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
+        return *this += -_Off;
+    }
+
+    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
+        _Array_const_iterator _Tmp = *this;
+        return _Tmp -= _Off;
+    }
+
+    _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return static_cast<ptrdiff_t>(_Idx - _Right._Idx);
+    }
+
+    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
+        return *(*this + _Off);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator==(const _Array_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return _Idx == _Right._Idx;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return _Idx < _Right._Idx;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+    _CONSTEXPR17 void _Compat(const _Array_const_iterator& _Right) const noexcept { // test for compatible iterator pair
+        _STL_VERIFY(_Ptr == _Right._Ptr, "array iterators incompatible");
+    }
+
+    using _Prevent_inheriting_unwrap = _Array_const_iterator;
+
+    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
+        return _Ptr + _Idx;
+    }
+
+    constexpr void _Verify_with(const _Array_const_iterator& _Last) const noexcept {
+        // note _Compat check inside operator<=
+        _STL_VERIFY(*this <= _Last, "array iterator range transposed");
+    }
+
+    constexpr void _Seek_to(pointer _It) noexcept {
+        _Idx = static_cast<size_t>(_It - _Ptr);
+    }
+
+private:
+    pointer _Ptr; // beginning of array
+    size_t _Idx; // offset into array
+#endif // _ITERATOR_DEBUG_LEVEL == 0
+};
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+template <class _Ty, size_t _Size>
+constexpr void _Verify_range(
+    const _Array_const_iterator<_Ty, _Size>& _First, const _Array_const_iterator<_Ty, _Size>& _Last) noexcept {
+    // TRANSITION, CUDA
+    _First._Verify_with(_Last);
+}
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+template <class _Ty, size_t _Size>
+_NODISCARD _CONSTEXPR17 _Array_const_iterator<_Ty, _Size> operator+(
+    const ptrdiff_t _Off, _Array_const_iterator<_Ty, _Size> _Next) noexcept {
+    return _Next += _Off;
+}
+
+#if _HAS_CXX20
+template <class _Ty, size_t _Size>
+struct pointer_traits<_Array_const_iterator<_Ty, _Size>> {
+    using pointer         = _Array_const_iterator<_Ty, _Size>;
+    using element_type    = const _Ty;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+#endif // _HAS_CXX20
+
+// CLASS TEMPLATE _Array_iterator
+template <class _Ty, size_t _Size>
+class _Array_iterator : public _Array_const_iterator<_Ty, _Size> {
+public:
+    using _Mybase = _Array_const_iterator<_Ty, _Size>;
+
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = _Ty;
+    using difference_type   = ptrdiff_t;
+    using pointer           = _Ty*;
+    using reference         = _Ty&;
+
+    enum { _EEN_SIZE = _Size }; // helper for expression evaluator
+
+    _CONSTEXPR17 _Array_iterator() noexcept {}
+
+    _CONSTEXPR17 explicit _Array_iterator(pointer _Parg, size_t _Off = 0) noexcept : _Mybase(_Parg, _Off) {}
+
+    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
+        return const_cast<reference>(_Mybase::operator*());
+    }
+
+    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
+        return const_cast<pointer>(_Mybase::operator->());
+    }
+
+    _CONSTEXPR17 _Array_iterator& operator++() noexcept {
+        _Mybase::operator++();
+        return *this;
+    }
+
+    _CONSTEXPR17 _Array_iterator operator++(int) noexcept {
+        _Array_iterator _Tmp = *this;
+        _Mybase::operator++();
+        return _Tmp;
+    }
+
+    _CONSTEXPR17 _Array_iterator& operator--() noexcept {
+        _Mybase::operator--();
+        return *this;
+    }
+
+    _CONSTEXPR17 _Array_iterator operator--(int) noexcept {
+        _Array_iterator _Tmp = *this;
+        _Mybase::operator--();
+        return _Tmp;
+    }
+
+    _CONSTEXPR17 _Array_iterator& operator+=(const ptrdiff_t _Off) noexcept {
+        _Mybase::operator+=(_Off);
+        return *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off) const noexcept {
+        _Array_iterator _Tmp = *this;
+        return _Tmp += _Off;
+    }
+
+    _CONSTEXPR17 _Array_iterator& operator-=(const ptrdiff_t _Off) noexcept {
+        _Mybase::operator-=(_Off);
+        return *this;
+    }
+
+    using _Mybase::operator-;
+
+    _NODISCARD _CONSTEXPR17 _Array_iterator operator-(const ptrdiff_t _Off) const noexcept {
+        _Array_iterator _Tmp = *this;
+        return _Tmp -= _Off;
+    }
+
+    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
+        return const_cast<reference>(_Mybase::operator[](_Off));
+    }
+
+    using _Prevent_inheriting_unwrap = _Array_iterator;
+
+    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
+        return const_cast<pointer>(_Mybase::_Unwrapped());
+    }
+};
+
+template <class _Ty, size_t _Size>
+_NODISCARD _CONSTEXPR17 _Array_iterator<_Ty, _Size> operator+(
+    const ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) noexcept {
+    return _Next += _Off;
+}
+
+#if _HAS_CXX20
+template <class _Ty, size_t _Size>
+struct pointer_traits<_Array_iterator<_Ty, _Size>> {
+    using pointer         = _Array_iterator<_Ty, _Size>;
+    using element_type    = _Ty;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE array
 template <class _Ty, size_t _Size>
 class array { // fixed size array of values
@@ -44,11 +436,11 @@ public:
     }
 #endif // _HAS_TR1_NAMESPACE
 
-    void fill(const _Ty& _Value) {
+    _CONSTEXPR20 void fill(const _Ty& _Value) {
         _STD fill_n(_Elems, _Size, _Value);
     }
 
-    void swap(array& _Other) noexcept(_Is_nothrow_swappable<_Ty>::value) {
+    _CONSTEXPR20 void swap(array& _Other) noexcept(_Is_nothrow_swappable<_Ty>::value) {
         _Swap_ranges_unchecked(_Elems, _Elems + _Size, _Other._Elems);
     }
 
@@ -152,8 +544,8 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const
-        noexcept /* strengthened */ {
+    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept
+    /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -202,7 +594,7 @@ struct _Enforce_same {
 };
 
 template <class _First, class... _Rest>
-array(_First, _Rest...)->array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
+array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
@@ -225,9 +617,9 @@ public:
     _DEPRECATE_TR1_NAMESPACE void assign(const _Ty&) {}
 #endif // _HAS_TR1_NAMESPACE
 
-    void fill(const _Ty&) {}
+    _CONSTEXPR20 void fill(const _Ty&) {}
 
-    void swap(array&) noexcept {}
+    _CONSTEXPR20 void swap(array&) noexcept {}
 
     _NODISCARD _CONSTEXPR17 iterator begin() noexcept {
         return iterator{};
@@ -377,37 +769,37 @@ public:
 };
 
 template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
-void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
+_CONSTEXPR20 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator>(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator>(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator<=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator<=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Right < _Left);
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
 

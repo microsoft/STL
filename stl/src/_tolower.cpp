@@ -5,13 +5,14 @@
 
 #include <yvals.h>
 
-#include "awint.h"
 #include <ctype.h>
 #include <internal_shared.h>
 #include <locale.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <xlocinfo.h>
+
+#include "awint.hpp"
 
 // remove macro definitions of _tolower() and tolower()
 #undef _tolower
@@ -41,7 +42,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     UINT codepage;
     const wchar_t* locale_name;
 
-    if (ploc == 0) {
+    if (ploc == nullptr) {
         locale_name = ___lc_locale_name_func()[LC_CTYPE];
         codepage    = ___lc_codepage_func();
     } else {
@@ -50,7 +51,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 
     if (locale_name == nullptr) {
-        if ((c >= 'A') && (c <= 'Z')) {
+        if (c >= 'A' && c <= 'Z') {
             c = c + ('a' - 'A');
         }
 
@@ -58,8 +59,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 
     // if checking case of c does not require API call, do it
-    if ((unsigned) c < 256) {
-        if (ploc == 0) {
+    if (static_cast<unsigned int>(c) < 256) {
+        if (ploc == nullptr) {
             if (!isupper(c)) {
                 return c;
             }
@@ -71,29 +72,30 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 
     // convert int c to multibyte string
-    if (ploc == 0 ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
+    if (ploc == nullptr ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
         inbuffer[0] = (c >> 8 & 0xff);
-        inbuffer[1] = (unsigned char) c;
+        inbuffer[1] = static_cast<unsigned char>(c);
         inbuffer[2] = 0;
         size        = 2;
     } else {
-        inbuffer[0] = (unsigned char) c;
+        inbuffer[0] = static_cast<unsigned char>(c);
         inbuffer[1] = 0;
         size        = 1;
     }
 
     // convert wide char to lowercase
-    if (0
-        == (size = __crtLCMapStringA(
-                locale_name, LCMAP_LOWERCASE, (const char*) inbuffer, size, (char*) outbuffer, 3, codepage, TRUE))) {
+    size = __crtLCMapStringA(locale_name, LCMAP_LOWERCASE, reinterpret_cast<const char*>(inbuffer), size,
+        reinterpret_cast<char*>(outbuffer), 3, codepage, TRUE);
+
+    if (size == 0) {
         return c;
     }
 
     // construct integer return value
     if (size == 1) {
-        return (int) outbuffer[0];
+        return static_cast<int>(outbuffer[0]);
     } else {
-        return (int) outbuffer[1] | ((int) outbuffer[0] << 8);
+        return static_cast<int>(outbuffer[1]) | (static_cast<int>(outbuffer[0]) << 8);
     }
 }
 
@@ -102,12 +104,12 @@ _CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype() {
     _Ctypevec ctype;
 
     ctype._Page  = ___lc_codepage_func();
-    ctype._Table = (const short*) _calloc_crt(256, sizeof(*__pctype_func()));
-    if (ctype._Table != 0) {
-        memcpy((void*) ctype._Table, __pctype_func(), 256 * sizeof(*__pctype_func()));
+    ctype._Table = static_cast<const short*>(_calloc_crt(256, sizeof(*__pctype_func())));
+    if (ctype._Table != nullptr) {
+        memcpy(const_cast<short*>(ctype._Table), __pctype_func(), 256 * sizeof(*__pctype_func()));
         ctype._Delfl = 1;
     } else {
-        ctype._Table = (const short*) __pctype_func();
+        ctype._Table = reinterpret_cast<const short*>(__pctype_func());
         ctype._Delfl = 0;
     }
     ctype._LocaleName = ___lc_locale_name_func()[LC_COLLATE];

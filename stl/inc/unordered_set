@@ -49,7 +49,7 @@ public:
 
     explicit _Uset_traits(const _Tr& _Traits) noexcept(is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
 
-    using value_compare = key_compare;
+    using value_compare = void; // TRANSITION, remove when _Standard becomes unconditionally true
 
     static const _Kty& _Kfn(const value_type& _Val) noexcept {
         return _Val;
@@ -276,31 +276,30 @@ template <class _Iter, class _Hasher = hash<_Iter_value_t<_Iter>>, class _Keyeq 
         conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>,
         int> = 0>
 unordered_set(_Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_set<_Iter_value_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
+    -> unordered_set<_Iter_value_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
-unordered_set(
-    initializer_list<_Kty>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>;
+unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
+    _Alloc = _Alloc()) -> unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_set(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_set<_Iter_value_t<_Iter>, hash<_Iter_value_t<_Iter>>, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
+    -> unordered_set<_Iter_value_t<_Iter>, hash<_Iter_value_t<_Iter>>, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_set(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_set<_Iter_value_t<_Iter>, _Hasher, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
+    -> unordered_set<_Iter_value_t<_Iter>, _Hasher, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_set<_Kty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
+    -> unordered_set<_Kty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_set<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
+    -> unordered_set<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
@@ -311,8 +310,9 @@ void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+    unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -537,33 +537,31 @@ template <class _Iter, class _Hasher = hash<_Iter_value_t<_Iter>>, class _Keyeq 
     enable_if_t<
         conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>,
         int> = 0>
-unordered_multiset(
-    _Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_multiset<_Iter_value_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
+unordered_multiset(_Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
+    _Alloc = _Alloc()) -> unordered_multiset<_Iter_value_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
-unordered_multiset(
-    initializer_list<_Kty>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>;
+unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
+    _Alloc = _Alloc()) -> unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multiset(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_multiset<_Iter_value_t<_Iter>, hash<_Iter_value_t<_Iter>>, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
+    -> unordered_multiset<_Iter_value_t<_Iter>, hash<_Iter_value_t<_Iter>>, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multiset(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_multiset<_Iter_value_t<_Iter>, _Hasher, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
+    -> unordered_multiset<_Iter_value_t<_Iter>, _Hasher, equal_to<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_multiset<_Kty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
+    -> unordered_multiset<_Kty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_multiset<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
+    -> unordered_multiset<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
@@ -574,8 +572,9 @@ void swap(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
 
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
-void erase_if(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+typename unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
+    unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -607,16 +606,6 @@ namespace pmr {
     using unordered_multiset = _STD unordered_multiset<_Kty, _Hasher, _Keyeq, polymorphic_allocator<_Kty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-    inline constexpr bool enable_view<unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>> = false;
-
-    template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-    inline constexpr bool enable_view<unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>> = false;
-} // namespace ranges
-#endif // __cpp_lib_concepts
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

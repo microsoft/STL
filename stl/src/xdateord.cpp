@@ -3,8 +3,9 @@
 
 // look up date ordering
 
-#include "awint.h"
 #include <locale>
+
+#include "awint.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

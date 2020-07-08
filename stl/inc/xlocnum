@@ -243,12 +243,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit numpunct_byname(const char* _Locname, size_t _Refs = 0)
-        : numpunct<_Elem>(_Locname, _Refs) { // construct for named locale
-    }
+        : numpunct<_Elem>(_Locname, _Refs) {} // construct for named locale
 
     explicit numpunct_byname(const string& _Str, size_t _Refs = 0)
-        : numpunct<_Elem>(_Str.c_str(), _Refs) { // construct for named locale
-    }
+        : numpunct<_Elem>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~numpunct_byname() noexcept {}
@@ -290,8 +288,7 @@ public:
 protected:
     virtual __CLR_OR_THIS_CALL ~num_get() noexcept {}
 
-    void _Init(const _Locinfo&) { // initialize from _Locinfo object
-    }
+    void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
 public:
     explicit __CLR_OR_THIS_CALL num_get(size_t _Refs = 0) : locale::facet(_Refs) { // construct from current locale
@@ -670,12 +667,12 @@ private:
         const string _Grouping  = _Punct_fac.grouping();
         const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
 
-        constexpr int _Numget_signoff             = 22;
-        constexpr int _Numget_xoff                = 24;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789ABCDEFabcdef-+Xx";
+        constexpr int _Numget_signoff = 22;
+        constexpr int _Numget_xoff    = 24;
+        static constexpr char _Src[]  = "0123456789ABCDEFabcdef-+Xx";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Loc);
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         char* _Ptr = _Ac;
 
@@ -783,12 +780,12 @@ private:
         bool _Bad              = false;
         bool _Sticky           = false;
 
-        constexpr int _Numget_signoff             = 10;
-        constexpr int _Numget_eoff                = 12;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789-+Ee";
+        constexpr int _Numget_signoff = 10;
+        constexpr int _Numget_eoff    = 12;
+        static constexpr char _Src[]  = "0123456789-+Ee";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         if (_First != _Last) {
             if (*_First == _Atoms[_Numget_signoff + 1]) { // gather plus sign
@@ -964,13 +961,13 @@ private:
         const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping = _Punct_fac.grouping();
 
-        constexpr int _Numget_signoff             = 22;
-        constexpr int _Numget_xoff                = 24;
-        constexpr int _Numget_poff                = 26;
-        _STATIC_UNLESS_PURE constexpr char _Src[] = "0123456789ABCDEFabcdef-+XxPp";
+        constexpr int _Numget_signoff = 22;
+        constexpr int _Numget_xoff    = 24;
+        constexpr int _Numget_poff    = 26;
+        static constexpr char _Src[]  = "0123456789ABCDEFabcdef-+XxPp";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         char* _Ptr = _Ac;
         bool _Bad  = false;
@@ -1170,8 +1167,7 @@ public:
 protected:
     virtual __CLR_OR_THIS_CALL ~num_put() noexcept {}
 
-    void __CLR_OR_THIS_CALL _Init(const _Locinfo&) { // initialize from _Locinfo object
-    }
+    void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
 public:
     explicit __CLR_OR_THIS_CALL num_put(size_t _Refs = 0) : locale::facet(_Refs) { // construct from current locale
@@ -1410,7 +1406,7 @@ private:
 
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         basic_string<_Elem> _Groupstring(_Count, _Elem(0)); // reserve space
-        _Ctype_fac.widen(&_Buf[0], &_Buf[_Count], &_Groupstring[0]);
+        _Ctype_fac.widen(_Buf, _Buf + _Count, &_Groupstring[0]);
 
         const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping  = _Punct_fac.grouping();
@@ -1496,7 +1492,7 @@ private:
 
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
         basic_string<_Elem> _Groupstring(_Count, _Elem(0)); // reserve space
-        _Ctype_fac.widen(&_Buf[0], &_Buf[_Count], &_Groupstring[0]);
+        _Ctype_fac.widen(_Buf, _Buf + _Count, &_Groupstring[0]);
 
         const auto& _Punct_fac = _STD use_facet<numpunct<_Elem>>(_Iosbase.getloc());
         const string _Grouping = _Punct_fac.grouping();

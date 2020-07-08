@@ -41,16 +41,13 @@ decltype(auto) _Scoped_outermost(_Alloc& _Al) { // gets the outermost allocator
     return _Scoped_outermost_helper<_Alloc>::_Fn(_Al);
 }
 
-
 // ALIAS TEMPLATE _Scoped_outermost_t
 template <class _Alloc>
 using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD declval<_Alloc&>()))>;
 
-
 // ALIAS TEMPLATE _Scoped_outermost_traits
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
-
 
 // CLASS TEMPLATE _Scoped_base
 template <class _Outer, class... _Inner>
@@ -59,7 +56,9 @@ class scoped_allocator_adaptor;
 template <class _Outer, class... _Inner>
 struct _Scoped_base;
 
-struct _Secret_scoped_allocator_construct_tag {};
+struct _Secret_scoped_allocator_construct_tag {
+    explicit _Secret_scoped_allocator_construct_tag() = default;
+};
 
 template <class _Outer, class _Inner0, class... _Inner>
 struct _Scoped_base<_Outer, _Inner0, _Inner...> : _Outer { // nest of allocators, arbitrary depth
@@ -76,8 +75,7 @@ struct _Scoped_base<_Outer, _Inner0, _Inner...> : _Outer { // nest of allocators
         return _Inner_obj;
     }
 
-    _Scoped_base() : _Outer(), _Inner_obj() { // value-initialize Outer and Inner
-    }
+    _Scoped_base() : _Outer(), _Inner_obj() {} // value-initialize Outer and Inner
 
     template <class _Other1, class... _Other2,
         enable_if_t<sizeof...(_Other2) != 0 || !is_base_of_v<_Scoped_base, decay_t<_Other1>>, int> = 0>
@@ -111,13 +109,10 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
         return _Self;
     }
 
-    _Scoped_base() : _Outer() { // value-initialize
-    }
+    _Scoped_base() : _Outer() {} // value-initialize
 
     template <class _Other1, enable_if_t<!is_base_of_v<_Scoped_base, decay_t<_Other1>>, int> = 0>
-    _Scoped_base(_Other1&& _Outer_arg) : _Outer(_STD forward<_Other1>(_Outer_arg)) {
-        // also handles rebinding
-    }
+    _Scoped_base(_Other1&& _Outer_arg) : _Outer(_STD forward<_Other1>(_Outer_arg)) {} // also handles rebinding
 
     _Scoped_base(const _Scoped_base&) = default;
     _Scoped_base(_Scoped_base&&)      = default;
@@ -215,12 +210,12 @@ public:
         return static_cast<const _Outer&>(*this);
     }
 
-    _NODISCARD _DECLSPEC_ALLOCATOR pointer allocate(
-        _CRT_GUARDOVERFLOW size_type _Count) { // allocate array of _Count elements, ignore hint
+    _NODISCARD __declspec(allocator) pointer
+        allocate(_CRT_GUARDOVERFLOW size_type _Count) { // allocate array of _Count elements, ignore hint
         return _Outer_traits::allocate(outer_allocator(), _Count);
     }
 
-    _NODISCARD _DECLSPEC_ALLOCATOR pointer allocate(
+    _NODISCARD __declspec(allocator) pointer allocate(
         _CRT_GUARDOVERFLOW size_type _Count, const_void_pointer _Hint) { // allocate array of _Count elements, with hint
         return _Outer_traits::allocate(outer_allocator(), _Count, _Hint);
     }
@@ -248,7 +243,7 @@ public:
 
 #if _HAS_CXX17
 template <class _Outer, class... _Inner>
-scoped_allocator_adaptor(_Outer, _Inner...)->scoped_allocator_adaptor<_Outer, _Inner...>;
+scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
 template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>

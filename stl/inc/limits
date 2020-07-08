@@ -11,6 +11,8 @@
 #include <cfloat>
 #include <climits>
 #include <cwchar>
+#include <intrin0.h>
+#include <isa_availability.h>
 #include <xstddef>
 
 #pragma pack(push, _CRT_PACKING)
@@ -106,16 +108,13 @@ public:
 };
 
 template <class _Ty>
-class numeric_limits<const _Ty> : public numeric_limits<_Ty> { // numeric limits for const types
-};
+class numeric_limits<const _Ty> : public numeric_limits<_Ty> {}; // numeric limits for const types
 
 template <class _Ty>
-class numeric_limits<volatile _Ty> : public numeric_limits<_Ty> { // numeric limits for volatile types
-};
+class numeric_limits<volatile _Ty> : public numeric_limits<_Ty> {}; // numeric limits for volatile types
 
 template <class _Ty>
-class numeric_limits<const volatile _Ty> : public numeric_limits<_Ty> { // numeric limits for const volatile types
-};
+class numeric_limits<const volatile _Ty> : public numeric_limits<_Ty> {}; // numeric limits for const volatile types
 
 // STRUCT _Num_int_base
 struct _Num_int_base : _Num_base { // base for integer types
@@ -1011,6 +1010,103 @@ public:
     static constexpr int min_exponent   = LDBL_MIN_EXP;
     static constexpr int min_exponent10 = LDBL_MIN_10_EXP;
 };
+
+// Implementation of countl_zero without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
+// see "Hacker's Delight" section 5-3
+template <class _Ty>
+_NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
+    _Ty _Yy = 0;
+
+    unsigned int _Nn = numeric_limits<_Ty>::digits;
+    unsigned int _Cc = numeric_limits<_Ty>::digits / 2;
+    do {
+        _Yy = static_cast<_Ty>(_Val >> _Cc);
+        if (_Yy != 0) {
+            _Nn -= _Cc;
+            _Val = _Yy;
+        }
+        _Cc >>= 1;
+    } while (_Cc != 0);
+    return static_cast<int>(_Nn) - static_cast<int>(_Val);
+}
+
+// Implementation of countr_zero without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
+// see "Hacker's Delight" section 5-4
+template <class _Ty>
+_NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
+    constexpr int _Digits = std::numeric_limits<_Ty>::digits;
+    return _Digits - _Countl_zero_fallback(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
+}
+
+#if defined(_M_IX86) || defined(_M_X64)
+// TRANSITION, VS 2019 16.8 Preview 1, intrin0.h will declare _tzcnt*
+extern "C" {
+extern int __isa_available;
+#ifdef __clang__
+#define _TZCNT_U32 __builtin_ia32_tzcnt_u32
+#define _TZCNT_U64 __builtin_ia32_tzcnt_u64
+#else // ^^^ __clang__ / !__clang__ vvv
+__MACHINEX86_X64(unsigned int _tzcnt_u32(unsigned int))
+__MACHINEX64(unsigned __int64 _tzcnt_u64(unsigned __int64));
+#define _TZCNT_U32 _tzcnt_u32
+#define _TZCNT_U64 _tzcnt_u64
+#endif // __clang__
+}
+
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
+
+#ifndef __AVX2__
+    const bool _Have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    if (!_Have_tzcnt && _Val == 0) {
+        return _Digits;
+    }
+#endif // __AVX2__
+
+    if _CONSTEXPR_IF (_Digits <= 32) {
+        // Intended widening to int. This operation means that a narrow 0 will widen
+        // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
+        // of the wider type.
+        return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
+    } else {
+#ifdef _M_IX86
+        const unsigned int _High = _Val >> 32;
+        const unsigned int _Low  = static_cast<unsigned int>(_Val);
+        if (_Low == 0) {
+            return 32 + _Checked_x86_x64_countr_zero(_High);
+        } else {
+            return _Checked_x86_x64_countr_zero(_Low);
+        }
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        return static_cast<int>(_TZCNT_U64(_Val));
+#endif // _M_IX86
+    }
+}
+#undef _TZCNT_U32
+#undef _TZCNT_U64
+#endif // defined(_M_IX86) || defined(_M_X64)
+
+template <class _Ty>
+constexpr bool _Is_standard_unsigned_integer =
+    _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
+#if defined(_M_IX86) || defined(_M_X64)
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated()) {
+        return _Checked_x86_x64_countr_zero(_Val);
+    }
+#endif // defined(__cpp_lib_is_constant_evaluated)
+#endif // defined(_M_IX86) || defined(_M_X64)
+    // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
+    return _Countr_zero_fallback(_Val);
+}
+
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

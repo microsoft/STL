@@ -224,13 +224,11 @@ namespace {
     }
 
     [[nodiscard]] __std_win_error __stdcall _Translate_not_found_to_success(const __std_win_error _Err) noexcept {
-        switch (_Err) {
-        case __std_win_error::_File_not_found:
-        case __std_win_error::_Path_not_found:
+        if (__std_is_file_not_found(_Err)) {
             return __std_win_error::_Success;
-        default:
-            return _Err;
         }
+
+        return _Err;
     }
 
     [[nodiscard]] __std_win_error __stdcall _Get_last_write_time_by_handle(
@@ -746,6 +744,83 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     }
 
     return __std_win_error::_Success;
+}
+
+[[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
+    uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
+    // get capacity information for the volume on which the file _Target resides
+    static_assert(sizeof(uintmax_t) == sizeof(ULARGE_INTEGER) && alignof(uintmax_t) == alignof(ULARGE_INTEGER),
+        "Size and alignment must match for reinterpret_cast<PULARGE_INTEGER>");
+    const auto _Available_c   = reinterpret_cast<PULARGE_INTEGER>(_Available);
+    const auto _Total_bytes_c = reinterpret_cast<PULARGE_INTEGER>(_Total_bytes);
+    const auto _Free_bytes_c  = reinterpret_cast<PULARGE_INTEGER>(_Free_bytes);
+    if (GetDiskFreeSpaceExW(_Target, _Available_c, _Total_bytes_c, _Free_bytes_c)) {
+        return __std_win_error::_Success;
+    }
+
+    __std_win_error _Last_error{GetLastError()};
+    _Available_c->QuadPart   = ~0ull;
+    _Total_bytes_c->QuadPart = ~0ull;
+    _Free_bytes_c->QuadPart  = ~0ull;
+    if (_Last_error != __std_win_error::_Directory_name_is_invalid) {
+        return _Last_error;
+    }
+
+    // Input could have been a file; canonicalize and remove the last component.
+    // We use VOLUME_NAME_NT because it always has a mapping available and we don't care about the canonical path
+    // being "ugly" due to needing the _Dos_to_nt_prefix.
+    static constexpr wchar_t _Dos_to_nt_prefix[] = LR"(\\?\GLOBALROOT)";
+    constexpr size_t _Dos_to_nt_prefix_count     = sizeof(_Dos_to_nt_prefix) / sizeof(wchar_t) - 1;
+    __crt_unique_heap_ptr<wchar_t> _Buf;
+    DWORD _Actual_length;
+    {
+        const _STD _Fs_file _Handle(
+            _Target, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
+        if (_Last_error != __std_win_error::_Success) {
+            return _Last_error;
+        }
+
+        DWORD _Buf_count = MAX_PATH;
+        for (;;) {
+            _Buf = _malloc_crt_t(wchar_t, _Buf_count);
+            if (!_Buf) {
+                return __std_win_error::_Not_enough_memory;
+            }
+
+            _Actual_length = __vcrt_GetFinalPathNameByHandleW(_Handle._Get(), _Buf.get() + _Dos_to_nt_prefix_count,
+                _Buf_count - _Dos_to_nt_prefix_count, FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
+            if (_Actual_length == 0) {
+                return __std_win_error{GetLastError()};
+            }
+
+            _Actual_length += _Dos_to_nt_prefix_count;
+            if (_Actual_length <= _Buf_count) {
+                break;
+            }
+
+            _Buf_count = _Actual_length;
+        }
+    } // close _Handle
+
+    const auto _Ptr = _Buf.get();
+
+    memcpy(_Ptr, _Dos_to_nt_prefix, _Dos_to_nt_prefix_count * sizeof(wchar_t));
+
+    // insert null terminator at the last slash
+    auto _Cursor = _Ptr + _Actual_length;
+    do {
+        --_Cursor; // cannot run off start because _Dos_to_nt_prefix contains a backslash
+    } while (*_Cursor != L'\\');
+
+    *_Cursor = L'\0';
+    if (GetDiskFreeSpaceExW(_Ptr, _Available_c, _Total_bytes_c, _Free_bytes_c)) {
+        return __std_win_error::_Success;
+    }
+
+    _Available_c->QuadPart   = ~0ull;
+    _Total_bytes_c->QuadPart = ~0ull;
+    _Free_bytes_c->QuadPart  = ~0ull;
+    return __std_win_error{GetLastError()};
 }
 
 [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_temp_path(wchar_t* const _Target) noexcept {

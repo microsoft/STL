@@ -9,14 +9,19 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#ifndef __cpp_coroutines
-#error <experimental/generator> requires /std:c++latest or /await compiler option
-#endif // __cpp_coroutines
+#if !defined(__cpp_coroutines) && !defined(__cpp_impl_coroutine)
+#error <experimental/generator> requires /std:c++latest or /await compiler options
+#endif // !defined(__cpp_coroutines) && !defined(__cpp_impl_coroutine)
 
 #ifdef _CPPUNWIND
 #include <exception>
 #endif
+#include <memory>
+#ifdef __cpp_coroutines
 #include <experimental/resumable>
+#else // __cpp_coroutines
+#include <coroutine>
+#endif // __cpp_coroutines
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

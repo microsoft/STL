@@ -9,7 +9,7 @@
 
 #include <Windows.h>
 
-#define NITEMS 20
+constexpr int _Nitems = 20;
 
 namespace {
     struct _At_thread_exit_data { // data for condition-variable slot
@@ -20,7 +20,7 @@ namespace {
     };
 
     struct _At_thread_exit_block { // block of condition-variable slots
-        _At_thread_exit_data data[NITEMS];
+        _At_thread_exit_data data[_Nitems];
         int num_used;
         _At_thread_exit_block* next;
     };
@@ -39,16 +39,16 @@ void _Cnd_register_at_thread_exit(
     _At_thread_exit_block* block = &_Thread_exit_data;
 
     _Lock_at_thread_exit_mutex();
-    while (block != 0) { // loop through list of blocks
-        if (block->num_used == NITEMS) { // block is full; move to next block and allocate
-            if (block->next == 0) {
-                block->next = (_At_thread_exit_block*) calloc(1, sizeof(_At_thread_exit_block));
+    while (block != nullptr) { // loop through list of blocks
+        if (block->num_used == _Nitems) { // block is full; move to next block and allocate
+            if (block->next == nullptr) {
+                block->next = static_cast<_At_thread_exit_block*>(calloc(1, sizeof(_At_thread_exit_block)));
             }
 
             block = block->next;
         } else { // found block with available space
-            for (int i = 0; i < NITEMS; ++i) { // find empty slot
-                if (block->data[i].mtx == 0) { // store into empty slot
+            for (int i = 0; i < _Nitems; ++i) { // find empty slot
+                if (block->data[i].mtx == nullptr) { // store into empty slot
                     block->data[i].id._Id = GetCurrentThreadId();
                     block->data[i].mtx    = mtx;
                     block->data[i].cnd    = cnd;
@@ -57,7 +57,7 @@ void _Cnd_register_at_thread_exit(
                     break;
                 }
             }
-            block = 0;
+            block = nullptr;
         }
     }
     _Unlock_at_thread_exit_mutex();
@@ -68,10 +68,10 @@ void _Cnd_unregister_at_thread_exit(_Mtx_t mtx) { // unregister condition variab
     _At_thread_exit_block* block = &_Thread_exit_data;
 
     _Lock_at_thread_exit_mutex();
-    while (block != 0) { // loop through list of blocks
-        for (int i = 0; block->num_used != 0 && i < NITEMS; ++i) {
+    while (block != nullptr) { // loop through list of blocks
+        for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx == mtx) { // release slot
-                block->data[i].mtx = 0;
+                block->data[i].mtx = nullptr;
                 --block->num_used;
             }
         }
@@ -87,15 +87,15 @@ void _Cnd_do_broadcast_at_thread_exit() { // notify condition variables waiting 
     const unsigned int currentThreadId = _Thrd_id();
 
     _Lock_at_thread_exit_mutex();
-    while (block != 0) { // loop through list of blocks
-        for (int i = 0; block->num_used != 0 && i < NITEMS; ++i) {
-            if (block->data[i].mtx != 0 && block->data[i].id._Id == currentThreadId) { // notify and release slot
+    while (block != nullptr) { // loop through list of blocks
+        for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
+            if (block->data[i].mtx != nullptr && block->data[i].id._Id == currentThreadId) { // notify and release slot
                 if (block->data[i].res) {
                     *block->data[i].res = 1;
                 }
                 _Mtx_unlock(block->data[i].mtx);
                 _Cnd_broadcast(block->data[i].cnd);
-                block->data[i].mtx = 0;
+                block->data[i].mtx = nullptr;
                 --block->num_used;
             }
         }

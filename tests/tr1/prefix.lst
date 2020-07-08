@@ -1,0 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+RUNALL_INCLUDE ..\universal_prefix.lst
+RUNALL_CROSSLIST
+PM_CL="/FIforce_include.hpp /D_ENFORCE_FACET_SPECIALIZATIONS=1 /D_CRT_SECURE_NO_WARNINGS"

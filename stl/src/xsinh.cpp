@@ -3,12 +3,12 @@
 
 // _Sinh function
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 // coefficients
-static const double p[] = {0.0000000001632881, 0.0000000250483893, 0.0000027557344615, 0.0001984126975233,
+static constexpr double p[] = {0.0000000001632881, 0.0000000250483893, 0.0000027557344615, 0.0001984126975233,
     0.0083333333334816, 0.1666666666666574, 1.0000000000000001};
 
 static constexpr size_t NP = sizeof(p) / sizeof(p[0]) - 1;

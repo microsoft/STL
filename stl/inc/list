@@ -555,7 +555,7 @@ public:
 
     template <class _Pr2>
     static _Nodeptr _Sort(_Nodeptr& _First, const size_type _Size, _Pr2 _Pred) {
-        // order [_First, _Last), using _Pred, return _First + _Size
+        // order [_First, _Last), return _First + _Size
         switch (_Size) {
         case 0:
             return _First;
@@ -801,17 +801,17 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    list() : _Mypair(_Zero_then_variadic_args_t()) {
+    list() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Alloc_sentinel_and_proxy();
     }
 
-    explicit list(const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    explicit list(const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alloc_sentinel_and_proxy();
     }
 
 private:
     template <class _Any_alloc>
-    explicit list(_Move_allocator_tag, _Any_alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _STD move(_Al)) {
+    explicit list(_Move_allocator_tag, _Any_alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
         _Alloc_sentinel_and_proxy();
     }
 
@@ -826,12 +826,12 @@ private:
 
 public:
     explicit list(_CRT_GUARDOVERFLOW size_type _Count)
-        : _Mypair(_Zero_then_variadic_args_t()) { // construct list from _Count * _Ty()
+        : _Mypair(_Zero_then_variadic_args_t{}) { // construct list from _Count * _Ty()
         _Construct_n(_Count);
     }
 
     explicit list(_CRT_GUARDOVERFLOW size_type _Count, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct list from _Count * _Ty(), with allocator
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Ty(), with allocator
         _Construct_n(_Count);
     }
 
@@ -847,12 +847,12 @@ private:
 
 public:
     list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val)
-        : _Mypair(_Zero_then_variadic_args_t()) { // construct list from _Count * _Val
+        : _Mypair(_Zero_then_variadic_args_t{}) { // construct list from _Count * _Val
         _Construct_n(_Count, _Val);
     }
 
     list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t(), _Al) { // construct list from _Count * _Val, allocator
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Val, allocator
         _Construct_n(_Count, _Val);
     }
 
@@ -869,40 +869,39 @@ private:
 
 public:
     list(const list& _Right)
-        : _Mypair(_One_then_variadic_args_t(), _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
-    list(const list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(const list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t()) {
+    list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Adl_verify_range(_First, _Last);
         _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Adl_verify_range(_First, _Last);
         _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-    list(list&& _Right) : _Mypair(_One_then_variadic_args_t(), _STD move(_Right._Getal())) {
+    list(list&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
     }
 
-    list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
-                        _STD make_move_iterator(_Right._Unchecked_end()));
-                    return;
-                }
+    list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
+                    _STD make_move_iterator(_Right._Unchecked_end()));
+                return;
             }
+        }
 
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
@@ -1021,11 +1020,11 @@ public:
         return _Op._Transfer_before(_Where);
     }
 
-    list(initializer_list<_Ty> _Ilist) : _Mypair(_Zero_then_variadic_args_t()) {
+    list(initializer_list<_Ty> _Ilist) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Construct_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 
-    list(initializer_list<_Ty> _Ilist, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t(), _Al) {
+    list(initializer_list<_Ty> _Ilist, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 
@@ -1193,7 +1192,7 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return _Min_value(
+        return (_STD min)(
             static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
     }
 
@@ -1683,10 +1682,9 @@ private:
 
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Right._Unchecked_end(), _Pred);
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
-            }
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
+        }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         const auto _Right_size = _Right._Mypair._Myval2._Mysize;
@@ -1708,12 +1706,12 @@ private:
     }
 
 public:
-    void sort() { // order sequence, using operator<
+    void sort() { // order sequence
         sort(less<>());
     }
 
     template <class _Pr2>
-    void sort(_Pr2 _Pred) { // order sequence, using _Pred
+    void sort(_Pr2 _Pred) { // order sequence
         auto& _My_data = _Mypair._Myval2;
         _Scary_val::_Sort(_My_data._Myhead->_Next, _My_data._Mysize, _Pass_fn(_Pred));
     }
@@ -1741,10 +1739,9 @@ private:
         // splice _Right [_First, _Last) before _Where; returns _Last
         if (this != _STD addressof(_Right)) { // splicing from another list, adjust counts
 #if _ITERATOR_DEBUG_LEVEL != 0
-            if
-                _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                    _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for splice");
-                }
+            if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+                _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for splice");
+            }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
             auto& _My_data = _Mypair._Myval2;
@@ -1800,7 +1797,7 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-list(_Iter, _Iter, _Alloc = _Alloc())->list<_Iter_value_t<_Iter>, _Alloc>;
+list(_Iter, _Iter, _Alloc = _Alloc()) -> list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Alloc>
@@ -1840,13 +1837,13 @@ _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>
-void erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
+typename list<_Ty, _Alloc>::size_type erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
 }
 
 template <class _Ty, class _Alloc, class _Pr>
-void erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    _Cont.remove_if(_Pass_fn(_Pred));
+typename list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _Cont.remove_if(_Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

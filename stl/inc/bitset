@@ -18,9 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#pragma warning(disable : 6294) // Ill-defined for-loop:
-                                // initial condition does not satisfy test.  Loop body not executed.
-
 _STD_BEGIN
 // CLASS TEMPLATE bitset
 template <size_t _Bits>
@@ -36,8 +33,7 @@ public:
         friend bitset<_Bits>;
 
     public:
-        ~reference() noexcept { // TRANSITION, ABI
-        }
+        ~reference() noexcept {} // TRANSITION, ABI
 
         reference& operator=(bool _Val) noexcept {
             _Pbitset->_Set_unchecked(_Mypos, _Val);
@@ -106,11 +102,11 @@ public:
     constexpr bitset(unsigned long long _Val) noexcept : _Array{static_cast<_Ty>(_Need_mask ? _Val & _Mask : _Val)} {}
 
     template <class _Traits, class _Elem>
-    void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _E0, const _Elem _E1) {
+    void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _Elem0, const _Elem _Elem1) {
         if (_Count > _Bits) {
             for (size_t _Idx = _Bits; _Idx < _Count; ++_Idx) {
                 const auto _Ch = _Ptr[_Idx];
-                if (!_Traits::eq(_E1, _Ch) && !_Traits::eq(_E0, _Ch)) {
+                if (!_Traits::eq(_Elem1, _Ch) && !_Traits::eq(_Elem0, _Ch)) {
                     _Xinv();
                 }
             }
@@ -126,8 +122,8 @@ public:
             do {
                 --_Last;
                 const auto _Ch = *_Last;
-                _This_word |= static_cast<_Ty>(_Traits::eq(_E1, _Ch)) << _Bits_used_in_word;
-                if (!_Traits::eq(_E1, _Ch) && !_Traits::eq(_E0, _Ch)) {
+                _This_word |= static_cast<_Ty>(_Traits::eq(_Elem1, _Ch)) << _Bits_used_in_word;
+                if (!_Traits::eq(_Elem1, _Ch) && !_Traits::eq(_Elem0, _Ch)) {
                     _Xinv();
                 }
 
@@ -154,8 +150,8 @@ public:
     explicit bitset(const basic_string<_Elem, _Traits, _Alloc>& _Str,
         typename basic_string<_Elem, _Traits, _Alloc>::size_type _Pos   = 0,
         typename basic_string<_Elem, _Traits, _Alloc>::size_type _Count = basic_string<_Elem, _Traits, _Alloc>::npos,
-        _Elem _E0                                                       = static_cast<_Elem>('0'),
-        _Elem _E1 = static_cast<_Elem>('1')) { // construct from [_Pos, _Pos + _Count) elements in string
+        _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {
+        // construct from [_Pos, _Pos + _Count) elements in string
         if (_Str.size() < _Pos) {
             _Xran(); // _Pos off end
         }
@@ -164,17 +160,17 @@ public:
             _Count = _Str.size() - _Pos; // trim _Count to size
         }
 
-        _Construct<_Traits>(_Str.data() + _Pos, _Count, _E0, _E1);
+        _Construct<_Traits>(_Str.data() + _Pos, _Count, _Elem0, _Elem1);
     }
 
     template <class _Elem>
     explicit bitset(const _Elem* _Ntcts, typename basic_string<_Elem>::size_type _Count = basic_string<_Elem>::npos,
-        _Elem _E0 = static_cast<_Elem>('0'), _Elem _E1 = static_cast<_Elem>('1')) {
+        _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {
         if (_Count == basic_string<_Elem>::npos) {
             _Count = char_traits<_Elem>::length(_Ntcts);
         }
 
-        _Construct<char_traits<_Elem>>(_Ntcts, _Count, _E0, _E1);
+        _Construct<char_traits<_Elem>>(_Ntcts, _Count, _Elem0, _Elem1);
     }
 
     bitset& operator&=(const bitset& _Right) noexcept {
@@ -286,23 +282,18 @@ public:
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_small = _Bits <= 32;
         constexpr bool _Bits_large = _Bits > 64;
-        if
-            _CONSTEXPR_IF(_Bits_zero) {
-                return 0;
-            }
-        else if
-            _CONSTEXPR_IF(_Bits_small) {
-                return static_cast<unsigned long>(_Array[0]);
-            }
-        else {
-            if
-                _CONSTEXPR_IF(_Bits_large) {
-                    for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
-                        if (_Array[_Idx] != 0) {
-                            _Xoflo(); // fail if any high-order words are nonzero
-                        }
+        if _CONSTEXPR_IF (_Bits_zero) {
+            return 0;
+        } else if _CONSTEXPR_IF (_Bits_small) {
+            return static_cast<unsigned long>(_Array[0]);
+        } else {
+            if _CONSTEXPR_IF (_Bits_large) {
+                for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
+                    if (_Array[_Idx] != 0) {
+                        _Xoflo(); // fail if any high-order words are nonzero
                     }
                 }
+            }
 
             if (_Array[0] > ULONG_MAX) {
                 _Xoflo();
@@ -315,19 +306,16 @@ public:
     _NODISCARD unsigned long long to_ullong() const {
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_large = _Bits > 64;
-        if
-            _CONSTEXPR_IF(_Bits_zero) {
-                return 0;
-            }
-        else {
-            if
-                _CONSTEXPR_IF(_Bits_large) {
-                    for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
-                        if (_Array[_Idx] != 0) {
-                            _Xoflo(); // fail if any high-order words are nonzero
-                        }
+        if _CONSTEXPR_IF (_Bits_zero) {
+            return 0;
+        } else {
+            if _CONSTEXPR_IF (_Bits_large) {
+                for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
+                    if (_Array[_Idx] != 0) {
+                        _Xoflo(); // fail if any high-order words are nonzero
                     }
                 }
+            }
 
             return _Array[0];
         }
@@ -335,12 +323,13 @@ public:
 
     template <class _Elem = char, class _Tr = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
     _NODISCARD basic_string<_Elem, _Tr, _Alloc> to_string(
-        _Elem _E0 = static_cast<_Elem>('0'), _Elem _E1 = static_cast<_Elem>('1')) const { // convert bitset to string
+        _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) const {
+        // convert bitset to string
         basic_string<_Elem, _Tr, _Alloc> _Str;
         _Str.reserve(_Bits);
 
         for (auto _Pos = _Bits; 0 < _Pos;) {
-            _Str.push_back(_Subscript(--_Pos) ? _E1 : _E0);
+            _Str.push_back(_Subscript(--_Pos) ? _Elem1 : _Elem0);
         }
 
         return _Str;
@@ -408,7 +397,19 @@ public:
     }
 
     _NODISCARD bool all() const noexcept {
-        return count() == size();
+        constexpr bool _Zero_length = _Bits == 0;
+        if _CONSTEXPR_IF (_Zero_length) { // must test for this, otherwise would count one full word
+            return true;
+        }
+
+        constexpr bool _No_padding = _Bits % _Bitsperword == 0;
+        for (size_t _Wpos = 0; _Wpos < _Words + _No_padding; ++_Wpos) {
+            if (_Array[_Wpos] != ~static_cast<_Ty>(0)) {
+                return false;
+            }
+        }
+
+        return _No_padding || _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
@@ -431,10 +432,9 @@ private:
 
     void _Trim() noexcept { // clear any trailing bits in last word
         constexpr bool _Work_to_do = _Bits == 0 || _Bits % _Bitsperword != 0;
-        if
-            _CONSTEXPR_IF(_Work_to_do) {
-                _Array[_Words] &= (_Ty{1} << _Bits % _Bitsperword) - 1;
-            }
+        if _CONSTEXPR_IF (_Work_to_do) {
+            _Array[_Words] &= (_Ty{1} << _Bits % _Bitsperword) - 1;
+        }
     }
 
     bitset& _Set_unchecked(size_t _Pos, bool _Val) noexcept { // set bit at _Pos to _Val, no checking
@@ -491,10 +491,10 @@ template <class _Elem, class _Tr, size_t _Bits>
 basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bitset<_Bits>& _Right) {
     using _Ctype             = typename basic_ostream<_Elem, _Tr>::_Ctype;
     const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Ostr.getloc());
-    const _Elem _E0          = _Ctype_fac.widen('0');
-    const _Elem _E1          = _Ctype_fac.widen('1');
+    const _Elem _Elem0       = _Ctype_fac.widen('0');
+    const _Elem _Elem1       = _Ctype_fac.widen('1');
 
-    return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_E0, _E1);
+    return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
 }
 
 // TEMPLATE operator>>
@@ -503,8 +503,8 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
     using _Istr_t                    = basic_istream<_Elem, _Tr>;
     using _Ctype                     = typename _Istr_t::_Ctype;
     const _Ctype& _Ctype_fac         = _STD use_facet<_Ctype>(_Istr.getloc());
-    const _Elem _E0                  = _Ctype_fac.widen('0');
-    const _Elem _E1                  = _Ctype_fac.widen('1');
+    const _Elem _Elem0               = _Ctype_fac.widen('0');
+    const _Elem _Elem1               = _Ctype_fac.widen('1');
     typename _Istr_t::iostate _State = _Istr_t::goodbit;
     bool _Changed                    = false;
     string _Str;
@@ -519,13 +519,13 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
             if (_Tr::eq_int_type(_Tr::eof(), _Meta)) { // end of file, quit
                 _State |= _Istr_t::eofbit;
                 break;
-            } else if ((_Char = _Tr::to_char_type(_Meta)) != _E0 && _Char != _E1) {
+            } else if ((_Char = _Tr::to_char_type(_Meta)) != _Elem0 && _Char != _Elem1) {
                 break; // invalid element
             } else if (_Str.max_size() <= _Str.size()) { // no room in string, give up (unlikely)
                 _State |= _Istr_t::failbit;
                 break;
             } else { // valid, append '0' or '1'
-                _Str.push_back('0' + (_Char == _E1));
+                _Str.push_back('0' + (_Char == _Elem1));
                 _Changed = true;
             }
         }
@@ -534,12 +534,11 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
 
     constexpr bool _Has_bits = _Bits > 0;
 
-    if
-        _CONSTEXPR_IF(_Has_bits) {
-            if (!_Changed) {
-                _State |= _Istr_t::failbit;
-            }
+    if _CONSTEXPR_IF (_Has_bits) {
+        if (!_Changed) {
+            _State |= _Istr_t::failbit;
         }
+    }
 
     _Istr.setstate(_State);
     _Right = bitset<_Bits>(_Str); // convert string and store
@@ -549,8 +548,8 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <size_t _Bits>
 struct hash<bitset<_Bits>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bitset<_Bits> argument_type;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t result_type;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bitset<_Bits> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
     _NODISCARD size_t operator()(const bitset<_Bits>& _Keyval) const noexcept {
         return _Hash_representation(_Keyval._Array);

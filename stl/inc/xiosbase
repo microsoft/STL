@@ -199,21 +199,17 @@ public:
     class failure : public system_error { // base of all iostreams exceptions
     public:
         explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
-            : system_error(_Errcode, _Message) { // construct with message
-        }
+            : system_error(_Errcode, _Message) {} // construct with message
 
         explicit failure(const char* _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
-            : system_error(_Errcode, _Message) { // construct with message
-        }
+            : system_error(_Errcode, _Message) {} // construct with message
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
     protected:
         virtual void _Doraise() const override { // report the exception
             _RAISE(*this);
         }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
     };
 
     // CLASS Init
@@ -481,8 +477,7 @@ private:
     struct _Iosarray : _Crt_new_delete { // list element for open-ended sparse array of longs/pointers
     public:
         __CLR_OR_THIS_CALL _Iosarray(int _Idx, _Iosarray* _Link)
-            : _Next(_Link), _Index(_Idx), _Lo(0), _Vp(nullptr) { // construct node for index _Idx and link it in
-        }
+            : _Next(_Link), _Index(_Idx), _Lo(0), _Vp(nullptr) {} // construct node for index _Idx and link it in
 
         _Iosarray* _Next; // pointer to next node
         int _Index; // index of this node
@@ -493,8 +488,7 @@ private:
     // STRUCT _Fnarray
     struct _Fnarray : _Crt_new_delete { // list element for open-ended sparse array of event handlers
         __CLR_OR_THIS_CALL _Fnarray(int _Idx, event_callback _Pnew, _Fnarray* _Link)
-            : _Next(_Link), _Index(_Idx), _Pfn(_Pnew) { // construct node for index _Idx and link it in
-        }
+            : _Next(_Link), _Index(_Idx), _Pfn(_Pnew) {} // construct node for index _Idx and link it in
 
         _Fnarray* _Next; // pointer to next node
         int _Index; // index of this node
@@ -508,7 +502,8 @@ private:
     }
 
     _Iosarray& __CLR_OR_THIS_CALL _Findarr(int _Idx) { // locate or make a variable array element
-        _Iosarray *_Ptr1, *_Ptr2;
+        _Iosarray* _Ptr1;
+        _Iosarray* _Ptr2;
 
         for (_Ptr1 = _Arr, _Ptr2 = nullptr; _Ptr1; _Ptr1 = _Ptr1->_Next) {
             if (_Ptr1->_Index == _Idx) {
@@ -529,7 +524,8 @@ private:
 
     void __CLR_OR_THIS_CALL _Tidy() noexcept { // discard storage for an ios_base
         _Callfns(erase_event);
-        _Iosarray *_Ptr1, *_Ptr2;
+        _Iosarray* _Ptr1;
+        _Iosarray* _Ptr2;
 
         for (_Ptr1 = _Arr; _Ptr1; _Ptr1 = _Ptr2) { // delete array element
             _Ptr2 = _Ptr1->_Next;
@@ -537,7 +533,8 @@ private:
         }
         _Arr = nullptr;
 
-        _Fnarray *_Pfa1, *_Pfa2;
+        _Fnarray* _Pfa1;
+        _Fnarray* _Pfa2;
         for (_Pfa1 = _Calls; _Pfa1; _Pfa1 = _Pfa2) { // delete callback element
             _Pfa2 = _Pfa1->_Next;
             delete _Pfa1;

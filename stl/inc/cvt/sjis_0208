@@ -57,7 +57,7 @@ namespace stdext {
                         // convert 2-byte code
                         unsigned char _By2 = static_cast<unsigned char>(*++_Mid1);
 
-                        if ((_By2 < 0x40 || 0x7e < _By2) && (_By2 < 0x80 && 0xfc < _By2)) { // TRANSITION, VSO-609129
+                        if (_By2 < 0x40 || _By2 == 0x7f || _By2 > 0xfc) {
                             return _Mybase::error; // bad second byte
                         }
 
@@ -132,8 +132,8 @@ namespace stdext {
                 return _Mybase::ok;
             }
 
-            virtual int do_length(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
-                noexcept override {
+            virtual int do_length(
+                _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 size_t _Wchars    = 0;
                 _Statype _Mystate = _State;

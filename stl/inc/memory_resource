@@ -333,7 +333,7 @@ namespace pmr {
 
         static constexpr bool _Prepare_oversized(size_t& _Bytes, size_t& _Align) noexcept {
             // adjust size and alignment to allow for an _Oversized_header
-            _Align = _Max_value(_Align, alignof(_Oversized_header));
+            _Align = (_STD max)(_Align, alignof(_Oversized_header));
 
             if (_Bytes > SIZE_MAX - sizeof(_Oversized_header) - alignof(_Oversized_header) + 1) {
                 // no room for header + alignment padding
@@ -418,8 +418,8 @@ namespace pmr {
             static_assert(_Default_next_capacity > 1);
 
             explicit _Pool(const size_t _Log_of_size_) noexcept
-                : _Block_size{size_t{1} << _Log_of_size_},
-                  _Log_of_size{_Log_of_size_} { // initialize a pool that manages blocks of the indicated size
+                : _Block_size{size_t{1} << _Log_of_size_}, _Log_of_size{_Log_of_size_} {
+                // initialize a pool that manages blocks of the indicated size
             }
 
             _Pool(_Pool&& _That) noexcept
@@ -531,7 +531,7 @@ namespace pmr {
 
                 // scale _Next_capacity by 2, saturating so that _Size_for_capacity(_Next_capacity) cannot overflow
                 _Next_capacity =
-                    _Min_value(_Next_capacity << 1, _Min_value((PTRDIFF_MAX - sizeof(_Chunk)) >> _Log_of_size,
+                    (_STD min)(_Next_capacity << 1, (_STD min)((PTRDIFF_MAX - sizeof(_Chunk)) >> _Log_of_size,
                                                         _Pool_resource._Options.max_blocks_per_chunk));
             }
         };
@@ -559,7 +559,7 @@ namespace pmr {
         pair<pmr::vector<_Pool>::iterator, unsigned char> _Find_pool(
             const size_t _Bytes, const size_t _Align) noexcept {
             // find the pool from which to allocate a block with size _Bytes and alignment _Align
-            const size_t _Size      = _Max_value(_Bytes + sizeof(void*), _Align);
+            const size_t _Size      = (_STD max)(_Bytes + sizeof(void*), _Align);
             const auto _Log_of_size = static_cast<unsigned char>(_Ceiling_of_log_2(_Size));
             return {_STD lower_bound(_Pools.begin(), _Pools.end(), _Log_of_size,
                         [](const _Pool& _Al, const unsigned char _Log) { return _Al._Log_of_size < _Log; }),
@@ -601,31 +601,29 @@ namespace pmr {
     class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened
-            : _Resource{_Upstream} { // initialize this resource with upstream
-        }
+            : _Resource{_Upstream} {} // initialize this resource with upstream
 
         monotonic_buffer_resource(const size_t _Initial_size, memory_resource* const _Upstream) noexcept // strengthened
-            : _Next_buffer_size(_Round(_Initial_size)),
-              _Resource{_Upstream} { // initialize this resource with upstream and initial allocation size
+            : _Next_buffer_size(_Round(_Initial_size)), _Resource{_Upstream} {
+            // initialize this resource with upstream and initial allocation size
         }
 
         monotonic_buffer_resource(void* const _Buffer, const size_t _Buffer_size,
             memory_resource* const _Upstream) noexcept // strengthened
             : _Current_buffer(_Buffer), _Space_available(_Buffer_size),
-              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size) : _Min_allocation),
-              _Resource{_Upstream} { // initialize this resource with upstream and initial buffer
+              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size) : _Min_allocation), _Resource{_Upstream} {
+            // initialize this resource with upstream and initial buffer
         }
 
         monotonic_buffer_resource() = default;
 
         explicit monotonic_buffer_resource(const size_t _Initial_size) noexcept // strengthened
-            : _Next_buffer_size(_Round(_Initial_size)) { // initialize this resource with initial allocation size
-        }
+            : _Next_buffer_size(_Round(_Initial_size)) {} // initialize this resource with initial allocation size
 
         monotonic_buffer_resource(void* const _Buffer, const size_t _Buffer_size) noexcept // strengthened
             : _Current_buffer(_Buffer), _Space_available(_Buffer_size),
-              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size)
-                                             : _Min_allocation) { // initialize this resource with initial buffer
+              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size) : _Min_allocation) {
+            // initialize this resource with initial buffer
         }
 
         virtual ~monotonic_buffer_resource() noexcept override {
@@ -647,7 +645,7 @@ namespace pmr {
             // unscale _Next_buffer_size so the next allocation will be the same size as the most recent allocation
             // (keep synchronized with monotonic_buffer_resource::_Scale)
             const size_t _Unscaled = (_Next_buffer_size / 3 * 2 + alignof(_Header) - 1) & _Max_allocation;
-            _Next_buffer_size      = _Max_value(_Unscaled, _Min_allocation);
+            _Next_buffer_size      = (_STD max)(_Unscaled, _Min_allocation);
 
             _Intrusive_stack<_Header> _Tmp{};
             _STD swap(_Tmp, _Chunks);
@@ -675,8 +673,7 @@ namespace pmr {
             return _Result;
         }
 
-        virtual void do_deallocate(void*, size_t, size_t) override { // nothing to do
-        }
+        virtual void do_deallocate(void*, size_t, size_t) override {} // nothing to do
 
     private:
         struct _Header : _Single_link<> { // track the size and alignment of an allocation from upstream
@@ -730,7 +727,7 @@ namespace pmr {
                 _New_size = (_Bytes + sizeof(_Header) + alignof(_Header) - 1) & _Max_allocation;
             }
 
-            const size_t _New_align = _Max_value(alignof(_Header), _Align);
+            const size_t _New_align = (_STD max)(alignof(_Header), _Align);
 
             void* _New_buffer = _Resource->allocate(_New_size, _New_align);
             _Check_alignment(_New_buffer, _New_align);

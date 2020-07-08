@@ -3,7 +3,6 @@
 
 // _Stoul function
 
-#include "xmath.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -11,47 +10,46 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "xmath.hpp"
+
 _EXTERN_C_UNLESS_PURE
 
 // macros
-#define BASE_MAX 36 // largest valid base
+constexpr int _Base_max = 36; // largest valid base
 
 // static data
 static const char digits[] = // valid digits
     "0123456789abcdefghijklmnopqrstuvwxyz";
 
-#if (ULONG_MAX >> 16) >> 16 == 0xffffffff
-// 64-bits!
-static const char ndigs[BASE_MAX + 1] = {0, 0, 65, 41, 33, 28, 25, 23, 22, 21, 20, 19, 18, 18, 17, 17, 17, 16, 16, 16,
-    15, 15, 15, 15, 14, 14, 14, 14, 14, 14, 14, 13, 13, 13, 13, 13, 13};
-#else // (ULONG_MAX >> 16) >> 16 == 0xffffffff
 // 32-bits!
-static const char ndigs[BASE_MAX + 1] = {0, 0, 33, 21, 17, 14, 13, 12, 11, 11, 10, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8,
+static const char ndigs[_Base_max + 1] = {0, 0, 33, 21, 17, 14, 13, 12, 11, 11, 10, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8,
     8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
-#endif // (ULONG_MAX >> 16) >> 16 == 0xffffffff
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     const char* s, char** endptr, int base, int* perr) { // convert string to unsigned long, with checking
-    const char *sc, *sd;
-    const char *s1, *s2;
+    const char* sc;
+    const char* sd;
+    const char* s1;
+    const char* s2;
     char dig = 0;
     char sign;
     ptrdiff_t n;
-    unsigned long x, y;
+    unsigned long x;
+    unsigned long y;
 
-    if (perr != 0) {
+    if (perr != nullptr) {
         *perr = 0;
     }
 
     sc = s;
-    while (isspace((unsigned char) *sc)) {
+    while (isspace(static_cast<unsigned char>(*sc))) {
         ++sc;
     }
 
     sign = *sc == '-' || *sc == '+' ? *sc++ : '+';
-    if (base < 0 || base == 1 || BASE_MAX < base) { // silly base
-        if (endptr != 0) {
-            *endptr = (char*) s;
+    if (base < 0 || base == 1 || _Base_max < base) { // silly base
+        if (endptr != nullptr) {
+            *endptr = const_cast<char*>(s);
         }
 
         return 0;
@@ -76,15 +74,16 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     }
 
     x = 0;
-    for (s2 = sc, y = 0; (sd = (char*) memchr(&digits[0], tolower(*sc), base)) != 0; ++sc) { // accumulate digits
+    for (s2 = sc, y = 0; (sd = static_cast<const char*>(memchr(&digits[0], tolower(*sc), base))) != 0;
+         ++sc) { // accumulate digits
         y   = x;
-        dig = (char) (sd - digits); // for overflow checking
+        dig = static_cast<char>(sd - digits); // for overflow checking
         x   = x * base + dig;
     }
 
     if (s1 == sc) { // check string validity
-        if (endptr != 0) {
-            *endptr = (char*) s;
+        if (endptr != nullptr) {
+            *endptr = const_cast<char*>(s);
         }
 
         return 0;
@@ -93,7 +92,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     n = sc - s2 - ndigs[base];
     if (n >= 0 && (0 < n || x < x - dig || (x - dig) / base != y)) { // overflow
         errno = ERANGE;
-        if (perr != 0) {
+        if (perr != nullptr) {
             *perr = 1;
         }
 
@@ -105,8 +104,8 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
         x = 0 - x;
     }
 
-    if (endptr != 0) {
-        *endptr = (char*) sc;
+    if (endptr != nullptr) {
+        *endptr = const_cast<char*>(sc);
     }
 
     return x;
@@ -114,7 +113,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoul(
     const char* s, char** endptr, int base) { // convert string, discard error code
-    return _Stoulx(s, endptr, base, 0);
+    return _Stoulx(s, endptr, base, nullptr);
 }
 
 _END_EXTERN_C_UNLESS_PURE

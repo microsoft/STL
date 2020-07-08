@@ -189,7 +189,7 @@ public:
     }
 
     void _Submit_for_chunks(const size_t _Hw_threads, const size_t _Chunks) const noexcept {
-        _Submit(_Min_value(_Hw_threads * _Oversubmission_multiplier, _Chunks));
+        _Submit((_STD min)(_Hw_threads * _Oversubmission_multiplier, _Chunks));
     }
 
 private:
@@ -229,7 +229,7 @@ constexpr size_t _Get_chunked_work_chunk_count(const size_t _Hw_threads, const _
     // get the number of chunks to break work into to parallelize
     const auto _Size_count = static_cast<size_t>(_Count); // no overflow due to forward iterators
     // we assume _Hw_threads * _Oversubscription_multiplier does not overflow
-    return _Min_value(_Hw_threads * _Oversubscription_multiplier, _Size_count);
+    return (_STD min)(_Hw_threads * _Oversubscription_multiplier, _Size_count);
 }
 
 // FUNCTION TEMPLATE _Get_least2_chunked_work_chunk_count
@@ -243,7 +243,7 @@ constexpr size_t _Get_least2_chunked_work_chunk_count(const size_t _Hw_threads, 
 
 // STRUCT TEMPLATE _Parallelism_allocator
 struct _Parallelism_allocate_traits {
-    _DECLSPEC_ALLOCATOR static void* _Allocate(const size_t _Bytes) {
+    __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
         void* _Result = ::operator new(_Bytes, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
@@ -253,7 +253,7 @@ struct _Parallelism_allocate_traits {
     }
 
 #ifdef __cpp_aligned_new
-    _DECLSPEC_ALLOCATOR static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+    __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
         void* _Result = ::operator new (_Bytes, align_val_t{_Align}, nothrow);
         if (!_Result) {
             _Throw_parallelism_resources_exhausted();
@@ -334,8 +334,8 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
 
 // VARIABLE TEMPLATE _Use_atomic_iterator
 template <class _Ty>
-struct _Atomic_is_usually_lock_free
-    : bool_constant<atomic<_Ty>::is_always_lock_free> { // deferred evaluation of atomic::is_always_lock_free
+struct _Atomic_is_usually_lock_free : bool_constant<atomic<_Ty>::is_always_lock_free> {
+    // deferred evaluation of atomic::is_always_lock_free
 };
 
 template <class _FwdIt>
@@ -719,8 +719,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
 
     _Work_stealing_team(size_t _Threads, _Diff _Total_work)
         : _Queues(_Threads), _Queues_used(0), _Remaining_work(_Total_work), _Available_mutex(),
-          _Available_queues(greater<>{}, _Get_queues(_Threads)) { // register work with the thread pool
-    }
+          _Available_queues(greater<>{}, _Get_queues(_Threads)) {} // register work with the thread pool
 
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
@@ -773,8 +772,9 @@ struct _Static_partition_team { // common data for all static partitioned ops
     _Diff _Unchunked_items;
 
     _Static_partition_team(const _Diff _Count_, const size_t _Chunks_)
-        : _Consumed_chunks{0}, _Chunks{_Chunks_}, _Count{_Count_}, _Chunk_size{_Count_ / static_cast<_Diff>(_Chunks_)},
-          _Unchunked_items{_Count_ % static_cast<_Diff>(_Chunks_)} {
+        : _Consumed_chunks{0}, _Chunks{_Chunks_}, _Count{_Count_}, _Chunk_size{static_cast<_Diff>(
+                                                                       _Count_ / static_cast<_Diff>(_Chunks_))},
+          _Unchunked_items{static_cast<_Diff>(_Count_ % static_cast<_Diff>(_Chunks_))} {
         // Calculate common data for statically partitioning iterator ranges.
         // pre: _Count_ >= _Chunks_ && _Chunks_ >= 1
     }
@@ -797,7 +797,7 @@ struct _Static_partition_team { // common data for all static partitioned ops
 
     _Diff _Get_chunk_offset(const size_t _This_chunk) const {
         const auto _This_chunk_diff = static_cast<_Diff>(_This_chunk);
-        return _This_chunk_diff * _Chunk_size + _Min_value(_This_chunk_diff, _Unchunked_items);
+        return _This_chunk_diff * _Chunk_size + (_STD min)(_This_chunk_diff, _Unchunked_items);
     }
 
     _Static_partition_key<_Diff> _Get_next_key() {
@@ -1003,16 +1003,10 @@ template <class _InIt1, class _InIt2>
 _Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // get the distance from 2 ranges which should have identical lengths
     if constexpr (_Is_random_iter_v<_InIt1>) {
-        (void) _First2; // TRANSITION, VSO-486357
-        (void) _Last2; // TRANSITION, VSO-486357
         return _Last1 - _First1;
     } else if constexpr (_Is_random_iter_v<_InIt2>) {
-        (void) _First1; // TRANSITION, VSO-486357
-        (void) _Last1; // TRANSITION, VSO-486357
         return _Last2 - _First2;
     } else {
-        (void) _First2; // TRANSITION, VSO-486357
-        (void) _Last2; // TRANSITION, VSO-486357
         return _STD distance(_First1, _Last1);
     }
 }
@@ -1026,7 +1020,7 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1
     if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
         const _CT _Count1 = _Last1 - _First1;
         const _CT _Count2 = _Last2 - _First2;
-        _Result           = _Min_value(_Count1, _Count2);
+        _Result           = (_STD min)(_Count1, _Count2);
     } else if constexpr (_Is_random_iter_v<_InIt1>) {
         for (auto _Count1 = _Last1 - _First1; 0 < _Count1 && _First2 != _Last2; --_Count1) {
             ++_First2;
@@ -1047,7 +1041,6 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1
 
     return _Result;
 }
-
 
 // PARALLEL FUNCTION TEMPLATE all_of
 template <bool _Invert, class _FwdIt, class _Pr>
@@ -1072,6 +1065,8 @@ struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task schedu
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // GH-818: https://github.com/microsoft/STL/issues/818
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _First = _Range._First; _First != _Range._Last; ++_First) {
@@ -1276,19 +1271,6 @@ _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noe
     return _First;
 }
 
-#if _ITERATOR_DEBUG_ARRAY_OVERLOADS
-template <class _ExPo, class _SourceTy, size_t _SourceSize, class _Diff, class _Fn,
-    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_SourceTy* for_each_n(
-    _ExPo&& _Exec, _SourceTy (&_First)[_SourceSize], const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
-    // perform function for each element [_First, _First + _Count)
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    _STL_VERIFY_ARRAY_SIZE(_First, _Count);
-    return _STD for_each_n(_STD forward<_ExPo>(_Exec), static_cast<_SourceTy*>(_First), _Count, _Pass_fn(_Func));
-}
-#endif // _ITERATOR_DEBUG_ARRAY_OVERLOADS
-
-
 // PARALLEL FUNCTION TEMPLATE find
 template <class _FwdIt>
 using _Parallel_find_results = conditional_t<_Use_atomic_iterator<_FwdIt>, _Parallel_choose_min_result<_FwdIt>,
@@ -1314,6 +1296,7 @@ struct _Static_partitioned_find2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range     = _Basis._Get_chunk(_Key);
         const auto _This_find = _Fx(_Range._First, _Range._Last);
@@ -1330,7 +1313,6 @@ struct _Static_partitioned_find2 {
         _Run_available_chunked_work(*static_cast<_Static_partitioned_find2*>(_Context));
     }
 };
-
 
 template <class _ExPo, class _FwdIt, class _Find_fx>
 _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, const _Find_fx _Fx) {
@@ -1519,6 +1501,7 @@ struct _Static_partitioned_find_end_backward2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range        = _Basis._Get_chunk(_Key);
@@ -1631,10 +1614,15 @@ struct _Static_partitioned_adjacent_find2 {
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results{_Last}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Team._Get_next_key();
-        if (!_Key || _Results._Complete()) {
+        if (_Results._Complete()) {
             return _Cancellation_status::_Canceled;
         }
+
+        const auto _Key = _Team._Get_next_key();
+        if (!_Key) {
+            return _Cancellation_status::_Canceled;
+        }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range        = _Basis._Get_chunk(_Key);
@@ -1718,8 +1706,8 @@ struct _Static_partitioned_count_if2 {
 };
 
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD _Iter_diff_t<_FwdIt> count_if(
-    _ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
+_NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
+/* terminates */ {
     // count elements satisfying _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
@@ -1753,8 +1741,8 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD _Iter_diff_t<_FwdIt> count(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
+_NODISCARD _Iter_diff_t<_FwdIt> count(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept
+/* terminates */ {
     // count elements that match _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
@@ -1850,6 +1838,7 @@ struct _Static_partitioned_mismatch2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range1       = _Basis1._Get_chunk(_Key);
@@ -1882,7 +1871,7 @@ struct _Static_partitioned_mismatch2 {
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
+    // return [_First1, _Last1)/[_First2, ...) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -1924,7 +1913,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, _Last2) mismatch using _Pred
+    // return [_First1, _Last1)/[_First2, _Last2) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -1981,6 +1970,7 @@ struct _Static_partitioned_equal2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range1       = _Basis1._Get_chunk(_Key);
         const auto _Range2_first = _Basis2._Get_chunk(_Key)._First;
@@ -1999,9 +1989,9 @@ struct _Static_partitioned_equal2 {
 };
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD bool equal(
-    _ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _Pr _Pred) noexcept /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
+_NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _Pr _Pred) noexcept
+/* terminates */ {
+    // compare [_First1, _Last1) to [_First2, ...)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -2034,7 +2024,7 @@ _NODISCARD bool equal(
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
     _Pr _Pred) noexcept /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred
+    // compare [_First1, _Last1) to [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -2099,6 +2089,7 @@ struct _Static_partitioned_search2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _Candidate = _Range._First; _Candidate != _Range._Last; ++_Candidate) {
@@ -2217,6 +2208,7 @@ struct _Static_partitioned_search_n2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range = _Basis._Get_chunk(_Key);
 
@@ -2333,8 +2325,8 @@ struct _Static_partitioned_unary_transform2 {
 };
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_FwdIt2 transform(
-    _ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept /* terminates */ {
+_FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) noexcept
+/* terminates */ {
     // transform [_First, _Last) with _Func
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -2469,8 +2461,8 @@ _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _F
 
 // PARALLEL FUNCTION TEMPLATE replace
 template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval,
-    const _Ty& _Newval) noexcept /* terminates */ {
+void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) noexcept
+/* terminates */ {
     // replace each matching _Oldval with _Newval
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, [&](auto&& _Value) {
@@ -2482,8 +2474,8 @@ void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& 
 
 // PARALLEL FUNCTION TEMPLATE replace_if
 template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-void replace_if(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) noexcept /* terminates */ {
+void replace_if(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) noexcept
+/* terminates */ {
     // replace each satisfying _Pred with _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _STD for_each(
@@ -2634,8 +2626,8 @@ _NODISCARD _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pre
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD _FwdIt remove(
-    _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
+_NODISCARD _FwdIt remove(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept
+/* terminates */ {
     // remove each matching _Val
     return _STD remove_if(_STD forward<_ExPo>(_Exec), _First, _Last,
         [&_Val](auto&& _Lhs) { return _STD forward<decltype(_Lhs)>(_Lhs) == _Val; });
@@ -2748,16 +2740,14 @@ struct _Sort_operation { // context for background threads
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // order [_First, _Last), using _Pred
-    using _Diff = _Iter_diff_t<_RanIt>;
+    // order [_First, _Last)
     _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const _Diff _Ideal = _ULast - _UFirst;
+    const auto _UFirst                = _Get_unwrapped(_First);
+    const auto _ULast                 = _Get_unwrapped(_Last);
+    const _Iter_diff_t<_RanIt> _Ideal = _ULast - _UFirst;
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        constexpr auto _Diffsort_max = static_cast<_Diff>(_ISORT_MAX);
         size_t _Threads;
-        if (_Ideal > _Diffsort_max && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
+        if (_Ideal > _ISORT_MAX && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
             // parallelize when input is large enough and we aren't on a uniprocessor machine
             _TRY_BEGIN
             _Sort_operation _Operation(_UFirst, _Pass_fn(_Pred), _Threads, _Ideal); // throws
@@ -2816,7 +2806,7 @@ struct _Static_partitioned_temporary_buffer2 {
     ptrdiff_t _Get_offset(const size_t _Chunk_number) {
         // get the offset of the first element of the temporary buffer allocated to chunk _Chunk_number
         auto _Diff_chunk = static_cast<ptrdiff_t>(_Chunk_number);
-        return _Diff_chunk * _Chunk_size + _Min_value(_Diff_chunk, _Unchunked_items);
+        return _Diff_chunk * _Chunk_size + (_STD min)(_Diff_chunk, _Unchunked_items);
     }
 
     void _Destroy_all() { // destroy each element of the temporary buffer
@@ -2847,13 +2837,13 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
-    const size_t _Clamped_ideal_chunks = _Min_value(_Max_tree_height, _Log_ideal_chunks);
+    const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);
 
     // similarly, if _Clamped_ideal_chunks is odd, that would break our 2 to even power invariant,
     // so go to the next higher power of 2
     const auto _Ideal_tree_height = _Clamped_ideal_chunks + (_Clamped_ideal_chunks & 0x1U);
 
-    return _Min_value(_Count_max_tree_height, _Ideal_tree_height);
+    return (_STD min)(_Count_max_tree_height, _Ideal_tree_height);
 }
 
 struct _Bottom_up_merge_tree {
@@ -3008,16 +2998,13 @@ struct _Static_partitioned_stable_sort3 {
 
 template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // sort preserving order of equivalents, using _Pred
+    // sort preserving order of equivalents
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        if (_Count > 1) {
-            _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
-        }
-
+        _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
         return;
     }
 
@@ -3027,7 +3014,6 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
         _Hw_threads          = __std_parallel_algorithms_hw_threads();
         _Attempt_parallelism = _Hw_threads > 1;
     } else {
-        (void) _Hw_threads; // TRANSITION, VSO-486357
         _Attempt_parallelism = false;
     }
 
@@ -3075,6 +3061,7 @@ struct _Static_partitioned_is_sorted_until {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         auto _Range = _Basis._Get_chunk(_Key);
         auto _Next  = _Range._First;
@@ -3121,7 +3108,6 @@ _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pre
             }
         }
     }
-
 
     _Seek_wrapped(_First, _STD is_sorted_until(_UFirst, _ULast, _Pass_fn(_Pred)));
     return _First;
@@ -3190,6 +3176,7 @@ struct _Static_partitioned_is_partitioned {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         // looking at chunks from either end, moving in towards the middle
         auto _Target_chunk_number = _Key._Chunk_number >> 1;
@@ -3302,14 +3289,15 @@ struct _Static_partitioned_is_heap_until {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_range_size = _Key._Size;
         const auto _Chunk_offset     = _Key._Start_at;
         const auto _Last             = _Chunk_offset + _Chunk_range_size;
 
-        const auto _Initial = _Max_value(_Chunk_offset, _Diff{1});
+        const auto _Initial = (_STD max)(_Chunk_offset, _Diff{1});
         for (_Diff _Off = _Initial; _Off < _Last; ++_Off) {
-            if (_DEBUG_LT_PRED(_Pred, _Range_first[(_Off - 1) >> 1], _Range_first[_Off])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_Range_first + ((_Off - 1) >> 1)), *(_Range_first + _Off))) {
                 _Results._Imbue(_Key._Chunk_number, _Range_first + _Off);
                 return _Cancellation_status::_Canceled;
             }
@@ -3326,7 +3314,7 @@ struct _Static_partitioned_is_heap_until {
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // find extent of range that is a heap ordered by _Pred
+    // find extent of range that is a heap
     _REQUIRE_PARALLEL_ITERATOR(_RanIt);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -3751,7 +3739,7 @@ void _Place_elements_from_indices(
     const auto _Last_index = _Indices_first + _Num_results;
     for (; _Indices_first != _Last_index; ++_Indices_first) {
         const auto _Curr_index = *_Indices_first;
-        *_Dest                 = _First[static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index)];
+        *_Dest                 = *(_First + static_cast<_Iter_diff_t<_RanIt1>>(_Curr_index));
         ++_Dest;
     }
 }
@@ -3901,10 +3889,10 @@ struct _Set_intersection_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range1_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                     ++_Index_chunk_first;
                     ++_Curr_range1_index;
@@ -3922,7 +3910,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), using _Pred
+    // AND sets [_First1, _Last1) and [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
@@ -3986,12 +3974,12 @@ struct _Set_difference_per_chunk {
         const auto _Range1_dist                  = _Last1 - _First1;
         const auto _Range2_dist                  = _Last2 - _First2;
         while (_Curr_range1_index < _Range1_dist && _Curr_range2_index < _Range2_dist) {
-            if (_DEBUG_LT_PRED(_Pred, _First1[_Curr_range1_index], _First2[_Curr_range2_index])) {
+            if (_DEBUG_LT_PRED(_Pred, *(_First1 + _Curr_range1_index), *(_First2 + _Curr_range2_index))) {
                 *_Index_chunk_first = static_cast<_Iter_value_t<_BidIt>>(_Curr_range1_index);
                 ++_Index_chunk_first;
                 ++_Curr_range1_index;
             } else {
-                if (!_Pred(_First2[_Curr_range2_index], _First1[_Curr_range1_index])) {
+                if (!_Pred(*(_First2 + _Curr_range2_index), *(_First1 + _Curr_range1_index))) {
                     ++_Curr_range1_index;
                 }
 
@@ -4013,7 +4001,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
-    // take set [_First2, _Last2) from [_First1, _Last1), using _Pred
+    // take set [_First2, _Last2) from [_First1, _Last1)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
@@ -4055,7 +4043,6 @@ template <class _InIt, class _Ty, class _BinOp>
 _Ty _Reduce_move_unchecked(_InIt _First, const _InIt _Last, _Ty _Val, _BinOp _Reduce_op) {
     // return reduction, choose optimization
     if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_Unwrapped_t<const _InIt&>, _Ty, _BinOp>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Val);
     } else {
         for (; _First != _Last; ++_First) {
@@ -4071,7 +4058,6 @@ _Ty _Reduce_at_least_two(const _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce
     // return reduction with no initial value
     // pre: distance(_First, _Last) >= 2
     if constexpr (_Plus_on_arithmetic_ranges_reduction_v<_FwdIt, _Ty, _BinOp>) {
-        (void) _Reduce_op; // TRANSITION, VSO-486357
         return _Reduce_plus_arithmetic_ranges(_First, _Last, _Ty{0});
     } else {
         auto _Next = _First;
@@ -4116,8 +4102,8 @@ struct _Static_partitioned_reduce2 {
 };
 
 template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD _Ty reduce(
-    _ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op) noexcept /* terminates */ {
+_NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op) noexcept
+/* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last), using _Reduce_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
@@ -4357,7 +4343,9 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
 }
 
 // PARALLEL FUNCTION TEMPLATE exclusive_scan
-struct _No_init_tag {}; // tag to indicate that no initial value is to be used
+struct _No_init_tag {
+    explicit _No_init_tag() = default;
+}; // tag to indicate that no initial value is to be used
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
 _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val) {
@@ -4607,8 +4595,8 @@ struct _Static_partitioned_inclusive_scan2 {
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_FwdIt2 inclusive_scan(
-    _ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty _Val) noexcept /* terminates */ {
+_FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty _Val) noexcept
+/* terminates */ {
     // compute partial noncommutative and associative reductions including _Val into _Dest, using _Reduce_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -4650,8 +4638,8 @@ _FwdIt2 inclusive_scan(
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_FwdIt2 inclusive_scan(
-    _ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op) noexcept /* terminates */ {
+_FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op) noexcept
+/* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
@@ -5090,8 +5078,8 @@ _FwdIt2 _Adjacent_difference_seq(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_FwdIt2 adjacent_difference(
-    _ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept /* terminates */ {
+_FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept
+/* terminates */ {
     // compute adjacent differences into _Dest
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);

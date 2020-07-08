@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This file is intended as a test resource for tools that want to verify that they can parse all MSVC++ standard
+// This file is intended as a test resource for tools that want to verify that they can parse all MSVC standard
 // library headers without warnings. This file disables deprecations, so it should not be included in programs directly.
 //
 // This file may be changed, renamed, or removed at any time.
 
-#ifndef _MSVC_ALL_PUBLIC_HEADERS_HPP
-#define _MSVC_ALL_PUBLIC_HEADERS_HPP
+#ifndef __MSVC_ALL_PUBLIC_HEADERS_HPP
+#define __MSVC_ALL_PUBLIC_HEADERS_HPP
 
 #pragma warning(push)
 #pragma warning(1 : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
@@ -48,6 +48,7 @@
 #include <compare>
 #include <complex>
 #include <concepts>
+#include <coroutine>
 #include <deque>
 #include <exception>
 #include <filesystem>
@@ -211,4 +212,4 @@
 
 #pragma warning(pop)
 
-#endif // _MSVC_ALL_PUBLIC_HEADERS_HPP
+#endif // __MSVC_ALL_PUBLIC_HEADERS_HPP

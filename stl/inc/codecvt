@@ -21,9 +21,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
-#define _LITTLE_FIRST   1
-#define _BIG_FIRST      2
-#define _BYTES_PER_WORD 4
+_INLINE_VAR constexpr int _Little_first = 1;
+_INLINE_VAR constexpr int _Big_first    = 2;
 
 enum _CXX17_DEPRECATE_CODECVT_HEADER codecvt_mode { consume_header = 4, generate_header = 2, little_endian = 1 };
 
@@ -97,19 +96,18 @@ protected:
                 *_Pstate = 1;
 
                 constexpr bool _Consuming = (_Mymode & consume_header) != 0;
-                if
-                    _CONSTEXPR_IF(_Consuming) {
-                        if (_Ch == 0xfeff) { // drop header and retry
-                            const result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
+                if _CONSTEXPR_IF (_Consuming) {
+                    if (_Ch == 0xfeff) { // drop header and retry
+                        const result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
-                            if (_Ans == _Mybase::partial) { // roll back header determination
-                                *_Pstate = 0;
-                                _Mid1    = _First1;
-                            }
-
-                            return _Ans;
+                        if (_Ans == _Mybase::partial) { // roll back header determination
+                            *_Pstate = 0;
+                            _Mid1    = _First1;
                         }
+
+                        return _Ans;
                     }
+                }
             }
 
             if (_Mymax < _Ch) {
@@ -161,17 +159,16 @@ protected:
             if (*_Pstate == 0) { // first time, maybe generate header
                 *_Pstate                   = 1;
                 constexpr bool _Generating = (_Mymode & generate_header) != 0;
-                if
-                    _CONSTEXPR_IF(_Generating) {
-                        if (_Last2 - _Mid2 < 3 + 1 + _Nextra) {
-                            return _Mybase::partial; // not enough room for both
-                        }
-
-                        // prepend header
-                        *_Mid2++ = '\xef';
-                        *_Mid2++ = '\xbb';
-                        *_Mid2++ = '\xbf';
+                if _CONSTEXPR_IF (_Generating) {
+                    if (_Last2 - _Mid2 < 3 + 1 + _Nextra) {
+                        return _Mybase::partial; // not enough room for both
                     }
+
+                    // prepend header
+                    *_Mid2++ = '\xef';
+                    *_Mid2++ = '\xbb';
+                    *_Mid2++ = '\xbf';
+                }
             }
 
             if (_Last2 - _Mid2 < 1 + _Nextra) {
@@ -249,42 +246,39 @@ protected:
             unsigned short _Ch0;
             unsigned short _Ch1;
 
-            if (*_Pstate == _LITTLE_FIRST) {
+            if (*_Pstate == _Little_first) {
                 _Ch0 = static_cast<unsigned short>(_Ptr[1] << 8 | _Ptr[0]);
-            } else if (*_Pstate == _BIG_FIRST) {
+            } else if (*_Pstate == _Big_first) {
                 _Ch0 = static_cast<unsigned short>(_Ptr[0] << 8 | _Ptr[1]);
             } else { // no header seen yet, try preferred mode
                 constexpr bool _Prefer_LE      = (_Mymode & little_endian) != 0;
-                constexpr char _Default_endian = _Prefer_LE ? _LITTLE_FIRST : _BIG_FIRST;
+                constexpr char _Default_endian = _Prefer_LE ? _Little_first : _Big_first;
 
-                if
-                    _CONSTEXPR_IF(_Prefer_LE) {
-                        _Ch0 = static_cast<unsigned short>(_Ptr[1] << 8 | _Ptr[0]);
-                    }
-                else {
+                if _CONSTEXPR_IF (_Prefer_LE) {
+                    _Ch0 = static_cast<unsigned short>(_Ptr[1] << 8 | _Ptr[0]);
+                } else {
                     _Ch0 = static_cast<unsigned short>(_Ptr[0] << 8 | _Ptr[1]);
                 }
 
                 *_Pstate                  = _Default_endian;
                 constexpr bool _Consuming = (_Mymode & consume_header) != 0;
-                if
-                    _CONSTEXPR_IF(_Consuming) {
-                        if (_Ch0 == 0xfffeu) {
-                            *_Pstate = 3 - _Default_endian;
-                        }
-
-                        if (_Ch0 == 0xfffeu || _Ch0 == 0xfeffu) { // consume header, fixate on endianness, and retry
-                            _Mid1 += _Bytes_per_word;
-                            result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
-
-                            if (_Ans == _Mybase::partial) { // not enough bytes, roll back header
-                                *_Pstate = 0;
-                                _Mid1    = _First1;
-                            }
-
-                            return _Ans;
-                        }
+                if _CONSTEXPR_IF (_Consuming) {
+                    if (_Ch0 == 0xfffeu) {
+                        *_Pstate = 3 - _Default_endian;
                     }
+
+                    if (_Ch0 == 0xfffeu || _Ch0 == 0xfeffu) { // consume header, fixate on endianness, and retry
+                        _Mid1 += _Bytes_per_word;
+                        result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
+
+                        if (_Ans == _Mybase::partial) { // not enough bytes, roll back header
+                            *_Pstate = 0;
+                            _Mid1    = _First1;
+                        }
+
+                        return _Ans;
+                    }
+                }
             }
 
             if (_Ch0 < 0xd800u || 0xdc00u <= _Ch0) { // one word, consume bytes
@@ -293,7 +287,7 @@ protected:
             } else if (_Last1 - _Mid1 < 2 * _Bytes_per_word) {
                 break;
             } else { // get second word
-                if (*_Pstate == _LITTLE_FIRST) {
+                if (*_Pstate == _Little_first) {
                     _Ch1 = static_cast<unsigned short>(_Ptr[3] << 8 | _Ptr[2]);
                 } else {
                     _Ch1 = static_cast<unsigned short>(_Ptr[2] << 8 | _Ptr[3]);
@@ -325,22 +319,21 @@ protected:
         _Mid2         = _First2;
 
         if (*_Pstate == 0) { // determine endianness once, maybe generate header
-            *_Pstate                   = (_Mymode & little_endian) != 0 ? _LITTLE_FIRST : _BIG_FIRST;
+            *_Pstate                   = (_Mymode & little_endian) != 0 ? _Little_first : _Big_first;
             constexpr bool _Generating = (_Mymode & generate_header) != 0;
-            if
-                _CONSTEXPR_IF(_Generating) {
-                    if (_Last2 - _Mid2 < 3 * _Bytes_per_word) {
-                        return _Mybase::partial; // not enough room for all
-                    }
-
-                    if (*_Pstate == _LITTLE_FIRST) { // put header LS byte first
-                        *_Mid2++ = '\xff';
-                        *_Mid2++ = '\xfe';
-                    } else { // put header MS byte first
-                        *_Mid2++ = '\xfe';
-                        *_Mid2++ = '\xff';
-                    }
+            if _CONSTEXPR_IF (_Generating) {
+                if (_Last2 - _Mid2 < 3 * _Bytes_per_word) {
+                    return _Mybase::partial; // not enough room for all
                 }
+
+                if (*_Pstate == _Little_first) { // put header LS byte first
+                    *_Mid2++ = '\xff';
+                    *_Mid2++ = '\xfe';
+                } else { // put header MS byte first
+                    *_Mid2++ = '\xfe';
+                    *_Mid2++ = '\xff';
+                }
+            }
         }
 
         while (_Mid1 != _Last1 && _Bytes_per_word <= _Last2 - _Mid2) { // convert and put a wide char
@@ -362,7 +355,7 @@ protected:
                 _Extra = true;
             }
 
-            if (*_Pstate == _LITTLE_FIRST) {
+            if (*_Pstate == _Little_first) {
                 if (_Extra) { // put a pair of words LS byte first
                     unsigned short _Ch0 =
                         static_cast<unsigned short>(0xd800 | static_cast<unsigned short>(_Ch >> 10) - 0x0040);
@@ -543,19 +536,18 @@ protected:
                 *_Pstate = 1;
 
                 constexpr bool _Consuming = (_Mymode & consume_header) != 0;
-                if
-                    _CONSTEXPR_IF(_Consuming) {
-                        if (_Ch == 0xfeffu) { // drop header and retry
-                            result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
+                if _CONSTEXPR_IF (_Consuming) {
+                    if (_Ch == 0xfeffu) { // drop header and retry
+                        result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
-                            if (_Ans == _Mybase::partial) { // roll back header determination
-                                *_Pstate = 0;
-                                _Mid1    = _First1;
-                            }
-
-                            return _Ans;
+                        if (_Ans == _Mybase::partial) { // roll back header determination
+                            *_Pstate = 0;
+                            _Mid1    = _First1;
                         }
+
+                        return _Ans;
                     }
+                }
             }
 
             *_Mid2++ = static_cast<_Elem>(_Ch);

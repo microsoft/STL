@@ -19,52 +19,114 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+// CLASS TEMPLATE back_insert_iterator
+template <class _Container>
+class back_insert_iterator { // wrap pushes to back of container as output iterator
+public:
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using pointer           = void;
+    using reference         = void;
+
+    using container_type = _Container;
+
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+
+    constexpr back_insert_iterator() noexcept = default;
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+
+    _CONSTEXPR20 explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
+        : container(_STD addressof(_Cont)) {}
+
+    _CONSTEXPR20 back_insert_iterator& operator=(const typename _Container::value_type& _Val) {
+        container->push_back(_Val);
+        return *this;
+    }
+
+    _CONSTEXPR20 back_insert_iterator& operator=(typename _Container::value_type&& _Val) {
+        container->push_back(_STD move(_Val));
+        return *this;
+    }
+
+    _NODISCARD _CONSTEXPR20 back_insert_iterator& operator*() noexcept /* strengthened */ {
+        return *this;
+    }
+
+    _CONSTEXPR20 back_insert_iterator& operator++() noexcept /* strengthened */ {
+        return *this;
+    }
+
+    _CONSTEXPR20 back_insert_iterator operator++(int) noexcept /* strengthened */ {
+        return *this;
+    }
+
+protected:
+    _Container* container = nullptr;
+};
+
+// FUNCTION TEMPLATE back_inserter
+template <class _Container>
+_NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
+    // return a back_insert_iterator
+    return back_insert_iterator<_Container>(_Cont);
+}
+
 // CLASS TEMPLATE front_insert_iterator
 template <class _Container>
 class front_insert_iterator { // wrap pushes to front of container as output iterator
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
     using pointer           = void;
     using reference         = void;
 
     using container_type = _Container;
 
-    explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
 
-    front_insert_iterator& operator=(const typename _Container::value_type& _Val) { // push value into container
+    constexpr front_insert_iterator() noexcept = default;
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+
+    _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
+
+    _CONSTEXPR20 front_insert_iterator& operator=(const typename _Container::value_type& _Val) {
+        // push value into container
         container->push_front(_Val);
         return *this;
     }
 
-    front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
+    _CONSTEXPR20 front_insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
         container->push_front(_STD move(_Val));
         return *this;
     }
 
-    _NODISCARD front_insert_iterator& operator*() { // pretend to return designated value
+    _NODISCARD _CONSTEXPR20 front_insert_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
-    front_insert_iterator& operator++() { // pretend to preincrement
+    _CONSTEXPR20 front_insert_iterator& operator++() { // pretend to preincrement
         return *this;
     }
 
-    front_insert_iterator operator++(int) { // pretend to postincrement
+    _CONSTEXPR20 front_insert_iterator operator++(int) { // pretend to postincrement
         return *this;
     }
 
 protected:
-    _Container* container; // pointer to container
+    _Container* container = nullptr;
 };
 
 // FUNCTION TEMPLATE front_inserter
 template <class _Container>
-_NODISCARD front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
+_NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
     return front_insert_iterator<_Container>(_Cont);
 }
-
 
 // CLASS TEMPLATE insert_iterator
 template <class _Container>
@@ -72,52 +134,96 @@ class insert_iterator { // wrap inserts into container as output iterator
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
     using pointer           = void;
     using reference         = void;
 
     using container_type = _Container;
 
-    insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+
+    insert_iterator() = default;
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+
+    _CONSTEXPR20 insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
         : container(_STD addressof(_Cont)), iter(_Where) {}
 
-    insert_iterator& operator=(
-        const typename _Container::value_type& _Val) { // insert into container and increment stored iterator
+    _CONSTEXPR20 insert_iterator& operator=(const typename _Container::value_type& _Val) {
+        // insert into container and increment stored iterator
         iter = container->insert(iter, _Val);
         ++iter;
         return *this;
     }
 
-    insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
-
+    _CONSTEXPR20 insert_iterator& operator=(typename _Container::value_type&& _Val) { // push value into container
         iter = container->insert(iter, _STD move(_Val));
         ++iter;
         return *this;
     }
 
-    _NODISCARD insert_iterator& operator*() { // pretend to return designated value
+    _NODISCARD _CONSTEXPR20 insert_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
-    insert_iterator& operator++() { // pretend to preincrement
+    _CONSTEXPR20 insert_iterator& operator++() { // pretend to preincrement
         return *this;
     }
 
-    insert_iterator& operator++(int) { // pretend to postincrement
+    _CONSTEXPR20 insert_iterator& operator++(int) { // pretend to postincrement
         return *this;
     }
 
 protected:
-    _Container* container; // pointer to container
-    typename _Container::iterator iter; // iterator into container
+    _Container* container = nullptr;
+    typename _Container::iterator iter{};
 };
 
 // FUNCTION TEMPLATE inserter
 template <class _Container>
-_NODISCARD insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
+_NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
 
+#ifdef __cpp_lib_concepts
+// CLASS TEMPLATE move_sentinel
+template <semiregular _Se>
+class move_sentinel {
+public:
+    constexpr move_sentinel() = default;
+
+    constexpr explicit move_sentinel(_Se _Val) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
+        : _Last{_STD move(_Val)} {}
+
+    // clang-format off
+    template <class _Se2>
+        requires convertible_to<const _Se2&, _Se>
+    constexpr move_sentinel(const move_sentinel<_Se2>& _Val)
+        noexcept(is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+        : _Last{_Val._Get_last()} {}
+
+    template <class _Se2>
+        requires assignable_from<_Se&, const _Se2&>
+    constexpr move_sentinel& operator=(const move_sentinel<_Se2>& _Val)
+        noexcept(is_nothrow_assignable_v<_Se&, const _Se2&>) /* strengthened */ {
+        _Last = _Val._Get_last();
+        return *this;
+    }
+    // clang-format on
+
+    _NODISCARD constexpr _Se base() const noexcept(is_nothrow_copy_constructible_v<_Se>) /* strengthened */ {
+        return _Last;
+    }
+
+    _NODISCARD constexpr const _Se& _Get_last() const noexcept {
+        return _Last;
+    }
+
+private:
+    _Se _Last{};
+};
+#endif // __cpp_lib_concepts
 
 // CLASS TEMPLATE istream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
@@ -191,7 +297,6 @@ _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
     const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
     return !(_Left == _Right);
 }
-
 
 // CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
@@ -477,8 +582,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
+            _STL_VERIFY(
+                _Myindex >= size_t{0} - static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
         }
 
         if (_Off > 0) {
@@ -514,9 +619,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(
-                _Mysize - _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator after end");
+            _STL_VERIFY(_Mysize - _Myindex >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator after end");
         }
 
         _Myindex -= _Off;
@@ -576,9 +680,8 @@ public:
 
     constexpr void _Verify_offset(const difference_type _Off) const noexcept {
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(
-                _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator iterator before begin");
+            _STL_VERIFY(_Myindex >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator iterator before begin");
         }
 
         if (_Off > 0) {

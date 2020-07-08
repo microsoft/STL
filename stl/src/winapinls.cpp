@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "awint.h"
+#include "awint.hpp"
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
+#include <algorithm>
 #include <ctype.h>
 #include <stdlib.h>
+#include <string_view>
 
 namespace {
     struct LCIDTOLOCALENAME {
@@ -255,6 +257,9 @@ namespace {
     };
     // clang-format on
 
+    static_assert(_STD is_sorted(_STD begin(LcidToLocaleNameTable), _STD end(LcidToLocaleNameTable),
+        [](const auto& left, const auto& right) { return left.lcid < right.lcid; }));
+
     // Map of locale name to an index in LcidToLocaleNameTable, for Windows XP.
     // Data in this table has been obtained from National Language Support (NLS) API Reference.
     // The table is sorted to improve search performance.
@@ -490,6 +495,13 @@ namespace {
         { L"zu-za"      , 112 },
     };
     // clang-format on
+
+    // This static_assert is case-sensitive, which is more than sufficient for the case-insensitive runtime lookups.
+    static_assert(_STD is_sorted(
+        _STD begin(LocaleNameToIndexTable), _STD end(LocaleNameToIndexTable), [](const auto& left, const auto& right) {
+            return _STD wstring_view{left.name} < _STD wstring_view{right.name};
+        }));
+
 } // unnamed namespace
 
 // __wcsnicmp_ascii
@@ -614,7 +626,7 @@ extern "C" int __cdecl __crtCompareStringEx(
     LPCWSTR lpLocaleName, DWORD dwCmpFlags, LPCWSTR lpString1, int cchCount1, LPCWSTR lpString2, int cchCount2) {
     // use CompareStringEx if it is available (only on Windows Vista+)...
     IFDYNAMICGETCACHEDFUNCTION(PFNCOMPARESTRINGEX, CompareStringEx, pfCompareStringEx) {
-        return (*pfCompareStringEx)(
+        return pfCompareStringEx(
             lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
     }
 
@@ -628,7 +640,7 @@ extern "C" int __cdecl __crtLCMapStringEx(
     LPCWSTR lpLocaleName, DWORD dwMapFlags, LPCWSTR lpSrcStr, int cchSrc, LPWSTR lpDestStr, int cchDest) {
     // use LCMapStringEx if it is available (only on Windows Vista+)...
     IFDYNAMICGETCACHEDFUNCTION(PFNLCMAPSTRINGEX, LCMapStringEx, pfLCMapStringEx) {
-        return (*pfLCMapStringEx)(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
+        return pfLCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
     }
 
     // ...otherwise fall back to using LCMapString.

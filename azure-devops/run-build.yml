@@ -1,0 +1,96 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+jobs:
+- job: ${{ parameters.targetPlatform }}
+  timeoutInMinutes: 360
+  pool:
+    name: $(agentPool)
+
+  variables:
+    buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
+    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
+  steps:
+    - script: |
+        python -m pip install --upgrade pip
+        pip install psutil
+      displayName: pip install psutil
+    - script: |
+        if exist "$(tmpDir)" (
+          rmdir /S /Q $(tmpDir)
+        )
+        mkdir $(tmpDir)
+      displayName: 'Setup TMP Directory'
+    - checkout: self
+      clean: true
+      submodules: true
+    - task: Cache@2
+      displayName: vcpkg/installed Caching
+      timeoutInMinutes: 10
+      inputs:
+        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
+        path: '$(vcpkgLocation)/installed'
+        cacheHitVar: CACHE_RESTORED
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg to Install boost-build'
+      condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
+      timeoutInMinutes: 10
+      inputs:
+        doNotUpdateVcpkg: true
+        vcpkgArguments: 'boost-build'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg to Install boost-math'
+      condition: ne(variables.CACHE_RESTORED, 'true')
+      timeoutInMinutes: 10
+      inputs:
+        doNotUpdateVcpkg: true
+        vcpkgArguments: 'boost-math'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: PowerShell@2
+      displayName: 'Get Test Parallelism'
+      timeoutInMinutes: 2
+      inputs:
+        targetType: inline
+        script: |
+          $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+          Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
+    - script: |
+        if exist "$(buildOutputLocation)" (
+          rmdir /S /Q "$(buildOutputLocation)"
+        )
+        call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+        -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
+        cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
+        -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
+        -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
+        cmake --build $(buildOutputLocation)
+      displayName: 'Build the STL'
+      timeoutInMinutes: 10
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: CmdLine@2
+      displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        workingDirectory: $(buildOutputLocation)
+        script: |
+          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          ctest -V
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: PublishTestResults@2
+      displayName: 'Publish Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(buildOutputLocation)
+        testResultsFormat: JUnit
+        testResultsFiles: '**/test-results.xml'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}'

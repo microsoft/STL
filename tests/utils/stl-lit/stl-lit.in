@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#===----------------------------------------------------------------------===##
+#
+# Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+#===----------------------------------------------------------------------===##
+
+import os
+import sys
+
+config_map = {}
+
+def map_config(source_dir, site_config):
+    global config_map
+    source_dir = os.path.realpath(source_dir)
+    source_dir = os.path.normcase(source_dir)
+    site_config = os.path.normpath(site_config)
+    config_map[source_dir] = site_config
+
+# Make sure we can find the lit package.
+sys.path.insert(0, os.path.join("@LLVM_SOURCE_DIR@", 'utils', 'lit'))
+
+@STL_LIT_CONFIG_MAP@
+
+builtin_parameters= {}
+builtin_parameters['config_map'] = config_map
+
+if __name__=='__main__':
+    from lit.main import main
+    main(builtin_parameters)

@@ -8,14 +8,16 @@
 _STD_BEGIN
 namespace pmr {
 
-    static memory_resource* _Default_resource = nullptr;
+    static memory_resource* _Default_resource{nullptr};
 
     extern "C" _CRT_SATELLITE_1 _Aligned_new_delete_resource_impl* __cdecl _Aligned_new_delete_resource() noexcept {
-        return &_Immortalize<_Aligned_new_delete_resource_impl>();
+        return &const_cast<_Aligned_new_delete_resource_impl&>(
+            _Immortalize_memcpy_image<_Aligned_new_delete_resource_impl>());
     }
 
     extern "C" _CRT_SATELLITE_1 _Unaligned_new_delete_resource_impl* __cdecl _Unaligned_new_delete_resource() noexcept {
-        return &_Immortalize<_Unaligned_new_delete_resource_impl>();
+        return &const_cast<_Unaligned_new_delete_resource_impl&>(
+            _Immortalize_memcpy_image<_Unaligned_new_delete_resource_impl>());
     }
 
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept {
@@ -62,11 +64,10 @@ namespace pmr {
             virtual void* do_allocate(size_t, size_t) override { // Sorry, OOM!
                 _Xbad_alloc();
             }
-            virtual void do_deallocate(void*, size_t, size_t) override { // Nothing to do
-            }
+            virtual void do_deallocate(void*, size_t, size_t) override {} // Nothing to do
         };
 
-        return &_Immortalize<_Null_resource>();
+        return &const_cast<_Null_resource&>(_Immortalize_memcpy_image<_Null_resource>());
     }
 
 } // namespace pmr

@@ -60,8 +60,7 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
 }
 
 // STRUCT _Nil
-struct _Nil { // empty struct, for unused argument types
-};
+struct _Nil {}; // empty struct, for unused argument types
 
 // ENUM future_errc
 enum class future_errc { // names for futures errors
@@ -97,11 +96,11 @@ struct is_error_code_enum<future_errc> : true_type {};
 _NODISCARD const error_category& future_category() noexcept;
 
 _NODISCARD inline error_code make_error_code(future_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), future_category());
+    return error_code(static_cast<int>(_Errno), _STD future_category());
 }
 
 _NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), future_category());
+    return error_condition(static_cast<int>(_Errno), _STD future_category());
 }
 
 // CLASS future_error
@@ -139,25 +138,20 @@ public:
         return _Future_error_map(_Mycode.value());
     }
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 
 private:
     error_code _Mycode; // the stored error code
 };
 
-// CLASS _Future_error_category
-class _Future_error_category : public _Generic_error_category { // categorize a future error
+class _Future_error_category2 : public error_category { // categorize a future error
 public:
-    _Future_error_category() {
-        _Addr = _Future_addr;
-    }
+    constexpr _Future_error_category2() noexcept : error_category(_Future_addr) {}
 
     virtual const char* name() const noexcept override {
         return "future";
@@ -169,12 +163,12 @@ public:
             return _Name;
         }
 
-        return _Generic_error_category::message(_Errcode);
+        return _Syserror_map(_Errcode);
     }
 };
 
 _NODISCARD inline const error_category& future_category() noexcept {
-    return _Immortalize<_Future_error_category>();
+    return _Immortalize_memcpy_image<_Future_error_category2>();
 }
 
 // STRUCT TEMPLATE _State_deleter
@@ -414,8 +408,7 @@ private:
         return false;
     }
 
-    virtual void _Run_deferred_function(unique_lock<mutex>&) { // do nothing
-    }
+    virtual void _Run_deferred_function(unique_lock<mutex>&) {} // do nothing
 
     virtual void _Do_notify(unique_lock<mutex>* _Lock, bool _At_thread_exit) { // notify waiting threads
         // TRANSITION, ABI: This is virtual, but never overridden.
@@ -622,7 +615,6 @@ public:
 private:
     function<void(_ArgTypes...)> _Fn;
 };
-
 
 template <class _Ty, class _Alloc>
 _Associated_state<_Ty>* _Make_associated_state(const _Alloc& _Al) {
@@ -1434,6 +1426,20 @@ void swap(packaged_task<_Ty>& _Left, packaged_task<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
+// FUNCTION TEMPLATE _Invoke_stored_explicit
+template <class... _Types, size_t... _Indices>
+auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(
+    _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
+    return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
+}
+
+// FUNCTION TEMPLATE _Invoke_stored
+template <class... _Types>
+auto _Invoke_stored(tuple<_Types...>&& _Tuple)
+    -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
+    return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
+}
+
 // FUNCTION TEMPLATE async
 template <class... _Types>
 class _Fake_no_copy_callable_adapter {
@@ -1566,7 +1572,7 @@ namespace experimental {
 
         void await_suspend(experimental::coroutine_handle<> _ResumeCb) {
             // TRANSITION, change to .then if and when future gets .then
-            thread _WaitingThread([& _Fut = _Fut, _ResumeCb]() mutable {
+            thread _WaitingThread([&_Fut = _Fut, _ResumeCb]() mutable {
                 _Fut.wait();
                 _ResumeCb();
             });

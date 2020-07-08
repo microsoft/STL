@@ -45,11 +45,9 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
     const size_t _Bytes = _Get_size_of_n<sizeof(_Ty)>(_Count);
 #ifdef __cpp_aligned_new
     constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
-    if
-        _CONSTEXPR_IF(_Extended_alignment) {
-            return static_cast<_Ty*>(::operator new (_Bytes, align_val_t{alignof(_Ty)}));
-        }
-    else
+    if _CONSTEXPR_IF (_Extended_alignment) {
+        return static_cast<_Ty*>(::operator new (_Bytes, align_val_t{alignof(_Ty)}));
+    } else
 #endif // __cpp_aligned_new
     {
         return static_cast<_Ty*>(::operator new(_Bytes));
@@ -322,7 +320,7 @@ public:
 
     _NODISCARD _Ty sum() const {
         _Ty _Sum = _Myptr[0];
-        for (size_t _Idx = 0; ++_Idx < size();) {
+        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
             _Sum += _Myptr[_Idx];
         }
 
@@ -331,7 +329,7 @@ public:
 
     _NODISCARD _Ty(min)() const {
         _Ty _Min = _Myptr[0];
-        for (size_t _Idx = 0; ++_Idx < size();) {
+        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
             if (_Myptr[_Idx] < _Min) {
                 _Min = _Myptr[_Idx];
             }
@@ -342,7 +340,7 @@ public:
 
     _NODISCARD _Ty(max)() const {
         _Ty _Max = _Myptr[0];
-        for (size_t _Idx = 0; ++_Idx < size();) {
+        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
             if (_Max < _Myptr[_Idx]) {
                 _Max = _Myptr[_Idx];
             }
@@ -448,7 +446,7 @@ private:
 
 #if _HAS_CXX17
 template <class _Ty, size_t _Nx>
-valarray(const _Ty (&)[_Nx], size_t)->valarray<_Ty>;
+valarray(const _Ty (&)[_Nx], size_t) -> valarray<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty>
@@ -955,8 +953,7 @@ private:
 // CLASS gslice
 class gslice { // define a generalized (multidimensional) slice of a valarray
 public:
-    gslice() : _Start(0) { // construct with all zeros
-    }
+    gslice() : _Start(0) {} // construct with all zeros
 
     gslice(size_t _Off, const _Sizarray& _Lenarr, const _Sizarray& _Incarr)
         : _Start(_Off), _Len(_Lenarr), _Stride(_Incarr) {}
@@ -1001,7 +998,7 @@ public:
         }
 
         size_t _Count = _Len[0];
-        for (size_t _Idx = 0; ++_Idx < _Len.size();) {
+        for (size_t _Idx = 1; _Idx < _Len.size(); ++_Idx) {
             _Count *= _Len[_Idx];
         }
 
@@ -1317,7 +1314,6 @@ _NODISCARD gslice_array<_Ty> valarray<_Ty>::operator[](const gslice& _Gslicearr)
 
 template <class _Ty>
 valarray<_Ty>& valarray<_Ty>::operator=(const mask_array<_Ty>& _Maskarr) {
-
     _Tidy_deallocate();
     _Grow(_Maskarr._Totlen());
     size_t _Count = 0;
