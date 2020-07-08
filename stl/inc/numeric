@@ -94,14 +94,14 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _Val) {
     // return commutative and associative reduction of _Val and [_First, _Last)
-    return _STD reduce(_First, _Last, _STD move(_Val), plus<>{});
+    return _STD reduce(_First, _Last, _STD move(_Val), plus{});
 }
 
 template <class _InIt>
 _NODISCARD _CONSTEXPR20 _Iter_value_t<_InIt> reduce(const _InIt _First, const _InIt _Last) {
     // return commutative and associative reduction of
     // iterator_traits<_InIt>::value_type{} and [_First, _Last)
-    return _STD reduce(_First, _Last, _Iter_value_t<_InIt>{}, plus<>{});
+    return _STD reduce(_First, _Last, _Iter_value_t<_InIt>{}, plus{});
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -111,7 +111,7 @@ template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_E
 _NODISCARD _Ty reduce(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Ty _Val) noexcept /* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _STD move(_Val), plus<>{});
+    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _STD move(_Val), plus{});
 }
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -120,7 +120,7 @@ _NODISCARD _Iter_value_t<_FwdIt> reduce(_ExPo&& _Exec, const _FwdIt _First, cons
     // return commutative and associative reduction of
     // iterator_traits<_FwdIt>::value_type{} and [_First, _Last)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _Iter_value_t<_FwdIt>{}, plus<>{});
+    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _Iter_value_t<_FwdIt>{}, plus{});
 }
 #endif // _HAS_CXX17
 
@@ -205,7 +205,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
 template <class _InIt1, class _InIt2, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
-    return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
+    return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus{}, multiplies{});
 }
 
 template <class _InIt, class _Ty, class _BinOp, class _UnaryOp>
@@ -235,7 +235,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, 
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD transform_reduce(
-        _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
+        _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus{}, multiplies{});
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -309,7 +309,7 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest, _Ty _Val) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus<>{});
+    return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus{});
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -320,7 +320,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execu
 _FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest, _Ty _Val) noexcept
 /* terminates */ {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus<>{});
+    return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus{});
 }
 
 // FUNCTION TEMPLATE inclusive_scan
@@ -369,7 +369,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_First, _Last, _Dest, plus<>{});
+    return _STD inclusive_scan(_First, _Last, _Dest, plus{});
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -384,7 +384,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
 /* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>{});
+    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus{});
 }
 
 // FUNCTION TEMPLATE transform_exclusive_scan
@@ -518,7 +518,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
 /* terminates */ {
     // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>{});
+    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus{});
 }
 #endif // _HAS_CXX17
 

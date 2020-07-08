@@ -4997,7 +4997,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept
 /* terminates */ {
     // compare [_First1, _Last1) to [_First2, ...)
-    return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>{});
+    return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -5099,7 +5099,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) noexcept /* terminates */ {
     // compare [_First1, _Last1) to [_First2, _Last2)
-    return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>{});
+    return _STD equal(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 

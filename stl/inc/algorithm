@@ -549,7 +549,7 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept /* terminates */ {
     // find first matching successor
-    return _STD adjacent_find(_STD forward<_ExPo>(_Exec), _First, _Last, equal_to<>{});
+    return _STD adjacent_find(_STD forward<_ExPo>(_Exec), _First, _Last, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -726,7 +726,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     // return [_First1, _Last1)/[_First2, ...) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>{});
+    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -818,7 +818,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>{});
+    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -1936,7 +1936,7 @@ template <class _ExPo, class _FwdItHaystack, class _FwdItPat, _Enable_if_executi
 _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, const _FwdItHaystack _Last1,
     const _FwdItPat _First2, const _FwdItPat _Last2) noexcept /* terminates */ {
     // find first [_First2, _Last2) match
-    return _STD search(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>{});
+    return _STD search(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -2269,7 +2269,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(const _FwdIt _First, const _FwdIt _Last,
 template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Diff _Count,
     const _Ty& _Val) noexcept /* terminates */ { // find first _Count * _Val match
-    return _STD search_n(_STD forward<_ExPo>(_Exec), _First, _Last, _Count, _Val, equal_to<>{});
+    return _STD search_n(_STD forward<_ExPo>(_Exec), _First, _Last, _Count, _Val, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -2624,7 +2624,7 @@ _NODISCARD _FwdIt1 find_end(
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept
 /* terminates */ { // find last [_First2, _Last2) match
-    return _STD find_end(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>{});
+    return _STD find_end(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -2832,7 +2832,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) noexcept /* terminates */ { // look for one of [_First2, _Last2) that matches element
-    return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>{});
+    return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -5604,7 +5604,7 @@ void sort(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept; // te
 template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* terminates */ {
     // order [_First, _Last)
-    _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less<>{});
+    _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 #endif // _HAS_CXX17
 
@@ -5798,7 +5798,7 @@ void stable_sort(const _BidIt _First, const _BidIt _Last) { // sort preserving o
 template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
     // sort preserving order of equivalents
-    _STD stable_sort(_STD forward<_ExPo>(_Exec), _First, _Last, less<>{});
+    _STD stable_sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 #endif // _HAS_CXX17
 
