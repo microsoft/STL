@@ -2689,6 +2689,7 @@ public:
             // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
             _Released_buffer _Result{_Al.allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1};
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
+            _Tidy_init();
             return _Result;
         }
     }

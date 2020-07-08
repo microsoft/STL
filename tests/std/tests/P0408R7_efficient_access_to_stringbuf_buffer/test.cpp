@@ -8,7 +8,14 @@
 #include <string_view>
 #include <utility>
 
+#include <test_death.hpp>
+
 using namespace std;
+
+constexpr const char empty_string[] = "";
+constexpr const char small_string[] = "a";
+constexpr const char large_string[] =
+    "This is a long long long long long long long long string to avoid small string optimization.";
 
 template <typename Stream>
 struct test_rvalue {
@@ -55,9 +62,9 @@ struct test_allocator {
 template <typename Test>
 void run_test_util() {
     Test test{};
-    test("");
-    test("a");
-    test("This is a long long long long long long long long string to avoid small string optimization.");
+    test(empty_string);
+    test(small_string);
+    test(large_string);
 }
 
 template <template <typename> typename Test>
@@ -118,8 +125,53 @@ void run_counting_test() {
     run_test_util<Test<counting_ostringstream>>();
 }
 
-int main() {
-    run_test<test_rvalue>();
-    run_test<test_allocator>();
-    run_counting_test<test_counting_allocator>();
+template <const char* str>
+void test_iterator_dereference_death() {
+    string s      = str;
+    auto iterator = s.begin();
+    stringstream stream{move(s)};
+    (void) *iterator; // cannot dereference invalid iterator
+}
+
+template <const char* str>
+void test_iterator_operator_arrow_death() {
+    string s      = str;
+    auto iterator = s.begin();
+    stringstream stream{move(s)};
+    (void) iterator.operator->(); // cannot dereference invalid iterator
+}
+
+template <const char* str>
+void test_iterator_increment_death() {
+    string s      = str;
+    auto iterator = s.begin();
+    stringstream stream{move(s)};
+    ++iterator; // cannot increase invalid iterator
+}
+
+template <const char* str>
+void test_iterator_increment_zero() {
+    string s      = str;
+    auto iterator = s.begin();
+    stringstream stream{move(s)};
+    iterator += 0; // OK
+}
+
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] {
+        run_test<test_rvalue>();
+        run_test<test_allocator>();
+        run_counting_test<test_counting_allocator>();
+
+        test_iterator_increment_zero<small_string>();
+        test_iterator_increment_zero<large_string>();
+    });
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+    exec.add_death_tests({test_iterator_dereference_death<small_string>, test_iterator_dereference_death<large_string>,
+        test_iterator_operator_arrow_death<small_string>, test_iterator_operator_arrow_death<large_string>,
+        test_iterator_increment_death<small_string>, test_iterator_increment_death<large_string>});
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+    return exec.run(argc, argv);
 }
