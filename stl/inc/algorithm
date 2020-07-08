@@ -3163,6 +3163,7 @@ namespace ranges {
 
                 _Seek_wrapped(_First, _STD move(_UFirst));
             }
+
             return _First;
         }
     };
@@ -3179,22 +3180,35 @@ namespace ranges {
             requires invocable<_Fn&> && indirectly_writable<_Out, invoke_result_t<_Fn&>>
         constexpr _Out operator()(_Out _First, _Se _Last, _Fn _Gen) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                *_UFirst = _Gen();
-            }
-
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            _Seek_wrapped(_First, _Generate_unchecked(_Get_unwrapped(_STD move(_First)),
+                                      _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Gen)));
             return _First;
         }
 
         template <class _Rng, copy_constructible _Fn>
             requires invocable<_Fn&> && output_range<_Rng, invoke_result_t<_Fn&>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Fn _Gen) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Gen));
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(
+                _First, _Generate_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Gen)));
+            return _First;
         }
         // clang-format on
+    private:
+        template <class _Out, class _Se, class _Fn>
+        _NODISCARD static constexpr _Out _Generate_unchecked(_Out _First, const _Se _Last, _Fn _Gen) {
+            _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(copy_constructible<_Fn>);
+            _STL_INTERNAL_STATIC_ASSERT(invocable<_Fn&>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_Out, invoke_result_t<_Fn&>>);
+
+            for (; _First != _Last; ++_First) {
+                *_First = _Gen();
+            }
+
+            return _First;
+        }
     };
 
     inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
@@ -3210,12 +3224,14 @@ namespace ranges {
         constexpr _Out operator()(_Out _First, iter_difference_t<_Out> _Count, _Fn _Gen) const {
             if (_Count > 0) {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-                for (; _Count > 0; ++_UFirst, (void) --_Count) {
+                do {
                     *_UFirst = _Gen();
-                }
+                    ++_UFirst;
+                } while (--_Count > 0);
 
                 _Seek_wrapped(_First, _STD move(_UFirst));
             }
+
             return _First;
         }
     };

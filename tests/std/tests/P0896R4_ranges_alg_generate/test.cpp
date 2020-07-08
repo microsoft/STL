@@ -5,55 +5,38 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
-#include <utility>
 
 #include <range_algorithm_support.hpp>
 
-constexpr void smoke_test() {
-    using ranges::generate;
-
-    {
-        int output[]    = {13, 42, 1367};
-        const int value = 7;
-        auto result     = generate(ranges::begin(output), ranges::end(output), []() { return value; });
-        for (const auto& elem : output) {
-            assert(elem == value);
-        }
-        assert(result == ranges::end(output));
-    }
-    {
-        int output[]    = {13, 42, 1367};
-        const int value = 13;
-        auto result     = generate(output, []() { return value; });
-        for (const auto& elem : output) {
-            assert(elem == value);
-        }
-        assert(result == ranges::end(output));
-    }
-    {
-        int output[] = {13, 42, 1367};
-        auto result  = generate(output, [calls_to_generate = -1]() mutable {
-            ++calls_to_generate;
-            return calls_to_generate;
-        });
-        for (int i = 0; i < 3; ++i) {
-            assert(i == output[i]);
-        }
-        assert(result == ranges::end(output));
-    }
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
-
 struct instantiator {
-    template <class Out>
-    static void call(Out&& out = {}) {
-        (void) ranges::generate(out, []() { return 42; });
-        (void) ranges::generate(ranges::begin(out), ranges::end(out), []() { return 42; });
+    template <ranges::output_range<const int&> Out>
+    static constexpr void call() {
+        using ranges::generate;
+
+        const auto iota_gen = [count = 0]() mutable { return count++; };
+
+        {
+            int output[] = {13, 42, 1367};
+            Out out_wrapper{output};
+            auto result = generate(out_wrapper, iota_gen);
+            assert(result == out_wrapper.end());
+            for (int i = 0; i < 3; ++i) {
+                assert(i == output[i]);
+            }
+        }
+        {
+            int output[] = {13, 42, 1367};
+            Out out_wrapper{output};
+            auto result = generate(out_wrapper.begin(), out_wrapper.end(), iota_gen);
+            assert(result == out_wrapper.end());
+            for (int i = 0; i < 3; ++i) {
+                assert(i == output[i]);
+            }
+        }
     }
 };
 
-template void test_out<instantiator>();
+int main() {
+    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    test_out<instantiator, int>();
+}

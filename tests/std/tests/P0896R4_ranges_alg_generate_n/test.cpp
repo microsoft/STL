@@ -5,55 +5,49 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
-#include <utility>
 
 #include <range_algorithm_support.hpp>
 
-constexpr void smoke_test() {
-    using ranges::generate_n, ranges::equal;
-    {
-        int output[] = {13, 42, 1367};
-        auto result  = generate_n(ranges::begin(output), ranges::distance(output), [calls_to_generate = -1]() mutable {
-            ++calls_to_generate;
-            return calls_to_generate;
-        });
-        for (int i = 0; i < 3; ++i) {
-            assert(i == output[i]);
-        }
-        assert(result == ranges::end(output));
-    }
-    {
-        int expected_output[] = {13, 42, 1367};
-        int output[]          = {13, 42, 1367};
-        auto result           = generate_n(ranges::begin(output), 0, [calls_to_generate = -1]() mutable {
-            ++calls_to_generate;
-            return calls_to_generate;
-        });
-        assert(ranges::equal(output, expected_output));
-        assert(result == ranges::begin(output));
-    }
-    {
-        int expected_output[] = {13, 42, 1367};
-        int output[]          = {13, 42, 1367};
-        auto result           = generate_n(ranges::begin(output), -1, [calls_to_generate = -1]() mutable {
-            ++calls_to_generate;
-            return calls_to_generate;
-        });
-        assert(ranges::equal(output, expected_output));
-        assert(result == ranges::begin(output));
-    }
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
+using namespace std;
 
 struct instantiator {
-    template <class Out>
-    static void call(Out&& out = {}) {
-        (void) ranges::generate_n(ranges::begin(out), 13, []() { return 13; });
+    template <ranges::output_range<const int&> Out>
+    static constexpr void call() {
+        using ranges::generate_n, ranges::equal, ranges::iterator_t;
+
+        const auto iota_gen = [count = 0]() mutable { return count++; };
+
+        {
+            int output[] = {13, 42, 1367};
+            Out out_wrapper{output};
+            auto result = generate_n(out_wrapper.begin(), ranges::distance(output), iota_gen);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            assert(result == out_wrapper.end());
+            for (int i = 0; i < 3; ++i) {
+                assert(i == output[i]);
+            }
+        }
+
+        constexpr int expected_output[] = {13, 42, 1367};
+        int output[]                    = {13, 42, 1367};
+        {
+            Out out_wrapper{output};
+            auto result = generate_n(out_wrapper.begin(), 0, iota_gen);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            assert(result.peek() == output);
+            assert(equal(output, expected_output));
+        }
+        {
+            Out out_wrapper{output};
+            auto result = generate_n(out_wrapper.begin(), -1, iota_gen);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            assert(result.peek() == output);
+            assert(equal(output, expected_output));
+        }
     }
 };
 
-template void test_out<instantiator>();
+int main() {
+    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    test_out<instantiator, int>();
+}

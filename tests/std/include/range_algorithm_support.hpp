@@ -807,7 +807,7 @@ struct with_input_ranges {
     }
 };
 
-template <class Continuation, class Element = int>
+template <class Continuation, class Element>
 struct with_output_ranges {
     template <class... Args>
     static constexpr void call() {
@@ -856,7 +856,7 @@ struct with_output_ranges {
     }
 };
 
-template <class Continuation, class Element = int>
+template <class Continuation, class Element>
 struct with_input_iterators {
     template <class... Args>
     static constexpr void call() {
@@ -895,12 +895,12 @@ struct with_input_iterators {
     }
 };
 
-template <class Instantiator, class Element = int>
+template <class Instantiator, class Element>
 constexpr void test_out() {
     with_output_ranges<Instantiator, Element>::call();
 }
 
-template <class Instantiator, class Element = int>
+template <class Instantiator, class Element>
 constexpr void test_in() {
     with_input_ranges<Instantiator, Element>::call();
 }
