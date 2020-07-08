@@ -559,7 +559,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static constexpr _Ty _Static;
     return _Static;
 }
-#elif defined(_MSC_VER) && _MSC_VER > 1927
+#elif defined(_MSC_VER) && _MSC_VER > 1927 && !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
 template <class _Ty>
 struct _Constexpr_immortalize_impl {
     union {
