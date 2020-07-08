@@ -3157,6 +3157,9 @@ void test_lexically_relative() {
     EXPECT(path(LR"(a\b\c\x\y\z)"sv).lexically_relative(LR"(a\b\c\d\.\e\..\f\g)"sv).native() == LR"(..\..\..\x\y\z)"sv);
 
     EXPECT(path(LR"(a\b\c\x\y\z)"sv).lexically_relative(LR"(a\b\c\d\.\e\..\f\g\..\..\..)"sv).native() == LR"(x\y\z)"sv);
+
+    // LWG-3070
+    EXPECT(path(LR"(\a:\b:)"sv).lexically_relative(LR"(\a:\c:)"sv).native() == LR"()"sv);
 }
 
 void test_lexically_proximate() {
@@ -3184,6 +3187,9 @@ void test_lexically_proximate() {
 
     EXPECT(
         path(LR"(a\b\c\x\y\z)"sv).lexically_proximate(LR"(a\b\c\d\.\e\..\f\g\..\..\..)"sv).native() == LR"(x\y\z)"sv);
+
+    // LWG-3070
+    EXPECT(path(LR"(\a:\b:)"sv).lexically_proximate(LR"(\a:\c:)"sv).native() == LR"(\a:\b:)"sv);
 }
 
 void test_weakly_canonical() {

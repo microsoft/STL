@@ -51,4 +51,4 @@ struct instantiator {
     }
 };
 
-template void test_in<instantiator>();
+template void test_in<instantiator, const int>();
