@@ -353,6 +353,30 @@ Function InstallCuda {
   }
 }
 
+<#
+.SYNOPSIS
+Install or upgrade a pip package.
+
+.DESCRIPTION
+Installs or upgrades a pip package specified in $Package.
+
+.PARAMETER Package
+The name of the package to be installed or upgraded.
+#>
+Function PipInstall {
+  Param(
+    [String]$Package
+  )
+
+  try {
+    Write-Host 'Installing or upgrading $Package...'
+    python.exe -m pip install --upgrade $Package
+    Write-Host 'Done installing or upgrading $Package'
+  }
+  catch {
+    Write-Error "Failed to install or upgrade $Package"
+  }
+}
 
 Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
 
@@ -379,6 +403,5 @@ Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\E
   -Name Path `
   -Value "$Env:PATH"
 
-Write-Host 'Updating Python modules...'
-python -m pip install --upgrade pip
-pip install psutil
+PipInstall pip
+PipInstall psutil
