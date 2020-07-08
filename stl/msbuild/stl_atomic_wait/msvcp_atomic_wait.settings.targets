@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
     <PropertyGroup>
-        <FinalBinary>p_post</FinalBinary>
+        <FinalBinary>p_atomic_wait</FinalBinary>
 
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
 
-        <TargetType>LIBRARY</TargetType>
+        <TargetType>DYNLINK</TargetType>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
@@ -23,10 +23,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <MsvcpFlavorSuffix Condition="'$(MsvcpFlavor)' == 'app'">_app</MsvcpFlavorSuffix>
         <MsvcpFlavorSuffix Condition="'$(MsvcpFlavor)' == 'netfx'">_clr$(NetFxVerX)</MsvcpFlavorSuffix>
 
-        <LibOutputFileName>msvcprt$(BuildSuffix)$(ClrLibSuffix)</LibOutputFileName>
+        <OutputName>msvcp$(VCToolsProdVerSuffix)$(BuildSuffix)_atomic_wait$(MsvcpFlavorSuffix)</OutputName>
+        <LibOutputFileName>msvcprt$(BuildSuffix)_atomic_wait$(ClrLibSuffix)</LibOutputFileName>
         <LibOutputFile>$(LibOutputFileName).lib</LibOutputFile>
 
+        <ClDefines>_VCRT_ALLOW_INTERNALS;$(ClDefines)</ClDefines>
+        <ClDefines Condition="'$(MsvcpFlavor)' == 'app'">$(ClDefines);_CRT_APP</ClDefines>
+
         <UseMsvcrt>false</UseMsvcrt>
+        <GenerateImportLib>true</GenerateImportLib>
+        <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
+        <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt_atomic_wait$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
+        <DllDef>$(MSBuildThisFileDirectory)..\..\src\msvcp_atomic_wait.def</DllDef>
 
         <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
         <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
@@ -42,25 +50,32 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
-            Include="$(CrtRoot)\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
-            Include="$(CrtRoot)\github\stl\msbuild\stl_1\$(CrtBuildModel)\msvcp_1_$(MsvcpFlavor)\msvcp_1.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
-            Include="$(CrtRoot)\github\stl\msbuild\stl_2\$(CrtBuildModel)\msvcp_2_$(MsvcpFlavor)\msvcp_2.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
-            Include="$(CrtRoot)\github\stl\msbuild\stl_codecvt_ids\$(CrtBuildModel)\msvcp_codecvt_ids_$(MsvcpFlavor)\msvcp_codecvt_ids.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
-            Include="$(CrtRoot)\github\stl\msbuild\stl_atomic_wait\$(CrtBuildModel)\msvcp_atomic_wait_$(MsvcpFlavor)\msvcp_atomic_wait.nativeproj"/>
-        <Lib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
-        <Lib Include="$(CrtLibPath)\msvcprt_1$(BuildSuffix)$(ClrLibSuffix).lib"/>
-        <Lib Include="$(CrtLibPath)\msvcprt_2$(BuildSuffix)$(ClrLibSuffix).lib"/>
-        <Lib Include="$(CrtLibPath)\msvcprt$(BuildSuffix)_codecvt_ids$(ClrLibSuffix).lib"/>
-        <Lib Include="$(CrtLibPath)\msvcprt$(BuildSuffix)_atomic_wait$(ClrLibSuffix).lib"/>
-        <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_begin_initialize.obj" />
-        <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_complete.obj" />
+        <RCResourceFile Include="$(MSBuildThisFileDirectory)\msvcprt_atomic_wait.rc"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd')" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)$(CrtSpectreSuffix)\msvcp.nativeproj"/>
+        <TargetLib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
+        <TargetLib Include="$(UniversalCRTLib)"/>
+    </ItemGroup>
+
+    <!-- Copy the output dll and pdb to various destinations -->
+    <ItemGroup>
+        <CopyFilesForCrossTools Condition="'$(MsvcpFlavor)' == 'kernel32'" Include="
+           $(LinkOutputFile);
+           $(LinkProgramDataBaseFileName);
+        "/>
+        <CopyFilesForNetFx Condition="'$(MsvcpFlavor)' == 'netfx'" Include="
+           $(LinkOutputFile);
+           $(LinkProgramDataBaseFileName);
+        "/>
+    </ItemGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)\stl_atomic_wait.files.settings.targets"/>
+
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
+    <Target Name="GetBaseAddress"/>
 
 </Project>
