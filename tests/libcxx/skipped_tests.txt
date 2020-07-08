@@ -63,6 +63,8 @@ numerics\bit\bit.pow.two\floor2.pass.cpp
 numerics\bit\bit.pow.two\ispow2.pass.cpp
 numerics\bit\bit.pow.two\log2p1.pass.cpp
 
+# test emits warning C4310: cast truncates constant value
+numerics\bit\bitops.rot\rotl.pass.cpp
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -452,15 +454,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-numerics\bit\bitops.count\countl_one.pass.cpp
-numerics\bit\bitops.count\countl_zero.pass.cpp
-numerics\bit\bitops.count\countr_one.pass.cpp
-numerics\bit\bitops.count\countr_zero.pass.cpp
-numerics\bit\bitops.count\popcount.pass.cpp
-numerics\bit\bitops.rot\rotl.pass.cpp
-numerics\bit\bitops.rot\rotr.pass.cpp
-
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
 utilities\variant\variant.variant\variant.assign\T.pass.cpp
@@ -503,9 +496,7 @@ thread\thread.semaphore\version.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
-# C++20 P0722R3 "Efficient sized delete for variable sized classes" // TRANSITION, VS2019 16.7p1
-language.support\support.dynamic\destroying_delete_t_declaration.pass.cpp
-language.support\support.dynamic\destroying_delete_t.pass.cpp
+# Nothing here! :-)
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***

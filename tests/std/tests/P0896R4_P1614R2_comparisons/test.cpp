@@ -83,19 +83,21 @@ struct three_way_archetype {
     three_way_archetype(three_way_archetype const&) = delete;
     three_way_archetype& operator=(three_way_archetype const&) = delete;
     ~three_way_archetype()                                     = delete;
+    // clang-format off
     // 0: not equality_comparable
-    bool operator==(three_way_archetype const&) const requires(I == 0) = delete;
-    bool operator==(three_way_archetype const&) const requires(I != 0);
+    bool operator==(three_way_archetype const&) const requires (I == 0) = delete;
+    bool operator==(three_way_archetype const&) const requires (I != 0);
     // 1: not totally_ordered
-    bool operator<(three_way_archetype const&) const requires(I == 1) = delete;
-    bool operator<(three_way_archetype const&) const requires(I != 1);
-    bool operator>(three_way_archetype const&) const requires(I != 1);
-    bool operator<=(three_way_archetype const&) const requires(I != 1);
-    bool operator>=(three_way_archetype const&) const requires(I != 1);
+    bool operator<(three_way_archetype const&) const requires (I == 1) = delete;
+    bool operator<(three_way_archetype const&) const requires (I != 1);
+    bool operator>(three_way_archetype const&) const requires (I != 1);
+    bool operator<=(three_way_archetype const&) const requires (I != 1);
+    bool operator>=(three_way_archetype const&) const requires (I != 1);
     // 2: <=> isn't defined
-    Category operator<=>(three_way_archetype const&) const requires(I != 2 && I != 3);
+    Category operator<=>(three_way_archetype const&) const requires (I != 2 && I != 3);
     // 3: <=> doesn't return a comparison category type
-    int operator<=>(three_way_archetype const&) const requires(I == 3);
+    int operator<=>(three_way_archetype const&) const requires (I == 3);
+    // clang-format on
 };
 constexpr int three_way_archetype_max = 4;
 

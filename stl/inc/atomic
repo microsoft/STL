@@ -798,8 +798,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
-#ifdef _M_IX86
-    _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
+#if defined(_M_IX86) && defined(__clang__) // TRANSITION, LLVM-46595
+    TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with (effectively) sequential consistency
         _TVal _Temp{load()};
         while (!compare_exchange_strong(_Temp, _Value, _Order)) { // keep trying
@@ -807,7 +807,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
         return _Temp;
     }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) && defined(__clang__), LLVM-46595 / !defined(_M_IX86) || !defined(__clang__) vvv
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long long _As_bytes;
@@ -815,7 +815,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             _Atomic_reinterpret_as<long long>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) || !defined(__clang__) ^^^
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
@@ -1148,7 +1148,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
 
-#ifdef _M_IX86
+#if defined(_M_IX86) && defined(__clang__) // TRANSITION, LLVM-46595
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         // effectively sequential consistency
         _TVal _Temp{this->load()};
@@ -1201,7 +1201,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
         return fetch_add(static_cast<_TVal>(-1)) - static_cast<_TVal>(1);
     }
 
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
+#else // ^^^ defined(_M_IX86) && defined(__clang__), LLVM-46595 / !defined(_M_IX86) || !defined(__clang__) vvv
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd64,
@@ -1251,7 +1251,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     _TVal operator--() noexcept {
         return static_cast<_TVal>(_InterlockedDecrement64(_Atomic_address_as<long long>(this->_Storage)));
     }
-#endif // _M_IX86
+#endif // ^^^ !defined(_M_IX86) || !defined(__clang__) ^^^
 };
 
 #if 1 // TRANSITION, ABI
