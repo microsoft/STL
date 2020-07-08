@@ -371,8 +371,14 @@ InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
+
 Write-Host 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+$Env:PATH="$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `
-  -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
+  -Value "$Env:PATH"
+
+Write-Host 'Updating Python modules...'
+python -m pip install --upgrade pip
+pip install psutil
