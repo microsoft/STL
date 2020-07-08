@@ -242,7 +242,6 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/filesystem.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/parallel_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
@@ -391,6 +390,7 @@ set(SOURCES_SATELLITE_2
 
 set(SOURCES_SATELLITE_ATOMIC_WAIT
     ${CMAKE_CURRENT_LIST_DIR}/src/atomic_wait.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/parallel_algorithms.cpp
 )
 
 set(SOURCES_SATELLITE_CODECVT_IDS

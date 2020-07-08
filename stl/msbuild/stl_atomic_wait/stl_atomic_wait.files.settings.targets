@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <ItemGroup>
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\atomic_wait.cpp;
+            $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
         </BuildFiles>

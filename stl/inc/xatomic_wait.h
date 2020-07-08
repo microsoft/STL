@@ -38,9 +38,16 @@ struct _Atomic_wait_context_t {
     unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
 };
 
-_EXTERN_C
 
-bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept;
+_EXTERN_C
+enum class __std_atomic_api_level : unsigned long {
+    __not_set,
+    __detecting,
+    __has_srwlock,
+    __has_wait_on_address,
+};
+
+__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept;
 bool __stdcall __std_atomic_wait_direct(
     const void* _Storage, const void* _Comparand, const size_t _Size, _Atomic_wait_context_t& _Wait_context) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;

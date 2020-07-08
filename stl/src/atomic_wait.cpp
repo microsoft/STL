@@ -22,10 +22,10 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-    struct alignas(std::hardware_destructive_interference_size) _Wait_table_entry {
+    struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
         // Arbitrary variable to wait/notify on if target variable is not proper atomic for that
         // Size is largest of lock-free to make aliasing problem into hypothetical
-        std::atomic<unsigned long long> _Counter{};
+        _STD atomic<unsigned long long> _Counter{};
 
         CONDITION_VARIABLE _Condition = CONDITION_VARIABLE_INIT;
         SRWLOCK _Lock                 = SRWLOCK_INIT;
@@ -36,7 +36,7 @@ namespace {
 
     _Wait_table_entry& _Atomic_wait_table_entry(const void* const _Storage) noexcept {
         static _Wait_table_entry wait_table[_Wait_table_size];
-        auto index = reinterpret_cast<std::uintptr_t>(_Storage);
+        auto index = reinterpret_cast<_STD uintptr_t>(_Storage);
         index ^= index >> (_Wait_table_size_power * 2);
         index ^= index >> _Wait_table_size_power;
         return wait_table[index & _Wait_table_index_mask];
@@ -48,7 +48,7 @@ namespace {
             return INFINITE;
         }
 
-        const unsigned long long current_time = ::GetTickCount64();
+        const unsigned long long current_time = GetTickCount64();
         if (current_time >= deadline) {
             return 0;
         }
@@ -90,7 +90,7 @@ namespace {
         auto& _Entry = _Atomic_wait_table_entry(_Storage);
         switch (_Wait_context._Wait_phase_and_spin_count) {
         case _Atomic_wait_phase_wait_none:
-            ::AcquireSRWLockExclusive(&_Entry._Lock);
+            AcquireSRWLockExclusive(&_Entry._Lock);
             _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_locked;
             // re-check, and go to _Atomic_wait_phase_wait_locked
             break;
@@ -98,7 +98,7 @@ namespace {
         case _Atomic_wait_phase_wait_locked:
             if (!::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, remaining_waiting_time, 0)) {
                 _Assume_timeout();
-                ::ReleaseSRWLockExclusive(&_Entry._Lock);
+                ReleaseSRWLockExclusive(&_Entry._Lock);
                 _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
                 return false;
             }
@@ -112,7 +112,7 @@ namespace {
     void _Atomic_unwait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
         if (_Wait_context._Wait_phase_and_spin_count == _Atomic_wait_phase_wait_locked) {
             auto& _Entry = _Atomic_wait_table_entry(_Storage);
-            ::ReleaseSRWLockExclusive(&_Entry._Lock);
+            ReleaseSRWLockExclusive(&_Entry._Lock);
             // Superflous currently, but let's have it for robustness
             _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
         }
@@ -120,74 +120,81 @@ namespace {
 
     void _Atomic_notify_fallback(const void* const _Storage) noexcept {
         auto& _Entry = _Atomic_wait_table_entry(_Storage);
-        ::AcquireSRWLockExclusive(&_Entry._Lock);
-        ::ReleaseSRWLockExclusive(&_Entry._Lock);
-        ::WakeAllConditionVariable(&_Entry._Condition);
+        AcquireSRWLockExclusive(&_Entry._Lock);
+        ReleaseSRWLockExclusive(&_Entry._Lock);
+        WakeAllConditionVariable(&_Entry._Condition);
     }
 
-    template <class _Function_pointer>
-    inline void _Save_function_pointer_relaxed(std::atomic<_Function_pointer>& _Dest, FARPROC _Src) {
-        _Dest.store(reinterpret_cast<_Function_pointer>(_Src), std::memory_order_relaxed);
-    }
-
-    enum _Api_initialized : int {
-        _Not_initalized,
-        _Initalized,
-        _In_progress,
+    struct _Wait_functions_table {
+        _STD atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
+        _STD atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle{nullptr};
+        _STD atomic<decltype(&::WakeByAddressAll)> _Pfn_WakeByAddressAll{nullptr};
+        _STD atomic<__std_atomic_api_level> _Api_level{__std_atomic_api_level::__not_set};
     };
 
-    struct _Wait_on_address_functions {
-        std::atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
-        std::atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle{nullptr};
-        std::atomic<decltype(&::WakeByAddressAll)> _Pfn_WakeByAddressAll{nullptr};
-        std::atomic<_Api_initialized> _Initialized{_Not_initalized};
-    };
+    _Wait_functions_table _Wait_functions;
 
-    _Wait_on_address_functions _Wait_fcns;
-
-    const _Wait_on_address_functions& _Get_wait_functions() {
-        if (_Wait_fcns._Initialized.load(std::memory_order_acquire) != _Initalized) {
-            _Api_initialized expected = _Not_initalized;
-            if (!_Wait_fcns._Initialized.compare_exchange_strong(expected, _In_progress, std::memory_order_acquire)) {
-                if (expected == _Initalized) {
-                    return _Wait_fcns;
+    void _Force_wait_functions_srwlock_only() noexcept {
+        auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
+        if (_Local <= __std_atomic_api_level::__detecting) {
+            while (!_Wait_functions._Api_level.compare_exchange_weak(_Local, __std_atomic_api_level::__has_srwlock)) {
+                if (_Local > __std_atomic_api_level::__detecting) {
+                    return;
                 }
             }
-            HMODULE sync_api_module        = ::GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
-            FARPROC wait_on_address        = ::GetProcAddress(sync_api_module, "WaitOnAddress");
-            FARPROC wake_by_address_single = ::GetProcAddress(sync_api_module, "WakeByAddressSingle");
-            FARPROC wake_by_address_all    = ::GetProcAddress(sync_api_module, "WakeByAddressAll");
-            if (wait_on_address != nullptr && wake_by_address_single != nullptr && wake_by_address_all != nullptr) {
-                _Save_function_pointer_relaxed(_Wait_fcns._Pfn_WaitOnAddress, wait_on_address);
-                _Save_function_pointer_relaxed(_Wait_fcns._Pfn_WakeByAddressSingle, wake_by_address_single);
-                _Save_function_pointer_relaxed(_Wait_fcns._Pfn_WakeByAddressAll, wake_by_address_all);
+        }
+    }
+
+    const _Wait_functions_table& _Get_wait_functions() noexcept {
+        auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
+        if (_Local <= __std_atomic_api_level::__detecting) {
+            while (!_Wait_functions._Api_level.compare_exchange_weak(_Local, __std_atomic_api_level::__detecting)) {
+                if (_Local > __std_atomic_api_level::__detecting) {
+                    return _Wait_functions;
+                }
             }
 
-            expected = _In_progress;
-            _Wait_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_release);
+            HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
+            const auto _Wait_on_address =
+                reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
+            const auto _Wake_by_address_single =
+                reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
+            const auto _Wake_by_address_all =
+                reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
+            if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
+                _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
+                _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
+                _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
+                _Wait_functions._Api_level.store(
+                    __std_atomic_api_level::__has_wait_on_address, _STD memory_order_release);
+            } else {
+                _Wait_functions._Api_level.store(__std_atomic_api_level::__has_srwlock, _STD memory_order_release);
+            }
         }
-        return _Wait_fcns;
+
+        return _Wait_functions;
     }
 
     bool _Have_wait_functions() noexcept {
-        return _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed) != nullptr;
+        return _Get_wait_functions()._Api_level.load(_STD memory_order_relaxed)
+               >= __std_atomic_api_level::__has_wait_on_address;
     }
 
     inline BOOL __crtWaitOnAddress(
         volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
-        const auto wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(std::memory_order_relaxed);
-        return wait_on_address(Address, CompareAddress, AddressSize, dwMilliseconds);
+        const auto _Wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(_STD memory_order_relaxed);
+        return _Wait_on_address(Address, CompareAddress, AddressSize, dwMilliseconds);
     }
 
     inline VOID __crtWakeByAddressSingle(PVOID Address) {
-        const auto wake_by_address_single =
-            _Get_wait_functions()._Pfn_WakeByAddressSingle.load(std::memory_order_relaxed);
-        wake_by_address_single(Address);
+        const auto _Wake_by_address_single =
+            _Get_wait_functions()._Pfn_WakeByAddressSingle.load(_STD memory_order_relaxed);
+        _Wake_by_address_single(Address);
     }
 
     inline VOID __crtWakeByAddressAll(PVOID Address) {
-        const auto wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(std::memory_order_relaxed);
-        wake_by_address_all(Address);
+        const auto _Wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
+        _Wake_by_address_all(Address);
     }
 #endif //  _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
@@ -238,13 +245,13 @@ bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wa
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     switch (_Wait_context._Wait_phase_and_spin_count) {
     case _Atomic_wait_phase_wait_none:
-        _Wait_context._Counter = _Entry._Counter.load(std::memory_order_relaxed);
+        _Wait_context._Counter = _Entry._Counter.load(_STD memory_order_relaxed);
         // Save counter in context and check again
         _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_counter;
         break;
 
     case _Atomic_wait_phase_wait_counter:
-        if (!__crtWaitOnAddress(const_cast<volatile std::uint64_t*>(&_Entry._Counter._Storage._Value),
+        if (!__crtWaitOnAddress(const_cast<volatile _STD uint64_t*>(&_Entry._Counter._Storage._Value),
                 &_Wait_context._Counter, sizeof(_Entry._Counter._Storage._Value),
                 _Get_remaining_waiting_time(_Wait_context))) {
             _Assume_timeout();
@@ -269,7 +276,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 #endif
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    _Entry._Counter.fetch_add(1, std::memory_order_relaxed);
+    _Entry._Counter.fetch_add(1, _STD memory_order_relaxed);
     __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
 }
 
@@ -303,14 +310,14 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
 #endif
     }
     constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
-    static std::atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
-    const unsigned long spin_count_from_cache = _Atomic_spin_count.load(std::memory_order_relaxed);
+    static _STD atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
+    const unsigned long spin_count_from_cache = _Atomic_spin_count.load(_STD memory_order_relaxed);
     if (spin_count_from_cache != _Uninitialized_spin_count) {
         return spin_count_from_cache;
     }
 
-    unsigned long spin_count = (std::thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-    _Atomic_spin_count.store(spin_count, std::memory_order_relaxed);
+    unsigned long spin_count = (_STD thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+    _Atomic_spin_count.store(spin_count, _STD memory_order_relaxed);
     return spin_count;
 }
 
@@ -319,22 +326,27 @@ void __stdcall __std_atomic_wait_get_deadline(
     if (_Timeout == _Atomic_wait_no_timeout) {
         _Wait_context._Deadline = _Atomic_wait_no_deadline;
     } else {
-        _Wait_context._Deadline = ::GetTickCount64() + _Timeout + (timeout_pico ? 1 : 0);
+        _Wait_context._Deadline = GetTickCount64() + _Timeout + (timeout_pico ? 1 : 0);
     }
 }
 
-bool __stdcall __std_atomic_set_api_level(unsigned long _Api_level) noexcept {
-    if (!IsWindowsVersionOrGreater(HIBYTE(LOWORD(_Api_level)), LOBYTE(LOWORD(_Api_level)), 0)) {
-        return false;
+__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept {
+#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+    (void) _Requested_api_level;
+    return __std_atomic_api_level::__has_wait_on_address;
+#else // ^^^ _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL // !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL vvv
+    switch (_Requested_api_level) {
+    case __std_atomic_api_level::__not_set:
+    case __std_atomic_api_level::__detecting:
+    case __std_atomic_api_level::__has_srwlock:
+        _Force_wait_functions_srwlock_only();
+        break;
+    case __std_atomic_api_level::__has_wait_on_address:
+    default: // future compat: new header using an old DLL will get the highest requested level supported
+        break;
     }
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-    if (_Api_level < _WIN32_WINNT_WIN8) {
-        _Api_initialized expected = _Not_initalized;
-        if (!_Wait_fcns._Initialized.compare_exchange_strong(expected, _Initalized, std::memory_order_relaxed)) {
-            return false; // It is too late
-        }
-    }
-#endif
-    return true;
+
+    return _Get_wait_functions()._Api_level.load(_STD memory_order_relaxed);
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
 }
 _END_EXTERN_C
