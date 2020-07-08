@@ -1187,7 +1187,7 @@ public:
     }
 
     auto unique() { // erase each element matching previous
-        return unique(equal_to<>());
+        return unique(equal_to<>{});
     }
 
     template <class _Pr2>
@@ -1217,11 +1217,11 @@ public:
     }
 
     void merge(forward_list& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>());
+        _Merge1(_Right, less<>{});
     }
 
     void merge(forward_list&& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>());
+        _Merge1(_Right, less<>{});
     }
 
     template <class _Pr2>

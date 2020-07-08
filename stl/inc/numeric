@@ -41,7 +41,7 @@ _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _T
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val) {
     // return noncommutative and nonassociative reduction of _Val and all in [_First, _Last)
-    return _STD accumulate(_First, _Last, _Val, plus<>());
+    return _STD accumulate(_First, _Last, _Val, plus<>{});
 }
 
 #if _HAS_CXX17
@@ -148,7 +148,7 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
 template <class _InIt1, class _InIt2, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Ty _Val) {
     // return noncommutative and nonassociative transform-reduction of sequences
-    return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>(), multiplies<>());
+    return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
 
 #if _HAS_CXX17
@@ -276,7 +276,7 @@ _CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _D
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt partial_sum(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // compute partial noncommutative and nonassociative reductions into _Dest
-    return _STD partial_sum(_First, _Last, _Dest, plus<>());
+    return _STD partial_sum(_First, _Last, _Dest, plus<>{});
 }
 
 #if _HAS_CXX17
@@ -384,7 +384,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
 /* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>());
+    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>{});
 }
 
 // FUNCTION TEMPLATE transform_exclusive_scan
@@ -506,7 +506,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_First, _Last, _Dest, minus<>());
+    return _STD adjacent_difference(_First, _Last, _Dest, minus<>{});
 }
 
 #if _HAS_CXX17
@@ -518,7 +518,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
 /* terminates */ {
     // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>());
+    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>{});
 }
 #endif // _HAS_CXX17
 
