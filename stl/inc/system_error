@@ -556,7 +556,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
 #ifdef __cpp_constinit
     constinit
 #endif // __cpp_constinit
-    static constexpr _Ty _Static;
+        static constexpr _Ty _Static;
     return _Static;
 }
 #elif defined(_MSC_VER) && _MSC_VER > 1927 && !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
