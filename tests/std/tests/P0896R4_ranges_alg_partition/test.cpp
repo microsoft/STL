@@ -75,7 +75,7 @@ struct partition_test {
         }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-        if (!std::is_constant_evaluated())
+        if (!is_constant_evaluated())
 #endif // TRANSITION, VSO-938163
         {
             if constexpr (ranges::forward_range<Range>) {

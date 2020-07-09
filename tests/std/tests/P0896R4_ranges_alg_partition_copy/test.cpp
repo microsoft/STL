@@ -24,9 +24,6 @@ STATIC_ASSERT(
     same_as<ranges::partition_copy_result<int, double, void*>, ranges::in_out_out_result<int, double, void*>>);
 
 // Validate dangling story
-template <class T>
-inline constexpr T* nullptr_to = nullptr;
-
 STATIC_ASSERT(same_as<decltype(ranges::partition_copy(borrowed<false>{}, nullptr_to<int>, nullptr_to<long>, is_even)),
     ranges::partition_copy_result<ranges::dangling, int*, long*>>);
 STATIC_ASSERT(same_as<decltype(ranges::partition_copy(borrowed<true>{}, nullptr_to<int>, nullptr_to<long>, is_even)),
@@ -92,11 +89,11 @@ struct partition_copy_test {
 template <class Instantiator, class Elem>
 constexpr void run_tests() {
     // Call Instantiator::template call</*...stuff...*/>() with a range whose element type is Elem, and two iterators to
-    // which Elem is writable, whose properties are "interesting" for ranges::partial_copy. What combinations of
+    // which Elem is writable, whose properties are "interesting" for ranges::partition_copy. What combinations of
     // properties are "interesting"?
 
     // For the input range, the algorithm simply unwraps iterators and chugs through looking for the end. It doesn't
-    // * take advantage of any capabilities provided by strong-than-input categories,
+    // * take advantage of any capabilities provided by stronger-than-input categories,
     // * care if the sentinel and iterator have the same type,
     // * care if it can difference iterators with sentinels or each other, or
     // * care about the size of the input range at all. (It can't even use size info to check the outputs, because we
@@ -104,7 +101,7 @@ constexpr void run_tests() {
     // TLDR: One input range with a proxy reference type and no other notable properties (the so-called "weakest" input
     // range) suffices.
 
-    // For the outputs, both or which are treated equivalently, the algorithm is similarly oblivious to properties other
+    // For the outputs, both of which are treated equivalently, the algorithm is similarly oblivious to properties other
     // than reference type and the ability to unwrap/rewrap. These could simply be the "weakest" writable iterator type
     // in with_writable_iterators.
 
