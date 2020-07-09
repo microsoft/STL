@@ -1589,6 +1589,39 @@ namespace ranges {
     };
 
     inline constexpr _Copy_n_fn copy_n{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE copy_backward_result
+    template <class _In, class _Out>
+    using copy_backward_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::copy_backward
+    class _Copy_backward_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
+            requires indirectly_copyable<_It1, _It2>
+        constexpr copy_backward_result<_It1, _It2> operator()(_It1 _First, _Se1 _Last, _It2 _Result) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Result = _Copy_backward_unchecked(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <bidirectional_range _Rng, bidirectional_iterator _It>
+            requires indirectly_copyable<iterator_t<_Rng>, _It>
+        constexpr copy_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
+            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            _Result     = _Copy_backward_unchecked(_Ubegin(_Range), _ULast, _STD move(_Result));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Copy_backward_fn copy_backward{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -2573,7 +2606,8 @@ namespace ranges {
 
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 const auto _Dist = _ULast - _UFirst;
-                auto _UResult = _Search_n_sized(_STD move(_UFirst), _Dist, _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _UResult =
+                    _Search_n_sized(_STD move(_UFirst), _Dist, _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
             } else {
                 auto _UResult = _Search_n_unsized(
@@ -2584,8 +2618,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Ty, class _Pr = ranges::equal_to, class _Pj = identity>
             requires indirectly_comparable<iterator_t<_Rng>, const _Ty*, _Pr, _Pj>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
-            _Rng&& _Range, const range_difference_t<_Rng> _Count, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count,
+            const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First = _RANGES begin(_Range);
 
             if (_Count <= 0) {
@@ -2599,8 +2633,8 @@ namespace ranges {
                     _Search_n_sized(_Get_unwrapped(_First), _Dist, _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
             } else {
-                auto _UResult = _Search_n_unsized(_Get_unwrapped(_First), _Uend(_Range), _Val,
-                    _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _UResult = _Search_n_unsized(
+                    _Get_unwrapped(_First), _Uend(_Range), _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
             }
         }
