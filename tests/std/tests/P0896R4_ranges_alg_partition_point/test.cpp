@@ -7,6 +7,7 @@
 #include <concepts>
 #include <numeric>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -43,12 +44,12 @@ struct partition_point_test {
         iota(ranges::begin(elements), ranges::end(elements), 0);
 
         // to avoid constant expression step limits
-        int bound = is_constant_evaluated() ? 10 : static_cast<int>(ranges::size(elements));
+        const size_t bound = elements[0] + (is_constant_evaluated() ? 10 : ranges::size(elements));
 
-        for (int i = 0; i < bound; ++i) {
-            const R range{span<const int>{elements, elements + i}};
-            for (int j = 0; j < i; ++j) {
-                assert(partition_point(range, [j](int x) { return x < j; }).peek() == elements + j);
+        for (size_t i = 0; i < bound; ++i) {
+            const R range{span{elements}.first(i)};
+            for (size_t j = 0; j < i; ++j) {
+                assert(partition_point(range, [j](int x) { return x < static_cast<int>(j); }).peek() == elements + j);
             }
         }
     }
