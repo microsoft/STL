@@ -618,8 +618,8 @@ namespace ranges {
         // clang-format on
     private:
         template <class _It, class _Se, class _Ty, class _Pj>
-        _NODISCARD constexpr iter_difference_t<_It> _Count_unchecked(
-            _It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) const {
+        _NODISCARD static constexpr iter_difference_t<_It> _Count_unchecked(
+            _It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
