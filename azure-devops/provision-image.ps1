@@ -353,6 +353,30 @@ Function InstallCuda {
   }
 }
 
+<#
+.SYNOPSIS
+Install or upgrade a pip package.
+
+.DESCRIPTION
+Installs or upgrades a pip package specified in $Package.
+
+.PARAMETER Package
+The name of the package to be installed or upgraded.
+#>
+Function PipInstall {
+  Param(
+    [String]$Package
+  )
+
+  try {
+    Write-Host 'Installing or upgrading $Package...'
+    python.exe -m pip install --upgrade $Package
+    Write-Host 'Done installing or upgrading $Package'
+  }
+  catch {
+    Write-Error "Failed to install or upgrade $Package"
+  }
+}
 
 Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
 
@@ -371,8 +395,13 @@ InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
+
 Write-Host 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+$Env:PATH="$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `
-  -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
+  -Value "$Env:PATH"
+
+PipInstall pip
+PipInstall psutil
