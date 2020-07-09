@@ -2668,7 +2668,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>());
+        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
         return begin() + _Off;
     }
 

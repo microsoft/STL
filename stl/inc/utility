@@ -31,7 +31,7 @@ _STD_BEGIN
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(max)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
-    // return larger of _Left and _Right using _Pred
+    // return larger of _Left and _Right
     return _Pred(_Left, _Right) ? _Right : _Left;
 }
 
@@ -55,7 +55,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorit
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Right, _Left))) /* strengthened */ {
-    // return smaller of _Left and _Right using _Pred
+    // return smaller of _Left and _Right
     return _Pred(_Right, _Left) ? _Right : _Left;
 }
 
@@ -522,7 +522,7 @@ template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(
     pair<_Ty1, _Ty2>& _Pr) noexcept { // get reference to element at _Idx in pair _Pr
     using _Rtype = tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&;
-    return _Pair_get<_Rtype>(_Pr, integral_constant<size_t, _Idx>());
+    return _Pair_get<_Rtype>(_Pr, integral_constant<size_t, _Idx>{});
 }
 
 template <class _Ty1, class _Ty2>
@@ -539,7 +539,7 @@ template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(
     const pair<_Ty1, _Ty2>& _Pr) noexcept { // get const reference to element at _Idx in pair _Pr
     using _Ctype = const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&;
-    return _Pair_get<_Ctype>(_Pr, integral_constant<size_t, _Idx>());
+    return _Pair_get<_Ctype>(_Pr, integral_constant<size_t, _Idx>{});
 }
 
 template <class _Ty1, class _Ty2>

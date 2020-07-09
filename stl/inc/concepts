@@ -199,7 +199,7 @@ concept _Boolean_testable_impl = convertible_to<_Ty, bool>;
 
 template <class _Ty>
 concept _Boolean_testable = _Boolean_testable_impl<_Ty>
-    && requires (_Ty&& __t) {
+    && requires(_Ty&& __t) {
         { !static_cast<_Ty&&>(__t) } -> _Boolean_testable_impl;
     };
 
