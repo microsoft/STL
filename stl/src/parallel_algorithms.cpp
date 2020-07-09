@@ -4,8 +4,8 @@
 // support for <execution>
 
 #include <internal_shared.h>
-#include <xatomic_wait.h>
 #include <thread>
+#include <xatomic_wait.h>
 
 namespace {
     unsigned char _Atomic_load_uchar(const volatile unsigned char* _Ptr) noexcept {

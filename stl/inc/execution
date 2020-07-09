@@ -18,8 +18,8 @@
 #include <mutex>
 #include <numeric>
 #include <queue>
-#include <vector>
 #include <thread>
+#include <vector>
 #include <xbit_ops.h>
 
 #pragma pack(push, _CRT_PACKING)
