@@ -15,7 +15,7 @@ struct instantiator {
     static constexpr void call() {
         using ranges::generate_n, ranges::equal, ranges::iterator_t;
 
-        const auto iota_gen = [count = 0]() mutable { return count++; };
+        const auto iota_gen = [val = 0]() mutable { return val++; };
 
         {
             int output[] = {13, 42, 1367};
