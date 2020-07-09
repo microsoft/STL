@@ -32,6 +32,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in_write<instantiator, int const, int>(), true));
-    test_in_write<instantiator, int const, int>();
+    STATIC_ASSERT((test_in_write<instantiator, const int, int>(), true));
+    test_in_write<instantiator, const int, int>();
 }
