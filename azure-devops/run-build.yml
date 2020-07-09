@@ -13,10 +13,6 @@ jobs:
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
-        python -m pip install --upgrade pip
-        pip install psutil
-      displayName: pip install psutil
-    - script: |
         if exist "$(tmpDir)" (
           rmdir /S /Q $(tmpDir)
         )
