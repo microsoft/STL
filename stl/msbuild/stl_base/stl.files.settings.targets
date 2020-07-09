@@ -12,8 +12,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
         <!-- Objs that exist only in libcpmt[d][01].lib. -->
         <BuildFiles Include="
-            $(CrtRoot)\github\stl\src\special_math.cpp;
+            $(CrtRoot)\github\stl\src\atomic_wait.cpp;
             $(CrtRoot)\github\stl\src\memory_resource.cpp;
+            $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
+            $(CrtRoot)\github\stl\src\special_math.cpp;
             $(CrtRoot)\github\stl\src\ulocale.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>

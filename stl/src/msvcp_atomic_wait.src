@@ -3,6 +3,7 @@
 
 ; atomic wait satellite DLL definition
 
+LIBRARY LIBRARYNAME
 
 EXPORTS
     __std_atomic_get_spin_count

@@ -458,11 +458,18 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     target_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     add_library(msvcp${D_SUFFIX}_atomic_wait SHARED)
+    set(_ATOMIC_WAIT_OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
+    string(TOUPPER "${_ATOMIC_WAIT_OUTPUT_NAME}" _ATOMIC_WAIT_OUTPUT_NAME_UPPER)
+    set(_ATOMIC_WAIT_DEF_NAME "${CMAKE_BINARY_DIR}/msvcp_atomic_wait${D_SUFFIX}.def")
+    # TRANSITION: It would be nice to teach CMake that this file is an input and that it must reconfigure if it changes
+    file(READ "${CMAKE_CURRENT_LIST_DIR}/src/msvcp_atomic_wait.src" _ATOMIC_WAIT_SRC_CONTENTS)
+    string(REPLACE "LIBRARYNAME" "${_ATOMIC_WAIT_OUTPUT_NAME_UPPER}" _ATOMIC_WAIT_DEF_CONTENTS "${_ATOMIC_WAIT_SRC_CONTENTS}")
+    file(WRITE "${_ATOMIC_WAIT_DEF_NAME}" "${_ATOMIC_WAIT_DEF_CONTENTS}")
     target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_wait${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
-    target_link_options(msvcp${D_SUFFIX}_atomic_wait PRIVATE "${THIS_CONFIG_LINK_OPTIONS}" "/DEF:${CMAKE_CURRENT_LIST_DIR}/src/msvcp_atomic_wait.def")
+    set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "${_ATOMIC_WAIT_OUTPUT_NAME}")
+    target_link_options(msvcp${D_SUFFIX}_atomic_wait PRIVATE "${THIS_CONFIG_LINK_OPTIONS}" "/DEF:${_ATOMIC_WAIT_DEF_NAME}")
 
     # msvcp140_2.dll (the special math satellite)
     add_library(msvcp_2${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_2})
