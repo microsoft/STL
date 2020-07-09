@@ -59,6 +59,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in_outerator<instantiator, P const, P>(), true));
-    test_in_outerator<instantiator, P const, P>();
+    STATIC_ASSERT((input_range_output_iterator_permutations<instantiator, P const, P>(), true));
+    input_range_output_iterator_permutations<instantiator, P const, P>();
 }

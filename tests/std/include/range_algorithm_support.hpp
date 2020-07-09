@@ -950,7 +950,7 @@ constexpr void test_contiguous() {
 }
 
 template <class Instantiator, class Element1, class Element2>
-constexpr void test_in_outerator() {
+constexpr void input_range_output_iterator_permutations() {
     with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
 }
 
