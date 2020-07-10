@@ -10,12 +10,16 @@
 
 using namespace std;
 
+constexpr auto iota_gen = [val = 0]() mutable { return val++; };
+
+// Validate dangling story
+STATIC_ASSERT(same_as<decltype(ranges::generate(borrowed<false>{}, iota_gen)), ranges::dangling>);
+STATIC_ASSERT(same_as<decltype(ranges::generate(borrowed<true>{}, iota_gen)), int*>);
+
 struct instantiator {
     template <ranges::output_range<const int&> Out>
     static constexpr void call() {
         using ranges::generate, ranges::iterator_t;
-
-        const auto iota_gen = [val = 0]() mutable { return val++; };
 
         {
             int output[] = {13, 42, 1367};
