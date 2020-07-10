@@ -9,26 +9,38 @@
 #include <type_traits>
 
 namespace detail {
+    struct bad_rng_pattern_sentinel {};
+
     template <typename UInt, int Width = std::numeric_limits<UInt>::digits>
-    class bad_rng_bit_generator { // generates bit patterns for bad_random_engine
+    class bad_rng_pattern_generator { // generates bit patterns for bad_random_engine
     public:
-        using result_type = UInt;
+        using difference_type   = std::ptrdiff_t;
+        using value_type        = UInt;
+        using pointer           = const UInt*;
+        using reference         = const UInt&;
+        using iterator_category = std::forward_iterator_tag;
+        using my_iter           = bad_rng_pattern_generator;
+        using my_sentinel       = bad_rng_pattern_sentinel;
 
-        static constexpr result_type top_bit    = result_type{1} << (Width - 1);
-        static constexpr result_type lower_bits = top_bit - 1;
-        static constexpr result_type mask_bits  = top_bit | lower_bits;
-        static constexpr int final_bit_count    = (Width - 1) / 2 + 1;
+        static constexpr value_type top_bit    = value_type{1} << (Width - 1);
+        static constexpr value_type lower_bits = top_bit - 1;
+        static constexpr value_type mask_bits  = top_bit | lower_bits;
+        static constexpr int final_bit_count   = (Width - 1) / 2 + 1;
 
-        constexpr result_type current_value() const noexcept { // gets the current pattern
+        constexpr reference operator*() const noexcept { // gets the current pattern
             return current_value_;
         }
 
-        constexpr bool generate_next() noexcept { // generates the next pattern, returns false if back to all 0's
+        constexpr pointer operator->() const noexcept {
+            return &current_value_;
+        }
+
+        constexpr my_iter& operator++() noexcept { // generates the next pattern
             current_value_ = (current_value_ & lower_bits) << 1 | (current_value_ & top_bit) >> (Width - 1);
 
             if (current_shift < Width - 1 && current_bit_count != 0 && current_bit_count != Width) {
                 ++current_shift;
-                return true;
+                return *this;
             }
 
             current_shift = 0;
@@ -36,30 +48,52 @@ namespace detail {
             if (current_bit_count < final_bit_count) { // n 1's -> n 0's
                 current_bit_count = Width - current_bit_count;
                 current_value_ ^= mask_bits;
-                return true;
             } else if (current_bit_count > final_bit_count) { // n 0's -> (n+1) 1's
                 current_bit_count = Width - current_bit_count + 1;
-                current_value_    = (current_value_ ^ mask_bits) << 1 | result_type{1};
-                return true;
+                current_value_    = (current_value_ ^ mask_bits) << 1 | value_type{1};
             } else { // all bit patterns have been generated, back to all 0's
                 current_bit_count = 0;
-                current_value_    = result_type{0};
-                return false;
+                current_value_    = value_type{0};
             }
+
+            return *this;
         }
 
-        friend constexpr bool operator==(const bad_rng_bit_generator& a, const bad_rng_bit_generator& b) noexcept {
-            return a.current_value() == b.current_value();
+        constexpr my_iter operator++(int) noexcept {
+            const my_iter old = *this;
+            ++*this;
+            return old;
         }
 
-        friend constexpr bool operator!=(const bad_rng_bit_generator& a, const bad_rng_bit_generator& b) noexcept {
+        friend constexpr bool operator==(const my_iter& a, const my_iter& b) noexcept {
+            return *a == *b;
+        }
+
+        friend constexpr bool operator!=(const my_iter& a, const my_iter& b) noexcept {
             return !(a == b);
         }
 
+        friend constexpr bool operator==(const my_iter& iter, const my_sentinel sentinel) noexcept {
+            (void) sentinel;
+            return *iter == 0;
+        }
+
+        friend constexpr bool operator!=(const my_iter& iter, const my_sentinel sentinel) noexcept {
+            return !(iter == sentinel);
+        }
+
+        friend constexpr bool operator==(const my_sentinel sentinel, const my_iter& iter) noexcept {
+            return iter == sentinel;
+        }
+
+        friend constexpr bool operator!=(const my_sentinel sentinel, const my_iter& iter) noexcept {
+            return !(iter == sentinel);
+        }
+
     private:
-        result_type current_value_ = 0;
-        int current_bit_count      = 0;
-        int current_shift          = 0;
+        value_type current_value_ = 0;
+        int current_bit_count     = 0;
+        int current_shift         = 0;
     };
 } // namespace detail
 
@@ -89,7 +123,7 @@ public:
     }
 
     constexpr result_type operator()() noexcept {
-        const result_type result = generators[current_dimension].current_value();
+        const result_type result = *generators[current_dimension];
 
         if (current_dimension < Dimension - 1) {
             ++current_dimension;
@@ -109,13 +143,14 @@ public:
     }
 
 private:
-    using generator = detail::bad_rng_bit_generator<UInt, Width>;
+    using generator = detail::bad_rng_pattern_generator<UInt, Width>;
+    using sentinel  = detail::bad_rng_pattern_sentinel;
 
     constexpr bool generate_next() noexcept { // generates the next subsequence, returns false if back to all 0's
-        if (limit_value != generator{}) {
+        if (limit_value != sentinel{}) {
             for (int i = 0; i < limit_dimension; ++i) {
                 if (generators[i] != limit_value) {
-                    generators[i].generate_next();
+                    ++generators[i];
                     return true;
                 } else {
                     generators[i] = generator{};
@@ -123,7 +158,7 @@ private:
             }
 
             for (int i = limit_dimension + 1; i < Dimension; ++i) {
-                generators[i].generate_next();
+                ++generators[i];
                 if (generators[i] != limit_value) {
                     return true;
                 } else {
@@ -141,10 +176,9 @@ private:
             }
         }
 
-        limit_dimension   = 0;
-        const bool result = limit_value.generate_next();
-        generators[0]     = limit_value;
-        return result;
+        limit_dimension = 0;
+        generators[0]   = ++limit_value;
+        return limit_value != sentinel{};
     }
 
     generator generators[Dimension] = {};
