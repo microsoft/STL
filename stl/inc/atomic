@@ -799,7 +799,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
 #if defined(_M_IX86) && defined(__clang__) // TRANSITION, LLVM-46595
-    TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
+    _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with (effectively) sequential consistency
         _TVal _Temp{load()};
         while (!compare_exchange_strong(_Temp, _Value, _Order)) { // keep trying
