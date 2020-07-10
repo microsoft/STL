@@ -17,7 +17,7 @@ struct X2 {
     }
 };
 
-#pragma pack(push,1)
+#pragma pack(push, 1)
 struct X3 {
     char x : 4;
     char : 2;
@@ -33,7 +33,7 @@ struct X3 {
 #pragma pack(pop)
 
 #pragma warning(push)
-#pragma warning(disable:4324) // '%s': structure was padded due to alignment specifier
+#pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
 struct alignas(4) X4 {
     char x;
 
@@ -78,7 +78,7 @@ struct X20 {
 };
 
 
-template<class X, std::size_t S>
+template <class X, std::size_t S>
 void test() {
     static_assert(sizeof(X) == S, "Unexpected size");
     X x2;
@@ -117,16 +117,15 @@ void test() {
     for (;;) {
         X xw;
         memcpy(&xw, &x2, sizeof(x));
-        if (v.compare_exchange_weak(xw, x3))
+        if (v.compare_exchange_weak(xw, x3)) {
             break;
+        }
     }
     assert(v.load().x == 6);
 }
 
 
-
-int main()
-{
+int main() {
     test<X1, 1>();
     test<X2, 2>();
     test<X3, 3>();
