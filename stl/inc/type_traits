@@ -425,12 +425,60 @@ _INLINE_VAR constexpr bool is_object_v = !is_function_v<_Ty> && !is_reference_v<
 template <class _Ty>
 struct is_object : bool_constant<is_object_v<_Ty>> {};
 
-// STRUCT TEMPLATE is_member_function_pointer
-template <class>
-_INLINE_VAR constexpr bool is_member_function_pointer_v = false;
+// STRUCT TEMPLATE _Arg_types
+template <class... _Types>
+struct _Arg_types {}; // provide argument_type, etc. when sizeof...(_Types) is 1 or 2
+
+template <class _Ty1>
+struct _Arg_types<_Ty1> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _ARGUMENT_TYPE_NAME;
+};
 
 template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool is_member_function_pointer_v<_Ty1 _Ty2::*> = is_function_v<_Ty1>;
+struct _Arg_types<_Ty1, _Ty2> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _FIRST_ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 _SECOND_ARGUMENT_TYPE_NAME;
+};
+
+// STRUCT TEMPLATE is_member_function_pointer
+template <class _Ty>
+struct _Is_memfunptr { // base class for member function pointer predicates
+    using _Bool_type = false_type; // NB: members are user-visible via _Weak_types
+};
+
+#define _IS_MEMFUNPTR(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                            \
+    template <class _Ret, class _Arg0, class... _Types>                                   \
+    struct _Is_memfunptr<_Ret (CALL_OPT _Arg0::*)(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> \
+        : _Arg_types<CV_OPT _Arg0*, _Types...> {                                          \
+        using _Bool_type = true_type;                                                     \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                 \
+        using _Class_type = _Arg0;                                                        \
+        using _Guide_type = enable_if<!is_same_v<int REF_OPT, int&&>, _Ret(_Types...)>;   \
+    };
+
+_MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
+#undef _IS_MEMFUNPTR
+
+#define _IS_MEMFUNPTR_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                          \
+    template <class _Ret, class _Arg0, class... _Types>                      \
+    struct _Is_memfunptr<_Ret (_Arg0::*)(_Types..., ...)                     \
+            CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
+        using _Bool_type = true_type;                                        \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;    \
+        using _Class_type = _Arg0;                                           \
+        using _Guide_type = enable_if<false>;                                \
+    };
+
+_CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
+#undef _IS_MEMFUNPTR_ELLIPSIS
+
+#ifdef __clang__
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
+#else // ^^^ Clang ^^^ / vvv Other vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<_Ty>::_Bool_type::value;
+#endif // ^^^ Other ^^^
 
 template <class _Ty>
 struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<_Ty>> {};
@@ -1410,48 +1458,6 @@ struct _Is_member_object_pointer<_Ty1 _Ty2::*, false> {
     using _Class_type           = _Ty2;
 };
 
-// STRUCT TEMPLATE _Arg_types
-template <class... _Types>
-struct _Arg_types {}; // provide argument_type, etc. (sometimes)
-
-template <class _Ty1>
-struct _Arg_types<_Ty1> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _ARGUMENT_TYPE_NAME;
-};
-
-template <class _Ty1, class _Ty2>
-struct _Arg_types<_Ty1, _Ty2> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty1 _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty2 _SECOND_ARGUMENT_TYPE_NAME;
-};
-
-template <class _Ty>
-struct _Memfunptr_args {}; // base class for member function pointer predicates
-
-#define _MEMFUNPTR_ARGS(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                            \
-    template <class _Ret, class _Arg0, class... _Types>                                     \
-    struct _Memfunptr_args<_Ret (CALL_OPT _Arg0::*)(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> \
-        : _Arg_types<CV_OPT _Arg0*, _Types...> {                                            \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                         \
-        using _Class_type = _Arg0;                                                          \
-        using _Guide_type = enable_if<!is_same_v<int REF_OPT, int&&>, _Ret(_Types...)>;     \
-    };
-
-_MEMBER_CALL_CV_REF_NOEXCEPT(_MEMFUNPTR_ARGS)
-#undef _MEMFUNPTR_ARGS
-
-#define _MEMFUNPTR_ARGS_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                        \
-    template <class _Ret, class _Arg0, class... _Types>                      \
-    struct _Memfunptr_args<_Ret (_Arg0::*)(_Types..., ...)                   \
-            CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;          \
-        using _Class_type = _Arg0;                                           \
-        using _Guide_type = enable_if<false>;                                \
-    };
-
-_CLASS_DEFINE_CV_REF_NOEXCEPT(_MEMFUNPTR_ARGS_ELLIPSIS)
-#undef _MEMFUNPTR_ARGS_ELLIPSIS
-
 template <class _Ty>
 class reference_wrapper;
 
@@ -1789,14 +1795,14 @@ inline constexpr bool is_nothrow_invocable_r_v =
     _Select_invoke_traits<_Callable, _Args...>::template _Is_nothrow_invocable_r<_Rx>::value;
 #endif // _HAS_CXX17
 
-// STRUCT TEMPLATE _Weak_types
+// ALIAS TEMPLATE _Weak_types
 template <class _Ty>
 struct _Function_args {}; // determine whether _Ty is a function
 
 #define _FUNCTION_ARGS(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT)                                           \
     template <class _Ret, class... _Types>                                                                \
     struct _Function_args<_Ret CALL_OPT(_Types...) CV_OPT REF_OPT NOEXCEPT_OPT> : _Arg_types<_Types...> { \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                       \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                                 \
     };
 
 _NON_MEMBER_CALL_CV_REF_NOEXCEPT(_FUNCTION_ARGS)
@@ -1805,7 +1811,7 @@ _NON_MEMBER_CALL_CV_REF_NOEXCEPT(_FUNCTION_ARGS)
 #define _FUNCTION_ARGS_ELLIPSIS(CV_REF_NOEXCEPT_OPT)                                                            \
     template <class _Ret, class... _Types>                                                                      \
     struct _Function_args<_Ret(_Types..., ...) CV_REF_NOEXCEPT_OPT> { /* no calling conventions for ellipsis */ \
-        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret result_type;                                             \
+        _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;                                       \
     };
 
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_FUNCTION_ARGS_ELLIPSIS)
@@ -1826,8 +1832,8 @@ struct _Weak_argument_type : _Weak_result_type<_Ty> {}; // default definition
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
-struct _Weak_argument_type<_Ty, void_t<typename _Ty::argument_type>>
-    : _Weak_result_type<_Ty> { // defined if _Ty::argument_type exists
+struct _Weak_argument_type<_Ty, void_t<typename _Ty::argument_type>> : _Weak_result_type<_Ty> {
+    // defined if _Ty::argument_type exists
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef typename _Ty::argument_type _ARGUMENT_TYPE_NAME;
 };
 _STL_RESTORE_DEPRECATED_WARNING
@@ -1846,12 +1852,8 @@ struct _Weak_binary_args<_Ty, void_t<typename _Ty::first_argument_type,
 _STL_RESTORE_DEPRECATED_WARNING
 
 template <class _Ty>
-struct _Weak_types { // provide nested types (sometimes)
-    using _F_or_pf_args = _Function_args<remove_pointer_t<_Ty>>;
-    using _Pmf_args     = _Memfunptr_args<remove_cv_t<_Ty>>;
-    using type          = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _F_or_pf_args,
-        conditional_t<is_member_function_pointer_v<_Ty>, _Pmf_args, _Weak_binary_args<_Ty>>>;
-};
+using _Weak_types = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _Function_args<remove_pointer_t<_Ty>>,
+    conditional_t<is_member_function_pointer_v<_Ty>, _Is_memfunptr<remove_cv_t<_Ty>>, _Weak_binary_args<_Ty>>>;
 
 // CLASS TEMPLATE reference_wrapper
 template <class _Ty>
@@ -1868,7 +1870,7 @@ struct _Refwrap_has_ctor_from<_Ty, _Uty, void_t<decltype(_Refwrap_ctor_fun<_Ty>(
 template <class _Ty>
 class reference_wrapper
 #if !_HAS_CXX20
-    : public _Weak_types<_Ty>::type
+    : public _Weak_types<_Ty>
 #endif // !_HAS_CXX20
 {
 public:
