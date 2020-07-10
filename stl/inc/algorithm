@@ -3219,7 +3219,7 @@ namespace ranges {
         template <class _It, class _Se, class _Ty1, class _Ty2, class _Out, class _Pj>
         _NODISCARD static constexpr replace_copy_result<_It, _Out> _Replace_copy_unchecked(
             _It _First, const _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj) {
-            // copy [_First, _Last) to _Out while replacing projected _Oldval with _Newval
+            // copy [_First, _Last) to _Result while replacing projected _Oldval with _Newval
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(output_iterator<_Out, const _Ty2&>);
@@ -3316,7 +3316,7 @@ namespace ranges {
         template <class _It, class _Se, class _Ty, class _Out, class _Pj, class _Pr>
         _NODISCARD static constexpr replace_copy_if_result<_It, _Out> _Replace_copy_if_unchecked(
             _It _First, const _Se _Last, _Out _Result, _Pr _Pred, const _Ty& _Newval, _Pj _Proj) {
-            // copy [_First, _Last) to _Out while replacing _Oldval with _Newval if projected _Oldval fulfuills _Pred
+            // copy [_First, _Last) to _Result while replacing _Oldval with _Newval if projected _Oldval fulfills _Pred
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(output_iterator<_Out, const _Ty&>);
