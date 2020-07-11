@@ -606,26 +606,33 @@ namespace ranges {
         _NODISCARD constexpr iter_difference_t<_It> operator()(
             _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
+            return _Count_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val, _Pass_fn(_Proj));
+        }
 
-            auto _UFirst                  = _Get_unwrapped(_STD move(_First));
-            const auto _ULast             = _Get_unwrapped(_STD move(_Last));
+        template <input_range _Rng, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+            return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Ty, class _Pj>
+        _NODISCARD static constexpr iter_difference_t<_It> _Count_unchecked(
+            _It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
+
             iter_difference_t<_It> _Count = 0;
-
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD invoke(_Proj, *_UFirst) == _Val) {
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Proj, *_First) == _Val) {
                     ++_Count;
                 }
             }
 
             return _Count;
         }
-
-        template <input_range _Rng, class _Ty, class _Pj = identity>
-            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Val, _Pass_fn(_Proj));
-        }
-        // clang-format on
     };
 
     inline constexpr _Count_fn count{_Not_quite_object::_Construct_tag{}};
