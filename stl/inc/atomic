@@ -354,18 +354,18 @@ struct _Atomic_storage {
         _Check_memory_order(_Order);
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if constexpr (!has_unique_object_representations_v<_Ty>) {
             __builtin_zero_non_value_bits(_Expected_ptr);
         }
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         bool _Result;
         _Lock();
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if constexpr (!has_unique_object_representations_v<_Ty>) {
             __builtin_zero_non_value_bits(_Storage_ptr);
         }
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
             _CSTD memcpy(_Storage_ptr, _STD addressof(_Desired), sizeof(_Ty));
             _Result = true;
@@ -493,15 +493,15 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected); // read before atomic operation
         char _Prev_bytes;
 
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if constexpr (has_unique_object_representations_v<_Ty>) {
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8,
                 _Atomic_address_as<char>(_Storage), _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         } else {
             _Ty _Mask;
             _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
@@ -521,7 +521,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
             }
         }
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
 
         reinterpret_cast<char&>(_Expected) = _Prev_bytes;
         return false;
@@ -599,15 +599,15 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
         short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected); // read before atomic operation
         short _Prev_bytes;
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if constexpr (has_unique_object_representations_v<_Ty>) {
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16,
                 _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         } else {
             _Ty _Mask;
             _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
@@ -627,7 +627,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
             }
         }
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
@@ -703,15 +703,15 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
         long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if constexpr (has_unique_object_representations_v<_Ty>) {
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange,
                 _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         } else {
             _Ty _Mask;
             _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
@@ -731,7 +731,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
             }
         }
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
@@ -835,15 +835,15 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
         long long _Prev_bytes;
 
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         if constexpr (has_unique_object_representations_v<_Ty>) {
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64,
                 _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__)
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
         } else {
             _Ty _Mask;
             _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
@@ -864,7 +864,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
             }
         }
-#endif // _HAS_CXX20 && !defined(__clang__)
+#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
