@@ -25,22 +25,34 @@ struct instantiator {
         { // Validate iterator + sentinel overload
             P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
             Read wrapped_input{input};
+            size_t comparisonsCounter = 0;
+            auto projection           = [&comparisonsCounter](const P& data) {
+                ++comparisonsCounter;
+                return data.second;
+            };
 
-            auto result = remove(wrapped_input.begin(), wrapped_input.end(), 47, get_second);
+            auto result = remove(wrapped_input.begin(), wrapped_input.end(), 47, projection);
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
             assert(ranges::equal(expected, span{input}.first<3>()));
+            assert(comparisonsCounter == ranges::size(input));
         }
         { // Validate range overload
             P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
             Read wrapped_input{input};
+            size_t comparisonsCounter = 0;
+            auto projection           = [&comparisonsCounter](const P& data) {
+                ++comparisonsCounter;
+                return data.second;
+            };
 
-            auto result = remove(wrapped_input, 47, get_second);
+            auto result = remove(wrapped_input, 47, projection);
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
             assert(ranges::equal(expected, span{input}.first<3>()));
+            assert(comparisonsCounter == ranges::size(input));
         }
     }
 };
