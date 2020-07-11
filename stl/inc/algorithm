@@ -539,7 +539,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
 
 template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, const _FwdIt _Last) { // find first matching successor
-    return _STD adjacent_find(_First, _Last, equal_to<>());
+    return _STD adjacent_find(_First, _Last, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -549,7 +549,7 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept /* terminates */ {
     // find first matching successor
-    return _STD adjacent_find(_STD forward<_ExPo>(_Exec), _First, _Last, equal_to<>());
+    return _STD adjacent_find(_STD forward<_ExPo>(_Exec), _First, _Last, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -733,7 +733,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
     // return [_First1, _Last1)/[_First2, ...) mismatch
-    return _STD mismatch(_First1, _Last1, _First2, equal_to<>());
+    return _STD mismatch(_First1, _Last1, _First2, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -743,7 +743,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     // return [_First1, _Last1)/[_First2, ...) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to<>());
+    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -825,7 +825,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
-    return _STD mismatch(_First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD mismatch(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -835,7 +835,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -2204,7 +2204,7 @@ template <class _FwdItHaystack, class _FwdItPat>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(
     const _FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2, const _FwdItPat _Last2) {
     // find first [_First2, _Last2) match
-    return _STD search(_First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD search(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -2212,7 +2212,7 @@ template <class _ExPo, class _FwdItHaystack, class _FwdItPat, _Enable_if_executi
 _NODISCARD _FwdItHaystack search(_ExPo&& _Exec, const _FwdItHaystack _First1, const _FwdItHaystack _Last1,
     const _FwdItPat _First2, const _FwdItPat _Last2) noexcept /* terminates */ {
     // find first [_First2, _Last2) match
-    return _STD search(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD search(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -2538,14 +2538,14 @@ _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, _FwdIt _Last, con
 template <class _FwdIt, class _Diff, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt search_n(const _FwdIt _First, const _FwdIt _Last, const _Diff _Count, const _Ty& _Val) {
     // find first _Count * _Val match
-    return _STD search_n(_First, _Last, _Count, _Val, equal_to<>());
+    return _STD search_n(_First, _Last, _Count, _Val, equal_to<>{});
 }
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Diff _Count,
     const _Ty& _Val) noexcept /* terminates */ { // find first _Count * _Val match
-    return _STD search_n(_STD forward<_ExPo>(_Exec), _First, _Last, _Count, _Val, equal_to<>());
+    return _STD search_n(_STD forward<_ExPo>(_Exec), _First, _Last, _Count, _Val, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -2889,7 +2889,7 @@ template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     _FwdIt1 const _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2) {
     // find last [_First2, _Last2) match
-    return _STD find_end(_First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD find_end(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -2900,7 +2900,7 @@ _NODISCARD _FwdIt1 find_end(
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept
 /* terminates */ { // find last [_First2, _Last2) match
-    return _STD find_end(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD find_end(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -3097,7 +3097,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
 template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) { // look for one of [_First2, _Last2) that matches element
-    return _STD find_first_of(_First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD find_first_of(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -3108,7 +3108,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) noexcept /* terminates */ { // look for one of [_First2, _Last2) that matches element
-    return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to<>());
+    return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
 
@@ -3721,7 +3721,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
 
 template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last) { // remove each matching previous
-    return _STD unique(_First, _Last, equal_to<>());
+    return _STD unique(_First, _Last, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -3888,7 +3888,7 @@ _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy
 
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy compressing pairs that match
-    return _STD unique_copy(_First, _Last, _Dest, equal_to<>());
+    return _STD unique_copy(_First, _Last, _Dest, equal_to<>{});
 }
 
 #if _HAS_CXX17
@@ -4648,7 +4648,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 template <class _RanIt>
 _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
     // push *(_Last - 1) onto heap at [_First, _Last - 1)
-    _STD push_heap(_First, _Last, less<>());
+    _STD push_heap(_First, _Last, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -4786,7 +4786,7 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 template <class _RanIt>
 _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
     // pop *_First to *(_Last - 1) and reheap
-    _STD pop_heap(_First, _Last, less<>());
+    _STD pop_heap(_First, _Last, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -4913,7 +4913,7 @@ _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // make [_
 
 template <class _RanIt>
 _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap
-    _STD make_heap(_First, _Last, less<>());
+    _STD make_heap(_First, _Last, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -5005,12 +5005,12 @@ _NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
 template <class _RanIt>
 _NODISCARD _CONSTEXPR20 _RanIt is_heap_until(_RanIt _First, _RanIt _Last) {
     // find extent of range that is a heap ordered by operator<
-    return _STD is_heap_until(_First, _Last, less<>());
+    return _STD is_heap_until(_First, _Last, less<>{});
 }
 
 template <class _RanIt>
 _NODISCARD _CONSTEXPR20 bool is_heap(_RanIt _First, _RanIt _Last) { // test if range is a heap ordered by operator<
-    return _STD is_heap(_First, _Last, less<>());
+    return _STD is_heap(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -5146,7 +5146,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order h
 
 template <class _RanIt>
 _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repeatedly popping
-    _STD sort_heap(_First, _Last, less<>());
+    _STD sort_heap(_First, _Last, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -5280,7 +5280,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find first element that _Val is before
-    return _STD upper_bound(_First, _Last, _Val, less<>());
+    return _STD upper_bound(_First, _Last, _Val, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -5382,7 +5382,7 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find range equivalent to _Val
-    return _STD equal_range(_First, _Last, _Val, less<>());
+    return _STD equal_range(_First, _Last, _Val, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -5463,7 +5463,7 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // test if _Val equivalent to some element
-    return _STD binary_search(_First, _Last, _Val, less<>());
+    return _STD binary_search(_First, _Last, _Val, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -5564,7 +5564,7 @@ _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt merge(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // copy merging ranges
-    return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>());
+    return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
@@ -5836,7 +5836,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
 template <class _BidIt>
 void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last) {
     // merge [_First, _Mid) with [_Mid, _Last)
-    _STD inplace_merge(_First, _Mid, _Last, less<>());
+    _STD inplace_merge(_First, _Mid, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6021,7 +6021,7 @@ _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // 
 
 template <class _RanIt>
 _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last) { // order [_First, _Last)
-    _STD sort(_First, _Last, less<>());
+    _STD sort(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6031,7 +6031,7 @@ void sort(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept; // te
 template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* terminates */ {
     // order [_First, _Last)
-    _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less<>{});
+    _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 #endif // _HAS_CXX17
 
@@ -6218,14 +6218,14 @@ void stable_sort(_ExPo&& _Exec, const _BidIt _First, const _BidIt _Last, _Pr _Pr
 
 template <class _BidIt>
 void stable_sort(const _BidIt _First, const _BidIt _Last) { // sort preserving order of equivalents
-    _STD stable_sort(_First, _Last, less<>());
+    _STD stable_sort(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
 template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
     // sort preserving order of equivalents
-    _STD stable_sort(_STD forward<_ExPo>(_Exec), _First, _Last, less<>());
+    _STD stable_sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 #endif // _HAS_CXX17
 
@@ -6257,7 +6257,7 @@ _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pr
 template <class _RanIt>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last) {
     // order [_First, _Last) up to _Mid
-    _STD partial_sort(_First, _Mid, _Last, less<>());
+    _STD partial_sort(_First, _Mid, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6312,7 +6312,7 @@ _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First
 template <class _InIt, class _RanIt>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2) {
     // copy [_First1, _Last1) into [_First2, _Last2)
-    return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, less<>());
+    return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6365,7 +6365,7 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
 
 template <class _RanIt>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last) { // order Nth element
-    _STD nth_element(_First, _Nth, _Last, less<>());
+    _STD nth_element(_First, _Nth, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6412,7 +6412,7 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
 template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
-    return _STD includes(_First1, _Last1, _First2, _Last2, less<>());
+    return _STD includes(_First1, _Last1, _First2, _Last2, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6473,7 +6473,7 @@ _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _In
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
-    return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>());
+    return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6534,7 +6534,7 @@ _CONSTEXPR20 _OutIt set_intersection(
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_intersection(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // AND sets [_First1, _Last1) and [_First2, _Last2)
-    return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>());
+    return _STD set_intersection(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6585,7 +6585,7 @@ _CONSTEXPR20 _OutIt set_difference(
 template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_difference(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // take set [_First2, _Last2) from [_First1, _Last1)
-    return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
+    return _STD set_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6639,7 +6639,7 @@ template <class _InIt1, class _InIt2, class _OutIt>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest) {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
-    return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>());
+    return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6690,7 +6690,7 @@ _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 
 template <class _FwdIt>
 _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last) { // find largest element
-    return _STD max_element(_First, _Last, less<>());
+    return _STD max_element(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6783,7 +6783,7 @@ _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 
 template <class _FwdIt>
 _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last) { // find smallest element
-    return _STD min_element(_First, _Last, less<>());
+    return _STD min_element(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -6904,7 +6904,7 @@ _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _
 template <class _FwdIt>
 _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _Last) {
     // find smallest and largest elements
-    return _STD minmax_element(_First, _Last, less<>());
+    return _STD minmax_element(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
@@ -7025,7 +7025,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
-    return (_STD max)(_Ilist, less<>());
+    return (_STD max)(_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -7105,7 +7105,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
-    return (_STD min)(_Ilist, less<>());
+    return (_STD min)(_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -7200,7 +7200,7 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const
 template <class _Ty>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
     // return {leftmost/smallest, rightmost/largest}
-    return _STD minmax(_Ilist, less<>());
+    return _STD minmax(_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -7334,7 +7334,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 template <class _BidIt>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
     // permute and test for pure ascending
-    return _STD next_permutation(_First, _Last, less<>());
+    return _STD next_permutation(_First, _Last, less<>{});
 }
 
 // FUNCTION TEMPLATE prev_permutation
@@ -7372,7 +7372,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
 template <class _BidIt>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
     // reverse permute and test for pure descending
-    return _STD prev_permutation(_First, _Last, less<>());
+    return _STD prev_permutation(_First, _Last, less<>{});
 }
 
 // FUNCTION TEMPLATES is_sorted AND is_sorted_until
@@ -7407,12 +7407,12 @@ _NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
 template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(_FwdIt _First, _FwdIt _Last) {
     // find extent of range that is ordered by operator<
-    return _STD is_sorted_until(_First, _Last, less<>());
+    return _STD is_sorted_until(_First, _Last, less<>{});
 }
 
 template <class _FwdIt>
 _NODISCARD _CONSTEXPR20 bool is_sorted(_FwdIt _First, _FwdIt _Last) { // test if range is ordered by operator<
-    return _STD is_sorted(_First, _Last, less<>());
+    return _STD is_sorted(_First, _Last, less<>{});
 }
 
 #if _HAS_CXX17
