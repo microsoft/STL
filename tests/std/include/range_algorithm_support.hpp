@@ -627,7 +627,7 @@ template <class I1, class I2>
 using BinaryPredicateFor = boolish (*)(std::iter_common_reference_t<I1>, std::iter_common_reference_t<I2>);
 
 template <class Continuation, class Element>
-struct with_writable_iterators {
+struct with_output_iterators {
     template <class... Args>
     static constexpr void call() {
         using namespace test;
@@ -638,10 +638,6 @@ struct with_writable_iterators {
             iterator<output, Element, CanDifference::no, CanCompare::no, ProxyRef::no>>();
         Continuation::template call<Args...,
             iterator<output, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
-        Continuation::template call<Args...,
-            iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::no>>();
-        Continuation::template call<Args...,
-            iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
         // For forward and bidi, Eq is necessarily true but Diff and Proxy may vary.
         Continuation::template call<Args...,
             iterator<fwd, Element, CanDifference::no, CanCompare::yes, ProxyRef::no>>();
@@ -667,6 +663,23 @@ struct with_writable_iterators {
             iterator<random, Element, CanDifference::yes, CanCompare::yes, ProxyRef::yes>>();
         // Contiguous iterators are totally locked down.
         Continuation::template call<Args..., iterator<contiguous, Element>>();
+    }
+};
+
+template <class Continuation, class Element>
+struct with_writable_iterators {
+    template <class... Args>
+    static constexpr void call() {
+        using namespace test;
+        using test::iterator;
+
+        // Diff and Eq are not significant for "lone" single-pass iterators, so we can ignore them here.
+        Continuation::template call<Args...,
+            iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
+
+        with_output_iterators<Continuation, Element>::template call<Args...>();
     }
 };
 
@@ -968,6 +981,11 @@ constexpr void test_random() {
 template <class Instantiator, class Element>
 constexpr void test_contiguous() {
     with_contiguous_ranges<Instantiator, Element>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void input_range_output_iterator_permutations() {
+    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element1, class Element2>

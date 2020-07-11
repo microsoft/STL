@@ -3286,6 +3286,64 @@ void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& 
     const _Ty& _Newval) noexcept; // terminates
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::replace
+    class _Replace_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty1, class _Ty2, class _Pj = identity>
+            requires indirectly_writable<_It, const _Ty2&>
+                  && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
+        constexpr _It operator()(
+            _It _First, _Se _Last, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Oldval, _Newval, _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Ty1, class _Ty2, class _Pj = identity>
+            requires indirectly_writable<iterator_t<_Rng>, const _Ty2&>
+                  && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
+        constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            auto _First = _RANGES begin(_Range);
+            auto _UResult = _Replace_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Oldval, _Newval, _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Ty1, class _Ty2, class _Pj>
+        _NODISCARD static constexpr _It _Replace_unchecked(
+            _It _First, const _Se _Last, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj) {
+            // replace projected _Oldval with _Newval in [_First, _Last)
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty2&>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Proj, *_First) == _Oldval) {
+                    *_First = _Newval;
+                }
+            }
+
+            return _First;
+        }
+    };
+
+    inline constexpr _Replace_fn replace{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE replace_if
 template <class _FwdIt, class _Pr, class _Ty>
 _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
@@ -3394,6 +3452,72 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE replace_copy_result
+    template <class _In, class _Out>
+    using replace_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::replace_copy
+    class _Replace_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out,
+            class _Pj = identity>
+            requires indirectly_copyable<_It, _Out>
+                  && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
+        constexpr replace_copy_result<_It, _Out> operator()(
+            _It _First, _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
+                _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
+        }
+
+        template <input_range _Rng, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out, class _Pj = identity>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+                  && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
+        constexpr replace_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Replace_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Ty1, class _Ty2, class _Out, class _Pj>
+        _NODISCARD static constexpr replace_copy_result<_It, _Out> _Replace_copy_unchecked(
+            _It _First, const _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj) {
+            // copy [_First, _Last) to _Result while replacing projected _Oldval with _Newval
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(output_iterator<_Out, const _Ty2&>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<equal_to, projected<_It, _Pj>, const _Ty1*>);
+
+            for (; _First != _Last; ++_First, (void) ++_Result) {
+                if (_STD invoke(_Proj, *_First) == _Oldval) {
+                    *_Result = _Newval;
+                } else {
+                    *_Result = *_First;
+                }
+            }
+
+            return {_STD move(_First), _STD move(_Result)};
+        }
+    };
+
+    inline constexpr _Replace_copy_fn replace_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE replace_copy_if
 template <class _InIt, class _OutIt, class _Pr, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
@@ -3428,6 +3552,67 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // ALIAS TEMPLATE replace_copy_if_result
+    template <class _In, class _Out>
+    using replace_copy_if_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::replace_copy_if
+    class _Replace_copy_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, output_iterator<const _Ty&> _Out,
+            class _Pj = identity, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+            requires indirectly_copyable<_It, _Out>
+        constexpr replace_copy_if_result<_It, _Out> operator()(
+            _It _First, _Se _Last, _Out _Result, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_copy_if_unchecked(_Get_unwrapped(_STD move(_First)),
+                _Get_unwrapped(_STD move(_Last)), _STD move(_Result), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
+        }
+
+        template <input_range _Rng, class _Ty, output_iterator<const _Ty&> _Out, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr replace_copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, _Out _Result, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Replace_copy_if_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                _STD move(_Result), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Ty, class _Out, class _Pj, class _Pr>
+        _NODISCARD static constexpr replace_copy_if_result<_It, _Out> _Replace_copy_if_unchecked(
+            _It _First, const _Se _Last, _Out _Result, _Pr _Pred, const _Ty& _Newval, _Pj _Proj) {
+            // copy [_First, _Last) to _Result while replacing _Oldval with _Newval if projected _Oldval fulfills _Pred
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(output_iterator<_Out, const _Ty&>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First, (void) ++_Result) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    *_Result = _Newval;
+                } else {
+                    *_Result = *_First;
+                }
+            }
+
+            return {_STD move(_First), _STD move(_Result)};
+        }
+    };
+
+    inline constexpr _Replace_copy_if_fn replace_copy_if{_Not_quite_object::_Construct_tag{}};
+
     // VARIABLE ranges::fill
     class _Fill_fn : private _Not_quite_object {
     public:
