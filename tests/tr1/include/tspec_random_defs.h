@@ -336,7 +336,7 @@ typedef double piecewise_linear_distribution_type;
 piecewise_linear_distribution<piecewise_linear_distribution_type> piecewise_linear_distribution_dist(
     8, 50.0, 100.0, _Random_test_fun_1);
 int piecewise_linear_distribution_smaller_ok = 0;
-int piecewise_linear_distribution_larger_ok = 0;
+int piecewise_linear_distribution_larger_ok  = 0;
 
 One_arg piecewise_linear_distribution_vals[] = {
     {FLIT(0.0), FLIT(0.0), FLIT(0.0)},
@@ -352,7 +352,7 @@ One_arg piecewise_linear_distribution_vals[] = {
 };
 
 int _Random_test_fun_2(double x) {
-    return (int)x;
+    return (int) x;
 }
 
 typedef unsigned int discrete_distribution_type;
