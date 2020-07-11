@@ -4824,7 +4824,8 @@ public:
         }
 
         _NODISCARD double _Piece_probability(const size_t _Idx) const {
-            return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1]) * (_Bvec[_Idx + 1] - _Bvec[_Idx]);
+            return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1])
+                   * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
         }
 
         void _Init(bool _Renorm = true) { // initialize
