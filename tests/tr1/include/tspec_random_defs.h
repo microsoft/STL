@@ -309,13 +309,13 @@ One_arg weibull_distribution_vals[] = {
     {FLIT(99.0), FLIT(0.0), FLIT(0.0)},
 };
 
-int _Random_test_fun(double x) {
-    return (int) x;
+int _Random_test_fun_1(double x) {
+    return (int) x - 50;
 }
 
 typedef double piecewise_constant_distribution_type;
 piecewise_constant_distribution<piecewise_constant_distribution_type> piecewise_constant_distribution_dist(
-    100, 50.0, 100.0, _Random_test_fun);
+    8, 50.0, 100.0, _Random_test_fun_1);
 int piecewise_constant_distribution_smaller_ok = 0;
 int piecewise_constant_distribution_larger_ok  = 0;
 
@@ -325,15 +325,38 @@ One_arg piecewise_constant_distribution_vals[] = {
     {FLIT(22.0), FLIT(0.0), FLIT(0.0)},
     {FLIT(33.0), FLIT(0.0), FLIT(0.0)},
     {FLIT(44.0), FLIT(0.0), FLIT(0.0)},
-    {FLIT(55.0), FLIT(0.014765100671140939452), FLIT(0.0)},
-    {FLIT(66.0), FLIT(0.017718120805369125953), FLIT(0.0)},
-    {FLIT(77.0), FLIT(0.02067114093959731419), FLIT(0.0)},
-    {FLIT(88.0), FLIT(0.023624161073825502428), FLIT(0.0)},
-    {FLIT(99.0), FLIT(0.026577181208053690665), FLIT(0.0)},
+    {FLIT(55.0), FLIT(0.0024489795918367346), FLIT(0.0)},
+    {FLIT(66.0), FLIT(0.012244897959183673), FLIT(0.0)},
+    {FLIT(77.0), FLIT(0.022857142857142857), FLIT(0.0)},
+    {FLIT(88.0), FLIT(0.0326530612244898), FLIT(0.0)},
+    {FLIT(99.0), FLIT(0.037551020408163265), FLIT(0.0)},
 };
 
+typedef double piecewise_linear_distribution_type;
+piecewise_linear_distribution<piecewise_linear_distribution_type> piecewise_linear_distribution_dist(
+    8, 50.0, 100.0, _Random_test_fun_1);
+int piecewise_linear_distribution_smaller_ok = 0;
+int piecewise_linear_distribution_larger_ok = 0;
+
+One_arg piecewise_linear_distribution_vals[] = {
+    {FLIT(0.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(11.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(22.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(33.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(44.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(55.0), FLIT(0.004467005076142132), FLIT(0.0)},
+    {FLIT(66.0), FLIT(0.013401015228426396), FLIT(0.0)},
+    {FLIT(77.0), FLIT(0.02233502538071066), FLIT(0.0)},
+    {FLIT(88.0), FLIT(0.03126903553299493), FLIT(0.0)},
+    {FLIT(99.0), FLIT(0.04020304568527919), FLIT(0.0)},
+};
+
+int _Random_test_fun_2(double x) {
+    return (int)x;
+}
+
 typedef unsigned int discrete_distribution_type;
-discrete_distribution<discrete_distribution_type> discrete_distribution_dist(100, 70, 90, _Random_test_fun);
+discrete_distribution<discrete_distribution_type> discrete_distribution_dist(100, 70, 90, _Random_test_fun_2);
 int discrete_distribution_smaller_ok = 0;
 int discrete_distribution_larger_ok  = 0;
 
