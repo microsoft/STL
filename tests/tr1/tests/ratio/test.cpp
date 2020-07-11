@@ -359,7 +359,7 @@ namespace {
         CHECK_INT(yotta_test::value, true);
 #endif // 1000000 <= INTMAX_MAX / 1000000000000000000
     }
-} // anonymous namespace
+} // unnamed namespace
 
 void test_main() { // test header <ratio>
     t_ratio();

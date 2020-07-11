@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "ab.hpp"
 #include <any>
 #include <assert.h>
 #include <utility>
+
+#include "ab.hpp"
 
 int small_but_nontrivial::constructions = 0;
 int small_but_nontrivial::defaults      = 0;

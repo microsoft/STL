@@ -62,6 +62,8 @@ numerics\bit\bit.pow.two\floor2.pass.cpp
 numerics\bit\bit.pow.two\ispow2.pass.cpp
 numerics\bit\bit.pow.two\log2p1.pass.cpp
 
+# test emits warning C4310: cast truncates constant value
+numerics\bit\bitops.rot\rotl.pass.cpp
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -454,15 +456,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-numerics\bit\bitops.count\countl_one.pass.cpp
-numerics\bit\bitops.count\countl_zero.pass.cpp
-numerics\bit\bitops.count\countr_one.pass.cpp
-numerics\bit\bitops.count\countr_zero.pass.cpp
-numerics\bit\bitops.count\popcount.pass.cpp
-numerics\bit\bitops.rot\rotl.pass.cpp
-numerics\bit\bitops.rot\rotr.pass.cpp
-
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
 utilities\variant\variant.variant\variant.assign\T.pass.cpp
@@ -505,9 +498,7 @@ thread\thread.semaphore\version.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
-# C++20 P0722R3 "Efficient sized delete for variable sized classes" // TRANSITION, VS2019 16.7p1
-language.support\support.dynamic\destroying_delete_t_declaration.pass.cpp
-language.support\support.dynamic\destroying_delete_t.pass.cpp
+# Nothing here! :-)
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -540,7 +531,7 @@ containers\views\span.cons\ptr_ptr.pass.cpp
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 thread\macro.pass.cpp
 
-# Clang's tgmath.h interferes with the UCRT's tgmath.h
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
 
 
@@ -583,11 +574,11 @@ containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
 
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
-containers\sequences\array\array.cons\default.pass.cpp
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
+containers\sequences\array\array.cons\initialization.pass.cpp
 containers\sequences\array\array.data\data_const.pass.cpp
 containers\sequences\array\array.data\data.pass.cpp
-containers\sequences\array\begin.pass.cpp
+containers\sequences\array\iterators.pass.cpp
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
 strings\string.view\char.bad.fail.cpp
@@ -884,11 +875,9 @@ numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_scalar_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
-numerics\complex.number\complex.transcendentals\sqrt.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
 numerics\complex.number\complex.value.ops\polar.pass.cpp
-numerics\complex.number\complex.value.ops\proj.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp

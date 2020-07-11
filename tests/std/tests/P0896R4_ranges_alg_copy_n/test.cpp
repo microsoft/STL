@@ -6,7 +6,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -18,12 +18,12 @@ constexpr void smoke_test() {
 
     int const input[] = {13, 42, 1729};
     int output[]      = {-1, -1, -1};
-    move_only_range wrapped_input{input};
-    auto result = copy_n(wrapped_input.begin(), ranges::distance(input), move_only_range{output}.begin());
+    basic_borrowed_range wrapped_input{input};
+    auto result = copy_n(wrapped_input.begin(), ranges::distance(input), basic_borrowed_range{output}.begin());
     STATIC_ASSERT(same_as<decltype(result),
-        copy_n_result<iterator_t<move_only_range<int const>>, iterator_t<move_only_range<int>>>>);
+        copy_n_result<iterator_t<basic_borrowed_range<int const>>, iterator_t<basic_borrowed_range<int>>>>);
     assert(result.in == wrapped_input.end());
-    assert(result.out == move_only_range{output}.end());
+    assert(result.out == basic_borrowed_range{output}.end());
     assert(ranges::equal(output, input));
 }
 
@@ -33,10 +33,10 @@ int main() {
 }
 
 struct instantiator {
-    template <class In, class, class Out>
+    template <class In, class Out>
     static void call(In in = {}, std::iter_difference_t<In> const count = 42, Out out = {}) {
         (void) ranges::copy_n(std::move(in), count, std::move(out));
     }
 };
 
-template void test_counted_out<instantiator>();
+template void test_read_write<instantiator, const int, int>();

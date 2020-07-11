@@ -7,24 +7,24 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
     using ranges::count;
     using P                  = std::pair<int, int>;
     std::array<P, 5> const x = {{{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}}};
-    using D                  = ranges::range_difference_t<move_only_range<P const>>;
+    using D                  = ranges::range_difference_t<basic_borrowed_range<P const>>;
 
     {
         // Validate range overload
-        auto result = count(move_only_range{x}, 99, get_second);
+        auto result = count(basic_borrowed_range{x}, 99, get_second);
         STATIC_ASSERT(std::same_as<decltype(result), D>);
         assert(result == 3);
     }
     {
         // Validate iterator + sentinel overload
-        move_only_range wrapped_x{x};
+        basic_borrowed_range wrapped_x{x};
         auto result = count(wrapped_x.begin(), wrapped_x.end(), 47, get_second);
         STATIC_ASSERT(std::same_as<decltype(result), D>);
         assert(result == 2);
@@ -50,4 +50,4 @@ struct instantiator {
     }
 };
 
-template void test_in<instantiator>();
+template void test_in<instantiator, const int>();

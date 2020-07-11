@@ -7,7 +7,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -22,9 +22,9 @@ constexpr void smoke_test() {
     R pairs   = {{{0, 42}, {2, 42}, {4, 42}}};
     auto incr = [](auto& y) { ++y; };
 
-    move_only_range wrapped_pairs{pairs};
+    basic_borrowed_range wrapped_pairs{pairs};
     auto result = for_each_n(wrapped_pairs.begin(), ranges::distance(pairs), incr, get_first);
-    STATIC_ASSERT(same_as<decltype(result), for_each_n_result<iterator_t<move_only_range<P>>, decltype(incr)>>);
+    STATIC_ASSERT(same_as<decltype(result), for_each_n_result<iterator_t<basic_borrowed_range<P>>, decltype(incr)>>);
     assert(result.in == wrapped_pairs.end());
     int some_value = 1729;
     result.fun(some_value);
@@ -39,7 +39,7 @@ int main() {
 }
 
 struct instantiator {
-    template <class In, class, class>
+    template <class In>
     static void call(In in = {}) {
         using std::iter_difference_t;
 
@@ -51,4 +51,4 @@ struct instantiator {
     }
 };
 
-template void test_counted_out<instantiator>();
+template void test_read<instantiator, const int>();

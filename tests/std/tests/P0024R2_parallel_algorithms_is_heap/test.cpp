@@ -6,8 +6,9 @@
 #include <execution>
 #include <functional>
 #include <numeric>
-#include <parallel_algorithms_utilities.hpp>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

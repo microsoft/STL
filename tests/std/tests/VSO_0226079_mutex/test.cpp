@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <string>
 #include <system_error>
-#include <test_windows.h>
 #include <thread>
 #include <utility>
+
+#include <test_windows.hpp>
 
 using namespace std;
 using namespace std::chrono;

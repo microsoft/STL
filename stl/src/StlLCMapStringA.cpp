@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "awint.h"
 #include <internal_shared.h>
 #include <locale.h>
+
+#include "awint.hpp"
 
 // int __cdecl __crtLCMapStringA - Get type information about an ANSI string.
 //
@@ -83,8 +84,8 @@ extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, L
 
             // do string mapping
             if (0
-                == __crtLCMapStringEx(
-                    LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, (LPWSTR) lpDestStr, cchDest)) {
+                == __crtLCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size,
+                    reinterpret_cast<LPWSTR>(lpDestStr), cchDest)) {
                 return retval;
             }
         }
