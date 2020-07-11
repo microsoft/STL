@@ -1568,12 +1568,6 @@ namespace ranges {
             _Seek_wrapped(_First, _STD move(_UFirst));
             return {_STD move(_First), _STD move(_Result)};
         }
-
-        template <input_range _Rng, weakly_incrementable _Out>
-            requires indirectly_copyable<iterator_t<_Rng>, _Out>
-        constexpr copy_n_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
-        }
         // clang-format on
     };
 
