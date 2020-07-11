@@ -133,7 +133,7 @@ void test() {
 
 
 int main() {
-#ifndef __clang__
+#ifndef __clang__ // TRANSITION, LLVM-46685
     test<X1, 1>();
     test<X2, 2>();
     test<X3, 3>();
@@ -141,6 +141,6 @@ int main() {
     test<X8, 8>();
     test<X16, 16>();
     test<X20, 20>();
-#endif // !__clang__
+#endif // !__clang__, TRANSITION, LLVM-46685
     return 0;
 }
