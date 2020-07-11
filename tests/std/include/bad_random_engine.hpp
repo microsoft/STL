@@ -102,8 +102,8 @@ class bad_random_engine {
     // Generates bit patterns with at most two transitions between 0's and 1's.
     // (e.g. 00000000, 11111111, 00001111, 11110000, 00011000, 11100111)
     // When its output is grouped into subsequences of length Dimension, it cycles through all possible subsequences
-    // containing only such bit patterns. Bit patterns with few 1's or few 0's are be generated first, starting from
-    // all 0's and all 1's.
+    // containing only such bit patterns. Bit patterns with few 1's or few 0's are generated first, starting from all
+    // 0's and all 1's.
 
     static_assert(std::is_integral<UInt>::value, "bad_random_engine: UInt should be unsigned integeral type");
     static_assert(std::is_unsigned<UInt>::value, "bad_random_engine: UInt should be unsigned integeral type");
