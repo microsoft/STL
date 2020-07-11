@@ -386,10 +386,11 @@ namespace ranges {
     inline constexpr _For_each_n_fn for_each_n{_Not_quite_object::_Construct_tag{}};
 
     // VARIABLE ranges::find
+    // concept-constrained for strict enforcement as it is used by several algorithms.
     // clang-format off
-    template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
+    template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-    _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
+    _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
         for (; _First != _Last; ++_First) {
             if (_STD invoke(_Proj, *_First) == _Val) {
                 break;
@@ -420,8 +421,9 @@ namespace ranges {
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _RANGES _Find_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Val, _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+            auto _UResult =
+                _RANGES _Find_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Val, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
@@ -442,9 +444,9 @@ _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr 
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::find_if
-    template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
-        indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-    _NODISCARD constexpr _It _Find_if_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj = {}) {
+    // concept-constrained for strict enforcement as it is used by several algorithms.
+    template <input_iterator _It, sentinel_for<_It> _Se, class _Pj, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+    _NODISCARD constexpr _It _Find_if_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         for (; _First != _Last; ++_First) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                 break;
@@ -3910,7 +3912,7 @@ namespace ranges {
         // clang-format off
         template <permutable _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-        constexpr subrange<_It> operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Remove_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val, _Pass_fn(_Proj));
@@ -3921,7 +3923,8 @@ namespace ranges {
         template <forward_range _Rng, class _Ty, class _Pj = identity>
             requires permutable<iterator_t<_Rng>>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
             auto _UResult = _Remove_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
@@ -3962,7 +3965,7 @@ namespace ranges {
 
         template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Remove_if_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
@@ -3974,7 +3977,7 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
-        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             auto _UResult = _Remove_if_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
