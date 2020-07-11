@@ -4823,6 +4823,10 @@ public:
             return _Ans;
         }
 
+        _NODISCARD double _Piece_probability(const size_t _Idx) const {
+            return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1]) * (_Bvec[_Idx + 1] - _Bvec[_Idx]);
+        }
+
         void _Init(bool _Renorm = true) { // initialize
             size_t _Size = this->_Pvec.size();
             size_t _Idx;
@@ -4839,7 +4843,7 @@ public:
                     for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
                         _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for "
                                                               "piecewise_linear_distribution");
-                        _Sum += 0.5 * (this->_Pvec[_Idx - 1] + this->_Pvec[_Idx]) * (_Bvec[_Idx] - _Bvec[_Idx - 1]);
+                        _Sum += _Piece_probability(_Idx - 1);
                     }
 
                     _STL_ASSERT(0.0 < _Sum, "invalid probability vector for "
@@ -4852,11 +4856,9 @@ public:
                 }
             }
 
-            this->_Pcdf.assign(1, 0.5 * (this->_Pvec[0] + this->_Pvec[1]) * (_Bvec[1] - _Bvec[0]));
+            this->_Pcdf.assign(1, _Piece_probability(0));
             for (_Idx = 2; _Idx < _Size; ++_Idx) {
-                this->_Pcdf.push_back(
-                    0.5 * (this->_Pvec[_Idx - 1] + this->_Pvec[_Idx]) * (_Bvec[_Idx] - _Bvec[_Idx - 1])
-                    + this->_Pcdf[_Idx - 2]);
+                this->_Pcdf.push_back(_Piece_probability(_Idx - 1) + this->_Pcdf[_Idx - 2]);
             }
         }
 
