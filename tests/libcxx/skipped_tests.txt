@@ -816,22 +816,9 @@ numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.weibull\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\ctor_iterator.pass.cpp
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\param_ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\param_ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_default.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_default.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_iterator.pass.cpp
 numerics\rand\rand.dis\rand.dist.uni\rand.dist.uni.real\param_ctor.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Various assertions.
