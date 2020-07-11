@@ -84,18 +84,18 @@ namespace ranges {
 #endif // __clang__
 
     // STRUCT TEMPLATE in_fun_result
-    template <class _In, class _Fn>
+    template <class _In, class _Fun>
     struct in_fun_result {
         [[no_unique_address]] _In in;
-        [[no_unique_address]] _Fn fun;
+        [[no_unique_address]] _Fun fun;
 
-        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fn&> _FFn>
-        constexpr operator in_fun_result<_IIn, _FFn>() const& {
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fun&> _FFun>
+        constexpr operator in_fun_result<_IIn, _FFun>() const& {
             return {in, fun};
         }
 
-        template <_Convertible_from<_In> _IIn, _Convertible_from<_Fn> _FFn>
-        constexpr operator in_fun_result<_IIn, _FFn>() && {
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Fun> _FFun>
+        constexpr operator in_fun_result<_IIn, _FFun>() && {
             return {_STD move(in), _STD move(fun)};
         }
     };
@@ -324,8 +324,8 @@ _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noe
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE for_each_result
-    template <class _It, class _Fn>
-    using for_each_result = in_fun_result<_It, _Fn>;
+    template <class _In, class _Fun>
+    using for_each_result = in_fun_result<_In, _Fun>;
 
     // VARIABLE ranges::for_each
     class _For_each_fn : private _Not_quite_object {
@@ -357,8 +357,8 @@ namespace ranges {
     inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
 
     // ALIAS TEMPLATE for_each_n_result
-    template <class _It, class _Fn>
-    using for_each_n_result = in_fun_result<_It, _Fn>;
+    template <class _In, class _Fun>
+    using for_each_n_result = in_fun_result<_In, _Fun>;
 
     // VARIABLE ranges::for_each_n
     class _For_each_n_fn : private _Not_quite_object {
@@ -1768,6 +1768,77 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE partition_copy_result
+    template <class _In, class _Out1, class _Out2>
+    using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
+
+    // VARIABLE ranges::partition_copy
+    class _Partition_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out1, weakly_incrementable _Out2,
+            class _Pj = identity, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+            requires indirectly_copyable<_It, _Out1> && indirectly_copyable<_It, _Out2>
+        constexpr partition_copy_result<_It, _Out1, _Out2> operator()(
+            _It _First, _Se _Last, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Partition_copy_unchecked(_Get_unwrapped(_STD move(_First)),
+                _Get_unwrapped(_STD move(_Last)), _Get_unwrapped_unverified(_STD move(_Dest_true)),
+                _Get_unwrapped_unverified(_STD move(_Dest_false)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _Seek_wrapped(_Dest_true, _STD move(_UResult.out1));
+            _Seek_wrapped(_Dest_false, _STD move(_UResult.out2));
+            return {_STD move(_First), _STD move(_Dest_true), _STD move(_Dest_false)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out1, weakly_incrementable _Out2, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out1> && indirectly_copyable<iterator_t<_Rng>, _Out2>
+        constexpr partition_copy_result<borrowed_iterator_t<_Rng>, _Out1, _Out2> operator()(
+            _Rng&& _Range, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Partition_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                _Get_unwrapped_unverified(_STD move(_Dest_true)), _Get_unwrapped_unverified(_STD move(_Dest_false)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _Seek_wrapped(_Dest_true, _STD move(_UResult.out1));
+            _Seek_wrapped(_Dest_false, _STD move(_UResult.out2));
+            return {_STD move(_First), _STD move(_Dest_true), _STD move(_Dest_false)};
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Out1, class _Out2, class _Pr, class _Pj>
+        _NODISCARD static constexpr partition_copy_result<_It, _Out1, _Out2> _Partition_copy_unchecked(
+            _It _First, const _Se _Last, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj) {
+            // copy true partition to _Dest_true, false to _Dest_false
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out1> && weakly_incrementable<_Out2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out1> && indirectly_copyable<_It, _Out2>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    *_Dest_true = *_First;
+                    ++_Dest_true;
+                } else {
+                    *_Dest_false = *_First;
+                    ++_Dest_false;
+                }
+            }
+
+            return {_STD move(_First), _STD move(_Dest_true), _STD move(_Dest_false)};
+        }
+    };
+
+    inline constexpr _Partition_copy_fn partition_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE is_partitioned
@@ -1802,6 +1873,59 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::is_partitioned
+    class _Is_partitioned_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            return _Is_partitioned_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            return _Is_partitioned_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pr, class _Pj>
+        _NODISCARD static constexpr bool _Is_partitioned_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // test if [_First, _Last) is partitioned with respect to _Pred and _Proj
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (;; ++_First) { // skip true partition
+                if (_First == _Last) {
+                    return true;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+            }
+
+            while (++_First != _Last) { // verify false partition
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return false; // found out of place element
+                }
+            }
+
+            return true;
+        }
+    };
+
+    inline constexpr _Is_partitioned_fn is_partitioned{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE partition_point
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
@@ -1826,6 +1950,105 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
     _Seek_wrapped(_First, _UFirst);
     return _First;
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::partition_point
+    class _Partition_point_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                const auto _Length = _Get_unwrapped(_STD move(_Last)) - _UFirst;
+                _UFirst = _Partition_point_n_unchecked(_STD move(_UFirst), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            } else {
+                _UFirst = _Partition_point_unchecked(
+                    _STD move(_UFirst), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            if constexpr (sized_range<_Rng>) {
+                const auto _Length = _RANGES distance(_Range);
+                auto _UFirst = _Partition_point_n_unchecked(_Ubegin(_Range), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _Rewrap_iterator(_Range, _STD move(_UFirst));
+            } else {
+                auto _UFirst =
+                    _Partition_point_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                return _Rewrap_iterator(_Range, _STD move(_UFirst));
+            }
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static constexpr _It _Partition_point_n_unchecked(
+            _It _First, iter_difference_t<_It> _Length, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+            _STL_INTERNAL_CHECK(_Length >= 0);
+
+            while (_Length > 0) {
+                const auto _Half = static_cast<iter_difference_t<_It>>(_Length / 2);
+                auto _Mid        = _RANGES next(_First, _Half);
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid))) { // _Mid is before the partition point
+                    _First = _STD move(_Mid);
+                    ++_First;
+                    _Length -= _Half;
+                    --_Length;
+                } else { // _Mid is at or past the partition point
+                    _Length = _Half;
+                }
+            }
+
+            return _First;
+        }
+
+        template <class _It, class _Se, class _Pr, class _Pj>
+        _NODISCARD static constexpr _It _Partition_point_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            // Instead of blindly seeking the end of the range, probe elements at exponentially increasing intervals to
+            // find an element past the partition point.
+            iter_difference_t<_It> _Skip = 2;
+            for (;;) {
+                auto _Mid = _First;
+                _Skip -= _RANGES advance(_Mid, _Skip, _Last);
+                if (_Mid == _Last) { // we've located the end of the range
+                    break;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid))) { // _Mid is at or past the partition point
+                    break;
+                }
+
+                _First = _STD move(_Mid);
+                ++_First;
+
+                using _Uty = _Make_unsigned_like_t<iter_difference_t<_It>>;
+                if (static_cast<_Uty>(_Skip) <= (static_cast<_Uty>(-1) >> 1)) {
+                    _Skip <<= 1;
+                }
+            }
+
+            return _Partition_point_n_unchecked(_STD move(_First), _Skip, _Pred, _Proj);
+        }
+    };
+
+    inline constexpr _Partition_point_fn partition_point{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE _Equal_rev_pred_unchecked
 #if _HAS_IF_CONSTEXPR
@@ -4136,6 +4359,89 @@ _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt partition(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::partition
+    class _Partition_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Partition_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        // clang-format off
+        template <forward_range _Rng, class _Pj = identity, indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+            requires permutable<iterator_t<_Rng>>
+        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            auto _UResult = _Partition_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Pr, class _Pj>
+        _NODISCARD static constexpr subrange<_It> _Partition_unchecked(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            if constexpr (_Bidi_common<_It, _Se>) {
+                auto _Saved_last = _Last;
+                for (;; ++_First) { // find any out-of-order pair
+                    for (;; ++_First) { // skip in-place elements at beginning
+                        if (_First == _Last) {
+                            return {_STD move(_First), _STD move(_Saved_last)};
+                        }
+
+                        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                            break;
+                        }
+                    }
+
+                    do { // skip in-place elements at end
+                        --_Last;
+                        if (_First == _Last) {
+                            return {_STD move(_First), _STD move(_Saved_last)};
+                        }
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last)));
+
+                    _RANGES iter_swap(_First, _Last); // out of place, swap and loop
+                }
+
+                return {_STD move(_First), _STD move(_Saved_last)};
+            } else {
+                for (;; ++_First) { // skip in-place elements at beginning
+                    if (_First == _Last) {
+                        return {_First, _First};
+                    }
+
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                        break;
+                    }
+                }
+
+                auto _Next = _First;
+                while (++_Next != _Last) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next))) {
+                        _RANGES iter_swap(_First, _Next); // out of place, swap and loop
+                        ++_First;
+                    }
+                }
+
+                return {_STD move(_First), _STD move(_Next)};
+            }
+        }
+    };
+
+    inline constexpr _Partition_fn partition{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE stable_partition
@@ -6620,8 +6926,8 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // ALIAS TEMPLATE minmax_element_result
-    template <class _It>
-    using minmax_element_result = min_max_result<_It>;
+    template <class _Ty>
+    using minmax_element_result = min_max_result<_Ty>;
 
     // VARIABLE ranges::minmax_element
     template <class _It, class _Se, class _Pr, class _Pj>

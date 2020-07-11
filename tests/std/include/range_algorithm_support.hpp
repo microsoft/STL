@@ -40,6 +40,9 @@ namespace detail {
 } // namespace detail
 constexpr bool is_permissive = detail::Derived<int>::test();
 
+template <class T>
+inline constexpr T* nullptr_to = nullptr;
+
 template <bool>
 struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
     int* begin() const;
