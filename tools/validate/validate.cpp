@@ -14,6 +14,8 @@
 #include <vector>
 using namespace std;
 
+constexpr size_t max_line_length = 120;
+
 class BinaryFile {
 public:
     explicit BinaryFile(const filesystem::path& filepath) {
@@ -61,6 +63,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     bool has_crlf     = false;
     bool has_utf8_bom = false;
 
+    size_t overlength_lines          = 0;
     size_t disallowed_characters     = 0;
     size_t tab_characters            = 0;
     size_t trailing_whitespace_lines = 0;
@@ -68,6 +71,8 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
+
+    size_t columns = 0;
 
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
         for (const auto& ch : buffer) {
@@ -100,10 +105,17 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 }
             }
 
-            if ((prev == ' ' || prev == '\t') && (ch == CR || ch == LF)) {
-                ++trailing_whitespace_lines;
-            }
+            if (ch == CR || ch == LF) {
+                if (prev == ' ' || prev == '\t') {
+                    ++trailing_whitespace_lines;
+                }
 
+                if (columns > max_line_length) {
+                    ++overlength_lines;
+                }
+                columns = ~size_t{0};
+            }
+            ++columns;
             previous3 = exchange(previous2, exchange(prev, ch));
         }
     }
@@ -148,6 +160,23 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     if (trailing_whitespace_lines != 0) {
         fwprintf(stderr, L"Validation failed: %ls contains %zu lines with trailing whitespace.\n", filepath.c_str(),
             trailing_whitespace_lines);
+    }
+
+    if (overlength_lines != 0) {
+        static constexpr array checked_extensions{
+            // line length should be capped in files with these extensions:
+            L""sv,
+            L".cpp"sv,
+            L".h"sv,
+            L".hpp"sv,
+            L".yml"sv,
+        };
+        static_assert(is_sorted(checked_extensions.begin(), checked_extensions.end()));
+
+        if (binary_search(checked_extensions.begin(), checked_extensions.end(), filepath.extension().wstring())) {
+            fwprintf(stderr, L"Validation failed: %ls contains %zu lines with more than %zu columns.\n",
+                filepath.c_str(), overlength_lines, max_line_length);
+        }
     }
 }
 
