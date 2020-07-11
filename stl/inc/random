@@ -4793,8 +4793,8 @@ public:
         param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Mypbase(_Noinit) {
             _Ty _Range = _High - _Low;
             _STL_ASSERT(_Ty{0} < _Range, "invalid range for piecewise_linear_distribution");
-            if (_Count < 2) {
-                _Count = 2;
+            if (_Count < 1) {
+                _Count = 1;
             }
 
             _Range /= static_cast<double>(_Count);
