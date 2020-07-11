@@ -4551,10 +4551,7 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = piecewise_constant_distribution;
 
-        param_type() {
-            _Bvec.push_back(0);
-            _Bvec.push_back(1);
-        }
+        param_type() : _Bvec{0, 1} {}
 
         template <class _InIt1, class _InIt2>
         param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit), _Bvec(_First1, _Last1) {
@@ -4563,9 +4560,7 @@ public:
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
                 }
             } else { // default construct
-                _Bvec.clear();
-                _Bvec.push_back(0);
-                _Bvec.push_back(1);
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4580,8 +4575,7 @@ public:
                     this->_Pvec.push_back(_Func(_Ty{0.5} * (_Bvec[_Idx] + _Bvec[_Idx + 1])));
                 }
             } else { // default construct
-                _Bvec.push_back(0);
-                _Bvec.push_back(1);
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4752,9 +4746,7 @@ public:
         // this breaks invariants of discrete_distribution<size_t>::param_type
         using distribution_type = piecewise_linear_distribution;
 
-        param_type() {
-            _Bvec.push_back(0);
-            _Bvec.push_back(1);
+        param_type() : _Bvec{0, 1} {
             this->_Pvec.push_back(1.0);
         }
 
@@ -4765,9 +4757,7 @@ public:
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
                 }
             } else { // default construct
-                _Bvec.clear();
-                _Bvec.push_back(0);
-                _Bvec.push_back(1);
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4782,8 +4772,7 @@ public:
                     this->_Pvec.push_back(_Func(_Bval));
                 }
             } else { // default construct
-                _Bvec.push_back(0);
-                _Bvec.push_back(1);
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4834,8 +4823,7 @@ public:
 
             if (_Renorm) {
                 if (this->_Pvec.empty()) { // make empty vector degenerate
-                    this->_Pvec.push_back(1.0);
-                    this->_Pvec.push_back(1.0);
+                    this->_Pvec = {1.0, 1.0};
                 } else { // normalize probabilities
                     double _Sum = 0;
 
