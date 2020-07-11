@@ -1,5 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 #include <atomic>
 #include <cassert>
+#include <cstddef>
+#include <cstring>
 
 struct X1 {
     char x : 6;
@@ -47,6 +52,8 @@ struct X8 {
     char x;
     long y;
 
+    void operator&() const {}
+
     void set(char v) {
         x = v;
         y = 0;
@@ -72,7 +79,7 @@ struct X20 {
 
     void set(char v) {
         x = v;
-        memset(&y, 0, sizeof(y));
+        std::memset(&y, 0, sizeof(y));
         z = 0;
     }
 };
@@ -85,9 +92,9 @@ void test() {
     X x3;
     X x4;
     X x1;
-    memset(&x1, 0x00, sizeof(x1));
-    memset(&x2, 0xff, sizeof(x1));
-    memset(&x3, 0xff, sizeof(x1));
+    std::memset(std::addressof(x1), 0x00, sizeof(x1));
+    std::memset(std::addressof(x2), 0xff, sizeof(x1));
+    std::memset(std::addressof(x3), 0xff, sizeof(x1));
     x1.set(5);
     x2.set(5);
     x3.set(6);
@@ -96,27 +103,27 @@ void test() {
     std::atomic<X> v;
     v.store(x1);
     X x;
-    memcpy(&x, &x3, sizeof(x));
+    std::memcpy(std::addressof(x), std::addressof(x3), sizeof(x));
     assert(!v.compare_exchange_strong(x, x4));
     assert(v.load().x == 5);
 
     v.store(x1);
     for (int retry = 0; retry != 10; ++retry) {
         X xw;
-        memcpy(&xw, &x3, sizeof(x));
+        std::memcpy(std::addressof(xw), std::addressof(x3), sizeof(x));
         assert(!v.compare_exchange_weak(xw, x4));
         assert(v.load().x == 5);
     }
 
     v.store(x1);
-    memcpy(&x, &x2, sizeof(x));
+    std::memcpy(std::addressof(x), std::addressof(x2), sizeof(x));
     assert(v.compare_exchange_strong(x, x3));
     assert(v.load().x == 6);
 
     v.store(x1);
     for (;;) {
         X xw;
-        memcpy(&xw, &x2, sizeof(x));
+        std::memcpy(std::addressof(xw), std::addressof(x2), sizeof(x));
         if (v.compare_exchange_weak(xw, x3)) {
             break;
         }
