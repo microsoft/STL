@@ -92,9 +92,9 @@ void test() {
     X x3;
     X x4;
     X x1;
-    std::memset(std::addressof(x1), 0x00, sizeof(x1));
-    std::memset(std::addressof(x2), 0xff, sizeof(x1));
-    std::memset(std::addressof(x3), 0xff, sizeof(x1));
+    std::memset(std::addressof(x1), 0xaa, sizeof(x1));
+    std::memset(std::addressof(x2), 0x55, sizeof(x1));
+    std::memset(std::addressof(x3), 0x55, sizeof(x1));
     x1.set(5);
     x2.set(5);
     x3.set(6);
@@ -133,6 +133,7 @@ void test() {
 
 
 int main() {
+#ifndef __clang__
     test<X1, 1>();
     test<X2, 2>();
     test<X3, 3>();
@@ -140,5 +141,6 @@ int main() {
     test<X8, 8>();
     test<X16, 16>();
     test<X20, 20>();
+#endif // !__clang__
     return 0;
 }
