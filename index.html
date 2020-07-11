@@ -12,8 +12,11 @@
             line-height: 1.5;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js"
-        integrity="sha256-TQq84xX6vkwR0Qs1qH5ADkP+MvH0W+9E7TdHJsoIQiM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"
+        integrity="sha256-R4pqcOYV8lt7snxMQO/HSbVCFRPMdrhAFMH+vr9giYI=" crossorigin="anonymous"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"
+        integrity="sha256-OrN9od558nPowCwU4e475a5CCwTfCwSrk7TF7KYUoXk=" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -271,11 +274,11 @@
                         min: timeframes[0].ticks.min,
                     },
                     time: {
-                        parser: 'YYYY-MM-DD',
-                        tooltipFormat: 'll',
+                        parser: 'yyyy-MM-dd',
+                        tooltipFormat: 'MMM d, yyyy',
                         unit: timeframes[0].time.unit,
                         displayFormats: {
-                            quarter: 'MMM YYYY',
+                            quarter: 'MMM yyyy',
                         },
                     },
                 }],
