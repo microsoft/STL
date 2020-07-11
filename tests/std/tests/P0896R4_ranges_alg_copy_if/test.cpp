@@ -11,14 +11,15 @@
 
 #include <range_algorithm_support.hpp>
 
+using namespace std;
 template <class T, class U>
 struct not_pair {
     T first;
     U second;
 
-    auto operator<=>(const not_pair&) const = default;
+    auto operator<=>(not_pair const&) const = default;
 
-    template <std::size_t I>
+    template <size_t I>
     constexpr friend auto&& get(not_pair& np) noexcept {
         if constexpr (I == 0) {
             return np.first;
@@ -27,7 +28,7 @@ struct not_pair {
             return np.second;
         }
     }
-    template <std::size_t I>
+    template <size_t I>
     constexpr friend auto&& get(not_pair const& np) noexcept {
         if constexpr (I == 0) {
             return np.first;
@@ -36,84 +37,70 @@ struct not_pair {
             return np.second;
         }
     }
-    template <std::size_t I>
+    template <size_t I>
     constexpr friend auto&& get(not_pair&& np) noexcept {
         if constexpr (I == 0) {
-            return std::move(np).first;
+            return move(np).first;
         } else {
             STATIC_ASSERT(I == 1);
-            return std::move(np).second;
+            return move(np).second;
         }
     }
-    template <std::size_t I>
+    template <size_t I>
     constexpr friend auto&& get(not_pair const&& np) noexcept {
         if constexpr (I == 0) {
-            return std::move(np).first;
+            return move(np).first;
         } else {
             STATIC_ASSERT(I == 1);
-            return std::move(np).second;
+            return move(np).second;
         }
     }
 };
 
-constexpr void smoke_test() {
-    using ranges::copy_if, ranges::copy_if_result, ranges::iterator_t;
-    using std::same_as;
-    using P = not_pair<int, int>;
+using P = not_pair<int, int>;
 
-    constexpr auto is_odd = [](int x) { return x % 2 != 0; };
+constexpr auto is_odd = [](int const x) { return x % 2 != 0; };
 
-    // Validate that copy_if_result aliases in_out_result
-    STATIC_ASSERT(same_as<copy_if_result<int, double>, ranges::in_out_result<int, double>>);
+// Validate that copy_if_result aliases in_out_result
+STATIC_ASSERT(same_as<ranges::copy_if_result<int, double>, ranges::in_out_result<int, double>>);
 
-    // Validate dangling story
-    STATIC_ASSERT(same_as<decltype(copy_if(borrowed<false>{}, static_cast<int*>(nullptr), is_odd)),
-        copy_if_result<ranges::dangling, int*>>);
-    STATIC_ASSERT(
-        same_as<decltype(copy_if(borrowed<true>{}, static_cast<int*>(nullptr), is_odd)), copy_if_result<int*, int*>>);
-
-    std::array<P, 3> const input    = {{{1, 99}, {4, 98}, {5, 97}}};
-    std::array<P, 2> const expected = {{{1, 99}, {5, 97}}};
-    using I                         = iterator_t<basic_borrowed_range<P const>>;
-    using O                         = iterator_t<basic_borrowed_range<P>>;
-    { // Validate range overload
-        std::array<P, 2> output = {};
-        auto result = copy_if(basic_borrowed_range{input}, basic_borrowed_range{output}.begin(), is_odd, get_first);
-        STATIC_ASSERT(same_as<decltype(result), copy_if_result<I, O>>);
-        assert(result.in == basic_borrowed_range{input}.end());
-        assert(result.out == basic_borrowed_range{output}.end());
-        assert(ranges::equal(output, expected));
-    }
-    { // Validate iterator + sentinel overload
-        std::array<P, 2> output = {};
-        basic_borrowed_range wrapped_input{input};
-        auto result = copy_if(
-            wrapped_input.begin(), wrapped_input.end(), basic_borrowed_range{output}.begin(), is_odd, get_first);
-        STATIC_ASSERT(same_as<decltype(result), copy_if_result<I, O>>);
-        assert(result.in == wrapped_input.end());
-        assert(result.out == basic_borrowed_range{output}.end());
-        assert(ranges::equal(output, expected));
-    }
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
+// Validate dangling story
+STATIC_ASSERT(same_as<decltype(ranges::copy_if(borrowed<false>{}, static_cast<int*>(nullptr), is_odd)),
+    ranges::copy_if_result<ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::copy_if(borrowed<true>{}, static_cast<int*>(nullptr), is_odd)),
+    ranges::copy_if_result<int*, int*>>);
 
 struct instantiator {
-    template <class In, class Out>
-    static void call(In&& in = {}, Out out = {}) {
-        using ranges::begin, ranges::copy_if, ranges::end, ranges::iterator_t;
+    static constexpr P input[3]    = {{1, 99}, {4, 98}, {5, 97}};
+    static constexpr P expected[2] = {{1, 99}, {5, 97}};
 
-        constexpr UnaryPredicateFor<iterator_t<In>> pred{};
-        constexpr ProjectionFor<iterator_t<In>> proj{};
+    template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
+    static constexpr void call() {
+        using ranges::copy_if, ranges::copy_if_result, ranges::iterator_t;
+        { // Validate range overload
+            array<P, 2> output = {{{-1, -1}, {-1, -1}}};
+            Read wrapped_input{input};
 
-        copy_if(in, std::move(out), pred);
-        copy_if(begin(in), end(in), std::move(out), pred);
-        copy_if(in, std::move(out), ProjectedUnaryPredicate<>{}, proj);
-        copy_if(begin(in), end(in), std::move(out), ProjectedUnaryPredicate<>{}, proj);
+            auto result = copy_if(wrapped_input, Write{output.data()}, is_odd, get_first);
+            STATIC_ASSERT(same_as<decltype(result), copy_if_result<iterator_t<Read>, Write>>);
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == output.data() + 2);
+            assert(ranges::equal(output, expected));
+        }
+        { // Validate iterator + sentinel overload
+            array<P, 2> output = {{{-1, -1}, {-1, -1}}};
+            Read wrapped_input{input};
+
+            auto result = copy_if(wrapped_input.begin(), wrapped_input.end(), Write{output.data()}, is_odd, get_first);
+            STATIC_ASSERT(same_as<decltype(result), copy_if_result<iterator_t<Read>, Write>>);
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == output.data() + 2);
+            assert(ranges::equal(output, expected));
+        }
     }
 };
 
-template void test_in_write<instantiator, const int, int>();
+int main() {
+    STATIC_ASSERT((test_in_write<instantiator, P const, P>(), true));
+    test_in_write<instantiator, P const, P>();
+}
