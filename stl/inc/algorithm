@@ -1677,22 +1677,38 @@ namespace ranges {
             requires indirectly_movable<_It, _Out>
         constexpr move_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst, (void) ++_Result) {
-                *_Result = _RANGES iter_move(_UFirst);
-            }
+            auto _UResult = _Move_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return {_STD move(_First), _STD move(_Result)};
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_movable<iterator_t<_Rng>, _Out>
         constexpr move_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Result));
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Move_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
         }
         // clang-format on
+
+    private:
+        template <class _It, class _Se, class _Out>
+        _NODISCARD static constexpr move_result<_It, _Out> _Move_unchecked(_It _First, const _Se _Last, _Out _Result) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_movable<_It, _Out>);
+
+            for (; _First != _Last; ++_First, (void) ++_Result) {
+                *_Result = _RANGES iter_move(_First);
+            }
+
+            return {_STD move(_First), _STD move(_Result)};
+        }
     };
 
     inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};

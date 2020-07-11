@@ -163,7 +163,7 @@ namespace test {
         using Value = std::remove_cv_t<Element>;
 
     public:
-        constexpr explicit proxy_reference(Element& ref) : ref_{ref} {}
+        constexpr explicit proxy_reference(Element& r) : ref_{r} {}
         proxy_reference(proxy_reference const&) = default;
 
         constexpr proxy_reference const& operator=(proxy_reference const& that) const
@@ -173,14 +173,16 @@ namespace test {
         }
 
         // clang-format off
-        constexpr operator Value() const requires derived_from<Category, input> && copy_constructible<Value> {
+        constexpr operator Element&() const requires derived_from<Category, input> {
             return ref_;
         }
-        // clang-format on
 
-        constexpr void operator=(Value const& val) const requires assignable_from<Element&, Value const&> {
-            ref_ = val;
+        template <class T>
+            requires (!std::same_as<std::remove_cvref_t<T>, proxy_reference> && assignable_from<Element&, T>)
+        constexpr void operator=(T&& val) const {
+            ref_ = std::forward<T>(val);
         }
+        // clang-format on
 
         template <class Cat, class Elem>
         constexpr boolish operator==(proxy_reference<Cat, Elem> that) const requires CanEq<Element, Elem> {
@@ -208,41 +210,41 @@ namespace test {
         }
 
         // clang-format off
-        friend constexpr boolish operator==(proxy_reference ref, Value const& val) requires CanEq<Element, Value> {
-            return {ref.ref_ == val};
+        friend constexpr boolish operator==(proxy_reference r, Value const& val) requires CanEq<Element, Value> {
+            return {r.ref_ == val};
         }
-        friend constexpr boolish operator==(Value const& val, proxy_reference ref) requires CanEq<Element, Value> {
-            return {ref.ref_ == val};
+        friend constexpr boolish operator==(Value const& val, proxy_reference r) requires CanEq<Element, Value> {
+            return {r.ref_ == val};
         }
-        friend constexpr boolish operator!=(proxy_reference ref, Value const& val) requires CanNEq<Element, Value> {
-            return {ref.ref_ != val};
+        friend constexpr boolish operator!=(proxy_reference r, Value const& val) requires CanNEq<Element, Value> {
+            return {r.ref_ != val};
         }
-        friend constexpr boolish operator!=(Value const& val, proxy_reference ref) requires CanNEq<Element, Value> {
-            return {ref.ref_ != val};
+        friend constexpr boolish operator!=(Value const& val, proxy_reference r) requires CanNEq<Element, Value> {
+            return {r.ref_ != val};
         }
-        friend constexpr boolish operator<(Value const& val, proxy_reference ref) requires CanLt<Value, Element> {
-            return {val < ref.ref_};
+        friend constexpr boolish operator<(Value const& val, proxy_reference r) requires CanLt<Value, Element> {
+            return {val < r.ref_};
         }
-        friend constexpr boolish operator<(proxy_reference ref, Value const& val) requires CanLt<Element, Value> {
-            return {ref.ref_ < val};
+        friend constexpr boolish operator<(proxy_reference r, Value const& val) requires CanLt<Element, Value> {
+            return {r.ref_ < val};
         }
-        friend constexpr boolish operator>(Value const& val, proxy_reference ref) requires CanGt<Value, Element> {
-            return {val > ref.ref_};
+        friend constexpr boolish operator>(Value const& val, proxy_reference r) requires CanGt<Value, Element> {
+            return {val > r.ref_};
         }
-        friend constexpr boolish operator>(proxy_reference ref, Value const& val) requires CanGt<Element, Value> {
-            return {ref.ref_ > val};
+        friend constexpr boolish operator>(proxy_reference r, Value const& val) requires CanGt<Element, Value> {
+            return {r.ref_ > val};
         }
-        friend constexpr boolish operator<=(Value const& val, proxy_reference ref) requires CanLtE<Value, Element> {
-            return {val <= ref.ref_};
+        friend constexpr boolish operator<=(Value const& val, proxy_reference r) requires CanLtE<Value, Element> {
+            return {val <= r.ref_};
         }
-        friend constexpr boolish operator<=(proxy_reference ref, Value const& val) requires CanLtE<Element, Value> {
-            return {ref.ref_ <= val};
+        friend constexpr boolish operator<=(proxy_reference r, Value const& val) requires CanLtE<Element, Value> {
+            return {r.ref_ <= val};
         }
-        friend constexpr boolish operator>=(Value const& val, proxy_reference ref) requires CanGtE<Value, Element> {
-            return {val >= ref.ref_};
+        friend constexpr boolish operator>=(Value const& val, proxy_reference r) requires CanGtE<Value, Element> {
+            return {val >= r.ref_};
         }
-        friend constexpr boolish operator>=(proxy_reference ref, Value const& val) requires CanGtE<Element, Value> {
-            return {ref.ref_ >= val};
+        friend constexpr boolish operator>=(proxy_reference r, Value const& val) requires CanGtE<Element, Value> {
+            return {r.ref_ >= val};
         }
         // clang-format on
 
@@ -251,6 +253,35 @@ namespace test {
         }
     };
 
+    template <class Ref>
+    struct common_reference {
+        Ref ref_;
+
+        common_reference(Ref r) : ref_{static_cast<Ref>(r)} {}
+
+        // clang-format off
+        template <class Cat, class Elem>
+            requires convertible_to<Elem&, Ref>
+        common_reference(proxy_reference<Cat, Elem> pref) : ref_{pref.peek()} {}
+        // clang-format on
+    };
+} // namespace test
+
+// clang-format off
+template <class Cat, class Elem, class U, template <class> class TQuals, template <class> class UQuals>
+    requires std::common_reference_with<Elem&, UQuals<U>>
+struct std::basic_common_reference<::test::proxy_reference<Cat, Elem>, U, TQuals, UQuals> {
+    using type = common_reference_t<Elem&, UQuals<U>>;
+};
+
+template <class T, class Cat, class Elem, template <class> class TQuals, template <class> class UQuals>
+    requires std::common_reference_with<TQuals<T>, Elem&>
+struct std::basic_common_reference<T, ::test::proxy_reference<Cat, Elem>, TQuals, UQuals> {
+    using type = common_reference_t<TQuals<T>, Elem&>;
+};
+// clang-format on
+
+namespace test {
     // clang-format off
     template <class Category, class Element,
         // Model sized_sentinel_for along with sentinel?
@@ -975,11 +1006,11 @@ struct get_nth_fn {
     { return get<I>(std::forward<T>(t)); }
 
     template <class T, class Elem>
-    [[nodiscard]] constexpr decltype(auto) operator()(test::proxy_reference<T, Elem> ref) const noexcept
+    [[nodiscard]] constexpr decltype(auto) operator()(test::proxy_reference<T, Elem> r) const noexcept
         requires requires {
-        (*this)(ref.peek());
+        (*this)(r.peek());
     }
-    { return (*this)(ref.peek()); }
+    { return (*this)(r.peek()); }
 };
 inline constexpr get_nth_fn<0> get_first;
 inline constexpr get_nth_fn<1> get_second;
