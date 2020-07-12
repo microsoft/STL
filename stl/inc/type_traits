@@ -372,59 +372,6 @@ struct is_compound : bool_constant<!is_fundamental_v<_Ty>> {}; // determine whet
 template <class _Ty>
 _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
-// STRUCT TEMPLATE is_member_pointer
-template <class _Ty>
-_INLINE_VAR constexpr bool is_member_pointer_v = false;
-
-template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool is_member_pointer_v<_Ty1 _Ty2::*> = true;
-
-template <class _Ty>
-struct is_member_pointer : bool_constant<is_member_pointer_v<_Ty>> {}; // determine whether _Ty is a pointer to member
-
-// STRUCT TEMPLATE is_scalar
-template <class _Ty>
-_INLINE_VAR constexpr bool is_scalar_v = // determine whether _Ty is a scalar type
-    is_arithmetic_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty> || is_member_pointer_v<_Ty> || is_null_pointer_v<_Ty>;
-
-template <class _Ty>
-struct is_scalar : bool_constant<is_scalar_v<_Ty>> {};
-
-// STRUCT TEMPLATE is_const
-template <class>
-_INLINE_VAR constexpr bool is_const_v = false; // determine whether type argument is const qualified
-
-template <class _Ty>
-_INLINE_VAR constexpr bool is_const_v<const _Ty> = true;
-
-template <class _Ty>
-struct is_const : bool_constant<is_const_v<_Ty>> {};
-
-// STRUCT TEMPLATE is_volatile
-template <class>
-_INLINE_VAR constexpr bool is_volatile_v = false; // determine whether type argument is volatile qualified
-
-template <class _Ty>
-_INLINE_VAR constexpr bool is_volatile_v<volatile _Ty> = true;
-
-template <class _Ty>
-struct is_volatile : bool_constant<is_volatile_v<_Ty>> {};
-
-// STRUCT TEMPLATE is_function
-template <class _Ty>
-_INLINE_VAR constexpr bool is_function_v = // only function types and reference types can't be const qualified
-    !is_const_v<const _Ty> && !is_reference_v<_Ty>;
-
-template <class _Ty>
-struct is_function : bool_constant<is_function_v<_Ty>> {};
-
-// STRUCT TEMPLATE is_object
-template <class _Ty>
-_INLINE_VAR constexpr bool is_object_v = !is_function_v<_Ty> && !is_reference_v<_Ty> && !is_void_v<_Ty>;
-
-template <class _Ty>
-struct is_object : bool_constant<is_object_v<_Ty>> {};
-
 // STRUCT TEMPLATE _Arg_types
 template <class... _Types>
 struct _Arg_types {}; // provide argument_type, etc. when sizeof...(_Types) is 1 or 2
@@ -472,16 +419,75 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 #undef _IS_MEMFUNPTR_ELLIPSIS
 
+// STRUCT TEMPLATE is_member_function_pointer
 #ifdef __clang__
 template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
 #else // ^^^ Clang ^^^ / vvv Other vvv
 template <class _Ty>
-_INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<_Ty>::_Bool_type::value;
+_INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_cv_t<_Ty>>::_Bool_type::value;
 #endif // ^^^ Other ^^^
 
 template <class _Ty>
 struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_member_pointer
+#ifdef __clang__
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_pointer_v = __is_member_pointer(_Ty);
+#else // ^^^ Clang / Other vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_pointer_v = is_member_function_pointer_v<_Ty>;
+
+template <class _Ty1, class _Ty2>
+_INLINE_VAR constexpr bool is_member_pointer_v<_Ty1 _Ty2::*> = true;
+#endif // ^^^ Other ^^^
+
+template <class _Ty>
+struct is_member_pointer : bool_constant<is_member_pointer_v<_Ty>> {}; // determine whether _Ty is a pointer to member
+
+// STRUCT TEMPLATE is_scalar
+template <class _Ty>
+_INLINE_VAR constexpr bool is_scalar_v = // determine whether _Ty is a scalar type
+    is_arithmetic_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty> || is_member_pointer_v<_Ty> || is_null_pointer_v<_Ty>;
+
+template <class _Ty>
+struct is_scalar : bool_constant<is_scalar_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_const
+template <class>
+_INLINE_VAR constexpr bool is_const_v = false; // determine whether type argument is const qualified
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_const_v<const _Ty> = true;
+
+template <class _Ty>
+struct is_const : bool_constant<is_const_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_volatile
+template <class>
+_INLINE_VAR constexpr bool is_volatile_v = false; // determine whether type argument is volatile qualified
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_volatile_v<volatile _Ty> = true;
+
+template <class _Ty>
+struct is_volatile : bool_constant<is_volatile_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_function
+template <class _Ty>
+_INLINE_VAR constexpr bool is_function_v = // only function types and reference types can't be const qualified
+    !is_const_v<const _Ty> && !is_reference_v<_Ty>;
+
+template <class _Ty>
+struct is_function : bool_constant<is_function_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_object
+template <class _Ty>
+_INLINE_VAR constexpr bool is_object_v = !is_function_v<_Ty> && !is_reference_v<_Ty> && !is_void_v<_Ty>;
+
+template <class _Ty>
+struct is_object : bool_constant<is_object_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_member_object_pointer
 template <class>
