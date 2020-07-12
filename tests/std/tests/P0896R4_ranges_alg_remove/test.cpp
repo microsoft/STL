@@ -21,7 +21,7 @@ struct instantiator {
 
     template <ranges::forward_range Read>
     static constexpr void call() {
-        using ranges::remove, ranges::subrange, ranges::iterator_t;
+        using ranges::remove, ranges::subrange, ranges::equal, ranges::iterator_t;
         { // Validate iterator + sentinel overload
             P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
             Read wrapped_input{input};
@@ -35,7 +35,7 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
-            assert(ranges::equal(expected, span{input}.first<3>()));
+            assert(equal(expected, span{input}.first<3>()));
             assert(comparisonsCounter == ranges::size(input));
         }
         { // Validate range overload
@@ -51,7 +51,7 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
-            assert(ranges::equal(expected, span{input}.first<3>()));
+            assert(equal(expected, span{input}.first<3>()));
             assert(comparisonsCounter == ranges::size(input));
         }
     }
