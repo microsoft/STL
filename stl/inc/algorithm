@@ -4626,6 +4626,155 @@ _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt
     return _STD rotate_copy(_First, _Mid, _Last, _Dest);
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::rotate
+    class _Rotate_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se>
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _It _Mid, _Se _Last) const {
+            _Adl_verify_range(_First, _Mid);
+            _Adl_verify_range(_Mid, _Last);
+            auto _UResult = _Rotate_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Mid)), _Get_unwrapped(_STD move(_Last)));
+
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        // clang-format off
+        template <forward_range _Rng>
+            requires permutable<iterator_t<_Rng>>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, iterator_t<_Rng> _Mid) const {
+            _Adl_verify_range(_Ubegin(_Range), _Mid);
+            auto _UResult = _Rotate_unchecked(_Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range));
+
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se>
+        _NODISCARD static constexpr subrange<_It> _Rotate_unchecked(_It _First, _It _Mid, _Se _Last) {
+            // Exchange the ranges [_First, _Mid) and [_Mid, _Last)
+            // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+
+            auto _End = _Get_final_iterator_unwrapped<_It>(_First, _STD move(_Last));
+            if (_First == _Mid) {
+                return {_End, _End};
+            }
+
+            if (_Mid == _End) {
+                return {_STD move(_First), _STD move(_End)};
+            }
+
+            if constexpr (random_access_iterator<_It>) {
+                _RANGES _Reverse_common(_First, _Mid);
+                _RANGES _Reverse_common(_Mid, _End);
+                _RANGES _Reverse_common(_First, _End);
+                _First += (_End - _Mid);
+                return {_STD move(_First), _STD move(_End)};
+            } else if constexpr (bidirectional_iterator<_It>) {
+                _RANGES _Reverse_common(_First, _Mid);
+                _RANGES _Reverse_common(_Mid, _End);
+                while (_First != _Mid && _End != _Mid) {
+                    _RANGES iter_swap(_First, --_End);
+                    ++_First;
+                }
+                if (_First == _Mid) {
+                    _RANGES _Reverse_common(_Mid, _End);
+                    return {_STD move(_First), _STD move(_End)};
+                } else {
+                    _RANGES _Reverse_common(_First, _Mid);
+                    return {_STD move(_First), _STD move(_End)};
+                }
+            } else {
+                auto _Next = _Mid;
+                do { // rotate the first cycle
+                    _RANGES iter_swap(_First, _Next);
+                    ++_First;
+                    ++_Next;
+                    if (_First == _Mid) {
+                        _Mid = _Next;
+                    }
+                } while (_Next != _Last);
+
+                auto _Begin = _First;
+
+                while (_Mid != _Last) { // rotate subsequent cycles
+                    _Next = _Mid;
+                    do {
+                        _RANGES iter_swap(_First, _Next);
+                        ++_First;
+                        ++_Next;
+                        if (_First == _Mid) {
+                            _Mid = _Next;
+                        }
+                    } while (_Next != _Last);
+                }
+                return {_STD move(_Begin), _STD move(_End)};
+            }
+        }
+    };
+
+    inline constexpr _Rotate_fn rotate{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE rotate_copy_result
+    template <class _In, class _Out>
+    using rotate_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::rotate_copy
+    class _Rotate_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <forward_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+            requires indirectly_copyable<_It, _Out>
+        _NODISCARD constexpr rotate_copy_result<_It, _Out> operator()(
+            _It _First, _It _Mid, _Se _Last, _Out _Result) const {
+            _Adl_verify_range(_First, _Mid);
+            _Adl_verify_range(_Mid, _Last);
+            auto _UResult = _Rotate_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Mid)),
+                _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
+        }
+
+        template <forward_range _Rng, weakly_incrementable _Out>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        _NODISCARD constexpr rotate_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, iterator_t<_Rng> _Mid, _Out _Result) const {
+            _Adl_verify_range(_Ubegin(_Range), _Mid);
+            auto _UResult = _Rotate_copy_unchecked(
+                _Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range), _STD move(_Result));
+
+            return {_Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_UResult.out)};
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Out>
+        _NODISCARD static constexpr rotate_copy_result<_It, _Out> _Rotate_copy_unchecked(
+            _It _First, _It _Mid, _Se _Last, _Out _Result) {
+            // Copy the content of [_Mid, _Last) and [_First, _Mid) to _Result
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+            auto _UResult1 = _RANGES _Copy_unchecked(_Mid, _STD move(_Last), _STD move(_Result));
+            auto _UResult2 = _RANGES _Copy_unchecked(_STD move(_First), _STD move(_Mid), _STD move(_UResult1.out));
+            return {_STD move(_UResult1.in), _STD move(_UResult2.out)};
+        }
+    };
+
+    inline constexpr _Rotate_copy_fn rotate_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE sample
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_reservoir_unchecked(
