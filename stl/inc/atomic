@@ -685,7 +685,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         _Ty _Mask;
         _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_STD addressof(_Mask));
-        const long _Mask_val = _Atomic_reinterpret_as<short>(_Mask);
+        const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
 
         for (;;) {
 #endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
@@ -808,7 +808,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _Ty _Mask;
         _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_STD addressof(_Mask));
-        const long long _Mask_val = _Atomic_reinterpret_as<short>(_Mask);
+        const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
 
         for (;;) {
 #endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
