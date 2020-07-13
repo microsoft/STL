@@ -4214,7 +4214,8 @@ namespace ranges {
         template <class _It, class _Se, class _Out, class _Pj, class _Pr>
         _NODISCARD static constexpr unique_copy_result<_It, _Out> _Unique_copy_unchecked(
             _It _First, const _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj) {
-            // Copy elements from [_First, _Last) to _Result, compressing adjacent elements whose projections satisfy _Pred
+            // Copy elements from [_First, _Last) to _Result, compressing adjacent elements whose projections satisfy
+            // _Pred
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
