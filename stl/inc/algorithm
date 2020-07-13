@@ -3954,7 +3954,7 @@ namespace ranges {
         // clang-format on
     private:
         template <class _It, class _Se, class _Pj, class _Pr>
-        _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj) {
+        _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
             // Remove adjacent elements from [_First, _Last) whose projections satisfy _Pred
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
@@ -3965,14 +3965,14 @@ namespace ranges {
                 return {_STD move(_Current), _STD move(_First)};
             }
 
-            for (; ++_First != _Last; ++_Current) {
+            for (;; ++_Current) {
+                if (++_First == _Last) {
+                    return {_STD move(_Current), _STD move(_First)};
+                }
+
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
                     break;
                 }
-            }
-
-            if (_First == _Last) {
-                return {_STD move(_Current), _STD move(_First)};
             }
 
             while (++_First != _Last) {
@@ -4164,19 +4164,17 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // ALIAS TEMPLATE unique_copy_result
+    template <class _In, class _Out>
+    using unique_copy_result = in_out_result<_In, _Out>;
 
+    // VARIABLE ranges::unique_copy
     // clang-format off
     template <class _It, class _Out>
     concept _Can_reread_or_store = forward_iterator<_It>
                                 || (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>)
                                 || indirectly_copyable_storable<_It, _Out>;
     // clang-format on
-
-    // ALIAS TEMPLATE unique_copy_result
-    template <class _In, class _Out>
-    using unique_copy_result = in_out_result<_In, _Out>;
-
-    // VARIABLE ranges::unique_copy
     class _Unique_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4227,7 +4225,7 @@ namespace ranges {
                 return {_STD move(_First), _STD move(_Result)};
             }
 
-            if constexpr (input_iterator<_Out>) {
+            if constexpr (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>) {
                 // Can reread _Result
                 *_Result = *_First;
 
@@ -4251,7 +4249,7 @@ namespace ranges {
                 }
             } else {
                 // Neither _First nor _Result can be reread, construct temporary
-                _Iter_value_t<_It> _Val = *_First;
+                iter_value_t<_It> _Val = *_First;
                 *_Result                = _Val;
 
                 while (++_First != _Last) {
