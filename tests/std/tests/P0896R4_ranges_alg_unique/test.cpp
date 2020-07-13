@@ -37,7 +37,7 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
-            assert(ranges::equal(expected, result));
+            assert(ranges::equal(expected, span{input}.first<4>()));
             assert(comparisonCounter == ranges::size(input) - 1);
         }
 
@@ -51,7 +51,7 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
-            assert(ranges::equal(expected, result));
+            assert(ranges::equal(expected, span{input}.first<4>()));
             assert(comparisonCounter == ranges::size(input) - 1);
         }
     }
