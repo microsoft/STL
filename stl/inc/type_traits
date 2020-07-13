@@ -419,7 +419,6 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 #undef _IS_MEMFUNPTR_ELLIPSIS
 
-// STRUCT TEMPLATE is_member_function_pointer
 #ifdef __clang__
 template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
@@ -430,29 +429,6 @@ _INLINE_VAR constexpr bool is_member_function_pointer_v = _Is_memfunptr<remove_c
 
 template <class _Ty>
 struct is_member_function_pointer : bool_constant<is_member_function_pointer_v<_Ty>> {};
-
-// STRUCT TEMPLATE is_member_pointer
-#ifdef __clang__
-template <class _Ty>
-_INLINE_VAR constexpr bool is_member_pointer_v = __is_member_pointer(_Ty);
-#else // ^^^ Clang / Other vvv
-template <class _Ty>
-_INLINE_VAR constexpr bool is_member_pointer_v = is_member_function_pointer_v<_Ty>;
-
-template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool is_member_pointer_v<_Ty1 _Ty2::*> = true;
-#endif // ^^^ Other ^^^
-
-template <class _Ty>
-struct is_member_pointer : bool_constant<is_member_pointer_v<_Ty>> {}; // determine whether _Ty is a pointer to member
-
-// STRUCT TEMPLATE is_scalar
-template <class _Ty>
-_INLINE_VAR constexpr bool is_scalar_v = // determine whether _Ty is a scalar type
-    is_arithmetic_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty> || is_member_pointer_v<_Ty> || is_null_pointer_v<_Ty>;
-
-template <class _Ty>
-struct is_scalar : bool_constant<is_scalar_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_const
 template <class>
@@ -491,13 +467,46 @@ struct is_object : bool_constant<is_object_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_member_object_pointer
 template <class>
-_INLINE_VAR constexpr bool is_member_object_pointer_v = false;
+struct _Is_member_object_pointer {
+    static constexpr bool value = false;
+};
 
 template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool is_member_object_pointer_v<_Ty1 _Ty2::*> = !is_function_v<_Ty1>;
+struct _Is_member_object_pointer<_Ty1 _Ty2::*> {
+    static constexpr bool value = !is_function_v<_Ty1>;
+    using _Class_type           = _Ty2;
+};
+
+#ifdef __clang__
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_object_pointer_v = __is_member_object_pointer(_Ty);
+#else // ^^^ Clang / Other vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_object_pointer_v = _Is_member_object_pointer<remove_cv_t<_Ty>>::value;
+#endif // ^^^ Other ^^^
 
 template <class _Ty>
 struct is_member_object_pointer : bool_constant<is_member_object_pointer_v<_Ty>> {};
+
+// STRUCT TEMPLATE is_member_pointer
+#ifdef __clang__
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_pointer_v = __is_member_pointer(_Ty);
+#else // ^^^ Clang / Other vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool is_member_pointer_v = is_member_object_pointer_v<_Ty> || is_member_function_pointer_v<_Ty>;
+#endif // ^^^ Other ^^^
+
+template <class _Ty>
+struct is_member_pointer : bool_constant<is_member_pointer_v<_Ty>> {}; // determine whether _Ty is a pointer to member
+
+// STRUCT TEMPLATE is_scalar
+template <class _Ty>
+_INLINE_VAR constexpr bool is_scalar_v = // determine whether _Ty is a scalar type
+    is_arithmetic_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty> || is_member_pointer_v<_Ty> || is_null_pointer_v<_Ty>;
+
+template <class _Ty>
+struct is_scalar : bool_constant<is_scalar_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_pod
 template <class _Ty>
@@ -1452,17 +1461,6 @@ _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_c
     move_if_noexcept(_Ty& _Arg) noexcept { // forward _Arg as movable, sometimes
     return _STD move(_Arg);
 }
-
-template <class _Ty, bool _Pmf = is_member_function_pointer_v<_Ty>>
-struct _Is_member_object_pointer {
-    static constexpr bool value = false;
-};
-
-template <class _Ty1, class _Ty2>
-struct _Is_member_object_pointer<_Ty1 _Ty2::*, false> {
-    static constexpr bool value = true;
-    using _Class_type           = _Ty2;
-};
 
 template <class _Ty>
 class reference_wrapper;
