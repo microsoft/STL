@@ -24,14 +24,16 @@ struct instantiator {
     template <ranges::forward_range Read>
     static constexpr void call() {
         using ranges::remove_if, ranges::subrange, ranges::equal, ranges::iterator_t;
+
+        size_t comparisonsCounter = 0;
+        auto projection           = [&comparisonsCounter](const P& data) {
+            ++comparisonsCounter;
+            return data.second;
+        };
+
         { // Validate iterator + sentinel overload
             P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
             Read wrapped_input{input};
-            size_t comparisonsCounter = 0;
-            auto projection           = [&comparisonsCounter](const P& data) {
-                ++comparisonsCounter;
-                return data.second;
-            };
 
             auto result = remove_if(wrapped_input.begin(), wrapped_input.end(), matches, projection);
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
@@ -40,14 +42,12 @@ struct instantiator {
             assert(equal(expected, span{input}.first<3>()));
             assert(comparisonsCounter == ranges::size(input));
         }
+
+        comparisonsCounter = 0;
+
         { // Validate range overload
             P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
             Read wrapped_input{input};
-            size_t comparisonsCounter = 0;
-            auto projection           = [&comparisonsCounter](const P& data) {
-                ++comparisonsCounter;
-                return data.second;
-            };
 
             auto result = remove_if(wrapped_input, matches, projection);
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);

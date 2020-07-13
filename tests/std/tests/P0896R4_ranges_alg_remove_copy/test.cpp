@@ -26,20 +26,22 @@ struct instantiator {
 
     template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) //  conditional expression is constant
-        if (!ranges::contiguous_range<Read> || !is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-        {
+        // Fails checking the indirect_binary_predicate requirement in C1XX's permissive mode with proxy iterators
+        // (probably related to VSO-566808)
+        constexpr bool non_proxy =
+            is_reference_v<ranges::range_reference_t<Read>> && is_reference_v<iter_reference_t<Write>>;
+        if constexpr (non_proxy || !is_permissive) {
             using ranges::remove_copy, ranges::remove_copy_result, ranges::equal, ranges::iterator_t;
+
+            size_t comparisonsCounter = 0;
+            auto projection           = [&comparisonsCounter](const P& data) {
+                ++comparisonsCounter;
+                return data.second;
+            };
+
             { // Validate iterator + sentinel overload
                 P output[3] = {{-1, -1}, {-1, -1}, {-1, -1}};
                 Read wrapped_input{input};
-                size_t comparisonsCounter = 0;
-                auto projection           = [&comparisonsCounter](const P& data) {
-                    ++comparisonsCounter;
-                    return data.second;
-                };
 
                 auto result = remove_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, 47, projection);
                 STATIC_ASSERT(same_as<decltype(result), remove_copy_result<iterator_t<Read>, Write>>);
@@ -48,14 +50,12 @@ struct instantiator {
                 assert(equal(output, expected));
                 assert(comparisonsCounter == ranges::size(input));
             }
+
+            comparisonsCounter = 0;
+
             { // Validate range overload
                 P output[3] = {{-1, -1}, {-1, -1}, {-1, -1}};
                 Read wrapped_input{input};
-                size_t comparisonsCounter = 0;
-                auto projection           = [&comparisonsCounter](const P& data) {
-                    ++comparisonsCounter;
-                    return data.second;
-                };
 
                 auto result = remove_copy(wrapped_input, Write{output}, 47, projection);
                 STATIC_ASSERT(same_as<decltype(result), remove_copy_result<iterator_t<Read>, Write>>);
