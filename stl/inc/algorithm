@@ -3288,8 +3288,8 @@ namespace ranges {
         constexpr unary_transform_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Fn _Func, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Transform_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
-                _STD move(_Result), _Pass_fn(_Func), _Pass_fn(_Proj));
+            auto _UResult = _Transform_unary_unchecked(_Get_unwrapped(_STD move(_First)),
+                _Get_unwrapped(_STD move(_Last)), _STD move(_Result), _Pass_fn(_Func), _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
@@ -3300,7 +3300,7 @@ namespace ranges {
         constexpr unary_transform_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Fn _Func, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Transform_unchecked(
+            auto _UResult = _Transform_unary_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result), _Pass_fn(_Func), _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult.in));
@@ -3314,9 +3314,10 @@ namespace ranges {
             _Se2 _Last2, _Out _Result, _Fn _Func, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UResult = _Transform_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
-                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _STD move(_Result),
-                _Pass_fn(_Func), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            auto _UResult =
+                _Transform_binary_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _STD move(_Result),
+                    _Pass_fn(_Func), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
 
             _Seek_wrapped(_First1, _STD move(_UResult.in1));
             _Seek_wrapped(_First2, _STD move(_UResult.in2));
@@ -3331,7 +3332,7 @@ namespace ranges {
             _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Fn _Func, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             auto _First1  = _RANGES begin(_Range1);
             auto _First2  = _RANGES begin(_Range2);
-            auto _UResult = _Transform_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+            auto _UResult = _Transform_binary_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
                 _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _STD move(_Result), _Pass_fn(_Func),
                 _Pass_fn(_Proj1), _Pass_fn(_Proj2));
 
@@ -3343,7 +3344,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Se, class _Out, class _Fn, class _Pj>
-        _NODISCARD static constexpr unary_transform_result<_It, _Out> _Transform_unchecked(
+        _NODISCARD static constexpr unary_transform_result<_It, _Out> _Transform_unary_unchecked(
             _It _First, const _Se _Last, _Out _Result, _Fn _Func, _Pj _Proj) {
             // transform projected [_First, _Last) with _Func
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
@@ -3358,9 +3359,9 @@ namespace ranges {
         }
 
         template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Fn, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr binary_transform_result<_It1, _It2, _Out> _Transform_unchecked(_It1 _First1,
+        _NODISCARD static constexpr binary_transform_result<_It1, _It2, _Out> _Transform_binary_unchecked(_It1 _First1,
             const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Fn _Func, _Pj1 _Proj1, _Pj2 _Proj2) {
-            // transform projected [_First1, _Last1) and projected [_First2, Last2) with _Func
+            // transform projected [_First1, _Last1) and projected [_First2, _Last2) with _Func
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);

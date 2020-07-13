@@ -27,10 +27,9 @@ struct int_wrapper {
 STATIC_ASSERT(same_as<ranges::move_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::move(borrowed<false>{}, static_cast<int*>(nullptr))),
-    ranges::move_result<ranges::dangling, int*>>);
 STATIC_ASSERT(
-    same_as<decltype(ranges::move(borrowed<true>{}, static_cast<int*>(nullptr))), ranges::move_result<int*, int*>>);
+    same_as<decltype(ranges::move(borrowed<false>{}, nullptr_to<int>)), ranges::move_result<ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::move(borrowed<true>{}, nullptr_to<int>)), ranges::move_result<int*, int*>>);
 
 struct instantiator {
     static constexpr int_wrapper expected_output[3] = {13, 55, 12345};

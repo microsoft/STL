@@ -17,9 +17,9 @@ constexpr auto matches = [](int const val) { return val == 47; };
 STATIC_ASSERT(same_as<ranges::replace_copy_if_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::replace_copy_if(borrowed<false>{}, static_cast<int*>(nullptr), matches, 5)),
+STATIC_ASSERT(same_as<decltype(ranges::replace_copy_if(borrowed<false>{}, nullptr_to<int>, matches, 5)),
     ranges::replace_copy_if_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::replace_copy_if(borrowed<true>{}, static_cast<int*>(nullptr), matches, 5)),
+STATIC_ASSERT(same_as<decltype(ranges::replace_copy_if(borrowed<true>{}, nullptr_to<int>, matches, 5)),
     ranges::replace_copy_if_result<int*, int*>>);
 
 struct instantiator {

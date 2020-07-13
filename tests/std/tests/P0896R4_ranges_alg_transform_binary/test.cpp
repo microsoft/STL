@@ -16,18 +16,14 @@ using P = pair<int, int>;
 STATIC_ASSERT(same_as<ranges::binary_transform_result<int, P, double>, ranges::in_in_out_result<int, P, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(
-    same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<false>{}, static_cast<int*>(nullptr), plus{})),
-        ranges::binary_transform_result<ranges::dangling, ranges::dangling, int*>>);
-STATIC_ASSERT(
-    same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<true>{}, static_cast<int*>(nullptr), plus{})),
-        ranges::binary_transform_result<ranges::dangling, int*, int*>>);
-STATIC_ASSERT(
-    same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<false>{}, static_cast<int*>(nullptr), plus{})),
-        ranges::binary_transform_result<int*, ranges::dangling, int*>>);
-STATIC_ASSERT(
-    same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<true>{}, static_cast<int*>(nullptr), plus{})),
-        ranges::binary_transform_result<int*, int*, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>, plus{})),
+    ranges::binary_transform_result<ranges::dangling, ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>, plus{})),
+    ranges::binary_transform_result<ranges::dangling, int*, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>, plus{})),
+    ranges::binary_transform_result<int*, ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<true>{}, nullptr_to<int>, plus{})),
+    ranges::binary_transform_result<int*, int*, int*>>);
 
 struct instantiator {
     static constexpr P input1[3]     = {{1, 99}, {4, 98}, {5, 97}};
@@ -41,7 +37,7 @@ struct instantiator {
     template <ranges::input_range Read1, ranges::input_range Read2, weakly_incrementable Write>
     static constexpr void call() {
         using ranges::transform, ranges::binary_transform_result, ranges::iterator_t;
-        { // Validate iterator + sentinel overload first range shorter
+        { // Validate iterator + sentinel overload, first range shorter
             int output[2] = {-1, -1};
             Read1 wrapped_in1{shortInput1};
             Read2 wrapped_in2{input2};
@@ -55,7 +51,7 @@ struct instantiator {
             assert(result.out.peek() == output + 2);
             assert(ranges::equal(output, shortExpected));
         }
-        { // Validate iterator + sentinel overload second range shorter
+        { // Validate iterator + sentinel overload, second range shorter
             int output[2] = {-1, -1};
             Read1 wrapped_in1{input1};
             Read2 wrapped_in2{shortInput2};

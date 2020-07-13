@@ -15,12 +15,12 @@ using P = pair<int, int>;
 // Validate that unary_transform_result aliases in_out_result
 STATIC_ASSERT(same_as<ranges::unary_transform_result<int, double>, ranges::in_out_result<int, double>>);
 
-constexpr auto minus_one = [](int x) -> int { return x - 1; };
+constexpr auto minus_one = [](const int x) { return x - 1; };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<false>{}, static_cast<int*>(nullptr), minus_one)),
+STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<false>{}, nullptr_to<int>, minus_one)),
     ranges::unary_transform_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<true>{}, static_cast<int*>(nullptr), minus_one)),
+STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<true>{}, nullptr_to<int>, minus_one)),
     ranges::unary_transform_result<int*, int*>>);
 
 struct instantiator {
