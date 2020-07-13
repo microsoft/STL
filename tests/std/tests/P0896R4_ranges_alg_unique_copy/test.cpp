@@ -25,21 +25,21 @@ struct instantiator {
     static constexpr P expected[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
     static constexpr P input[6]    = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
 
-    size_t comparisonCounter    = 0;
-    constexpr auto countedEqual = [&](const int a, const int b) {
-        ++comparisonCounter;
-        return a == b;
-    };
-
     template <ranges::input_range Read, weakly_incrementable Write>
     static constexpr void call() {
         using ranges::unique_copy, ranges::unique_copy_result, ranges::iterator_t;
+
+        size_t comparisonCounter = 0;
+        auto countedEq           = [&comparisonCounter](const int a, const int b) {
+            ++comparisonCounter;
+            return a == b;
+        };
+
         { // Validate iterator + sentinel overload
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
 
-            auto result =
-                unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, countedEqual, get_second);
+            auto result = unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, countedEq, get_second);
             STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 4);
@@ -53,7 +53,7 @@ struct instantiator {
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
 
-            auto result = unique_copy(wrapped_input, Write{output}, countedEqual, get_second);
+            auto result = unique_copy(wrapped_input, Write{output}, countedEq, get_second);
             STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 4);

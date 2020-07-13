@@ -22,37 +22,37 @@ struct instantiator {
     template <ranges::forward_range ReadWrite>
     static constexpr void call() {
         using ranges::unique, ranges::subrange, ranges::iterator_t;
+
+        size_t comparisonCounter = 0;
+        auto countedEq           = [&comparisonCounter](const int a, const int b) {
+            ++comparisonCounter;
+            return a == b;
+        };
+
         { // Validate iterator + sentinel overload
             P input[6] = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
             ReadWrite wrapped_input{input};
-            size_t comparisonsCounter = 0;
-            constexpr auto countedEq  = [&comparisonsCounter](const int a, const int b) {
-                ++comparisonsCounter;
-                return a == b;
-            };
 
             auto result = unique(wrapped_input.begin(), wrapped_input.end(), countedEq, get_second);
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
             assert(ranges::equal(expected, span{input}.first<4>()));
-            assert(comparisonsCounter == ranges::size(input) - 1);
+            assert(comparisonCounter == ranges::size(input) - 1);
         }
+
+        comparisonCounter = 0;
+
         { // Validate range overload
             P input[6] = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
             ReadWrite wrapped_input{input};
-            size_t comparisonsCounter = 0;
-            constexpr auto countedEq  = [&comparisonsCounter](const int a, const int b) {
-                ++comparisonsCounter;
-                return a == b;
-            };
 
             auto result = unique(wrapped_input, countedEq, get_second);
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
             assert(ranges::equal(expected, span{input}.first<4>()));
-            assert(comparisonsCounter == ranges::size(input) - 1);
+            assert(comparisonCounter == ranges::size(input) - 1);
         }
     }
 };
