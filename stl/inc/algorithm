@@ -4250,15 +4250,15 @@ namespace ranges {
             } else {
                 // Neither _First nor _Result can be reread, construct temporary
                 iter_value_t<_It> _Val = *_First;
-                *_Result                = _Val;
 
                 while (++_First != _Last) {
                     if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First))) {
-                        _Val = *_First;
+                        *_Result = _STD move(_Val);
                         ++_Result;
-                        *_Result = _Val;
+                        _Val = *_First;
                     }
                 }
+                *_Result = _STD move(_Val);
             }
             ++_Result;
 

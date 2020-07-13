@@ -64,15 +64,6 @@ struct instantiator {
 };
 
 int main() {
-    // with store
-    STATIC_ASSERT((input_range_output_iterator_permutations<instantiator, const P, P>(), true));
-    input_range_output_iterator_permutations<instantiator, const P, P>();
-
-    // with readable out
-    STATIC_ASSERT((input_range_input_iterator_permutations<instantiator, const P, P>(), true));
-    input_range_input_iterator_permutations<instantiator, const P, P>();
-
-    // with readable in
-    STATIC_ASSERT((forward_range_output_iterator_permutations<instantiator, const P, P>(), true));
-    forward_range_output_iterator_permutations<instantiator, const P, P>();
+    STATIC_ASSERT((test_in_write<instantiator, const P, P>(), true));
+    test_in_write<instantiator, const P, P>();
 }
