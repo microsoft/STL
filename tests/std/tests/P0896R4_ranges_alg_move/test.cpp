@@ -39,7 +39,7 @@ struct instantiator {
     template <ranges::input_range Read, indirectly_writable<ranges::range_rvalue_reference_t<Read>> Write>
     static constexpr void call() {
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) //  conditional expression is constant
+#pragma warning(suppress : 4127) // conditional expression is constant
         if (!ranges::contiguous_range<Read> || !is_constant_evaluated())
 #endif // TRANSITION, VSO-938163
         {
