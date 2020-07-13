@@ -278,8 +278,8 @@ tests\P0896R4_ranges_range_machinery
 tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
-tests\P0896R4_ranges_unique
-tests\P0896R4_ranges_unique_copy
+tests\P0896R4_ranges_alg_unique
+tests\P0896R4_ranges_alg_unique_copy
 tests\P0898R3_concepts
 tests\P0898R3_identity
 tests\P0919R3_heterogeneous_unordered_lookup

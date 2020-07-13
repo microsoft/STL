@@ -3955,7 +3955,7 @@ namespace ranges {
     private:
         template <class _It, class _Se, class _Pj, class _Pr>
         _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj) {
-            // Remove adjacent elements from [_First, _Last) whose projection satisfy _Pred
+            // Remove adjacent elements from [_First, _Last) whose projections satisfy _Pred
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
@@ -4196,7 +4196,7 @@ namespace ranges {
             return {_STD move(_First), _STD move(_Result)};
         }
 
-        template <input_range _Rng, class _Pj = identity, weakly_incrementable _Out,
+        template <input_range _Rng, weakly_incrementable _Out, class _Pj = identity,
             indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
             requires indirectly_copyable<iterator_t<_Rng>, _Out> && _Can_reread_or_store<iterator_t<_Rng>, _Out>
         constexpr unique_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
@@ -4214,7 +4214,7 @@ namespace ranges {
         template <class _It, class _Se, class _Out, class _Pj, class _Pr>
         _NODISCARD static constexpr unique_copy_result<_It, _Out> _Unique_copy_unchecked(
             _It _First, const _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj) {
-            // Copy elements from [_First, _Last) to _Out, compressing adjacent elements whose projection satisfy _Pred
+            // Copy elements from [_First, _Last) to _Result, compressing adjacent elements whose projections satisfy _Pred
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
@@ -4249,7 +4249,7 @@ namespace ranges {
                     }
                 }
             } else {
-                // Cannot reread _First nor _Result, construct temporary
+                // Neither _First nor _Result can be reread, construct temporary
                 _Iter_value_t<_It> _Val = *_First;
                 *_Result                = _Val;
 
