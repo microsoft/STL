@@ -3570,6 +3570,44 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::reverse
+    // clang-format off XXX
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <bidirectional_iterator _It>
+    // requires permutable<_It>
+    constexpr void _Reverse_common(_It _First, _It _Last) {
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (contiguous_iterator<_It>) {
+            using _Elem          = remove_reference_t<iter_reference_t<_It>>;
+            constexpr size_t _Nx = sizeof(_Elem);
+            constexpr bool _Allow_vectorization =
+                conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+
+            if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+                if (!_STD is_constant_evaluated()) {
+                    _Elem* const _First_addr = _STD to_address(_First);
+                    _Elem* const _Last_addr  = _STD to_address(_Last);
+                    if constexpr (_Nx == 1) {
+                        __std_reverse_trivially_swappable_1(_First_addr, _Last_addr);
+                    } else if constexpr (_Nx == 2) {
+                        __std_reverse_trivially_swappable_2(_First_addr, _Last_addr);
+                    } else if constexpr (_Nx == 4) {
+                        __std_reverse_trivially_swappable_4(_First_addr, _Last_addr);
+                    } else {
+                        __std_reverse_trivially_swappable_8(_First_addr, _Last_addr);
+                    }
+
+                    return;
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+        for (; _First != _Last && _First != --_Last; ++_First) {
+            _RANGES iter_swap(_First, _Last);
+        }
+    }
+    // clang-format on
+
     class _Reverse_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3582,7 +3620,7 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _Reverse_unchecked(_STD move(_UFirst), _STD move(_ULast));
+            _RANGES _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
             return _First;
         }
 
@@ -3590,48 +3628,10 @@ namespace ranges {
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
             auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _Reverse_unchecked(_Ubegin(_Range), _ULast);
+            _RANGES _Reverse_common(_Ubegin(_Range), _ULast);
             return _Rewrap_iterator(_Range, _STD move(_ULast));
         }
         // clang-format on
-    private:
-        template <class _It>
-        static constexpr void _Reverse_unchecked(_It _First, _It _Last) {
-            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
-
-#if _USE_STD_VECTOR_ALGORITHMS
-            using _Elem = remove_pointer_t<_It>;
-            constexpr bool _Allow_vectorization =
-                contiguous_iterator<_It> && conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
-
-            if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
-                if (!_STD is_constant_evaluated()) {
-                    __std_reverse_trivially_swappable_1(_STD to_address(_First), _STD to_address(_Last));
-                    return;
-                }
-            } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
-                if (!_STD is_constant_evaluated()) {
-                    __std_reverse_trivially_swappable_2(_STD to_address(_First), _STD to_address(_Last));
-                    return;
-                }
-            } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
-                if (!_STD is_constant_evaluated()) {
-                    __std_reverse_trivially_swappable_4(_STD to_address(_First), _STD to_address(_Last));
-                    return;
-                }
-            } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
-                if (!_STD is_constant_evaluated()) {
-                    __std_reverse_trivially_swappable_8(_STD to_address(_First), _STD to_address(_Last));
-                    return;
-                }
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-            for (; _First != _Last && _First != --_Last; ++_First) {
-                _RANGES iter_swap(_First, _Last);
-            }
-        }
     };
 
     inline constexpr _Reverse_fn reverse{_Not_quite_object::_Construct_tag{}};
