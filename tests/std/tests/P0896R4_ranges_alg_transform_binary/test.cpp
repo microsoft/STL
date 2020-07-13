@@ -65,7 +65,7 @@ struct instantiator {
             assert(result.out.peek() == output + 2);
             assert(ranges::equal(output, shortExpected));
         }
-        { // Validate range overload first range shorter
+        { // Validate range overload, first range shorter
             int output[2] = {-1, -1};
             Read1 wrapped_in1{shortInput1};
             Read2 wrapped_in2{input2};
@@ -78,7 +78,7 @@ struct instantiator {
             assert(result.out.peek() == output + 2);
             assert(ranges::equal(output, shortExpected));
         }
-        { // Validate range overload second range shorter
+        { // Validate range overload, second range shorter
             int output[2] = {-1, -1};
             Read1 wrapped_in1{input1};
             Read2 wrapped_in2{shortInput2};
