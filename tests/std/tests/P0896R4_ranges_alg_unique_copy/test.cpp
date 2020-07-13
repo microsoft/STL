@@ -27,38 +27,85 @@ struct instantiator {
 
     template <ranges::input_range Read, weakly_incrementable Write>
     static constexpr void call() {
-        using ranges::unique_copy, ranges::unique_copy_result, ranges::iterator_t;
-
-        size_t comparisonCounter = 0;
-        auto countedEq           = [&comparisonCounter](const int a, const int b) {
-            ++comparisonCounter;
-            return a == b;
-        };
+        using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::iterator_t;
 
         { // Validate iterator + sentinel overload
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
 
-            auto result = unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, countedEq, get_second);
+            // Tests which implementation strategy was choosen
+            size_t inputCounter    = 0;
+            size_t outputCounter   = 0;
+            size_t storeCounter    = 0;
+            auto countedProjection = [&](const P& val) {
+                if (output <= addressof(val) && addressof(val) < output + 4) {
+                    ++outputCounter;
+                } else if (input <= addressof(val) && addressof(val) < input + 6) {
+                    ++inputCounter;
+                } else {
+                    ++storeCounter;
+                }
+                return val.second;
+            };
+
+            auto result =
+                unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{}, countedProjection);
             STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 4);
-            assert(ranges::equal(expected, output));
-            assert(comparisonCounter == 5);
+            assert(equal(expected, output));
+            if constexpr (input_iterator<Write>) {
+                assert(inputCounter == 5);
+                assert(outputCounter == 5);
+                assert(storeCounter == 0);
+            } else if constexpr (ranges::forward_range<Read>) {
+                assert(inputCounter == 10);
+                assert(outputCounter == 0);
+                assert(storeCounter == 0);
+            } else {
+                assert(inputCounter == 5);
+                assert(outputCounter == 0);
+                assert(storeCounter == 5);
+            }
         }
-
-        comparisonCounter = 0;
 
         { // Validate range overload
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
 
-            auto result = unique_copy(wrapped_input, Write{output}, countedEq, get_second);
+            // Tests which implementation strategy was choosen
+            size_t inputCounter    = 0;
+            size_t outputCounter   = 0;
+            size_t storeCounter    = 0;
+            auto countedProjection = [&](const P& val) {
+                if (output <= addressof(val) && addressof(val) < output + 4) {
+                    ++outputCounter;
+                } else if (input <= addressof(val) && addressof(val) < input + 6) {
+                    ++inputCounter;
+                } else {
+                    ++storeCounter;
+                }
+                return val.second;
+            };
+
+            auto result = unique_copy(wrapped_input, Write{output}, equal_to{}, countedProjection);
             STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 4);
-            assert(ranges::equal(expected, output));
-            assert(comparisonCounter == 5);
+            assert(equal(expected, output));
+            if constexpr (input_iterator<Write>) {
+                assert(inputCounter == 5);
+                assert(outputCounter == 5);
+                assert(storeCounter == 0);
+            } else if constexpr (ranges::forward_range<Read>) {
+                assert(inputCounter == 10);
+                assert(outputCounter == 0);
+                assert(storeCounter == 0);
+            } else {
+                assert(inputCounter == 5);
+                assert(outputCounter == 0);
+                assert(storeCounter == 5);
+            }
         }
     }
 };
