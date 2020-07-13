@@ -23,10 +23,10 @@ struct instantiator {
     static constexpr void call() {
         using ranges::remove, ranges::subrange, ranges::equal, ranges::iterator_t;
 
-        size_t comparisonsCounter = 0;
-        auto projection           = [&comparisonsCounter](const P& data) {
-            ++comparisonsCounter;
-            return data.second;
+        size_t projectionCounter = 0;
+        auto projection          = [&projectionCounter](const P& val) {
+            ++projectionCounter;
+            return val.second;
         };
 
         { // Validate iterator + sentinel overload
@@ -38,10 +38,10 @@ struct instantiator {
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<3>()));
-            assert(comparisonsCounter == ranges::size(input));
+            assert(projectionCounter == ranges::size(input));
         }
 
-        comparisonsCounter = 0;
+        projectionCounter = 0;
 
         { // Validate range overload
             P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
@@ -52,7 +52,7 @@ struct instantiator {
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<3>()));
-            assert(comparisonsCounter == ranges::size(input));
+            assert(projectionCounter == ranges::size(input));
         }
     }
 };

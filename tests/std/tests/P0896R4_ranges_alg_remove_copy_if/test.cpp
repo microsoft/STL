@@ -35,10 +35,10 @@ struct instantiator {
         if constexpr (non_proxy || !is_permissive) {
             using ranges::remove_copy_if, ranges::remove_copy_if_result, ranges::equal, ranges::iterator_t;
 
-            size_t comparisonsCounter = 0;
-            auto projection           = [&comparisonsCounter](const P& data) {
-                ++comparisonsCounter;
-                return data.second;
+            size_t projectionCounter = 0;
+            auto projection          = [&projectionCounter](const P& val) {
+                ++projectionCounter;
+                return val.second;
             };
 
             { // Validate iterator + sentinel overload
@@ -50,10 +50,10 @@ struct instantiator {
                 assert(result.in == wrapped_input.end());
                 assert(result.out.peek() == output + 3);
                 assert(equal(output, expected));
-                assert(comparisonsCounter == ranges::size(input));
+                assert(projectionCounter == ranges::size(input));
             }
 
-            comparisonsCounter = 0;
+            projectionCounter = 0;
 
             { // Validate range overload
                 P output[3] = {{-1, -1}, {-1, -1}, {-1, -1}};
@@ -63,7 +63,7 @@ struct instantiator {
                 assert(result.in == wrapped_input.end());
                 assert(result.out.peek() == output + 3);
                 assert(equal(output, expected));
-                assert(comparisonsCounter == ranges::size(input));
+                assert(projectionCounter == ranges::size(input));
             }
         }
     }
