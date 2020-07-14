@@ -1554,9 +1554,8 @@ namespace ranges {
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _First = _RANGES begin(_Range);
-            auto _UResult =
-                _RANGES _Copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
@@ -2574,8 +2573,7 @@ namespace ranges {
 
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 const auto _Dist = _ULast - _UFirst;
-                auto _UResult =
-                    _Search_n_sized(_STD move(_UFirst), _Dist, _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _UResult = _Search_n_sized(_STD move(_UFirst), _Dist, _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
             } else {
                 auto _UResult = _Search_n_unsized(
@@ -2586,8 +2584,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Ty, class _Pr = ranges::equal_to, class _Pj = identity>
             requires indirectly_comparable<iterator_t<_Rng>, const _Ty*, _Pr, _Pj>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count,
-            const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
+            _Rng&& _Range, const range_difference_t<_Rng> _Count, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First = _RANGES begin(_Range);
 
             if (_Count <= 0) {
@@ -2601,8 +2599,8 @@ namespace ranges {
                     _Search_n_sized(_Get_unwrapped(_First), _Dist, _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
             } else {
-                auto _UResult = _Search_n_unsized(
-                    _Get_unwrapped(_First), _Uend(_Range), _Val, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _UResult = _Search_n_unsized(_Get_unwrapped(_First), _Uend(_Range), _Val,
+                    _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_First, _STD move(_UResult));
             }
         }
@@ -4564,8 +4562,7 @@ namespace ranges {
         }
 
         // clang-format off
-        template <forward_range _Rng, class _Pj = identity,
-            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        template <forward_range _Rng, class _Pj = identity, indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             auto _UResult = _Partition_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
