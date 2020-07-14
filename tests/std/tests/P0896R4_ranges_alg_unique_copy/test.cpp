@@ -10,7 +10,36 @@
 
 #include <range_algorithm_support.hpp>
 using namespace std;
-using P = pair<int, int>;
+
+struct instrumentedPair {
+    pair<int, int> _val         = {0, 0};
+    mutable int _numProjections = 0;
+
+    constexpr instrumentedPair() = default;
+    constexpr instrumentedPair(const instrumentedPair& other) : _val{other._val} {}
+    constexpr instrumentedPair(instrumentedPair&& other) : _val{exchange(other._val, {-1, -1})} {}
+    constexpr instrumentedPair& operator=(const instrumentedPair& other) {
+        _val            = other._val;
+        _numProjections = 0;
+        return *this;
+    }
+    constexpr instrumentedPair& operator=(instrumentedPair& other) {
+        _val            = exchange(other._val, {-1, -1});
+        _numProjections = 0;
+        return *this;
+    }
+
+    constexpr instrumentedPair(const int a, const int b) : _val{a, b} {};
+    constexpr instrumentedPair(const int a, const int b, const int c) : _val{a, b}, _numProjections{c} {};
+
+    constexpr auto operator<=>(const instrumentedPair&) const = default;
+    constexpr bool operator==(const instrumentedPair&) const  = default;
+
+    constexpr friend int countedProjection(const instrumentedPair& value) {
+        ++value._numProjections;
+        return value._val.second;
+    }
+};
 
 // Validate that unique_copy_result aliases in_out_result
 STATIC_ASSERT(same_as<ranges::unique_copy_result<int, double>, ranges::in_out_result<int, double>>);
@@ -22,8 +51,34 @@ STATIC_ASSERT(
     same_as<decltype(ranges::unique_copy(borrowed<true>{}, nullptr_to<int>)), ranges::unique_copy_result<int*, int*>>);
 
 struct instantiator {
-    static constexpr P expected[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
-    static constexpr P input[6]    = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
+    static constexpr instrumentedPair expectedOutput[4] = {
+        instrumentedPair{0, 99, 0}, //
+        instrumentedPair{1, 47, 0}, //
+        instrumentedPair{3, 99, 0}, //
+        instrumentedPair{4, 47, 0} //
+    };
+    static constexpr instrumentedPair expectedOutputRead[4] = {
+        instrumentedPair{0, 99, 1}, //
+        instrumentedPair{1, 47, 2}, //
+        instrumentedPair{3, 99, 1}, //
+        instrumentedPair{4, 47, 1} //
+    };
+    static constexpr instrumentedPair expectedInput[6] = {
+        instrumentedPair{0, 99, 0}, //
+        instrumentedPair{1, 47, 1}, //
+        instrumentedPair{2, 47, 1}, //
+        instrumentedPair{3, 99, 1}, //
+        instrumentedPair{4, 47, 1}, //
+        instrumentedPair{5, 47, 1} //
+    };
+    static constexpr instrumentedPair expectedInputRead[6] = {
+        instrumentedPair{0, 99, 1}, //
+        instrumentedPair{1, 47, 3}, //
+        instrumentedPair{2, 47, 1}, //
+        instrumentedPair{3, 99, 2}, //
+        instrumentedPair{4, 47, 2}, //
+        instrumentedPair{5, 47, 1} //
+    };
 
     template <ranges::input_range Read, weakly_incrementable Write>
     static constexpr void call() {
@@ -34,80 +89,68 @@ struct instantiator {
 #endif // TRANSITION, VSO-938163
         {
             { // Validate iterator + sentinel overload
-                P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-                Read wrapped_input{input};
-
-                // Tests which implementation strategy was chosen
-                size_t inputCounter    = 0;
-                size_t outputCounter   = 0;
-                size_t storeCounter    = 0;
-                auto countedProjection = [&](const P& val) {
-                    if (begin(output) <= addressof(val) && addressof(val) < end(output)) {
-                        ++outputCounter;
-                    } else if (begin(input) <= addressof(val) && addressof(val) < end(input)) {
-                        ++inputCounter;
-                    } else {
-                        ++storeCounter;
-                    }
-                    return val.second;
+                const instrumentedPair input[6] = {
+                    instrumentedPair{0, 99}, //
+                    instrumentedPair{1, 47}, //
+                    instrumentedPair{2, 47}, //
+                    instrumentedPair{3, 99}, //
+                    instrumentedPair{4, 47}, //
+                    instrumentedPair{5, 47} //
                 };
+                instrumentedPair output[4] = {
+                    instrumentedPair{-1, -1}, //
+                    instrumentedPair{-1, -1}, //
+                    instrumentedPair{-1, -1}, //
+                    instrumentedPair{-1, -1} //
+                };
+                Read wrapped_input{input};
 
                 auto result = unique_copy(
                     wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{}, countedProjection);
                 STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
                 assert(result.in == wrapped_input.end());
                 assert(result.out.peek() == end(output));
-                assert(equal(expected, output));
                 if constexpr (input_iterator<Write>) {
-                    assert(inputCounter == size(input) - 1);
-                    assert(outputCounter == size(input) - 1);
-                    assert(storeCounter == 0);
+                    assert(equal(expectedOutputRead, output));
+                    assert(equal(expectedInput, input));
                 } else if constexpr (ranges::forward_range<Read>) {
-                    assert(inputCounter == 2 * (size(input) - 1));
-                    assert(outputCounter == 0);
-                    assert(storeCounter == 0);
+                    assert(equal(expectedOutput, output));
+                    assert(equal(expectedInputRead, input));
                 } else {
-                    assert(inputCounter == size(input) - 1);
-                    assert(outputCounter == 0);
-                    assert(storeCounter == size(input) - 1);
+                    assert(equal(expectedOutput, output));
+                    assert(equal(expectedInput, input));
                 }
             }
             { // Validate range overload
-                P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-                Read wrapped_input{input};
-
-                // Tests which implementation strategy was chosen
-                size_t inputCounter    = 0;
-                size_t outputCounter   = 0;
-                size_t storeCounter    = 0;
-                auto countedProjection = [&](const P& val) {
-                    if (begin(output) <= addressof(val) && addressof(val) < end(output)) {
-                        ++outputCounter;
-                    } else if (begin(input) <= addressof(val) && addressof(val) < end(input)) {
-                        ++inputCounter;
-                    } else {
-                        ++storeCounter;
-                    }
-                    return val.second;
+                const instrumentedPair input[6] = {
+                    instrumentedPair{0, 99}, //
+                    instrumentedPair{1, 47}, //
+                    instrumentedPair{2, 47}, //
+                    instrumentedPair{3, 99}, //
+                    instrumentedPair{4, 47}, //
+                    instrumentedPair{5, 47} //
                 };
+                instrumentedPair output[4] = {
+                    instrumentedPair{-1, -1}, //
+                    instrumentedPair{-1, -1}, //
+                    instrumentedPair{-1, -1}, //
+                    instrumentedPair{-1, -1} //
+                };
+                Read wrapped_input{input};
 
                 auto result = unique_copy(wrapped_input, Write{output}, equal_to{}, countedProjection);
                 STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
                 assert(result.in == wrapped_input.end());
                 assert(result.out.peek() == end(output));
-                assert(equal(expected, output));
                 if constexpr (input_iterator<Write>) {
-                    assert(inputCounter == size(input) - 1);
-                    assert(outputCounter == size(input) - 1);
-                    assert(storeCounter == 0);
+                    assert(equal(expectedOutputRead, output));
+                    assert(equal(expectedInput, input));
                 } else if constexpr (ranges::forward_range<Read>) {
-                    assert(inputCounter == 2 * (size(input) - 1));
-                    assert(outputCounter == 0);
-                    assert(storeCounter == 0);
+                    assert(equal(expectedOutput, output));
+                    assert(equal(expectedInputRead, input));
                 } else {
-                    assert(inputCounter == size(input) - 1);
-                    assert(outputCounter == 0);
-                    assert(storeCounter == size(input) - 1);
+                    assert(equal(expectedOutput, output));
+                    assert(equal(expectedInput, input));
                 }
             }
         }
@@ -116,7 +159,7 @@ struct instantiator {
 
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((test_in_write<instantiator, const P, P>(), true));
+    STATIC_ASSERT((test_in_write<instantiator, const instrumentedPair, instrumentedPair>(), true));
 #endif // TRANSITION, GH-1030
-    test_in_write<instantiator, const P, P>();
+    test_in_write<instantiator, const instrumentedPair, instrumentedPair>();
 }
