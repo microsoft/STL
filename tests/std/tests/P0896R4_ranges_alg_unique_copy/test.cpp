@@ -33,14 +33,14 @@ struct instantiator {
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
 
-            // Tests which implementation strategy was choosen
+            // Tests which implementation strategy was chosen
             size_t inputCounter    = 0;
             size_t outputCounter   = 0;
             size_t storeCounter    = 0;
             auto countedProjection = [&](const P& val) {
-                if (output <= addressof(val) && addressof(val) < output + 4) {
+                if (output <= addressof(val) && addressof(val) < end(output)) {
                     ++outputCounter;
-                } else if (input <= addressof(val) && addressof(val) < input + 6) {
+                } else if (input <= addressof(val) && addressof(val) < end(input)) {
                     ++inputCounter;
                 } else {
                     ++storeCounter;
@@ -55,17 +55,17 @@ struct instantiator {
             assert(result.out.peek() == output + 4);
             assert(equal(expected, output));
             if constexpr (input_iterator<Write>) {
-                assert(inputCounter == 5);
-                assert(outputCounter == 5);
+                assert(inputCounter == ranges::size(input) - 1);
+                assert(outputCounter == ranges::size(input) - 1);
                 assert(storeCounter == 0);
             } else if constexpr (ranges::forward_range<Read>) {
-                assert(inputCounter == 10);
+                assert(inputCounter == 2 * (ranges::size(input) - 1));
                 assert(outputCounter == 0);
                 assert(storeCounter == 0);
             } else {
-                assert(inputCounter == 5);
+                assert(inputCounter == ranges::size(input) - 1);
                 assert(outputCounter == 0);
-                assert(storeCounter == 5);
+                assert(storeCounter == ranges::size(input) - 1);
             }
         }
 
@@ -73,14 +73,14 @@ struct instantiator {
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
 
-            // Tests which implementation strategy was choosen
+            // Tests which implementation strategy was chosen
             size_t inputCounter    = 0;
             size_t outputCounter   = 0;
             size_t storeCounter    = 0;
             auto countedProjection = [&](const P& val) {
-                if (output <= addressof(val) && addressof(val) < output + 4) {
+                if (output <= addressof(val) && addressof(val) < end(output)) {
                     ++outputCounter;
-                } else if (input <= addressof(val) && addressof(val) < input + 6) {
+                } else if (input <= addressof(val) && addressof(val) < end(input)) {
                     ++inputCounter;
                 } else {
                     ++storeCounter;
@@ -94,17 +94,17 @@ struct instantiator {
             assert(result.out.peek() == output + 4);
             assert(equal(expected, output));
             if constexpr (input_iterator<Write>) {
-                assert(inputCounter == 5);
-                assert(outputCounter == 5);
+                assert(inputCounter == ranges::size(input) - 1);
+                assert(outputCounter == ranges::size(input) - 1);
                 assert(storeCounter == 0);
             } else if constexpr (ranges::forward_range<Read>) {
-                assert(inputCounter == 10);
+                assert(inputCounter == 2 * (ranges::size(input) - 1));
                 assert(outputCounter == 0);
                 assert(storeCounter == 0);
             } else {
-                assert(inputCounter == 5);
+                assert(inputCounter == ranges::size(input) - 1);
                 assert(outputCounter == 0);
-                assert(storeCounter == 5);
+                assert(storeCounter == ranges::size(input) - 1);
             }
         }
     }
