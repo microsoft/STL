@@ -110,11 +110,12 @@ public:
     }
 
     enum { // constants for bits in stream state
-        _Allocated = 1, // set if character array storage has been allocated, eback() points to allocated storage
-        _Constant  = 2, // set if character array nonmutable
-        _Noread    = 4, // set if character array cannot be read
-        _Append    = 8, // set if all writes are appends
-        _Atend     = 16 // set if initial writes are appends
+        _Allocated   = 1, // set if character array storage has been allocated, eback() points to allocated storage
+        _Constant    = 2, // set if character array nonmutable
+        _Noread      = 4, // set if character array cannot be read
+        _Append      = 8, // set if all writes are appends
+        _Atend       = 16, // set if initial writes are appends
+        _From_rvalue = 32 // set if character array is released from an rvalue of basic_string
     };
 
     using int_type = typename _Traits::int_type;
@@ -129,7 +130,7 @@ public:
 
     _NODISCARD _Buffer_view _Get_buffer_view() const noexcept {
         _Buffer_view _Result{};
-        if (!(_Mystate & _Constant) && _Mysb::pptr()) {
+        if ((!(_Mystate & _Constant) || (_Mystate & _From_rvalue)) && _Mysb::pptr()) {
             // writable, make string view from write buffer
             const auto _Base = _Mysb::pbase();
             _Result._Ptr     = _Base;
@@ -334,7 +335,7 @@ protected:
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) {
         // change position by _Off, according to _Way, _Mode
         const auto _Gptr_old = _Mysb::gptr();
-        const auto _Pptr_old = _Mysb::pptr();
+        const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
         if (_Pptr_old && _Seekhigh < _Pptr_old) { // update high-water pointer
             _Seekhigh = _Pptr_old;
         }
@@ -394,7 +395,7 @@ protected:
         // change position to _Pos, according to _Mode
         const auto _Off      = static_cast<streamoff>(_Pos);
         const auto _Gptr_old = _Mysb::gptr();
-        const auto _Pptr_old = _Mysb::pptr();
+        const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
         if (_Pptr_old && _Seekhigh < _Pptr_old) { // update high-water pointer
             _Seekhigh = _Pptr_old;
         }
@@ -424,6 +425,8 @@ protected:
 protected:
     void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
+        _State &= ~_From_rvalue;
+
         if (_Count > INT_MAX) { // TRANSITION, VSO-485517
             _Xbad_alloc();
         }
@@ -457,10 +460,11 @@ protected:
 
 #if _HAS_CXX20
     void _Init_string_inplace(_Mystr&& _Str, int _State) {
+        _State |= _From_rvalue;
+
         auto [_Ptr, _Length, _Count] = _Str._Release_to_buffer(_Al);
         _Elem* const _Pnew           = _Unfancy(_Ptr);
         if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
-            _State &= ~_Constant;
             // finite buffer that can be read or written, set it up
             _Seekhigh        = _Pnew + _Length;
             auto _End_buffer = _Pnew + _Count;
