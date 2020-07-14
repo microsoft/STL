@@ -21,7 +21,7 @@ struct instantiator {
 
     template <ranges::forward_range ReadWrite>
     static constexpr void call() {
-        using ranges::unique, ranges::subrange, ranges::iterator_t;
+        using ranges::unique, ranges::subrange, ranges::equal, ranges::size, ranges::iterator_t;
 
         size_t comparisonCounter = 0;
         auto countedEq           = [&comparisonCounter](const int a, const int b) {
@@ -37,8 +37,8 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
-            assert(ranges::equal(expected, span{input}.first<4>()));
-            assert(comparisonCounter == ranges::size(input) - 1);
+            assert(equal(expected, span{input}.first<4>()));
+            assert(comparisonCounter == size(input) - 1);
         }
 
         comparisonCounter = 0;
@@ -51,8 +51,8 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
-            assert(ranges::equal(expected, span{input}.first<4>()));
-            assert(comparisonCounter == ranges::size(input) - 1);
+            assert(equal(expected, span{input}.first<4>()));
+            assert(comparisonCounter == size(input) - 1);
         }
     }
 };

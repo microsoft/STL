@@ -27,7 +27,8 @@ struct instantiator {
 
     template <ranges::input_range Read, weakly_incrementable Write>
     static constexpr void call() {
-        using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::iterator_t;
+        using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::size,
+            ranges::iterator_t;
 
         { // Validate iterator + sentinel overload
             P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
@@ -55,17 +56,17 @@ struct instantiator {
             assert(result.out.peek() == output + 4);
             assert(equal(expected, output));
             if constexpr (input_iterator<Write>) {
-                assert(inputCounter == ranges::size(input) - 1);
-                assert(outputCounter == ranges::size(input) - 1);
+                assert(inputCounter == size(input) - 1);
+                assert(outputCounter == size(input) - 1);
                 assert(storeCounter == 0);
             } else if constexpr (ranges::forward_range<Read>) {
-                assert(inputCounter == 2 * (ranges::size(input) - 1));
+                assert(inputCounter == 2 * (size(input) - 1));
                 assert(outputCounter == 0);
                 assert(storeCounter == 0);
             } else {
-                assert(inputCounter == ranges::size(input) - 1);
+                assert(inputCounter == size(input) - 1);
                 assert(outputCounter == 0);
-                assert(storeCounter == ranges::size(input) - 1);
+                assert(storeCounter == size(input) - 1);
             }
         }
 
@@ -94,17 +95,17 @@ struct instantiator {
             assert(result.out.peek() == output + 4);
             assert(equal(expected, output));
             if constexpr (input_iterator<Write>) {
-                assert(inputCounter == ranges::size(input) - 1);
-                assert(outputCounter == ranges::size(input) - 1);
+                assert(inputCounter == size(input) - 1);
+                assert(outputCounter == size(input) - 1);
                 assert(storeCounter == 0);
             } else if constexpr (ranges::forward_range<Read>) {
-                assert(inputCounter == 2 * (ranges::size(input) - 1));
+                assert(inputCounter == 2 * (size(input) - 1));
                 assert(outputCounter == 0);
                 assert(storeCounter == 0);
             } else {
-                assert(inputCounter == ranges::size(input) - 1);
+                assert(inputCounter == size(input) - 1);
                 assert(outputCounter == 0);
-                assert(storeCounter == ranges::size(input) - 1);
+                assert(storeCounter == size(input) - 1);
             }
         }
     }
