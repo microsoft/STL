@@ -49,7 +49,7 @@ public:
         : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al_) {}
 
     explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
-        : _Al(_STD move(_Str._Get_allocator_reference())) {
+        : _Al(_STD move(_Str._Getal())) {
         _Init_string_inplace(_STD move(_Str), _Getstate(_Mode));
     }
 
@@ -178,8 +178,7 @@ public:
         if (_View._Size >= _View._Res) {
             // the buffer is full
             _Result.assign(_View._Ptr, _View._Size);
-        } else {
-            _Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res);
+        } else if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
             _Mystate &= ~_Allocated;
         }
         _Tidy();
@@ -203,7 +202,7 @@ public:
 
     void str(_Mystr&& _Newstr) {
         _Tidy();
-        _Pocma(_Al, _Newstr._Get_allocator_reference());
+        _Pocma(_Al, _Newstr._Getal());
         _Init_string_inplace(_STD move(_Newstr), _Mystate);
     }
 
@@ -440,31 +439,28 @@ protected:
 
 #if _HAS_CXX20
     void _Init_string_inplace(_Mystr&& _Str, int _State) {
-        if ((_State & _Constant) && !(_State & _Noread)) { // readonly, copy the string
-            _Init(_Str.c_str(), _Str.size(), _State);
-        } else { // writeable, construct in place
-            auto [_Ptr, _Length, _Count] = _Str._Release_to_buffer(_Al);
-            _Elem* const _Pnew           = _Unfancy(_Ptr);
-            if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
-                // finite buffer that can be read or written, set it up
-                _Seekhigh        = _Pnew + _Length;
-                auto _End_buffer = _Pnew + _Count;
+        auto [_Ptr, _Length, _Count] = _Str._Release_to_buffer(_Al);
+        _Elem* const _Pnew           = _Unfancy(_Ptr);
+        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+            _State &= ~_Constant;
+            // finite buffer that can be read or written, set it up
+            _Seekhigh        = _Pnew + _Length;
+            auto _End_buffer = _Pnew + _Count;
 
-                _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
+            _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
 
-                if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-                    _Mysb::setg(_Pnew, nullptr, _Pnew);
-                } else {
-                    _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
-                }
-
-                _State |= _Allocated;
+            if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
+                _Mysb::setg(_Pnew, nullptr, _Pnew);
             } else {
-                _Seekhigh = nullptr;
+                _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
             }
 
-            _Mystate = _State;
+            _State |= _Allocated;
+        } else {
+            _Seekhigh = nullptr;
         }
+
+        _Mystate = _State;
     }
 #endif // _HAS_CXX20
 

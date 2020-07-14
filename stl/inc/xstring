@@ -2269,6 +2269,7 @@ template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = alloca
 class basic_string { // null-terminated transparent array of elements
 private:
     friend _Tidy_deallocate_guard<basic_string>;
+    friend basic_stringbuf<_Elem, _Traits, _Alloc>;
 
     using _Alty        = _Rebind_alloc_t<_Alloc, _Elem>;
     using _Alty_traits = allocator_traits<_Alty>;
@@ -2656,7 +2657,7 @@ private:
 
 public:
 #if _HAS_CXX20
-    void _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
+    bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used by basic_stringbuf
         _Tidy_deallocate();
         _Traits::assign(_Right[_Size], _Elem());
@@ -2666,12 +2667,14 @@ public:
         _My_data._Myres      = _Res;
         if (_My_data._Large_string_engaged()) {
             _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
+            return true;
         } else {
             _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
-            _Getal().deallocate(_Fancy_right, _Res);
+            return false;
         }
     }
 
+    // No instance of this type can exist where an exception may be thrown.
     struct _Released_buffer {
         pointer _Ptr;
         size_type _Size;
@@ -2683,19 +2686,17 @@ public:
         auto& _My_data = _Mypair._Myval2;
         if (_My_data._Large_string_engaged()) {
             _Released_buffer _Result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres};
-            _Tidy_leak();
+            _My_data._Orphan_all();
+            _Tidy_init();
             return _Result;
         } else {
             // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
             _Released_buffer _Result{_Al.allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1};
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Tidy_leak();
+            _My_data._Orphan_all();
+            _Tidy_init();
             return _Result;
         }
-    }
-
-    _NODISCARD _Alty& _Get_allocator_reference() {
-        return _Getal();
     }
 #endif // _HAS_CXX20
 
@@ -4426,13 +4427,6 @@ private:
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
     }
-
-#if _HAS_CXX20
-    void _Tidy_leak() noexcept { // initialize buffer, without deallocating
-        _Mypair._Myval2._Orphan_all();
-        _Tidy_init();
-    }
-#endif // _HAS_CXX20
 
 public:
     void _Orphan_all() noexcept { // used by filesystem::path

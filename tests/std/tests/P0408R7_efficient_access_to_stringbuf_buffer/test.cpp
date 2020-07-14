@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <iostream>
 #include <memory_resource>
 #include <sstream>
 #include <string>
@@ -114,6 +115,8 @@ struct test_counting_allocator {
         stream.str(move(s));
         if constexpr (!std::is_same_v<Stream, counting_istringstream>) {
             assert(stream.rdbuf()->get_allocator().count == 1);
+        } else {
+            assert(stream.rdbuf()->get_allocator().count == 1);
         }
     }
 };
@@ -157,6 +160,30 @@ void test_iterator_increment_zero() {
     iterator += 0; // OK
 }
 
+class test_stringbuf : public stringbuf {
+public:
+    using stringbuf::basic_stringbuf;
+
+    using stringbuf::eback;
+    using stringbuf::egptr;
+    using stringbuf::epptr;
+    using stringbuf::gptr;
+    using stringbuf::pbase;
+    using stringbuf::pptr;
+};
+
+void test_init_buf_ptrs() {
+    test_stringbuf buf1{string{large_string}, ios_base::out};
+    assert(*buf1.pbase() == large_string[0]);
+    assert(buf1.epptr() >= buf1.pbase() + buf1.view().size());
+    assert(buf1.pptr() == buf1.pbase());
+    test_stringbuf buf2{string{large_string}, ios_base::out | ios_base::ate};
+    assert(buf2.pptr() == buf2.pbase() + buf2.view().size());
+    test_stringbuf buf3{string{large_string}, ios_base::in};
+    assert(*buf3.eback() == large_string[0]);
+    assert(buf3.gptr() == buf3.eback() && buf3.egptr() == buf3.eback() + buf3.view().size());
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {
         run_test<test_rvalue>();
@@ -165,12 +192,19 @@ int main(int argc, char* argv[]) {
 
         test_iterator_increment_zero<small_string>();
         test_iterator_increment_zero<large_string>();
+
+        test_init_buf_ptrs();
     });
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-    exec.add_death_tests({test_iterator_dereference_death<small_string>, test_iterator_dereference_death<large_string>,
-        test_iterator_operator_arrow_death<small_string>, test_iterator_operator_arrow_death<large_string>,
-        test_iterator_increment_death<small_string>, test_iterator_increment_death<large_string>});
+    exec.add_death_tests({
+        test_iterator_dereference_death<small_string>,
+        test_iterator_dereference_death<large_string>,
+        test_iterator_operator_arrow_death<small_string>,
+        test_iterator_operator_arrow_death<large_string>,
+        test_iterator_increment_death<small_string>,
+        test_iterator_increment_death<large_string>,
+    });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
