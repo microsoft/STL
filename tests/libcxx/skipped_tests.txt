@@ -461,9 +461,6 @@ utilities\variant\variant.variant\variant.assign\T.pass.cpp
 utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
 utilities\variant\variant.variant\variant.ctor\T.pass.cpp
 
-# C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
-language.support\support.limits\support.limits.general\compare.version.pass.cpp
-
 # C++20 P0896R4 "<ranges>"
 language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
 language.support\support.limits\support.limits.general\functional.version.pass.cpp
