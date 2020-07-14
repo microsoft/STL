@@ -152,8 +152,7 @@ void test_iterator_increment_death() {
     ++iterator; // cannot increase invalid iterator
 }
 
-template <const char* str>
-void test_iterator_increment_zero() {
+void test_iterator_increment_zero(const char* str) {
     string s      = str;
     auto iterator = s.begin();
     stringstream stream{move(s)};
@@ -190,8 +189,8 @@ int main(int argc, char* argv[]) {
         run_test<test_allocator>();
         run_counting_test<test_counting_allocator>();
 
-        test_iterator_increment_zero<small_string>();
-        test_iterator_increment_zero<large_string>();
+        test_iterator_increment_zero(small_string);
+        test_iterator_increment_zero(large_string);
 
         test_init_buf_ptrs();
     });

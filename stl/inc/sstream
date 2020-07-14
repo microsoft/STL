@@ -187,11 +187,7 @@ public:
 
     _NODISCARD _Mystr_view view() const noexcept {
         const auto _View = _Get_buffer_view();
-        if (_View._Ptr) {
-            return _Mystr_view{_View._Ptr, _View._Size};
-        } else {
-            return {};
-        }
+        return _Mystr_view{_View._Ptr, _View._Size};
     }
 
     template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
@@ -200,10 +196,27 @@ public:
         _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
     }
 
-    void str(_Mystr&& _Newstr) {
+    void _Str(_Mystr&& _Newstr, _Equal_allocators) {
         _Tidy();
         _Pocma(_Al, _Newstr._Getal());
         _Init_string_inplace(_STD move(_Newstr), _Mystate);
+    }
+
+    void _Str(_Mystr&& _Newstr, _Propagate_allocators) {
+        _Str(_STD move(_Newstr), _Equal_allocators{});
+    }
+
+    void _Str(_Mystr&& _Newstr, _No_propagate_allocators) {
+        if (_Al == _Newstr._Getal()) {
+            _Str(_STD move(_Newstr), _Equal_allocators{});
+        } else {
+            _Tidy();
+            _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
+        }
+    }
+
+    void str(_Mystr&& _Newstr) {
+        _Str(_STD move(_Newstr), _Choose_pocma<_Alloc>{});
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
