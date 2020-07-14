@@ -29,89 +29,94 @@ struct instantiator {
     static constexpr void call() {
         using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::size,
             ranges::iterator_t;
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+        if constexpr (!ranges::contiguous_range<Range>)
+#endif // TRANSITION, VSO-938163
+        {
+            { // Validate iterator + sentinel overload
+                P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+                Read wrapped_input{input};
 
-        { // Validate iterator + sentinel overload
-            P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-            Read wrapped_input{input};
+                // Tests which implementation strategy was chosen
+                size_t inputCounter    = 0;
+                size_t outputCounter   = 0;
+                size_t storeCounter    = 0;
+                auto countedProjection = [&](const P& val) {
+                    if (begin(output) <= addressof(val) && addressof(val) < end(output)) {
+                        ++outputCounter;
+                    } else if (begin(input) <= addressof(val) && addressof(val) < end(input)) {
+                        ++inputCounter;
+                    } else {
+                        ++storeCounter;
+                    }
+                    return val.second;
+                };
 
-            // Tests which implementation strategy was chosen
-            size_t inputCounter    = 0;
-            size_t outputCounter   = 0;
-            size_t storeCounter    = 0;
-            auto countedProjection = [&](const P& val) {
-                if (output <= addressof(val) && addressof(val) < end(output)) {
-                    ++outputCounter;
-                } else if (input <= addressof(val) && addressof(val) < end(input)) {
-                    ++inputCounter;
+                auto result = unique_copy(
+                    wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{}, countedProjection);
+                STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
+                assert(result.in == wrapped_input.end());
+                assert(result.out.peek() == end(output));
+                assert(equal(expected, output));
+                if constexpr (input_iterator<Write>) {
+                    assert(inputCounter == size(input) - 1);
+                    assert(outputCounter == size(input) - 1);
+                    assert(storeCounter == 0);
+                } else if constexpr (ranges::forward_range<Read>) {
+                    assert(inputCounter == 2 * (size(input) - 1));
+                    assert(outputCounter == 0);
+                    assert(storeCounter == 0);
                 } else {
-                    ++storeCounter;
+                    assert(inputCounter == size(input) - 1);
+                    assert(outputCounter == 0);
+                    assert(storeCounter == size(input) - 1);
                 }
-                return val.second;
-            };
-
-            auto result =
-                unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{}, countedProjection);
-            STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
-            assert(result.in == wrapped_input.end());
-            assert(result.out.peek() == output + 4);
-            assert(equal(expected, output));
-            if constexpr (input_iterator<Write>) {
-                assert(inputCounter == size(input) - 1);
-                assert(outputCounter == size(input) - 1);
-                assert(storeCounter == 0);
-            } else if constexpr (ranges::forward_range<Read>) {
-                assert(inputCounter == 2 * (size(input) - 1));
-                assert(outputCounter == 0);
-                assert(storeCounter == 0);
-            } else {
-                assert(inputCounter == size(input) - 1);
-                assert(outputCounter == 0);
-                assert(storeCounter == size(input) - 1);
             }
-        }
+            { // Validate range overload
+                P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+                Read wrapped_input{input};
 
-        { // Validate range overload
-            P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-            Read wrapped_input{input};
+                // Tests which implementation strategy was chosen
+                size_t inputCounter    = 0;
+                size_t outputCounter   = 0;
+                size_t storeCounter    = 0;
+                auto countedProjection = [&](const P& val) {
+                    if (begin(output) <= addressof(val) && addressof(val) < end(output)) {
+                        ++outputCounter;
+                    } else if (begin(input) <= addressof(val) && addressof(val) < end(input)) {
+                        ++inputCounter;
+                    } else {
+                        ++storeCounter;
+                    }
+                    return val.second;
+                };
 
-            // Tests which implementation strategy was chosen
-            size_t inputCounter    = 0;
-            size_t outputCounter   = 0;
-            size_t storeCounter    = 0;
-            auto countedProjection = [&](const P& val) {
-                if (output <= addressof(val) && addressof(val) < end(output)) {
-                    ++outputCounter;
-                } else if (input <= addressof(val) && addressof(val) < end(input)) {
-                    ++inputCounter;
+                auto result = unique_copy(wrapped_input, Write{output}, equal_to{}, countedProjection);
+                STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
+                assert(result.in == wrapped_input.end());
+                assert(result.out.peek() == end(output));
+                assert(equal(expected, output));
+                if constexpr (input_iterator<Write>) {
+                    assert(inputCounter == size(input) - 1);
+                    assert(outputCounter == size(input) - 1);
+                    assert(storeCounter == 0);
+                } else if constexpr (ranges::forward_range<Read>) {
+                    assert(inputCounter == 2 * (size(input) - 1));
+                    assert(outputCounter == 0);
+                    assert(storeCounter == 0);
                 } else {
-                    ++storeCounter;
+                    assert(inputCounter == size(input) - 1);
+                    assert(outputCounter == 0);
+                    assert(storeCounter == size(input) - 1);
                 }
-                return val.second;
-            };
-
-            auto result = unique_copy(wrapped_input, Write{output}, equal_to{}, countedProjection);
-            STATIC_ASSERT(same_as<decltype(result), unique_copy_result<iterator_t<Read>, Write>>);
-            assert(result.in == wrapped_input.end());
-            assert(result.out.peek() == output + 4);
-            assert(equal(expected, output));
-            if constexpr (input_iterator<Write>) {
-                assert(inputCounter == size(input) - 1);
-                assert(outputCounter == size(input) - 1);
-                assert(storeCounter == 0);
-            } else if constexpr (ranges::forward_range<Read>) {
-                assert(inputCounter == 2 * (size(input) - 1));
-                assert(outputCounter == 0);
-                assert(storeCounter == 0);
-            } else {
-                assert(inputCounter == size(input) - 1);
-                assert(outputCounter == 0);
-                assert(storeCounter == size(input) - 1);
             }
         }
     }
 };
 
 int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((test_in_write<instantiator, const P, P>(), true));
+#endif // TRANSITION, GH-1030
     test_in_write<instantiator, const P, P>();
 }
