@@ -3570,10 +3570,10 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::reverse
-    // clang-format off XXX
+    // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It>
-    // requires permutable<_It>
+        requires permutable<_It>
     constexpr void _Reverse_common(_It _First, _It _Last) {
 #if _USE_STD_VECTOR_ALGORITHMS
         if constexpr (contiguous_iterator<_It>) {
