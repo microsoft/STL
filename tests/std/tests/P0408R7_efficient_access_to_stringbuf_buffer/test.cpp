@@ -80,10 +80,10 @@ struct counting_allocator {
     using value_type = T;
 
     std::allocator<T> allocator{};
-    std::size_t count{0};
+    std::shared_ptr<std::size_t> count{std::make_shared<std::size_t>(std::size_t{0})};
 
     T* allocate(std::size_t n) {
-        count++;
+        (*count)++;
         return allocator.allocate(n);
     }
 
@@ -94,7 +94,7 @@ struct counting_allocator {
     counting_allocator() {}
 
     template <typename U>
-    explicit counting_allocator(const counting_allocator<U>& c) : count(c.count) {}
+    explicit counting_allocator(const counting_allocator<U>& c) : allocator(c.allocator), count(c.count) {}
 };
 
 template <typename T, typename U>
@@ -110,14 +110,11 @@ using counting_ostringstream = std::basic_ostringstream<char, std::char_traits<c
 template <typename Stream>
 struct test_counting_allocator {
     void operator()(counting_string s) {
+        shared_ptr<size_t> pcount = s.get_allocator().count;
         Stream stream{move(s)};
         s = move(stream).str();
         stream.str(move(s));
-        if constexpr (!std::is_same_v<Stream, counting_istringstream>) {
-            assert(stream.rdbuf()->get_allocator().count == 1);
-        } else {
-            assert(stream.rdbuf()->get_allocator().count == 1);
-        }
+        assert(*pcount == 1);
     }
 };
 
@@ -171,23 +168,50 @@ public:
     using stringbuf::pptr;
 };
 
+void test_init_buf_ptrs_out(test_stringbuf& buf) {
+    assert(*buf.pbase() == large_string[0]);
+    assert(buf.epptr() >= buf.pbase() + buf.view().size());
+    assert(buf.pptr() == buf.pbase());
+}
+
+void test_init_buf_ptrs_out_ate(test_stringbuf& buf) {
+    assert(*buf.pbase() == large_string[0]);
+    assert(buf.epptr() >= buf.pbase() + buf.view().size());
+    assert(buf.pptr() == buf.pbase() + buf.view().size());
+}
+
+void test_init_buf_ptrs_in(test_stringbuf& buf) {
+    assert(*buf.eback() == large_string[0]);
+    assert(buf.gptr() == buf.eback() && buf.egptr() == buf.eback() + buf.view().size());
+}
+
 void test_init_buf_ptrs() {
     test_stringbuf buf1{string{large_string}, ios_base::out};
-    assert(*buf1.pbase() == large_string[0]);
-    assert(buf1.epptr() >= buf1.pbase() + buf1.view().size());
-    assert(buf1.pptr() == buf1.pbase());
+    test_init_buf_ptrs_out(buf1);
+
     test_stringbuf buf2{string{large_string}, ios_base::out | ios_base::ate};
-    assert(buf2.pptr() == buf2.pbase() + buf2.view().size());
+    test_init_buf_ptrs_out_ate(buf2);
+
     test_stringbuf buf3{string{large_string}, ios_base::in};
-    assert(*buf3.eback() == large_string[0]);
-    assert(buf3.gptr() == buf3.eback() && buf3.egptr() == buf3.eback() + buf3.view().size());
+    test_init_buf_ptrs_in(buf3);
+
+    test_stringbuf buf4{string{large_string}, ios_base::in | ios_base::out};
+    test_init_buf_ptrs_out(buf4);
+    test_init_buf_ptrs_in(buf4);
+
+    test_stringbuf buf5{string{large_string}, ios_base::in | ios_base::out | ios_base::ate};
+    test_init_buf_ptrs_out_ate(buf5);
+    test_init_buf_ptrs_in(buf5);
 }
 
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {
         run_test<test_rvalue>();
         run_test<test_allocator>();
+
+#if _ITERATOR_DEBUG_LEVEL == 0
         run_counting_test<test_counting_allocator>();
+#endif // _ITERATOR_DEBUG_LEVEL == 0
 
         test_iterator_increment_zero(small_string);
         test_iterator_increment_zero(large_string);
