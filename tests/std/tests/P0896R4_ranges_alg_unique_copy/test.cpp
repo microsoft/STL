@@ -30,7 +30,7 @@ struct instantiator {
         using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::size,
             ranges::iterator_t;
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-        if constexpr (!ranges::contiguous_range<Range>)
+        if constexpr (!ranges::contiguous_range<Read>)
 #endif // TRANSITION, VSO-938163
         {
             { // Validate iterator + sentinel overload
