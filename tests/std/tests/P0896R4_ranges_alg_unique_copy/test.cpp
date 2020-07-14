@@ -32,13 +32,12 @@ struct instrumentedPair {
     constexpr instrumentedPair(const int a, const int b) : _val{a, b} {};
     constexpr instrumentedPair(const int a, const int b, const int c) : _val{a, b}, _numProjections{c} {};
 
-    constexpr auto operator<=>(const instrumentedPair&) const = default;
-    constexpr bool operator==(const instrumentedPair&) const  = default;
+    constexpr bool operator==(const instrumentedPair&) const = default;
+};
 
-    constexpr friend int countedProjection(const instrumentedPair& value) {
-        ++value._numProjections;
-        return value._val.second;
-    }
+constexpr auto countedProjection = [](const instrumentedPair& value) {
+    ++value._numProjections;
+    return value._val.second;
 };
 
 // Validate that unique_copy_result aliases in_out_result
