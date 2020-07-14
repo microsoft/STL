@@ -175,11 +175,16 @@ public:
     _NODISCARD _Mystr str() && {
         _Mystr _Result{_String_constructor_rvalue_allocator_tag{}, _STD move(_Al)};
         const auto _View = _Get_buffer_view();
-        if (_View._Size >= _View._Res) {
+        // _Size cannot larger than _Res, but it could be equal,
+        // because basic_stringbuf doesn't allocate for the terminating '\0'.
+        if (_View._Size == _View._Res) {
             // the buffer is full
             _Result.assign(_View._Ptr, _View._Size);
-        } else if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
-            _Mystate &= ~_Allocated;
+        } else {
+            _Traits::assign(_View._Ptr[_View._Size], _Elem());
+            if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
+                _Mystate &= ~_Allocated;
+            }
         }
         _Tidy();
         return _Result;
