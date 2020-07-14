@@ -797,15 +797,15 @@ namespace mergeable_test {
         writable_archetype& operator++();
 
         // clang-format off
-        writable_archetype operator++(int) requires (WS != not_weakly_incrementable);
+        writable_archetype operator++(int) requires (WS != writable_status::not_weakly_incrementable);
 
         // 1: not indirectly_copyable<const int*, writable_archetype>
-        void operator=(int) requires (WS == not_ind_copy_int) = delete;
-        writable_archetype& operator=(int) requires (WS != not_ind_copy_int);
+        void operator=(int) requires (WS == writable_status::not_ind_copy_int) = delete;
+        writable_archetype& operator=(int) requires (WS != writable_status::not_ind_copy_int);
 
         // 2: not indirectly_copyable<const long*, writable_archetype>
-        void operator=(long) requires (WS == not_ind_copy_long) = delete;
-        writable_archetype& operator=(long) requires (WS != not_ind_copy_long);
+        void operator=(long) requires (WS == writable_status::not_ind_copy_long) = delete;
+        writable_archetype& operator=(long) requires (WS != writable_status::not_ind_copy_long);
         // clang-format on
     };
 

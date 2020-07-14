@@ -57,13 +57,6 @@ struct instantiator {
             const same_as<bool> auto result = includes(haystack, needle, ranges::less{}, get_first, add_one);
             assert(!result);
         }
-        { // Validate iterator overload, needle not found
-            Haystack haystack{haystack_elements};
-            Needle needle{bad_needle_elements};
-            const same_as<bool> auto result = includes(
-                haystack.begin(), haystack.end(), needle.begin(), needle.end(), ranges::less{}, get_first, add_one);
-            assert(!result);
-        }
     }
 };
 
