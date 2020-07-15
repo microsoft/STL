@@ -1812,11 +1812,12 @@ namespace filesystem {
         static string _Pretty_message(const string_view _Op, const path& _Path1, const path& _Path2 = {}) {
             using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             string _Result;
-            // Convert the paths to narrow encoding in a way that gracefully handles non-encodeable characters
+            // Convert the paths to narrow encoding in a way that gracefully handles non-encodable characters
+            const auto _Code_page   = __std_fs_code_page();
             const string _Path1_str = _Convert_wide_to_narrow_replace_chars<char_traits<char>>(
-                __std_fs_code_page(), _Path1.native(), allocator<char>());
+                _Code_page, _Path1.native(), allocator<char>{});
             const string _Path2_str = _Convert_wide_to_narrow_replace_chars<char_traits<char>>(
-                __std_fs_code_page(), _Path2.native(), allocator<char>());
+                _Code_page, _Path2.native(), allocator<char>{});
             _Result.reserve(_Op.size() + (_Path2_str.empty() ? 4 : 8) + _Path1_str.size() + _Path2_str.size());
             _Result += _Op;
             _Result += R"(: ")"sv; // 3 chars

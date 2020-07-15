@@ -431,7 +431,7 @@ void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Hand
 
     _Result._Err = _Result._Len == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success;
 
-    // Some Codepages don't support WC_NO_BEST_FIT_CHARS, fall back to default conversion.
+    // Some codepages don't support WC_NO_BEST_FIT_CHARS, fall back to default conversion.
     if (_Result._Err == __std_win_error{ERROR_INVALID_FLAGS}) {
         _Result._Len = WideCharToMultiByte(static_cast<unsigned int>(_Code_page), 0, _Input_str, _Input_len,
             _Output_str, _Output_len, nullptr, nullptr);
