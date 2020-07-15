@@ -42,7 +42,7 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    unsigned long _Get_remaining_waiting_time(_Atomic_wait_context_t& _Wait_context) {
+    unsigned long _Get_remaining_wait_milliseconds(_Atomic_wait_context_t& _Wait_context) {
         const unsigned long long deadline = _Wait_context._Deadline;
         if (deadline == _Atomic_wait_no_deadline) {
             return INFINITE;
@@ -207,7 +207,7 @@ bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
     }
 #endif
     if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
-            _Get_remaining_waiting_time(_Wait_context))) {
+            _Get_remaining_wait_milliseconds(_Wait_context))) {
         _Assume_timeout();
         return false;
     }
@@ -251,7 +251,7 @@ bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wa
     case _Atomic_wait_phase_wait_counter:
         if (!__crtWaitOnAddress(const_cast<volatile _STD uint64_t*>(&_Entry._Counter._Storage._Value),
                 &_Wait_context._Counter, sizeof(_Entry._Counter._Storage._Value),
-                _Get_remaining_waiting_time(_Wait_context))) {
+                _Get_remaining_wait_milliseconds(_Wait_context))) {
             _Assume_timeout();
             return false;
         }
