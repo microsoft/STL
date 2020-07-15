@@ -117,7 +117,6 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_POINTER_LOCK_FREE  2
 
 _STD_BEGIN
-
 // FENCES
 extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
     if (_Order == memory_order_relaxed) {
@@ -255,7 +254,7 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 // Provides common implementation of atomic wait for 1, 2, 4, and 8
 // Not CRTP base to avoid change that might break ODR
 template <class _Value_type, class _Atomic_storage>
-inline bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_type _Expected_bytes,
+bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_type _Expected_bytes,
     const _STD memory_order _Order, unsigned long long timeout) noexcept {
     _Atomic_wait_context_t _Wait_context;
     _Atomic_wait_get_deadline(_Wait_context, timeout);
@@ -456,12 +455,27 @@ public:
 #else // ^^^ don't break ABI / break ABI vvv
     void _Lock() const noexcept { // lock the spinlock
         _Atomic_wait_context_t _Wait_context;
-        while (_InterlockedExchange8(&_Spinlock, 1)) {
-            _Atomic_wait_direct_for_internal_spinlock(&_Spinlock, '\1', _Wait_context);
+        for (;;) {
+            auto _Local = _InterlockedExchange8(&_Spinlock, 1);
+            if (!_Local) {
+                break;
+            }
+
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+            if (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
+                continue; // Keep spinning for now.
+            }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+
+            __std_atomic_wait_direct(&_Spinlock, &_Local, 1, _Wait_context);
+            // Don't check for spurious wakes, spinlock will do it
         }
+
+#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
-            __std_atomic_unwait_direct(const_cast<const long*>(&_Shared_ptr_flag), _Wait_context);
+            __std_atomic_unwait_direct(&_Spinlock, _Wait_context);
         }
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     void _Unlock() const noexcept { // unlock the spinlock

@@ -42,7 +42,7 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    unsigned long _Get_remaining_waiting_time(_Atomic_wait_context_t& _Wait_context) {
+    unsigned long _Get_remaining_wait_milliseconds(_Atomic_wait_context_t& _Wait_context) {
         const unsigned long long deadline = _Wait_context._Deadline;
         if (deadline == _Atomic_wait_no_deadline) {
             return INFINITE;
@@ -77,13 +77,11 @@ namespace {
 #define __crtWakeByAddressSingle WakeByAddressSingle
 #define __crtWakeByAddressAll    WakeByAddressAll
 
-#pragma comment(lib, "Synchronization.lib")
-
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
     bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-        DWORD remaining_waiting_time = _Get_remaining_waiting_time(_Wait_context);
-        if (remaining_waiting_time == 0) {
+        DWORD _Remaining_waiting_time = _Get_remaining_wait_milliseconds(_Wait_context);
+        if (_Remaining_waiting_time == 0) {
             return false;
         }
 
@@ -96,7 +94,7 @@ namespace {
             break;
 
         case _Atomic_wait_phase_wait_locked:
-            if (!::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, remaining_waiting_time, 0)) {
+            if (!::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, _Remaining_waiting_time, 0)) {
                 _Assume_timeout();
                 ReleaseSRWLockExclusive(&_Entry._Lock);
                 _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
@@ -209,7 +207,7 @@ bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
     }
 #endif
     if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
-            _Get_remaining_waiting_time(_Wait_context))) {
+            _Get_remaining_wait_milliseconds(_Wait_context))) {
         _Assume_timeout();
         return false;
     }
@@ -253,7 +251,7 @@ bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wa
     case _Atomic_wait_phase_wait_counter:
         if (!__crtWaitOnAddress(const_cast<volatile _STD uint64_t*>(&_Entry._Counter._Storage._Value),
                 &_Wait_context._Counter, sizeof(_Entry._Counter._Storage._Value),
-                _Get_remaining_waiting_time(_Wait_context))) {
+                _Get_remaining_wait_milliseconds(_Wait_context))) {
             _Assume_timeout();
             return false;
         }
@@ -311,14 +309,14 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
     }
     constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
     static _STD atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
-    const unsigned long spin_count_from_cache = _Atomic_spin_count.load(_STD memory_order_relaxed);
-    if (spin_count_from_cache != _Uninitialized_spin_count) {
-        return spin_count_from_cache;
+    const unsigned long _Spin_count_from_cache = _Atomic_spin_count.load(_STD memory_order_relaxed);
+    if (_Spin_count_from_cache != _Uninitialized_spin_count) {
+        return _Spin_count_from_cache;
     }
 
-    unsigned long spin_count = (_STD thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-    _Atomic_spin_count.store(spin_count, _STD memory_order_relaxed);
-    return spin_count;
+    unsigned long _Spin_count = (_STD thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
+    _Atomic_spin_count.store(_Spin_count, _STD memory_order_relaxed);
+    return _Spin_count;
 }
 
 void __stdcall __std_atomic_wait_get_deadline(

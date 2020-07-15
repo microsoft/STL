@@ -28,16 +28,15 @@ enum _Atomic_spin_phase : unsigned long {
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
-constexpr unsigned long long _Atomic_wait_no_timeout  = 0xFFFF'FFFF'FFFF'FFFF;
-constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
+_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_timeout  = 0xFFFF'FFFF'FFFF'FFFF;
+_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
 struct _Atomic_wait_context_t {
     unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_init_spin_count;
-    unsigned long _Deadline_picoseconds      = 0; // reserved for potential future precision improvement
+    unsigned long _Reserved                  = 0; // reserved for potential future precision improvement
     unsigned long long _Deadline             = _Atomic_wait_no_deadline; // or GetTickCount64 plus duration
     unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
 };
-
 
 _EXTERN_C
 enum class __std_atomic_api_level : unsigned long {
@@ -98,37 +97,6 @@ inline void _Atomic_wait_get_deadline(
     }
     // Otherwise defaults to _Atomic_wait_no_deadline
 }
-
-// FUNCTION _Atomic_wait_direct_timed_for_internal_spinlock
-// Provides common implementation of atomic wait for 1,2,4 and 8 sizes.
-// Does not do _Atomic_reinterpret_as, works only with "good" types.
-// Spins before going to kernel wait.
-// May return spuriously.
-template <class _Value_type>
-inline void _Atomic_wait_direct_for_internal_spinlock(
-    _Value_type* const _Spinlock, const _Value_type _Locked_value, _Atomic_wait_context_t& _Wait_context) noexcept {
-    constexpr auto _Size = sizeof(_Value_type);
-    static_assert(_Size == alignof(_Value_type), "Not proterly aligned");
-    static_assert(_Size == 1 || _Size == 2 || _Size == 4 || _Size == 8, "bad size");
-
-#ifdef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-    __std_atomic_wait_direct(_Spinlock, &_Locked_value, _Size, _Wait_context);
-#else
-    if (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
-        return; // Keep spinning for now.
-    }
-    __std_atomic_wait_direct(_Spinlock, &_Locked_value, _Size, _Wait_context);
-    // Don't check for spurious wakes, spinlock will do it
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-}
-
-template <class _Value_type>
-inline void _Atomic_wait_direct_for_internal_spinlock(volatile _Value_type* const _Spinlock,
-    const _Value_type _Locked_value, _Atomic_wait_context_t& _Wait_context) noexcept {
-    // Cast away volatile
-    _Atomic_wait_direct_for_internal_spinlock(const_cast<_Value_type*>(_Spinlock), _Locked_value, _Wait_context);
-}
-
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
