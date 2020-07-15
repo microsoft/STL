@@ -9,6 +9,8 @@
 struct X1 {
     char x : 6;
 
+    void operator&() const = delete;
+
     void set(char v) {
         x = v;
     }
@@ -16,6 +18,8 @@ struct X1 {
 
 struct X2 {
     short x : 9;
+
+    void operator&() const = delete;
 
     void set(char v) {
         x = v;
@@ -28,6 +32,8 @@ struct X3 {
     char : 2;
     char y : 1;
     short z;
+
+    void operator&() const = delete;
 
     void set(char v) {
         x = v;
@@ -52,7 +58,7 @@ struct X8 {
     char x;
     long y;
 
-    void operator&() const {}
+    void operator&() const = delete;
 
     void set(char v) {
         x = v;
@@ -64,6 +70,8 @@ struct X16 {
     long x;
     char y;
     long long z;
+
+    void operator&() const = delete;
 
     void set(char v) {
         x = v;
@@ -77,6 +85,8 @@ struct X20 {
     long y[3];
     char z;
 
+    void operator&() const = delete;
+
     void set(char v) {
         x = v;
         std::memset(&y, 0, sizeof(y));
@@ -88,13 +98,14 @@ struct X20 {
 template <class X, std::size_t S>
 void test() {
     static_assert(sizeof(X) == S, "Unexpected size");
+    X x1;
     X x2;
     X x3;
     X x4;
-    X x1;
     std::memset(std::addressof(x1), 0xaa, sizeof(x1));
-    std::memset(std::addressof(x2), 0x55, sizeof(x1));
-    std::memset(std::addressof(x3), 0x55, sizeof(x1));
+    std::memset(std::addressof(x2), 0x55, sizeof(x2));
+    std::memset(std::addressof(x3), 0x55, sizeof(x3));
+    std::memset(std::addressof(x4), 0x55, sizeof(x4));
     x1.set(5);
     x2.set(5);
     x3.set(6);
