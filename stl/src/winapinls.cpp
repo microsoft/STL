@@ -652,7 +652,7 @@ extern "C" int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DW
 
 // __crtGetLocaleInfoEx() - Wrapper for GetLocaleInfoEx().
 extern "C" int __cdecl __crtGetLocaleInfoEx(_In_opt_ LPCWSTR const lpLocaleName, _In_ LCTYPE const LCType,
-    _Out_opt_ LPWSTR const lpLCData, _In_ int const cchData) {
+    _Out_writes_opt_(cchData) LPWSTR const lpLCData, _In_ int const cchData) {
     IFDYNAMICGETCACHEDFUNCTION(PFNGETLOCALEINFOEX, GetLocaleInfoEx, pfGetLocaleInfoEx) {
         return pfGetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
     }
