@@ -715,7 +715,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
 
     _Work_stealing_team(size_t _Threads, _Diff _Total_work)
         : _Queues(_Threads), _Queues_used(0), _Remaining_work(_Total_work), _Available_mutex(),
-          _Available_queues(greater<>{}, _Get_queues(_Threads)) {} // register work with the thread pool
+          _Available_queues(greater{}, _Get_queues(_Threads)) {} // register work with the thread pool
 
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
