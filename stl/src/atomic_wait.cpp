@@ -80,7 +80,7 @@ namespace {
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
     bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-        DWORD _Remaining_waiting_time = _Get__Remaining_waiting_time(_Wait_context);
+        DWORD _Remaining_waiting_time = _Get_remaining_wait_milliseconds(_Wait_context);
         if (_Remaining_waiting_time == 0) {
             return false;
         }
