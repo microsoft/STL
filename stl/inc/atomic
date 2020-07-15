@@ -115,6 +115,15 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_LLONG_LOCK_FREE    2
 #define ATOMIC_POINTER_LOCK_FREE  2
 
+// Padding bits should not participate in cmpxchg comparison starting C++20.
+// Clang does not have __builtin_zero_non_value_bits to exclude these bits to implement this C++20 feature.
+// EDG front-end substitutes everything and runs into incomplete types passed to atomic<T>
+#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#define _CMPXCHG_MASK_OUT_PADDING_BITS 1
+#else
+#define _CMPXCHG_MASK_OUT_PADDING_BITS 0
+#endif
+
 _STD_BEGIN
 
 // FENCES
@@ -354,14 +363,14 @@ struct _Atomic_storage {
         _Check_memory_order(_Order);
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         __builtin_zero_non_value_bits(_Expected_ptr);
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         bool _Result;
         _Lock();
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         __builtin_zero_non_value_bits(_Storage_ptr);
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
             _CSTD memcpy(_Storage_ptr, _STD addressof(_Desired), sizeof(_Ty));
             _Result = true;
@@ -489,26 +498,26 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected); // read before atomic operation
         char _Prev_bytes;
 
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         _Ty _Mask;
         _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_STD addressof(_Mask));
         const char _Mask_val = _Atomic_reinterpret_as<char>(_Mask);
 
         for (;;) {
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8,
                 _Atomic_address_as<char>(_Storage), _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
             if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                 break;
             }
             _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
         }
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
         reinterpret_cast<char&>(_Expected) = _Prev_bytes;
         return false;
@@ -586,26 +595,26 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
         short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected); // read before atomic operation
         short _Prev_bytes;
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         _Ty _Mask;
         _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_STD addressof(_Mask));
         const short _Mask_val = _Atomic_reinterpret_as<short>(_Mask);
 
         for (;;) {
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16,
                 _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
             if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                 break;
             }
             _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
         }
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
@@ -681,26 +690,26 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
         long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         _Ty _Mask;
         _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_STD addressof(_Mask));
         const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
 
         for (;;) {
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange,
                 _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
             if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                 break;
             }
             _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
         }
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
@@ -804,26 +813,26 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
         long long _Prev_bytes;
 
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         _Ty _Mask;
         _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_STD addressof(_Mask));
         const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
 
         for (;;) {
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
             _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64,
                 _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired), _Expected_bytes);
             if (_Prev_bytes == _Expected_bytes) {
                 return true;
             }
-#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
             if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                 break;
             }
             _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
         }
-#endif // _HAS_CXX20 && !defined(__clang__), TRANSITION, LLVM-46685 && !defined(__EDG__)
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
