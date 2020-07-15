@@ -28,8 +28,8 @@ enum _Atomic_spin_phase : unsigned long {
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
-constexpr unsigned long long _Atomic_wait_no_timeout  = 0xFFFF'FFFF'FFFF'FFFF;
-constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
+_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_timeout  = 0xFFFF'FFFF'FFFF'FFFF;
+_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
 struct _Atomic_wait_context_t {
     unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_init_spin_count;
