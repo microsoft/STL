@@ -14,6 +14,7 @@
 #define _SILENCE_CXX17_TEMPORARY_BUFFER_DEPRECATION_WARNING
 #define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
+#define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING
 #define _SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
@@ -1483,6 +1484,7 @@ void tuple_test() {
 
     tuple<> empty_tuple1(allocator_arg, allocator<double>());
     tuple<> empty_tuple2(allocator_arg, allocator<double>(), empty_tuple1);
+    (void) empty_tuple2;
 
     tuple<int, int> tup1{};
     tuple<const int&, const int&> tup2(tup1);

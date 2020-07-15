@@ -90,6 +90,22 @@ static_assert(is_trivially_copyable_v<span<const int>::iterator>);
 static_assert(is_trivially_copyable_v<span<const int, 3>>);
 static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
 
+// For portability, our implementation provides an additional guarantee beyond the Standard
+// that span and its iterators are standard-layout.
+static_assert(is_standard_layout_v<span<int>>);
+static_assert(is_standard_layout_v<span<int>::iterator>);
+static_assert(is_standard_layout_v<span<int, 3>>);
+static_assert(is_standard_layout_v<span<int, 3>::iterator>);
+static_assert(is_standard_layout_v<span<const int>>);
+static_assert(is_standard_layout_v<span<const int>::iterator>);
+static_assert(is_standard_layout_v<span<const int, 3>>);
+static_assert(is_standard_layout_v<span<const int, 3>::iterator>);
+
+// For performance, our implementation provides an additional guarantee beyond the Standard
+// that fixed-size span has only the size of a pointer.
+static_assert(sizeof(span<int, 4>) == sizeof(void*));
+static_assert(sizeof(span<int>) == sizeof(void*) + sizeof(size_t));
+
 struct Base {};
 struct Derived : Base {};
 static_assert(is_convertible_v<Derived*, Base*>);
@@ -367,10 +383,8 @@ constexpr bool test() {
         using C = array<int, 3>::const_iterator;
         using Z = array<double, 3>::iterator;
 
-        // TRANSITION, GH-427, array iterators haven't strengthened noexcept
-
-        static_assert(is_constructible_v<span<int>, I, I>);
-        static_assert(is_constructible_v<span<int>, I, C>);
+        static_assert(is_nothrow_constructible_v<span<int>, I, I>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<int>, I, C>); // strengthened
         static_assert(!is_constructible_v<span<int>, I, Z>);
         static_assert(!is_constructible_v<span<int>, C, I>);
         static_assert(!is_constructible_v<span<int>, C, C>);
@@ -379,8 +393,8 @@ constexpr bool test() {
         static_assert(!is_constructible_v<span<int>, Z, C>);
         static_assert(!is_constructible_v<span<int>, Z, Z>);
 
-        static_assert(is_constructible_v<span<int, 3>, I, I>);
-        static_assert(is_constructible_v<span<int, 3>, I, C>);
+        static_assert(is_nothrow_constructible_v<span<int, 3>, I, I>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<int, 3>, I, C>); // strengthened
         static_assert(!is_constructible_v<span<int, 3>, I, Z>);
         static_assert(!is_constructible_v<span<int, 3>, C, I>);
         static_assert(!is_constructible_v<span<int, 3>, C, C>);
@@ -389,10 +403,10 @@ constexpr bool test() {
         static_assert(!is_constructible_v<span<int, 3>, Z, C>);
         static_assert(!is_constructible_v<span<int, 3>, Z, Z>);
 
-        static_assert(is_constructible_v<span<const int>, I, I>);
-        static_assert(is_constructible_v<span<const int>, I, C>);
-        static_assert(is_constructible_v<span<const int>, C, I>);
-        static_assert(is_constructible_v<span<const int>, C, C>);
+        static_assert(is_nothrow_constructible_v<span<const int>, I, I>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<const int>, I, C>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<const int>, C, I>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<const int>, C, C>); // strengthened
 
         static_assert(!is_constructible_v<span<int>, I, int*>);
         static_assert(!is_constructible_v<span<int>, int*, I>);
@@ -404,8 +418,8 @@ constexpr bool test() {
 
         using B = array<Base, 3>::iterator;
         using D = array<Derived, 3>::iterator;
-        static_assert(is_constructible_v<span<Base>, B, B>);
-        static_assert(is_constructible_v<span<Base, 3>, B, B>);
+        static_assert(is_nothrow_constructible_v<span<Base>, B, B>); // strengthened
+        static_assert(is_nothrow_constructible_v<span<Base, 3>, B, B>); // strengthened
         static_assert(!is_constructible_v<span<Base>, D, D>);
         static_assert(!is_constructible_v<span<Base, 3>, D, D>);
 

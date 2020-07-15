@@ -60,7 +60,6 @@ using _Pchar = wchar_t; // UTF16
 #define _FS_SLASH  L'/'
 #define _FS_BSLASH L'\\'
 
-
 struct _Char8_t; // flag for UTF8
 
 // ENUM file_type
@@ -94,7 +93,7 @@ enum class copy_options { // names for copy options
 
 _BITMASK_OPS(copy_options)
 
-// ENUM dirctory_options
+// ENUM directory_options
 enum class directory_options { // names for directory options
     none = 0,
     follow_directory_symlink
@@ -197,7 +196,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t*, uintmax_t);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms);
-
 
 // STRUCT TEMPLATE _Path_cvt
 template <class _Inchar, class _Outchar, class _Outtraits = char_traits<_Outchar>,
@@ -596,7 +594,6 @@ public:
         : _Myptr(_Right._Myptr), _Myelem(_Right._Myelem), _Myoff(_Right._Myoff) {}
 
     _Path_iterator& operator=(const _Path_iterator& _Right) {
-
         _Myptr  = _Right._Myptr;
         _Myelem = _Right._Myelem;
         _Myoff  = _Right._Myoff;
@@ -607,7 +604,6 @@ public:
         : _Myptr(_Right._Myptr), _Myelem(_STD move(_Right._Myelem)), _Myoff(_Right._Myoff) {}
 
     _Path_iterator& operator=(_Path_iterator&& _Right) noexcept {
-
         _Myptr  = _Right._Myptr;
         _Myelem = _STD move(_Right._Myelem);
         _Myoff  = _Right._Myoff;
@@ -757,7 +753,7 @@ public:
         *this /= _Path_cvt<_Valty, value_type>::_Cvt(_Str_out, _Str.c_str(), _Str.size());
     }
 
-    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
+    template <class _InIt, enable_if_t<conjunction_v<negation<is_same<_InIt, path>>, _Is_iterator<_InIt>>, int> = 0>
     path(_InIt _First) {
         using _Valty = _Iter_value_t<_InIt>;
         basic_string<_Valty> _Str;
@@ -806,7 +802,6 @@ public:
     path(path&& _Right) noexcept : _Mystr(_STD move(_Right._Mystr)) {}
 
     path& operator=(path&& _Right) noexcept {
-
         _Mystr = _STD move(_Right._Mystr);
         return *this;
     }
@@ -815,14 +810,12 @@ public:
 
     // ARBITRARY SOURCE ASSIGN
     path& operator=(const path& _Right) {
-
         _Mystr = _Right._Mystr;
         return *this;
     }
 
     template <class _InIt>
     path& operator=(_InIt _First) {
-
         return *this = path(_First);
     }
 
@@ -980,7 +973,7 @@ public:
         return *this;
     }
 
-    path& replace_extension(const path& _Newext = path()) { // replace extension with _Newext
+    path& replace_extension(const path& _Newext = {}) { // replace extension with _Newext
         if (_Newext.empty() || _Newext.c_str()[0] == _FS_PERIOD) {
             *this = parent_path() / path((stem().native() + _Newext.native()));
         } else {
@@ -1116,7 +1109,7 @@ public:
         if (_Idx < _Mystr.size() && _FS_ISSEP(_Mystr[_Idx])) {
             return path(string_type(1, _FS_PREF));
         } else {
-            return path();
+            return {};
         }
     }
 
@@ -1145,7 +1138,7 @@ public:
     }
 
     _NODISCARD path filename() const {
-        return empty() ? path() : path(*--end());
+        return empty() ? path{} : path(*--end());
     }
 
     _NODISCARD path stem() const { // pick off stem (basename) in filename (leaf) before dot
@@ -1161,7 +1154,7 @@ public:
         return _Idx == string_type::npos // no .
                        || _Str.size() == 1 // only .
                        || (_Str.size() == 2 && _Str[0] == _FS_PERIOD && _Str[1] == _FS_PERIOD) // only ..
-                   ? path()
+                   ? path{}
                    : path(_Str.substr(_Idx));
     }
 
@@ -1370,14 +1363,12 @@ private:
     path _Mypval1;
     path _Mypval2;
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 [[noreturn]] inline void _Throw_filesystem_error(const char* const _Message) {
@@ -1398,24 +1389,24 @@ public:
     directory_entry& operator=(directory_entry&&) = default;
 
     explicit directory_entry(
-        const _FSPFX path& _Path, file_status _Statarg = file_status(), file_status _Symstatarg = file_status())
+        const _FSPFX path& _Path, file_status _Statarg = file_status{}, file_status _Symstatarg = file_status{})
         : _Mypval(_Path), _Mystat(_Statarg), _Mysymstat(_Symstatarg) {}
 
     void assign(
-        const _FSPFX path& _Path, file_status _Statarg = file_status(), file_status _Symstatarg = file_status()) {
+        const _FSPFX path& _Path, file_status _Statarg = file_status{}, file_status _Symstatarg = file_status{}) {
         _Mypval    = _Path;
         _Mystat    = _Statarg;
         _Mysymstat = _Symstatarg;
     }
 
-    void replace_filename(const _FSPFX path& _Path, file_status _Statarg = file_status(),
-        file_status _Symstatarg = file_status()) { // replace filename and assign status
+    void replace_filename(const _FSPFX path& _Path, file_status _Statarg = file_status{},
+        file_status _Symstatarg = file_status{}) { // replace filename and assign status
         _Mypval    = _Mypval.parent_path() / _Path;
         _Mystat    = _Statarg;
         _Mysymstat = _Symstatarg;
     }
 
-    operator const _FSPFX path&() const noexcept {
+    operator const _FSPFX path &() const noexcept {
         return _Mypval;
     }
 
@@ -1429,7 +1420,7 @@ public:
     }
 
     _NODISCARD file_status status(error_code& _Code) const noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (!status_known(_Mystat)) {
             if (status_known(_Mysymstat) && !is_symlink(_Mysymstat)) {
                 _Mystat = _Mysymstat;
@@ -1447,7 +1438,7 @@ public:
     }
 
     _NODISCARD file_status symlink_status(error_code& _Code) const noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (!status_known(_Mysymstat)) {
             _Mysymstat = _FSPFX symlink_status(_Mypval, _Code);
         }
@@ -1550,7 +1541,7 @@ public:
     }
 
     _Directory_iterator& increment(error_code& _Code) noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (_Mypdir && *_Mypdir) {
             _Get();
         } else {
@@ -1625,14 +1616,12 @@ _NODISCARD bool operator!=(
 
 using directory_iterator = _Directory_iterator<true_type>;
 
-_NODISCARD inline const directory_iterator& begin(
-    const directory_iterator& _Iter) noexcept { // return begin directory_iterator for range-based for
+_NODISCARD inline const directory_iterator& begin(const directory_iterator& _Iter) noexcept {
     return _Iter;
 }
 
-_NODISCARD inline directory_iterator end(
-    const directory_iterator&) noexcept { // return end directory_iterator for range-based for
-    return directory_iterator();
+_NODISCARD inline directory_iterator end(const directory_iterator&) noexcept {
+    return {};
 }
 
 // CLASS recursive_directory_iterator
@@ -1659,13 +1648,13 @@ public:
 
     recursive_directory_iterator(const path& _Path, directory_options _Opts, error_code& _Code) noexcept
         : _Mylist(1, _Mypair(_Myiter(_Path), _Path)), _Myentry(), _No_push(false), _Options(_Opts) {
-        _Code = error_code();
+        _Code.clear();
         _Get();
     }
 
     recursive_directory_iterator(const path& _Path, error_code& _Code) noexcept
         : _Mylist(1, _Mypair(_Myiter(_Path), _Path)), _Myentry(), _No_push(false), _Options(directory_options::none) {
-        _Code = error_code();
+        _Code.clear();
         _Get();
     }
 
@@ -1733,7 +1722,7 @@ public:
     }
 
     recursive_directory_iterator& increment(error_code& _Code) noexcept {
-        _Code = error_code();
+        _Code.clear();
         if (_Mylist.front().first == _Myiter()) {
             _Code = make_error_code(errc::operation_not_permitted);
         } else {
@@ -1777,21 +1766,18 @@ _NODISCARD inline bool operator!=(
     return !(_Left == _Right);
 }
 
-_NODISCARD inline const recursive_directory_iterator& begin(const recursive_directory_iterator&
-        _Iter) noexcept { // return begin recursive_directory_iterator for range-based for
+_NODISCARD inline const recursive_directory_iterator& begin(const recursive_directory_iterator& _Iter) noexcept {
     return _Iter;
 }
 
-_NODISCARD inline recursive_directory_iterator end(
-    const recursive_directory_iterator&) noexcept { // return end recursive_directory_iterator for
-                                                    // range-based for
-    return recursive_directory_iterator();
+_NODISCARD inline recursive_directory_iterator end(const recursive_directory_iterator&) noexcept {
+    return {};
 }
 
 // OPERATIONAL FUNCTIONS
 inline path _Absolute(const path& _Path, const path& _Base,
     error_code& _Code) { // make absolute path from _Path and directory _Base; errors in _Code
-    _Code                               = error_code();
+    _Code.clear();
     const bool _Path_has_root_name      = _Path.has_root_name();
     const bool _Path_has_root_directory = _Path.has_root_directory();
     if (_Path_has_root_name && _Path_has_root_directory) {
@@ -1799,13 +1785,13 @@ inline path _Absolute(const path& _Path, const path& _Base,
     }
 
     path _Current = current_path(_Code);
-    if (_Code != error_code()) {
-        return path();
+    if (_Code) {
+        return {};
     }
 
     path _Abs_base = _Absolute(_Base, _Current, _Code);
-    if (_Code != error_code()) {
-        return path();
+    if (_Code) {
+        return {};
     }
 
     if (_Path_has_root_name) { // insert _Base
@@ -1821,7 +1807,7 @@ _NODISCARD inline path absolute(const path& _Path,
     const path& _Base = current_path()) { // make absolute path from _Path and directory _Base
     error_code _Code;
     path _Result = _Absolute(_Path, _Base, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("absolute(p1, p2): current_path() couldn't get current working directory");
     }
 
@@ -1868,7 +1854,7 @@ _NODISCARD inline path canonical(const path& _Path,
     error_code _Code;
     path _Ans = canonical(_Path, _Base, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("canonical(p1, p2): invalid arguments");
     }
 
@@ -1878,8 +1864,8 @@ _NODISCARD inline path canonical(const path& _Path,
 _NODISCARD inline path canonical(const path& _Path,
     error_code& _Code) { // make absolute path from _Path with no ., .., or symlink
     path _Current = current_path(_Code);
-    if (_Code != error_code()) {
-        return path();
+    if (_Code) {
+        return {};
     }
 
     return canonical(_Path, _Current, _Code);
@@ -1887,10 +1873,10 @@ _NODISCARD inline path canonical(const path& _Path,
 
 _NODISCARD inline path canonical(const path& _Path, const path& _Base,
     error_code& _Code) { // make absolute path from _Path, _Base with no ".", "..", symlink
-    _Code = error_code();
+    _Code.clear();
     path _Canon_path; // NRVO this variable
     path _Abs_path = _Absolute(_Path, _Base, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         return _Canon_path;
     }
 
@@ -1922,7 +1908,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval) { // copy _Oldpval 
     error_code _Code;
 
     copy(_Oldpval, _Newpval, copy_options::none, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy(p1, p2): invalid arguments");
     }
 }
@@ -1937,7 +1923,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval,
     error_code _Code;
 
     copy(_Oldpval, _Newpval, _Opts, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy(p1, p2, options): invalid arguments");
     }
 }
@@ -1948,7 +1934,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
     file_status _Newstat;
     error_code _Code2;
 
-    _Code = error_code();
+    _Code.clear();
     if ((_Opts & copy_options::create_symlinks) != copy_options::none
         || (_Opts & copy_options::skip_symlinks) != copy_options::none) { // get symlink status
         _Oldstat = symlink_status(_Oldpval);
@@ -1985,7 +1971,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
             _Code = make_error_code(errc::operation_not_permitted);
         }
 
-        for (directory_iterator _Next(_Oldpval), _End; _Code == error_code() && _Next != _End; ++_Next) {
+        for (directory_iterator _Next(_Oldpval), _End; !_Code && _Next != _End; ++_Next) {
             copy(_Next->path(), _Newpval / _Next->path().filename(),
                 _Opts | copy_options::_Unspecified_recursion_prevention_tag, _Code);
         }
@@ -1996,7 +1982,7 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval,
     copy_options _Opt /* = copy_options::none */) { // copy _Oldpval to _Newpval
     error_code _Code;
     const bool _Ans = copy_file(_Oldpval, _Newpval, _Opt, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy_file(p1, p2, options): invalid arguments");
     }
 
@@ -2015,7 +2001,7 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval, copy_options _
     file_time_type _Oldtime;
     file_time_type _Newtime;
 
-    _Code = error_code();
+    _Code.clear();
     if (_Exists && (_Opt == copy_options::none || equivalent(_Oldpval, _Newpval, _Code))) {
         _Code = make_error_code(errc::file_exists);
         return false;
@@ -2043,7 +2029,7 @@ inline bool copy_file(const path& _Oldpval, const path& _Newpval, copy_options _
 inline void copy_symlink(const path& _Oldpval, const path& _Newpval) { // copy symlink, file or directory
     error_code _Code;
     copy_symlink(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("copy_symlink(p1, p2): invalid arguments");
     }
 }
@@ -2060,7 +2046,7 @@ inline void copy_symlink(const path& _Oldpval, const path& _Newpval,
 inline bool create_directories(const path& _Path) { // create directories chain
     error_code _Code;
     const bool _Ans = create_directories(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directories(p): invalid argument");
     }
 
@@ -2069,7 +2055,7 @@ inline bool create_directories(const path& _Path) { // create directories chain
 
 inline bool create_directories(const path& _Path,
     error_code& _Code) noexcept { // create directory chain
-    _Code = error_code();
+    _Code.clear();
     if (_Path.empty()) {
         return false;
     } else if (!exists(_Path)) { // recursively create parent directories, then current
@@ -2096,7 +2082,7 @@ inline bool create_directory(const path& _Path) { // create a directory
     error_code _Code;
     const bool _Ans = create_directory(_Path, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directory(p): invalid argument");
     }
 
@@ -2107,7 +2093,7 @@ inline bool create_directory(const path& _Path,
     error_code& _Code) noexcept { // create a directory
     const int _Ans = _Make_dir(_Path.c_str(), nullptr);
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans < 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2119,7 +2105,7 @@ inline bool create_directory(const path& _Path, const path& _Attrs) { // create 
     error_code _Code;
     const bool _Ans = create_directory(_Path, _Attrs, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directory(p1, p2): invalid arguments");
     }
 
@@ -2130,7 +2116,7 @@ inline bool create_directory(const path& _Path, const path& _Attrs,
     error_code& _Code) noexcept { // create a directory, copying attributes
     const int _Ans = _Make_dir(_Path.c_str(), _Attrs.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans < 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2142,7 +2128,7 @@ inline void create_directory_symlink(const path& _Oldpval,
     const path& _Newpval) { // symlink directory _Newpval to _Oldpval
     error_code _Code;
     create_directory_symlink(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_directory_symlink(p1, p2): invalid arguments");
     }
 }
@@ -2151,7 +2137,7 @@ inline void create_directory_symlink(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // symlink directory_Newpval to _Oldpval (NB: SAME AS FILE)
     const int _Ans = _Symlink(_Oldpval.c_str(), _Newpval.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans != 0) {
         _Code = error_code(_Ans, _STD system_category());
     }
@@ -2160,7 +2146,7 @@ inline void create_directory_symlink(const path& _Oldpval, const path& _Newpval,
 inline void create_hard_link(const path& _Oldpval, const path& _Newpval) { // hard link _Newpval to _Oldpval
     error_code _Code;
     create_hard_link(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_hard_link(p1, p2): invalid arguments");
     }
 }
@@ -2169,7 +2155,7 @@ inline void create_hard_link(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // hard link _Newpval to _Oldpval
     const int _Ans = _Link(_Oldpval.c_str(), _Newpval.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans != 0) {
         _Code = error_code(_Ans, _STD system_category());
     }
@@ -2178,7 +2164,7 @@ inline void create_hard_link(const path& _Oldpval, const path& _Newpval,
 inline void create_symlink(const path& _Oldpval, const path& _Newpval) { // symlink _Newpval to _Oldpval
     error_code _Code;
     create_symlink(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("create_symlink(p1, p2): invalid arguments");
     }
 }
@@ -2187,7 +2173,7 @@ inline void create_symlink(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // symlink _Newpval to _Oldpval
     const int _Ans = _Symlink(_Oldpval.c_str(), _Newpval.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans != 0) {
         _Code = error_code(_Ans, _STD system_category());
     }
@@ -2196,7 +2182,7 @@ inline void create_symlink(const path& _Oldpval, const path& _Newpval,
 _NODISCARD inline path current_path() {
     error_code _Code;
     path _Ans = current_path(_Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("current_path(): can't get current working directory");
     }
 
@@ -2204,11 +2190,11 @@ _NODISCARD inline path current_path() {
 }
 
 _NODISCARD inline path current_path(error_code& _Code) {
-    _Code = error_code();
+    _Code.clear();
     _Pchar _Dest[_MAX_FILESYS_NAME];
     if (!_Current_get(_Dest)) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
-        return path();
+        return {};
     }
     return path(_Dest);
 }
@@ -2221,7 +2207,7 @@ inline void current_path(const path& _Path) { // set current working directory
 
 inline void current_path(const path& _Path,
     error_code& _Code) noexcept { // set current working directory
-    _Code = error_code();
+    _Code.clear();
     if (!_Current_set(_Path.c_str())) {
         _Code = make_error_code(errc::no_such_file_or_directory);
     }
@@ -2231,7 +2217,7 @@ _NODISCARD inline bool equivalent(const path& _Path1, const path& _Path2) {
     error_code _Code;
     const int _Ans = equivalent(_Path1, _Path2, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("equivalent(p1, p2): invalid arguments");
     }
 
@@ -2241,7 +2227,7 @@ _NODISCARD inline bool equivalent(const path& _Path1, const path& _Path2) {
 _NODISCARD inline bool equivalent(const path& _Path1, const path& _Path2, error_code& _Code) noexcept {
     const int _Ans = _Equivalent(_Path1.c_str(), _Path2.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ans < 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2258,14 +2244,14 @@ _NODISCARD inline bool exists(const path& _Path) {
 }
 
 _NODISCARD inline bool exists(const path& _Path, error_code& _Code) noexcept {
-    _Code = error_code();
+    _Code.clear();
     return exists(status(_Path));
 }
 
 _NODISCARD inline uintmax_t file_size(const path& _Path) {
     error_code _Code;
     const uintmax_t _Ans = file_size(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("file_size(p): invalid argument");
     }
 
@@ -2276,7 +2262,7 @@ _NODISCARD inline uintmax_t file_size(const path& _Path, error_code& _Code) noex
     uintmax_t _Ans          = static_cast<uintmax_t>(-1);
     const file_status _Stat = status(_Path);
 
-    _Code = error_code();
+    _Code.clear();
     if (exists(_Stat) && is_regular_file(_Stat)) {
         _Ans = _File_size(_Path.c_str());
     }
@@ -2291,7 +2277,7 @@ _NODISCARD inline uintmax_t file_size(const path& _Path, error_code& _Code) noex
 _NODISCARD inline uintmax_t hard_link_count(const path& _Path) {
     error_code _Code;
     const uintmax_t _Ans = hard_link_count(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("hard_link_count(p): invalid argument");
     }
 
@@ -2299,7 +2285,7 @@ _NODISCARD inline uintmax_t hard_link_count(const path& _Path) {
 }
 
 _NODISCARD inline uintmax_t hard_link_count(const path& _Path, error_code& _Code) noexcept {
-    _Code                = error_code();
+    _Code.clear();
     const uintmax_t _Ans = _Hard_links(_Path.c_str());
     if (_Ans == static_cast<uintmax_t>(-1)) {
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2347,7 +2333,7 @@ _NODISCARD inline bool is_directory(const path& _Path, error_code& _Code) noexce
 _NODISCARD inline bool is_empty(const path& _Path) {
     error_code _Code;
     const bool _Ans = _FSPFX is_empty(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("is_empty(p): invalid argument");
     }
 
@@ -2357,7 +2343,7 @@ _NODISCARD inline bool is_empty(const path& _Path) {
 _NODISCARD inline bool is_empty(const path& _Path, error_code& _Code) noexcept {
     const file_status _Stat = status(_Path);
 
-    _Code = error_code();
+    _Code.clear();
     if (is_directory(_Stat)) {
         return directory_iterator(_Path) == directory_iterator();
     } else {
@@ -2428,7 +2414,7 @@ _NODISCARD inline bool is_symlink(const path& _Path, error_code& _Code) noexcept
 _NODISCARD inline file_time_type last_write_time(const path& _Path) {
     error_code _Code;
     file_time_type _Ans = last_write_time(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("last_write_time(p): invalid argument");
     }
 
@@ -2438,7 +2424,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path) {
 _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& _Code) noexcept {
     const int64_t _Ticks = _Last_write_time(_Path.c_str());
 
-    _Code = error_code();
+    _Code.clear();
     if (_Ticks == -1) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
         return (file_time_type::min)();
@@ -2449,14 +2435,14 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& 
 inline void last_write_time(const path& _Path, file_time_type _Newtime) { // set last write time
     error_code _Code;
     last_write_time(_Path, _Newtime, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("last_write_time(p, new_time): invalid arguments");
     }
 }
 
 inline void last_write_time(const path& _Path, file_time_type _Newtime,
     error_code& _Code) noexcept { // set last write time
-    _Code = error_code();
+    _Code.clear();
     if (_Set_last_write_time(_Path.c_str(), _Newtime.time_since_epoch().count()) == 0) {
         _Code = make_error_code(errc::operation_not_permitted);
     }
@@ -2465,7 +2451,7 @@ inline void last_write_time(const path& _Path, file_time_type _Newtime,
 inline void permissions(const path& _Path, perms _Mask) { // set access permissions
     error_code _Code;
     permissions(_Path, _Mask, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("permissions(p, prms): can't set permissions");
     }
 }
@@ -2476,7 +2462,7 @@ inline void permissions(const path& _Path, perms _Mask,
     _Mask             = _Mask & perms::mask;
     bool _Ok          = true;
 
-    _Code = error_code();
+    _Code.clear();
     if ((_Todo & perms::add_perms) == perms::none) {
         if ((_Todo & perms::remove_perms) != perms::none) {
             _Mask = status(_Path).permissions() & ~_Mask;
@@ -2497,7 +2483,7 @@ inline void permissions(const path& _Path, perms _Mask,
 _NODISCARD inline path read_symlink(const path& _Path) { // read symbolic link
     error_code _Code;
     path _Sympath = read_symlink(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("read_symlink(p): can't read symbolic link");
     }
 
@@ -2506,10 +2492,10 @@ _NODISCARD inline path read_symlink(const path& _Path) { // read symbolic link
 
 _NODISCARD inline path read_symlink(const path& _Path,
     error_code& _Code) { // read symbolic link
-    _Code = error_code();
+    _Code.clear();
     if (!is_symlink(_Path)) { // report error
         _Code = make_error_code(errc::no_such_file_or_directory);
-        return path();
+        return {};
     }
     _Pchar _Dest[_MAX_FILESYS_NAME];
     return path(_Symlink_get(_Dest, _Path.c_str()));
@@ -2519,7 +2505,7 @@ inline bool remove(const path& _Path) { // remove a file
     error_code _Code;
     const bool _Ans = remove(_Path, _Code);
 
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("remove(p): invalid argument");
     }
 
@@ -2528,7 +2514,7 @@ inline bool remove(const path& _Path) { // remove a file
 
 inline bool remove(const path& _Path,
     error_code& _Code) noexcept { // remove a file
-    _Code = error_code();
+    _Code.clear();
     if (!exists(symlink_status(_Path))) {
         return false;
     } else if (is_directory(_Path, _Code)) {
@@ -2550,7 +2536,7 @@ inline bool remove(const path& _Path,
 
 inline bool _Remove_all(const path& _Path, uintmax_t& _Ans,
     error_code& _Code) noexcept { // recursively remove a file or directory, count removed files
-    _Code = error_code();
+    _Code.clear();
     if (is_directory(_Path)) { // empty and remove a directory
         using _Myit = _Directory_iterator<false_type>;
         _Myit _Last;
@@ -2582,7 +2568,7 @@ inline bool _Remove_all(const path& _Path, uintmax_t& _Ans,
 inline uintmax_t remove_all(const path& _Path) { // recursively remove a directory
     error_code _Code;
     const uintmax_t _Ans = remove_all(_Path, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("remove_all(p): invalid argument");
     }
 
@@ -2603,14 +2589,14 @@ inline uintmax_t remove_all(const path& _Path,
 inline void rename(const path& _Oldpval, const path& _Newpval) { // rename _Oldpval as _Newpval
     error_code _Code;
     rename(_Oldpval, _Newpval, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("rename(p1, p2): invalid arguments");
     }
 }
 
 inline void rename(const path& _Oldpval, const path& _Newpval,
     error_code& _Code) noexcept { // rename _Oldpval as _Newpval
-    _Code = error_code();
+    _Code.clear();
 
     if (!exists(_Oldpval)) { // fail immediately without modifying the filesystem
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2618,7 +2604,7 @@ inline void rename(const path& _Oldpval, const path& _Newpval,
     }
 
     if (exists(_Newpval)) { // both exist; there can be only one
-        if (equivalent(_Oldpval, _Newpval, _Code) || _Code != error_code()) {
+        if (equivalent(_Oldpval, _Newpval, _Code) || _Code) {
             return; // successful no-op, or report equivalent() failure
         }
 
@@ -2635,7 +2621,7 @@ inline void rename(const path& _Oldpval, const path& _Newpval,
 inline void resize_file(const path& _Path, uintmax_t _Newsize) { // change file size
     error_code _Code;
     resize_file(_Path, _Newsize, _Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("resize_file(p, n): invalid arguments");
     }
 };
@@ -2644,7 +2630,7 @@ inline void resize_file(const path& _Path, uintmax_t _Newsize,
     error_code& _Code) noexcept { // change file size
     const int _Errno = _Resize(_Path.c_str(), _Newsize);
 
-    _Code = error_code();
+    _Code.clear();
     if (_Errno != 0) {
         _Code = error_code(_Errno, _STD system_category());
     }
@@ -2655,7 +2641,7 @@ _NODISCARD inline space_info space(const path& _Path) {
 }
 
 _NODISCARD inline space_info space(const path& _Path, error_code& _Code) noexcept {
-    _Code = error_code();
+    _Code.clear();
     return _Statvfs(_Path.c_str());
 }
 
@@ -2665,7 +2651,7 @@ _NODISCARD inline file_status status(const path& _Path) {
 }
 
 _NODISCARD inline file_status status(const path& _Path, error_code& _Code) noexcept {
-    _Code = error_code();
+    _Code.clear();
     perms _Mode;
     const file_type _Ftype = _Stat(_Path.c_str(), &_Mode);
     return file_status(_Ftype, _Mode);
@@ -2684,7 +2670,7 @@ _NODISCARD inline file_status symlink_status(const path& _Path, error_code& _Cod
     perms _Mode;
     const file_type _Ftype = _Lstat(_Path.c_str(), &_Mode);
 
-    _Code = error_code();
+    _Code.clear();
     return file_status(_Ftype, _Mode);
 }
 
@@ -2705,7 +2691,7 @@ _NODISCARD inline path system_complete(const path& _Path) {
 }
 
 _NODISCARD inline path system_complete(const path& _Path, error_code& _Code) {
-    _Code = error_code();
+    _Code.clear();
 
     path _Ans;
 
@@ -2713,7 +2699,7 @@ _NODISCARD inline path system_complete(const path& _Path, error_code& _Code) {
     _Ans = system_complete(_Path);
     _CATCH_ALL
     _Code = make_error_code(errc::operation_not_permitted);
-    return path();
+    return {};
     _CATCH_END
 
     return _Ans;
@@ -2722,7 +2708,7 @@ _NODISCARD inline path system_complete(const path& _Path, error_code& _Code) {
 _NODISCARD inline path temp_directory_path() {
     error_code _Code;
     path _Ans = temp_directory_path(_Code);
-    if (_Code != error_code()) {
+    if (_Code) {
         _Throw_filesystem_error("temp_directory_path(): can't find temp directory");
     }
 
@@ -2734,10 +2720,10 @@ _NODISCARD inline path temp_directory_path(error_code& _Code) {
     _Temp_get(_Dest);
     path _Ans(_Dest);
 
-    _Code = error_code();
+    _Code.clear();
     if (!exists(_Ans) || !is_directory(_Ans)) { // report error
         _Code = make_error_code(errc::no_such_file_or_directory);
-        return path();
+        return {};
     }
     return _Ans;
 }

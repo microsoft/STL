@@ -254,8 +254,7 @@ public:
     _PGLOBAL _CRTIMP2_PURE_IMPORT static const bool intl; // true if international
     __PURE_APPDOMAIN_GLOBAL _CRTIMP2_PURE_IMPORT static locale::id id; // unique facet id
 
-    explicit moneypunct(size_t _Refs = 0) : _Mpunct<_Elem>(_Refs, _Intl) { // construct from current locale
-    }
+    explicit moneypunct(size_t _Refs = 0) : _Mpunct<_Elem>(_Refs, _Intl) {} // construct from current locale
 
     moneypunct(const _Locinfo& _Lobj, size_t _Refs = 0, bool _Isdef = false)
         : _Mpunct<_Elem>(_Lobj, _Refs, _Intl, _Isdef) {}
@@ -299,12 +298,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit moneypunct_byname(const char* _Locname, size_t _Refs = 0)
-        : moneypunct<_Elem, _Intl>(_Locname, _Refs) { // construct for named locale
-    }
+        : moneypunct<_Elem, _Intl>(_Locname, _Refs) {} // construct for named locale
 
     explicit moneypunct_byname(const string& _Str, size_t _Refs = 0)
-        : moneypunct<_Elem, _Intl>(_Str.c_str(), _Refs) { // construct for named locale
-    }
+        : moneypunct<_Elem, _Intl>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~moneypunct_byname() noexcept {}
@@ -358,8 +355,7 @@ public:
 protected:
     virtual __CLR_OR_THIS_CALL ~money_get() noexcept {}
 
-    void _Init(const _Locinfo&) { // initialize from _Locinfo object
-    }
+    void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
     virtual _InIt __CLR_OR_THIS_CALL do_get(_InIt _First, _InIt _Last, bool _Intl, ios_base& _Iosbase,
         ios_base::iostate& _State,
@@ -433,7 +429,7 @@ private:
         size_t _Idx;
         static constexpr char _Src[]   = "0123456789-";
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         for (size_t _Off = 0; !_Bad && _Off < 4; ++_Off) {
             switch (_Pattern.field[_Off]) { // parse a format component
@@ -661,8 +657,7 @@ public:
 protected:
     virtual __CLR_OR_THIS_CALL ~money_put() noexcept {}
 
-    void _Init(const _Locinfo&) { // initialize from _Locinfo object
-    }
+    void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, bool _Intl, ios_base& _Iosbase, _Elem _Fill,
         long double _Val) const { // put long double to _Dest
@@ -680,19 +675,19 @@ protected:
         char _Buf[40];
 
         // convert to chars:
-        const auto _Count = static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), "%.0Lf", _Val));
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), "%.0Lf", _Val);
 
         if (_Count < 0) {
             return _Dest; // bad conversion, give up
         }
 
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        const _Elem _E0                = _Ctype_fac.widen('0');
+        const _Elem _Elem0             = _Ctype_fac.widen('0');
 
-        string_type _Val2(_Count, _Elem{});
-        _Ctype_fac.widen(&_Buf[0], &_Buf[_Count], &_Val2[0]);
-        _Val2.append(_Exp, _E0); // scale by trailing zeros
-        return _Putmfld(_Dest, _Intl, _Iosbase, _Fill, _Negative, _Val2, _E0);
+        string_type _Val2(static_cast<size_t>(_Count), _Elem{});
+        _Ctype_fac.widen(_Buf, _Buf + _Count, &_Val2[0]);
+        _Val2.append(_Exp, _Elem0); // scale by trailing zeros
+        return _Putmfld(_Dest, _Intl, _Iosbase, _Fill, _Negative, _Val2, _Elem0);
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, bool _Intl, ios_base& _Iosbase, _Elem _Fill,
@@ -700,7 +695,7 @@ protected:
         static constexpr char _Src[] = "0123456789-";
         _Elem _Atoms[sizeof(_Src)];
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());
-        _Ctype_fac.widen(&_Src[0], &_Src[sizeof(_Src)], _Atoms);
+        _Ctype_fac.widen(_STD begin(_Src), _STD end(_Src), _Atoms);
 
         bool _Negative = false;
         size_t _Idx0   = 0;
@@ -723,8 +718,9 @@ protected:
     }
 
 private:
-    _OutIt _Putmfld(_OutIt _Dest, bool _Intl, ios_base& _Iosbase, _Elem _Fill, bool _Neg, string_type _Val,
-        _Elem _E0) const { // put string_type with just digits to _Dest
+    _OutIt _Putmfld(
+        _OutIt _Dest, bool _Intl, ios_base& _Iosbase, _Elem _Fill, bool _Neg, string_type _Val, _Elem _Elem0) const {
+        // put string_type with just digits to _Dest
         const _Mpunct<_Elem>* _Ppunct_fac;
         if (_Intl) {
             _Ppunct_fac = _STD addressof(_STD use_facet<_Mypunct1>(_Iosbase.getloc())); // international
@@ -737,7 +733,7 @@ private:
         const auto _Fracdigits = static_cast<unsigned int>(_Ifracdigits < 0 ? -_Ifracdigits : _Ifracdigits);
 
         if (_Val.size() <= _Fracdigits) {
-            _Val.insert(0, _Fracdigits - _Val.size() + 1, _E0);
+            _Val.insert(0, _Fracdigits - _Val.size() + 1, _Elem0);
         } else if (*_Grouping.c_str() != CHAR_MAX && '\0' < *_Grouping.c_str()) {
             // grouping specified, add thousands separators
             const _Elem _Kseparator = _Ppunct_fac->thousands_sep();
@@ -826,20 +822,17 @@ private:
 
             case money_base::value: // put value field
                 if (_Fracdigits == 0) {
-                    _Dest = _Put(_Dest, _Val.begin(),
-                        _Val.size()); // no fraction part
+                    _Dest = _Put(_Dest, _Val.begin(), _Val.size()); // no fraction part
                 } else if (_Val.size() <= _Fracdigits) { // put leading zero, all fraction digits
-                    *_Dest++ = _E0;
+                    *_Dest++ = _Elem0;
                     *_Dest++ = _Ppunct_fac->decimal_point();
-                    _Dest    = _Rep(_Dest, _E0,
-                        _Fracdigits - _Val.size()); // insert zeros
+                    _Dest    = _Rep(_Dest, _Elem0, _Fracdigits - _Val.size()); // insert zeros
                     _Dest    = _Put(_Dest, _Val.begin(), _Val.size());
                 } else { // put both integer and fraction parts
-                    _Dest    = _Put(_Dest, _Val.begin(),
-                        _Val.size() - _Fracdigits); // put integer part
+                    _Dest    = _Put(_Dest, _Val.begin(), _Val.size() - _Fracdigits); // put integer part
                     *_Dest++ = _Ppunct_fac->decimal_point();
-                    _Dest    = _Put(_Dest, _Val.end() - static_cast<ptrdiff_t>(_Fracdigits),
-                        _Fracdigits); // put fraction part
+                    _Dest =
+                        _Put(_Dest, _Val.end() - static_cast<ptrdiff_t>(_Fracdigits), _Fracdigits); // put fraction part
                 }
                 break;
 
@@ -856,16 +849,15 @@ private:
         }
 
         if (1 < _Sign.size()) {
-            _Dest = _Put(_Dest, _Sign.begin() + 1,
-                _Sign.size() - 1); // put remainder of sign
+            _Dest = _Put(_Dest, _Sign.begin() + 1, _Sign.size() - 1); // put remainder of sign
         }
 
         _Iosbase.width(0);
         return _Rep(_Dest, _Fill, _Fillcount); // put trailing fill
     }
 
-    static _OutIt _Put(_OutIt _Dest, typename string_type::const_iterator _Source,
-        size_t _Count) { // put [_Source, _Source + _Count) to _Dest
+    static _OutIt _Put(_OutIt _Dest, typename string_type::const_iterator _Source, size_t _Count) {
+        // put [_Source, _Source + _Count) to _Dest
         for (; 0 < _Count; --_Count, (void) ++_Dest, ++_Source) {
             *_Dest = *_Source;
         }

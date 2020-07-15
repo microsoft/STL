@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _ENABLE_ATOMIC_ALIGNMENT_FIX
-
 #include <algorithm>
 #include <assert.h>
 #include <deque>
@@ -12,8 +10,9 @@
 #include <iterator>
 #include <list>
 #include <numeric>
-#include <parallel_algorithms_utilities.hpp>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

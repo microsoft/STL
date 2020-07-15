@@ -63,7 +63,7 @@ template <class _Ty, class _Outer_alloc, class _Inner_alloc, class... _Types,
     enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
 void _Uses_allocator_construct(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Types&&... _Args) {
     // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, non-pair case
-    _Uses_allocator_construct1(uses_allocator<_Ty, _Inner_alloc>(), _Ptr, _Outer, _Inner,
+    _Uses_allocator_construct1(uses_allocator<_Ty, _Inner_alloc>{}, _Ptr, _Outer, _Inner,
         _STD forward<_Types>(_Args)...); // TRANSITION, if constexpr
 }
 
@@ -93,8 +93,8 @@ void _Uses_allocator_construct_pair(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& 
     tuple<_Types1...>&& _Val1, tuple<_Types2...>&& _Val2) {
     // uses-allocator construction of pair from _Val1 and _Val2 by alloc _Outer propagating alloc _Inner
     allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, piecewise_construct,
-        _Uses_allocator_piecewise<_Ty1>(uses_allocator<_Ty1, _Inner_alloc>(), _Inner, _STD move(_Val1)),
-        _Uses_allocator_piecewise<_Ty2>(uses_allocator<_Ty2, _Inner_alloc>(), _Inner, _STD move(_Val2)));
+        _Uses_allocator_piecewise<_Ty1>(uses_allocator<_Ty1, _Inner_alloc>{}, _Inner, _STD move(_Val1)),
+        _Uses_allocator_piecewise<_Ty2>(uses_allocator<_Ty2, _Inner_alloc>{}, _Inner, _STD move(_Val2)));
 }
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class... _Types1, class... _Types2>
@@ -142,7 +142,7 @@ namespace pmr {
     public:
         virtual ~memory_resource() noexcept {}
 
-        _NODISCARD _DECLSPEC_ALLOCATOR void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
+        _NODISCARD __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
             _STL_ASSERT(_Is_pow_2(_Align), "memory_resource::allocate(): Alignment must be a power of two.");
             return do_allocate(_Bytes, _Align);
@@ -206,12 +206,11 @@ namespace pmr {
 
         template <class _Uty>
         polymorphic_allocator(const polymorphic_allocator<_Uty>& _That) noexcept
-            : _Resource{_That._Resource} { // initialize with _That's resource
-        }
+            : _Resource{_That._Resource} {} // initialize with _That's resource
 
         polymorphic_allocator& operator=(const polymorphic_allocator&) = delete;
 
-        _NODISCARD _DECLSPEC_ALLOCATOR _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
             // get space for _Count objects of type _Ty from _Resource
             void* const _Vp = _Resource->allocate(_Get_size_of_n<sizeof(_Ty)>(_Count), alignof(_Ty));
             return static_cast<_Ty*>(_Vp);

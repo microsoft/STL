@@ -224,7 +224,6 @@ public:
     }
 };
 
-
 // forward_list TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference, class _Nodeptr_type>
@@ -276,8 +275,7 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    _Flist_val() noexcept : _Myhead() { // initialize data
-    }
+    _Flist_val() noexcept : _Myhead() {} // initialize data
 
     _Nodeptr _Before_head() const noexcept { // return pointer to the "before begin" pseudo node
         return pointer_traits<_Nodeptr>::pointer_to(reinterpret_cast<_Node&>(const_cast<_Nodeptr&>(_Myhead)));
@@ -617,17 +615,16 @@ public:
     forward_list(forward_list&& _Right, const _Alloc& _Al) noexcept(
         _Alnode_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        if
-            _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-                    _Insert_op._Append_range_unchecked(
-                        _STD make_move_iterator(_Right._Unchecked_begin()), _Default_sentinel{});
-                    _Alloc_proxy();
-                    _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
-                    return;
-                }
+        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
+                _Insert_op._Append_range_unchecked(
+                    _STD make_move_iterator(_Right._Unchecked_begin()), _Default_sentinel{});
+                _Alloc_proxy();
+                _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
+                return;
             }
+        }
 
         _Alloc_proxy();
         _Take_head(_Right);
@@ -1096,8 +1093,8 @@ public:
         splice_after(_Where, _Right, _First);
     }
 
-    void splice_after(const_iterator _Where, forward_list& _Right, const_iterator _First,
-        const_iterator _Last) noexcept /* strengthened */ {
+    void splice_after(const_iterator _Where, forward_list& _Right, const_iterator _First, const_iterator _Last) noexcept
+    /* strengthened */ {
         // splice _Right (_First, _Last) after _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(
@@ -1190,7 +1187,7 @@ public:
     }
 
     auto unique() { // erase each element matching previous
-        return unique(equal_to<>());
+        return unique(equal_to<>{});
     }
 
     template <class _Pr2>
@@ -1220,11 +1217,11 @@ public:
     }
 
     void merge(forward_list& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>());
+        _Merge1(_Right, less<>{});
     }
 
     void merge(forward_list&& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>());
+        _Merge1(_Right, less<>{});
     }
 
     template <class _Pr2>
@@ -1251,10 +1248,9 @@ private:
         auto& _Right_data = _Right._Mypair._Myval2;
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Default_sentinel{}, _Pred);
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
-            }
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
+        }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (!_My_data._Myhead) {
@@ -1273,13 +1269,12 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 2
         constexpr bool _Noexcept =
             noexcept(_DEBUG_LT_PRED(_Pred, _My_data._Myhead->_Myval, _Right_data._Myhead->_Myval));
-        if
-            _CONSTEXPR_IF(_Noexcept) {
-                // if the comparison is noexcept, we can take all the iterators in one go and avoid quadratic updates of
-                // the iterator chain
-                _Lockit _Lock(_LOCK_DEBUG);
-                _Transfer_non_before_begin_ownership(_Right);
-            } // unlock
+        if _CONSTEXPR_IF (_Noexcept) {
+            // if the comparison is noexcept, we can take all the iterators in one go and avoid quadratic updates of
+            // the iterator chain
+            _Lockit _Lock(_LOCK_DEBUG);
+            _Transfer_non_before_begin_ownership(_Right);
+        } // unlock
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (!_Right_data._Myhead) {
@@ -1326,13 +1321,12 @@ private:
             }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-            if
-                _CONSTEXPR_IF(!_Noexcept) {
-                    _Lockit _Lock(_LOCK_DEBUG);
-                    for (auto _Next = _First2; _Next != _Run_end; _Next = _Next->_Next) {
-                        _Transfer_ownership(_Right, _Next);
-                    }
-                } // unlock
+            if _CONSTEXPR_IF (!_Noexcept) {
+                _Lockit _Lock(_LOCK_DEBUG);
+                for (auto _Next = _First2; _Next != _Run_end; _Next = _Next->_Next) {
+                    _Transfer_ownership(_Right, _Next);
+                }
+            } // unlock
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
             _Right_data._Myhead = _Run_end; // snip out the run from its old position
@@ -1348,12 +1342,12 @@ private:
     }
 
 public:
-    void sort() { // order sequence, using operator<
+    void sort() { // order sequence
         _Scary_val::_Sort(_Mypair._Myval2._Before_head(), less<>{});
     }
 
     template <class _Pr2>
-    void sort(_Pr2 _Pred) { // order sequence, using _Pred
+    void sort(_Pr2 _Pred) { // order sequence
         _Scary_val::_Sort(_Mypair._Myval2._Before_head(), _Pass_fn(_Pred));
     }
 
@@ -1425,10 +1419,9 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
-            }
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
+        }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -1455,10 +1448,9 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
-        if
-            _CONSTEXPR_IF(!_Alnode_traits::is_always_equal::value) {
-                _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
-            }
+        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
+        }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
         if (_First == _Last) {
@@ -1516,7 +1508,7 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-forward_list(_Iter, _Iter, _Alloc = _Alloc())->forward_list<_Iter_value_t<_Iter>, _Alloc>;
+forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Alloc>

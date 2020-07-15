@@ -25,8 +25,7 @@ _STD_BEGIN
 namespace chrono {
     // STRUCT TEMPLATE treat_as_floating_point
     template <class _Rep>
-    struct treat_as_floating_point : is_floating_point<_Rep> { // tests for floating-point type
-    };
+    struct treat_as_floating_point : is_floating_point<_Rep> {}; // tests for floating-point type
 
     template <class _Rep>
     _INLINE_VAR constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
@@ -221,9 +220,7 @@ namespace chrono {
 
 // STRUCT TEMPLATE _Lcm (LEAST COMMON MULTIPLE)
 template <intmax_t _Ax, intmax_t _Bx>
-struct _Lcm
-    : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> { // compute least common multiple of _Ax and _Bx
-};
+struct _Lcm : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> {}; // compute LCM of _Ax and _Bx
 
 // STRUCT TEMPLATE common_type SPECIALIZATIONS
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
@@ -281,12 +278,10 @@ namespace chrono {
     };
 
     template <class _CR, class _Period1, class _Rep2>
-    struct _Duration_div_mod1<_CR, _Period1, _Rep2, false> { // no return type
-    };
+    struct _Duration_div_mod1<_CR, _Period1, _Rep2, false> {}; // no return type
 
     template <class _CR, class _Period1, class _Rep2, bool = _Is_duration_v<_Rep2>>
-    struct _Duration_div_mod { // no return type
-    };
+    struct _Duration_div_mod {}; // no return type
 
     template <class _CR, class _Period1, class _Rep2>
     struct _Duration_div_mod<_CR, _Period1, _Rep2, false> : _Duration_div_mod1<_CR, _Period1, _Rep2> {
@@ -612,6 +607,11 @@ namespace chrono {
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
+            // Instead of just having "(_Ctr * period::den) / _Freq",
+            // the algorithm below prevents overflow when _Ctr is sufficiently large.
+            // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
+            // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
+            // but the initial value of _Ctr could be large.
             const long long _Whole = (_Ctr / _Freq) * period::den;
             const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
             return time_point(duration(_Whole + _Part));
@@ -631,18 +631,18 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const chrono::duratio
     // Every function calling this one is TRANSITION, ABI
     constexpr chrono::nanoseconds _Ten_days{chrono::hours{24} * 10};
     constexpr chrono::duration<double> _Ten_days_d{_Ten_days};
-    chrono::nanoseconds _T0 = chrono::system_clock::now().time_since_epoch();
-    const bool _Clamped     = _Ten_days_d < _Rel_time;
+    chrono::nanoseconds _Tx0 = chrono::system_clock::now().time_since_epoch();
+    const bool _Clamped      = _Ten_days_d < _Rel_time;
     if (_Clamped) {
-        _T0 += _Ten_days;
+        _Tx0 += _Ten_days;
     } else {
-        _T0 += chrono::duration_cast<chrono::nanoseconds>(_Rel_time);
+        _Tx0 += chrono::duration_cast<chrono::nanoseconds>(_Rel_time);
     }
 
-    const auto _Whole_seconds = chrono::duration_cast<chrono::seconds>(_T0);
+    const auto _Whole_seconds = chrono::duration_cast<chrono::seconds>(_Tx0);
     _Xt.sec                   = _Whole_seconds.count();
-    _T0 -= _Whole_seconds;
-    _Xt.nsec = static_cast<long>(_T0.count());
+    _Tx0 -= _Whole_seconds;
+    _Xt.nsec = static_cast<long>(_Tx0.count());
     return _Clamped;
 }
 
@@ -653,8 +653,8 @@ inline namespace literals {
             return chrono::hours(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, ratio<3600>> operator"" h(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, ratio<3600>>(_Val);
         }
 
@@ -662,8 +662,8 @@ inline namespace literals {
             return chrono::minutes(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, ratio<60>>(operator"" min)(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, ratio<60>>(_Val);
         }
 
@@ -679,8 +679,8 @@ inline namespace literals {
             return chrono::milliseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, milli> operator"" ms(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, milli> operator"" ms(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, milli>(_Val);
         }
 
@@ -688,8 +688,8 @@ inline namespace literals {
             return chrono::microseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, micro> operator"" us(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, micro> operator"" us(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, micro>(_Val);
         }
 
@@ -697,8 +697,8 @@ inline namespace literals {
             return chrono::nanoseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, nano> operator"" ns(
-            long double _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr chrono::duration<double, nano> operator"" ns(long double _Val) noexcept
+        /* strengthened */ {
             return chrono::duration<double, nano>(_Val);
         }
     } // namespace chrono_literals

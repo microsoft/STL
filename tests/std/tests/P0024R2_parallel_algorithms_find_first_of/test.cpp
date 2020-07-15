@@ -7,10 +7,11 @@
 #include <forward_list>
 #include <list>
 #include <numeric>
-#include <parallel_algorithms_utilities.hpp>
 #include <stdlib.h>
 #include <string_view>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

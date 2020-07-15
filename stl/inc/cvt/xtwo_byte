@@ -57,11 +57,9 @@ namespace stdext {
                     if (_Bytecode < _Table::_Nlow) {
                         _Widecode = _Bytecode; // map byte to same wide value
                     } else if ((_Widecode = _Table::_Btw[_Bytecode - _Table::_Nlow]) == 0) {
-                        if
-                            _CONSTEXPR_IF(_Table::_Nbytes < 2) {
-                                return _Mybase::error; // no single-byte mapping
-                            }
-                        else {
+                        if _CONSTEXPR_IF (_Table::_Nbytes < 2) {
+                            return _Mybase::error; // no single-byte mapping
+                        } else {
                             if (_Mid1 + 1 == _Last1) {
                                 break; // need another input byte
                             }
@@ -158,8 +156,8 @@ namespace stdext {
                 return _Mybase::ok;
             }
 
-            virtual int do_length(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
-                noexcept override {
+            virtual int do_length(
+                _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 size_t _Wchars    = 0;
                 _Statype _Mystate = _State;

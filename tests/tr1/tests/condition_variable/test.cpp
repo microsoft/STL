@@ -13,7 +13,7 @@
 #include <system_error>
 #include <thread>
 
-namespace { // anonymous namespace
+namespace {
     int count;
     int value;
     STD mutex sync_mutex;
@@ -47,8 +47,6 @@ namespace { // anonymous namespace
     class waiter { // wait in separate thread
     public:
         waiter(Cond& c, Mutex& m, int& r) : cnd(c), mtx(m), result(r) {}
-
-        waiter& operator=(const waiter&); // not defined
 
         void operator()(int flags) const { // launch thread and synchronize with main thread
             try { // make sure exceptions don't escape
@@ -311,7 +309,7 @@ namespace { // anonymous namespace
         my_mutex mtx4;
         t_condition_variables(cnd, mtx4, "my_mutex");
     }
-} // anonymous namespace
+} // unnamed namespace
 
 void test_main() { // test header <condition_variable>
     t_condition_variable();

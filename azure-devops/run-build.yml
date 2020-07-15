@@ -3,17 +3,26 @@
 
 jobs:
 - job: ${{ parameters.targetPlatform }}
+  timeoutInMinutes: 360
   pool:
-    name: STL
+    name: $(agentPool)
 
   variables:
+    buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
+    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
+    - script: |
+        if exist "$(tmpDir)" (
+          rmdir /S /Q $(tmpDir)
+        )
+        mkdir $(tmpDir)
+      displayName: 'Setup TMP Directory'
     - checkout: self
       clean: true
-      submodules: recursive
+      submodules: true
     - task: Cache@2
-      displayName: Cache vcpkg
+      displayName: vcpkg/installed Caching
       timeoutInMinutes: 10
       inputs:
         key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
@@ -24,45 +33,60 @@ jobs:
       condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
       timeoutInMinutes: 10
       inputs:
-        vcpkgArguments: 'boost-build:x86-windows'
+        doNotUpdateVcpkg: true
+        vcpkgArguments: 'boost-build'
         vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: run-vcpkg@0
-      displayName: 'Run vcpkg'
+      displayName: 'Run vcpkg to Install boost-math'
+      condition: ne(variables.CACHE_RESTORED, 'true')
       timeoutInMinutes: 10
       inputs:
+        doNotUpdateVcpkg: true
         vcpkgArguments: 'boost-math'
         vcpkgDirectory: '$(vcpkgLocation)'
-        vcpkgTriplet: ${{ parameters.targetPlatform }}-windows
-    - task: run-cmake@0
-      displayName: 'Build Support Tools'
+        vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: PowerShell@2
+      displayName: 'Get Test Parallelism'
       timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
       inputs:
-        cmakeListsTxtPath: 'tools/CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*x64-Release.*'
-        buildDirectory: $(Build.ArtifactStagingDirectory)/tools
-    - task: BatchScript@1
-      displayName: 'Enforce clang-format'
-      timeoutInMinutes: 60
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/enforce-clang-format.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/parallelize/parallelize.exe'
-    - task: BatchScript@1
-      displayName: 'Validate Files'
-      timeoutInMinutes: 2
-      condition: eq('${{ parameters.targetPlatform }}', 'x64')
-      inputs:
-        filename: 'azure-devops/validate-files.cmd'
-        failOnStandardError: true
-        arguments: '$(Build.ArtifactStagingDirectory)/tools/validate/validate.exe'
-    - task: run-cmake@0
+        targetType: inline
+        script: |
+          $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+          Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
+    - script: |
+        if exist "$(buildOutputLocation)" (
+          rmdir /S /Q "$(buildOutputLocation)"
+        )
+        call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+        -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
+        cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
+        -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
+        -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
+        cmake --build $(buildOutputLocation)
       displayName: 'Build the STL'
       timeoutInMinutes: 10
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: CmdLine@2
+      displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
       inputs:
-        cmakeListsTxtPath: 'CMakeSettings.json'
-        useVcpkgToolchainFile: true
-        configurationRegexFilter: '.*${{ parameters.targetPlatform }}.*'
-        buildDirectory: $(Build.ArtifactStagingDirectory)/${{ parameters.targetPlatform }}
+        workingDirectory: $(buildOutputLocation)
+        script: |
+          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          ctest -V
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: PublishTestResults@2
+      displayName: 'Publish Tests'
+      timeoutInMinutes: 10
+      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      inputs:
+        searchFolder: $(buildOutputLocation)
+        testResultsFormat: JUnit
+        testResultsFiles: '**/test-results.xml'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}'

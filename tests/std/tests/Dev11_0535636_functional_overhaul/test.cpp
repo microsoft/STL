@@ -15,6 +15,13 @@
 #include <typeinfo>
 #include <utility>
 
+#if _HAS_CXX17
+#include <string_view>
+using string_or_view = std::string_view;
+#else
+using string_or_view = std::string;
+#endif
+
 using namespace std;
 using namespace std::placeholders;
 
@@ -716,39 +723,6 @@ int cube_noexcept(int n) noexcept {
     return n * n * n;
 }
 
-void test_dev11_391117();
-void test_dev11_535636();
-void test_dev11_794227();
-void test_dev11_868374();
-void test_more_reference_wrapper();
-void test_reference_wrapper_invocation();
-void test_invoke();
-void test_mem_fn();
-void test_function();
-void test_bind();
-void test_more_bind();
-void test_dev11_1160769();
-void test_not_fn();
-
-int main() {
-    // Test addressof() with functions.
-    assert(addressof(triple) == &triple);
-
-    test_dev11_391117();
-    test_dev11_535636();
-    test_dev11_794227();
-    test_dev11_868374();
-    test_more_reference_wrapper();
-    test_reference_wrapper_invocation();
-    test_invoke();
-    test_mem_fn();
-    test_function();
-    test_bind();
-    test_more_bind();
-    test_dev11_1160769();
-    test_not_fn();
-}
-
 
 // Test DevDiv#391117 "<functional> reference_wrapper: reference_wrapper doesn't compile with pure virtual function call
 // operators".
@@ -877,7 +851,7 @@ void test_dev11_868374() {
 
 
 // More reference_wrapper tests.
-void test_more_reference_wrapper() {
+_CONSTEXPR20 bool test_more_reference_wrapper() {
     STATIC_ASSERT(is_trivially_copyable_v<reference_wrapper<int>>);
     STATIC_ASSERT(is_trivially_copyable_v<reference_wrapper<string>>);
     STATIC_ASSERT(is_trivially_copyable_v<reference_wrapper<int(int, int)>>);
@@ -908,6 +882,20 @@ void test_more_reference_wrapper() {
     auto crw3 = cref(crw);
     STATIC_ASSERT(is_same_v<decltype(crw3), reference_wrapper<const int>>);
     assert(&crw3.get() == &x);
+
+    struct Cat {};
+    struct Dog {
+        Cat cat;
+        constexpr operator Cat&() {
+            return cat;
+        }
+    };
+
+    Dog dog;
+    reference_wrapper<Cat> catref(dog);
+    assert(&catref.get() == &dog.cat);
+
+    return true;
 }
 
 
@@ -1319,29 +1307,29 @@ STATIC_ASSERT(TestRWTypes<DifferentResults, None, unsigned int, unsigned short, 
 #endif // _HAS_CXX20
 
 // Test mem_fn().
-void test_mem_fn() {
+_CONSTEXPR20 bool test_mem_fn() {
     struct Widget {
         int m_i = 100;
 
-        int nullary() {
+        constexpr int nullary() {
             return ++m_i;
         }
-        int unary(int x) {
+        constexpr int unary(int x) {
             return m_i += x;
         }
-        int binary(int x, int y) {
+        constexpr int binary(int x, int y) {
             return m_i += x * y;
         }
-        int nullary_c() const {
+        constexpr int nullary_c() const {
             return m_i * 2;
         }
-        int unary_c(int x) const {
+        constexpr int unary_c(int x) const {
             return m_i * x;
         }
-        int unary_lv(int x) & {
+        constexpr int unary_lv(int x) & {
             return m_i += x * x;
         }
-        int unary_rv(int x) && {
+        constexpr int unary_rv(int x) && {
             return m_i += x * x * x;
         }
     };
@@ -1400,6 +1388,8 @@ void test_mem_fn() {
     assert(mem_fn(&Widget::unary_lv)(&w, 6) == 1061);
 
     assert(mem_fn(&Widget::unary_rv)(move(w), 7) == 1404);
+
+    return true;
 }
 
 
@@ -1989,11 +1979,11 @@ struct UserTwo {};
 namespace std {
     template <>
     struct is_placeholder<UserTwo> : integral_constant<int, 2> {};
-}
+} // namespace std
 
 struct UserBind {
     template <typename T>
-    T operator()(const T& a, const T& b) const {
+    constexpr T operator()(const T& a, const T& b) const {
         return a + b + b;
     }
 };
@@ -2001,24 +1991,24 @@ struct UserBind {
 namespace std {
     template <>
     struct is_bind_expression<UserBind> : true_type {};
-}
+} // namespace std
 
 template <typename... Types>
 struct Pack {};
 
 struct Typewriter {
     template <typename... Types>
-    Pack<Typewriter&, Types&&...> operator()(Types&&...) {
+    constexpr Pack<Typewriter&, Types&&...> operator()(Types&&...) {
         return Pack<Typewriter&, Types&&...>();
     }
 
     template <typename... Types>
-    Pack<const Typewriter&, Types&&...> operator()(Types&&...) const {
+    constexpr Pack<const Typewriter&, Types&&...> operator()(Types&&...) const {
         return Pack<const Typewriter&, Types&&...>();
     }
 };
 
-void test_more_bind() {
+_CONSTEXPR20 bool test_more_bind() {
     STATIC_ASSERT(is_placeholder_v<int> == 0);
 
     STATIC_ASSERT(is_placeholder_v<decltype(_1)> == 1);
@@ -2110,11 +2100,11 @@ void test_more_bind() {
 
     // Verify that bind()'s function call operator is const-overloaded.
     struct ConstOverloaded {
-        int operator()(int x, int y) {
+        constexpr int operator()(int x, int y) {
             return x * x * y;
         }
 
-        int operator()(int x, int y) const {
+        constexpr int operator()(int x, int y) const {
             return x * x * x * y;
         }
     };
@@ -2134,15 +2124,15 @@ void test_more_bind() {
         return p + i;
     };
 
-    const string s("cute fluffy kittens");
+    const string_or_view s("cute fluffy kittens");
 
-    assert(bind<const char*>(lambda2, s.c_str(), _1)(2) == s.c_str() + 2);
+    assert(bind<const char*>(lambda2, s.data(), _1)(2) == s.data() + 2);
     assert(calls == 1);
 
-    assert(bind<string>(lambda2, s.c_str(), _1)(3).size() == 16);
+    assert(bind<string_or_view>(lambda2, s.data(), _1)(3).size() == 16);
     assert(calls == 2);
 
-    bind<void>(lambda2, s.c_str(), _1)(4);
+    bind<void>(lambda2, s.data(), _1)(4);
     assert(calls == 3);
 
 
@@ -2169,6 +2159,57 @@ void test_more_bind() {
     STATIC_ASSERT(
         is_same_v<decltype(p11), Pack<const Typewriter&, const bool&,
                                      Pack<const Typewriter&, Z&, const Z&, Z&&, const Z&&>&&, Z&, const double&>>);
+
+#if _HAS_CXX17
+    struct NothrowInvocable {
+        int operator()(int i) noexcept {
+            return i;
+        }
+    };
+    struct NotNothrowInvocable {
+        int operator()(int i) {
+            return i;
+        }
+    };
+    struct PossiblyThrowingInt {
+        int i;
+        PossiblyThrowingInt() = default;
+        constexpr PossiblyThrowingInt(int j) : i(j) {}
+        operator int() {
+            return i;
+        }
+    };
+    PossiblyThrowingInt possibly_throwing_int{1729};
+
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, ref(n)))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), int>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, ref(n)))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, ref(n)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, ref(possibly_throwing_int)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), PossiblyThrowingInt>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, ref(possibly_throwing_int)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), PossiblyThrowingInt>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, ref(n)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, ref(n)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, _1)), int>);
+
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, bind(NothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, bind(NotNothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, bind(NothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, bind(NotNothrowInvocable{}, _1))), int>);
+#endif // _HAS_CXX17
+
+    return true;
 }
 
 
@@ -2195,56 +2236,56 @@ struct BoolWrapper {
 struct TestNotFn {
     int m_x;
 
-    explicit TestNotFn(const int x) : m_x(x) {}
+    constexpr explicit TestNotFn(const int x) : m_x(x) {}
 
     TestNotFn(const TestNotFn&) = delete;
     TestNotFn(TestNotFn&&)      = default;
     TestNotFn& operator=(const TestNotFn&) = delete;
     TestNotFn& operator=(TestNotFn&&) = delete;
 
-    bool operator()(const int i) & {
+    constexpr bool operator()(const int i) & {
         return i < m_x + 100;
     }
 
-    bool operator()(const int i) const& {
+    constexpr bool operator()(const int i) const& {
         return i < m_x + 200;
     }
 
-    bool operator()(const int i) && {
+    constexpr bool operator()(const int i) && {
         return i < m_x + 300;
     }
 
-    bool operator()(const int i) const&& {
+    constexpr bool operator()(const int i) const&& {
         return i < m_x + 400;
     }
 };
 
 struct EmptyTestNotFn {
-    explicit EmptyTestNotFn(int) {}
+    constexpr explicit EmptyTestNotFn(int) {}
 
-    EmptyTestNotFn(const EmptyTestNotFn&) = delete;
-    EmptyTestNotFn(EmptyTestNotFn&&)      = default;
+    EmptyTestNotFn(const EmptyTestNotFn&)      = delete;
+    constexpr EmptyTestNotFn(EmptyTestNotFn&&) = default;
     EmptyTestNotFn& operator=(const EmptyTestNotFn&) = delete;
     EmptyTestNotFn& operator=(EmptyTestNotFn&&) = delete;
 
-    bool operator()(const int i) & {
+    constexpr bool operator()(const int i) & {
         return i < 1500;
     }
 
-    bool operator()(const int i) const& {
+    constexpr bool operator()(const int i) const& {
         return i < 2500;
     }
 
-    bool operator()(const int i) && {
+    constexpr bool operator()(const int i) && {
         return i < 3500;
     }
 
-    bool operator()(const int i) const&& {
+    constexpr bool operator()(const int i) const&& {
         return i < 4500;
     }
 };
 
-void test_not_fn() {
+_CONSTEXPR20 bool test_not_fn() {
 #if _HAS_CXX17
     {
         BoolWrapper bw_true{true};
@@ -2284,4 +2325,31 @@ void test_not_fn() {
         assert(move(cg)(4600));
     }
 #endif // _HAS_CXX17
+    return true;
+}
+
+int main() {
+    // Test addressof() with functions.
+    assert(addressof(triple) == &triple);
+
+    test_dev11_391117();
+    test_dev11_535636();
+    test_dev11_794227();
+    test_dev11_868374();
+    test_more_reference_wrapper();
+    test_reference_wrapper_invocation();
+    test_invoke();
+    test_mem_fn();
+    test_function();
+    test_bind();
+    test_more_bind();
+    test_dev11_1160769();
+    test_not_fn();
+
+#if _HAS_CXX20
+    static_assert(test_more_reference_wrapper());
+    static_assert(test_mem_fn());
+    static_assert(test_more_bind());
+    static_assert(test_not_fn());
+#endif // _HAS_CXX20
 }

@@ -37,6 +37,7 @@
 
 #define _HAS_DEPRECATED_RESULT_OF 1
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+#define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 
@@ -7029,7 +7030,7 @@ namespace msvc {
             static_assert(sizeof(S::member) == sizeof(std::variant<std::function<S()>>));
             static_assert(sizeof(S) >= sizeof(S::member));
         }
-    }
+    } // namespace vso468746
 
     namespace vso492097 {
         // Defend against regression of VSO-492097
@@ -7066,7 +7067,21 @@ namespace msvc {
             static_assert(!std::is_copy_constructible_v<std::variant<volatile S>>);
         }
     } // namespace vso508126
-} // unnamed namespace
+
+    namespace DevCom1031281 {
+        // Compilers may warn when initializing a variant from a "weird" argument, e.g., std::variant<short>{some_int}
+        // is potentially narrowing. Compilers should not, however, emit such diagnostics from the metaprogramming that
+        // determines which alternative a variant initialization would activate. We don't want to emit warnings when
+        // determining implicit conversion sequences early in overload resolution.
+
+        void Overload(int) {}
+        void Overload(std::variant<unsigned short>) {}
+
+        void run_test() {
+            Overload(42);
+        }
+    } // namespace DevCom1031281
+} // namespace msvc
 
 int main() {
     bad_variant_access::run_test();
@@ -7127,4 +7142,5 @@ int main() {
     msvc::vso468746::run_test();
     msvc::vso508126::run_test();
     msvc::vso492097::run_test();
+    msvc::DevCom1031281::run_test();
 }

@@ -413,41 +413,39 @@ template <class _Iter, class _Hasher = hash<_Guide_key_t<_Iter>>, class _Keyeq =
         conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>,
         int> = 0>
 unordered_map(_Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
+    -> unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_map(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
-    _Alloc = _Alloc())
-    ->unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
+    _Alloc = _Alloc()) -> unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-unordered_map(_Iter, _Iter, _Alloc)
-    ->unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, hash<_Guide_key_t<_Iter>>, equal_to<_Guide_key_t<_Iter>>,
-        _Alloc>;
+unordered_map(_Iter, _Iter, _Alloc) -> unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>,
+    hash<_Guide_key_t<_Iter>>, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-unordered_map(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, hash<_Guide_key_t<_Iter>>, equal_to<_Guide_key_t<_Iter>>,
-        _Alloc>;
+unordered_map(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc) -> unordered_map<_Guide_key_t<_Iter>,
+    _Guide_val_t<_Iter>, hash<_Guide_key_t<_Iter>>, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_map(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
+    -> unordered_map<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
 
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-unordered_map(initializer_list<pair<_Kty, _Ty>>, _Alloc)->unordered_map<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
+unordered_map(initializer_list<pair<_Kty, _Ty>>, _Alloc)
+    -> unordered_map<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 unordered_map(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_map<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
+    -> unordered_map<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Ty, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_map(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_map<_Kty, _Ty, _Hasher, equal_to<_Kty>, _Alloc>;
+    -> unordered_map<_Kty, _Ty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
@@ -513,12 +511,10 @@ public:
     using local_iterator       = typename _Mybase::iterator;
     using const_local_iterator = typename _Mybase::const_iterator;
 
-    unordered_multimap() : _Mybase(_Key_compare(), allocator_type()) { // construct empty map from defaults
-    }
+    unordered_multimap() : _Mybase(_Key_compare(), allocator_type()) {} // construct empty map from defaults
 
     explicit unordered_multimap(const allocator_type& _Al)
-        : _Mybase(_Key_compare(), _Al) { // construct empty map from defaults, allocator
-    }
+        : _Mybase(_Key_compare(), _Al) {} // construct empty map from defaults, allocator
 
     unordered_multimap(const unordered_multimap& _Right)
         : _Mybase(_Right, _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {}
@@ -706,44 +702,40 @@ template <class _Iter, class _Hasher = hash<_Guide_key_t<_Iter>>, class _Keyeq =
     enable_if_t<
         conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>,
         int> = 0>
-unordered_multimap(
-    _Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
+unordered_multimap(_Iter, _Iter, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
+    _Alloc = _Alloc()) -> unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multimap(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(),
-    _Keyeq = _Keyeq(), _Alloc = _Alloc())
-    ->unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
+    _Keyeq = _Keyeq(), _Alloc = _Alloc()) -> unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-unordered_multimap(_Iter, _Iter, _Alloc)
-    ->unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, hash<_Guide_key_t<_Iter>>,
-        equal_to<_Guide_key_t<_Iter>>, _Alloc>;
+unordered_multimap(_Iter, _Iter, _Alloc) -> unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>,
+    hash<_Guide_key_t<_Iter>>, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Alloc, enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-unordered_multimap(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, hash<_Guide_key_t<_Iter>>,
-        equal_to<_Guide_key_t<_Iter>>, _Alloc>;
+unordered_multimap(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Alloc) -> unordered_multimap<_Guide_key_t<_Iter>,
+    _Guide_val_t<_Iter>, hash<_Guide_key_t<_Iter>>, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
 
 template <class _Iter, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multimap(_Iter, _Iter, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
+    -> unordered_multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Hasher, equal_to<_Guide_key_t<_Iter>>, _Alloc>;
 
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 unordered_multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc)
-    ->unordered_multimap<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
+    -> unordered_multimap<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 unordered_multimap(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>, _Alloc)
-    ->unordered_multimap<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
+    -> unordered_multimap<_Kty, _Ty, hash<_Kty>, equal_to<_Kty>, _Alloc>;
 
 template <class _Kty, class _Ty, class _Hasher, class _Alloc,
     enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
 unordered_multimap(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
-    ->unordered_multimap<_Kty, _Ty, _Hasher, equal_to<_Kty>, _Alloc>;
+    -> unordered_multimap<_Kty, _Ty, _Hasher, equal_to<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>

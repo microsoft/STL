@@ -20,7 +20,7 @@ public:
         m_file = _wfopen(filepath.c_str(), L"rb");
 
         if (!m_file) {
-            fwprintf(stderr, L"Validation failed: %s couldn't be opened.\n", filepath.c_str());
+            fwprintf(stderr, L"Validation failed: %ls couldn't be opened.\n", filepath.c_str());
         }
     }
 
@@ -95,8 +95,8 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    fwprintf(stderr, L"Validation failed: %s contains disallowed character 0x%02X.\n", filepath.c_str(),
-                        static_cast<unsigned int>(ch));
+                    fwprintf(stderr, L"Validation failed: %ls contains disallowed character 0x%02X.\n",
+                        filepath.c_str(), static_cast<unsigned int>(ch));
                 }
             }
 
@@ -114,11 +114,11 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
 
     if (has_cr) {
         fwprintf(
-            stderr, L"Validation failed: %s contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
+            stderr, L"Validation failed: %ls contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
     } else if (has_lf && has_crlf) {
-        fwprintf(stderr, L"Validation failed: %s contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %ls contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
     } else if (has_lf) {
-        fwprintf(stderr, L"Validation failed: %s contains LF line endings.", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %ls contains LF line endings.", filepath.c_str());
 
         if (prev != LF) {
             fwprintf(stderr, L" Also, it doesn't end with a newline.\n");
@@ -129,57 +129,60 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
         }
     } else if (has_crlf) {
         if (previous2 != CR || prev != LF) {
-            fwprintf(stderr, L"Validation failed: %s doesn't end with a newline.\n", filepath.c_str());
+            fwprintf(stderr, L"Validation failed: %ls doesn't end with a newline.\n", filepath.c_str());
         } else if (previous3 == LF) {
-            fwprintf(stderr, L"Validation failed: %s ends with multiple newlines.\n", filepath.c_str());
+            fwprintf(stderr, L"Validation failed: %ls ends with multiple newlines.\n", filepath.c_str());
         }
     } else {
-        fwprintf(stderr, L"Validation failed: %s doesn't contain any newlines.\n", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %ls doesn't contain any newlines.\n", filepath.c_str());
     }
 
     if (has_utf8_bom) {
-        fwprintf(stderr, L"Validation failed: %s contains UTF-8 BOM characters.\n", filepath.c_str());
+        fwprintf(stderr, L"Validation failed: %ls contains UTF-8 BOM characters.\n", filepath.c_str());
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        fwprintf(stderr, L"Validation failed: %s contains %zu tab characters.\n", filepath.c_str(), tab_characters);
+        fwprintf(stderr, L"Validation failed: %ls contains %zu tab characters.\n", filepath.c_str(), tab_characters);
     }
 
     if (trailing_whitespace_lines != 0) {
-        fwprintf(stderr, L"Validation failed: %s contains %zu lines with trailing whitespace.\n", filepath.c_str(),
+        fwprintf(stderr, L"Validation failed: %ls contains %zu lines with trailing whitespace.\n", filepath.c_str(),
             trailing_whitespace_lines);
     }
 }
 
 int main() {
     static constexpr array skipped_directories{
-        ".git"sv,
-        ".vs"sv,
-        ".vscode"sv,
-        "llvm-project"sv,
-        "out"sv,
-        "vcpkg"sv,
+        L".git"sv,
+        L".vs"sv,
+        L".vscode"sv,
+        L"__pycache__"sv,
+        L"build"sv,
+        L"llvm-project"sv,
+        L"out"sv,
+        L"vcpkg"sv,
     };
 
     static constexpr array skipped_extensions{
-        ".dll"sv,
-        ".exe"sv,
-        ".obj"sv,
+        L".dll"sv,
+        L".exe"sv,
+        L".obj"sv,
     };
 
     static constexpr array tabby_filenames{
-        ".gitmodules"sv,
+        L".gitmodules"sv,
     };
 
-    // TRANSITION, P0202R3, use constexpr is_sorted()
-    assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
-    assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
-    assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
+    static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
+    static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
+    static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
     vector<unsigned char> buffer; // reused for performance
 
     for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
-        const string filename = rdi->path().filename().string();
+        const filesystem::path& filepath = rdi->path();
+
+        const wstring filename = filepath.filename().wstring();
 
         if (!rdi->is_regular_file()) {
             if (rdi->is_directory()) {
@@ -191,7 +194,19 @@ int main() {
             continue;
         }
 
-        const string extension = rdi->path().extension().string();
+        const wstring& relative_path = filepath.native();
+
+        constexpr size_t maximum_relative_path_length = 120;
+        if (relative_path.size() > maximum_relative_path_length) {
+            fwprintf(stderr, L"Validation failed: the path \"%ls\" is too long (%zu characters; the limit is %zu).\n",
+                filepath.c_str(), relative_path.size(), maximum_relative_path_length);
+        }
+
+        if (relative_path.find(L' ') != wstring::npos) {
+            fwprintf(stderr, L"Validation failed: the path \"%ls\" contains spaces.\n", filepath.c_str());
+        }
+
+        const wstring extension = filepath.extension().wstring();
 
         if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
             continue;
@@ -201,6 +216,6 @@ int main() {
                                          ? TabPolicy::Allowed
                                          : TabPolicy::Forbidden;
 
-        scan_file(rdi->path(), tab_policy, buffer);
+        scan_file(filepath, tab_policy, buffer);
     }
 }

@@ -3,6 +3,29 @@
 
 #include "test.hpp"
 
+#include <algorithm>
+#include <array>
+#include <assert.h>
+#include <charconv>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <functional>
+#include <limits>
+#include <optional>
+#include <random>
+#include <set>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "double_fixed_precision_to_chars_test_cases_1.hpp"
 #include "double_fixed_precision_to_chars_test_cases_2.hpp"
 #include "double_fixed_precision_to_chars_test_cases_3.hpp"
@@ -21,32 +44,9 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
-#include <algorithm>
-#include <array>
-#include <assert.h>
-#include <charconv>
-#include <chrono>
-#include <cmath>
 #include <floating_point_test_cases.hpp>
-#include <fstream>
-#include <functional>
-#include <limits>
-#include <optional>
-#include <random>
-#include <set>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <string_view>
-#include <system_error>
-#include <type_traits>
-#include <utility>
-#include <vector>
 
 using namespace std;
-using namespace std::chrono;
 
 void initialize_randomness(mt19937_64& mt64, const int argc, char** const argv) {
     constexpr size_t n = mt19937_64::state_size;
@@ -565,20 +565,20 @@ void all_integer_tests() {
 
 void assert_message_bits(const bool b, const char* const msg, const uint32_t bits) {
     if (!b) {
-        printf("%s failed for 0x%08X\n", msg, bits);
-        puts("This is a randomized test.");
-        puts("DO NOT IGNORE/RERUN THIS FAILURE.");
-        puts("You must report it to the STL maintainers.");
+        fprintf(stderr, "%s failed for 0x%08X\n", msg, bits);
+        fprintf(stderr, "This is a randomized test.\n");
+        fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
+        fprintf(stderr, "You must report it to the STL maintainers.\n");
         abort();
     }
 }
 
 void assert_message_bits(const bool b, const char* const msg, const uint64_t bits) {
     if (!b) {
-        printf("%s failed for 0x%016llX\n", msg, bits);
-        puts("This is a randomized test.");
-        puts("DO NOT IGNORE/RERUN THIS FAILURE.");
-        puts("You must report it to the STL maintainers.");
+        fprintf(stderr, "%s failed for 0x%016llX\n", msg, bits);
+        fprintf(stderr, "This is a randomized test.\n");
+        fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
+        fprintf(stderr, "You must report it to the STL maintainers.\n");
         abort();
     }
 }
@@ -1060,7 +1060,7 @@ void all_floating_tests(mt19937_64& mt64) {
 }
 
 int main(int argc, char** argv) {
-    const auto start = steady_clock::now();
+    const auto start = chrono::steady_clock::now();
 
     mt19937_64 mt64;
 
@@ -1070,8 +1070,8 @@ int main(int argc, char** argv) {
 
     all_floating_tests(mt64);
 
-    const auto finish  = steady_clock::now();
-    const long long ms = duration_cast<milliseconds>(finish - start).count();
+    const auto finish  = chrono::steady_clock::now();
+    const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
 
     puts("PASS");
     printf("Randomized test cases: %u\n", PrefixesToTest * Fractions);

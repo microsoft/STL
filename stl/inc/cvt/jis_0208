@@ -20,8 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 namespace stdext {
     namespace cvt {
-
-
         using _Statype = _CSTD mbstate_t;
 
 #define _ESC_CODE 0x1b
@@ -202,8 +200,8 @@ namespace stdext {
                 return _Mybase::partial;
             }
 
-            virtual int do_length(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
-                noexcept override {
+            virtual int do_length(
+                _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 size_t _Wchars    = 0;
                 _Statype _Mystate = _State;

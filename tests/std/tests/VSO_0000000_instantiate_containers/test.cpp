@@ -22,7 +22,6 @@
 #include <hash_map>
 #include <hash_set>
 #include <initializer_list>
-#include <instantiate_containers_iterators_common.hpp>
 #include <iterator>
 #include <list>
 #include <map>
@@ -40,11 +39,26 @@
 #include <valarray>
 #include <vector>
 
+#include <instantiate_containers_iterators_common.hpp>
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 int main() {} // COMPILE-ONLY
+
+template <typename Tpl, typename Fx, size_t... Indices>
+void for_each_tuple_element_impl(Tpl&& Tuple, Fx Func, index_sequence<Indices...>) {
+    // call Func() on the Indices elements of Tuple
+    int ignored[] = {(static_cast<void>(Func(get<Indices>(forward<Tpl>(Tuple)))), 0)...};
+    (void) ignored;
+}
+
+template <typename Tpl, typename Fx>
+void for_each_tuple_element(Tpl&& Tuple, Fx Func) { // call Func() on each element in Tuple
+    for_each_tuple_element_impl(
+        forward<Tpl>(Tuple), Func, make_index_sequence<tuple_size_v<remove_reference_t<Tpl>>>{});
+}
 
 // Use this type to ensure function templates are used instead
 // of regular member functions.
@@ -121,7 +135,7 @@ template <typename T>
 void construct_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [](auto c) {
+    for_each_tuple_element(containers, [](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c));
     });
@@ -131,7 +145,7 @@ template <typename T>
 void construct_tree_containers_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [&](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.key_comp());
         T another3(begin(c), end(c), value.key_comp(), value.get_allocator());
@@ -142,7 +156,7 @@ template <typename T>
 void construct_hash_containers_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    _For_each_tuple_element(containers, [&](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.bucket_count());
         T another3(begin(c), end(c), value.bucket_count(), value.hash_function());
@@ -699,7 +713,7 @@ namespace std {
     inline const T* cbegin(valarray<T>& arr) {
         return begin(arr); // unqualified
     }
-}
+} // namespace std
 
 void valarray_test() {
     valarray<int> value{};

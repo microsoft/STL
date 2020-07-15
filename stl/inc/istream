@@ -31,8 +31,8 @@ public:
     using _Nget  = num_get<_Elem, _Iter>;
 
 #if defined(__FORCE_INSTANCE)
-    explicit __CLR_OR_THIS_CALL basic_istream(_Mysb* _Strbuf, bool _Isstd, bool _Noinit) : _Chcount(0) {
-        if (!_Noinit) {
+    explicit __CLR_OR_THIS_CALL basic_istream(_Mysb* _Strbuf, bool _Isstd, bool _Skip_init) : _Chcount(0) {
+        if (!_Skip_init) {
             _Myios::init(_Strbuf, _Isstd);
         }
     }
@@ -156,8 +156,7 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard isfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL isfx() { // perform any wrapup
-    }
+    void __CLR_OR_THIS_CALL isfx() {} // perform any wrapup
 
 #ifdef _M_CEE_PURE
     basic_istream& __CLR_OR_THIS_CALL operator>>(basic_istream&(__clrcall* _Pfn)(basic_istream&) ) {

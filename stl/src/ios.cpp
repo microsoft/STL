@@ -74,8 +74,8 @@ void __CLRCALL_PURE_OR_CDECL ios_base::_Ios_base_dtor(ios_base* _This) { // dest
 
 void __CLRCALL_PURE_OR_CDECL ios_base::_Addstd(ios_base* _This) { // add standard stream to destructor list
     _BEGIN_LOCK(_LOCK_STREAM)
-    for (_This->_Stdstr = 0; ++_This->_Stdstr < _Nstdstr;) {
-        if (stdstr[_This->_Stdstr] == 0 || stdstr[_This->_Stdstr] == _This) {
+    for (_This->_Stdstr = 1; _This->_Stdstr < _Nstdstr; ++_This->_Stdstr) {
+        if (stdstr[_This->_Stdstr] == nullptr || stdstr[_This->_Stdstr] == _This) {
             break; // found a candidate
         }
     }

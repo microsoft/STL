@@ -121,8 +121,7 @@ _NODISCARD inline bool _System_error_equal(const error_code&, const error_condit
 // CLASS error_code
 class error_code { // store an implementation-specific error code and category
 public:
-    error_code() noexcept : _Myval(0), _Mycat(&system_category()) { // construct non-error
-    }
+    error_code() noexcept : _Myval(0), _Mycat(&_STD system_category()) {} // construct non-error
 
     error_code(int _Val, const error_category& _Cat) noexcept : _Myval(_Val), _Mycat(&_Cat) {}
 
@@ -138,14 +137,13 @@ public:
 
     template <class _Enum, enable_if_t<is_error_code_enum_v<_Enum>, int> = 0>
     error_code& operator=(_Enum _Errcode) noexcept {
-
         *this = make_error_code(_Errcode); // using ADL
         return *this;
     }
 
     void clear() noexcept {
         _Myval = 0;
-        _Mycat = &system_category();
+        _Mycat = &_STD system_category();
     }
 
     _NODISCARD int value() const noexcept {
@@ -205,8 +203,7 @@ private:
 // CLASS error_condition
 class error_condition { // store an abstract error code and category
 public:
-    error_condition() noexcept : _Myval(0), _Mycat(&generic_category()) { // construct non-error
-    }
+    error_condition() noexcept : _Myval(0), _Mycat(&_STD generic_category()) {} // construct non-error
 
     error_condition(int _Val, const error_category& _Cat) noexcept : _Myval(_Val), _Mycat(&_Cat) {}
 
@@ -222,14 +219,13 @@ public:
 
     template <class _Enum, enable_if_t<is_error_condition_enum_v<_Enum>, int> = 0>
     error_condition& operator=(_Enum _Errcode) noexcept {
-
         *this = make_error_condition(_Errcode); // using ADL
         return *this;
     }
 
     void clear() noexcept {
         _Myval = 0;
-        _Mycat = &generic_category();
+        _Mycat = &_STD generic_category();
     }
 
     _NODISCARD int value() const noexcept {
@@ -325,8 +321,8 @@ _NODISCARD inline bool operator<(const error_condition& _Left, const error_condi
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
 // VIRTUALS FOR error_category
-_NODISCARD inline error_condition error_category::default_error_condition(int _Errval) const
-    noexcept { // make error_condition for error code
+_NODISCARD inline error_condition error_category::default_error_condition(int _Errval) const noexcept {
+    // make error_condition for error code
     return error_condition(_Errval, *this);
 }
 
@@ -339,27 +335,27 @@ _NODISCARD inline bool error_category::equivalent(const error_code& _Code, int _
 }
 
 // MEMBER FUNCTIONS for error_code
-_NODISCARD inline error_condition error_code::default_error_condition() const
-    noexcept { // make error_condition for error code
+_NODISCARD inline error_condition error_code::default_error_condition() const noexcept {
+    // make error_condition for error code
     return category().default_error_condition(value());
 }
 
 // FUNCTION make_error_code
 _NODISCARD inline error_code make_error_code(errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), generic_category());
+    return error_code(static_cast<int>(_Errno), _STD generic_category());
 }
 
 _NODISCARD inline error_code make_error_code(io_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), iostream_category());
+    return error_code(static_cast<int>(_Errno), _STD iostream_category());
 }
 
 // FUNCTION make_error_condition
 _NODISCARD inline error_condition make_error_condition(errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), generic_category());
+    return error_condition(static_cast<int>(_Errno), _STD generic_category());
 }
 
 _NODISCARD inline error_condition make_error_condition(io_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), iostream_category());
+    return error_condition(static_cast<int>(_Errno), _STD iostream_category());
 }
 
 // STRUCT TEMPLATE SPECIALIZATION hash
@@ -425,14 +421,12 @@ public:
         return _Mycode;
     }
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
 protected:
     virtual void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
 };
 
 [[noreturn]] inline void _Throw_system_error(const errc _Errno) {
@@ -512,9 +506,9 @@ public:
         // make error_condition for error code (generic if possible)
         const int _Posv = _Winerror_map(_Errval);
         if (_Posv == 0) {
-            return error_condition(_Errval, system_category());
+            return error_condition(_Errval, _STD system_category());
         } else {
-            return error_condition(_Posv, generic_category());
+            return error_condition(_Posv, _STD generic_category());
         }
     }
 };
@@ -560,8 +554,8 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
 #elif defined(__cpp_constexpr_dynamic_alloc)
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
-    constexpr _Ty _Static;
-    return _Static._Storage;
+    static constexpr _Ty _Static;
+    return _Static;
 }
 #else // choose immortalize strategy
 template <class _Ty>

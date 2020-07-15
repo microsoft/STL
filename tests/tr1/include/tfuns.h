@@ -3,6 +3,14 @@
 
 // common header for functional?.cpp
 
+#pragma warning(push)
+#pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // __clang__
+
 struct funobj;
 static int f0();
 static int f1(const volatile funobj);
@@ -131,20 +139,19 @@ struct funobj { // general purpose function object
     int cf6(int i1, int i2, int i3, int i4, int i5) const { // const member function with five arguments
         return ::f6(*this, i1, i2, i3, i4, i5);
     }
-    int cf7(int i1, int i2, int i3, int i4, int i5,
-        int i6) const { // const member function with six arguments
+    int cf7(int i1, int i2, int i3, int i4, int i5, int i6) const { // const member function with six arguments
         return ::f7(*this, i1, i2, i3, i4, i5, i6);
     }
-    int cf8(
-        int i1, int i2, int i3, int i4, int i5, int i6, int i7) const { // const member function with seven arguments
+    int cf8(int i1, int i2, int i3, int i4, int i5, int i6, int i7) const {
+        // const member function with seven arguments
         return ::f8(*this, i1, i2, i3, i4, i5, i6, i7);
     }
-    int cf9(int i1, int i2, int i3, int i4, int i5, int i6, int i7,
-        int i8) const { // const member function with eight arguments
+    int cf9(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) const {
+        // const member function with eight arguments
         return ::f9(*this, i1, i2, i3, i4, i5, i6, i7, i8);
     }
-    int cf10(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8,
-        int i9) const { // const member function with nine arguments
+    int cf10(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9) const {
+        // const member function with nine arguments
         return ::f10(*this, i1, i2, i3, i4, i5, i6, i7, i8, i9);
     }
 
@@ -166,20 +173,19 @@ struct funobj { // general purpose function object
     int vf6(int i1, int i2, int i3, int i4, int i5) volatile { // volatile member function with five arguments
         return ::f6(*this, i1, i2, i3, i4, i5);
     }
-    int vf7(int i1, int i2, int i3, int i4, int i5,
-        int i6) volatile { // volatile member function with six arguments
+    int vf7(int i1, int i2, int i3, int i4, int i5, int i6) volatile { // volatile member function with six arguments
         return ::f7(*this, i1, i2, i3, i4, i5, i6);
     }
-    int vf8(int i1, int i2, int i3, int i4, int i5, int i6,
-        int i7) volatile { // volatile member function with seven arguments
+    int vf8(int i1, int i2, int i3, int i4, int i5, int i6, int i7) volatile {
+        // volatile member function with seven arguments
         return ::f8(*this, i1, i2, i3, i4, i5, i6, i7);
     }
-    int vf9(int i1, int i2, int i3, int i4, int i5, int i6, int i7,
-        int i8) volatile { // volatile member function with eight arguments
+    int vf9(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) volatile {
+        // volatile member function with eight arguments
         return ::f9(*this, i1, i2, i3, i4, i5, i6, i7, i8);
     }
-    int vf10(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8,
-        int i9) volatile { // volatile member function with nine arguments
+    int vf10(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9) volatile {
+        // volatile member function with nine arguments
         return ::f10(*this, i1, i2, i3, i4, i5, i6, i7, i8, i9);
     }
 
@@ -198,24 +204,24 @@ struct funobj { // general purpose function object
     int cvf5(int i1, int i2, int i3, int i4) const volatile { // const volatile member function with four arguments
         return ::f5(*this, i1, i2, i3, i4);
     }
-    int cvf6(int i1, int i2, int i3, int i4, int i5) const
-        volatile { // const volatile member function with five arguments
+    int cvf6(int i1, int i2, int i3, int i4, int i5) const volatile {
+        // const volatile member function with five arguments
         return ::f6(*this, i1, i2, i3, i4, i5);
     }
-    int cvf7(int i1, int i2, int i3, int i4, int i5,
-        int i6) const volatile { // const volatile member function with six arguments
+    int cvf7(int i1, int i2, int i3, int i4, int i5, int i6) const volatile {
+        // const volatile member function with six arguments
         return ::f7(*this, i1, i2, i3, i4, i5, i6);
     }
-    int cvf8(int i1, int i2, int i3, int i4, int i5, int i6, int i7) const
-        volatile { // const volatile member function with seven arguments
+    int cvf8(int i1, int i2, int i3, int i4, int i5, int i6, int i7) const volatile {
+        // const volatile member function with seven arguments
         return ::f8(*this, i1, i2, i3, i4, i5, i6, i7);
     }
-    int cvf9(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) const
-        volatile { // const volatile member function with eight arguments
+    int cvf9(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) const volatile {
+        // const volatile member function with eight arguments
         return ::f9(*this, i1, i2, i3, i4, i5, i6, i7, i8);
     }
-    int cvf10(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9) const
-        volatile { // const volatile member function with nine arguments
+    int cvf10(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9) const volatile {
+        // const volatile member function with nine arguments
         return ::f10(*this, i1, i2, i3, i4, i5, i6, i7, i8, i9);
     }
     int i0;
@@ -626,3 +632,9 @@ const T& fake_lvalue(const T&& t) { // C++11 12.2 [class.temporary]/5: "A tempor
                                     // of the full-expression containing the call."
     return t;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+
+#pragma warning(pop)

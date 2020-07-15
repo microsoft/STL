@@ -18,7 +18,7 @@ typedef unsigned int Uint32;
 template <class T>
 class generator {
 public:
-    void reset(const T* ptr0, unsigned n0) { // establish new sequence
+    void reset(const T* ptr0, unsigned int n0) { // establish new sequence
         ptr = ptr0;
         n   = n0;
         i   = 0;
@@ -28,14 +28,14 @@ public:
         return ptr[i++];
     }
 
-    unsigned index() const { // return index into sequence
+    unsigned int index() const { // return index into sequence
         return i;
     }
 
 private:
     const T* ptr;
-    unsigned n;
-    unsigned i;
+    unsigned int n;
+    unsigned int i;
 };
 
 template <class Eng>

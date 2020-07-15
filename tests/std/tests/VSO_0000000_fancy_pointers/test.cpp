@@ -5,7 +5,6 @@
 #include <deque>
 #include <forward_list>
 #include <functional>
-#include <instantiate_containers_iterators_common.hpp>
 #include <iterator>
 #include <list>
 #include <map>
@@ -18,6 +17,8 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include <instantiate_containers_iterators_common.hpp>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -273,7 +274,7 @@ namespace std {
         typedef Val& reference;
         typedef fancy_pointer<Val> pointer;
     };
-}
+} // namespace std
 
 template <typename T>
 struct always_false : std::false_type {};

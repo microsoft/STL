@@ -3,7 +3,6 @@
 
 // thread functions
 
-#include "awint.h"
 #include <process.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -12,6 +11,8 @@
 #include <xthreads.h>
 
 #include <Windows.h>
+
+#include "awint.hpp"
 
 namespace {
     using _Thrd_start_t = int (*)(void*);
@@ -27,7 +28,7 @@ namespace {
     using _Thrd_callback_t = unsigned int(__stdcall*)(void*);
 
     unsigned int __stdcall _Thrd_runner(void* d) { // call thread function
-        _Thrd_binder b = *(_Thrd_binder*) d;
+        _Thrd_binder b = *static_cast<_Thrd_binder*>(d);
         _Mtx_lock(*b.mtx);
         *b.started = 1;
         _Cnd_signal(*b.cond);
@@ -47,8 +48,8 @@ _CRTIMP2_PURE void _Thrd_exit(int res) { // terminate execution of calling threa
 
 // TRANSITION, ABI: _Thrd_start() is preserved for binary compatibility
 _CRTIMP2_PURE int _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { // start a thread
-    return (thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, func, b, 0, &thr->_Id))) == 0 ? _Thrd_error
-                                                                                                    : _Thrd_success;
+    thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, func, b, 0, &thr->_Id));
+    return thr->_Hnd == 0 ? _Thrd_error : _Thrd_success;
 }
 
 int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread terminates
@@ -58,7 +59,7 @@ int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread termina
     }
 
     if (code) {
-        *code = (int) res;
+        *code = static_cast<int>(res);
     }
 
     return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;

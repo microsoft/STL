@@ -24,6 +24,7 @@ static constexpr _Win_errtab_t _Win_errtab[] = {
     // table of Windows/Posix pairs
     {ERROR_ACCESS_DENIED, errc::permission_denied},
     {ERROR_ALREADY_EXISTS, errc::file_exists},
+    {ERROR_BAD_NETPATH, errc::no_such_file_or_directory},
     {ERROR_BAD_UNIT, errc::no_such_device},
     {ERROR_BROKEN_PIPE, errc::broken_pipe},
     {ERROR_BUFFER_OVERFLOW, errc::filename_too_long},
@@ -46,7 +47,7 @@ static constexpr _Win_errtab_t _Win_errtab[] = {
     {ERROR_INVALID_DRIVE, errc::no_such_device},
     {ERROR_INVALID_FUNCTION, errc::function_not_supported},
     {ERROR_INVALID_HANDLE, errc::invalid_argument},
-    {ERROR_INVALID_NAME, errc::invalid_argument},
+    {ERROR_INVALID_NAME, errc::no_such_file_or_directory},
     {ERROR_INVALID_PARAMETER, errc::invalid_argument},
     {ERROR_LOCK_VIOLATION, errc::no_lock_available},
     {ERROR_LOCKED, errc::no_lock_available},

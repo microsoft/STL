@@ -64,11 +64,9 @@ template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
     { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
     { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-#if 1 // Implement the PR for LWG-3150
     typename _Require_constant<(_Ty::min)()>;
     typename _Require_constant<(_Ty::max)()>;
     requires (_Ty::min)() < (_Ty::max)();
-#endif // LWG-3150
 };
 // clang-format on
 #endif // __cpp_lib_concepts
@@ -211,23 +209,23 @@ public:
             }
 
             for (_Kx = 0; _Kx < _Mx; ++_Kx) { // scramble and add any vector contributions
-                result_type _R1 =
+                result_type _Rx1 =
                     1664525 * _Xor27(_UFirst[_Kx % _Nx] ^ _UFirst[(_Kx + _Px) % _Nx] ^ _UFirst[(_Kx - 1) % _Nx]);
-                result_type _R2 = static_cast<result_type>(
-                    (_R1 + (_Kx == 0 ? _Sx : _Kx <= _Sx ? _Kx % _Nx + _Myvec[(_Kx - 1) % _Sx] : _Kx % _Nx)) & _Mask);
+                result_type _Rx2 = static_cast<result_type>(
+                    (_Rx1 + (_Kx == 0 ? _Sx : _Kx <= _Sx ? _Kx % _Nx + _Myvec[(_Kx - 1) % _Sx] : _Kx % _Nx)) & _Mask);
 
-                _UFirst[(_Kx + _Px) % _Nx] = (_UFirst[(_Kx + _Px) % _Nx] + _R1) & _Mask;
-                _UFirst[(_Kx + _Qx) % _Nx] = (_UFirst[(_Kx + _Qx) % _Nx] + _R2) & _Mask;
-                _UFirst[_Kx % _Nx]         = _R2;
+                _UFirst[(_Kx + _Px) % _Nx] = (_UFirst[(_Kx + _Px) % _Nx] + _Rx1) & _Mask;
+                _UFirst[(_Kx + _Qx) % _Nx] = (_UFirst[(_Kx + _Qx) % _Nx] + _Rx2) & _Mask;
+                _UFirst[_Kx % _Nx]         = _Rx2;
             }
             for (; _Kx < _Mx + _Nx; ++_Kx) { // rescramble
-                result_type _R3 =
+                result_type _Rx3 =
                     1566083941 * _Xor27(_UFirst[_Kx % _Nx] + _UFirst[(_Kx + _Px) % _Nx] + _UFirst[(_Kx - 1) % _Nx]);
-                result_type _R4 = static_cast<result_type>((_R3 - _Kx % _Nx) & _Mask);
+                result_type _Rx4 = static_cast<result_type>((_Rx3 - _Kx % _Nx) & _Mask);
 
-                _UFirst[(_Kx + _Px) % _Nx] = (_UFirst[(_Kx + _Px) % _Nx] ^ _R3) & _Mask;
-                _UFirst[(_Kx + _Qx) % _Nx] = (_UFirst[(_Kx + _Qx) % _Nx] ^ _R4) & _Mask;
-                _UFirst[_Kx % _Nx]         = _R4;
+                _UFirst[(_Kx + _Px) % _Nx] = (_UFirst[(_Kx + _Px) % _Nx] ^ _Rx3) & _Mask;
+                _UFirst[(_Kx + _Qx) % _Nx] = (_UFirst[(_Kx + _Qx) % _Nx] ^ _Rx4) & _Mask;
+                _UFirst[_Kx % _Nx]         = _Rx4;
             }
         }
     }
@@ -313,36 +311,24 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Divide by _Ax:
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
-    if
-        _CONSTEXPR_IF(_Ax == 0) { // degenerate case; avoid divide by 0
-            (void) _Prev;
-            return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
-        }
-    else if
-        _CONSTEXPR_IF(
-            _Mx == 0) { // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m used throughout
-                        // this subclause [rand.eng.lcong] is numeric_limits<result_type>::max() plus 1."
-                        // That is: Just do the multiply and let normal unsigned modulo take care of it
-            return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
-        }
-    else if
-        _CONSTEXPR_IF(
-            _Cx <= UINT_MAX
-            && static_cast<_Uint>(_Mx - 1)
-                   <= (UINT_MAX - _Cx) / _Ax) { // unsigned int is sufficient to store intermediate calculation
-            const auto _Mul =
-                static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
-            return static_cast<_Uint>(_Mul % _Mx);
-        }
-    else if
-        _CONSTEXPR_IF(
-            _Cx <= ULLONG_MAX
-            && static_cast<_Uint>(_Mx - 1)
-                   <= (ULLONG_MAX - _Cx) / _Ax) { // unsigned long long is sufficient to store intermediate calculation
-            const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
-            return static_cast<_Uint>(_Mul % _Mx);
-        }
-    else { // no intermediate integral type fits; fall back to multiprecision
+    if _CONSTEXPR_IF (_Ax == 0) { // degenerate case; avoid divide by 0
+        return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
+    } else if _CONSTEXPR_IF (_Mx == 0) {
+        // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
+        // used throughout this subclause [rand.eng.lcong] is
+        // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
+        // and let normal unsigned modulo take care of it
+        return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
+    } else if _CONSTEXPR_IF (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
+        // unsigned int is sufficient to store intermediate calculation
+        const auto _Mul =
+            static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
+        return static_cast<_Uint>(_Mul % _Mx);
+    } else if _CONSTEXPR_IF (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
+        // unsigned long long is sufficient to store intermediate calculation
+        const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
+        return static_cast<_Uint>(_Mul % _Mx);
+    } else { // no intermediate integral type fits; fall back to multiprecision
         _MP_arr _Wx;
         _MP_Mul(_Wx, _Prev, _Ax);
         _MP_Add(_Wx, _Cx);
@@ -379,17 +365,15 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
 
 template <class _Uint, _Uint _Cx, _Uint _Mx>
 _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
-    if
-        _CONSTEXPR_IF(_Mx != 0) {
-            _Sx %= _Mx;
-        }
+    if _CONSTEXPR_IF (_Mx != 0) {
+        _Sx %= _Mx;
+    }
 
-    if
-        _CONSTEXPR_IF(_Cx == 0) {
-            if (_Sx == 0) {
-                _Sx = _Uint{1};
-            }
+    if _CONSTEXPR_IF (_Cx == 0) {
+        if (_Sx == 0) {
+            _Sx = _Uint{1};
         }
+    }
 
     return _Sx;
 }
@@ -397,21 +381,15 @@ _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { /
 template <class _Uint, _Uint _Cx, _Uint _Mx, class _Seed_seq>
 _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4741 [rand.eng.lcong]/6
     _Uint _Sx;
-    if
-        _CONSTEXPR_IF(_Mx == 0) {
-            if
-                _CONSTEXPR_IF(sizeof(_Uint) <= sizeof(unsigned int)) {
-                    _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq));
-                }
-            else {
-                _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq));
-            }
+    if _CONSTEXPR_IF (_Mx == 0) {
+        if _CONSTEXPR_IF (sizeof(_Uint) <= sizeof(unsigned int)) {
+            _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq));
+        } else {
+            _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq));
         }
-    else if
-        _CONSTEXPR_IF(_Mx <= UINT_MAX) {
-            _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq) % _Mx);
-        }
-    else {
+    } else if _CONSTEXPR_IF (_Mx <= UINT_MAX) {
+        _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq) % _Mx);
+    } else {
         _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq) % _Mx);
     }
 
@@ -487,16 +465,16 @@ public:
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator==(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
+    friend bool operator==(const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator!=(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
+    friend bool operator!=(const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 
@@ -533,15 +511,15 @@ public:
     linear_congruential() noexcept // strengthened
         : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(1u)) {}
 
-    explicit linear_congruential(_Uint _X0) noexcept // strengthened
-        : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_X0)) {}
+    explicit linear_congruential(_Uint _Xx0) noexcept // strengthened
+        : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Xx0)) {}
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, linear_congruential> = 0>
     linear_congruential(_Gen& _Seq) : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Seq())) {}
 
-    void seed(_Uint _X0 = 1u) noexcept /* strengthened */ {
+    void seed(_Uint _Xx0 = 1u) noexcept /* strengthened */ {
         // reset sequence from numeric value
-        _Prev = _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_X0);
+        _Prev = _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Xx0);
     }
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, linear_congruential> = 0>
@@ -581,16 +559,16 @@ public:
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator==(
-        const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept /* strengthened */ {
+    friend bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
-    friend bool operator!=(
-        const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept /* strengthened */ {
+    friend bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 
@@ -612,7 +590,7 @@ private:
 // CLASS TEMPLATE _Circ_buf FOR subtract_with_carry, subtract_with_carry_01, AND mersenne_twister
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
-    _Ty _At(int _Ix) const {
+    _Ty _At(size_t _Ix) const {
         return _Ax[_Base(_Ix)];
     }
 
@@ -636,14 +614,14 @@ struct _Circ_buf { // holds historical values for generators
             _Other = _Right._Ax + _Right._Base();
         }
 
-        ptrdiff_t _N0 = _Nw;
-        while (0 < _N0) { // scan
-                          // note: may need up to three passes; each scan starts at the
-                          // current highest array position and ends at the end of the
-                          // array or the _Idx value, whichever comes first; the
-                          // equality test succeeds only by reaching the _Idx value.
+        ptrdiff_t _Nx0 = _Nw;
+        while (0 < _Nx0) { // scan
+                           // note: may need up to three passes; each scan starts at the
+                           // current highest array position and ends at the end of the
+                           // array or the _Idx value, whichever comes first; the
+                           // equality test succeeds only by reaching the _Idx value.
             const _Ty* _Limit = _First < _Last ? _Last : _Use2 ? _Right._Ax + 2 * _Nw : _Ax + 2 * _Nw;
-            _N0 -= _Limit - _First;
+            _Nx0 -= _Limit - _First;
             while (_First != _Limit) {
                 if (*_First++ != *_Other++) {
                     return false;
@@ -658,7 +636,7 @@ struct _Circ_buf { // holds historical values for generators
         return true;
     }
 
-    unsigned int _Base(int _Ix = 0) const {
+    size_t _Base(size_t _Ix = 0) const {
         return (_Ix += _Idx) < _Nw ? (_Ix + _Nw) : (_Ix - _Nw);
     }
 
@@ -683,8 +661,8 @@ public:
         seed();
     }
 
-    _Swc_base(_Seed_t _X0) {
-        seed(_X0);
+    _Swc_base(_Seed_t _Xx0) {
+        seed(_Xx0);
     }
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, _Swc_base> = 0>
@@ -693,12 +671,12 @@ public:
     }
 
     void seed(_Seed_t _Value = default_seed) { // set initial values from specified seed value
-        _Seed(_Value, false, true_type());
+        _Seed(_Value, false, true_type{});
     }
 
     template <class _Gen>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>());
+        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>{});
     }
 
     _NODISCARD result_type(min)() const {
@@ -757,7 +735,7 @@ protected:
         this->_Idx = _Rx;
     }
 
-    void _Setx(unsigned int _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
+    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) { // update _Ax[_Ix] and _Carry
         bool _Underflowed = false;
         _Ty _Newx         = _Xis;
         if (_Newx < _Xir) {
@@ -830,11 +808,9 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     static int _Get_wc() { // compute number of 32-bit words per element
         int _Kx;
 
-        if
-            _CONSTEXPR_IF(_Mx == 0) {
-                _Kx = (8 * sizeof(_Ty) + 31) / 32;
-            }
-        else { // compute number of 32-bit words required
+        if _CONSTEXPR_IF (_Mx == 0) {
+            _Kx = (8 * sizeof(_Ty) + 31) / 32;
+        } else { // compute number of 32-bit words required
             unsigned long long _Val = 1ULL << 32;
             for (_Kx = 1; 0 < _Val && _Val < _Mx; ++_Kx) {
                 _Val = _Val << 32;
@@ -850,9 +826,9 @@ struct _Swc_traits { // traits for subtract_with_carry generator
                                                              // otherwise compute from last value
         int _Kx = _Get_wc();
 
-        for (int _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
+        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
             _Ax[_Ix] = _Gx();
-            for (int _Jx = 0; ++_Jx < _Kx;) {
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 _Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
             }
         }
@@ -868,12 +844,11 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 #pragma warning(push)
 #pragma warning(disable : 4724) // potential mod by 0
     static _Cy_t _Reduce(_Ty* _Ax) { // reduce values to allowed range
-        if
-            _CONSTEXPR_IF(_Mx != 0) {
-                for (int _Ix = 0; _Ix < _Nw; ++_Ix) {
-                    _Ax[_Ix] = _Ax[_Ix] % _Mx;
-                }
+        if _CONSTEXPR_IF (_Mx != 0) {
+            for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
+                _Ax[_Ix] = _Ax[_Ix] % _Mx;
             }
+        }
 
         return _Ax[_Nw - 1] == 0;
     }
@@ -884,7 +859,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
         basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
         int _Kx = _Get_wc();
 
-        for (int _Ix = 0; _Ix < _Nw; ++_Ix) {
+        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
             for (int _Jx = 1; _Jx <= _Kx; ++_Jx) { // unpack into _Kx words
                 unsigned int _Word = static_cast<unsigned int>(_Buf._At(_Ix) >> ((_Kx - _Jx) * 32));
                 _Ostr << _Word << ' ';
@@ -908,7 +883,7 @@ public:
 
     subtract_with_carry() : _Mybase(default_seed) {}
 
-    explicit subtract_with_carry(_Ty _X0) : _Mybase(_X0) {}
+    explicit subtract_with_carry(_Ty _Xx0) : _Mybase(_Xx0) {}
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry> = 0>
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
@@ -937,7 +912,7 @@ public:
 
     subtract_with_carry_engine() : _Mybase(default_seed) {}
 
-    explicit subtract_with_carry_engine(_Ty _X0) : _Mybase(_X0) {}
+    explicit subtract_with_carry_engine(_Ty _Xx0) : _Mybase(_Xx0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
     explicit subtract_with_carry_engine(_Seed_seq& _Seq) : _Mybase() {
@@ -945,7 +920,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed(_Value, false, true_type());
+        this->_Seed(_Value, false, true_type{});
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
@@ -955,18 +930,17 @@ public:
         unsigned long _Arr[_Kx * _Rx];
         _Seq.generate(&_Arr[0], &_Arr[_Kx * _Rx]);
 
-        int _Idx0 = 0;
-        for (int _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
+        size_t _Idx0 = 0;
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
             this->_Ax[_Ix] = _Arr[_Idx0];
-            for (int _Jx = 0; ++_Jx < _Kx;) {
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 
             constexpr bool _Mod_non_zero = _Traits::_Mod != 0;
-            if
-                _CONSTEXPR_IF(_Mod_non_zero) {
-                    this->_Ax[_Ix] %= _Traits::_Mod;
-                }
+            if _CONSTEXPR_IF (_Mod_non_zero) {
+                this->_Ax[_Ix] %= _Traits::_Mod;
+            }
         }
 
         this->_Carry = _Traits::_Reduce(this->_Ax);
@@ -1000,7 +974,7 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax, bool _Readcy) { // set initial values of _Ax from generator _Gx
                                                              // return value of _Cy from range if _Readcy is true,
                                                              // otherwise from last value
-        for (int _Ix = 0; _Ix < _Rx; ++_Ix) { // read values
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // read values
             _Ty _Factor = 1;
             _Ty _Val    = 0;
             for (int _Jx = 0; _Jx < _Nwords - 1; ++_Jx) { // read components of value
@@ -1021,7 +995,7 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     template <class _Elem, class _Traits>
     static void _Write(
         basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Rx>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        for (int _Ix = 0; _Ix < _Rx; ++_Ix) { // write values
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // write values
             _Ty _Val = _Buf._At(_Ix);
             unsigned long _Temp;
             for (int _Jx = 0; _Jx < _Nwords - 1; ++_Jx) { // write components of value
@@ -1103,8 +1077,9 @@ public:
         seed(default_seed, static_cast<_Ty>(1812433253));
     }
 
-    explicit mersenne_twister(_Ty _X0, _Ty _Dxarg = _WMSK, _Ty _Fxarg = static_cast<_Ty>(1812433253)) : _Dxval(_Dxarg) {
-        seed(_X0, _Fxarg);
+    explicit mersenne_twister(_Ty _Xx0, _Ty _Dxarg = _WMSK, _Ty _Fxarg = static_cast<_Ty>(1812433253))
+        : _Dxval(_Dxarg) {
+        seed(_Xx0, _Fxarg);
     }
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, mersenne_twister> = 0>
@@ -1112,10 +1087,10 @@ public:
         seed(_Gx);
     }
 
-    void seed(_Ty _X0 = default_seed, _Ty _Fx = static_cast<_Ty>(1812433253)) {
+    void seed(_Ty _Xx0 = default_seed, _Ty _Fx = static_cast<_Ty>(1812433253)) {
         // set initial values from specified value
-        _Ty _Prev = this->_Ax[0] = _X0 & _WMSK;
-        for (int _Ix = 1; _Ix < _Nx; ++_Ix) {
+        _Ty _Prev = this->_Ax[0] = _Xx0 & _WMSK;
+        for (size_t _Ix = 1; _Ix < _Nx; ++_Ix) {
             _Prev = this->_Ax[_Ix] = (_Ix + _Fx * (_Prev ^ (_Prev >> (_Wx - 2)))) & _WMSK;
         }
 
@@ -1124,7 +1099,7 @@ public:
 
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, mersenne_twister> = 0>
     void seed(_Gen& _Gx, bool = false) { // set initial values from range
-        for (int _Ix = 0; _Ix < _Nx; ++_Ix) {
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
             this->_Ax[_Ix] = _Gx() & _WMSK;
         }
 
@@ -1133,7 +1108,7 @@ public:
 
     template <class _Elem, class _S_Traits>
     basic_ostream<_Elem, _S_Traits>& _Write(basic_ostream<_Elem, _S_Traits>& _Ostr) const { // write state to _Ostr
-        for (int _Ix = 0; _Ix < _Nx; ++_Ix) {
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
             _Ostr << this->_At(_Ix) << ' ';
         }
 
@@ -1173,7 +1148,7 @@ protected:
     _Post_satisfies_(this->_Idx == 0)
 
         void _Refill_lower() { // compute values for the lower half of the history array
-        int _Ix;
+        size_t _Ix;
         for (_Ix = 0; _Ix < _Nx - _Mx; ++_Ix) { // fill in lower region
             _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + 1] & _LMSK);
             this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _Mx];
@@ -1190,7 +1165,7 @@ protected:
     }
 
     void _Refill_upper() { // compute values for the upper half of the history array
-        int _Ix;
+        size_t _Ix;
         for (_Ix = _Nx; _Ix < 2 * _Nx; ++_Ix) { // fill in values
             _Ty _Tmp       = (this->_Ax[_Ix - _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + 1] & _LMSK);
             this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _Mx];
@@ -1267,15 +1242,15 @@ public:
 
     mersenne_twister_engine() : _Mybase(default_seed, _Dx, _Fx) {}
 
-    explicit mersenne_twister_engine(result_type _X0) : _Mybase(_X0, _Dx, _Fx) {}
+    explicit mersenne_twister_engine(result_type _Xx0) : _Mybase(_Xx0, _Dx, _Fx) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
     explicit mersenne_twister_engine(_Seed_seq& _Seq) : _Mybase(default_seed, _Dx, _Fx) {
         seed(_Seq);
     }
 
-    void seed(result_type _X0 = default_seed) { // set initial values from specified value
-        _Mybase::seed(_X0, _Fx);
+    void seed(result_type _Xx0 = default_seed) { // set initial values from specified value
+        _Mybase::seed(_Xx0, _Fx);
     }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
@@ -1288,7 +1263,7 @@ public:
         _Ty _Sum  = 0;
         for (size_t _Ix = 0; _Ix < _Nx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
             this->_Ax[_Ix] = _Arr[_Idx0];
-            for (int _Jx = 0; ++_Jx < _Kx;) {
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 
@@ -1341,8 +1316,8 @@ public:
         _Nx = 0;
     }
 
-    void seed(result_type _X0) { // seed engine from specified value
-        _Eng.seed(_X0);
+    void seed(result_type _Xx0) { // seed engine from specified value
+        _Eng.seed(_Xx0);
         _Nx = 0;
     }
 
@@ -1446,7 +1421,7 @@ public:
 
     explicit discard_block_engine(_Engine&& _Ex) : _Mybase(_STD move(_Ex)) {}
 
-    explicit discard_block_engine(result_type _X0) : _Mybase(_X0) {}
+    explicit discard_block_engine(result_type _Xx0) : _Mybase(_Xx0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine, _Engine> = 0>
     explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
@@ -1485,7 +1460,7 @@ public:
         _Init();
     }
 
-    explicit independent_bits_engine(result_type _X0) : _Eng(static_cast<_Eres>(_X0)) {
+    explicit independent_bits_engine(result_type _Xx0) : _Eng(static_cast<_Eres>(_Xx0)) {
         _Init();
     }
 
@@ -1498,8 +1473,8 @@ public:
         _Eng.seed();
     }
 
-    void seed(result_type _X0) { // seed engine from specified value
-        _Eng.seed(static_cast<_Eres>(_X0));
+    void seed(result_type _Xx0) { // seed engine from specified value
+        _Eng.seed(static_cast<_Eres>(_Xx0));
     }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, independent_bits_engine> = 0>
@@ -1522,28 +1497,28 @@ public:
     _NODISCARD result_type operator()() {
         size_t _Idx       = 0;
         result_type _Res  = 0;
-        result_type _Mask = ((result_type{1} << (_W0 - 1)) << 1) - 1;
+        result_type _Mask = ((result_type{1} << (_Wx0 - 1)) << 1) - 1;
         _Eres _Val;
 
-        for (; _Idx < _N0; ++_Idx) { // pack _W0-bit values
+        for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
             for (;;) { // get a small enough value
                 _Val = _Eng() - (_Engine::min)();
-                if (_Val <= _Y0) {
+                if (_Val <= _Yx0) {
                     break;
                 }
             }
-            _Res = _Res << _W0 | (static_cast<result_type>(_Val) & _Mask);
+            _Res = _Res << _Wx0 | (static_cast<result_type>(_Val) & _Mask);
         }
 
         _Mask = _Mask << 1 | 1;
-        for (; _Idx < _Nx; ++_Idx) { // pack _W0+1-bit values
+        for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
             for (;;) { // get a small enough value
                 _Val = _Eng() - (_Engine::min)();
-                if (_Val <= _Y1) {
+                if (_Val <= _Yx1) {
                     break;
                 }
             }
-            _Res = _Res << (_W0 + 1) | (static_cast<result_type>(_Val) & _Mask);
+            _Res = _Res << (_Wx0 + 1) | (static_cast<result_type>(_Val) & _Mask);
         }
         return _Res;
     }
@@ -1579,25 +1554,25 @@ private:
         }
 
         for (size_t _Nfix = 0;; ++_Nfix) { // compute consistent set of parameters
-            _Nx = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
-            _W0 = _Wx / _Nx;
-            _N0 = _Nx - _Wx % _Nx;
-            _Y0 = (_Rx >> _W0) << _W0;
-            _Y1 = (((_Rx >> _W0) >> 1) << _W0) << 1;
-            if (_Nfix == 1 || _Rx - _Y0 <= _Y0 / _Nx) {
+            _Nx  = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
+            _Wx0 = _Wx / _Nx;
+            _Nx0 = _Nx - _Wx % _Nx;
+            _Yx0 = (_Rx >> _Wx0) << _Wx0;
+            _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
+            if (_Nfix == 1 || _Rx - _Yx0 <= _Yx0 / _Nx) {
                 break; // also works if _Rx == 0 (_Mx == all bits)
             }
         }
-        --_Y0;
-        --_Y1;
+        --_Yx0;
+        --_Yx1;
     }
 
     _Engine _Eng; // the stored engine
-    size_t _N0; // number of smaller packing words
+    size_t _Nx0; // number of smaller packing words
     size_t _Nx; // total number of packing words
-    size_t _W0; // bits per smaller packing word
-    _Eres _Y0; // max value for smaller packing word
-    _Eres _Y1; // max value for larger packing word
+    size_t _Wx0; // bits per smaller packing word
+    _Eres _Yx0; // max value for smaller packing word
+    _Eres _Yx1; // max value for larger packing word
 };
 
 template <class _Engine, size_t _Wx, class _UIntType>
@@ -1647,7 +1622,7 @@ public:
         _Init();
     }
 
-    explicit shuffle_order_engine(result_type _X0) : _Eng(_X0) {
+    explicit shuffle_order_engine(result_type _Xx0) : _Eng(_Xx0) {
         _Init();
     }
 
@@ -1661,8 +1636,8 @@ public:
         _Init();
     }
 
-    void seed(result_type _X0) { // seed engine from specified value
-        _Eng.seed(_X0);
+    void seed(result_type _Xx0) { // seed engine from specified value
+        _Eng.seed(_Xx0);
         _Init();
     }
 
@@ -1832,8 +1807,7 @@ public:
         return _Par._Max;
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -1886,7 +1860,7 @@ private:
     }
 
     static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
-        return _Adjust(_Uval, is_signed<_Ty>());
+        return _Adjust(_Uval, is_signed<_Ty>{});
     }
 
     static _Uty _Adjust(_Uty _Uval, true_type) { // convert signed ranges to unsigned ranges and vice versa
@@ -1968,8 +1942,8 @@ public:
             _Init(0.5);
         }
 
-        explicit param_type(double _P0) {
-            _Init(_P0);
+        explicit param_type(double _Px0) {
+            _Init(_Px0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -1984,10 +1958,10 @@ public:
             return _Px;
         }
 
-        void _Init(double _P0) { // set internal state
-            _STL_ASSERT(0.0 <= _P0 && _P0 <= 1.0, "invalid probability argument for bernoulli_distribution");
+        void _Init(double _Px0) { // set internal state
+            _STL_ASSERT(0.0 <= _Px0 && _Px0 <= 1.0, "invalid probability argument for bernoulli_distribution");
 
-            _Px = _P0;
+            _Px = _Px0;
         }
 
         double _Px;
@@ -1995,7 +1969,7 @@ public:
 
     bernoulli_distribution() : _Par(0.5) {}
 
-    explicit bernoulli_distribution(double _P0) : _Par(_P0) {}
+    explicit bernoulli_distribution(double _Px0) : _Par(_Px0) {}
 
     explicit bernoulli_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2019,8 +1993,7 @@ public:
         return true;
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -2034,9 +2007,9 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        double _P0;
-        _In(_Istr, _P0);
-        _Par._Init(_P0);
+        double _Px0;
+        _In(_Istr, _Px0);
+        _Par._Init(_Px0);
         return _Istr;
     }
 
@@ -2092,8 +2065,8 @@ public:
             _Init(_Ty1(0.5));
         }
 
-        explicit param_type(_Ty1 _P0) {
-            _Init(_P0);
+        explicit param_type(_Ty1 _Px0) {
+            _Init(_Px0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -2108,9 +2081,9 @@ public:
             return _Px;
         }
 
-        void _Init(_Ty1 _P0) { // initialize
-            _STL_ASSERT(0.0 < _P0 && _P0 < 1.0, "invalid probability argument for geometric_distribution");
-            _Px      = _P0;
+        void _Init(_Ty1 _Px0) { // initialize
+            _STL_ASSERT(0.0 < _Px0 && _Px0 < 1.0, "invalid probability argument for geometric_distribution");
+            _Px      = _Px0;
             _Log_1_p = _CSTD log(1 - _Px);
         }
 
@@ -2120,7 +2093,7 @@ public:
 
     geometric_distribution() : _Par(_Ty1(0.5)) {}
 
-    explicit geometric_distribution(_Ty1 _P0) : _Par(_P0) {}
+    explicit geometric_distribution(_Ty1 _Px0) : _Par(_Px0) {}
 
     explicit geometric_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2144,8 +2117,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -2159,9 +2131,9 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty1 _P0;
-        _In(_Istr, _P0);
-        _Par._Init(_P0);
+        _Ty1 _Px0;
+        _In(_Istr, _Px0);
+        _Par._Init(_Px0);
         return _Istr;
     }
 
@@ -2202,7 +2174,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-
 // CLASS TEMPLATE poisson_distribution AND HELPER
 template <class _Ty = int>
 class _Small_poisson_distribution { // poisson distribution with small mean
@@ -2215,7 +2186,7 @@ public:
         _Ty1 _Val;
         for (_Res = 0, _Val = 1.0;; ++_Res) { // count repetitions
             _Val *= _NRAND(_Eng, _Ty1);
-            if (_Val <= _G0) {
+            if (_Val <= _Gx0) {
                 break;
             }
         }
@@ -2223,11 +2194,11 @@ public:
     }
 
     void _Init(const _Ty1& _Mean0) { // set internal state
-        _G0 = _CSTD exp(-_Mean0);
+        _Gx0 = _CSTD exp(-_Mean0);
     }
 
 private:
-    _Ty1 _G0;
+    _Ty1 _Gx0;
 };
 
 template <class _Ty = int>
@@ -2267,14 +2238,14 @@ public:
             _Mean = _Mean0;
             _Sqrt = _CSTD sqrt(2.0 * _Mean0);
             _Logm = _CSTD log(_Mean0);
-            _G1   = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
+            _Gx1  = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
             _Small._Init(_Mean0);
         }
 
         _Ty1 _Mean;
         _Ty1 _Sqrt;
         _Ty1 _Logm;
-        _Ty1 _G1;
+        _Ty1 _Gx1;
 
         _Small_poisson_distribution<_Ty> _Small;
     };
@@ -2305,8 +2276,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -2351,7 +2321,7 @@ private:
             }
 
             if (_NRAND(_Eng, _Ty1)
-                <= 0.9 * (1.0 + _Yx * _Yx) * _CSTD exp(_Res * _Par0._Logm - _XLgamma(_Res + 1.0) - _Par0._G1)) {
+                <= 0.9 * (1.0 + _Yx * _Yx) * _CSTD exp(_Res * _Par0._Logm - _XLgamma(_Res + 1.0) - _Par0._Gx1)) {
                 return _Res;
             }
         }
@@ -2382,7 +2352,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-
 // CLASS TEMPLATE binomial_distribution
 template <class _Ty = int>
 class binomial_distribution { // binomial distribution
@@ -2400,8 +2369,8 @@ public:
             _Init(1, _Ty1(0.5));
         }
 
-        explicit param_type(_Ty _T0, _Ty1 _P0 = _Ty1(0.5)) {
-            _Init(_T0, _P0);
+        explicit param_type(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) {
+            _Init(_Tx0, _Px0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -2420,14 +2389,14 @@ public:
             return _Px;
         }
 
-        void _Init(_Ty _T0, _Ty1 _P0) { // initialize
-            _STL_ASSERT(0.0 <= _T0, "invalid max argument for binomial_distribution");
-            _STL_ASSERT(0.0 <= _P0 && _P0 <= 1.0, "invalid probability argument for binomial_distribution");
-            _Tx    = _T0;
-            _Px    = _P0;
+        void _Init(_Ty _Tx0, _Ty1 _Px0) { // initialize
+            _STL_ASSERT(0.0 <= _Tx0, "invalid max argument for binomial_distribution");
+            _STL_ASSERT(0.0 <= _Px0 && _Px0 <= 1.0, "invalid probability argument for binomial_distribution");
+            _Tx    = _Tx0;
+            _Px    = _Px0;
             _Pp    = _Px < 0.5 ? _Px : (1.0 - _Px);
             _Mean  = _Tx * _Pp;
-            _G1    = _XLgamma(_Tx + 1.0);
+            _Gx1   = _XLgamma(_Tx + 1.0);
             _Sqrt  = _CSTD sqrt(2 * _Mean * (1 - _Pp));
             _Logp  = _CSTD log(_Pp);
             _Logp1 = _CSTD log(1.0 - _Pp);
@@ -2438,7 +2407,7 @@ public:
         _Ty1 _Px;
         _Ty1 _Pp;
         _Ty1 _Mean;
-        _Ty1 _G1;
+        _Ty1 _Gx1;
         _Ty1 _Sqrt;
         _Ty1 _Logp;
         _Ty1 _Logp1;
@@ -2448,7 +2417,7 @@ public:
 
     binomial_distribution() : _Par(1, _Ty1(0.5)) {}
 
-    explicit binomial_distribution(_Ty _T0, _Ty1 _P0 = _Ty1(0.5)) : _Par(_T0, _P0) {}
+    explicit binomial_distribution(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) : _Par(_Tx0, _Px0) {}
 
     explicit binomial_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -2476,8 +2445,7 @@ public:
         return _Par.t();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -2491,11 +2459,11 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _T0;
-        _Ty1 _P0;
-        _In(_Istr, _P0);
-        _In(_Istr, _T0);
-        _Par._Init(_T0, _P0);
+        _Ty _Tx0;
+        _Ty1 _Px0;
+        _In(_Istr, _Px0);
+        _In(_Istr, _Tx0);
+        _Par._Init(_Tx0, _Px0);
         return _Istr;
     }
 
@@ -2535,7 +2503,7 @@ private:
                 }
                 if (_NRAND(_Eng, _Ty1)
                     <= 1.2 * _Par0._Sqrt * (1.0 + _Yx * _Yx)
-                           * _CSTD exp(_Par0._G1 - _XLgamma(_Res + 1.0) - _XLgamma(_Par0._Tx - _Res + 1.0)
+                           * _CSTD exp(_Par0._Gx1 - _XLgamma(_Res + 1.0) - _XLgamma(_Par0._Tx - _Res + 1.0)
                                        + _Res * _Par0._Logp + (_Par0._Tx - _Res) * _Par0._Logp1)) {
                     break;
                 }
@@ -2643,8 +2611,7 @@ public:
         return _Par._Max;
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -2796,8 +2763,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -2903,11 +2869,11 @@ public:
         _Ty _Sigma;
     };
 
-    normal_distribution() : _Par(0.0, 1.0), _Valid(false), _X2(0) {}
+    normal_distribution() : _Par(0.0, 1.0), _Valid(false), _Xx2(0) {}
 
-    explicit normal_distribution(_Ty _Mean0, _Ty _Sigma0 = 1.0) : _Par(_Mean0, _Sigma0), _Valid(false), _X2(0) {}
+    explicit normal_distribution(_Ty _Mean0, _Ty _Sigma0 = 1.0) : _Par(_Mean0, _Sigma0), _Valid(false), _Xx2(0) {}
 
-    explicit normal_distribution(const param_type& _Par0) : _Par(_Par0), _Valid(false), _X2(0) {}
+    explicit normal_distribution(const param_type& _Par0) : _Par(_Par0), _Valid(false), _Xx2(0) {}
 
     _NODISCARD _Ty mean() const {
         return _Par.mean();
@@ -2962,7 +2928,7 @@ public:
         _Par._Init(_Mean0, _Sigma0);
 
         _Istr >> _Valid;
-        _In(_Istr, _X2);
+        _In(_Istr, _Xx2);
         return _Istr;
     }
 
@@ -2972,7 +2938,7 @@ public:
         _Out(_Ostr, _Par._Sigma);
 
         _Ostr << ' ' << _Valid;
-        _Out(_Ostr, _X2);
+        _Out(_Ostr, _Xx2);
         return _Ostr;
     }
 
@@ -2983,33 +2949,33 @@ private:
                              // Knuth, vol. 2, p. 122, alg. P
         _Ty _Res;
         if (_Keep && _Valid) {
-            _Res   = _X2;
+            _Res   = _Xx2;
             _Valid = false;
         } else { // generate two values, store one, return one
-            _Ty _V1;
-            _Ty _V2;
+            _Ty _Vx1;
+            _Ty _Vx2;
             _Ty _Sx;
             for (;;) { // reject bad values
-                _V1 = 2 * _NRAND(_Eng, _Ty) - 1;
-                _V2 = 2 * _NRAND(_Eng, _Ty) - 1;
-                _Sx = _V1 * _V1 + _V2 * _V2;
+                _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
+                _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
+                _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
                 if (_Sx < 1) {
                     break;
                 }
             }
             const auto _Fx = static_cast<_Ty>(_CSTD sqrt(-2.0 * _CSTD log(_Sx) / _Sx));
             if (_Keep) { // save second value for next call
-                _X2    = _Fx * _V2;
+                _Xx2   = _Fx * _Vx2;
                 _Valid = true;
             }
-            _Res = _Fx * _V1;
+            _Res = _Fx * _Vx1;
         }
         return _Res * _Par0._Sigma + _Par0._Mean;
     }
 
     param_type _Par;
     bool _Valid;
-    _Ty _X2;
+    _Ty _Xx2;
 };
 
 template <class _Ty>
@@ -3115,8 +3081,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -3246,8 +3211,8 @@ public:
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _A0, _Ty _B0 = _Ty{1}) {
-            _Init(_A0, _B0);
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) {
+            _Init(_Ax0, _Bx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -3266,11 +3231,11 @@ public:
             return _Bx;
         }
 
-        void _Init(_Ty _A0, _Ty _B0) { // initialize
-            _STL_ASSERT(0.0 < _A0, "invalid a argument for weibull_distribution");
-            _STL_ASSERT(0.0 < _B0, "invalid b argument for weibull_distribution");
-            _Ax = _A0;
-            _Bx = _B0;
+        void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+            _STL_ASSERT(0.0 < _Ax0, "invalid a argument for weibull_distribution");
+            _STL_ASSERT(0.0 < _Bx0, "invalid b argument for weibull_distribution");
+            _Ax = _Ax0;
+            _Bx = _Bx0;
         }
 
         _Ty _Ax;
@@ -3279,7 +3244,7 @@ public:
 
     weibull_distribution() : _Par(_Ty{1}, _Ty{1}) {}
 
-    explicit weibull_distribution(_Ty _A0, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
+    explicit weibull_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) : _Par(_Ax0, _Bx0) {}
 
     explicit weibull_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3307,8 +3272,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -3322,11 +3286,11 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _A0;
-        _Ty _B0;
-        _In(_Istr, _A0);
-        _In(_Istr, _B0);
-        _Par._Init(_A0, _B0);
+        _Ty _Ax0;
+        _Ty _Bx0;
+        _In(_Istr, _Ax0);
+        _In(_Istr, _Bx0);
+        _Par._Init(_Ax0, _Bx0);
         return _Istr;
     }
 
@@ -3384,8 +3348,8 @@ public:
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _A0, _Ty _B0 = _Ty{1}) {
-            _Init(_A0, _B0);
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) {
+            _Init(_Ax0, _Bx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -3404,10 +3368,10 @@ public:
             return _Bx;
         }
 
-        void _Init(_Ty _A0, _Ty _B0) { // initialize
-            _STL_ASSERT(0.0 < _B0, "invalid b argument for extreme_value_distribution");
-            _Ax = _A0;
-            _Bx = _B0;
+        void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+            _STL_ASSERT(0.0 < _Bx0, "invalid b argument for extreme_value_distribution");
+            _Ax = _Ax0;
+            _Bx = _Bx0;
         }
 
         _Ty _Ax;
@@ -3416,7 +3380,7 @@ public:
 
     extreme_value_distribution() : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit extreme_value_distribution(_Ty _A0, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
+    explicit extreme_value_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) : _Par(_Ax0, _Bx0) {}
 
     explicit extreme_value_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3444,8 +3408,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -3459,11 +3422,11 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _A0;
-        _Ty _B0;
-        _In(_Istr, _A0);
-        _In(_Istr, _B0);
-        _Par._Init(_A0, _B0);
+        _Ty _Ax0;
+        _Ty _Bx0;
+        _In(_Istr, _Ax0);
+        _In(_Istr, _Bx0);
+        _Par._Init(_Ax0, _Bx0);
         return _Istr;
     }
 
@@ -3523,8 +3486,8 @@ public:
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _M0, _Ty _S0 = _Ty{1}) {
-            _Init(_M0, _S0);
+        explicit param_type(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) {
+            _Init(_Mx0, _Sx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -3543,10 +3506,10 @@ public:
             return _Sx;
         }
 
-        void _Init(_Ty _M0, _Ty _S0) { // initialize
-            _STL_ASSERT(0.0 < _S0, "invalid s argument for lognormal_distribution");
-            _Mx = _M0;
-            _Sx = _S0;
+        void _Init(_Ty _Mx0, _Ty _Sx0) { // initialize
+            _STL_ASSERT(0.0 < _Sx0, "invalid s argument for lognormal_distribution");
+            _Mx = _Mx0;
+            _Sx = _Sx0;
         }
 
         _Ty _Mx;
@@ -3555,7 +3518,7 @@ public:
 
     lognormal_distribution() : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit lognormal_distribution(_Ty _M0, _Ty _S0 = _Ty{1}) : _Par(_M0, _S0) {}
+    explicit lognormal_distribution(_Ty _Mx0, _Ty _Sx0 = _Ty{1}) : _Par(_Mx0, _Sx0) {}
 
     explicit lognormal_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3583,8 +3546,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -3598,11 +3560,11 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _M0;
-        _Ty _S0;
-        _In(_Istr, _M0);
-        _In(_Istr, _S0);
-        _Par._Init(_M0, _S0);
+        _Ty _Mx0;
+        _Ty _Sx0;
+        _In(_Istr, _Mx0);
+        _In(_Istr, _Sx0);
+        _Par._Init(_Mx0, _Sx0);
         return _Istr;
     }
 
@@ -3660,8 +3622,8 @@ public:
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _N0) {
-            _Init(_N0);
+        explicit param_type(_Ty _Nx0) {
+            _Init(_Nx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -3676,9 +3638,9 @@ public:
             return _Nx;
         }
 
-        void _Init(_Ty _N0) { // initialize
-            _STL_ASSERT(0 < _N0, "invalid n argument for chi_squared_distribution");
-            _Nx = _N0;
+        void _Init(_Ty _Nx0) { // initialize
+            _STL_ASSERT(0 < _Nx0, "invalid n argument for chi_squared_distribution");
+            _Nx = _Nx0;
         }
 
         _Ty _Nx;
@@ -3686,7 +3648,7 @@ public:
 
     chi_squared_distribution() : _Par(_Ty{1}) {}
 
-    explicit chi_squared_distribution(_Ty _N0) : _Par(_N0) {}
+    explicit chi_squared_distribution(_Ty _Nx0) : _Par(_Nx0) {}
 
     explicit chi_squared_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3710,8 +3672,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -3725,9 +3686,9 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _N0;
-        _Istr >> _N0;
-        _Par._Init(_N0);
+        _Ty _Nx0;
+        _Istr >> _Nx0;
+        _Par._Init(_Nx0);
         return _Istr;
     }
 
@@ -3783,8 +3744,8 @@ public:
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _A0, _Ty _B0 = _Ty{1}) {
-            _Init(_A0, _B0);
+        explicit param_type(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) {
+            _Init(_Ax0, _Bx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -3803,10 +3764,10 @@ public:
             return _Bx;
         }
 
-        void _Init(_Ty _A0, _Ty _B0) { // initialize
-            _STL_ASSERT(0.0 < _B0, "invalid b argument for cauchy_distribution");
-            _Ax = _A0;
-            _Bx = _B0;
+        void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+            _STL_ASSERT(0.0 < _Bx0, "invalid b argument for cauchy_distribution");
+            _Ax = _Ax0;
+            _Bx = _Bx0;
         }
 
         _Ty _Ax;
@@ -3815,7 +3776,7 @@ public:
 
     cauchy_distribution() : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit cauchy_distribution(_Ty _A0, _Ty _B0 = _Ty{1}) : _Par(_A0, _B0) {}
+    explicit cauchy_distribution(_Ty _Ax0, _Ty _Bx0 = _Ty{1}) : _Par(_Ax0, _Bx0) {}
 
     explicit cauchy_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -3843,8 +3804,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -3858,11 +3818,11 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _A0;
-        _Ty _B0;
-        _In(_Istr, _A0);
-        _In(_Istr, _B0);
-        _Par._Init(_A0, _B0);
+        _Ty _Ax0;
+        _Ty _Bx0;
+        _In(_Istr, _Ax0);
+        _In(_Istr, _Bx0);
+        _Par._Init(_Ax0, _Bx0);
         return _Istr;
     }
 
@@ -3911,44 +3871,44 @@ class _Beta_distribution { // beta distribution
 public:
     using result_type = _Ty;
 
-    explicit _Beta_distribution(const _Ty& _A0 = _Ty{1}, const _Ty& _B0 = _Ty{1}) {
-        _Init(_A0, _B0);
+    explicit _Beta_distribution(const _Ty& _Ax0 = _Ty{1}, const _Ty& _Bx0 = _Ty{1}) {
+        _Init(_Ax0, _Bx0);
     }
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
         if (_Ax < _Ty{1} && _Bx < _Ty{1}) { // look for a good value
             _Ty _Wx;
-            _Ty _P1;
-            _Ty _P2;
+            _Ty _Px1;
+            _Ty _Px2;
             for (;;) { // reject large values
-                _P1 = _NRAND(_Eng, _Ty);
-                _P2 = _NRAND(_Eng, _Ty);
-                _P1 = _CSTD pow(_P1, _Ty{1} / _Ax);
-                _P2 = _CSTD pow(_P2, _Ty{1} / _Bx);
-                _Wx = _P1 + _P2;
+                _Px1 = _NRAND(_Eng, _Ty);
+                _Px2 = _NRAND(_Eng, _Ty);
+                _Px1 = _CSTD pow(_Px1, _Ty{1} / _Ax);
+                _Px2 = _CSTD pow(_Px2, _Ty{1} / _Bx);
+                _Wx  = _Px1 + _Px2;
                 if (_Wx <= _Ty{1}) {
                     break;
                 }
             }
-            return _P1 / _Wx;
+            return _Px1 / _Wx;
         } else { // use gamma distributions instead
-            _Ty _P1;
-            _Ty _P2;
+            _Ty _Px1;
+            _Ty _Px2;
             gamma_distribution<_Ty> _Dist1(_Ax, 1);
             gamma_distribution<_Ty> _Dist2(_Bx, 1);
-            _P1 = _Dist1(_Eng);
-            _P2 = _Dist2(_Eng);
-            return _P1 / (_P1 + _P2);
+            _Px1 = _Dist1(_Eng);
+            _Px2 = _Dist2(_Eng);
+            return _Px1 / (_Px1 + _Px2);
         }
     }
 
 private:
-    void _Init(_Ty _A0, _Ty _B0) { // initialize
-        _STL_ASSERT(0.0 < _A0, "invalid a argument for _Beta_distribution");
-        _STL_ASSERT(0.0 < _B0, "invalid b argument for _Beta_distribution");
-        _Ax = _A0;
-        _Bx = _B0;
+    void _Init(_Ty _Ax0, _Ty _Bx0) { // initialize
+        _STL_ASSERT(0.0 < _Ax0, "invalid a argument for _Beta_distribution");
+        _STL_ASSERT(0.0 < _Bx0, "invalid b argument for _Beta_distribution");
+        _Ax = _Ax0;
+        _Bx = _Bx0;
     }
 
     _Ty _Ax;
@@ -3970,8 +3930,8 @@ public:
             _Init(_Ty{1}, _Ty{1});
         }
 
-        explicit param_type(_Ty _M0, _Ty _N0 = _Ty{1}) {
-            _Init(_M0, _N0);
+        explicit param_type(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) {
+            _Init(_Mx0, _Nx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -3990,11 +3950,11 @@ public:
             return _Nx;
         }
 
-        void _Init(_Ty _M0, _Ty _N0) { // initialize
-            _STL_ASSERT(0 < _M0, "invalid m argument for fisher_f_distribution");
-            _STL_ASSERT(0 < _N0, "invalid n argument for fisher_f_distribution");
-            _Mx = _M0;
-            _Nx = _N0;
+        void _Init(_Ty _Mx0, _Ty _Nx0) { // initialize
+            _STL_ASSERT(0 < _Mx0, "invalid m argument for fisher_f_distribution");
+            _STL_ASSERT(0 < _Nx0, "invalid n argument for fisher_f_distribution");
+            _Mx = _Mx0;
+            _Nx = _Nx0;
         }
 
         _Ty _Mx;
@@ -4003,7 +3963,7 @@ public:
 
     fisher_f_distribution() : _Par(_Ty{1}, _Ty{1}) {}
 
-    explicit fisher_f_distribution(_Ty _M0, _Ty _N0 = _Ty{1}) : _Par(_M0, _N0) {}
+    explicit fisher_f_distribution(_Ty _Mx0, _Ty _Nx0 = _Ty{1}) : _Par(_Mx0, _Nx0) {}
 
     explicit fisher_f_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -4031,8 +3991,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -4046,10 +4005,10 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _M0;
-        _Ty _N0;
-        _Istr >> _M0 >> _N0;
-        _Par._Init(_M0, _N0);
+        _Ty _Mx0;
+        _Ty _Nx0;
+        _Istr >> _Mx0 >> _Nx0;
+        _Par._Init(_Mx0, _Nx0);
         return _Istr;
     }
 
@@ -4063,14 +4022,14 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         _Ty _Px;
-        _Ty _V1;
-        _Ty _V2;
-        _V1 = static_cast<_Ty>(_Par0._Mx) * static_cast<_Ty>(0.5);
-        _V2 = static_cast<_Ty>(_Par0._Nx) * static_cast<_Ty>(0.5);
-        _Beta_distribution<_Ty> _Dist(_V1, _V2);
+        _Ty _Vx1;
+        _Ty _Vx2;
+        _Vx1 = static_cast<_Ty>(_Par0._Mx) * static_cast<_Ty>(0.5);
+        _Vx2 = static_cast<_Ty>(_Par0._Nx) * static_cast<_Ty>(0.5);
+        _Beta_distribution<_Ty> _Dist(_Vx1, _Vx2);
         _Px = _Dist(_Eng);
 
-        return (_V2 / _V1) * (_Px / (_Ty{1} - _Px));
+        return (_Vx2 / _Vx1) * (_Px / (_Ty{1} - _Px));
     }
 
     param_type _Par;
@@ -4113,8 +4072,8 @@ public:
             _Init(_Ty{1});
         }
 
-        explicit param_type(_Ty _N0) {
-            _Init(_N0);
+        explicit param_type(_Ty _Nx0) {
+            _Init(_Nx0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -4129,9 +4088,9 @@ public:
             return _Nx;
         }
 
-        void _Init(_Ty _N0) { // initialize
-            _STL_ASSERT(0 < _N0, "invalid n argument for student_t_distribution");
-            _Nx = _N0;
+        void _Init(_Ty _Nx0) { // initialize
+            _STL_ASSERT(0 < _Nx0, "invalid n argument for student_t_distribution");
+            _Nx = _Nx0;
         }
 
         _Ty _Nx;
@@ -4139,7 +4098,7 @@ public:
 
     student_t_distribution() : _Par(_Ty{1}) {}
 
-    explicit student_t_distribution(_Ty _N0) : _Par(_N0) {}
+    explicit student_t_distribution(_Ty _Nx0) : _Par(_Nx0) {}
 
     explicit student_t_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -4163,8 +4122,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -4178,9 +4136,9 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _N0;
-        _Istr >> _N0;
-        _Par._Init(_N0);
+        _Ty _Nx0;
+        _Istr >> _Nx0;
+        _Par._Init(_Nx0);
         return _Istr;
     }
 
@@ -4192,23 +4150,23 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        _Ty _V1;
-        _Ty _V2;
-        _Ty _R0;
+        _Ty _Vx1;
+        _Ty _Vx2;
+        _Ty _Rx0;
         _Ty _Rs;
         uniform_real<_Ty> _Dist(-1, 1);
         for (;;) { // get a point inside unit circle
-            _V1 = _Dist(_Eng);
-            _V2 = _Dist(_Eng);
-            _Rs = _V1 * _V1 + _V2 * _V2;
+            _Vx1 = _Dist(_Eng);
+            _Vx2 = _Dist(_Eng);
+            _Rs  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
 
             if (_Rs < _Ty{1}) {
                 break;
             }
         }
-        _R0 = _CSTD sqrt(_Rs);
+        _Rx0 = _CSTD sqrt(_Rs);
 
-        return _V1 * _CSTD sqrt(_Par0._Nx * (_CSTD pow(_R0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
+        return _Vx1 * _CSTD sqrt(_Par0._Nx * (_CSTD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
     }
 
     param_type _Par;
@@ -4251,8 +4209,8 @@ public:
             _Init(1, 0.5);
         }
 
-        explicit param_type(_Ty _K0, double _P0 = 0.5) {
-            _Init(_K0, _P0);
+        explicit param_type(_Ty _Kx0, double _Px0 = 0.5) {
+            _Init(_Kx0, _Px0);
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
@@ -4271,13 +4229,13 @@ public:
             return _Px;
         }
 
-        void _Init(_Ty _K0, double _P0) { // initialize
-            _STL_ASSERT(0.0 < _K0, "invalid max argument for "
-                                   "negative_binomial_distribution");
-            _STL_ASSERT(0.0 < _P0 && _P0 <= 1.0, "invalid probability argument for "
-                                                 "negative_binomial_distribution");
-            _Kx = _K0;
-            _Px = _P0;
+        void _Init(_Ty _Kx0, double _Px0) { // initialize
+            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for "
+                                    "negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for "
+                                                   "negative_binomial_distribution");
+            _Kx = _Kx0;
+            _Px = _Px0;
         }
 
         _Ty _Kx;
@@ -4286,7 +4244,7 @@ public:
 
     negative_binomial_distribution() : _Par(1, 0.5) {}
 
-    explicit negative_binomial_distribution(_Ty _K0, double _P0 = 0.5) : _Par(_K0, _P0) {}
+    explicit negative_binomial_distribution(_Ty _Kx0, double _Px0 = 0.5) : _Par(_Kx0, _Px0) {}
 
     explicit negative_binomial_distribution(const param_type& _Par0) : _Par(_Par0) {}
 
@@ -4314,8 +4272,7 @@ public:
         return (numeric_limits<result_type>::max)();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -4329,11 +4286,11 @@ public:
 
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
-        _Ty _K0;
-        double _P0;
-        _In(_Istr, _P0);
-        _In(_Istr, _K0);
-        _Par._Init(_K0, _P0);
+        _Ty _Kx0;
+        double _Px0;
+        _In(_Istr, _Px0);
+        _In(_Istr, _Kx0);
+        _Par._Init(_Kx0, _Px0);
         return _Istr;
     }
 
@@ -4347,11 +4304,11 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        double _V1;
+        double _Vx1;
         gamma_distribution<double> dist1(
             static_cast<double>(_Par0._Kx), static_cast<double>((_Ty{1} - _Par0._Px) / _Par0._Px));
-        _V1 = dist1(_Eng);
-        poisson_distribution<_Ty> dist2(_V1);
+        _Vx1 = dist1(_Eng);
+        poisson_distribution<_Ty> dist2(_Vx1);
 
         return dist2(_Eng);
     }
@@ -4394,11 +4351,8 @@ public:
 
     struct param_type { // parameter package
         using distribution_type = discrete_distribution;
-        struct _Noinit { // placeholder to suppress initialization
-        };
 
-        param_type(_Noinit) { // do-nothing constructor for derived classes
-        }
+        param_type(_Uninitialized) {} // do-nothing constructor for derived classes
 
         param_type() {
             _Init();
@@ -4508,8 +4462,7 @@ public:
         return static_cast<result_type>(_Par._Pvec.size() - 1);
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -4593,7 +4546,6 @@ public:
 
     using _Mybase     = discrete_distribution<size_t>;
     using _Mypbase    = typename _Mybase::param_type;
-    using _Noinit     = typename _Mypbase::_Noinit;
     using result_type = _Ty;
 
     struct param_type : _Mypbase { // parameter package
@@ -4605,7 +4557,7 @@ public:
         }
 
         template <class _InIt1, class _InIt2>
-        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit()), _Bvec(_First1, _Last1) {
+        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit), _Bvec(_First1, _Last1) {
             if (2 <= _Bvec.size()) {
                 for (size_t _Idx = 0; _Idx < _Bvec.size() - 1; ++_Idx) {
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
@@ -4616,7 +4568,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit()) {
+        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
             } else { // default construct
@@ -4715,8 +4667,7 @@ public:
         return _Par._Bvec.back();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -4795,7 +4746,6 @@ public:
 
     using _Mybase     = discrete_distribution<size_t>;
     using _Mypbase    = typename _Mybase::param_type;
-    using _Noinit     = typename _Mypbase::_Noinit;
     using result_type = _Ty;
 
     struct param_type : _Mypbase { // parameter package
@@ -4807,7 +4757,7 @@ public:
         }
 
         template <class _InIt1, class _InIt2>
-        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit()), _Bvec(_First1, _Last1) {
+        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit), _Bvec(_First1, _Last1) {
             if (2 <= _Bvec.size()) {
                 for (size_t _Idx = 0; _Idx < _Bvec.size(); ++_Idx) {
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
@@ -4818,7 +4768,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit()) {
+        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
             } else { // default construct
@@ -4839,7 +4789,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Mypbase(_Noinit()) {
+        param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Mypbase(_Noinit) {
             _Ty _Range = _High - _Low;
             _STL_ASSERT(_Ty{0} < _Range, "invalid range for piecewise_linear_distribution");
             if (_Count < 2) {
@@ -4944,8 +4894,7 @@ public:
         return _Par._Bvec.back();
     }
 
-    void reset() { // clear internal state
-    }
+    void reset() {} // clear internal state
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) const {
@@ -4992,17 +4941,18 @@ public:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        size_t _Px = _Mybase::operator()(_Eng, _Par0);
-        double _P0 = _Par0._Pvec[_Px];
-        double _P1 = _Par0._Pvec[_Px + 1];
+        size_t _Px  = _Mybase::operator()(_Eng, _Par0);
+        double _Px0 = _Par0._Pvec[_Px];
+        double _Px1 = _Par0._Pvec[_Px + 1];
         uniform_real<_Ty> _Dist;
-        result_type _X0 = _Dist(_Eng);
+        result_type _Xx0 = _Dist(_Eng);
 
-        if (_P0 != _P1) {
-            _X0 = static_cast<result_type>((_STD sqrt(_P0 * _P0 * (1.0 - _X0) + _P1 * _P1 * _X0) - _P0) / (_P1 - _P0));
+        if (_Px0 != _Px1) {
+            _Xx0 = static_cast<result_type>(
+                (_STD sqrt(_Px0 * _Px0 * (1.0 - _Xx0) + _Px1 * _Px1 * _Xx0) - _Px0) / (_Px1 - _Px0));
         }
 
-        return _Par0._Bvec[_Px] + _X0 * (_Par0._Bvec[_Px + 1] - _Par0._Bvec[_Px]);
+        return _Par0._Bvec[_Px] + _Xx0 * (_Par0._Bvec[_Px + 1] - _Par0._Bvec[_Px]);
     }
 
     param_type _Par;

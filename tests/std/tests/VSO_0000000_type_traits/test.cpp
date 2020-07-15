@@ -568,7 +568,7 @@ STATIC_ASSERT(!is_pod_v<Wrap<TrivialExceptConstruct>>);
 
 // VSO-152213 "<type_traits>: is_function does not match qualified function types"
 // VSO-154500 "<type_traits>: [Feedback]std::is_function returns false for cv/ref qualified functions"
-// C++14 LWG-2196 "Specification of is_*[copy/move]_[constructible/assignable] unclear for non-referencable types"
+// C++14 LWG-2196 "Specification of is_*[copy/move]_[constructible/assignable] unclear for non-referenceable types"
 // C++17 LWG-2101 "Some transformation types can produce impossible types"
 
 template <typename T>
@@ -842,7 +842,7 @@ struct Immovable {
 namespace std {
     template <>
     void swap(Immovable&, Immovable&) {}
-}
+} // namespace std
 
 #endif // _HAS_CXX17
 
@@ -1146,15 +1146,15 @@ static_assert(test_remove_cvref<const volatile int& (C::*) (int)>());
 
 // VSO-707437 "<type_traits>: [Feedback] Template parameter is ambiguous after VS update"
 template <typename T>
-void test_VSO_707437_c(T, add_const_t<T>) {}
+void test_VSO_707437_c(T, add_const_t<T>*) {}
 template <typename T>
-void test_VSO_707437_v(T, add_volatile_t<T>) {}
+void test_VSO_707437_v(T, add_volatile_t<T>*) {}
 template <typename T>
-void test_VSO_707437_cv(T, add_cv_t<T>) {}
+void test_VSO_707437_cv(T, add_cv_t<T>*) {}
 
 #if _HAS_CXX20
 template <typename T>
-void test_VSO_707437_i(T, type_identity_t<T>) {}
+void test_VSO_707437_i(T, type_identity_t<T>*) {}
 #endif // _HAS_CXX20
 
 // VSO-781535 "[RWC][Regression][prod/fe] WebKit failed with error C2938"
@@ -1232,12 +1232,12 @@ STATIC_ASSERT(!HasUnderlyingTypeAlias<ExampleEnum[]>::value);
 int main() {
     test_all_function_types();
 
-    test_VSO_707437_c(11L, 22);
-    test_VSO_707437_v(11L, 22);
-    test_VSO_707437_cv(11L, 22);
+    test_VSO_707437_c(11L, nullptr);
+    test_VSO_707437_v(11L, nullptr);
+    test_VSO_707437_cv(11L, nullptr);
 
 #if _HAS_CXX20
-    test_VSO_707437_i(11L, 22);
+    test_VSO_707437_i(11L, nullptr);
 #endif // _HAS_CXX20
 }
 
@@ -1270,7 +1270,7 @@ namespace {
                 return permissive();
             }
         };
-    }
+    } // namespace detail
     constexpr bool is_permissive = detail::Derived<int>::test();
 
     struct move_only {

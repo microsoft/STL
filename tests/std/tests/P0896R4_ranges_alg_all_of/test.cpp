@@ -6,11 +6,11 @@
 #include <cassert>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
-inline constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };
-inline constexpr auto is_odd  = [](auto const& x) { return x % 2 != 0; };
+constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };
+constexpr auto is_odd  = [](auto const& x) { return x % 2 != 0; };
 
 using R = std::array<std::pair<int, int>, 3>;
 
@@ -18,24 +18,24 @@ constexpr void smoke_test() {
     using ranges::all_of;
     constexpr R pairs = {{{0, 13}, {2, 13}, {4, 13}}};
 
-    assert(all_of(move_only_range{pairs}, is_even, get_first));
-    assert(!all_of(move_only_range{pairs}, is_even, get_second));
-    assert(!all_of(move_only_range{pairs}, is_odd, get_first));
-    assert(all_of(move_only_range{pairs}, is_odd, get_second));
+    assert(all_of(basic_borrowed_range{pairs}, is_even, get_first));
+    assert(!all_of(basic_borrowed_range{pairs}, is_even, get_second));
+    assert(!all_of(basic_borrowed_range{pairs}, is_odd, get_first));
+    assert(all_of(basic_borrowed_range{pairs}, is_odd, get_second));
     {
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         assert(all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_even, get_first));
     }
     {
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         assert(!all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_even, get_second));
     }
     {
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         assert(!all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_odd, get_first));
     }
     {
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         assert(all_of(wrapped_pairs.begin(), wrapped_pairs.end(), is_odd, get_second));
     }
 }
@@ -53,4 +53,4 @@ struct instantiator {
     }
 };
 
-template void test_in<instantiator>();
+template void test_in<instantiator, const int>();

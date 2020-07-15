@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
-#include <constexpr_char_traits.hpp>
 #include <string>
 #include <utility>
+
+#include <constexpr_char_traits.hpp>
 
 using namespace std;
 

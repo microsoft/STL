@@ -47,7 +47,6 @@ namespace stdext {
 
             explicit codecvt_utf8_utf16(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-
             virtual ~codecvt_utf8_utf16() noexcept {}
 
         protected:
@@ -143,18 +142,17 @@ namespace stdext {
                     if (*_Pstate == 0) { // first time, maybe look for and consume header
                         *_Pstate = 1;
 
-                        if
-                            _CONSTEXPR_IF((_Mode & _STD consume_header) != 0) {
-                                if (_Ch == 0xfeff) { // drop header and retry
-                                    result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
+                        if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0) {
+                            if (_Ch == 0xfeff) { // drop header and retry
+                                result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
-                                    if (_Ans == _Mybase::partial) { // roll back header determination
-                                        *_Pstate = 0;
-                                        _Mid1    = _First1;
-                                    }
-                                    return _Ans;
+                                if (_Ans == _Mybase::partial) { // roll back header determination
+                                    *_Pstate = 0;
+                                    _Mid1    = _First1;
                                 }
+                                return _Ans;
                             }
+                        }
                     }
 
                     *_Mid2++ = static_cast<_Elem>(_Ch);
@@ -210,19 +208,18 @@ namespace stdext {
                         break; // not enough room, even without header
                     }
 
-                    if
-                        _CONSTEXPR_IF((_Mode & _STD generate_header) != 0) { // maybe header to put
-                            if (*_Pstate == 0) { // header to put
-                                if (_Last2 - _Mid2 < 3 + _Nput) {
-                                    break; // not enough room for both
-                                }
-
-                                // prepend header
-                                *_Mid2++ = '\xef';
-                                *_Mid2++ = '\xbb';
-                                *_Mid2++ = '\xbf';
+                    if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0) { // maybe header to put
+                        if (*_Pstate == 0) { // header to put
+                            if (_Last2 - _Mid2 < 3 + _Nput) {
+                                break; // not enough room for both
                             }
+
+                            // prepend header
+                            *_Mid2++ = '\xef';
+                            *_Mid2++ = '\xbb';
+                            *_Mid2++ = '\xbf';
                         }
+                    }
 
                     ++_Mid1;
                     if (_Save || _Nextra < 3) { // put first byte of sequence, if not already put
@@ -248,8 +245,8 @@ namespace stdext {
                 return 1 < *_Pstate ? _Mybase::error : _Mybase::ok; // fail if trailing first word
             }
 
-            virtual int do_length(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const
-                noexcept override {
+            virtual int do_length(
+                _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 size_t _Wchars    = 0;
                 _Statype _Mystate = _State;
@@ -285,15 +282,11 @@ namespace stdext {
             }
 
             virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
-                if
-                    _CONSTEXPR_IF((_Mode & _STD consume_header) != 0) {
-                        return 9; // header + max input
-                    }
-                else if
-                    _CONSTEXPR_IF((_Mode & _STD generate_header) != 0) {
-                        return 7; // header + max output
-                    }
-                else {
+                if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0) {
+                    return 9; // header + max input
+                } else if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0) {
+                    return 7; // header + max output
+                } else {
                     return 6; // 6-byte max input sequence, no 3-byte header
                 }
             }

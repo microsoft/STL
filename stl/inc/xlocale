@@ -85,8 +85,7 @@ struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocati
         return _Ptr;
     }
 
-    void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept { // imitate True Placement Delete
-    }
+    void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept {} // imitate True Placement Delete
 #endif // _DEBUG
 };
 
@@ -776,13 +775,9 @@ protected:
         _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const { // convert bytes [_First1, _Last1) to [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if
-            _CONSTEXPR_IF(is_same_v<_Byte, _Elem>) {
-                (void) _Last1;
-                (void) _Last2;
-                return noconv; // convert nothing
-            }
-        else {
+        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+            return noconv; // convert nothing
+        } else {
             // types differ, copy one for one
             for (; _Mid1 != _Last1; ++_Mid1, ++_Mid2) {
                 if (_Mid2 == _Last2) {
@@ -799,13 +794,9 @@ protected:
         _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const { // convert [_First1, _Last1) to bytes [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if
-            _CONSTEXPR_IF(is_same_v<_Byte, _Elem>) {
-                (void) _Last1;
-                (void) _Last2;
-                return noconv; // convert nothing
-            }
-        else {
+        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+            return noconv; // convert nothing
+        } else {
             // types differ, copy one for one
             for (; _Mid1 != _Last1; ++_Mid1, ++_Mid2) {
                 if (_Mid2 == _Last2) {
@@ -3263,12 +3254,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit __CLR_OR_THIS_CALL ctype_byname(const char* _Locname, size_t _Refs = 0)
-        : ctype<_Elem>(_Locinfo(_Locname), _Refs) { // construct for named locale
-    }
+        : ctype<_Elem>(_Locinfo(_Locname), _Refs) {} // construct for named locale
 
     explicit __CLR_OR_THIS_CALL ctype_byname(const string& _Str, size_t _Refs = 0)
-        : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) { // construct for named locale
-    }
+        : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}

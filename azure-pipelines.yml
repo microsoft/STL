@@ -3,19 +3,78 @@
 
 # Build STL targeting x86, x64, arm, arm64
 
-jobs:
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: x86
+variables:
+  agentPool: 'StlBuild-2020-07-08-2'
+  tmpDir: 'D:\Temp'
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: x64
+stages:
+  - stage: Code_Format
+    displayName: 'Code Format'
+    jobs:
+      - job: Code_Format_Validation
+        timeoutInMinutes: 90
+        displayName: 'Validation'
+        pool:
+          name: $(agentPool)
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: arm
+        variables:
+          buildOutputLocation: 'D:\tools'
+        steps:
+          - script: |
+              if exist "$(tmpDir)" (
+                rmdir /S /Q $(tmpDir)
+              )
+              mkdir $(tmpDir)
+            displayName: 'Setup TMP Directory'
+          - checkout: self
+            clean: true
+            submodules: false
+          - script: |
+              if exist "$(buildOutputLocation)" (
+                rmdir /S /Q "$(buildOutputLocation)"
+              )
+              call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+              -host_arch=amd64 -arch=amd64 -no_logo
+              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
+              -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
+              cmake --build $(buildOutputLocation)
+            displayName: 'Build Support Tools'
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+          - task: BatchScript@1
+            displayName: 'Enforce clang-format'
+            timeoutInMinutes: 60
+            inputs:
+              filename: 'azure-devops/enforce-clang-format.cmd'
+              failOnStandardError: true
+              arguments: '$(buildOutputLocation)/parallelize/parallelize.exe'
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+          - task: BatchScript@1
+            displayName: 'Validate Files'
+            timeoutInMinutes: 2
+            inputs:
+              filename: 'azure-devops/validate-files.cmd'
+              failOnStandardError: true
+              arguments: '$(buildOutputLocation)/validate/validate.exe'
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+  - stage: Build_And_Test
+    displayName: 'Build and Test'
+    jobs:
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
 
-- template: azure-devops/run-build.yml
-  parameters:
-    targetPlatform: arm64
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64

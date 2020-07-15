@@ -22,15 +22,15 @@ _CRTIMP2_PURE void __cdecl ios_base::Init::_Init_ctor(ios_base::Init*) { // init
 
 _CRTIMP2_PURE void __cdecl ios_base::Init::_Init_dtor(ios_base::Init*) { // flush standard streams last time
     if (--_Init_cnt == 0) { // flush standard streams
-        if (_Ptr_cerr != 0) {
+        if (_Ptr_cerr != nullptr) {
             _Ptr_cerr->flush();
         }
 
-        if (_Ptr_clog != 0) {
+        if (_Ptr_clog != nullptr) {
             _Ptr_clog->flush();
         }
 
-        if (_Ptr_cout != 0) {
+        if (_Ptr_cout != nullptr) {
             _Ptr_cout->flush();
         }
     }

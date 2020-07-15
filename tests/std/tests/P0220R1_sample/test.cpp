@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "adapterator.hpp"
 #include <algorithm>
 #include <array>
 #include <assert.h>
@@ -10,6 +9,8 @@
 #include <random>
 #include <stdio.h>
 #include <type_traits>
+
+#include "adapterator.hpp"
 
 using namespace std;
 
@@ -72,7 +73,7 @@ namespace {
         test_source_dest<SourceCategory, bidirectional_iterator_tag>(gen);
         test_source_dest<SourceCategory, random_access_iterator_tag>(gen);
     }
-}
+} // unnamed namespace
 
 int main() {
     iota(begin(source), end(source), 0);

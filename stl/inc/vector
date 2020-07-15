@@ -558,22 +558,21 @@ private:
     }
 
     void _Move_construct(vector& _Right, false_type) { // move from _Right, possibly moving its contents
-        if
-            _CONSTEXPR_IF(!_Alty_traits::is_always_equal::value) {
-                if (_Getal() != _Right._Getal()) {
-                    const auto& _Right_data   = _Right._Mypair._Myval2;
-                    const pointer _Rightfirst = _Right_data._Myfirst;
-                    const pointer _Rightlast  = _Right_data._Mylast;
-                    if (_Rightfirst != _Rightlast) {
-                        _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
-                        _Tidy_guard<vector> _Guard{this};
-                        auto& _My_data   = _Mypair._Myval2;
-                        _My_data._Mylast = _Umove(_Rightfirst, _Rightlast, _My_data._Myfirst);
-                        _Guard._Target   = nullptr;
-                    }
-                    return;
+        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+            if (_Getal() != _Right._Getal()) {
+                const auto& _Right_data   = _Right._Mypair._Myval2;
+                const pointer _Rightfirst = _Right_data._Myfirst;
+                const pointer _Rightlast  = _Right_data._Mylast;
+                if (_Rightfirst != _Rightlast) {
+                    _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
+                    _Tidy_guard<vector> _Guard{this};
+                    auto& _My_data   = _Mypair._Myval2;
+                    _My_data._Mylast = _Umove(_Rightfirst, _Rightlast, _My_data._Myfirst);
+                    _Guard._Target   = nullptr;
                 }
+                return;
             }
+        }
 
         _Move_construct(_Right, true_type{});
     }
@@ -1753,7 +1752,7 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-vector(_Iter, _Iter, _Alloc = _Alloc())->vector<_Iter_value_t<_Iter>, _Alloc>;
+vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Ty, class _Alloc>
@@ -1847,6 +1846,8 @@ class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     _Vb_reference() = default;
 
 public:
+    _Vb_reference(const _Vb_reference&) = default;
+
     _Vb_reference(const _Mybase& _Right) noexcept : _Mybase(_Right._Myptr, _Right._Myoff, _Right._Getcont()) {}
 
     _Vb_reference& operator=(const _Vb_reference& _Right) noexcept {
@@ -2313,12 +2314,11 @@ public:
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>)
         : _Mybase(_STD move(_Right), _Al) {
-        if
-            _CONSTEXPR_IF(!_Alvbase_traits::is_always_equal::value) {
-                if (this->_Getal() != _Right._Getal()) {
-                    return;
-                }
+        if _CONSTEXPR_IF (!_Alvbase_traits::is_always_equal::value) {
+            if (this->_Getal() != _Right._Getal()) {
+                return;
             }
+        }
 
         this->_Swap_proxy_and_iterators(_Right);
     }
@@ -2668,7 +2668,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>());
+        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
         return begin() + _Off;
     }
 
@@ -2695,11 +2695,11 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
-        _STD copy(_Where + 1, end(), _Where);
+        _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        _STD copy(_Where + 1, end(), _Where);
+        _STD copy(_Next_iter(_Where), end(), _Where);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Trim(this->_Mysize - 1);

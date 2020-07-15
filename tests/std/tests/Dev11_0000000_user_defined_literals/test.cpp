@@ -402,9 +402,9 @@ int main() {
         std::experimental::erase_if(str1, is_vowel{});
         assert(str1 == "ct flffy kttns");
 
-        std::string str2{"visual studio"};
-        std::experimental::erase(str2, 'u');
-        assert(str2 == "visal stdio");
+        std::string str2{"asynchronous beat"};
+        std::experimental::erase(str2, 'a');
+        assert(str2 == "synchronous bet");
 
         struct is_odd : no_copy {
             bool operator()(const int i) const {
@@ -560,9 +560,9 @@ int main() {
         assert(str1 == "ct flffy kttns");
         assert(str1_removed == 5);
 
-        std::string str2{"visual studio"};
-        const auto str2_removed = std::erase(str2, 'u');
-        assert(str2 == "visal stdio");
+        std::string str2{"asynchronous beat"};
+        const auto str2_removed = std::erase(str2, 'a');
+        assert(str2 == "synchronous bet");
         assert(str2_removed == 2);
 
         struct is_odd : no_copy {

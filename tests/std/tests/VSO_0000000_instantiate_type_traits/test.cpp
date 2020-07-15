@@ -46,7 +46,7 @@ namespace detail {
     constexpr bool test = false;
     template <typename T>
     constexpr bool test<T, std::void_t<decltype(evil(T{}))>> = true;
-}
+} // namespace detail
 
 constexpr bool has_evil_extension = detail::test<>;
 #endif // _HAS_CXX17
