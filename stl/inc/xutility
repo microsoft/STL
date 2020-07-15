@@ -5959,7 +5959,8 @@ public:
 
 #endif // ^^^ intrinsics unavailable ^^^
 
-    // using multiply-shift instead of modulo to fairly map values in range [0, _Mod), adapted from arXiv:1805.10941v4
+    // using multiply-shift instead of modulo to fairly map values in range [0, _Mod), adapted from "Daniel Lemire, Fast
+    // Random Integer Generation in an Interval, ACM Transactions on Modeling and Computer Simulation 29 (1), 2019"
     static constexpr _Udiff _Reduce(
         _Udiff _Value, _Udiff _Mod, size_t _Bitrange, _Udiff& _Multiply_result_lo) noexcept {
         constexpr auto _Udiff_bits = CHAR_BIT * sizeof(_Udiff);
