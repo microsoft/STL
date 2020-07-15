@@ -487,7 +487,7 @@ extern "C" VOID __cdecl __crtCloseThreadpoolWork(__inout PTP_WORK const pwk) {
 }
 
 #else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-extern "C" BOOL __cdecl __crtQueueUserWorkItem(LPTHREAD_START_ROUTINE, PVOID, ULONG) {
+extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_opt_ PVOID, _In_ ULONG) {
     // This function doesn't have an implementation as it is only used on Windows XP
     return 0;
 }

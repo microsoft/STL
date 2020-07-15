@@ -229,7 +229,7 @@ _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSys
 
 #else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
-BOOL __cdecl __crtQueueUserWorkItem(__in LPTHREAD_START_ROUTINE function, __in_opt PVOID context, __in ULONG flags);
+BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE function, _In_opt_ PVOID context, _In_ ULONG flags);
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
