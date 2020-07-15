@@ -12,8 +12,8 @@
 using namespace std;
 
 struct instrumentedPair {
-    pair<int, int> _val         = {0, 0};
-    mutable int _numProjections = 0;
+    pair<int, int> _val = {0, 0};
+    int _numProjections = 0;
 
     constexpr instrumentedPair() = default;
     constexpr instrumentedPair(const instrumentedPair& other) : _val{other._val} {}
@@ -23,7 +23,7 @@ struct instrumentedPair {
         _numProjections = 0;
         return *this;
     }
-    constexpr instrumentedPair& operator=(instrumentedPair& other) {
+    constexpr instrumentedPair& operator=(instrumentedPair&& other) {
         _val            = exchange(other._val, {-1, -1});
         _numProjections = 0;
         return *this;
@@ -35,7 +35,7 @@ struct instrumentedPair {
     constexpr bool operator==(const instrumentedPair&) const = default;
 };
 
-constexpr auto countedProjection = [](const instrumentedPair& value) {
+constexpr auto countedProjection = [](instrumentedPair& value) {
     ++value._numProjections;
     return value._val.second;
 };
@@ -88,7 +88,7 @@ struct instantiator {
 #endif // TRANSITION, VSO-938163
         {
             { // Validate iterator + sentinel overload
-                const instrumentedPair input[6] = {
+                instrumentedPair input[6] = {
                     instrumentedPair{0, 99}, //
                     instrumentedPair{1, 47}, //
                     instrumentedPair{2, 47}, //
@@ -121,7 +121,7 @@ struct instantiator {
                 }
             }
             { // Validate range overload
-                const instrumentedPair input[6] = {
+                instrumentedPair input[6] = {
                     instrumentedPair{0, 99}, //
                     instrumentedPair{1, 47}, //
                     instrumentedPair{2, 47}, //
@@ -158,7 +158,7 @@ struct instantiator {
 
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((test_in_write<instantiator, const instrumentedPair, instrumentedPair>(), true));
+    STATIC_ASSERT((test_in_write<instantiator, instrumentedPair, instrumentedPair>(), true));
 #endif // TRANSITION, GH-1030
-    test_in_write<instantiator, const instrumentedPair, instrumentedPair>();
+    test_in_write<instantiator, instrumentedPair, instrumentedPair>();
 }
