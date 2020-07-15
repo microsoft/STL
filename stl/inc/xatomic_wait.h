@@ -15,6 +15,8 @@
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 _STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
 
 enum _Atomic_spin_phase : unsigned long {
     _Atomic_wait_phase_mask            = 0x0000'00FF,
@@ -28,13 +30,12 @@ enum _Atomic_spin_phase : unsigned long {
     _Atomic_unwait_needed              = _Atomic_wait_phase_wait_locked,
 };
 
-_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_timeout  = 0xFFFF'FFFF'FFFF'FFFF;
-_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
+_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_timeout = 0xFFFF'FFFF'FFFF'FFFF;
 
 struct _Atomic_wait_context_t {
     unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_init_spin_count;
     unsigned long _Reserved                  = 0; // reserved for potential future precision improvement
-    unsigned long long _Deadline             = _Atomic_wait_no_deadline; // or GetTickCount64 plus duration
+    unsigned long long _Deadline             = _Atomic_wait_no_timeout; // or GetTickCount64 plus duration
     unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
 };
 
@@ -60,17 +61,18 @@ void __stdcall __std_atomic_unwait_indirect(const void* _Storage, _Atomic_wait_c
 
 _NODISCARD unsigned long __stdcall __std_atomic_get_spin_count(bool _Is_direct) noexcept;
 void __stdcall __std_atomic_wait_get_deadline(
-    _Atomic_wait_context_t& _Wait_context, unsigned long long timeout, unsigned long timeout_pico) noexcept;
+    _Atomic_wait_context_t& _Wait_context, unsigned long long _Timeout) noexcept;
 _END_EXTERN_C
 
 _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_count, const bool _Is_direct) noexcept {
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     if (_Is_direct) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
         return false;
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+
     switch (_Wait_phase_and_spin_count & _Atomic_wait_phase_mask) {
     case _Atomic_wait_phase_init_spin_count:
         _Wait_phase_and_spin_count = _Atomic_wait_phase_spin | __std_atomic_get_spin_count(_Is_direct);
@@ -93,10 +95,12 @@ _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_cou
 inline void _Atomic_wait_get_deadline(
     _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout) noexcept {
     if (_Timeout != _Atomic_wait_no_timeout) {
-        __std_atomic_wait_get_deadline(_Wait_context, _Timeout, 0);
+        __std_atomic_wait_get_deadline(_Wait_context, _Timeout);
     }
-    // Otherwise defaults to _Atomic_wait_no_deadline
+    // Otherwise defaults to _Atomic_wait_no_timeout
 }
+
+#pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)

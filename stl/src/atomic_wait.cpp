@@ -34,7 +34,7 @@ namespace {
     };
 #pragma warning(pop)
 
-    _Wait_table_entry& _Atomic_wait_table_entry(const void* const _Storage) noexcept {
+    [[nodiscard]] _Wait_table_entry& _Atomic_wait_table_entry(const void* const _Storage) noexcept {
         static _Wait_table_entry wait_table[_Wait_table_size];
         auto index = reinterpret_cast<_STD uintptr_t>(_Storage);
         index ^= index >> (_Wait_table_size_power * 2);
@@ -42,9 +42,9 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    unsigned long _Get_remaining_wait_milliseconds(_Atomic_wait_context_t& _Wait_context) {
+    [[nodiscard]] unsigned long _Get_remaining_wait_milliseconds(_Atomic_wait_context_t& _Wait_context) {
         const unsigned long long deadline = _Wait_context._Deadline;
-        if (deadline == _Atomic_wait_no_deadline) {
+        if (deadline == _Atomic_wait_no_timeout) {
             return INFINITE;
         }
 
@@ -63,10 +63,10 @@ namespace {
 
     void _Assume_timeout() noexcept {
 #ifdef _DEBUG
-        if (::GetLastError() != ERROR_TIMEOUT) {
+        if (GetLastError() != ERROR_TIMEOUT) {
             abort(); // we are in noexcept, don't throw
         }
-#endif
+#endif // _DEBUG
     }
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
@@ -79,7 +79,8 @@ namespace {
 
 #else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
 
-    bool _Atomic_wait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
+    [[nodiscard]] bool _Atomic_wait_fallback(
+        const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
         DWORD _Remaining_waiting_time = _Get_remaining_wait_milliseconds(_Wait_context);
         if (_Remaining_waiting_time == 0) {
             return false;
@@ -102,6 +103,9 @@ namespace {
             }
             // re-check, and still in _Atomic_wait_phase_wait_locked
             break;
+
+        default:
+            _CSTD abort();
         }
 
         return true;
@@ -111,7 +115,7 @@ namespace {
         if (_Wait_context._Wait_phase_and_spin_count == _Atomic_wait_phase_wait_locked) {
             auto& _Entry = _Atomic_wait_table_entry(_Storage);
             ReleaseSRWLockExclusive(&_Entry._Lock);
-            // Superflous currently, but let's have it for robustness
+            // Superfluous currently, but let's have it for robustness
             _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
         }
     }
@@ -143,7 +147,7 @@ namespace {
         }
     }
 
-    const _Wait_functions_table& _Get_wait_functions() noexcept {
+    [[nodiscard]] const _Wait_functions_table& _Get_wait_functions() noexcept {
         auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
         if (_Local <= __std_atomic_api_level::__detecting) {
             while (!_Wait_functions._Api_level.compare_exchange_weak(_Local, __std_atomic_api_level::__detecting)) {
@@ -173,24 +177,24 @@ namespace {
         return _Wait_functions;
     }
 
-    bool _Have_wait_functions() noexcept {
+    [[nodiscard]] bool _Have_wait_functions() noexcept {
         return _Get_wait_functions()._Api_level.load(_STD memory_order_relaxed)
                >= __std_atomic_api_level::__has_wait_on_address;
     }
 
-    inline BOOL __crtWaitOnAddress(
+    [[nodiscard]] BOOL __crtWaitOnAddress(
         volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
         const auto _Wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(_STD memory_order_relaxed);
         return _Wait_on_address(Address, CompareAddress, AddressSize, dwMilliseconds);
     }
 
-    inline VOID __crtWakeByAddressSingle(PVOID Address) {
+    VOID __crtWakeByAddressSingle(PVOID Address) {
         const auto _Wake_by_address_single =
             _Get_wait_functions()._Pfn_WakeByAddressSingle.load(_STD memory_order_relaxed);
         _Wake_by_address_single(Address);
     }
 
-    inline VOID __crtWakeByAddressAll(PVOID Address) {
+    VOID __crtWakeByAddressAll(PVOID Address) {
         const auto _Wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
         _Wake_by_address_all(Address);
     }
@@ -205,12 +209,14 @@ bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
     if (!_Have_wait_functions()) {
         return _Atomic_wait_fallback(_Storage, _Wait_context);
     }
-#endif
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
     if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
             _Get_remaining_wait_milliseconds(_Wait_context))) {
         _Assume_timeout();
         return false;
     }
+
     return true;
 }
 
@@ -220,7 +226,8 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
         _Atomic_notify_fallback(_Storage);
         return;
     }
-#endif
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
     __crtWakeByAddressSingle(const_cast<void*>(_Storage));
 }
 
@@ -230,7 +237,8 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
         _Atomic_notify_fallback(_Storage);
         return;
     }
-#endif
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
     __crtWakeByAddressAll(const_cast<void*>(_Storage));
 }
 
@@ -239,7 +247,8 @@ bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wa
     if (!_Have_wait_functions()) {
         return _Atomic_wait_fallback(_Storage, _Wait_context);
     }
-#endif
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     switch (_Wait_context._Wait_phase_and_spin_count) {
     case _Atomic_wait_phase_wait_none:
@@ -258,7 +267,11 @@ bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wa
         // Lock on new counter value if coming back
         _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
         break;
+
+    default:
+        _CSTD abort();
     }
+
     return true;
 }
 
@@ -272,27 +285,23 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
         _Atomic_notify_fallback(_Storage);
         return;
     }
-#endif
+#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _Entry._Counter.fetch_add(1, _STD memory_order_relaxed);
     __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
 }
 
-void __stdcall __std_atomic_unwait_direct(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
-    (void) _Storage, _Wait_context;
-#else
+void __stdcall __std_atomic_unwait_direct(
+    [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
+#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
     _Atomic_unwait_fallback(_Storage, _Wait_context);
-#endif
+#endif // !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
 }
 
 void __stdcall __std_atomic_unwait_indirect(
-    const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
-    (void) _Storage, _Wait_context;
-#else
+    [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
     _Atomic_unwait_fallback(_Storage, _Wait_context);
-#endif
 }
 
 unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
@@ -301,12 +310,13 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
         // since for indirect waits this will work only if notified.
 #ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
         return 0;
-#else
+#else // ^^^ _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL // !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL vvv
         if (_Have_wait_functions()) {
             return 0;
         }
-#endif
+#endif // ^^^ !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
     }
+
     constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
     static _STD atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
     const unsigned long _Spin_count_from_cache = _Atomic_spin_count.load(_STD memory_order_relaxed);
@@ -320,11 +330,11 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
 }
 
 void __stdcall __std_atomic_wait_get_deadline(
-    _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout, unsigned long timeout_pico) noexcept {
+    _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout) noexcept {
     if (_Timeout == _Atomic_wait_no_timeout) {
-        _Wait_context._Deadline = _Atomic_wait_no_deadline;
+        _Wait_context._Deadline = _Atomic_wait_no_timeout;
     } else {
-        _Wait_context._Deadline = GetTickCount64() + _Timeout + (timeout_pico ? 1 : 0);
+        _Wait_context._Deadline = GetTickCount64() + _Timeout;
     }
 }
 

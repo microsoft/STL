@@ -252,12 +252,12 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 
 // FUNCTION TEMPLATE _Atomic_wait_direct_timed
 // Provides common implementation of atomic wait for 1, 2, 4, and 8
-// Not CRTP base to avoid change that might break ODR
+// Not CRTP base to avoid change that might break ABI
 template <class _Value_type, class _Atomic_storage>
 bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_type _Expected_bytes,
-    const _STD memory_order _Order, unsigned long long timeout) noexcept {
+    const memory_order _Order, const unsigned long long _Timeout) noexcept {
     _Atomic_wait_context_t _Wait_context;
-    _Atomic_wait_get_deadline(_Wait_context, timeout);
+    _Atomic_wait_get_deadline(_Wait_context, _Timeout);
     const auto _Storage_ptr = _STD addressof(_Storage._Storage);
 
     for (;;) {
@@ -265,6 +265,7 @@ bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_typ
         if (_Expected_bytes != _Observed_bytes) {
             break;
         }
+
         if (!_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
             if (!__std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Wait_context)) {
                 return false;
@@ -272,11 +273,12 @@ bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_typ
         }
     }
 
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
         __std_atomic_unwait_direct(_Storage_ptr, _Wait_context);
     }
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
+
     return true;
 }
 
@@ -413,11 +415,11 @@ struct _Atomic_storage {
             }
         }
 
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
         if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
             __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
         }
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     }
 
     void notify_one() noexcept {
@@ -461,21 +463,21 @@ public:
                 break;
             }
 
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
             if (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
                 continue; // Keep spinning for now.
             }
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
             __std_atomic_wait_direct(&_Spinlock, &_Local, 1, _Wait_context);
             // Don't check for spurious wakes, spinlock will do it
         }
 
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
         if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
             __std_atomic_unwait_direct(&_Spinlock, _Wait_context);
         }
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
@@ -579,9 +581,9 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Atomic_wait_no_timeout);
     }
 
-    bool _Timed_wait(const _Ty _Expected, unsigned long long timeout, const memory_order _Order) const noexcept {
+    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
         const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
-        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, timeout);
+        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Timeout);
     }
 
     void notify_one() noexcept {
@@ -681,9 +683,9 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Atomic_wait_no_timeout);
     }
 
-    bool _Timed_wait(const _Ty _Expected, unsigned long long timeout, const memory_order _Order) const noexcept {
+    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
         const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
-        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, timeout);
+        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Timeout);
     }
 
     void notify_one() noexcept {
@@ -781,9 +783,9 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Atomic_wait_no_timeout);
     }
 
-    bool _Timed_wait(const _Ty _Expected, unsigned long long timeout, const memory_order _Order) const noexcept {
+    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
         const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
-        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, timeout);
+        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Timeout);
     }
 
     void notify_one() noexcept {
@@ -908,9 +910,9 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Atomic_wait_no_timeout);
     }
 
-    bool _Timed_wait(const _Ty _Expected, unsigned long long timeout, const memory_order _Order) const noexcept {
+    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
         const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
-        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, timeout);
+        return _Atomic_wait_direct_timed(*this, _Expected_bytes, _Order, _Timeout);
     }
 
     void notify_one() noexcept {
@@ -1027,16 +1029,17 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
+
             if (!_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, false)) {
                 __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
             }
         }
 
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
         if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
             __std_atomic_unwait_indirect(_Storage_ptr, _Wait_context);
         }
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     }
 
     void notify_one() noexcept {
@@ -1855,7 +1858,7 @@ public:
 #if _HAS_CXX20
     using _Base::wait;
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
-        const_cast<atomic*>(this)->_Base::wait(_Expected, _Order);
+        const_cast<const atomic*>(this)->_Base::wait(_Expected, _Order);
     }
 
     using _Base::notify_one;
@@ -2169,14 +2172,14 @@ void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::valu
 }
 
 template <class _Ty>
-void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, typename atomic<_Ty>::value_type _Expected,
-    memory_order _Order) noexcept /* strengthened */ {
+void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
+    const memory_order _Order) noexcept /* strengthened */ {
     _Mem->wait(_Expected, _Order);
 }
 
 template <class _Ty>
-void atomic_wait_explicit(const atomic<_Ty>* const _Mem, typename atomic<_Ty>::value_type _Expected,
-    memory_order _Order) noexcept /* strengthened */ {
+void atomic_wait_explicit(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
+    const memory_order _Order) noexcept /* strengthened */ {
     _Mem->wait(_Expected, _Order);
 }
 
@@ -2256,6 +2259,7 @@ using atomic_size_t    = atomic<size_t>;
 using atomic_ptrdiff_t = atomic<ptrdiff_t>;
 using atomic_intmax_t  = atomic<intmax_t>;
 using atomic_uintmax_t = atomic<uintmax_t>;
+
 #if _HAS_CXX20
 // Though there are CMPXCHG8B and CMPXCHG16B,
 // the largest atomics with a full set of efficient operations are pointer-sized.
@@ -2296,11 +2300,11 @@ struct atomic_flag { // flag with test-and-set semantics
     constexpr atomic_flag() noexcept = default;
 
 #if _HAS_CXX20
-    void wait(const bool _Expected, memory_order _Order = memory_order::seq_cst) const noexcept {
+    void wait(const bool _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Storage.wait(static_cast<decltype(_Storage)::value_type>(_Expected), _Order);
     }
 
-    void wait(const bool _Expected, memory_order _Order = memory_order::seq_cst) const volatile noexcept {
+    void wait(const bool _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
         _Storage.wait(static_cast<decltype(_Storage)::value_type>(_Expected), _Order);
     }
 
@@ -2349,35 +2353,35 @@ _NODISCARD inline bool atomic_flag_test_explicit(const atomic_flag* const _Flag,
 }
 #endif // _HAS_CXX20
 
-inline bool atomic_flag_test_and_set(atomic_flag* _Flag) noexcept {
+inline bool atomic_flag_test_and_set(atomic_flag* const _Flag) noexcept {
     return _Flag->test_and_set();
 }
 
-inline bool atomic_flag_test_and_set(volatile atomic_flag* _Flag) noexcept {
+inline bool atomic_flag_test_and_set(volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test_and_set();
 }
 
-inline bool atomic_flag_test_and_set_explicit(atomic_flag* _Flag, memory_order _Order) noexcept {
+inline bool atomic_flag_test_and_set_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test_and_set(_Order);
 }
 
-inline bool atomic_flag_test_and_set_explicit(volatile atomic_flag* _Flag, memory_order _Order) noexcept {
+inline bool atomic_flag_test_and_set_explicit(volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test_and_set(_Order);
 }
 
-inline void atomic_flag_clear(atomic_flag* _Flag) noexcept {
+inline void atomic_flag_clear(atomic_flag* const _Flag) noexcept {
     _Flag->clear();
 }
 
-inline void atomic_flag_clear(volatile atomic_flag* _Flag) noexcept {
+inline void atomic_flag_clear(volatile atomic_flag* const _Flag) noexcept {
     _Flag->clear();
 }
 
-inline void atomic_flag_clear_explicit(atomic_flag* _Flag, memory_order _Order) noexcept {
+inline void atomic_flag_clear_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
 
-inline void atomic_flag_clear_explicit(volatile atomic_flag* _Flag, memory_order _Order) noexcept {
+inline void atomic_flag_clear_explicit(volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
 

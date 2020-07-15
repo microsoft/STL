@@ -19,8 +19,8 @@ namespace {
 #endif
         return _Value;
     }
-
 } // unnamed namespace
+
 extern "C" {
 
 // TRANSITION, ABI
