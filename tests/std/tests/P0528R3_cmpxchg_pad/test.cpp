@@ -48,6 +48,8 @@ struct X3 {
 struct alignas(4) X4 {
     char x;
 
+    void operator&() const = delete;
+
     void set(char v) {
         x = v;
     }
