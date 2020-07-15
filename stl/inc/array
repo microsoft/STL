@@ -577,6 +577,10 @@ public:
         return _Elems;
     }
 
+    // friend constexpr bool operator==(const array&, const array&) = default;
+    // friend constexpr _Synth_three_way_result<value_type> operator<=>(const array&, const array&);
+    // friend constexpr bool operator<=>(const array&, const array&);
+
     [[noreturn]] void _Xran() const {
         _Xout_of_range("invalid array<T, N> subscript");
     }
@@ -778,6 +782,7 @@ _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const ar
     return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
 }
 
+#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left == _Right);
@@ -802,6 +807,15 @@ template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+template <class _Ty, size_t _Size>
+_NODISCARD _CONSTEXPR20 _Synth_three_way_result<_Ty> operator<=>(
+    const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 // FUNCTION TEMPLATE to_array

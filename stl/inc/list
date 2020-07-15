@@ -1810,6 +1810,7 @@ _NODISCARD bool operator==(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
     return _Left.size() == _Right.size() && _STD equal(_Left.begin(), _Left.end(), _Right.begin());
 }
 
+#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
@@ -1834,6 +1835,15 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(
+        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

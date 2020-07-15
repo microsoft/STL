@@ -1766,6 +1766,7 @@ _NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
            && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
+#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
@@ -1791,6 +1792,16 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
+    const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(
+        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+}
+#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 
 // CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
 using _Vbase         = unsigned int; // word type for vector<bool> representation
