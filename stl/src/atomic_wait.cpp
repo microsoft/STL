@@ -69,15 +69,13 @@ namespace {
 #endif // _DEBUG
     }
 
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
-
-#define _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
 #define __crtWaitOnAddress       WaitOnAddress
 #define __crtWakeByAddressSingle WakeByAddressSingle
 #define __crtWakeByAddressAll    WakeByAddressAll
 
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 vvv
+#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
 
     [[nodiscard]] bool _Atomic_wait_fallback(
         const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
@@ -198,18 +196,18 @@ namespace {
         const auto _Wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
         _Wake_by_address_all(Address);
     }
-#endif //  _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+#endif //  _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
 } // unnamed namespace
 
 _EXTERN_C
 bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const size_t _Size,
     _Atomic_wait_context_t& _Wait_context) noexcept {
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
         return _Atomic_wait_fallback(_Storage, _Wait_context);
     }
-#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
     if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
             _Get_remaining_wait_milliseconds(_Wait_context))) {
@@ -221,33 +219,33 @@ bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const 
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
         _Atomic_notify_fallback(_Storage);
         return;
     }
-#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE = 0
 
     __crtWakeByAddressSingle(const_cast<void*>(_Storage));
 }
 
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
         _Atomic_notify_fallback(_Storage);
         return;
     }
-#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
     __crtWakeByAddressAll(const_cast<void*>(_Storage));
 }
 
 bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
         return _Atomic_wait_fallback(_Storage, _Wait_context);
     }
-#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     switch (_Wait_context._Wait_phase_and_spin_count) {
@@ -280,12 +278,12 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
 }
 
 void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
         _Atomic_notify_fallback(_Storage);
         return;
     }
-#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _Entry._Counter.fetch_add(1, _STD memory_order_relaxed);
@@ -294,27 +292,29 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
 
 void __stdcall __std_atomic_unwait_direct(
     [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
-#ifndef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     _Atomic_unwait_fallback(_Storage, _Wait_context);
-#endif // !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 }
 
 void __stdcall __std_atomic_unwait_indirect(
     [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     _Atomic_unwait_fallback(_Storage, _Wait_context);
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 }
 
 unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
     if (_Is_direct) {
         // WaitOnAddress spins by itself, but this is only helpful for direct waits,
         // since for indirect waits this will work only if notified.
-#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
         return 0;
-#else // ^^^ _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL // !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL vvv
+#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
         if (_Have_wait_functions()) {
             return 0;
         }
-#endif // ^^^ !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // ^^^ !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     }
 
     constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
@@ -339,10 +339,10 @@ void __stdcall __std_atomic_wait_get_deadline(
 }
 
 __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept {
-#ifdef _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
     (void) _Requested_api_level;
     return __std_atomic_api_level::__has_wait_on_address;
-#else // ^^^ _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL // !_ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL vvv
+#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
     switch (_Requested_api_level) {
     case __std_atomic_api_level::__not_set:
     case __std_atomic_api_level::__detecting:
@@ -355,6 +355,6 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
     }
 
     return _Get_wait_functions()._Api_level.load(_STD memory_order_relaxed);
-#endif // _ATOMIC_WAIT_STATICALLY_AVAILABLE_TO_IMPL
+#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
 _END_EXTERN_C
