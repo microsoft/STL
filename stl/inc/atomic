@@ -117,7 +117,7 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 // Padding bits should not participate in cmpxchg comparison starting C++20.
 // Clang does not have __builtin_zero_non_value_bits to exclude these bits to implement this C++20 feature.
-// EDG front-end substitutes everything and runs into incomplete types passed to atomic<T>
+// The EDG front-end substitutes everything and runs into incomplete types passed to atomic<T>.
 #if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
 #define _CMPXCHG_MASK_OUT_PADDING_BITS 1
 #else
