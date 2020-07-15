@@ -2180,6 +2180,8 @@ inline void atomic_flag_clear_explicit(volatile atomic_flag* _Flag, memory_order
 
 _STD_END
 
+#undef _CMPXCHG_MASK_OUT_PADDING_BITS
+
 #undef _ATOMIC_CHOOSE_INTRINSIC
 #undef _ATOMIC_HAS_DCAS
 
