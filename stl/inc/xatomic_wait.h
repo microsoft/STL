@@ -33,11 +33,10 @@ constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
 struct _Atomic_wait_context_t {
     unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_init_spin_count;
-    unsigned long _Deadline_picoseconds      = 0; // reserved for potential future precision improvement
+    unsigned long _Reserved                  = 0; // reserved for potential future precision improvement
     unsigned long long _Deadline             = _Atomic_wait_no_deadline; // or GetTickCount64 plus duration
     unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
 };
-
 
 _EXTERN_C
 enum class __std_atomic_api_level : unsigned long {
