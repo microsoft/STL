@@ -2660,7 +2660,7 @@ public:
     bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used by basic_stringbuf
         _Tidy_deallocate();
-        pointer _Fancy_right = pointer_traits<pointer>::pointer_to(*_Right);
+        pointer _Fancy_right = _Refancy<pointer>(_Right);
         auto& _My_data       = _Mypair._Myval2;
         _My_data._Mysize     = _Size;
         _My_data._Myres      = _Res;

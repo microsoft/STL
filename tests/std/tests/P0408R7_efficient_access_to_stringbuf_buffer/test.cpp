@@ -147,7 +147,7 @@ void test_iterator_increment_death() {
     auto iterator = s.begin();
     stringstream stream{move(s)};
     ++iterator; // cannot increase invalid iterator
-    cout << str << endl;
+    cout << s << endl;
 }
 
 void test_iterator_increment_zero(const char* str) {
