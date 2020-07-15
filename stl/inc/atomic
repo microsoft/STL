@@ -1855,7 +1855,7 @@ public:
 #if _HAS_CXX20
     using _Base::wait;
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
-        const_cast<atomic*>(this)->_Base::wait(_Expected, _Order);
+        const_cast<const atomic*>(this)->_Base::wait(_Expected, _Order);
     }
 
     using _Base::notify_one;
