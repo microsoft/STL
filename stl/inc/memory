@@ -3108,7 +3108,7 @@ protected:
                 break;
 
             default: // Unrecognized bit pattern
-                abort();
+                _CSTD abort();
             }
         }
     }
