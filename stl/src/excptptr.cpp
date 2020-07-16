@@ -50,7 +50,7 @@ namespace {
             _Ty _Storage;
         };
 
-        constexpr _Constexpr_excptptr_immortalize_impl() : _Storage() {}
+        constexpr _Constexpr_excptptr_immortalize_impl() noexcept : _Storage{} {}
 
         _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&) = delete;
         _Constexpr_excptptr_immortalize_impl& operator=(const _Constexpr_excptptr_immortalize_impl&) = delete;
