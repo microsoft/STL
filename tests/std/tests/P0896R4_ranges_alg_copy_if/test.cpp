@@ -101,6 +101,8 @@ struct instantiator {
 };
 
 int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((test_in_write<instantiator, P const, P>(), true));
+#endif // TRANSITION, GH-1030
     test_in_write<instantiator, P const, P>();
 }
