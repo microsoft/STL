@@ -27,6 +27,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _USE_STD_VECTOR_ALGORITHMS 0
 #endif
 
+#ifdef __CUDACC__
+#define _CONSTEXPR_BIT_CAST inline
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#define _CONSTEXPR_BIT_CAST constexpr
+#endif // ^^^ no workaround ^^^
+
 #if _USE_STD_VECTOR_ALGORITHMS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
@@ -52,17 +58,15 @@ template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
         int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST _To _Bit_cast(const _From& _Val) noexcept {
 #ifdef __CUDACC__
-_NODISCARD _To _Bit_cast(const _From& _Val) noexcept {
     _To _To_obj; // assumes default-init
     _CSTD memcpy(_STD addressof(_To_obj), _STD addressof(_Val), sizeof(_To));
     return _To_obj;
-}
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
-_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
-}
 #endif // ^^^ no workaround ^^^
+}
 
 // STRUCT TEMPLATE _Get_first_parameter
 template <class _Ty>
@@ -5937,7 +5941,74 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using pointer           = _Pointer;
     using reference         = _Reference;
 };
+
+// STRUCT TEMPLATE _Float_bit_traits
+template <class _Ty>
+struct _Float_bit_traits;
+
+template <>
+struct _Float_bit_traits<float> {
+    using _Float_type = float;
+    using _Bit_type   = unsigned int;
+
+    static constexpr _Bit_type _Magnitude_mask = 0x7fff'ffffU;
+    static constexpr _Bit_type _Exponent_mask  = 0x7f80'0000U;
+};
+
+template <>
+struct _Float_bit_traits<double> {
+    using _Float_type = double;
+    using _Bit_type   = unsigned long long;
+
+    static constexpr _Bit_type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
+    static constexpr _Bit_type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
+};
+
+template <>
+struct _Float_bit_traits<long double> {
+    using _Float_type = long double;
+    using _Bit_type   = unsigned long long;
+
+    static constexpr _Bit_type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
+    static constexpr _Bit_type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
+};
+
+template <class _Ty>
+struct _Float_bit_traits<const _Ty> : public _Float_bit_traits<_Ty> {};
+
+template <class _Ty>
+struct _Float_bit_traits<volatile _Ty> : public _Float_bit_traits<_Ty> {};
+
+template <class _Ty>
+struct _Float_bit_traits<const volatile _Ty> : public _Float_bit_traits<_Ty> {};
+
+// FUNCTION TEMPLATE _Float_abs_bits
+template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
+    using _Bit_type  = typename _Float_bit_traits<_Ty>::_Bit_type;
+    const auto _Bits = _Bit_cast<_Bit_type>(_Xx);
+    return static_cast<_Bit_type>(_Bits & _Float_bit_traits<_Ty>::_Magnitude_mask);
+}
+
+// FUNCTION TEMPLATE _Float_abs
+template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating point abs()
+    return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
+}
+
+// FUNCTION TEMPLATE _Is_nan
+template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
+    return _Float_abs_bits(_Xx) > _Float_bit_traits<_Ty>::_Exponent_mask;
+}
+
+// FUNCTION TEMPLATE _Is_finite
+template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
+    return _Float_abs_bits(_Xx) < _Float_bit_traits<_Ty>::_Exponent_mask;
+}
 _STD_END
+#undef _CONSTEXPR_BIT_CAST
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

@@ -540,14 +540,9 @@ template <class _Arithmetic>
 _NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
     // computes absolute value of _Val (converting to an unsigned integer type if necessary to avoid overflow
     // representing the negation of the minimum value)
-    if constexpr (is_floating_point_v<_Arithmetic>) {
-        // TRANSITION, P0553: this mishandles NaNs
-        if (_Val < 0) {
-            return -_Val;
-        }
+    static_assert(is_integral_v<_Arithmetic>);
 
-        return _Val;
-    } else if constexpr (is_signed_v<_Arithmetic>) {
+    if constexpr (is_signed_v<_Arithmetic>) {
         using _Unsigned = make_unsigned_t<_Arithmetic>;
         if (_Val < 0) {
             // note static_cast to _Unsigned such that _Arithmetic == short returns unsigned short rather than int
@@ -619,9 +614,23 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 template <class _Ty, enable_if_t<is_arithmetic_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>, int> = 0>
 _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
     if constexpr (is_floating_point_v<_Ty>) {
+        if (_STD is_constant_evaluated()) {
+            if (_STD _Is_nan(_Val1)) {
+                return _Val1;
+            }
+
+            if (_STD _Is_nan(_Val2)) {
+                return _Val2;
+            }
+        } else {
+            if (_STD _Is_nan(_Val1) || _STD _Is_nan(_Val2)) {
+                return _Val1 + _Val2;
+            }
+        }
+
         constexpr _Ty _High_limit = (numeric_limits<_Ty>::max)() / 2;
-        const auto _Val1_a        = _Abs_u(_Val1);
-        const auto _Val2_a        = _Abs_u(_Val2);
+        const auto _Val1_a        = _Float_abs(_Val1);
+        const auto _Val2_a        = _Float_abs(_Val2);
         if (_Val1_a <= _High_limit && _Val2_a <= _High_limit) {
             // _Val1 and _Val2 are small enough that _Val1 + _Val2 won't overflow
 
@@ -635,16 +644,6 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
             // be finer than 2^-1074 and addition/subtraction can't create smaller steps.
 
             return (_Val1 + _Val2) / 2;
-        }
-
-        // TRANSITION, P0553: the next two branches handle NaNs but don't produce correct behavior under /fp:fast or
-        // -fassociative-math
-        if (_Val1 != _Val1) {
-            return _Val1;
-        }
-
-        if (_Val2 != _Val2) {
-            return _Val2;
         }
 
         // Here at least one of {_Val1, _Val2} has large magnitude.
