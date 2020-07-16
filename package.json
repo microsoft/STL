@@ -1,0 +1,28 @@
+{
+  "name": "stl-status-chart",
+  "version": "1.0.0",
+  "description": "STL Status Chart",
+  "main": "gather_stats.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microsoft/STL.git#gh-pages"
+  },
+  "keywords": [
+    "chart"
+  ],
+  "author": "Microsoft",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "bugs": {
+    "url": "https://github.com/microsoft/STL/issues"
+  },
+  "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
+  "dependencies": {
+    "@octokit/rest": "^18.0.1",
+    "cli-progress": "^3.8.2",
+    "dotenv": "^8.2.0",
+    "luxon": "^1.24.1"
+  }
+}
