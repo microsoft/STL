@@ -15,15 +15,11 @@ constexpr bool test_ord(T val) {
     assert((0 == val) == (Z == comp::equal));
     assert((val != 0) == (Z != comp::equal));
     assert((0 != val) == (Z != comp::equal));
-#ifdef __cpp_impl_three_way_comparison
     assert(((val <=> 0) == 0) == (Z == comp::equal));
     assert(((0 <=> val) == 0) == (Z == comp::equal));
 
-#if __cpp_impl_three_way_comparison >= 201907L
     assert(val == val);
     assert(!(val != val));
-#endif // __cpp_impl_three_way_comparison >= 201907L
-#endif // __cpp_impl_three_way_comparison
     assert(std::is_eq(val) == (Z == comp::equal));
     assert(std::is_neq(val) == (Z != comp::equal));
 
@@ -35,15 +31,11 @@ constexpr bool test_ord(T val) {
     assert((0 >= val) == (Z != comp::greater && Z != comp::unordered));
     assert((val >= 0) == (Z != comp::less && Z != comp::unordered));
     assert((0 <= val) == (Z != comp::less && Z != comp::unordered));
-#ifdef __cpp_impl_three_way_comparison
     assert(((val <=> 0) < 0) == (Z == comp::less));
     assert(((0 <=> val) < 0) == (Z == comp::greater));
 
-#if __cpp_impl_three_way_comparison >= 201907L
     assert(val == val);
     assert(!(val != val));
-#endif // __cpp_impl_three_way_comparison >= 201907L
-#endif // __cpp_impl_three_way_comparison
     assert(std::is_lt(val) == (Z == comp::less));
     assert(std::is_lteq(val) == (Z != comp::greater && Z != comp::unordered));
     assert(std::is_gt(val) == (Z == comp::greater));
@@ -121,7 +113,7 @@ static_assert(test_common_type<std::strong_ordering, std::partial_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::weak_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::strong_ordering>());
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
 constexpr auto my_cmp_three_way = [](const auto& left, const auto& right) { return left <=> right; };
 
 template <class Left, class Right>
@@ -187,7 +179,7 @@ void test_algorithm() {
     assert((test_algorithm2<Ty1, Ty2>()));
     assert((test_algorithm2<Ty2, Ty1>()));
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 int main() {
     test_ord<comp::equal>(std::partial_ordering::equivalent);
@@ -204,12 +196,12 @@ int main() {
     test_ord<comp::less>(std::strong_ordering::less);
     test_ord<comp::greater>(std::strong_ordering::greater);
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
     test_algorithm<int>();
     test_algorithm<char>();
     test_algorithm<unsigned char>();
     test_algorithm<int, char>();
     test_algorithm<int, unsigned char>();
     test_algorithm<char, unsigned char>();
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 }
