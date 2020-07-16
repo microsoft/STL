@@ -1139,19 +1139,19 @@ struct _Iterator_traits_base<_Iter,
         typename _Iter::pointer, typename _Iter::reference>> {
     // defined if _Iter::* types exist
     using iterator_category = typename _Iter::iterator_category;
-    using value_type        = typename _Iter::value_type;
-    using difference_type   = typename _Iter::difference_type;
-    using pointer           = typename _Iter::pointer;
-    using reference         = typename _Iter::reference;
+    using value_type = typename _Iter::value_type;
+    using difference_type = typename _Iter::difference_type;
+    using pointer = typename _Iter::pointer;
+    using reference = typename _Iter::reference;
 };
 
 template <class _Ty, bool = is_object_v<_Ty>>
 struct _Iterator_traits_pointer_base { // iterator properties for pointers to object
     using iterator_category = random_access_iterator_tag;
-    using value_type        = remove_cv_t<_Ty>;
-    using difference_type   = ptrdiff_t;
-    using pointer           = _Ty*;
-    using reference         = _Ty&;
+    using value_type = remove_cv_t<_Ty>;
+    using difference_type = ptrdiff_t;
+    using pointer = _Ty*;
+    using reference = _Ty&;
 };
 
 template <class _Ty>
@@ -1411,8 +1411,8 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _O
 template <class _Iter, class _Diff, enable_if_t<_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>, int> = 0>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
     // ask an iterator to assert that the iterator moved _Off positions is valid, and unwrap
-    using _IDiff     = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
-    using _CDiff     = common_type_t<_Diff, _IDiff>;
+    using _IDiff = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
+    using _CDiff = common_type_t<_Diff, _IDiff>;
     const auto _COff = static_cast<_CDiff>(_Off);
 
     _STL_ASSERT(_COff <= static_cast<_CDiff>(_Max_possible_v<_IDiff>)
@@ -1721,7 +1721,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
     // increment iterator by offset, input iterators
     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
 
-    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -1736,7 +1736,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
 template <class _BidIt, class _Diff>
 _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_tag) {
     // increment iterator by offset, bidirectional iterators
-    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -1789,8 +1789,8 @@ template <class _InIt>
 _CONSTEXPR17 _Iter_diff_t<_InIt> _Distance1(_InIt _First, _InIt _Last, input_iterator_tag) {
     // return distance between iterators; input
     _Adl_verify_range(_First, _Last);
-    auto _UFirst             = _Get_unwrapped(_First);
-    const auto _ULast        = _Get_unwrapped(_Last);
+    auto _UFirst = _Get_unwrapped(_First);
+    const auto _ULast = _Get_unwrapped(_Last);
     _Iter_diff_t<_InIt> _Off = 0;
     for (; _UFirst != _ULast; ++_UFirst) {
         ++_Off;
@@ -4436,7 +4436,7 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+        auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         _Seek_wrapped(
             _Dest, _Copy_n_unchecked4(_UFirst, _Count, _UDest,
                        bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable>{}));
@@ -4518,9 +4518,9 @@ _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, t
 template <class _BidIt1, class _BidIt2>
 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) { // copy [_First, _Last) backwards to [..., _Dest)
     _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
+    auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
+    auto _UDest = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     _Seek_wrapped(_Dest, _Copy_backward_unchecked(_UFirst, _ULast, _UDest,
                              bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable>{}));
     return _Dest;
@@ -4969,7 +4969,7 @@ bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
     const auto _First1_ch = reinterpret_cast<const char*>(_First1);
     const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
+    const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
 }
 
@@ -4978,7 +4978,7 @@ _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
     // compare [_First1, _Last1) to [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
     const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
+    const auto _ULast1 = _Get_unwrapped(_Last1);
     const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     return _Equal_unchecked(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
 }
