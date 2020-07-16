@@ -23,38 +23,44 @@ struct instantiator {
 
     template <ranges::forward_range Read>
     static constexpr void call() {
-        using ranges::remove_if, ranges::subrange, ranges::equal, ranges::iterator_t;
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+#pragma warning(suppress : 4127) // conditional expression is constant
+        if (!ranges::contiguous_range<Read> || !is_constant_evaluated())
+#endif // TRANSITION, VSO-938163
+        {
+            using ranges::remove_if, ranges::subrange, ranges::equal, ranges::iterator_t;
 
-        size_t projectionCounter = 0;
-        auto projection          = [&projectionCounter](const P& val) {
-            ++projectionCounter;
-            return val.second;
-        };
+            size_t projectionCounter = 0;
+            auto projection          = [&projectionCounter](const P& val) {
+                ++projectionCounter;
+                return val.second;
+            };
 
-        { // Validate iterator + sentinel overload
-            P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
-            Read wrapped_input{input};
+            { // Validate iterator + sentinel overload
+                P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
+                Read wrapped_input{input};
 
-            auto result = remove_if(wrapped_input.begin(), wrapped_input.end(), matches, projection);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
-            assert(result.begin() == next(wrapped_input.begin(), 3));
-            assert(result.end() == wrapped_input.end());
-            assert(equal(expected, span{input}.first<3>()));
-            assert(projectionCounter == ranges::size(input));
-        }
+                auto result = remove_if(wrapped_input.begin(), wrapped_input.end(), matches, projection);
+                STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
+                assert(result.begin() == next(wrapped_input.begin(), 3));
+                assert(result.end() == wrapped_input.end());
+                assert(equal(expected, span{input}.first<3>()));
+                assert(projectionCounter == ranges::size(input));
+            }
 
-        projectionCounter = 0;
+            projectionCounter = 0;
 
-        { // Validate range overload
-            P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
-            Read wrapped_input{input};
+            { // Validate range overload
+                P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
+                Read wrapped_input{input};
 
-            auto result = remove_if(wrapped_input, matches, projection);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
-            assert(result.begin() == next(wrapped_input.begin(), 3));
-            assert(result.end() == wrapped_input.end());
-            assert(equal(expected, span{input}.first<3>()));
-            assert(projectionCounter == ranges::size(input));
+                auto result = remove_if(wrapped_input, matches, projection);
+                STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
+                assert(result.begin() == next(wrapped_input.begin(), 3));
+                assert(result.end() == wrapped_input.end());
+                assert(equal(expected, span{input}.first<3>()));
+                assert(projectionCounter == ranges::size(input));
+            }
         }
     }
 };
