@@ -196,7 +196,7 @@ namespace {
         const auto _Wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
         _Wake_by_address_all(Address);
     }
-#endif //  _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
 } // unnamed namespace
 
@@ -314,7 +314,7 @@ unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexc
         if (_Have_wait_functions()) {
             return 0;
         }
-#endif // ^^^ !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // ^^^ !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE ^^^
     }
 
     constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;

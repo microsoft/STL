@@ -1260,10 +1260,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #if defined(_M_ARM) || defined(_M_ARM64) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) // !defined(_M_ARM) && !defined(_M_ARM64)
+#else // ^^^ default to Win8 // default to Vista vvv
 // The earliest Windows supported by this implementation is Windows Vista
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
-#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64)
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
 
 #endif // _STL_COMPILER_PREPROCESSOR

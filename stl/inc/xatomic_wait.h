@@ -9,6 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <stdlib.h>
 #include <xatomic.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -88,7 +89,11 @@ _NODISCARD inline bool _Atomic_wait_spin(unsigned long& _Wait_phase_and_spin_cou
         }
         _Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
         break;
+
+    default:
+        _CSTD abort();
     }
+
     return false;
 }
 
