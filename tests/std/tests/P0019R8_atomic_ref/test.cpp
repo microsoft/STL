@@ -19,6 +19,18 @@ struct bigint {
     }
 };
 
+struct int128 {
+    long long value;
+    long long more_value;
+
+    int128(int value = 0) : value(value), more_value(0) {}
+
+    operator int() const {
+        return static_cast<int>(value);
+    }
+};
+
+
 // code reuse of ../P1135R6_atomic_flag_test/test.cpp
 
 template <bool AddViaCas, typename ValueType>
@@ -102,4 +114,5 @@ int main() {
     test_ops<true, double>();
     test_ops<true, long double>();
     test_ops<true, bigint>();
+    test_ops<true, int128>();
 }

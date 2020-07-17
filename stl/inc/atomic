@@ -45,7 +45,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _DEBUG
 #endif // _INVALID_MEMORY_ORDER
 
-#if 0 // TRANSITION, ABI
 // MACRO _STD_COMPARE_EXCHANGE_128
 #if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B || defined(_M_ARM64)
 #define _STD_COMPARE_EXCHANGE_128 _InterlockedCompareExchange128
@@ -56,10 +55,10 @@ _STL_DISABLE_CLANG_WARNINGS
 // CRITICAL_SECTION shared by all 16-byte atomics.
 // (Note: machines without this instruction typically have 2 cores or fewer, so this isn't too bad)
 // All pointer parameters must be 16-byte aligned.
-_NODISCARD extern "C" unsigned char __cdecl __std_atomic_compare_exchange_128(
+extern "C" _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(
     _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept;
-_NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
+extern "C" _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _STD_COMPARE_EXCHANGE_128 __std_atomic_compare_exchange_128
 #endif // defined(_M_X64) && !_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
 
@@ -70,7 +69,6 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #else // ^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B || !defined(_M_X64)
-#endif // TRANSITION, ABI
 
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
 #if defined(_M_IX86) || defined(_M_X64)
@@ -834,16 +832,17 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     typename _Atomic_storage_types<_Ty>::_TStorage _Storage;
 };
 
-#if 0 // TRANSITION, ABI
+
 #if defined(_M_X64) || defined(_M_ARM64)
 template <class _Ty>
-struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
+struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
+    // TRANSITION, ABI: replace '_Ty&' with '_Ty' in parameter of everywhere in this specialization
 
-    using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal = typename _Atomic_storage_types<_Ty&>::_TVal;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty&>::_TConstr _Value) noexcept
         : _Storage{_Value} {} // non-atomically initialize this atomic
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
@@ -934,10 +933,9 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         long long _High;
     };
 
-    typename _Atomic_storage_types<_Ty>::_TStorage _Storage;
+    typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
 #endif // defined(_M_X64) || defined(_M_ARM64)
-#endif // TRANSITION, ABI
 
 // STRUCT TEMPLATE _Atomic_integral
 template <class _Ty, size_t = sizeof(_Ty)>
@@ -1816,11 +1814,7 @@ public:
             _Check_aligment(_Value);
         }
 
-#if 1 // TRANSITION, ABI
-        if constexpr (!is_always_lock_free) {
-#else
         if constexpr (!_Is_potentially_lock_free) {
-#endif
             this->_Init_spinlock_for_ref();
         }
     }
@@ -1836,14 +1830,6 @@ public:
 
     static constexpr size_t required_alignment = _Is_potentially_lock_free ? sizeof(_Ty) : alignof(_Ty);
 
-#if 1 // TRANSITION, ABI
-    _NODISCARD bool is_lock_free() const noexcept {
-        constexpr bool _Result = sizeof(_Ty) <= 8 && (sizeof(_Ty) & sizeof(_Ty) - 1) == 0;
-        return _Result;
-    }
-
-#else // ^^^ don't break ABI / break ABI vvv
-
     _NODISCARD bool is_lock_free() const noexcept {
 #if _ATOMIC_HAS_DCAS
         return sizeof(_Ty) <= 2 * sizeof(void*);
@@ -1851,7 +1837,6 @@ public:
         return sizeof(_Ty) <= sizeof(void*) || (sizeof(_Ty) <= 2 * sizeof(void*) && __std_atomic_has_cmpxchg16b());
 #endif // _ATOMIC_HAS_DCAS
     }
-#endif // TRANSITION, ABI
 
     _Ty operator=(const _Ty _Value) noexcept {
         this->store(_Value);

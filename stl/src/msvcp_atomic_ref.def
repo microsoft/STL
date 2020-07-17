@@ -5,3 +5,5 @@
 
 EXPORTS
     __std_atomic_get_mutex
+    __std_atomic_compare_exchange_128
+    __std_atomic_has_cmpxchg16b
