@@ -24,14 +24,9 @@ struct instantiator {
     static constexpr P input[5]    = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
     static constexpr P expected[5] = {{0, 99}, {47, 1}, {2, 99}, {47, 1}, {4, 99}};
 
-    static constexpr void eq(P const (&output)[5]) {
-        // Extracted into a separate function to keep /analyze from exhausting the compiler heap
-        assert(ranges::equal(output, expected));
-    }
-
     template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
     static constexpr void call() {
-        using ranges::replace_copy, ranges::replace_copy_result, ranges::iterator_t;
+        using ranges::replace_copy, ranges::replace_copy_result, ranges::equal, ranges::iterator_t;
         { // Validate iterator + sentinel overload
             P output[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
             Read wrapped_input{input};
@@ -41,7 +36,7 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), replace_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 5);
-            eq(output);
+            assert(equal(output, expected));
         }
         { // Validate range overload
             P output[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
@@ -51,12 +46,14 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), replace_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 5);
-            eq(output);
+            assert(equal(output, expected));
         }
     }
 };
 
 int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((input_range_output_iterator_permutations<instantiator, P const, P>(), true));
+#endif // TRANSITION, GH-1030
     input_range_output_iterator_permutations<instantiator, P const, P>();
 }
