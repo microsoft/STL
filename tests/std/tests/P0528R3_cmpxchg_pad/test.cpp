@@ -154,12 +154,15 @@ template <class X>
 void test0() {
     X x1;
     X x2;
+    X x3;
     std::memset(std::addressof(x1), 0xaa, sizeof(x1));
     std::memset(std::addressof(x2), 0x55, sizeof(x2));
+    std::memset(std::addressof(x3), 0x55, sizeof(x3));
 
     std::atomic<X> v;
     v.store(x1);
     X x;
+    std::memcpy(std::addressof(x), std::addressof(x3), sizeof(x));
 
     assert(v.compare_exchange_strong(x, x2));
 }
