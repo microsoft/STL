@@ -535,6 +535,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
+
         reinterpret_cast<char&>(_Expected) = _Prev_bytes;
         return false;
     }
@@ -624,6 +625,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
+
                 if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                     _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
                     return false;
@@ -637,6 +639,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
+
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
     }
@@ -724,6 +727,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
+
                 if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                     _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
                     return false;
@@ -737,6 +741,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
+
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
     }
@@ -853,6 +858,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
+
                 if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
                     _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
                     return false;
@@ -866,6 +872,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
+
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
     }
