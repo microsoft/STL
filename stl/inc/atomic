@@ -421,6 +421,7 @@ struct _Atomic_storage {
 #endif
     }
 
+    // clang-format off
     void _Unlock() const noexcept { // unlock the spinlock
 #if _HAS_CXX20
         if constexpr (!is_reference_v<_Ty>) {
@@ -438,6 +439,7 @@ struct _Atomic_storage {
         }
 #endif
     }
+    // clang-format on
 
 protected:
     void _Init_spinlock_for_ref() noexcept {
