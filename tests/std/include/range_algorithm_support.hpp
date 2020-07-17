@@ -1008,6 +1008,11 @@ constexpr void test_in_write() {
     with_input_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_fwd_write() {
+    with_forward_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
 template <class Instantiator, class Element>
 constexpr void test_read() {
     with_input_iterators<Instantiator, Element>::call();

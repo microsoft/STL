@@ -266,6 +266,10 @@ tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
 tests\P0896R4_ranges_alg_partition_point
+tests\P0896R4_ranges_alg_remove
+tests\P0896R4_ranges_alg_remove_copy
+tests\P0896R4_ranges_alg_remove_copy_if
+tests\P0896R4_ranges_alg_remove_if
 tests\P0896R4_ranges_alg_replace
 tests\P0896R4_ranges_alg_replace_copy
 tests\P0896R4_ranges_alg_replace_copy_if
