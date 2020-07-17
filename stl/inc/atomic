@@ -509,7 +509,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         char _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr  (_Cmpxchg_has_padding_bits_v<_Ty>) {
+        if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
             _Ty _Mask;
             _CSTD memset(_STD addressof(_Mask), 0xff, sizeof(_Ty));
             __builtin_zero_non_value_bits(_STD addressof(_Mask));
