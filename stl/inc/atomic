@@ -721,7 +721,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             __builtin_zero_non_value_bits(_STD addressof(_Mask));
             const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
 
-            if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
+            for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange,
                     _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
