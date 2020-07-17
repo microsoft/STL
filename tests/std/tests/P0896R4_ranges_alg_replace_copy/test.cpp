@@ -15,9 +15,9 @@ using P = pair<int, int>;
 STATIC_ASSERT(same_as<ranges::replace_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::replace_copy(borrowed<false>{}, static_cast<int*>(nullptr), 42, 5)),
+STATIC_ASSERT(same_as<decltype(ranges::replace_copy(borrowed<false>{}, nullptr_to<int>, 42, 5)),
     ranges::replace_copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::replace_copy(borrowed<true>{}, static_cast<int*>(nullptr), 42, 5)),
+STATIC_ASSERT(same_as<decltype(ranges::replace_copy(borrowed<true>{}, nullptr_to<int>, 42, 5)),
     ranges::replace_copy_result<int*, int*>>);
 
 struct instantiator {

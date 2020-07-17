@@ -65,10 +65,10 @@ constexpr auto is_odd = [](int const x) { return x % 2 != 0; };
 STATIC_ASSERT(same_as<ranges::copy_if_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::copy_if(borrowed<false>{}, static_cast<int*>(nullptr), is_odd)),
+STATIC_ASSERT(same_as<decltype(ranges::copy_if(borrowed<false>{}, nullptr_to<int>, is_odd)),
     ranges::copy_if_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::copy_if(borrowed<true>{}, static_cast<int*>(nullptr), is_odd)),
-    ranges::copy_if_result<int*, int*>>);
+STATIC_ASSERT(
+    same_as<decltype(ranges::copy_if(borrowed<true>{}, nullptr_to<int>, is_odd)), ranges::copy_if_result<int*, int*>>);
 
 struct instantiator {
     static constexpr P input[3]    = {{1, 99}, {4, 98}, {5, 97}};
