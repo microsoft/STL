@@ -6,6 +6,11 @@
 #include <cstddef>
 #include <cstring>
 
+struct X0 {
+    void operator&() const = delete;
+};
+
+
 struct X1 {
     char x : 6;
 
@@ -145,8 +150,23 @@ void test() {
 }
 
 
+template <class X>
+void test0() {
+    X x1;
+    X x2;
+    std::memset(std::addressof(x1), 0xaa, sizeof(x1));
+    std::memset(std::addressof(x2), 0x55, sizeof(x2));
+
+    std::atomic<X> v;
+    v.store(x1);
+    X x;
+
+    assert(v.compare_exchange_strong(x, x2));
+}
+
 int main() {
 #ifndef __clang__ // TRANSITION, LLVM-46685
+    test0<X0>();
     test<X1, 1>();
     test<X2, 2>();
     test<X3, 3>();
