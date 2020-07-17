@@ -15,7 +15,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     constexpr size_t _Table_index_mask = _Table_size - 1;
 
     struct alignas(std::hardware_destructive_interference_size) _Table_entry {
-        _Smtx_t _Mutex                                                        = 0;
+        _Smtx_t _Mutex                                                           = 0;
         char _Pad[std::hardware_destructive_interference_size - sizeof(_Smtx_t)] = {};
     };
     static _Table_entry _Table[_Table_size];
@@ -28,12 +28,12 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 
 #if defined(_M_X64)
 
-_NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(
-    _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
+_NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
+    _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
 }
- 
+
 _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
     return true;
 }
