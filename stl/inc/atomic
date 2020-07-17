@@ -47,10 +47,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _INVALID_MEMORY_ORDER
 
 // MACRO _STD_COMPARE_EXCHANGE_128
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B || defined(_M_ARM64)
+#if defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || defined(_M_ARM64)
 #define _STD_COMPARE_EXCHANGE_128 _InterlockedCompareExchange128
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B || defined(_M_ARM64)
-#if defined(_M_X64) && !_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
+#endif // defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || defined(_M_ARM64)
+#if defined(_M_X64) && !defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B)
 // 16-byte atomics are separately compiled for x64, as not all x64 hardware has the cmpxchg16b
 // instruction; in the event this instruction is not available, the fallback is a global
 // CRITICAL_SECTION shared by all 16-byte atomics.
@@ -61,15 +61,15 @@ extern "C" _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept;
 extern "C" _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _STD_COMPARE_EXCHANGE_128 __std_atomic_compare_exchange_128
-#endif // defined(_M_X64) && !_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
+#endif // defined(_M_X64) && !defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B)
 
 // MACRO _ATOMIC_HAS_DCAS
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B || !defined(_M_X64)
+#if defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || !defined(_M_X64)
 #define _ATOMIC_HAS_DCAS 1
 #else // ^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B || !defined(_M_X64)
+#endif // defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || !defined(_M_X64)
 
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
 #if defined(_M_IX86) || defined(_M_X64)
@@ -408,17 +408,23 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
+#if _HAS_CXX20
         if constexpr (!is_reference_v<_Ty>) {
+#endif
             while (_InterlockedExchange(&_Spinlock, 1)) {
                 _YIELD_PROCESSOR();
             }
+#if _HAS_CXX20
         } else {
             _Smtx_lock_exclusive(_Spinlock);
         }
+#endif
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
+#if _HAS_CXX20
         if constexpr (!is_reference_v<_Ty>) {
+#endif
 #if defined(_M_ARM) || defined(_M_ARM64)
             _Memory_barrier();
             __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
@@ -426,9 +432,11 @@ struct _Atomic_storage {
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
             _InterlockedExchange(&_Spinlock, 0);
 #endif // hardware
+#if _HAS_CXX20
         } else {
             _Smtx_unlock_exclusive(_Spinlock);
         }
+#endif
     }
 
 protected:
