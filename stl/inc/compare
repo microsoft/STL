@@ -53,7 +53,7 @@ public:
         return _Val._Value == 0;
     }
 
-    _NODISCARD friend constexpr bool operator==(const partial_ordering&, const partial_ordering&) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(partial_ordering, partial_ordering) noexcept = default;
 
     _NODISCARD friend constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == static_cast<_Compare_t>(_Compare_ord::less);
@@ -96,10 +96,6 @@ public:
     }
 
 private:
-    _NODISCARD constexpr bool _Is_ordered() const noexcept {
-        return _Value != static_cast<_Compare_t>(_Compare_ncmp::unordered);
-    }
-
     _Compare_t _Value;
 };
 
@@ -128,7 +124,7 @@ public:
         return _Val._Value == 0;
     }
 
-    _NODISCARD friend constexpr bool operator==(const weak_ordering&, const weak_ordering&) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(weak_ordering, weak_ordering) noexcept = default;
 
     _NODISCARD friend constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
@@ -203,7 +199,7 @@ public:
         return _Val._Value == 0;
     }
 
-    _NODISCARD friend constexpr bool operator==(const strong_ordering&, const strong_ordering&) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(strong_ordering, strong_ordering) noexcept = default;
 
     _NODISCARD friend constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;

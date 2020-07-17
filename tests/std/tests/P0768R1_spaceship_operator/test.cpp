@@ -10,53 +10,86 @@
 enum class comp { equal, nonequal, less, greater, unordered };
 
 template <comp Z, class T>
-constexpr bool test_ord(T val) {
+constexpr bool test_order(T val) {
+    // Validate that val is ordered relative to literal zero according to Z
     assert((val == 0) == (Z == comp::equal));
     assert((0 == val) == (Z == comp::equal));
+
     assert((val != 0) == (Z != comp::equal));
     assert((0 != val) == (Z != comp::equal));
-    assert(((val <=> 0) == 0) == (Z == comp::equal));
-    assert(((0 <=> val) == 0) == (Z == comp::equal));
-
-    assert(val == val);
-    assert(!(val != val));
-    assert(std::is_eq(val) == (Z == comp::equal));
-    assert(std::is_neq(val) == (Z != comp::equal));
 
     assert((val < 0) == (Z == comp::less));
     assert((0 > val) == (Z == comp::less));
+
     assert((val > 0) == (Z == comp::greater));
     assert((0 < val) == (Z == comp::greater));
+
     assert((val <= 0) == (Z != comp::greater && Z != comp::unordered));
     assert((0 >= val) == (Z != comp::greater && Z != comp::unordered));
+
     assert((val >= 0) == (Z != comp::less && Z != comp::unordered));
     assert((0 <= val) == (Z != comp::less && Z != comp::unordered));
-    assert(((val <=> 0) < 0) == (Z == comp::less));
-    assert(((0 <=> val) < 0) == (Z == comp::greater));
 
-    assert(val == val);
-    assert(!(val != val));
+    assert(std::is_eq(val) == (Z == comp::equal));
+    assert(std::is_neq(val) == (Z != comp::equal));
     assert(std::is_lt(val) == (Z == comp::less));
     assert(std::is_lteq(val) == (Z != comp::greater && Z != comp::unordered));
     assert(std::is_gt(val) == (Z == comp::greater));
     assert(std::is_gteq(val) == (Z != comp::less && Z != comp::unordered));
 
+    // Validate that equality is reflexive for comparison category types
+    assert(val == val);
+    assert(!(val != val));
+
     return true;
 }
 
-static_assert(test_ord<comp::equal>(std::partial_ordering::equivalent));
-static_assert(test_ord<comp::less>(std::partial_ordering::less));
-static_assert(test_ord<comp::greater>(std::partial_ordering::greater));
-static_assert(test_ord<comp::unordered>(std::partial_ordering::unordered));
+constexpr bool test_orderings() {
+    assert(test_order<comp::equal>(std::partial_ordering::equivalent));
+    assert(test_order<comp::less>(std::partial_ordering::less));
+    assert(test_order<comp::greater>(std::partial_ordering::greater));
+    assert(test_order<comp::unordered>(std::partial_ordering::unordered));
 
-static_assert(test_ord<comp::equal>(std::weak_ordering::equivalent));
-static_assert(test_ord<comp::less>(std::weak_ordering::less));
-static_assert(test_ord<comp::greater>(std::weak_ordering::greater));
+    assert(test_order<comp::equal>(std::weak_ordering::equivalent));
+    assert(test_order<comp::less>(std::weak_ordering::less));
+    assert(test_order<comp::greater>(std::weak_ordering::greater));
 
-static_assert(test_ord<comp::equal>(std::strong_ordering::equal));
-static_assert(test_ord<comp::equal>(std::strong_ordering::equivalent));
-static_assert(test_ord<comp::less>(std::strong_ordering::less));
-static_assert(test_ord<comp::greater>(std::strong_ordering::greater));
+    assert(test_order<comp::equal>(std::strong_ordering::equal));
+    assert(test_order<comp::equal>(std::strong_ordering::equivalent));
+    assert(test_order<comp::less>(std::strong_ordering::less));
+    assert(test_order<comp::greater>(std::strong_ordering::greater));
+
+    return true;
+}
+
+constexpr bool test_spaceships() {
+    // Exhaustively validate x <=> 0 and 0 <=> x for all values of each comparison category type.
+    // Guards against regression of GH-1050: "0 <=> partial_ordering::unordered returns invalid value".
+    assert(std::partial_ordering::less <=> 0 == std::partial_ordering::less);
+    assert(0 <=> std::partial_ordering::less == std::partial_ordering::greater);
+    assert(std::partial_ordering::equivalent <=> 0 == std::partial_ordering::equivalent);
+    assert(0 <=> std::partial_ordering::equivalent == std::partial_ordering::equivalent);
+    assert(std::partial_ordering::greater <=> 0 == std::partial_ordering::greater);
+    assert(0 <=> std::partial_ordering::greater == std::partial_ordering::less);
+    assert(std::partial_ordering::unordered <=> 0 == std::partial_ordering::unordered);
+    assert(0 <=> std::partial_ordering::unordered == std::partial_ordering::unordered);
+
+    assert(std::weak_ordering::less <=> 0 == std::weak_ordering::less);
+    assert(0 <=> std::weak_ordering::less == std::weak_ordering::greater);
+    assert(std::weak_ordering::equivalent <=> 0 == std::weak_ordering::equivalent);
+    assert(0 <=> std::weak_ordering::equivalent == std::weak_ordering::equivalent);
+    assert(std::weak_ordering::greater <=> 0 == std::weak_ordering::greater);
+    assert(0 <=> std::weak_ordering::greater == std::weak_ordering::less);
+
+    assert(std::strong_ordering::less <=> 0 == std::strong_ordering::less);
+    assert(0 <=> std::strong_ordering::less == std::strong_ordering::greater);
+    assert(std::strong_ordering::equal <=> 0 == std::strong_ordering::equal);
+    assert(0 <=> std::strong_ordering::equal == std::strong_ordering::equal);
+    assert(std::strong_ordering::greater <=> 0 == std::strong_ordering::greater);
+    assert(0 <=> std::strong_ordering::greater == std::strong_ordering::less);
+
+    return true;
+}
 
 template <class Expected, class... Categories>
 constexpr bool test_common_cc = std::is_same_v<std::common_comparison_category_t<Categories...>, Expected>;
@@ -181,184 +214,12 @@ void test_algorithm() {
 }
 #endif // __cpp_lib_concepts
 
-// Guard against regression of GH-1050: 0 <=> partial_ordering::unordered returns invalid value
-static_assert(!(std::partial_ordering::less == 0));
-static_assert(std::partial_ordering::less != 0);
-static_assert(std::partial_ordering::less < 0);
-static_assert(!(std::partial_ordering::less > 0));
-static_assert(std::partial_ordering::less <= 0);
-static_assert(!(std::partial_ordering::less >= 0));
-
-static_assert(std::partial_ordering::equivalent == 0);
-static_assert(!(std::partial_ordering::equivalent != 0));
-static_assert(!(std::partial_ordering::equivalent < 0));
-static_assert(!(std::partial_ordering::equivalent > 0));
-static_assert(std::partial_ordering::equivalent <= 0);
-static_assert(std::partial_ordering::equivalent >= 0);
-
-static_assert(!(std::partial_ordering::greater == 0));
-static_assert(std::partial_ordering::greater != 0);
-static_assert(!(std::partial_ordering::greater < 0));
-static_assert(std::partial_ordering::greater > 0);
-static_assert(!(std::partial_ordering::greater <= 0));
-static_assert(std::partial_ordering::greater >= 0);
-
-static_assert(!(std::partial_ordering::unordered == 0));
-static_assert(std::partial_ordering::unordered != 0);
-static_assert(!(std::partial_ordering::unordered < 0));
-static_assert(!(std::partial_ordering::unordered > 0));
-static_assert(!(std::partial_ordering::unordered <= 0));
-static_assert(!(std::partial_ordering::unordered >= 0));
-
-static_assert(!(0 == std::partial_ordering::less));
-static_assert(0 != std::partial_ordering::less);
-static_assert(!(0 < std::partial_ordering::less));
-static_assert(0 > std::partial_ordering::less);
-static_assert(!(0 <= std::partial_ordering::less));
-static_assert(0 >= std::partial_ordering::less);
-
-static_assert(0 == std::partial_ordering::equivalent);
-static_assert(!(0 != std::partial_ordering::equivalent));
-static_assert(!(0 < std::partial_ordering::equivalent));
-static_assert(!(0 > std::partial_ordering::equivalent));
-static_assert(0 <= std::partial_ordering::equivalent);
-static_assert(0 >= std::partial_ordering::equivalent);
-
-static_assert(!(0 == std::partial_ordering::greater));
-static_assert(0 != std::partial_ordering::greater);
-static_assert(0 < std::partial_ordering::greater);
-static_assert(!(0 > std::partial_ordering::greater));
-static_assert(0 <= std::partial_ordering::greater);
-static_assert(!(0 >= std::partial_ordering::greater));
-
-static_assert(!(0 == std::partial_ordering::unordered));
-static_assert(0 != std::partial_ordering::unordered);
-static_assert(!(0 < std::partial_ordering::unordered));
-static_assert(!(0 > std::partial_ordering::unordered));
-static_assert(!(0 <= std::partial_ordering::unordered));
-static_assert(!(0 >= std::partial_ordering::unordered));
-
-static_assert(std::partial_ordering::less <=> 0 == std::partial_ordering::less);
-static_assert(0 <=> std::partial_ordering::less == std::partial_ordering::greater);
-static_assert(std::partial_ordering::equivalent <=> 0 == std::partial_ordering::equivalent);
-static_assert(0 <=> std::partial_ordering::equivalent == std::partial_ordering::equivalent);
-static_assert(std::partial_ordering::greater <=> 0 == std::partial_ordering::greater);
-static_assert(0 <=> std::partial_ordering::greater == std::partial_ordering::less);
-static_assert(std::partial_ordering::unordered <=> 0 == std::partial_ordering::unordered);
-static_assert(0 <=> std::partial_ordering::unordered == std::partial_ordering::unordered);
-
-static_assert(!(std::weak_ordering::less == 0));
-static_assert(std::weak_ordering::less != 0);
-static_assert(std::weak_ordering::less < 0);
-static_assert(!(std::weak_ordering::less > 0));
-static_assert(std::weak_ordering::less <= 0);
-static_assert(!(std::weak_ordering::less >= 0));
-
-static_assert(std::weak_ordering::equivalent == 0);
-static_assert(!(std::weak_ordering::equivalent != 0));
-static_assert(!(std::weak_ordering::equivalent < 0));
-static_assert(!(std::weak_ordering::equivalent > 0));
-static_assert(std::weak_ordering::equivalent <= 0);
-static_assert(std::weak_ordering::equivalent >= 0);
-
-static_assert(!(std::weak_ordering::greater == 0));
-static_assert(std::weak_ordering::greater != 0);
-static_assert(!(std::weak_ordering::greater < 0));
-static_assert(std::weak_ordering::greater > 0);
-static_assert(!(std::weak_ordering::greater <= 0));
-static_assert(std::weak_ordering::greater >= 0);
-
-static_assert(!(0 == std::weak_ordering::less));
-static_assert(0 != std::weak_ordering::less);
-static_assert(!(0 < std::weak_ordering::less));
-static_assert(0 > std::weak_ordering::less);
-static_assert(!(0 <= std::weak_ordering::less));
-static_assert(0 >= std::weak_ordering::less);
-
-static_assert(0 == std::weak_ordering::equivalent);
-static_assert(!(0 != std::weak_ordering::equivalent));
-static_assert(!(0 < std::weak_ordering::equivalent));
-static_assert(!(0 > std::weak_ordering::equivalent));
-static_assert(0 <= std::weak_ordering::equivalent);
-static_assert(0 >= std::weak_ordering::equivalent);
-
-static_assert(!(0 == std::weak_ordering::greater));
-static_assert(0 != std::weak_ordering::greater);
-static_assert(0 < std::weak_ordering::greater);
-static_assert(!(0 > std::weak_ordering::greater));
-static_assert(0 <= std::weak_ordering::greater);
-static_assert(!(0 >= std::weak_ordering::greater));
-
-static_assert(std::weak_ordering::less <=> 0 == std::weak_ordering::less);
-static_assert(0 <=> std::weak_ordering::less == std::weak_ordering::greater);
-static_assert(std::weak_ordering::equivalent <=> 0 == std::weak_ordering::equivalent);
-static_assert(0 <=> std::weak_ordering::equivalent == std::weak_ordering::equivalent);
-static_assert(std::weak_ordering::greater <=> 0 == std::weak_ordering::greater);
-static_assert(0 <=> std::weak_ordering::greater == std::weak_ordering::less);
-
-static_assert(!(std::strong_ordering::less == 0));
-static_assert(std::strong_ordering::less != 0);
-static_assert(std::strong_ordering::less < 0);
-static_assert(!(std::strong_ordering::less > 0));
-static_assert(std::strong_ordering::less <= 0);
-static_assert(!(std::strong_ordering::less >= 0));
-
-static_assert(std::strong_ordering::equal == 0);
-static_assert(!(std::strong_ordering::equal != 0));
-static_assert(!(std::strong_ordering::equal < 0));
-static_assert(!(std::strong_ordering::equal > 0));
-static_assert(std::strong_ordering::equal <= 0);
-static_assert(std::strong_ordering::equal >= 0);
-
-static_assert(!(std::strong_ordering::greater == 0));
-static_assert(std::strong_ordering::greater != 0);
-static_assert(!(std::strong_ordering::greater < 0));
-static_assert(std::strong_ordering::greater > 0);
-static_assert(!(std::strong_ordering::greater <= 0));
-static_assert(std::strong_ordering::greater >= 0);
-
-static_assert(!(0 == std::strong_ordering::less));
-static_assert(0 != std::strong_ordering::less);
-static_assert(!(0 < std::strong_ordering::less));
-static_assert(0 > std::strong_ordering::less);
-static_assert(!(0 <= std::strong_ordering::less));
-static_assert(0 >= std::strong_ordering::less);
-
-static_assert(0 == std::strong_ordering::equal);
-static_assert(!(0 != std::strong_ordering::equal));
-static_assert(!(0 < std::strong_ordering::equal));
-static_assert(!(0 > std::strong_ordering::equal));
-static_assert(0 <= std::strong_ordering::equal);
-static_assert(0 >= std::strong_ordering::equal);
-
-static_assert(!(0 == std::strong_ordering::greater));
-static_assert(0 != std::strong_ordering::greater);
-static_assert(0 < std::strong_ordering::greater);
-static_assert(!(0 > std::strong_ordering::greater));
-static_assert(0 <= std::strong_ordering::greater);
-static_assert(!(0 >= std::strong_ordering::greater));
-
-static_assert(std::strong_ordering::less <=> 0 == std::strong_ordering::less);
-static_assert(0 <=> std::strong_ordering::less == std::strong_ordering::greater);
-static_assert(std::strong_ordering::equal <=> 0 == std::strong_ordering::equal);
-static_assert(0 <=> std::strong_ordering::equal == std::strong_ordering::equal);
-static_assert(std::strong_ordering::greater <=> 0 == std::strong_ordering::greater);
-static_assert(0 <=> std::strong_ordering::greater == std::strong_ordering::less);
-
 int main() {
-    test_ord<comp::equal>(std::partial_ordering::equivalent);
-    test_ord<comp::less>(std::partial_ordering::less);
-    test_ord<comp::greater>(std::partial_ordering::greater);
-    test_ord<comp::unordered>(std::partial_ordering::unordered);
+    static_assert(test_orderings());
+    test_orderings();
 
-    test_ord<comp::equal>(std::weak_ordering::equivalent);
-    test_ord<comp::less>(std::weak_ordering::less);
-    test_ord<comp::greater>(std::weak_ordering::greater);
-
-    test_ord<comp::equal>(std::strong_ordering::equal);
-    test_ord<comp::equal>(std::strong_ordering::equivalent);
-    test_ord<comp::less>(std::strong_ordering::less);
-    test_ord<comp::greater>(std::strong_ordering::greater);
+    static_assert(test_spaceships());
+    test_spaceships();
 
 #ifdef __cpp_lib_concepts
     test_algorithm<int>();
