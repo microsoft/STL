@@ -83,6 +83,8 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
 }
 
+#include <intrin.h>
+
 int main() {
     test_ops<false, char>();
     test_ops<false, signed char>();
