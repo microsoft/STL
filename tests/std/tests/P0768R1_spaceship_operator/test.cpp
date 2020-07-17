@@ -7,10 +7,10 @@
 #include <compare>
 #include <type_traits>
 
-enum class comp { equal, nonequal, less, greater, unordered };
+enum class comp { equal, less, greater, unordered };
 
 template <comp Z, class T>
-constexpr bool test_order(T val) {
+constexpr bool test_order(const T val) {
     // Validate that val is ordered relative to literal zero according to Z
     assert((val == 0) == (Z == comp::equal));
     assert((0 == val) == (Z == comp::equal));
