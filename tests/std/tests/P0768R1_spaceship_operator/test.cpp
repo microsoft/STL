@@ -210,6 +210,34 @@ static_assert(!(std::partial_ordering::unordered > 0));
 static_assert(!(std::partial_ordering::unordered <= 0));
 static_assert(!(std::partial_ordering::unordered >= 0));
 
+static_assert(!(0 == std::partial_ordering::less));
+static_assert(0 != std::partial_ordering::less);
+static_assert(!(0 < std::partial_ordering::less));
+static_assert(0 > std::partial_ordering::less);
+static_assert(!(0 <= std::partial_ordering::less));
+static_assert(0 >= std::partial_ordering::less);
+
+static_assert(0 == std::partial_ordering::equivalent);
+static_assert(!(0 != std::partial_ordering::equivalent));
+static_assert(!(0 < std::partial_ordering::equivalent));
+static_assert(!(0 > std::partial_ordering::equivalent));
+static_assert(0 <= std::partial_ordering::equivalent);
+static_assert(0 >= std::partial_ordering::equivalent);
+
+static_assert(!(0 == std::partial_ordering::greater));
+static_assert(0 != std::partial_ordering::greater);
+static_assert(0 < std::partial_ordering::greater);
+static_assert(!(0 > std::partial_ordering::greater));
+static_assert(0 <= std::partial_ordering::greater);
+static_assert(!(0 >= std::partial_ordering::greater));
+
+static_assert(!(0 == std::partial_ordering::unordered));
+static_assert(0 != std::partial_ordering::unordered);
+static_assert(!(0 < std::partial_ordering::unordered));
+static_assert(!(0 > std::partial_ordering::unordered));
+static_assert(!(0 <= std::partial_ordering::unordered));
+static_assert(!(0 >= std::partial_ordering::unordered));
+
 static_assert(std::partial_ordering::less <=> 0 == std::partial_ordering::less);
 static_assert(0 <=> std::partial_ordering::less == std::partial_ordering::greater);
 static_assert(std::partial_ordering::equivalent <=> 0 == std::partial_ordering::equivalent);
@@ -240,6 +268,27 @@ static_assert(std::weak_ordering::greater > 0);
 static_assert(!(std::weak_ordering::greater <= 0));
 static_assert(std::weak_ordering::greater >= 0);
 
+static_assert(!(0 == std::weak_ordering::less));
+static_assert(0 != std::weak_ordering::less);
+static_assert(!(0 < std::weak_ordering::less));
+static_assert(0 > std::weak_ordering::less);
+static_assert(!(0 <= std::weak_ordering::less));
+static_assert(0 >= std::weak_ordering::less);
+
+static_assert(0 == std::weak_ordering::equivalent);
+static_assert(!(0 != std::weak_ordering::equivalent));
+static_assert(!(0 < std::weak_ordering::equivalent));
+static_assert(!(0 > std::weak_ordering::equivalent));
+static_assert(0 <= std::weak_ordering::equivalent);
+static_assert(0 >= std::weak_ordering::equivalent);
+
+static_assert(!(0 == std::weak_ordering::greater));
+static_assert(0 != std::weak_ordering::greater);
+static_assert(0 < std::weak_ordering::greater);
+static_assert(!(0 > std::weak_ordering::greater));
+static_assert(0 <= std::weak_ordering::greater);
+static_assert(!(0 >= std::weak_ordering::greater));
+
 static_assert(std::weak_ordering::less <=> 0 == std::weak_ordering::less);
 static_assert(0 <=> std::weak_ordering::less == std::weak_ordering::greater);
 static_assert(std::weak_ordering::equivalent <=> 0 == std::weak_ordering::equivalent);
@@ -267,6 +316,27 @@ static_assert(!(std::strong_ordering::greater < 0));
 static_assert(std::strong_ordering::greater > 0);
 static_assert(!(std::strong_ordering::greater <= 0));
 static_assert(std::strong_ordering::greater >= 0);
+
+static_assert(!(0 == std::strong_ordering::less));
+static_assert(0 != std::strong_ordering::less);
+static_assert(!(0 < std::strong_ordering::less));
+static_assert(0 > std::strong_ordering::less);
+static_assert(!(0 <= std::strong_ordering::less));
+static_assert(0 >= std::strong_ordering::less);
+
+static_assert(0 == std::strong_ordering::equal);
+static_assert(!(0 != std::strong_ordering::equal));
+static_assert(!(0 < std::strong_ordering::equal));
+static_assert(!(0 > std::strong_ordering::equal));
+static_assert(0 <= std::strong_ordering::equal);
+static_assert(0 >= std::strong_ordering::equal);
+
+static_assert(!(0 == std::strong_ordering::greater));
+static_assert(0 != std::strong_ordering::greater);
+static_assert(0 < std::strong_ordering::greater);
+static_assert(!(0 > std::strong_ordering::greater));
+static_assert(0 <= std::strong_ordering::greater);
+static_assert(!(0 >= std::strong_ordering::greater));
 
 static_assert(std::strong_ordering::less <=> 0 == std::strong_ordering::less);
 static_assert(0 <=> std::strong_ordering::less == std::strong_ordering::greater);
