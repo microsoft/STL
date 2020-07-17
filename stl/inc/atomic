@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <xatomic.h>
+#include <xthreads.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -114,7 +115,7 @@ extern "C" _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_POINTER_LOCK_FREE  2
 
 _EXTERN_C
-long* __stdcall __std_atomic_get_mutex(const void* _Key) noexcept;
+_Smtx_t* __stdcall __std_atomic_get_mutex(const void* _Key) noexcept;
 _END_EXTERN_C
 
 _STD_BEGIN
@@ -328,10 +329,6 @@ struct _Atomic_storage_types {
     using _Spinlock = long;
 
     static constexpr bool _Has_volatile = true;
-
-    static long* _Get_spinlock(long& _Spinlock) {
-        return &_Spinlock;
-    }
 };
 
 template <class _Ty>
@@ -339,13 +336,9 @@ struct _Atomic_storage_types<_Ty&> {
     using _TVal     = _Ty;
     using _TStorage = _Ty&;
     using _TConstr  = _Ty&;
-    using _Spinlock = long*;
+    using _Spinlock = _Smtx_t*; // POINTER TO mutex
 
     static constexpr bool _Has_volatile = false;
-
-    static long* _Get_spinlock(long* _Spinlock) {
-        return _Spinlock;
-    }
 };
 
 // STRUCT TEMPLATE _Atomic_storage
@@ -415,19 +408,27 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock), 1)) {
-            _YIELD_PROCESSOR();
+        if constexpr (!is_reference_v<_Ty>) {
+            while (_InterlockedExchange(&_Spinlock, 1)) {
+                _YIELD_PROCESSOR();
+            }
+        } else {
+            _Smtx_lock_exclusive(_Spinlock);
         }
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
+        if constexpr (!is_reference_v<_Ty>) {
 #if defined(_M_ARM) || defined(_M_ARM64)
-        _Memory_barrier();
-        __iso_volatile_store32(reinterpret_cast<int*>(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock)), 0);
-        _Memory_barrier();
+            _Memory_barrier();
+            __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
+            _Memory_barrier();
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange(_Atomic_storage_types<_Ty>::_Get_spinlock(_Spinlock), 0);
+            _InterlockedExchange(&_Spinlock, 0);
 #endif // hardware
+        } else {
+            _Smtx_unlock_exclusive(_Spinlock);
+        }
     }
 
 protected:
@@ -436,7 +437,7 @@ protected:
     }
 
 private:
-    // Spinlock for non-lock-free atomic. Spinlock pointer for non-lock-free atomic_ref
+    // Spinlock integer for non-lock-free atomic. <xthreads.h> mutex pointer for non-lock-free atomic_ref
     mutable typename _Atomic_storage_types<_Ty>::_Spinlock _Spinlock = 0;
 
 public:

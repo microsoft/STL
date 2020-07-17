@@ -4,19 +4,19 @@
 // implement atomic_ref spin lock
 
 #include <cstdint>
+#include <intrin.h>
 #include <new>
-
-#include <windows.h>
+#include <xthreads.h>
 
 _EXTERN_C
-long* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
+_Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     constexpr size_t _Table_size_power = 8;
     constexpr size_t _Table_size       = 1 << _Table_size_power;
     constexpr size_t _Table_index_mask = _Table_size - 1;
 
     struct alignas(std::hardware_destructive_interference_size) _Table_entry {
-        long _Mutex                                                           = 0;
-        char _Pad[std::hardware_destructive_interference_size - sizeof(long)] = {};
+        _Smtx_t _Mutex                                                        = 0;
+        char _Pad[std::hardware_destructive_interference_size - sizeof(_Smtx_t)] = {};
     };
     static _Table_entry _Table[_Table_size];
 
