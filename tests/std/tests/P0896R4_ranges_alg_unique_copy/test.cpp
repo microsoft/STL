@@ -156,9 +156,43 @@ struct instantiator {
     }
 };
 
+#ifdef TEST_EVERYTHING
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((test_in_write<instantiator, instrumentedPair, instrumentedPair>(), true));
 #endif // TRANSITION, GH-1030
     test_in_write<instantiator, instrumentedPair, instrumentedPair>();
 }
+#else // ^^^ test all range combinations // test only interesting range combos vvv
+
+// We need to test the three different implementations, so we need input_range/forward_range as input and
+// output_iterator/input_iterator as output.
+using in_test_range = test::range<input_iterator_tag, instrumentedPair, test::Sized::no, test::CanDifference::no,
+    test::Common::no, test::CanCompare::no, test::ProxyRef::yes>;
+
+using fwd_test_range = test::range<input_iterator_tag, instrumentedPair, test::Sized::no, test::CanDifference::no,
+    test::Common::no, test::CanCompare::no, test::ProxyRef::yes>;
+
+using out_test_iterator = test::iterator<output_iterator_tag, instrumentedPair, test::CanDifference::no,
+    test::CanCompare::no, test::ProxyRef::yes>;
+
+using in_test_iterator = test::iterator<input_iterator_tag, instrumentedPair, test::CanDifference::no,
+    test::CanCompare::no, test::ProxyRef::yes>;
+
+constexpr bool run_tests() {
+    // Reread output implementation
+    instantiator::call<in_test_range, in_test_iterator>();
+
+    // Reread input implementation
+    instantiator::call<fwd_test_range, out_test_iterator>();
+
+    // Store implementation
+    instantiator::call<in_test_range, out_test_iterator>();
+    return true;
+}
+
+int main() {
+    STATIC_ASSERT(run_tests());
+    run_tests();
+}
+#endif // TEST_EVERYTHING
