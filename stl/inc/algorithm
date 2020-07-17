@@ -4671,6 +4671,70 @@ void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _
     _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::shuffle
+    class _Shuffle_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Urng>
+            requires permutable<_It> && uniform_random_bit_generator<remove_reference<_Urng>>
+        _It operator()(_It _First, _Se _Last, _Urng&& _Func) const {
+            _Adl_verify_range(_First, _Last);
+
+            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            auto _UResult =
+                _Shuffle_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _RngFunc);
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Urng>
+            requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference<_Urng>>
+        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) const {
+            auto _First  = _RANGES begin(_Range);
+
+            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            auto _UResult = _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc);
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Urng>
+        _NODISCARD static _It _Shuffle_unchecked(_It _First, const _Se _Last, _Urng& _Func) {
+            // shuffle [_First, _Last) using random function _Func
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(uniform_random_bit_generator<remove_reference<_Urng>>);
+
+            if (_First == _Last) {
+                return _First;
+            }
+            using _Diff = iter_difference_t<_It>;
+
+            auto _Target        = _First;
+            _Diff _Target_index = 1;
+            for (; ++_Target != _Last; ++_Target_index) {
+                // randomly place an element from [_First, _Target] at _Target
+                const _Diff _Off = _Func(_Target_index + 1);
+                _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
+                if (_Off != _Target_index) { // avoid self-move-assignment
+                    _RANGES iter_swap(_Target, _First + _Off);
+                }
+            }
+            return _Target;
+        }
+    };
+
+    inline constexpr _Shuffle_fn shuffle{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 #if _HAS_AUTO_PTR_ETC
 // FUNCTION TEMPLATE random_shuffle WITH RANDOM FN
 template <class _RanIt, class _RngFn>
