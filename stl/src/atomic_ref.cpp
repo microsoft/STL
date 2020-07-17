@@ -26,18 +26,21 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     return &_Table[_Index & _Table_index_mask]._Mutex;
 }
 
-#if defined(_M_X64)
+
 
 _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
+#if defined(_M_X64) || defined(_M_ARM64)
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
+#else
+    __debugbreak();
+    return 0;
+#endif
 }
 
 _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
     return true;
 }
-
-#endif
 
 _END_EXTERN_C
