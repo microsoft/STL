@@ -370,7 +370,9 @@ struct _Atomic_storage {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         bool _Result;
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
         __builtin_zero_non_value_bits(_Expected_ptr);
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _Lock();
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
