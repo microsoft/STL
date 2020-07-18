@@ -1020,7 +1020,7 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
-            
+
             __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
         }
 
