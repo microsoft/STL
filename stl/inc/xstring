@@ -2682,20 +2682,21 @@ public:
 
     _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
         // Release to a buffer, or allocate a new one if in small string mode
+        _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
+        _Result._Size  = _My_data._Mysize;
         if (_My_data._Large_string_engaged()) {
-            _Released_buffer _Result{_My_data._Bx._Ptr, _My_data._Mysize, _My_data._Myres};
-            _My_data._Orphan_all();
-            _Tidy_init();
-            return _Result;
+            _Result._Ptr = _My_data._Bx._Ptr;
+            _Result._Res = _My_data._Myres + 1;
         } else {
             // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
-            _Released_buffer _Result{_Al.allocate(_BUF_SIZE + 1), _My_data._Mysize, _BUF_SIZE + 1};
+            _Result._Ptr = _Al.allocate(_BUF_SIZE + 1);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _My_data._Orphan_all();
-            _Tidy_init();
-            return _Result;
+            _Result._Res = _BUF_SIZE + 1;
         }
+        _My_data._Orphan_all();
+        _Tidy_init();
+        return _Result;
     }
 #endif // _HAS_CXX20
 
