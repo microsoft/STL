@@ -101,6 +101,9 @@ public:
     }
 
     _NODISCARD friend constexpr partial_ordering operator<=>(_Literal_zero, const partial_ordering _Val) noexcept {
+        // The stored value is either less (0xff), equivalent (0x00), greater (0x01) or unordered (0x80). Subtracting
+        // from 0 produces either 0x01, 0x00, 0xff, or 0x80. Note that the effect is to exchange less for greater (and
+        // vice versa), while leaving equivalent and unordered unchanged.
         return partial_ordering{static_cast<_Compare_ord>(0 - static_cast<unsigned int>(_Val._Value))};
     }
 
