@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <limits>
 #include <type_traits>
 
@@ -110,7 +111,6 @@ class bad_random_engine {
     static_assert(Width > 0, "bad_random_engine: invalid value for Width");
     static_assert(Width <= std::numeric_limits<UInt>::digits, "bad_random_engine: invalid value for Width");
     static_assert(Dimension > 0, "bad_random_engine: invalid value for Dimension");
-
 
 public:
     using result_type = UInt;
