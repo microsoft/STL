@@ -1497,7 +1497,7 @@ void test_with_test_type() {
     assert(T::alive == 0);
 }
 
-void test_ambigious_assign() {
+void test_ambiguous_assign() {
     using OptInt = std::optional<int>;
     {
         using T = AssignableFrom<OptInt const&>;
@@ -1553,7 +1553,7 @@ void test_ambigious_assign() {
 int run_test()
 {
     test_with_test_type();
-    test_ambigious_assign();
+    test_ambiguous_assign();
     {
         optional<int> opt;
         constexpr optional<short> opt2;
@@ -2557,7 +2557,7 @@ void test_with_test_type() {
 }
 
 
-void test_ambigious_assign() {
+void test_ambiguous_assign() {
     using OptInt = std::optional<int>;
     {
         using T = AssignableFrom<OptInt&&>;
@@ -2613,7 +2613,7 @@ void test_ambigious_assign() {
 int run_test()
 {
     test_with_test_type();
-    test_ambigious_assign();
+    test_ambiguous_assign();
     {
         optional<int> opt;
         optional<short> opt2;

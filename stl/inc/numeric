@@ -10,9 +10,9 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <xutility>
 
-#if _HAS_CXX20
+#if _HAS_CXX17
 #include <limits>
-#endif // _HAS_CXX20
+#endif // _HAS_CXX17
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -41,7 +41,7 @@ _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _T
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _Ty _Val) {
     // return noncommutative and nonassociative reduction of _Val and all in [_First, _Last)
-    return _STD accumulate(_First, _Last, _Val, plus<>());
+    return _STD accumulate(_First, _Last, _Val, plus<>{});
 }
 
 #if _HAS_CXX17
@@ -80,7 +80,6 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            (void) _Reduce_op; // TRANSITION, VSO-486357
             return _Reduce_plus_arithmetic_ranges(_UFirst, _ULast, _Val);
         }
     }
@@ -95,14 +94,14 @@ _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _V
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty reduce(const _InIt _First, const _InIt _Last, _Ty _Val) {
     // return commutative and associative reduction of _Val and [_First, _Last)
-    return _STD reduce(_First, _Last, _STD move(_Val), plus<>{});
+    return _STD reduce(_First, _Last, _STD move(_Val), plus{});
 }
 
 template <class _InIt>
 _NODISCARD _CONSTEXPR20 _Iter_value_t<_InIt> reduce(const _InIt _First, const _InIt _Last) {
     // return commutative and associative reduction of
     // iterator_traits<_InIt>::value_type{} and [_First, _Last)
-    return _STD reduce(_First, _Last, _Iter_value_t<_InIt>{}, plus<>{});
+    return _STD reduce(_First, _Last, _Iter_value_t<_InIt>{}, plus{});
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -112,7 +111,7 @@ template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_E
 _NODISCARD _Ty reduce(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Ty _Val) noexcept /* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _STD move(_Val), plus<>{});
+    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _STD move(_Val), plus{});
 }
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -121,7 +120,7 @@ _NODISCARD _Iter_value_t<_FwdIt> reduce(_ExPo&& _Exec, const _FwdIt _First, cons
     // return commutative and associative reduction of
     // iterator_traits<_FwdIt>::value_type{} and [_First, _Last)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _Iter_value_t<_FwdIt>{}, plus<>{});
+    return _STD reduce(_STD forward<_ExPo>(_Exec), _First, _Last, _Iter_value_t<_FwdIt>{}, plus{});
 }
 #endif // _HAS_CXX17
 
@@ -149,7 +148,7 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(
 template <class _InIt1, class _InIt2, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Ty _Val) {
     // return noncommutative and nonassociative transform-reduction of sequences
-    return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>(), multiplies<>());
+    return _STD inner_product(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
 }
 
 #if _HAS_CXX17
@@ -193,8 +192,6 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            (void) _Reduce_op; // TRANSITION, VSO-486357
-            (void) _Transform_op; // TRANSITION, VSO-486357
             return _Transform_reduce_arithmetic_defaults(_UFirst1, _ULast1, _UFirst2, _STD move(_Val));
         }
     }
@@ -208,7 +205,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
 template <class _InIt1, class _InIt2, class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty transform_reduce(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _Ty _Val) {
     // return commutative and associative transform-reduction of sequences
-    return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
+    return _STD transform_reduce(_First1, _Last1, _First2, _STD move(_Val), plus{}, multiplies{});
 }
 
 template <class _InIt, class _Ty, class _BinOp, class _UnaryOp>
@@ -238,7 +235,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, 
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD transform_reduce(
-        _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus<>{}, multiplies<>{});
+        _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus{}, multiplies{});
 }
 
 template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -279,7 +276,7 @@ _CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _D
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt partial_sum(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // compute partial noncommutative and nonassociative reductions into _Dest
-    return _STD partial_sum(_First, _Last, _Dest, plus<>());
+    return _STD partial_sum(_First, _Last, _Dest, plus<>{});
 }
 
 #if _HAS_CXX17
@@ -312,7 +309,7 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest, _Ty _Val) {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus<>{});
+    return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus{});
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -323,7 +320,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execu
 _FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest, _Ty _Val) noexcept
 /* terminates */ {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
-    return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus<>{});
+    return _STD exclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, _STD move(_Val), plus{});
 }
 
 // FUNCTION TEMPLATE inclusive_scan
@@ -372,7 +369,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_First, _Last, _Dest, plus<>{});
+    return _STD inclusive_scan(_First, _Last, _Dest, plus{});
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -387,7 +384,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
 /* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest
-    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus<>());
+    return _STD inclusive_scan(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, plus{});
 }
 
 // FUNCTION TEMPLATE transform_exclusive_scan
@@ -509,7 +506,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, const _OutIt _Dest) {
     // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_First, _Last, _Dest, minus<>());
+    return _STD adjacent_difference(_First, _Last, _Dest, minus<>{});
 }
 
 #if _HAS_CXX17
@@ -521,7 +518,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, const _FwdIt2 _Dest) noexcept
 /* terminates */ {
     // compute adjacent differences into _Dest
-    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus<>());
+    return _STD adjacent_difference(_STD forward<_ExPo>(_Exec), _First, _Last, _Dest, minus{});
 }
 #endif // _HAS_CXX17
 
@@ -563,26 +560,6 @@ _NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
     }
 }
 
-// FUNCTION TEMPLATE _Stl_bitscan_forward
-template <class _Unsigned>
-_NODISCARD constexpr unsigned long _Stl_bitscan_forward(_Unsigned _Mask) noexcept {
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
-    return static_cast<unsigned long>(_Countr_zero(_Mask));
-#else // ^^^ __cpp_lib_bitops / !__cpp_lib_bitops vvv
-    // find the index of the least significant set bit (_BitScanForward isn't constexpr... yet :))
-    static_assert(is_unsigned_v<_Unsigned>, "Bitscan only works on bits");
-    unsigned long _Count = 0;
-    if (_Mask != 0) {
-        while ((_Mask & 1U) == 0) {
-            _Mask >>= 1;
-            ++_Count;
-        }
-    }
-
-    return _Count;
-#endif // !__cpp_lib_bitops
-}
-
 // FUNCTION TEMPLATE gcd
 template <class _Mt, class _Nt>
 _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) noexcept /* strengthened */ {
@@ -601,12 +578,13 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
         return static_cast<_Common>(_Mx_magnitude);
     }
 
-    const auto _Mx_trailing_zeroes  = _Stl_bitscan_forward(_Mx_magnitude);
-    const auto _Common_factors_of_2 = (_STD min)(_Mx_trailing_zeroes, _Stl_bitscan_forward(_Nx_magnitude));
+    const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero(_Mx_magnitude));
+    const auto _Common_factors_of_2 =
+        (_STD min)(_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero(_Nx_magnitude)));
     _Nx_magnitude >>= _Common_factors_of_2;
     _Mx_magnitude >>= _Mx_trailing_zeroes;
     do {
-        _Nx_magnitude >>= _Stl_bitscan_forward(_Nx_magnitude);
+        _Nx_magnitude >>= static_cast<unsigned long>(_Countr_zero(_Nx_magnitude));
         if (_Mx_magnitude > _Nx_magnitude) {
             _Common_unsigned _Temp = _Mx_magnitude;
             _Mx_magnitude          = _Nx_magnitude;

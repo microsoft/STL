@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "test.hpp"
 #include <charconv>
+
+#include "test.hpp"
 using namespace std;
 
 // C11 7.21.6.1 "The fprintf function"/8:
@@ -5025,4 +5026,27 @@ inline constexpr DoublePrecisionToCharsTestCase double_general_precision_to_char
         "17976931348623157081452742373170435679807056752584499659891747680315726078002853876058955863276687817154045895"
         "35143824642343213268894641827684675467035375169860499105765512820762454900903893289440758685084551339423045832"
         "36903222948165808559332123348274797826204144723168738177180919299881250404026184124858368"},
+
+    // The UCRT had trouble with rounding this value. charconv was never affected, but let's test it anyways.
+    {0x1.88e2d605edc3dp+345, chars_format::general, 105,
+        "109995565999999994887854821710219658911365648587951921896774663603198787416706536331386569598149846892544"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 19, "1.099955659999999949e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 18, "1.09995565999999995e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 17, "1.0999556599999999e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 16, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 15, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 14, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 13, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 12, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 11, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 10, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 9, "1.09995566e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 8, "1.0999557e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 7, "1.099956e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 6, "1.09996e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 5, "1.1e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 4, "1.1e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 3, "1.1e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 2, "1.1e+104"},
+    {0x1.88e2d605edc3dp+345, chars_format::general, 1, "1e+104"},
 };

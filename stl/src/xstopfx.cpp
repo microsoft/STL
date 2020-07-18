@@ -3,8 +3,9 @@
 
 // _Stopfx function
 
-#include "xmath.h"
 #include <ctype.h>
+
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
@@ -12,7 +13,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
     const char* s = *ps;
     int code      = 0;
 
-    while (isspace((unsigned char) *s)) {
+    while (isspace(static_cast<unsigned char>(*s))) {
         ++s;
     }
 
@@ -34,15 +35,15 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
             if (*q == '(') { // got '(', skip through ')'
                 do {
                     ++q;
-                } while (isalnum((unsigned char) *q) || *q == '_');
+                } while (isalnum(static_cast<unsigned char>(*q)) || *q == '_');
 
                 if (*q == ')') {
                     s = ++q;
                 }
             }
         }
-        if (endptr != 0) {
-            *endptr = (char*) s;
+        if (endptr != nullptr) {
+            *endptr = const_cast<char*>(s);
         }
     } else if (*s == 'i' || *s == 'I') { // parse "inf" or fail
         if ((*++s != 'n' && *s != 'N') || (*++s != 'f' && *s != 'F')) { // parse failed, roll back pointer
@@ -61,8 +62,8 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
             }
         }
 
-        if (endptr != 0) {
-            *endptr = (char*) s;
+        if (endptr != nullptr) {
+            *endptr = const_cast<char*>(s);
         }
     } else if (*s == '0' && (s[1] == 'x' || s[1] == 'X')) { // test for valid hex field following 0x or 0X
         const char* s1 = s + 2;
@@ -70,7 +71,7 @@ int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point 
             ++s1;
         }
 
-        if (isxdigit((unsigned char) *s1)) {
+        if (isxdigit(static_cast<unsigned char>(*s1))) {
             s += 2;
             code |= FL_HEX;
         } else {

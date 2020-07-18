@@ -511,12 +511,10 @@ public:
     using local_iterator       = typename _Mybase::iterator;
     using const_local_iterator = typename _Mybase::const_iterator;
 
-    unordered_multimap() : _Mybase(_Key_compare(), allocator_type()) { // construct empty map from defaults
-    }
+    unordered_multimap() : _Mybase(_Key_compare(), allocator_type()) {} // construct empty map from defaults
 
     explicit unordered_multimap(const allocator_type& _Al)
-        : _Mybase(_Key_compare(), _Al) { // construct empty map from defaults, allocator
-    }
+        : _Mybase(_Key_compare(), _Al) {} // construct empty map from defaults, allocator
 
     unordered_multimap(const unordered_multimap& _Right)
         : _Mybase(_Right, _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {}

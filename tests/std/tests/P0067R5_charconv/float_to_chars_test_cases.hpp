@@ -38,8 +38,9 @@
 
 #pragma once
 
-#include "test.hpp"
 #include <charconv>
+
+#include "test.hpp"
 using namespace std;
 
 inline constexpr FloatToCharsTestCase float_to_chars_test_cases[] = {
@@ -496,6 +497,14 @@ inline constexpr FloatToCharsTestCase float_to_chars_test_cases[] = {
     {1.234e8f, chars_format{}, "123400000"},
     {1.234e9f, chars_format{}, "1.234e+09"},
     {1.234e10f, chars_format{}, "1.234e+10"},
+
+    // GH-331 "<charconv>: Test plain shortest's large integer fallback"
+    // The exactly-representable integer 123456790528 is 12 digits, but scientific shortest needs 13 characters.
+    // Therefore, the plain overload must select fixed notation. Because this 12-digit number exceeds the 9-digit
+    // round-trip limit, we can't use Ryu - we need to activate the large integer fallback (currently, long division for
+    // float).
+    {123456790528.0f, chars_format::scientific, "1.2345679e+11"},
+    {123456790528.0f, chars_format{}, "123456790528"},
 
     // Test hexfloat corner cases.
     {0x1.728p+0f, chars_format::hex, "1.728p+0"}, // instead of "2.e5p-1"

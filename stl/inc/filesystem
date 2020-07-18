@@ -102,6 +102,32 @@ namespace filesystem {
         return _Output;
     }
 
+    // More lenient version of _Convert_wide_to_narrow: Instead of failing on non-representable characters,
+    // replace them with a replacement character.
+    template <class _Traits, class _Alloc>
+    _NODISCARD basic_string<typename _Traits::char_type, _Traits, _Alloc> _Convert_wide_to_narrow_replace_chars(
+        const __std_code_page _Code_page, const wstring_view _Input, const _Alloc& _Al) {
+        basic_string<typename _Traits::char_type, _Traits, _Alloc> _Output(_Al);
+
+        if (!_Input.empty()) {
+            if (_Input.size() > static_cast<size_t>(INT_MAX)) {
+                _Throw_system_error(errc::invalid_argument);
+            }
+
+            const int _Len = _Check_convert_result(__std_fs_convert_wide_to_narrow_replace_chars(
+                _Code_page, _Input.data(), static_cast<int>(_Input.size()), nullptr, 0));
+
+            _Output.resize(static_cast<size_t>(_Len));
+
+            const auto _Data_as_char = reinterpret_cast<char*>(_Output.data());
+
+            (void) _Check_convert_result(__std_fs_convert_wide_to_narrow_replace_chars(
+                _Code_page, _Input.data(), static_cast<int>(_Input.size()), _Data_as_char, _Len));
+        }
+
+        return _Output;
+    }
+
     _NODISCARD inline wstring _Convert_utf32_to_wide(const u32string_view _Input) {
         wstring _Output;
 
@@ -921,7 +947,7 @@ namespace filesystem {
             return operator/=(_Replacement);
         }
 
-        path& replace_extension(/* const path& _Replacement = path() */) noexcept /* strengthened */ {
+        path& replace_extension(/* const path& _Replacement = {} */) noexcept /* strengthened */ {
             // remove any extension() (and alternate data stream references) from *this's filename()
             const wchar_t* _First = _Text.data();
             const auto _Last      = _First + _Text.size();
@@ -1650,6 +1676,15 @@ namespace filesystem {
         return _Val;
     }
 
+    _NODISCARD inline bool _Relative_path_contains_root_name(const path& _Path) {
+        for (const auto& _File_name : _Path.relative_path()) {
+            if (!_Parse_root_name(_File_name.native()).empty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     _NODISCARD inline path path::lexically_relative(const path& _Base) const {
         using namespace _STD string_view_literals; // TRANSITION, VSO-571749
 
@@ -1659,7 +1694,8 @@ namespace filesystem {
         path _Result;
 
         if (root_name() != _Base.root_name() || is_absolute() != _Base.is_absolute()
-            || (!has_root_directory() && _Base.has_root_directory())) {
+            || (!has_root_directory() && _Base.has_root_directory()) || _Relative_path_contains_root_name(*this)
+            || _Relative_path_contains_root_name(_Base)) {
             return _Result;
         }
 
@@ -1776,8 +1812,12 @@ namespace filesystem {
         static string _Pretty_message(const string_view _Op, const path& _Path1, const path& _Path2 = {}) {
             using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             string _Result;
-            const string _Path1_str = _Path1.string();
-            const string _Path2_str = _Path2.string();
+            // Convert the paths to narrow encoding in a way that gracefully handles non-encodable characters
+            const auto _Code_page   = __std_fs_code_page();
+            const string _Path1_str = _Convert_wide_to_narrow_replace_chars<char_traits<char>>(
+                _Code_page, _Path1.native(), allocator<char>{});
+            const string _Path2_str = _Convert_wide_to_narrow_replace_chars<char_traits<char>>(
+                _Code_page, _Path2.native(), allocator<char>{});
             _Result.reserve(_Op.size() + (_Path2_str.empty() ? 4 : 8) + _Path1_str.size() + _Path2_str.size());
             _Result += _Op;
             _Result += R"(: ")"sv; // 3 chars
@@ -1794,14 +1834,12 @@ namespace filesystem {
         path _Path2;
         string _What;
 
-#if _HAS_EXCEPTIONS
-
-#else // _HAS_EXCEPTIONS
+#if !_HAS_EXCEPTIONS
     protected:
         virtual void _Doraise() const override { // perform class-specific exception handling
             _RAISE(*this);
         }
-#endif // _HAS_EXCEPTIONS
+#endif // !_HAS_EXCEPTIONS
     };
 
     [[noreturn]] inline void _Throw_fs_error(const char* _Op, __std_win_error _Error) {
@@ -4038,7 +4076,7 @@ namespace filesystem {
 
             if (!__std_is_file_not_found(_Err)) {
                 _Ec = _Make_ec(_Err);
-                return path();
+                return {};
             }
         }
 
@@ -4064,7 +4102,7 @@ namespace filesystem {
                     _Call_canonical = false;
                 } else {
                     _Ec = _Make_ec(_Err);
-                    return path();
+                    return {};
                 }
             }
         }
@@ -4098,13 +4136,13 @@ namespace filesystem {
         const path _Weakly_canonical_path = _STD filesystem::weakly_canonical(_Path, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         const path _Weakly_canonical_base = _STD filesystem::weakly_canonical(_Base, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _Weakly_canonical_path.lexically_proximate(_Weakly_canonical_base);
@@ -4115,7 +4153,7 @@ namespace filesystem {
         const path _Base = _STD filesystem::current_path(_Ec);
         // N4810 29.11.14.27 [fs.op.proximate]/1 incorrectly calls current_path()
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _STD filesystem::proximate(_Path, _Base, _Ec);
@@ -4134,13 +4172,13 @@ namespace filesystem {
         const path _Weakly_canonical_path = _STD filesystem::weakly_canonical(_Path, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         const path _Weakly_canonical_base = _STD filesystem::weakly_canonical(_Base, _Ec);
 
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _Weakly_canonical_path.lexically_relative(_Weakly_canonical_base);
@@ -4151,7 +4189,7 @@ namespace filesystem {
         const path _Base = _STD filesystem::current_path(_Ec);
         // N4810 29.11.14.29 [fs.op.relative]/1 incorrectly calls current_path()
         if (_Ec) {
-            return path();
+            return {};
         }
 
         return _STD filesystem::relative(_Path, _Base, _Ec);

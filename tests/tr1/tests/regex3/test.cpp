@@ -316,8 +316,8 @@ static void test_uncoveredgrammar() {
     // test "."
     MyRgx rx1;
     MyRgx rx2;
-    STDString str1(T("Moon is white\n Sun is bright"));
-    STDString str2(T("Windows seven"));
+    STDString str1(T("Cats are cute\n Dogs are friendly"));
+    STDString str2(T("Prime number"));
     STDString str3(T("aaaqxzbbb"));
     STDString str4(T("aaa\nxzbbb"));
     static const STD regex_constants::syntax_option_type flag[6] = {

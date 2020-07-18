@@ -7,7 +7,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -24,29 +24,29 @@ constexpr void smoke_test() {
     for (auto [value, _] : pairs) {
         {
             // Validate range overload [found case]
-            auto result = find_if(move_only_range{pairs}, equals(value), get_first);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
+            auto result = find_if(basic_borrowed_range{pairs}, equals(value), get_first);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<P const>>>);
             assert((*result).first == value);
         }
         {
             // Validate iterator + sentinel overload [found case]
-            move_only_range wrapped_pairs{pairs};
+            basic_borrowed_range wrapped_pairs{pairs};
             auto result = find_if(wrapped_pairs.begin(), wrapped_pairs.end(), equals(value), get_first);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
+            STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<P const>>>);
             assert((*result).first == value);
         }
     }
     {
         // Validate range overload [not found case]
-        auto result = find_if(move_only_range{pairs}, equals(42), get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
-        assert(result == move_only_range{pairs}.end());
+        auto result = find_if(basic_borrowed_range{pairs}, equals(42), get_first);
+        STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<P const>>>);
+        assert(result == basic_borrowed_range{pairs}.end());
     }
     {
         // Validate iterator + sentinel overload [not found case]
-        move_only_range wrapped_pairs{pairs};
+        basic_borrowed_range wrapped_pairs{pairs};
         auto result = find_if(wrapped_pairs.begin(), wrapped_pairs.end(), equals(42), get_first);
-        STATIC_ASSERT(same_as<decltype(result), iterator_t<move_only_range<P const>>>);
+        STATIC_ASSERT(same_as<decltype(result), iterator_t<basic_borrowed_range<P const>>>);
         assert(result == wrapped_pairs.end());
     }
 }
@@ -67,4 +67,4 @@ struct instantiator {
     }
 };
 
-template void test_in<instantiator>();
+template void test_in<instantiator, const int>();

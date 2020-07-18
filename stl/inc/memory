@@ -514,8 +514,11 @@ public:
 
     bool _Incref_nz() noexcept { // increment use count if not zero, return true if successful
         auto& _Volatile_uses = reinterpret_cast<volatile long&>(_Uses);
-        long _Count          = _ISO_VOLATILE_LOAD32(_Volatile_uses);
-
+#ifdef _M_CEE_PURE
+        long _Count = *_Atomic_address_as<const long>(&_Volatile_uses);
+#else
+        long _Count = __iso_volatile_load32(reinterpret_cast<volatile int*>(&_Volatile_uses));
+#endif
         while (_Count != 0) {
             const long _Old_value = _INTRIN_RELAXED(_InterlockedCompareExchange)(&_Volatile_uses, _Count + 1, _Count);
             if (_Old_value == _Count) {
@@ -1383,7 +1386,7 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>& _Other)
         return shared_ptr<_Ty1>(_Other, _Ptr);
     }
 
-    return shared_ptr<_Ty1>();
+    return {};
 }
 
 template <class _Ty1, class _Ty2>
@@ -1395,7 +1398,7 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noex
         return shared_ptr<_Ty1>(_STD move(_Other), _Ptr);
     }
 
-    return shared_ptr<_Ty1>();
+    return {};
 }
 #else // _CPPRTTI
 template <class _Ty1, class _Ty2>
@@ -1756,14 +1759,14 @@ private:
 
 protected:
     template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
-    explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
+    constexpr explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
         : _Ty(_STD forward<_Other>(_Val)) {}
 
-    _Ty& _Get_val() noexcept {
+    constexpr _Ty& _Get_val() noexcept {
         return *this;
     }
 
-    const _Ty& _Get_val() const noexcept {
+    constexpr const _Ty& _Get_val() const noexcept {
         return *this;
     }
 };
@@ -1775,22 +1778,21 @@ private:
 
 protected:
     template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
-    explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
+    constexpr explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
         : _Myval(_STD forward<_Other>(_Val)) {}
 
-    _Ty& _Get_val() noexcept {
+    constexpr _Ty& _Get_val() noexcept {
         return _Myval;
     }
 
-    const _Ty& _Get_val() const noexcept {
+    constexpr const _Ty& _Get_val() const noexcept {
         return _Myval;
     }
 };
 
 // CLASS TEMPLATE _Ref_count_obj_alloc3
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>,
-                                                      public _Ref_count_base {
+class _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>, public _Ref_count_base {
     // handle reference counting for object in control block, allocator
 private:
     static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared should remove_cv_t");
@@ -1895,7 +1897,6 @@ template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
-        (void) _Al;
         _Copy_memmove(_In, _In + _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
@@ -1916,7 +1917,6 @@ template <class _Ty, class _Alloc>
 void _Uninitialized_value_construct_multidimensional_n_al(_Ty* const _Out, const size_t _Size, _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (_Use_memset_value_construct_v<_Item*> && _Uses_default_construct<_Alloc, _Item*>::value) {
-        (void) _Al;
         _Zero_range(_Out, _Out + _Size);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
@@ -1942,7 +1942,6 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
-        (void) _Al;
         _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
@@ -1955,9 +1954,8 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
 
 // CLASS TEMPLATE _Ref_count_unbounded_array_alloc
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_unbounded_array_alloc
-    : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
-      public _Ref_count_base {
+class _Ref_count_unbounded_array_alloc : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
+                                         public _Ref_count_base {
     // handle reference counting for unbounded array in control block, allocator
 private:
     static_assert(is_unbounded_array_v<_Ty>);
@@ -2019,9 +2017,8 @@ private:
 
 // CLASS TEMPLATE _Ref_count_bounded_array_alloc
 template <class _Ty, class _Alloc>
-class __declspec(empty_bases) _Ref_count_bounded_array_alloc
-    : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
-      public _Ref_count_base {
+class _Ref_count_bounded_array_alloc : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
+                                       public _Ref_count_base {
     // handle reference counting for bounded array in control block, allocator
 private:
     static_assert(is_bounded_array_v<_Ty>);
@@ -2317,7 +2314,7 @@ public:
     }
 
     void reset() noexcept { // release resource, convert to null weak_ptr object
-        weak_ptr().swap(*this);
+        weak_ptr{}.swap(*this);
     }
 
     void swap(weak_ptr& _Other) noexcept {
@@ -2733,7 +2730,7 @@ _NODISCARD bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<
     using _Ptr1   = typename unique_ptr<_Ty1, _Dx1>::pointer;
     using _Ptr2   = typename unique_ptr<_Ty2, _Dx2>::pointer;
     using _Common = common_type_t<_Ptr1, _Ptr2>;
-    return less<_Common>()(_Left.get(), _Right.get());
+    return less<_Common>{}(_Left.get(), _Right.get());
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
@@ -2774,13 +2771,13 @@ _NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) 
 template <class _Ty, class _Dx>
 _NODISCARD bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>()(_Left.get(), _Right);
+    return less<_Ptr>{}(_Left.get(), _Right);
 }
 
 template <class _Ty, class _Dx>
 _NODISCARD bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>()(_Left, _Right.get());
+    return less<_Ptr>{}(_Left, _Right.get());
 }
 
 template <class _Ty, class _Dx>
@@ -2951,10 +2948,10 @@ inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noe
 }
 
 #if _HAS_CXX20 && 0
-template <size_t _N0, class _Ty>
+template <size_t _Nx, class _Ty>
 _NODISCARD constexpr _Ty* assume_aligned(_Ty* _Ptr) noexcept /* strengthened */ {
-    // this enforces the requirement that _N0 be a power of two
-    __builtin_assume_aligned(_Ptr, _N0);
+    // this enforces the requirement that _Nx be a power of two
+    __builtin_assume_aligned(_Ptr, _Nx);
 
     return _Ptr;
 }

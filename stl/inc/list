@@ -555,7 +555,7 @@ public:
 
     template <class _Pr2>
     static _Nodeptr _Sort(_Nodeptr& _First, const size_type _Size, _Pr2 _Pred) {
-        // order [_First, _Last), using _Pred, return _First + _Size
+        // order [_First, _Last), return _First + _Size
         switch (_Size) {
         case 0:
             return _First;
@@ -1626,7 +1626,7 @@ public:
     }
 
     auto unique() { // erase each element matching previous
-        return unique(equal_to<>());
+        return unique(equal_to<>{});
     }
 
     template <class _Pr2>
@@ -1653,11 +1653,11 @@ public:
     }
 
     void merge(list& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>());
+        _Merge1(_Right, less<>{});
     }
 
     void merge(list&& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>());
+        _Merge1(_Right, less<>{});
     }
 
     template <class _Pr2>
@@ -1706,12 +1706,12 @@ private:
     }
 
 public:
-    void sort() { // order sequence, using operator<
-        sort(less<>());
+    void sort() { // order sequence
+        sort(less<>{});
     }
 
     template <class _Pr2>
-    void sort(_Pr2 _Pred) { // order sequence, using _Pred
+    void sort(_Pr2 _Pred) { // order sequence
         auto& _My_data = _Mypair._Myval2;
         _Scary_val::_Sort(_My_data._Myhead->_Next, _My_data._Mysize, _Pass_fn(_Pred));
     }

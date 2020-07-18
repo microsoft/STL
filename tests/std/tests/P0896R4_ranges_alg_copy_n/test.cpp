@@ -6,37 +6,32 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
-constexpr void smoke_test() {
-    using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
-    using std::same_as;
+using namespace std;
 
-    // Validate that copy_n_result aliases in_out_result
-    STATIC_ASSERT(same_as<copy_n_result<int, double>, ranges::in_out_result<int, double>>);
-
-    int const input[] = {13, 42, 1729};
-    int output[]      = {-1, -1, -1};
-    move_only_range wrapped_input{input};
-    auto result = copy_n(wrapped_input.begin(), ranges::distance(input), move_only_range{output}.begin());
-    STATIC_ASSERT(same_as<decltype(result),
-        copy_n_result<iterator_t<move_only_range<int const>>, iterator_t<move_only_range<int>>>>);
-    assert(result.in == wrapped_input.end());
-    assert(result.out == move_only_range{output}.end());
-    assert(ranges::equal(output, input));
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
+// Validate that copy_n_result aliases in_out_result
+STATIC_ASSERT(same_as<ranges::copy_n_result<int, double>, ranges::in_out_result<int, double>>);
 
 struct instantiator {
-    template <class In, class, class Out>
-    static void call(In in = {}, std::iter_difference_t<In> const count = 42, Out out = {}) {
-        (void) ranges::copy_n(std::move(in), count, std::move(out));
+    static constexpr int input[3] = {13, 42, 1729};
+
+    template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
+    static constexpr void call() {
+        using ranges::copy_n, ranges::copy_n_result, ranges::iterator_t;
+        int output[3] = {-1, -1, -1};
+        Read wrapped_input{input};
+
+        auto result = copy_n(wrapped_input.begin(), 3, Write{output});
+        STATIC_ASSERT(same_as<decltype(result), copy_n_result<iterator_t<Read>, Write>>);
+        assert(result.in == wrapped_input.end());
+        assert(result.out.peek() == output + 3);
+        assert(ranges::equal(output, input));
     }
 };
 
-template void test_counted_out<instantiator>();
+int main() {
+    STATIC_ASSERT((test_in_write<instantiator, const int, int>(), true));
+    test_in_write<instantiator, const int, int>();
+}

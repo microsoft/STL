@@ -101,7 +101,6 @@ public:
                 return;
             }
 
-
             _Tied->flush();
             _Ok = _Ostr.good(); // store test only after flushing tie
         }

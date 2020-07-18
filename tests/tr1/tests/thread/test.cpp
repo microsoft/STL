@@ -341,7 +341,7 @@ namespace {
             CHECK_INT(tgt <= STD chrono::system_clock::now(), true);
         }
     }
-} // anonymous namespace
+} // unnamed namespace
 
 void test_main() { // test header <thread>
     if (!terse) { // display value of __STDCPP_THREADS__

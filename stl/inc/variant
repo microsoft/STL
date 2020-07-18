@@ -442,8 +442,7 @@ protected:
 }
 
 template <bool _TrivialDestruction, class... _Types>
-class _Variant_storage_ { // empty storage (empty "_Types" case)
-};
+class _Variant_storage_ {}; // empty storage (empty "_Types" case)
 
 // ALIAS TEMPLATE _Variant_storage
 template <class... _Types>
@@ -458,19 +457,17 @@ public:
         _Variant_storage<_Rest...> _Tail;
     };
 
-    _Variant_storage_() noexcept { // no initialization (no active member)
-    }
+    _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_First, _Types...>)
-        : _Head(static_cast<_Types&&>(_Args)...) { // initialize _Head with _Args...
-    }
+        : _Head(static_cast<_Types&&>(_Args)...) {} // initialize _Head with _Args...
+
     template <size_t _Idx, class... _Types, enable_if_t<(_Idx > 0), int> = 0>
     constexpr explicit _Variant_storage_(integral_constant<size_t, _Idx>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
-        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) { // initialize _Tail (recurse)
-    }
+        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
     _NODISCARD constexpr _First& _Get() & noexcept {
         return _Head;
@@ -499,19 +496,17 @@ public:
                                     // since the class has a variant member with a non-trivial destructor)
     }
 
-    _Variant_storage_() noexcept { // no initialization (no active member)
-    }
+    _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_First, _Types...>)
-        : _Head(static_cast<_Types&&>(_Args)...) { // initialize _Head with _Args...
-    }
+        : _Head(static_cast<_Types&&>(_Args)...) {} // initialize _Head with _Args...
+
     template <size_t _Idx, class... _Types, enable_if_t<(_Idx > 0), int> = 0>
     constexpr explicit _Variant_storage_(integral_constant<size_t, _Idx>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
-        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) { // initialize _Tail (recurse)
-    }
+        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
     _Variant_storage_(_Variant_storage_&&)      = default;
     _Variant_storage_(const _Variant_storage_&) = default;
@@ -557,19 +552,17 @@ public:
                                     // since the class has a variant member with a non-trivial destructor)
     }
 
-    _Variant_storage_() noexcept { // no initialization (no active member)
-    }
+    _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_First ^, _Types...>)
-        : _Head(static_cast<_Types&&>(_Args)...) { // initialize _Head with _Args...
-    }
+        : _Head(static_cast<_Types&&>(_Args)...) {} // initialize _Head with _Args...
+
     template <size_t _Idx, class... _Types, enable_if_t<(_Idx > 0), int> = 0>
     constexpr explicit _Variant_storage_(integral_constant<size_t, _Idx>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
-        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) { // initialize _Tail (recurse)
-    }
+        : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
     _Variant_storage_(_Variant_storage_&&)      = default;
     _Variant_storage_(const _Variant_storage_&) = default;
@@ -789,7 +782,7 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
     void operator()(_Tagged<_Ty, _Idx> _Source) const noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
         is_nothrow_constructible<remove_reference_t<_Ty>, _Ty>>) { // initialize _Idx-th item in _Self from _Source
                                                                    // pre: _Self.valueless_by_exception()
-        (void) _Source; // TRANSITION, VSO-486357
+        (void) _Source; // TRANSITION, DevCom-1004719
         if constexpr (_Idx != variant_npos) {
             auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
             _Construct_in_place(_Target, static_cast<_Ty&&>(_Source._Val));
@@ -812,7 +805,7 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
             is_nothrow_constructible<_Remove_cvref_t<_Ty>, _Ty>>>) {
         // assign the _Idx-th alternative of _Self from _Source
         if constexpr (_Idx == variant_npos) { // assign from valueless _Source
-            (void) _Source; // TRANSITION, VSO-486357
+            (void) _Source; // TRANSITION, DevCom-1004719
             _Self._Reset();
         } else {
             auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
@@ -862,8 +855,7 @@ public:
         return _STD move(*this);
     }
 
-    _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} { // initialize to the value-less state
-    }
+    _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} {} // initialize to the value-less state
 
     template <size_t _Idx, class... _UTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant<_Types...>, _Idx>, _UTypes...>, int> = 0>
@@ -898,7 +890,6 @@ public:
     void _Destroy() noexcept { // destroy the contained value, if any
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
             _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
-                (void) _Ref; // TRANSITION, VSO-486357
                 if constexpr (decltype(_Ref)::_Idx != variant_npos) {
                     _Destroy_in_place(_Ref._Val);
                 }
@@ -971,6 +962,9 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
 #else // ^^^ Clang / not Clang vvv
 #pragma warning(push)
+#pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
+#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 #endif // __clang__
 template <size_t _Idx, class _Ty>
@@ -978,11 +972,6 @@ struct _Variant_init_single_overload {
     using _FTy = _Meta_list<integral_constant<size_t, _Idx>, _Ty> (*)(_Ty);
     operator _FTy();
 };
-#ifdef __clang__
-#pragma clang diagnostic pop
-#else // ^^^ Clang / not Clang vvv
-#pragma warning(pop)
-#endif // __clang__
 
 template <class _Indices, class... _Types>
 struct _Variant_init_overload_set_;
@@ -995,8 +984,7 @@ template <class... _Types>
 using _Variant_init_overload_set = _Variant_init_overload_set_<index_sequence_for<_Types...>, _Types...>;
 
 template <class Enable, class _Ty, class... _Types>
-struct _Variant_init_helper { // failure case (has no member "type")
-};
+struct _Variant_init_helper {}; // failure case (has no member "type")
 
 template <class _Ty, class... _Types>
 struct _Variant_init_helper<void_t<decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>()))>, _Ty,
@@ -1011,11 +999,16 @@ using _Variant_init_type = _Meta_front<_Meta_pop_front<typename _Variant_init_he
 
 template <class _Ty, class... _Types> // extract the index from _Variant_init_helper
 using _Variant_init_index = _Meta_front<typename _Variant_init_helper<void, _Ty, _Types...>::type>;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ Clang / not Clang vvv
+#pragma warning(pop)
+#endif // __clang__
 
 template <class>
-struct _Is_in_place_index_specialization : false_type {};
+inline constexpr bool _Is_in_place_index_specialization = false;
 template <size_t _Idx>
-struct _Is_in_place_index_specialization<in_place_index_t<_Idx>> : true_type {};
+inline constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
 
 template <class... _Types>
 class variant : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
@@ -1030,14 +1023,13 @@ public:
     // constructors [variant.ctor]
     template <class _First = _Meta_front<variant>, enable_if_t<is_default_constructible_v<_First>, int> = 0>
     constexpr variant() noexcept(is_nothrow_default_constructible_v<_First>)
-        : _Mybase(in_place_index<0>) { // value-initialize alternative 0
-    }
+        : _Mybase(in_place_index<0>) {} // value-initialize alternative 0
 
     template <class _Ty,
         enable_if_t<sizeof...(_Types) != 0 //
                         && !is_same_v<_Remove_cvref_t<_Ty>, variant> //
                         && !_Is_specialization_v<_Remove_cvref_t<_Ty>, in_place_type_t> //
-                        && !_Is_in_place_index_specialization<_Remove_cvref_t<_Ty>>::value //
+                        && !_Is_in_place_index_specialization<_Remove_cvref_t<_Ty>> //
                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>, //
             int> = 0>
     constexpr variant(_Ty&& _Obj) noexcept(is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>)
@@ -1065,7 +1057,8 @@ public:
         enable_if_t<is_constructible_v<_Meta_at_c<variant, _Idx>, _UTypes...>, int> = 0>
     constexpr explicit variant(in_place_index_t<_Idx>, _UTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Meta_at_c<variant, _Idx>, _UTypes...>) // strengthened
-        : _Mybase(in_place_index<_Idx>, static_cast<_UTypes&&>(_Args)...) { // initialize alternative _Idx from _Args...
+        : _Mybase(in_place_index<_Idx>, static_cast<_UTypes&&>(_Args)...) {
+        // initialize alternative _Idx from _Args...
     }
     template <size_t _Idx, class _Elem, class... _UTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant, _Idx>, initializer_list<_Elem>&, _UTypes...>, int> = 0>
@@ -1144,6 +1137,10 @@ public:
     using _Mybase::valueless_by_exception;
 
     // swap [variant.swap]
+#ifdef __clang__ // TRANSITION, LLVM-45398
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
+#endif // TRANSITION, LLVM-45398
     void swap(variant& _That) noexcept(
         conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
         // exchange the contained values if *this and _That hold the same alternative, otherwise exchange the values of
@@ -1170,8 +1167,6 @@ public:
                                 is_nothrow_swappable<_Types>...>)
 #endif // TRANSITION, VSO-897887
                         {
-                            (void) _My_ref;
-                            (void) _That_ref; // TRANSITION, VSO-486357
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
                             constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
@@ -1222,6 +1217,9 @@ public:
             }
         }
     }
+#ifdef __clang__ // TRANSITION, LLVM-45398
+#pragma clang diagnostic pop
+#endif // TRANSITION, LLVM-45398
 
 private:
     template <size_t _Idx, class... _ArgTypes>
@@ -1379,7 +1377,7 @@ struct _Variant_relop_visitor { // evaluate _Op with the contained value of two 
         if constexpr (_Idx != variant_npos) {
             return _Op{}(_Variant_raw_get<_Idx>(_Left), _Right._Val);
         } else { // return whatever _Op returns for equal values
-            (void) _Right; // TRANSITION, VSO-486357
+            (void) _Right; // TRANSITION, DevCom-1004719
             return _Op{}(0, 0);
         }
     }
@@ -1485,8 +1483,8 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-            (void) _Obj;
-            ((void) _Args, ...); // TRANSITION, VSO-486357
+            (void) _Obj; // TRANSITION, DevCom-1004719
+            ((void) _Args, ...); // TRANSITION, DevCom-1004719
             _Throw_bad_variant_access();
         }
 #if _HAS_CXX20
@@ -1726,7 +1724,6 @@ struct _Variant_hash_visitor { // visitation function for hashing variants
         noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
             is_nothrow_invocable<hash<_Ty>, const _Ty&>>) { // hash contained value _Obj
         if constexpr (_Idx == variant_npos) { // hash a valueless variant
-            (void) _Obj; // TRANSITION, VSO-486357
             return 0;
         } else { // hash the contained value
             return hash<_Ty>{}(_Obj._Val);

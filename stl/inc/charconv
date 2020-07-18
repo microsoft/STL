@@ -193,17 +193,6 @@ inline to_chars_result to_chars(char* const _First, char* const _Last, const uns
 to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
 
 
-// FUNCTION TEMPLATE _Bit_cast
-template <class _To, class _From,
-    enable_if_t<sizeof(_To) == sizeof(_From) && is_trivially_copyable_v<_To> && is_trivially_copyable_v<_From>, int> =
-        0>
-_NODISCARD /*constexpr*/ _To _Bit_cast(const _From& _From_obj) noexcept {
-    _To _To_obj; // assumes default-init
-    _CSTD memcpy(_STD addressof(_To_obj), _STD addressof(_From_obj), sizeof(_To));
-    return _To_obj;
-}
-
-
 // STRUCT from_chars_result
 struct from_chars_result {
     const char* ptr;
@@ -604,9 +593,9 @@ _NODISCARD inline bool _Add(_Big_integer_flt& _Xval, const uint32_t _Value) noex
     return true;
 }
 
-_NODISCARD inline uint32_t _Add_carry(uint32_t& _U1, const uint32_t _U2, const uint32_t _U_carry) noexcept {
-    const uint64_t _Uu = static_cast<uint64_t>(_U1) + _U2 + _U_carry;
-    _U1                = static_cast<uint32_t>(_Uu);
+_NODISCARD inline uint32_t _Add_carry(uint32_t& _Ux1, const uint32_t _Ux2, const uint32_t _U_carry) noexcept {
+    const uint64_t _Uu = static_cast<uint64_t>(_Ux1) + _Ux2 + _U_carry;
+    _Ux1               = static_cast<uint32_t>(_Uu);
     return static_cast<uint32_t>(_Uu >> 32);
 }
 
@@ -3029,13 +3018,8 @@ _NODISCARD to_chars_result _Floating_to_chars(
     }
 
     if constexpr (_Overload == _Floating_to_chars_overload::_Plain) {
-        (void) _Fmt;
-        (void) _Precision;
-
         return _Floating_to_chars_ryu(_First, _Last, _Value, chars_format{});
     } else if constexpr (_Overload == _Floating_to_chars_overload::_Format_only) {
-        (void) _Precision;
-
         if (_Fmt == chars_format::hex) {
             return _Floating_to_chars_hex_shortest(_First, _Last, _Value);
         }

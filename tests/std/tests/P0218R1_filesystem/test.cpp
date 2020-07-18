@@ -23,10 +23,11 @@
 #include <string>
 #include <string_view>
 #include <system_error>
-#include <test_filesystem_support.hpp>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <test_filesystem_support.hpp>
 
 using namespace std;
 using namespace std::chrono;
@@ -58,11 +59,11 @@ struct test_temp_directory {
     explicit test_temp_directory(const string_view testName) : directoryPath(get_new_test_directory(testName)) {
         remove_all(directoryPath, ec);
         if (ec) {
-            wcout << L"Warning, couldn't clean up " << directoryPath << L" before test.\n";
+            wcerr << L"Warning, couldn't clean up " << directoryPath << L" before test.\n";
         } else {
             create_directories(directoryPath, ec);
             if (ec) {
-                wcout << L"Warning, couldn't create test directory " << directoryPath << L" before test.\n";
+                wcerr << L"Warning, couldn't create test directory " << directoryPath << L" before test.\n";
             }
         }
     }
@@ -70,7 +71,7 @@ struct test_temp_directory {
     ~test_temp_directory() noexcept {
         remove_all(directoryPath, ec);
         if (ec) {
-            wcout << L"Warning, couldn't clean up " << directoryPath << L" after test.\n";
+            wcerr << L"Warning, couldn't clean up " << directoryPath << L" after test.\n";
         }
     }
 };
@@ -79,7 +80,7 @@ bool pass = true;
 
 bool expect(const bool b, const char* const func, const int line, const char* const message) {
     if (!b) {
-        wcout << func << L" @ " << line << L": check failed: " << message << L'\n';
+        wcerr << func << L" @ " << line << L": check failed: " << message << L'\n';
         pass = false;
     }
     return b;
@@ -90,12 +91,12 @@ bool expect(const bool b, const char* const func, const int line, const char* co
 bool good(const error_code& ec) {
     bool overall = true;
     if (ec.value() != 0) {
-        wcout << L"Unexpected error " << ec.value() << L" " << ec.message().c_str() << L"\n";
+        wcerr << L"Unexpected error " << ec.value() << L" " << ec.message().c_str() << L"\n";
         overall = false;
     }
 
     if (ec.category() != system_category()) {
-        wcout << L"Unexpected category " << ec.category().name() << L"\n";
+        wcerr << L"Unexpected category " << ec.category().name() << L"\n";
         overall = false;
     }
 
@@ -362,7 +363,7 @@ bool run_decomp_test_case(const decomposition_test_case& testCase) {
         return true;
     }
 
-    wcout << L"Test failure:\n" << testCase << actual;
+    wcerr << L"Test failure:\n" << testCase << actual;
 
     return false;
 }
@@ -406,7 +407,7 @@ bool run_stem_test_case(const stem_test_case& testCase) {
         return true;
     }
 
-    wcout << L"Expected " << p.native() << L" to have stem() " << testCase.stem << L" and extension() "
+    wcerr << L"Expected " << p.native() << L" to have stem() " << testCase.stem << L" and extension() "
           << testCase.extension << L", but it actually has stem() " << p.stem().native() << L" and extension() "
           << p.extension().native() << L"\n";
 
@@ -523,7 +524,7 @@ bool run_compare_test_case(const compare_test_case& testCase) {
         return true;
     }
 
-    wcout << L"Unexpected comparison result:\nLeft:  " << testCase.left << L"\nRight: " << testCase.right
+    wcerr << L"Unexpected comparison result:\nLeft:  " << testCase.left << L"\nRight: " << testCase.right
           << L"\nExpected: " << testCase.expected << L"\n Actual: " << actual << L"\n";
 
     return false;
@@ -564,7 +565,7 @@ bool run_slash_test_case(const slash_test_case& testCase) {
         return true;
     }
 
-    wcout << L"Expected " << testCase.a << L" / " << testCase.b << L" to be " << testCase.expected << L" but it was "
+    wcerr << L"Expected " << testCase.a << L" / " << testCase.b << L" to be " << testCase.expected << L" but it was "
           << p.native() << L"\n";
     return false;
 }
@@ -811,7 +812,7 @@ void test_remove_filename_and_sep() {
         path p{before};
         p._Remove_filename_and_separator();
         if (p.native() != after) { // look for exact match
-            wcout << L"_Remove_filename_and_separator('" << before << L"') => '" << p.native() << L"' expected '"
+            wcerr << L"_Remove_filename_and_separator('" << before << L"') => '" << p.native() << L"' expected '"
                   << after << L"'\n";
             pass = false;
         }
@@ -879,7 +880,7 @@ void test_filesystem_error() {
 void test_file_status() {
     auto check = [](const file_status& x, file_type ft, perms p, const char* name) {
         if (x.type() != ft || x.permissions() != p) {
-            wcout << L"test_file_status failed: " << name << L'\n';
+            wcerr << L"test_file_status failed: " << name << L'\n';
             pass = false;
         }
     };
@@ -947,25 +948,25 @@ void test_file_status() {
 
 void check_symlink_permissions(const error_code& ec, const wchar_t* const function_id) {
     if (ec.category() != system_category()) {
-        wcout << L"Incorrect error category from " << function_id << L"\n";
+        wcerr << L"Incorrect error category from " << function_id << L"\n";
         pass = false;
     }
 
 #ifdef WINDOWS_XP
     if (ec.value() != 50) {
-        wcout << L"Expected ERROR_NOT_SUPPORTED from " << function_id << L" but it returned " << ec.message().c_str()
+        wcerr << L"Expected ERROR_NOT_SUPPORTED from " << function_id << L" but it returned " << ec.message().c_str()
               << L"\n";
         pass = false;
     }
 #else // ^^^ WINDOWS_XP ^^^ // vvv !WINDOWS_XP vvv
     if (ec.value() != 1314) {
-        wcout << L"Expected ERROR_PRIVILEGE_NOT_HELD from " << function_id << L" but it returned "
+        wcerr << L"Expected ERROR_PRIVILEGE_NOT_HELD from " << function_id << L" but it returned "
               << ec.message().c_str() << L"\n";
         pass = false;
     }
 #endif // WINDOWS_XP
 
-    wcout << L"Warning: could not test " << function_id
+    wcerr << L"Warning: could not test " << function_id
           << L" due to symlink creation failure, do you have admin rights?\n";
 }
 
@@ -1517,12 +1518,12 @@ void expect_absolute(const path& input, const wstring_view expected) {
     error_code ec(-1, generic_category());
     const path actual = absolute(input, ec);
     if (actual.native() != expected || ec || ec.category() != system_category()) {
-        wcout << L"Expected absolute(" << input.native() << L") to be " << expected << L"\n";
+        wcerr << L"Expected absolute(" << input.native() << L") to be " << expected << L"\n";
         if (actual.native() != expected) {
-            wcout << L"Actual result: " << actual.native() << L"\n";
+            wcerr << L"Actual result: " << actual.native() << L"\n";
         }
         if (ec) {
-            wcout << L"The call failed.\n";
+            wcerr << L"The call failed.\n";
         }
 
         pass = false;
@@ -1543,7 +1544,7 @@ void test_absolute() {
     EXPECT(throws_filesystem_error([&] { return absolute(longPath); }, "absolute"sv, longPath));
     EXPECT(absolute(longPath, ec).empty());
     if (ec.value() != 206) {
-        wcout << L"Warning: Expected absolute on a >32k long path to report ERROR_FILENAME_EXCED_RANGE, "
+        wcerr << L"Warning: Expected absolute on a >32k long path to report ERROR_FILENAME_EXCED_RANGE, "
                  L"but it reported "
               << ec.value() << L"\n";
     }
@@ -2266,11 +2267,11 @@ void equivalent_failure_test_case(const path& left, const path& right) {
 
     error_code ec;
     if (equivalent(left, right, ec)) {
-        wcout << L"Expected equivalent(" << left << L", " << right << L") to fail but it returned true\n";
+        wcerr << L"Expected equivalent(" << left << L", " << right << L") to fail but it returned true\n";
         pass = false;
     } else if (!ec) {
         EXPECT(ec.category() == system_category());
-        wcout << L"Expected equivalent(" << left << L", " << right
+        wcerr << L"Expected equivalent(" << left << L", " << right
               << L") to fail but it "
                  L"returned no failure code\n";
         pass = false;
@@ -2282,7 +2283,7 @@ void equivalent_test_case(const path& left, const path& right, const bool expect
     const bool actual = equivalent(left, right, ec);
     EXPECT(good(ec));
     if (expected != actual) {
-        wcout << boolalpha << L"Expected equivalent(" << left << L", " << right << L") to be " << expected
+        wcerr << boolalpha << L"Expected equivalent(" << left << L", " << right << L") to be " << expected
               << L" but it was " << actual << L"\n";
         pass = false;
     }
@@ -2875,8 +2876,9 @@ void test_status() {
         EXPECT(status(nonexistent).type() == file_type::not_found); // should not throw
         EXPECT(status(nonexistent, ec).type() == file_type::not_found);
         EXPECT(ec.category() == system_category());
-        // accept ERROR_FILE_NOT_FOUND (2), ERROR_PATH_NOT_FOUND (3), or ERROR_BAD_NETPATH (53)
-        EXPECT(ec.value() == 2 || ec.value() == 3 || ec.value() == 53);
+        // Accept ERROR_FILE_NOT_FOUND (2), ERROR_PATH_NOT_FOUND (3), ERROR_BAD_NETPATH (53), ERROR_INVALID_NAME (123).
+        // This should match __std_is_file_not_found() in <xfilesystem_abi.h>.
+        EXPECT(ec.value() == 2 || ec.value() == 3 || ec.value() == 53 || ec.value() == 123);
         EXPECT(ec == errc::no_such_file_or_directory);
     }
 
@@ -3155,6 +3157,9 @@ void test_lexically_relative() {
     EXPECT(path(LR"(a\b\c\x\y\z)"sv).lexically_relative(LR"(a\b\c\d\.\e\..\f\g)"sv).native() == LR"(..\..\..\x\y\z)"sv);
 
     EXPECT(path(LR"(a\b\c\x\y\z)"sv).lexically_relative(LR"(a\b\c\d\.\e\..\f\g\..\..\..)"sv).native() == LR"(x\y\z)"sv);
+
+    // LWG-3070
+    EXPECT(path(LR"(\a:\b:)"sv).lexically_relative(LR"(\a:\c:)"sv).native() == LR"()"sv);
 }
 
 void test_lexically_proximate() {
@@ -3182,6 +3187,9 @@ void test_lexically_proximate() {
 
     EXPECT(
         path(LR"(a\b\c\x\y\z)"sv).lexically_proximate(LR"(a\b\c\d\.\e\..\f\g\..\..\..)"sv).native() == LR"(x\y\z)"sv);
+
+    // LWG-3070
+    EXPECT(path(LR"(\a:\b:)"sv).lexically_proximate(LR"(\a:\c:)"sv).native() == LR"(\a:\b:)"sv);
 }
 
 void test_weakly_canonical() {
@@ -3788,7 +3796,7 @@ void test_file_time_type() {
 
     if (file_time_tick_count + tolerance < system_clock_tick_count
         || file_time_tick_count - tolerance > system_clock_tick_count) {
-        wcout << L"test_file_time_type failed: " << file_time_tick_count << L" ticks too different from "
+        wcerr << L"test_file_time_type failed: " << file_time_tick_count << L" ticks too different from "
               << system_clock_tick_count << L" ticks from system_clock\n";
         pass = false;
     }
@@ -3796,7 +3804,7 @@ void test_file_time_type() {
 
 template <typename DirIter>
 void interactive_dir_iter(wstring_view p) {
-    wcout << L"iterate over: \"" << p << L"\":\n";
+    wcerr << L"iterate over: \"" << p << L"\":\n";
 
     directory_options opts = {};
     // ! => skip_permission_denied
@@ -3815,9 +3823,9 @@ void interactive_dir_iter(wstring_view p) {
     }
 
     for (const auto& entry : DirIter(p, opts)) {
-        wcout << entry.path().native() << L'\n';
+        wcerr << entry.path().native() << L'\n';
     }
-    wcout << L"---- iteration complete -----\n";
+    wcerr << L"---- iteration complete -----\n";
 }
 
 template <typename Elem, typename Traits>
@@ -3873,32 +3881,32 @@ void run_interactive_tests(int argc, wchar_t* argv[]) {
     for (int i = 1; i < argc; ++i) {
         const wstring_view arg = argv[i];
         if (arg == L"-?"sv) {
-            wcout << usage;
+            wcerr << usage;
         } else if (starts_with(arg, L"-recdir:"sv)) {
             interactive_dir_iter<recursive_directory_iterator>(the_rest);
         } else if (starts_with(arg, L"-dir:"sv)) {
             interactive_dir_iter<directory_iterator>(the_rest);
         } else if (starts_with(arg, L"-lstat:"sv)) {
-            wcout << quoted(arg) << L" => " << symlink_status(the_rest) << "\n";
+            wcerr << quoted(arg) << L" => " << symlink_status(the_rest) << "\n";
         } else if (starts_with(arg, L"-stat:"sv)) {
-            wcout << quoted(arg) << L" => " << status(the_rest) << "\n";
+            wcerr << quoted(arg) << L" => " << status(the_rest) << "\n";
         } else if (starts_with(arg, L"-de:"sv)) {
-            wcout << quoted(arg) << L" => " << directory_entry(the_rest) << "\n";
+            wcerr << quoted(arg) << L" => " << directory_entry(the_rest) << "\n";
         } else if (starts_with(arg, L"-mkdir:"sv)) {
-            wcout << L"create_directory => " << create_directory(the_rest) << "\n";
+            wcerr << L"create_directory => " << create_directory(the_rest) << "\n";
         } else if (starts_with(arg, L"-mkdirs:"sv)) {
-            wcout << L"create_directory => " << create_directories(the_rest) << "\n";
+            wcerr << L"create_directory => " << create_directories(the_rest) << "\n";
         } else if (starts_with(arg, L"-now"sv)) {
-            wcout << L"         system_clock: " << system_clock::now().time_since_epoch().count() << L'\n';
-            wcout << L"file_time_type::clock: " << file_time_type::clock::now().time_since_epoch().count() << L'\n';
+            wcerr << L"         system_clock: " << system_clock::now().time_since_epoch().count() << L'\n';
+            wcerr << L"file_time_type::clock: " << file_time_type::clock::now().time_since_epoch().count() << L'\n';
         } else if (starts_with(arg, L"-rm:"sv)) {
-            wcout << L"remove => " << remove(the_rest) << "\n";
+            wcerr << L"remove => " << remove(the_rest) << "\n";
         } else if (starts_with(arg, L"-rmall:"sv)) {
-            wcout << L"remove_all => " << remove_all(the_rest) << "\n";
+            wcerr << L"remove_all => " << remove_all(the_rest) << "\n";
         } else if (starts_with(arg, L"-sz:"sv)) {
-            wcout << L"file_size => " << file_size(the_rest) << "\n";
+            wcerr << L"file_size => " << file_size(the_rest) << "\n";
         } else {
-            wcout << usage;
+            wcerr << usage;
         }
     }
 }

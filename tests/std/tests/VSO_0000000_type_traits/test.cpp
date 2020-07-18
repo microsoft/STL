@@ -568,7 +568,7 @@ STATIC_ASSERT(!is_pod_v<Wrap<TrivialExceptConstruct>>);
 
 // VSO-152213 "<type_traits>: is_function does not match qualified function types"
 // VSO-154500 "<type_traits>: [Feedback]std::is_function returns false for cv/ref qualified functions"
-// C++14 LWG-2196 "Specification of is_*[copy/move]_[constructible/assignable] unclear for non-referencable types"
+// C++14 LWG-2196 "Specification of is_*[copy/move]_[constructible/assignable] unclear for non-referenceable types"
 // C++17 LWG-2101 "Some transformation types can produce impossible types"
 
 template <typename T>

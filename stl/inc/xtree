@@ -913,7 +913,7 @@ public:
 
 private:
     void _Different_allocator_move_construct(_Tree&& _Right) {
-        // TRANSITION, VSO-675959 (inline into only caller when that is fixed)
+        // TRANSITION, VSO-761321 (inline into only caller when that is fixed)
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
@@ -2054,38 +2054,6 @@ protected:
 private:
     _Compressed_pair<key_compare, _Compressed_pair<_Alnode, _Scary_val>> _Mypair;
 };
-
-template <class _Traits>
-_NODISCARD bool operator==(const _Tree<_Traits>& _Left, const _Tree<_Traits>& _Right) {
-    return _Left.size() == _Right.size()
-           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
-}
-
-template <class _Traits>
-_NODISCARD bool operator!=(const _Tree<_Traits>& _Left, const _Tree<_Traits>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Traits>
-_NODISCARD bool operator<(const _Tree<_Traits>& _Left, const _Tree<_Traits>& _Right) {
-    return _STD lexicographical_compare(
-        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
-}
-
-template <class _Traits>
-_NODISCARD bool operator>(const _Tree<_Traits>& _Left, const _Tree<_Traits>& _Right) {
-    return _Right < _Left;
-}
-
-template <class _Traits>
-_NODISCARD bool operator<=(const _Tree<_Traits>& _Left, const _Tree<_Traits>& _Right) {
-    return !(_Right < _Left);
-}
-
-template <class _Traits>
-_NODISCARD bool operator>=(const _Tree<_Traits>& _Left, const _Tree<_Traits>& _Right) {
-    return !(_Left < _Right);
-}
 _STD_END
 
 #pragma pop_macro("new")

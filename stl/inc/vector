@@ -1846,6 +1846,8 @@ class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     _Vb_reference() = default;
 
 public:
+    _Vb_reference(const _Vb_reference&) = default;
+
     _Vb_reference(const _Mybase& _Right) noexcept : _Mybase(_Right._Myptr, _Right._Myoff, _Right._Getcont()) {}
 
     _Vb_reference& operator=(const _Vb_reference& _Right) noexcept {
@@ -2666,7 +2668,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>());
+        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
         return begin() + _Off;
     }
 
@@ -2693,11 +2695,11 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
-        _STD copy(_Where + 1, end(), _Where);
+        _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        _STD copy(_Where + 1, end(), _Where);
+        _STD copy(_Next_iter(_Where), end(), _Where);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Trim(this->_Mysize - 1);
