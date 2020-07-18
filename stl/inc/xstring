@@ -2669,6 +2669,7 @@ public:
             return true;
         } else {
             _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
+            _My_data._Myres = _BUF_SIZE - 1;
             return false;
         }
     }
