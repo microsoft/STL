@@ -52,27 +52,27 @@ void __stdcall __std_wait_for_threadpool_work_callbacks(PTP_WORK _Work, BOOL _Ca
 }
 
 void __stdcall __std_execution_wait_on_uchar(const volatile unsigned char* _Address, unsigned char _Compare) noexcept {
-    _Atomic_wait_context_t _Wait_context;
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-    if (_Atomic_load_uchar(_Address) != _Compare) {
-        return;
-    }
-
+    auto _Address_adjusted_cv = const_cast<const unsigned char*>(_Address);
     for (;;) {
-        __std_atomic_wait_direct(const_cast<const unsigned char*>(_Address), &_Compare, 1, _Wait_context);
         if (_Atomic_load_uchar(_Address) != _Compare) {
-            break;
+            return;
         }
+        _Atomic_wait_result _Result =
+            __std_atomic_wait_direct(_Address_adjusted_cv, &_Compare, 1, _Atomic_wait_no_deadline);
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+        if (_Result == _Atomic_wait_fallback) {
+            for (;;) {
+                if (_Atomic_load_uchar(_Address) != _Compare) {
+                    __std_atomic_wait_fallback_uninit(_Address_adjusted_cv);
+                    return;
+                }
+                __std_atomic_wait_fallback(_Address_adjusted_cv, _Atomic_wait_no_deadline);
+            }
+        }
+#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 vvv
+        [[maybe_unused]] _Result;
+#endif // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 ^^^
     }
-
-    if (_Wait_context._Wait_phase_and_spin_count & _Atomic_unwait_needed) {
-        __std_atomic_unwait_direct(const_cast<const unsigned char*>(_Address), _Wait_context);
-    }
-
-#else // ^^^ pre-Win8 / Win8+ vvv
-    __std_atomic_wait_direct(const_cast<const unsigned char*>(_Address), &_Compare, 1, _Wait_context);
-#endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 }
 
 void __stdcall __std_execution_wake_by_address_all(const volatile void* _Address) noexcept {

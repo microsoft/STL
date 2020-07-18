@@ -22,10 +22,6 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
-        // Arbitrary variable to wait/notify on if target variable is not proper atomic for that
-        // Size is largest of lock-free to make aliasing problem into hypothetical
-        _STD atomic<unsigned long long> _Counter{};
-
         CONDITION_VARIABLE _Condition = CONDITION_VARIABLE_INIT;
         SRWLOCK _Lock                 = SRWLOCK_INIT;
 
@@ -41,18 +37,17 @@ namespace {
         return wait_table[index & _Wait_table_index_mask];
     }
 
-    [[nodiscard]] unsigned long _Get_remaining_wait_milliseconds(_Atomic_wait_context_t& _Wait_context) {
-        const unsigned long long deadline = _Wait_context._Deadline;
-        if (deadline == _Atomic_wait_no_timeout) {
+    [[nodiscard]] unsigned long _Get_remaining_wait_milliseconds(unsigned long long _Deadline) {
+        if (_Deadline == _Atomic_wait_no_deadline) {
             return INFINITE;
         }
 
         const unsigned long long current_time = GetTickCount64();
-        if (current_time >= deadline) {
+        if (current_time >= _Deadline) {
             return 0;
         }
 
-        unsigned long long remaining      = deadline - current_time;
+        unsigned long long remaining      = _Deadline - current_time;
         constexpr unsigned long _Ten_days = 864'000'000;
         if (remaining > _Ten_days) {
             return _Ten_days;
@@ -76,53 +71,6 @@ namespace {
 
 #else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
 
-    [[nodiscard]] bool _Atomic_wait_fallback(
-        const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-        DWORD _Remaining_waiting_time = _Get_remaining_wait_milliseconds(_Wait_context);
-        if (_Remaining_waiting_time == 0) {
-            return false;
-        }
-
-        auto& _Entry = _Atomic_wait_table_entry(_Storage);
-        switch (_Wait_context._Wait_phase_and_spin_count) {
-        case _Atomic_wait_phase_wait_none:
-            AcquireSRWLockExclusive(&_Entry._Lock);
-            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_locked;
-            // re-check, and go to _Atomic_wait_phase_wait_locked
-            break;
-
-        case _Atomic_wait_phase_wait_locked:
-            if (!::SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, _Remaining_waiting_time, 0)) {
-                _Assume_timeout();
-                ReleaseSRWLockExclusive(&_Entry._Lock);
-                _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-                return false;
-            }
-            // re-check, and still in _Atomic_wait_phase_wait_locked
-            break;
-
-        default:
-            _CSTD abort();
-        }
-
-        return true;
-    }
-
-    void _Atomic_unwait_fallback(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-        if (_Wait_context._Wait_phase_and_spin_count == _Atomic_wait_phase_wait_locked) {
-            auto& _Entry = _Atomic_wait_table_entry(_Storage);
-            ReleaseSRWLockExclusive(&_Entry._Lock);
-            // Superfluous currently, but let's have it for robustness
-            _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-        }
-    }
-
-    void _Atomic_notify_fallback(const void* const _Storage) noexcept {
-        auto& _Entry = _Atomic_wait_table_entry(_Storage);
-        AcquireSRWLockExclusive(&_Entry._Lock);
-        ReleaseSRWLockExclusive(&_Entry._Lock);
-        WakeAllConditionVariable(&_Entry._Condition);
-    }
 
     struct _Wait_functions_table {
         _STD atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
@@ -200,27 +148,29 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-bool __stdcall __std_atomic_wait_direct(const void* _Storage, const void* const _Comparand, const size_t _Size,
-    _Atomic_wait_context_t& _Wait_context) noexcept {
+_Atomic_wait_result __stdcall __std_atomic_wait_direct(
+    const void* _Storage, const void* const _Comparand, const size_t _Size, unsigned long long deadline) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
-        return _Atomic_wait_fallback(_Storage, _Wait_context);
+        auto& _Entry = _Atomic_wait_table_entry(_Storage);
+        AcquireSRWLockExclusive(&_Entry._Lock);
+        return _Atomic_wait_fallback;
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
     if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
-            _Get_remaining_wait_milliseconds(_Wait_context))) {
+            _Get_remaining_wait_milliseconds(deadline))) {
         _Assume_timeout();
-        return false;
+        return _Atomic_wait_timeout;
     }
 
-    return true;
+    return _Atomic_wait_success;
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
-        _Atomic_notify_fallback(_Storage);
+        __std_atomic_notify_one_indirect(_Storage);
         return;
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE = 0
@@ -231,7 +181,7 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
-        _Atomic_notify_fallback(_Storage);
+        __std_atomic_notify_all_indirect(_Storage);
         return;
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
@@ -239,37 +189,25 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
     __crtWakeByAddressAll(const_cast<void*>(_Storage));
 }
 
-bool __stdcall __std_atomic_wait_indirect(const void* const _Storage, _Atomic_wait_context_t& _Wait_context) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (!_Have_wait_functions()) {
-        return _Atomic_wait_fallback(_Storage, _Wait_context);
-    }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-
+_Atomic_wait_result __stdcall __std_atomic_wait_fallback(
+    const void* const _Storage, unsigned long long deadline) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    switch (_Wait_context._Wait_phase_and_spin_count) {
-    case _Atomic_wait_phase_wait_none:
-        _Wait_context._Counter = _Entry._Counter.load(_STD memory_order_relaxed);
-        // Save counter in context and check again
-        _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_counter;
-        break;
-
-    case _Atomic_wait_phase_wait_counter:
-        if (!__crtWaitOnAddress(const_cast<volatile _STD uint64_t*>(&_Entry._Counter._Storage._Value),
-                &_Wait_context._Counter, sizeof(_Entry._Counter._Storage._Value),
-                _Get_remaining_wait_milliseconds(_Wait_context))) {
-            _Assume_timeout();
-            return false;
-        }
-        // Lock on new counter value if coming back
-        _Wait_context._Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-        break;
-
-    default:
-        _CSTD abort();
+    if (!SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, _Get_remaining_wait_milliseconds(deadline), 0)) {
+        _Assume_timeout();
+        return _Atomic_wait_timeout;
     }
 
-    return true;
+    return _Atomic_wait_success;
+}
+
+void __stdcall __std_atomic_wait_fallback_init(const void* _Storage) noexcept {
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+    AcquireSRWLockExclusive(&_Entry._Lock);
+}
+
+void __stdcall __std_atomic_wait_fallback_uninit(const void* _Storage) noexcept {
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+    ReleaseSRWLockExclusive(&_Entry._Lock);
 }
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
@@ -277,38 +215,17 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
 }
 
 void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (!_Have_wait_functions()) {
-        _Atomic_notify_fallback(_Storage);
-        return;
-    }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    _Entry._Counter.fetch_add(1, _STD memory_order_relaxed);
-    __crtWakeByAddressAll(&_Entry._Counter._Storage._Value);
+    AcquireSRWLockExclusive(&_Entry._Lock);
+    ReleaseSRWLockExclusive(&_Entry._Lock);
+    WakeAllConditionVariable(&_Entry._Condition);
 }
 
-void __stdcall __std_atomic_unwait_direct(
-    [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    _Atomic_unwait_fallback(_Storage, _Wait_context);
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-}
-
-void __stdcall __std_atomic_unwait_indirect(
-    [[maybe_unused]] const void* const _Storage, [[maybe_unused]] _Atomic_wait_context_t& _Wait_context) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    _Atomic_unwait_fallback(_Storage, _Wait_context);
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-}
-
-void __stdcall __std_atomic_wait_get_deadline(
-    _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout) noexcept {
-    if (_Timeout == _Atomic_wait_no_timeout) {
-        _Wait_context._Deadline = _Atomic_wait_no_timeout;
+unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
+    if (_Timeout == _Atomic_wait_no_deadline) {
+        return _Atomic_wait_no_deadline;
     } else {
-        _Wait_context._Deadline = GetTickCount64() + _Timeout;
+        return GetTickCount64() + _Timeout;
     }
 }
 

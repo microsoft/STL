@@ -19,21 +19,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-enum _Atomic_spin_phase {
-    _Atomic_wait_phase_wait_none    = 0,
-    _Atomic_wait_phase_wait_locked  = 1,
-    _Atomic_wait_phase_wait_counter = 2,
-    _Atomic_unwait_needed           = _Atomic_wait_phase_wait_locked,
+enum _Atomic_wait_result {
+    _Atomic_wait_timeout  = 0,
+    _Atomic_wait_fallback = 1,
+    _Atomic_wait_success  = 2,
 };
 
-_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_timeout = 0xFFFF'FFFF'FFFF'FFFF;
-
-struct _Atomic_wait_context_t {
-    unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
-    unsigned long _Reserved                  = 0; // reserved for potential future precision improvement
-    unsigned long long _Deadline             = _Atomic_wait_no_timeout; // or GetTickCount64 plus duration
-    unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
-};
+_INLINE_VAR constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
 _EXTERN_C
 enum class __std_atomic_api_level : unsigned long {
@@ -44,28 +36,25 @@ enum class __std_atomic_api_level : unsigned long {
 };
 
 __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept;
-bool __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* _Comparand, const size_t _Size, _Atomic_wait_context_t& _Wait_context) noexcept;
+_Atomic_wait_result __stdcall __std_atomic_wait_direct(
+    const void* _Storage, const void* _Comparand, const size_t _Size, unsigned long long deadline) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* _Storage) noexcept;
-void __stdcall __std_atomic_unwait_direct(const void* _Storage, _Atomic_wait_context_t& _Wait_context) noexcept;
 
-bool __stdcall __std_atomic_wait_indirect(const void* _Storage, _Atomic_wait_context_t& _Wait_context) noexcept;
+void __stdcall __std_atomic_wait_fallback_init(const void* _Storage) noexcept;
+void __stdcall __std_atomic_wait_fallback_uninit(const void* _Storage) noexcept;
+_Atomic_wait_result __stdcall __std_atomic_wait_fallback(const void* _Storage, unsigned long long deadline) noexcept;
 void __stdcall __std_atomic_notify_one_indirect(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
-void __stdcall __std_atomic_unwait_indirect(const void* _Storage, _Atomic_wait_context_t& _Wait_context) noexcept;
 
-_NODISCARD unsigned long __stdcall __std_atomic_get_spin_count(bool _Is_direct) noexcept;
-void __stdcall __std_atomic_wait_get_deadline(
-    _Atomic_wait_context_t& _Wait_context, unsigned long long _Timeout) noexcept;
+unsigned long long __stdcall __std_atomic_wait_get_deadline(unsigned long long _Timeout) noexcept;
 _END_EXTERN_C
 
-inline void _Atomic_wait_get_deadline(
-    _Atomic_wait_context_t& _Wait_context, const unsigned long long _Timeout) noexcept {
-    if (_Timeout != _Atomic_wait_no_timeout) {
-        __std_atomic_wait_get_deadline(_Wait_context, _Timeout);
+inline unsigned long long _Atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
+    if (_Timeout == _Atomic_wait_no_deadline) {
+        return _Atomic_wait_no_deadline;
     }
-    // Otherwise defaults to _Atomic_wait_no_timeout
+    return __std_atomic_wait_get_deadline(_Timeout);
 }
 
 #pragma pop_macro("new")
