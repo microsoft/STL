@@ -220,16 +220,22 @@ int main(int argc, char* argv[]) {
         test_init_buf_ptrs();
     });
 
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _ITERATOR_DEBUG_LEVEL > 0
     exec.add_death_tests({
         test_iterator_dereference_death<small_string>,
-        test_iterator_dereference_death<large_string>,
         test_iterator_operator_arrow_death<small_string>,
-        test_iterator_operator_arrow_death<large_string>,
         test_iterator_increment_death<small_string>,
+    });
+#endif // _ITERATOR_DEBUG_LEVEL > 0
+
+#if _ITERATOR_DEBUG_LEVEL > 1
+    exec.add_death_tests({
+        test_iterator_dereference_death<large_string>,
+        test_iterator_operator_arrow_death<large_string>,
         test_iterator_increment_death<large_string>,
     });
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _ITERATOR_DEBUG_LEVEL > 1
+
 
     return exec.run(argc, argv);
 }
