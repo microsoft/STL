@@ -377,7 +377,7 @@ struct _Atomic_storage {
             _Ty _Local;
             const auto _Local_ptr = _STD addressof(_Local);
             _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_Ty));
-            __builtin_zero_non_value_bits(_STD addressof(_Local));
+            __builtin_zero_non_value_bits(_Local_ptr);
             _Result = _CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
         } else {
             _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
