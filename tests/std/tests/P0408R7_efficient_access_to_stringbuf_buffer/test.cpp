@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
-#include <iostream>
 #include <memory_resource>
 #include <sstream>
 #include <string>
@@ -22,6 +21,7 @@ template <typename Stream>
 struct test_rvalue {
     void operator()(const string& init_value) {
         string buffer{init_value};
+        size_t res = buffer.capacity();
         Stream stream{move(buffer)};
         assert(stream.view() == init_value);
         assert(stream.str() == init_value);
@@ -29,6 +29,11 @@ struct test_rvalue {
         assert(stream.rdbuf()->get_allocator() == init_value.get_allocator());
         // Move out the buffer, the underlying buffer should be empty.
         buffer = move(stream).str();
+        if (buffer == string_view{large_string}) {
+            assert(buffer.capacity() == res);
+        } else {
+            assert(buffer.capacity() == res + 1);
+        }
         assert(buffer == init_value);
         assert(stream.view().empty());
         assert(stream.str().empty());
@@ -147,7 +152,6 @@ void test_iterator_increment_death() {
     auto iterator = s.begin();
     stringstream stream{move(s)};
     ++iterator; // cannot increase invalid iterator
-    cout << s << endl;
 }
 
 void test_iterator_increment_zero(const char* str) {
