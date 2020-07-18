@@ -266,10 +266,8 @@ bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_typ
             break;
         }
 
-        if (!_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
-            if (!__std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Wait_context)) {
-                return false;
-            }
+        if (!__std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Wait_context)) {
+            return false;
         }
     }
 
@@ -410,9 +408,8 @@ struct _Atomic_storage {
             if (_CSTD memcmp(_STD addressof(_Observed), _Expected_ptr, sizeof(_Ty)) != 0) {
                 break;
             }
-            if (!_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, false)) {
-                __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
-            }
+
+            __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
         }
 
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
@@ -462,12 +459,6 @@ public:
             if (!_Local) {
                 break;
             }
-
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-            if (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
-                continue; // Keep spinning for now.
-            }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
             __std_atomic_wait_direct(&_Spinlock, &_Local, 1, _Wait_context);
             // Don't check for spurious wakes, spinlock will do it
@@ -1029,10 +1020,8 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
                 break;
             }
-
-            if (!_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, false)) {
-                __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
-            }
+            
+            __std_atomic_wait_indirect(_Storage_ptr, _Wait_context);
         }
 
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0

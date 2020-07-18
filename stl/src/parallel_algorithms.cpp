@@ -55,10 +55,8 @@ void __stdcall __std_execution_wait_on_uchar(const volatile unsigned char* _Addr
     _Atomic_wait_context_t _Wait_context;
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-    while (_Atomic_wait_spin(_Wait_context._Wait_phase_and_spin_count, true)) {
-        if (_Atomic_load_uchar(_Address) != _Compare) {
-            return;
-        }
+    if (_Atomic_load_uchar(_Address) != _Compare) {
+        return;
     }
 
     for (;;) {

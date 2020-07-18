@@ -6,7 +6,6 @@
 LIBRARY LIBRARYNAME
 
 EXPORTS
-    __std_atomic_get_spin_count
     __std_atomic_notify_all_direct
     __std_atomic_notify_all_indirect
     __std_atomic_notify_one_direct

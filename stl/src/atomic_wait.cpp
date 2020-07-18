@@ -10,7 +10,6 @@
 #include <new>
 #include <thread>
 #include <Windows.h>
-#include <VersionHelpers.h>
 
 // clang-format on
 
@@ -302,31 +301,6 @@ void __stdcall __std_atomic_unwait_indirect(
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     _Atomic_unwait_fallback(_Storage, _Wait_context);
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-}
-
-unsigned long __stdcall __std_atomic_get_spin_count(const bool _Is_direct) noexcept {
-    if (_Is_direct) {
-        // WaitOnAddress spins by itself, but this is only helpful for direct waits,
-        // since for indirect waits this will work only if notified.
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-        return 0;
-#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
-        if (_Have_wait_functions()) {
-            return 0;
-        }
-#endif // ^^^ !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE ^^^
-    }
-
-    constexpr unsigned long _Uninitialized_spin_count = ULONG_MAX;
-    static _STD atomic<unsigned long> _Atomic_spin_count{_Uninitialized_spin_count};
-    const unsigned long _Spin_count_from_cache = _Atomic_spin_count.load(_STD memory_order_relaxed);
-    if (_Spin_count_from_cache != _Uninitialized_spin_count) {
-        return _Spin_count_from_cache;
-    }
-
-    unsigned long _Spin_count = (_STD thread::hardware_concurrency() == 1 ? 0 : 10'000) * _Atomic_spin_value_step;
-    _Atomic_spin_count.store(_Spin_count, _STD memory_order_relaxed);
-    return _Spin_count;
 }
 
 void __stdcall __std_atomic_wait_get_deadline(
