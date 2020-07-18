@@ -64,7 +64,16 @@ public:
     }
 
     _NODISCARD friend constexpr bool operator<=(const partial_ordering _Val, _Literal_zero) noexcept {
+        // The stored value is either less (0xff), equivalent (0x00), greater (0x01) or unordered (0x80). Subtracting
+        // 1 produces either 0xfe, 0xff, 0x00, or 0x79. The high bit is set in the result only if the initial value was
+        // less or equivalent, for which we want to return true.
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1117991
         return static_cast<signed char>(static_cast<unsigned char>(_Val._Value) - 1) < 0;
+#else // ^^^ no workaround / workaround vvv
+        auto _Tmp = static_cast<unsigned char>(_Val._Value);
+        --_Tmp;
+        return static_cast<bool>(_Tmp >> 7);
+#endif // TRANSITION, DevCom-1117991
     }
 
     _NODISCARD friend constexpr bool operator>=(const partial_ordering _Val, _Literal_zero) noexcept {
