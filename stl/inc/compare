@@ -64,9 +64,9 @@ public:
     }
 
     _NODISCARD friend constexpr bool operator<=(const partial_ordering _Val, _Literal_zero) noexcept {
-        // The stored value is either less (0xff), equivalent (0x00), greater (0x01) or unordered (0x80). Subtracting
-        // 1 produces either 0xfe, 0xff, 0x00, or 0x79. The high bit is set in the result only if the initial value was
-        // less or equivalent, for which we want to return true.
+        // The stored value is either less (0xff), equivalent (0x00), greater (0x01), or unordered (0x80).
+        // Subtracting 1 produces either 0xfe, 0xff, 0x00, or 0x7f. The high bit is set in the result
+        // if and only if the initial value was less or equivalent, for which we want to return true.
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1117991
         return static_cast<signed char>(static_cast<unsigned char>(_Val._Value) - 1) < 0;
 #else // ^^^ no workaround / workaround vvv
@@ -101,9 +101,9 @@ public:
     }
 
     _NODISCARD friend constexpr partial_ordering operator<=>(_Literal_zero, const partial_ordering _Val) noexcept {
-        // The stored value is either less (0xff), equivalent (0x00), greater (0x01) or unordered (0x80). Subtracting
-        // from 0 produces either 0x01, 0x00, 0xff, or 0x80. Note that the effect is to exchange less for greater (and
-        // vice versa), while leaving equivalent and unordered unchanged.
+        // The stored value is either less (0xff), equivalent (0x00), greater (0x01), or unordered (0x80).
+        // Subtracting from 0 produces either 0x01, 0x00, 0xff, or 0x80. Note that the effect is to
+        // exchange less for greater (and vice versa), while leaving equivalent and unordered unchanged.
         return partial_ordering{static_cast<_Compare_ord>(0 - static_cast<unsigned int>(_Val._Value))};
     }
 
