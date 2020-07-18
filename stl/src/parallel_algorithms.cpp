@@ -70,7 +70,7 @@ void __stdcall __std_execution_wait_on_uchar(const volatile unsigned char* _Addr
             }
         }
 #else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_WIN8 / _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 vvv
-        [[maybe_unused]] _Result;
+        (void) _Result;
 #endif // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8 ^^^
     }
 }

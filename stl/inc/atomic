@@ -257,7 +257,7 @@ template <class _Value_type, class _Atomic_storage>
 bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_type _Expected_bytes,
     const memory_order _Order, const unsigned long long _Timeout) noexcept {
     unsigned long long _Deadline = _Atomic_wait_get_deadline(_Timeout);
-    const auto _Storage_ptr = _STD addressof(_Storage._Storage);
+    const auto _Storage_ptr      = _STD addressof(_Storage._Storage);
 
     for (;;) {
         _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_Storage.load(_Order));
@@ -265,10 +265,11 @@ bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_typ
             return true;
         }
 
-        _Atomic_wait_result _Result = __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Deadline);
+        _Atomic_wait_result _Result =
+            __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Deadline);
         if (_Result == _Atomic_wait_timeout) {
             return false;
-        } 
+        }
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
         if (_Result == _Atomic_wait_fallback) {
             for (;;) {
@@ -286,7 +287,6 @@ bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_typ
         }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     }
-
 }
 
 // FUNCTION _Load_barrier
@@ -476,7 +476,7 @@ public:
                         __std_atomic_wait_fallback_uninit(&_Spinlock);
                         return;
                     }
-                    
+
                     __std_atomic_wait_fallback(&_Spinlock, _Atomic_wait_no_deadline);
                 }
             }
