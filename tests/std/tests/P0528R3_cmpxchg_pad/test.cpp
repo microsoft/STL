@@ -16,8 +16,12 @@ struct X1 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
+    }
+
+    bool check(const char v) const {
+        return x == v;
     }
 };
 
@@ -26,8 +30,12 @@ struct X2 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
+    }
+
+    bool check(const char v) const {
+        return x == v;
     }
 };
 
@@ -40,10 +48,14 @@ struct X3 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
         y = 0;
-        z = 0;
+        z = ~v;
+    }
+
+    bool check(const char v) const {
+        return x == v && z == ~v;
     }
 };
 #pragma pack(pop)
@@ -58,8 +70,35 @@ struct alignas(4) X4 {
     void set(char v) {
         x = v;
     }
+
+    bool check(const char v) const {
+        return x == v;
+    }
 };
 #pragma warning(pop)
+
+#pragma pack(push)
+#pragma warning(push)
+#pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
+struct X6 {
+    char x;
+    alignas(2) char y[2];
+    char z;
+
+    void operator&() const = delete;
+
+    void set(char v) {
+        x = v;
+        std::memset(&y, 0, sizeof(y));
+        z = ~v;
+    }
+
+    bool check(const char v) const {
+        return x == v && z == ~v;
+    }
+};
+#pragma warning(pop)
+#pragma pack(pop)
 
 struct X8 {
     char x;
@@ -71,7 +110,29 @@ struct X8 {
         x = v;
         y = 0;
     }
+
+    bool check(const char v) const {
+        return x == v;
+    }
 };
+
+#pragma pack(push, 1)
+struct X9 {
+    X8 x;
+    char z;
+
+    void operator&() const = delete;
+
+    void set(char v) {
+        x.set(v);
+        z = ~v;
+    }
+
+    bool check(const char v) const {
+        return x.check(v) && z == ~v;
+    }
+};
+#pragma pack(pop)
 
 struct X16 {
     long x;
@@ -83,7 +144,11 @@ struct X16 {
     void set(char v) {
         x = v;
         y = 0;
-        z = 0;
+        z = ~v;
+    }
+
+    bool check(const char v) const {
+        return x == v && z == ~v;
     }
 };
 
@@ -97,7 +162,11 @@ struct X20 {
     void set(char v) {
         x = v;
         std::memset(&y, 0, sizeof(y));
-        z = 0;
+        z = ~v;
+    }
+
+    bool check(const char v) const {
+        return x == v && z == ~v;
     }
 };
 
@@ -105,6 +174,7 @@ struct X20 {
 template <class X, std::size_t S>
 void test() {
     static_assert(sizeof(X) == S, "Unexpected size");
+    static_assert(!std::has_unique_object_representations_v<X>, "No padding type");
     X x1;
     X x2;
     X x3;
@@ -123,20 +193,20 @@ void test() {
     X x;
     std::memcpy(std::addressof(x), std::addressof(x3), sizeof(x));
     assert(!v.compare_exchange_strong(x, x4));
-    assert(v.load().x == 5);
+    assert(v.load().check(5));
 
     v.store(x1);
     for (int retry = 0; retry != 10; ++retry) {
         X xw;
         std::memcpy(std::addressof(xw), std::addressof(x3), sizeof(x));
         assert(!v.compare_exchange_weak(xw, x4));
-        assert(v.load().x == 5);
+        assert(v.load().check(5));
     }
 
     v.store(x1);
     std::memcpy(std::addressof(x), std::addressof(x2), sizeof(x));
     assert(v.compare_exchange_strong(x, x3));
-    assert(v.load().x == 6);
+    assert(v.load().check(6));
 
     v.store(x1);
     for (;;) {
@@ -146,7 +216,7 @@ void test() {
             break;
         }
     }
-    assert(v.load().x == 6);
+    assert(v.load().check(6));
 }
 
 
@@ -174,7 +244,9 @@ int main() {
     test<X2, 2>();
     test<X3, 3>();
     test<X4, 4>();
+    test<X6, 6>();
     test<X8, 8>();
+    test<X9, 9>();
     test<X16, 16>();
     test<X20, 20>();
 #endif // !__clang__, TRANSITION, LLVM-46685
