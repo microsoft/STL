@@ -6,6 +6,8 @@
 #include <concepts>
 #include <ranges>
 #include <span>
+#include <type_traits>
+#include <utility>
 
 #include <range_algorithm_support.hpp>
 
@@ -27,9 +29,9 @@ struct int_wrapper {
 STATIC_ASSERT(same_as<ranges::move_backward_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::move_backward(borrowed<false>{}, static_cast<int*>(nullptr))),
+STATIC_ASSERT(same_as<decltype(ranges::move_backward(borrowed<false>{}, nullptr_to<int>)),
     ranges::move_backward_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::move_backward(borrowed<true>{}, static_cast<int*>(nullptr))),
+STATIC_ASSERT(same_as<decltype(ranges::move_backward(borrowed<true>{}, nullptr_to<int>)),
     ranges::move_backward_result<int*, int*>>);
 
 static constexpr int expected_output[]      = {13, 42, 1729};
@@ -41,7 +43,7 @@ struct instantiator {
     static constexpr void call() {
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
 #pragma warning(suppress : 4127) // conditional expression is constant
-        if (!ranges::contiguous_range<R1> || !ranges::contiguous_range<R1> || !is_constant_evaluated())
+        if (!ranges::contiguous_range<R1> || !is_constant_evaluated())
 #endif // TRANSITION, VSO-938163
         {
             // For the second range, we need an iterator to the end; it's expedient to simply ignore ranges with
