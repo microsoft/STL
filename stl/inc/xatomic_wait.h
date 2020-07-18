@@ -29,7 +29,7 @@ enum _Atomic_spin_phase {
 _INLINE_VAR constexpr unsigned long long _Atomic_wait_no_timeout = 0xFFFF'FFFF'FFFF'FFFF;
 
 struct _Atomic_wait_context_t {
-    unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_wait_counter;
+    unsigned long _Wait_phase_and_spin_count = _Atomic_wait_phase_wait_none;
     unsigned long _Reserved                  = 0; // reserved for potential future precision improvement
     unsigned long long _Deadline             = _Atomic_wait_no_timeout; // or GetTickCount64 plus duration
     unsigned long long _Counter; // For indirect waits - value of internal variable to wait against
