@@ -44,6 +44,8 @@ void test(const bool release_wait) {
 }
 
 int main() {
+    static_assert(std::latch::max() > 0);
+
     test(true);
     test(false);
 }

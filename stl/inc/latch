@@ -42,6 +42,10 @@ public:
         }
     }
 
+    static constexpr ptrdiff_t max() noexcept {
+        return (numeric_limits<ptrdiff_t>::max)();
+    }
+
     bool try_wait() const noexcept {
         return _Counter.load(memory_order_acquire) == 0;
     }
