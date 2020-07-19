@@ -4666,7 +4666,7 @@ namespace ranges {
         // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Urng>
             requires (forward_iterator<_It> || random_access_iterator<_Out>)
-                  && indirectly_copyable<_It, _Out> && uniform_random_bit_generator<remove_reference<_Urng>>
+                  && indirectly_copyable<_It, _Out> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         constexpr _Out operator()(
             _It _First, _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Urng&& _Func) const {
             _Adl_verify_range(_First, _Last);
@@ -4690,7 +4690,7 @@ namespace ranges {
         template <input_range _Rng, weakly_incrementable _Out, class _Urng>
             requires (forward_range<_Rng> || random_access_iterator<_Out>)
                   && indirectly_copyable<iterator_t<_Rng>, _Out>
-                  && uniform_random_bit_generator<remove_reference<_Urng>>
+                  && uniform_random_bit_generator<remove_reference_t<_Urng>>
         constexpr _Out operator()(_Rng&& _Range, _Out _Result, range_difference_t<_Rng> _Count, _Urng&& _Func) const {
             if (_Count <= 0) {
                 return _Result;
@@ -4710,14 +4710,13 @@ namespace ranges {
         }
         // clang-format on
     private:
-        template <class _It, class _Se, class _Out, class _Urng>
+        template <class _It, class _Se, class _Out, class _Rng>
         _NODISCARD static constexpr _Out _Sample_selection_unchecked(
-            _It _First, const _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Urng& _RngFunc) {
+            _It _First, const _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Rng& _RngFunc) {
             // randomly select _Count elements from [_First, _Last) into _Result
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
-            _STL_INTERNAL_STATIC_ASSERT(uniform_random_bit_generator<remove_reference<_Urng>>);
 
             auto _PopSize = _RANGES distance(_First, _Last);
             if (_Count > _PopSize) {
@@ -4735,14 +4734,13 @@ namespace ranges {
             return _Result;
         }
 
-        template <class _It, class _Se, class _Out, class _Urng>
+        template <class _It, class _Se, class _Out, class _Rng>
         _NODISCARD static constexpr _Out _Sample_reservoir_unchecked(
-            _It _First, const _Se _Last, _Out _Result, const iter_difference_t<_It> _Count, _Urng& _RngFunc) {
+            _It _First, const _Se _Last, _Out _Result, const iter_difference_t<_It> _Count, _Rng& _RngFunc) {
             // randomly select _Count elements from [_First, _Last) into _Result
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_Out>);
-            _STL_INTERNAL_STATIC_ASSERT(uniform_random_bit_generator<remove_reference<_Urng>>);
 
             iter_difference_t<_It> _PopSize{};
             for (; _PopSize < _Count; ++_PopSize, (void) ++_First) {
