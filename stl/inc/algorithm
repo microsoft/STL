@@ -1826,6 +1826,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_movable<_It1, _It2>);
 
+            if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
+                if (!_STD is_constant_evaluated()) {
+                    return _Copy_backward_memmove(_First, _Last, _Result);
+                }
+            }
+
             while (_First != _Last) {
                 *--_Result = _RANGES iter_move(--_Last);
             }
