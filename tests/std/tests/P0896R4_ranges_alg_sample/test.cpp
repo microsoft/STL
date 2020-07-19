@@ -33,7 +33,8 @@ struct instantiator {
                 assert(result1.peek() == end(output1));
 
                 // check repeatability
-                sample(wrapped_input.begin(), wrapped_input.end(), Write{output2}, 3, copy_gen);
+                Read wrapped_input2{reservoir};
+                sample(wrapped_input2.begin(), wrapped_input2.end(), Write{output2}, 3, copy_gen);
                 assert(equal(output1, output2));
 
                 if (ranges::forward_range<Read>) {
@@ -55,7 +56,8 @@ struct instantiator {
                 assert(result1.peek() == end(output1));
 
                 // check repeatability
-                sample(wrapped_input, Write{output2}, 3, copy_gen);
+                Read wrapped_input2{reservoir};
+                sample(wrapped_input2, Write{output2}, 3, copy_gen);
                 assert(equal(output1, output2));
 
                 if (ranges::forward_range<Read>) {
