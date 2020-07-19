@@ -1,0 +1,81 @@
+// atomic standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _LATCH_
+#define _LATCH_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <latch> is not supported when compiling with /clr:pure.
+#endif // _M_CEE_PURE
+
+#if !_HAS_CXX20
+#pragma message("The contents of <latch> are available only with C++20 or later.")
+#endif // !_HAS_CXX20
+
+#include <atomic>
+#include <system_error>
+
+_STD_BEGIN
+
+class latch {
+public:
+    constexpr explicit latch(const ptrdiff_t expected) noexcept /* strengthened */
+        : _Counter{expected} {}
+
+    ~latch() = default;
+
+    latch(const latch&) = delete;
+    latch& operator=(const latch&) = delete;
+
+    void count_down(const ptrdiff_t _Update = 1) {
+        ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
+        if (_Current < 0) {
+            _Counter.notify_all();
+            _Throw_system_error(errc::resource_deadlock_would_occur);
+        } else if (_Current == 0) {
+            _Counter.notify_all();
+        }
+    }
+
+    bool try_wait() const noexcept {
+        return _Counter.load(memory_order_acquire) == 0;
+    }
+
+    void wait() const {
+        for (;;) {
+            const ptrdiff_t _Current = _Counter.load(memory_order_acquire);
+            if (_Current == 0) {
+                return;
+            }
+            if (_Current < 0) {
+                _Throw_system_error(errc::resource_deadlock_would_occur);
+            }
+            _Counter.wait(_Current, memory_order_relaxed);
+        }
+    }
+
+    void arrive_and_wait(const ptrdiff_t _Update = 1) {
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
+        if (_Current < 0) {
+            _Throw_system_error(errc::resource_deadlock_would_occur);
+        } else if (_Current == 0) {
+            _Counter.notify_all();
+        } else {
+            _Counter.wait(_Current, memory_order_relaxed);
+            wait();
+        }
+    }
+
+private:
+    atomic<ptrdiff_t> _Counter;
+};
+
+_STD_END
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _LATCH_

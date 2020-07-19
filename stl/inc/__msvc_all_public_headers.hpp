@@ -64,6 +64,7 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <latch>
 #include <limits>
 #include <list>
 #include <locale>

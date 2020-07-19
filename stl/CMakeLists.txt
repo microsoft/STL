@@ -153,6 +153,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/iso646.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/istream
     ${CMAKE_CURRENT_LIST_DIR}/inc/iterator
+    ${CMAKE_CURRENT_LIST_DIR}/inc/latch
     ${CMAKE_CURRENT_LIST_DIR}/inc/limits
     ${CMAKE_CURRENT_LIST_DIR}/inc/list
     ${CMAKE_CURRENT_LIST_DIR}/inc/locale
