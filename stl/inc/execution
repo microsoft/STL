@@ -719,7 +719,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
 
     _Work_stealing_team(size_t _Threads, _Diff _Total_work)
         : _Queues(_Threads), _Queues_used(0), _Remaining_work(_Total_work), _Available_mutex(),
-          _Available_queues(greater<>{}, _Get_queues(_Threads)) {} // register work with the thread pool
+          _Available_queues(greater{}, _Get_queues(_Threads)) {} // register work with the thread pool
 
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
@@ -1871,7 +1871,7 @@ struct _Static_partitioned_mismatch2 {
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
+    // return [_First1, _Last1)/[_First2, ...) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -1913,7 +1913,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, _Last2) mismatch using _Pred
+    // return [_First1, _Last1)/[_First2, _Last2) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -1991,7 +1991,7 @@ struct _Static_partitioned_equal2 {
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _Pr _Pred) noexcept
 /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
+    // compare [_First1, _Last1) to [_First2, ...)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -2024,7 +2024,7 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
     _Pr _Pred) noexcept /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred
+    // compare [_First1, _Last1) to [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -2740,7 +2740,7 @@ struct _Sort_operation { // context for background threads
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // order [_First, _Last), using _Pred
+    // order [_First, _Last)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst                = _Get_unwrapped(_First);
     const auto _ULast                 = _Get_unwrapped(_Last);
@@ -2998,7 +2998,7 @@ struct _Static_partitioned_stable_sort3 {
 
 template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // sort preserving order of equivalents, using _Pred
+    // sort preserving order of equivalents
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -3314,7 +3314,7 @@ struct _Static_partitioned_is_heap_until {
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // find extent of range that is a heap ordered by _Pred
+    // find extent of range that is a heap
     _REQUIRE_PARALLEL_ITERATOR(_RanIt);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -3910,7 +3910,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), using _Pred
+    // AND sets [_First1, _Last1) and [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
@@ -4001,7 +4001,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
-    // take set [_First2, _Last2) from [_First1, _Last1), using _Pred
+    // take set [_First2, _Last2) from [_First1, _Last1)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);

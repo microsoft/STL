@@ -1386,7 +1386,7 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>& _Other)
         return shared_ptr<_Ty1>(_Other, _Ptr);
     }
 
-    return shared_ptr<_Ty1>();
+    return {};
 }
 
 template <class _Ty1, class _Ty2>
@@ -1398,7 +1398,7 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noex
         return shared_ptr<_Ty1>(_STD move(_Other), _Ptr);
     }
 
-    return shared_ptr<_Ty1>();
+    return {};
 }
 #else // _CPPRTTI
 template <class _Ty1, class _Ty2>
@@ -2730,7 +2730,7 @@ _NODISCARD bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<
     using _Ptr1   = typename unique_ptr<_Ty1, _Dx1>::pointer;
     using _Ptr2   = typename unique_ptr<_Ty2, _Dx2>::pointer;
     using _Common = common_type_t<_Ptr1, _Ptr2>;
-    return less<_Common>()(_Left.get(), _Right.get());
+    return less<_Common>{}(_Left.get(), _Right.get());
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
@@ -2771,13 +2771,13 @@ _NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) 
 template <class _Ty, class _Dx>
 _NODISCARD bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>()(_Left.get(), _Right);
+    return less<_Ptr>{}(_Left.get(), _Right);
 }
 
 template <class _Ty, class _Dx>
 _NODISCARD bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>()(_Left, _Right.get());
+    return less<_Ptr>{}(_Left, _Right.get());
 }
 
 template <class _Ty, class _Dx>
