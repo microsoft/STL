@@ -33,7 +33,7 @@ public:
     latch& operator=(const latch&) = delete;
 
     void count_down(const ptrdiff_t _Update = 1) {
-        ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
         if (_Current == 0) {
             _Counter.notify_all();
         } else if (_Current < 0) {
