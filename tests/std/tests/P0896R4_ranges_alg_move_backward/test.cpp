@@ -134,8 +134,8 @@ constexpr void test_memmove() {
 }
 
 int main() {
-    // FIXME: STATIC_ASSERT((test_bidi_bidi<instantiator, int_wrapper, int_wrapper>(), true));
-    // FIXME: test_bidi_bidi<instantiator, int_wrapper, int_wrapper>();
+    STATIC_ASSERT((test_bidi_bidi<instantiator, int_wrapper, int_wrapper>(), true));
+    test_bidi_bidi<instantiator, int_wrapper, int_wrapper>();
 
     STATIC_ASSERT((test_memmove(), true));
     test_memmove();
