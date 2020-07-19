@@ -1795,6 +1795,25 @@ namespace ranges {
     using move_backward_result = in_out_result<_In, _Out>;
 
     // VARIABLE ranges::move_backward
+    // clang-format off
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <bidirectional_iterator _It1, bidirectional_iterator _It2>
+        requires indirectly_movable<_It1, _It2>
+    _NODISCARD static constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
+        if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
+            if (!_STD is_constant_evaluated()) {
+                return _Copy_backward_memmove(_First, _Last, _Result);
+            }
+        }
+
+        while (_First != _Last) {
+            *--_Result = _RANGES iter_move(--_Last);
+        }
+
+        return _Result;
+    }
+    // clang-format on
+
     class _Move_backward_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1807,7 +1826,7 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _Result = _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            _Result = _RANGES _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -1815,29 +1834,10 @@ namespace ranges {
             requires indirectly_movable<iterator_t<_Rng>, _It>
         constexpr move_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
             auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _Result     = _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
+            _Result     = _RANGES _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
             return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
         }
         // clang-format on
-    private:
-        template <class _It1, class _It2>
-        _NODISCARD static constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
-            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It1>);
-            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It2>);
-            _STL_INTERNAL_STATIC_ASSERT(indirectly_movable<_It1, _It2>);
-
-            if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
-                if (!_STD is_constant_evaluated()) {
-                    return _Copy_backward_memmove(_First, _Last, _Result);
-                }
-            }
-
-            while (_First != _Last) {
-                *--_Result = _RANGES iter_move(--_Last);
-            }
-
-            return _Result;
-        }
     };
 
     inline constexpr _Move_backward_fn move_backward{_Not_quite_object::_Construct_tag{}};
