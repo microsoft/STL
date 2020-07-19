@@ -256,9 +256,9 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 template <class _Value_type, class _Atomic_storage>
 bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, const _Value_type _Expected_bytes,
     const memory_order _Order, const unsigned long long _Timeout) noexcept {
-    const auto _Storage_ptr      = _STD addressof(_Storage._Storage);
+    const auto _Storage_ptr = _STD addressof(_Storage._Storage);
     _Wait_context _Context;
-    _Context._Storage = _Storage_ptr;
+    _Context._Storage  = _Storage_ptr;
     _Context._Deadline = _Atomic_wait_get_deadline(_Timeout);
     bool _Result;
     for (;;) {
@@ -405,7 +405,7 @@ struct _Atomic_storage {
         const auto _Expected_ptr = _STD addressof(_Expected);
 
         _Wait_context _Context;
-        _Context._Storage = _Storage_ptr;
+        _Context._Storage  = _Storage_ptr;
         _Context._Deadline = _Atomic_wait_no_deadline;
         for (;;) {
             const _Ty _Observed = load(_Order);
