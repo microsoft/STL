@@ -793,6 +793,20 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_latch
+#error __cpp_lib_latch  is not defined
+#elif __cpp_lib_latch != 201907L
+#error __cpp_lib_latch  is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_latch == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_latch
+#error __cpp_lib_latch  is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_launder
 #error __cpp_lib_launder is not defined
