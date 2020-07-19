@@ -34,11 +34,11 @@ public:
 
     void count_down(const ptrdiff_t _Update = 1) {
         ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
-        if (_Current < 0) {
+        if (_Current == 0) {
+            _Counter.notify_all();
+        } else if (_Current < 0) {
             _Counter.notify_all();
             _Throw_system_error(errc::resource_deadlock_would_occur);
-        } else if (_Current == 0) {
-            _Counter.notify_all();
         }
     }
 
@@ -50,9 +50,8 @@ public:
         for (;;) {
             const ptrdiff_t _Current = _Counter.load(memory_order_acquire);
             if (_Current == 0) {
-                return;
-            }
-            if (_Current < 0) {
+                break;
+            } else if (_Current < 0) {
                 _Throw_system_error(errc::resource_deadlock_would_occur);
             }
             _Counter.wait(_Current, memory_order_relaxed);
@@ -61,10 +60,11 @@ public:
 
     void arrive_and_wait(const ptrdiff_t _Update = 1) {
         const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
-        if (_Current < 0) {
-            _Throw_system_error(errc::resource_deadlock_would_occur);
-        } else if (_Current == 0) {
+        if (_Current == 0) {
             _Counter.notify_all();
+        } else if (_Current < 0) {
+            _Counter.notify_all();
+            _Throw_system_error(errc::resource_deadlock_would_occur);
         } else {
             _Counter.wait(_Current, memory_order_relaxed);
             wait();
