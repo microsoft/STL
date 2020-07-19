@@ -64,7 +64,6 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
-#include <latch>
 #include <limits>
 #include <list>
 #include <locale>
@@ -106,6 +105,7 @@
 
 #ifndef _M_CEE_PURE
 #include <atomic>
+#include <latch>
 #endif // _M_CEE_PURE
 
 #ifndef _M_CEE
