@@ -19,12 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-enum _Atomic_wait_result {
-    _Atomic_wait_timeout  = 0,
-    _Atomic_wait_fallback = 1,
-    _Atomic_wait_success  = 2,
-};
-
 _INLINE_VAR constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
 _EXTERN_C
@@ -35,17 +29,25 @@ enum class __std_atomic_api_level : unsigned long {
     __has_wait_on_address,
 };
 
+struct _Wait_context {
+    bool _Locked = false; // If true, unwait is needed (never true for direct wait when WaitOnAddress is available)
+    const void* _Storage; // Initialize to pointer to wait on
+    _Wait_context* _Next;
+    _Wait_context* _Prev;
+    void* _Condition;
+    unsigned long long _Deadline; // Initialize to _Atomic_wait_no_deadline or deadline
+};
+
 __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept;
-_Atomic_wait_result __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* _Comparand, const size_t _Size, unsigned long long deadline) noexcept;
+bool __stdcall __std_atomic_wait_direct(const void* _Comparand, const size_t _Size, _Wait_context& _Context) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* _Storage) noexcept;
+void __stdcall __std_atomic_unwait_direct(_Wait_context& _Context) noexcept;
 
-void __stdcall __std_atomic_wait_fallback_init(const void* _Storage) noexcept;
-void __stdcall __std_atomic_wait_fallback_uninit(const void* _Storage) noexcept;
-_Atomic_wait_result __stdcall __std_atomic_wait_fallback(const void* _Storage, unsigned long long deadline) noexcept;
+bool __stdcall __std_atomic_wait_indirect(_Wait_context& _Context) noexcept;
 void __stdcall __std_atomic_notify_one_indirect(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
+void __stdcall __std_atomic_unwait_indirect(_Wait_context& _Context) noexcept;
 
 unsigned long long __stdcall __std_atomic_wait_get_deadline(unsigned long long _Timeout) noexcept;
 _END_EXTERN_C

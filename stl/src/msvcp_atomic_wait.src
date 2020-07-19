@@ -6,16 +6,16 @@
 LIBRARY LIBRARYNAME
 
 EXPORTS
+    __std_atomic_wait_get_deadline
     __std_atomic_notify_all_direct
     __std_atomic_notify_all_indirect
     __std_atomic_notify_one_direct
     __std_atomic_notify_one_indirect
     __std_atomic_set_api_level
+    __std_atomic_unwait_direct
+    __std_atomic_unwait_indirect
     __std_atomic_wait_direct
-    __std_atomic_wait_fallback
-    __std_atomic_wait_fallback_init
-    __std_atomic_wait_fallback_uninit
-    __std_atomic_wait_get_deadline
+    __std_atomic_wait_indirect
     __std_bulk_submit_threadpool_work
     __std_close_threadpool_work
     __std_create_threadpool_work

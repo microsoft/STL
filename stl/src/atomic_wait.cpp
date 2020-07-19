@@ -22,8 +22,8 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
-        CONDITION_VARIABLE _Condition = CONDITION_VARIABLE_INIT;
         SRWLOCK _Lock                 = SRWLOCK_INIT;
+        _Wait_context _Wait_list_head = {false, nullptr, &_Wait_list_head, &_Wait_list_head, nullptr};
 
         constexpr _Wait_table_entry() noexcept = default;
     };
@@ -148,23 +148,20 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-_Atomic_wait_result __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* const _Comparand, const size_t _Size, unsigned long long deadline) noexcept {
+bool __stdcall __std_atomic_wait_direct(const void* _Comparand, const size_t _Size, _Wait_context& _Context) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (!_Have_wait_functions()) {
-        auto& _Entry = _Atomic_wait_table_entry(_Storage);
-        AcquireSRWLockExclusive(&_Entry._Lock);
-        return _Atomic_wait_fallback;
+        return __std_atomic_wait_indirect(_Context);
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
-    if (!__crtWaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size,
-            _Get_remaining_wait_milliseconds(deadline))) {
+    if (!__crtWaitOnAddress(const_cast<volatile void*>(_Context._Storage), const_cast<void*>(_Comparand), _Size,
+            _Get_remaining_wait_milliseconds(_Context._Deadline))) {
         _Assume_timeout();
-        return _Atomic_wait_timeout;
+        return false;
     }
 
-    return _Atomic_wait_success;
+    return true;
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
@@ -189,37 +186,75 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
     __crtWakeByAddressAll(const_cast<void*>(_Storage));
 }
 
-_Atomic_wait_result __stdcall __std_atomic_wait_fallback(
-    const void* const _Storage, unsigned long long deadline) noexcept {
-    auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    if (!SleepConditionVariableSRW(&_Entry._Condition, &_Entry._Lock, _Get_remaining_wait_milliseconds(deadline), 0)) {
-        _Assume_timeout();
-        return _Atomic_wait_timeout;
-    }
 
-    return _Atomic_wait_success;
-}
-
-void __stdcall __std_atomic_wait_fallback_init(const void* _Storage) noexcept {
-    auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    AcquireSRWLockExclusive(&_Entry._Lock);
-}
-
-void __stdcall __std_atomic_wait_fallback_uninit(const void* _Storage) noexcept {
-    auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    ReleaseSRWLockExclusive(&_Entry._Lock);
+void __stdcall __std_atomic_unwait_direct(_Wait_context& _Context) noexcept {
+    return __std_atomic_unwait_indirect(_Context);
 }
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
-    return __std_atomic_notify_all_indirect(_Storage);
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+    AcquireSRWLockExclusive(&_Entry._Lock);
+    _Wait_context* _Context = _Entry._Wait_list_head._Next;
+    for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
+        if (_Context->_Storage == _Storage) {
+            WakeConditionVariable(&reinterpret_cast<CONDITION_VARIABLE&>(_Context->_Condition));
+            break;
+        }
+    }
+    ReleaseSRWLockExclusive(&_Entry._Lock);
 }
 
 void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     AcquireSRWLockExclusive(&_Entry._Lock);
+    _Wait_context* _Context = _Entry._Wait_list_head._Next;
+    for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
+        if (_Context->_Storage == _Storage) {
+            WakeAllConditionVariable(&reinterpret_cast<CONDITION_VARIABLE&>(_Context->_Condition));
+            break;
+        }
+    }
     ReleaseSRWLockExclusive(&_Entry._Lock);
-    WakeAllConditionVariable(&_Entry._Condition);
 }
+
+
+bool __stdcall __std_atomic_wait_indirect(_Wait_context& _Context) noexcept {
+    auto& _Entry = _Atomic_wait_table_entry(_Context._Storage);
+    if (_Context._Locked) {
+        if (!SleepConditionVariableSRW(&reinterpret_cast<CONDITION_VARIABLE&>(_Context._Condition), &_Entry._Lock,
+                _Get_remaining_wait_milliseconds(_Context._Deadline), 0)) {
+            _Assume_timeout();
+            return false;
+        }
+    } else {
+        reinterpret_cast<CONDITION_VARIABLE&>(_Context._Condition) = CONDITION_VARIABLE_INIT;
+        AcquireSRWLockExclusive(&_Entry._Lock);
+
+        _Wait_context* const _Next = &_Entry._Wait_list_head;
+        _Wait_context* const _Prev = _Next->_Prev;
+        _Context._Prev             = _Prev;
+        _Context._Next             = _Next;
+        _Prev->_Next               = &_Context;
+        _Next->_Prev               = &_Context;
+
+        _Context._Locked = true;
+    }
+    return true;
+}
+
+void __stdcall __std_atomic_unwait_indirect(_Wait_context& _Context) noexcept {
+    if (_Context._Locked) {
+
+        _Wait_context* const _Prev = _Context._Prev;
+        _Wait_context* const _Next = _Context._Next;
+        _Context._Next->_Prev      = _Prev;
+        _Context._Prev->_Next      = _Next;
+
+        auto& _Entry = _Atomic_wait_table_entry(_Context._Storage);
+        ReleaseSRWLockExclusive(&_Entry._Lock);
+    }
+}
+
 
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
     if (_Timeout == _Atomic_wait_no_deadline) {
