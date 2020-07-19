@@ -4805,7 +4805,7 @@ namespace ranges {
 
         // clang-format off
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Urng>
-            requires permutable<_It> && uniform_random_bit_generator<remove_reference<_Urng>>
+            requires permutable<_It> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _It operator()(_It _First, _Se _Last, _Urng&& _Func) const {
             _Adl_verify_range(_First, _Last);
 
@@ -4818,7 +4818,7 @@ namespace ranges {
         }
 
         template <random_access_range _Rng, class _Urng>
-            requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference<_Urng>>
+            requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) const {
             auto _First  = _RANGES begin(_Range);
 
@@ -4830,12 +4830,11 @@ namespace ranges {
         }
         // clang-format on
     private:
-        template <class _It, class _Se, class _Urng>
-        _NODISCARD static _It _Shuffle_unchecked(_It _First, const _Se _Last, _Urng& _Func) {
+        template <class _It, class _Se, class _Rng>
+        _NODISCARD static _It _Shuffle_unchecked(_It _First, const _Se _Last, _Rng& _Func) {
             // shuffle [_First, _Last) using random function _Func
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(uniform_random_bit_generator<remove_reference<_Urng>>);
 
             if (_First == _Last) {
                 return _First;
