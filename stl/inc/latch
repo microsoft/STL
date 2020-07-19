@@ -20,6 +20,11 @@
 #include <atomic>
 #include <system_error>
 
+[[noreturn]] inline void __std_barrier_deadlock() {
+    // TRANSITION, atomic wait satellite merge: move to satellite
+    _STD _Throw_system_error(_STD errc::resource_deadlock_would_occur);
+}
+
 _STD_BEGIN
 
 class latch {
@@ -38,7 +43,7 @@ public:
             _Counter.notify_all();
         } else if (_Current < 0) {
             _Counter.notify_all();
-            _Throw_system_error(errc::resource_deadlock_would_occur);
+            __std_barrier_deadlock();
         }
     }
 
@@ -56,7 +61,7 @@ public:
             if (_Current == 0) {
                 break;
             } else if (_Current < 0) {
-                _Throw_system_error(errc::resource_deadlock_would_occur);
+                __std_barrier_deadlock();
             }
             _Counter.wait(_Current, memory_order_relaxed);
         }
@@ -68,7 +73,7 @@ public:
             _Counter.notify_all();
         } else if (_Current < 0) {
             _Counter.notify_all();
-            _Throw_system_error(errc::resource_deadlock_would_occur);
+            __std_barrier_deadlock();
         } else {
             _Counter.wait(_Current, memory_order_relaxed);
             wait();
