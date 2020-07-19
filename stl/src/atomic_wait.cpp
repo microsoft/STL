@@ -92,55 +92,54 @@ namespace {
         }
     }
 
-    [[nodiscard]] const _Wait_functions_table& _Get_wait_functions() noexcept {
-        auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
-        if (_Local <= __std_atomic_api_level::__detecting) {
-            while (!_Wait_functions._Api_level.compare_exchange_weak(_Local, __std_atomic_api_level::__detecting)) {
-                if (_Local > __std_atomic_api_level::__detecting) {
-                    return _Wait_functions;
-                }
-            }
-
-            HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
-            const auto _Wait_on_address =
-                reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
-            const auto _Wake_by_address_single =
-                reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
-            const auto _Wake_by_address_all =
-                reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
-            if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
-                _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
-                _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
-                _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
-                _Wait_functions._Api_level.store(
-                    __std_atomic_api_level::__has_wait_on_address, _STD memory_order_release);
-            } else {
-                _Wait_functions._Api_level.store(__std_atomic_api_level::__has_srwlock, _STD memory_order_release);
+    [[nodiscard]] __std_atomic_api_level _Init_wait_functions(__std_atomic_api_level _Level) {
+        while (!_Wait_functions._Api_level.compare_exchange_weak(_Level, __std_atomic_api_level::__detecting)) {
+            if (_Level > __std_atomic_api_level::__detecting) {
+                return _Level;
             }
         }
 
-        return _Wait_functions;
+        HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
+        const auto _Wait_on_address =
+            reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
+        const auto _Wake_by_address_single =
+            reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
+        const auto _Wake_by_address_all =
+            reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
+        if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
+            _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
+            _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
+            _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
+            _Wait_functions._Api_level.store(__std_atomic_api_level::__has_wait_on_address, _STD memory_order_release);
+            return __std_atomic_api_level::__has_wait_on_address;
+        } else {
+            _Wait_functions._Api_level.store(__std_atomic_api_level::__has_srwlock, _STD memory_order_release);
+            return __std_atomic_api_level::__has_srwlock;
+        }
     }
 
-    [[nodiscard]] bool _Have_wait_functions() noexcept {
-        return _Get_wait_functions()._Api_level.load(_STD memory_order_relaxed)
-               >= __std_atomic_api_level::__has_wait_on_address;
+    [[nodiscard]] __std_atomic_api_level _Acquire_wait_functions() noexcept {
+        auto _Level = _Wait_functions._Api_level.load(_STD memory_order_acquire);
+        if (_Level <= __std_atomic_api_level::__detecting) {
+            _Level = _Init_wait_functions(_Level);
+        }
+
+        return _Level;
     }
 
     [[nodiscard]] BOOL __crtWaitOnAddress(
         volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
-        const auto _Wait_on_address = _Get_wait_functions()._Pfn_WaitOnAddress.load(_STD memory_order_relaxed);
+        const auto _Wait_on_address = _Wait_functions._Pfn_WaitOnAddress.load(_STD memory_order_relaxed);
         return _Wait_on_address(Address, CompareAddress, AddressSize, dwMilliseconds);
     }
 
     VOID __crtWakeByAddressSingle(PVOID Address) {
-        const auto _Wake_by_address_single =
-            _Get_wait_functions()._Pfn_WakeByAddressSingle.load(_STD memory_order_relaxed);
+        const auto _Wake_by_address_single = _Wait_functions._Pfn_WakeByAddressSingle.load(_STD memory_order_relaxed);
         _Wake_by_address_single(Address);
     }
 
     VOID __crtWakeByAddressAll(PVOID Address) {
-        const auto _Wake_by_address_all = _Get_wait_functions()._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
+        const auto _Wake_by_address_all = _Wait_functions._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
         _Wake_by_address_all(Address);
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
@@ -150,7 +149,7 @@ namespace {
 _EXTERN_C
 bool __stdcall __std_atomic_wait_direct(const void* _Comparand, const size_t _Size, _Wait_context& _Context) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (!_Have_wait_functions()) {
+    if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
         return __std_atomic_wait_indirect(_Context);
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
@@ -166,7 +165,7 @@ bool __stdcall __std_atomic_wait_direct(const void* _Comparand, const size_t _Si
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (!_Have_wait_functions()) {
+    if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
         __std_atomic_notify_one_indirect(_Storage);
         return;
     }
@@ -177,7 +176,7 @@ void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexce
 
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (!_Have_wait_functions()) {
+    if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
         __std_atomic_notify_all_indirect(_Storage);
         return;
     }
@@ -280,7 +279,7 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
         break;
     }
 
-    return _Get_wait_functions()._Api_level.load(_STD memory_order_relaxed);
+    return _Acquire_wait_functions();
 #endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
 _END_EXTERN_C
