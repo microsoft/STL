@@ -482,11 +482,6 @@ std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
 std/thread/thread.barrier/completion.pass.cpp FAIL
 std/thread/thread.barrier/max.pass.cpp FAIL
 std/thread/thread.barrier/version.pass.cpp FAIL
-std/thread/thread.latch/arrive_and_wait.pass.cpp FAIL
-std/thread/thread.latch/count_down.pass.cpp FAIL
-std/thread/thread.latch/max.pass.cpp FAIL
-std/thread/thread.latch/try_wait.pass.cpp FAIL
-std/thread/thread.latch/version.pass.cpp FAIL
 std/thread/thread.semaphore/acquire.pass.cpp FAIL
 std/thread/thread.semaphore/binary.pass.cpp FAIL
 std/thread/thread.semaphore/max.pass.cpp FAIL
@@ -544,6 +539,8 @@ std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14
 # Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
 
+# "error: _LIBCPP_VERSION not defined"
+std/thread/thread.latch/version.pass.cpp FAIL
 
 # *** STL BUGS ***
 # STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"

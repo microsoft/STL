@@ -482,10 +482,6 @@ thread\thread.barrier\arrive_and_wait.pass.cpp
 thread\thread.barrier\completion.pass.cpp
 thread\thread.barrier\max.pass.cpp
 thread\thread.barrier\version.pass.cpp
-thread\thread.latch\arrive_and_wait.pass.cpp
-thread\thread.latch\count_down.pass.cpp
-thread\thread.latch\max.pass.cpp
-thread\thread.latch\try_wait.pass.cpp
 thread\thread.latch\version.pass.cpp
 thread\thread.semaphore\acquire.pass.cpp
 thread\thread.semaphore\binary.pass.cpp
