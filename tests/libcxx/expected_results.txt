@@ -539,9 +539,6 @@ std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14
 # Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
 
-# "error: _LIBCPP_VERSION not defined"
-std/thread/thread.latch/version.pass.cpp FAIL
-
 # *** STL BUGS ***
 # STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
 std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
@@ -650,8 +647,10 @@ std/language.support/support.runtime/cstdlib.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIPPED
 
-
 # *** LIKELY BOGUS TESTS ***
+# "error: _LIBCPP_VERSION not defined"
+std/thread/thread.latch/version.pass.cpp FAIL
+
 # Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
 std/numerics/c.math/cmath.pass.cpp FAIL

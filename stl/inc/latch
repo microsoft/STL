@@ -15,7 +15,7 @@
 
 #if !_HAS_CXX20
 #pragma message("The contents of <latch> are available only with C++20 or later.")
-#endif // !_HAS_CXX20
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <atomic>
 #include <system_error>
@@ -85,6 +85,8 @@ private:
 };
 
 _STD_END
+
+#endif // ^^^ _HAS_CXX20 ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _LATCH_
