@@ -520,22 +520,40 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    break;
-                }
-            }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            auto _UResult = _Find_if_not_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+
+            auto _UResult = _Find_if_not_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Find_if_not_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+            }
+
+            return _First;
         }
     };
 
@@ -589,33 +607,48 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
         _NODISCARD constexpr _It operator()(_It _First, const _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // find first satisfying _Pred with successor
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_First);
-            const auto _ULast = _Get_unwrapped(_Last);
 
-            if (_UFirst == _ULast) {
-                return _First;
-            }
+            auto _UResult = _Adjacent_find_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
 
-            for (auto _UNext = _UFirst;; _UFirst = _UNext) {
-                if (++_UNext == _ULast) {
-                    _Seek_wrapped(_First, _UNext);
-                    return _First;
-                }
-
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, *_UNext))) {
-                    _Seek_wrapped(_First, _UFirst);
-                    return _First;
-                }
-            }
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
                 ranges::equal_to>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+
+            auto _UResult = _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Adjacent_find_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // find first satisfying _Pred with successor
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<_Pr, projected<_It, _Pj>, projected<_It, _Pj>>);
+
+            if (_First == _Last) {
+                return _First;
+            }
+
+            for (auto _Next = _First;; _First = _Next) {
+                if (++_Next == _Last) {
+                    return _Next;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Next))) {
+                    return _First;
+                }
+            }
         }
     };
 
@@ -3184,24 +3217,16 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr _It1 operator()(_It1 _First1, const _Se1 _Last1, const _It2 _First2, const _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr _It1 operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UFirst1       = _Get_unwrapped(_STD move(_First1));
-            const auto _ULast1  = _Get_unwrapped(_Last1);
-            const auto _UFirst2 = _Get_unwrapped(_First2);
-            const auto _ULast2  = _Get_unwrapped(_Last2);
-            for (; _UFirst1 != _ULast1; ++_UFirst1) {
-                for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UMid2))) {
-                        _Seek_wrapped(_First1, _STD move(_UFirst1));
-                        return _First1;
-                    }
-                }
-            }
 
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
+            auto _UResult = _Find_first_of_unchecked(_Get_unwrapped(_STD move(_First1)),
+                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
+                _Get_unwrapped(_STD move(_Last2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult));
             return _First1;
         }
 
@@ -3210,10 +3235,35 @@ namespace ranges {
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_iterator_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2),
-                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            auto _First1 = _RANGES begin(_Range1);
+
+            auto _UResult = _Find_first_of_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult));
+            return _First1;
         }
         // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr _It1 _Find_first_of_unchecked(_It1 _First1, const _Se1 _Last1, const _It2 _First2,
+            const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            for (; _First1 != _Last1; ++_First1) {
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_Mid2))) {
+                        return _First1;
+                    }
+                }
+            }
+
+            return _First1;
+        }
     };
 
     inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
