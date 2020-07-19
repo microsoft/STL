@@ -44,7 +44,7 @@ void test(const bool release_wait) {
 }
 
 int main() {
-    static_assert(std::latch::max() > 0);
+    static_assert(std::latch::max() >= 5, "latch should support some number of cound downs");
 
     test(true);
     test(false);
