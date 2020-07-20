@@ -6701,7 +6701,8 @@ namespace ranges {
     }
 
     template <class _It, class _Pr, class _Pj>
-    constexpr subrange<_It> _Partition_by_median_guess_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+    _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_unchecked(
+        _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
         // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
         // elements greater than pivot; return the equal partition as a subrange.
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
