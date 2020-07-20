@@ -1626,7 +1626,7 @@ public:
     }
 
     auto unique() { // erase each element matching previous
-        return unique(equal_to<>{});
+        return unique(equal_to<>());
     }
 
     template <class _Pr2>
@@ -1653,11 +1653,11 @@ public:
     }
 
     void merge(list& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>{});
+        _Merge1(_Right, less<>());
     }
 
     void merge(list&& _Right) { // merge in elements from _Right, both ordered by operator<
-        _Merge1(_Right, less<>{});
+        _Merge1(_Right, less<>());
     }
 
     template <class _Pr2>
@@ -1707,7 +1707,7 @@ private:
 
 public:
     void sort() { // order sequence
-        sort(less<>{});
+        sort(less<>());
     }
 
     template <class _Pr2>
@@ -1810,12 +1810,14 @@ _NODISCARD bool operator==(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
     return _Left.size() == _Right.size() && _STD equal(_Left.begin(), _Left.end(), _Right.begin());
 }
 
-#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
@@ -1835,15 +1837,13 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
 template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(
         _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

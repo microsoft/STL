@@ -52,13 +52,13 @@ _NODISCARD bool operator>=(const stack<_Ty, _Container>& _Left, const stack<_Ty,
     return _Left.c >= _Right.c;
 }
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
 template <class _Ty, three_way_comparable _Container>
 _NODISCARD compare_three_way_result_t<_Container> operator<=>(
     const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
     return _Left.c <=> _Right.c;
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 template <class _Ty, class _Container>
 class stack {
@@ -146,7 +146,9 @@ public:
     friend bool operator>  <>(const stack&, const stack&);
     friend bool operator<= <>(const stack&, const stack&);
     friend bool operator>= <>(const stack&, const stack&);
+    #if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
     friend compare_three_way_result_t<_Container> operator<=> <>(const stack&, const stack&);
+    #endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
     // clang-format on
 
 protected:

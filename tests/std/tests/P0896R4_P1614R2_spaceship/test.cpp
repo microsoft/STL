@@ -18,6 +18,7 @@
 #include <ranges>
 #include <set>
 #include <stack>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -38,7 +39,8 @@ void ordered_containers_test(const Container& smaller, const Container& smaller_
 }
 
 template <class Container>
-void unordered_containers_test(Container something, Container something_equal, Container different) {
+void unordered_containers_test(
+    const Container& something, const Container& something_equal, const Container& different) {
     assert(something == something_equal);
     assert(something != different);
 }
@@ -49,13 +51,12 @@ void ordering_test_cases() {
         constexpr std::array<int, 3> a1{{2, 8, 9}};
         constexpr std::array<int, 5> a2{{2, 8, 9, 1, 8}};
 
-        assert((a0 <=> a0) == 0);
-        assert((a1 <=> a1) == 0);
-        assert((a2 <=> a0) < 0);
-        assert((a0 <=> a2) > 0);
+        static_assert((a0 <=> a0) == 0);
+        static_assert((a1 <=> a1) == 0);
+        static_assert((a2 <=> a0) < 0);
+        static_assert((a0 <=> a2) > 0);
     }
-    {
-        // array
+    { // array
         std::array<int, 3> a1 = {100, 100, 100};
         std::array<int, 3> a2 = {100, 100, 100};
         std::array<int, 3> b1 = {200, 200};
@@ -160,9 +161,9 @@ void ordering_test_cases() {
         unordered_containers_test(a, b, c);
     }
     { // unordered_multiset
-        std::unordered_set<std::string> a = {"cat", "dog", "cat"};
-        std::unordered_set<std::string> b = {"cat", "cat", "dog"};
-        std::unordered_set<std::string> c = {"mouse", "cat", "bear", "dog"};
+        std::unordered_multiset<std::string> a = {"cat", "dog", "cat"};
+        std::unordered_multiset<std::string> b = {"cat", "cat", "dog"};
+        std::unordered_multiset<std::string> c = {"mouse", "cat", "bear", "dog"};
         unordered_containers_test(a, b, c);
     }
     { // queue
@@ -188,6 +189,5 @@ void ordering_test_cases() {
 }
 
 int main() {
-    // STATIC_ASSERT((ordering_test_cases(), true));
     ordering_test_cases();
 }
