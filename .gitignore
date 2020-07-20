@@ -11,3 +11,9 @@ __pycache__/
 # Ignore submodules in other branches.
 /llvm-project/
 /vcpkg/
+
+# Ignore installed packages.
+/node_modules/
+
+# Ignore secret credentials.
+/.env
