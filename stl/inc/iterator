@@ -292,13 +292,11 @@ _NODISCARD bool operator==(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
     return _Left._Equal(_Right);
 }
 
-#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 template <class _Ty, class _Elem, class _Traits, class _Diff>
 _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
     const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 
 // CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
