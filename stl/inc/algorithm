@@ -1417,21 +1417,31 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    return false;
-                }
-            }
 
-            return true;
+            return _All_of_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _All_of_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr bool _All_of_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     };
 
@@ -1471,21 +1481,31 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    return true;
-                }
-            }
 
-            return false;
+            return _Any_of_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Any_of_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr bool _Any_of_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     };
 
@@ -1525,21 +1545,31 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    return false;
-                }
-            }
 
-            return true;
+            return _None_of_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _None_of_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr bool _None_of_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     };
 
