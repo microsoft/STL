@@ -6452,7 +6452,7 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 // FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
-_CONSTEXPR20 _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
+_CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last)
     if (_First != _Last) {
         for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
@@ -6628,6 +6628,154 @@ void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* te
     // order [_First, _Last)
     _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Insertion_sort_common(const _It _First, const _It _Last, _Pr _Pred, _Pj _Proj) {
+        // insertion sort [_First, _Last)
+        _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+        if (_First == _Last) { // empty range is sorted
+            return;
+        }
+
+        for (auto _Next = _First; ++_Next != _Last;) { // order next element
+            iter_value_t<_It> _Val = _RANGES iter_move(_Next);
+            auto _Next1            = _Next;
+
+            for (auto _First1 = _Next1;;) {
+                --_First1;
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First1))) {
+                    break;
+                }
+                *_Next1 = _RANGES iter_move(_First1); // move hole down
+                if (--_Next1 == _First) {
+                    break;
+                }
+            }
+
+            *_Next1 = _STD move(_Val); // insert element in hole
+        }
+    }
+
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Med3_unchecked(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // sort median of three elements to middle
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+        if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+            _RANGES iter_swap(_Mid, _First);
+        }
+
+        if (_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Mid))) {
+            // swap middle and last, then test first again
+            _RANGES iter_swap(_Last, _Mid);
+
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+                _RANGES iter_swap(_Mid, _First);
+            }
+        }
+    }
+
+    template <class _It, class _Pr, class _Pj>
+    constexpr void _Guess_median_unchecked(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // sort median element to middle
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+        using _Diff        = iter_difference_t<_It>;
+        const _Diff _Count = _Last - _First;
+        if (_Count > 40) { // Tukey's ninther
+            const _Diff _Step     = (_Count + 1) >> 3; // +1 can't overflow because range was made inclusive in caller
+            const _Diff _Two_step = _Step << 1; // note: intentionally discards low-order bit
+            _Med3_unchecked(_First, _First + _Step, _First + _Two_step, _Pred, _Proj);
+            _Med3_unchecked(_Mid - _Step, _Mid, _Mid + _Step, _Pred, _Proj);
+            _Med3_unchecked(_Last - _Two_step, _Last - _Step, _Last, _Pred, _Proj);
+            _Med3_unchecked(_First + _Step, _Mid, _Last - _Step, _Pred, _Proj);
+        } else {
+            _Med3_unchecked(_First, _Mid, _Last, _Pred, _Proj);
+        }
+    }
+
+    template <class _It, class _Pr, class _Pj>
+    constexpr subrange<_It> _Partition_by_median_guess_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
+        // elements greater than pivot; return the equal partition as a subrange.
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+        _It _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
+        _RANGES _Guess_median_unchecked(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
+        _It _Pfirst = _Mid;
+        _It _Plast  = _RANGES next(_Pfirst);
+
+        while (_First < _Pfirst
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_RANGES prev(_Pfirst)), _STD invoke(_Proj, *_Pfirst))
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_RANGES prev(_Pfirst)))) {
+            --_Pfirst;
+        }
+
+        while (_Plast < _Last && !_STD invoke(_Pred, _STD invoke(_Proj, *_Plast), _STD invoke(_Proj, *_Pfirst))
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_Plast))) {
+            ++_Plast;
+        }
+
+        _It _Gfirst = _Plast;
+        _It _Glast  = _Pfirst;
+
+        for (;;) { // partition
+            for (; _Gfirst < _Last; ++_Gfirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_Gfirst))) {
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj, *_Gfirst), _STD invoke(_Proj, *_Pfirst))) {
+                    break;
+                } else if (_Plast != _Gfirst) {
+                    _RANGES iter_swap(_Plast, _Gfirst);
+                    ++_Plast;
+                } else {
+                    ++_Plast;
+                }
+            }
+
+            for (; _First < _Glast; --_Glast) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_RANGES prev(_Glast)), _STD invoke(_Proj, *_Pfirst))) {
+                } else if (_STD invoke(
+                               _Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_RANGES prev(_Glast)))) {
+                    break;
+                } else if (--_Pfirst != _RANGES prev(_Glast)) {
+                    _RANGES iter_swap(_Pfirst, _RANGES prev(_Glast));
+                }
+            }
+
+            if (_Glast == _First && _Gfirst == _Last) {
+                return {_STD move(_Pfirst), _STD move(_Plast)};
+            }
+
+            if (_Glast == _First) { // no room at bottom, rotate pivot upward
+                if (_Plast != _Gfirst) {
+                    _RANGES iter_swap(_Pfirst, _Plast);
+                }
+
+                ++_Plast;
+                _RANGES iter_swap(_Pfirst, _Gfirst);
+                ++_Pfirst;
+                ++_Gfirst;
+            } else if (_Gfirst == _Last) { // no room at top, rotate pivot downward
+                if (--_Glast != --_Pfirst) {
+                    _RANGES iter_swap(_Glast, _Pfirst);
+                }
+
+                _RANGES iter_swap(_Pfirst, --_Plast);
+            } else {
+                _RANGES iter_swap(_Gfirst, --_Glast);
+                ++_Gfirst;
+            }
+        }
+    }
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE stable_sort
@@ -6977,6 +7125,82 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* 
     // not parallelized at present, parallelism expected to be feasible in a future release
     _STD nth_element(_First, _Nth, _Last);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::nth_element
+    class _Nth_element_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr _It operator()(_It _First, _It _Nth, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Nth);
+            _Adl_verify_range(_Nth, _Last);
+            auto _UNth   = _Get_unwrapped(_Nth);
+            auto _UFinal = _Get_final_iterator_unwrapped<_It>(_UNth, _STD move(_Last));
+            _Seek_wrapped(_Nth, _UFinal);
+
+            _Nth_element_common(_Get_unwrapped(_STD move(_First)), _STD move(_UNth), _STD move(_UFinal),
+                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Nth;
+        }
+
+        template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, iterator_t<_Rng> _Nth, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_RANGES begin(_Range), _Nth);
+            _Adl_verify_range(_Nth, _RANGES end(_Range));
+            auto _UNth   = _Get_unwrapped(_Nth);
+            auto _UFinal = [&] {
+                if constexpr (common_range<_Rng>) {
+                    return _Uend(_Range);
+                } else if constexpr (sized_range<_Rng>) {
+                    return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
+                } else {
+                    return _RANGES next(_UNth, _Uend(_Range));
+                }
+            }();
+            _Seek_wrapped(_Nth, _UFinal);
+
+            _Nth_element_common(
+                _Ubegin(_Range), _STD move(_UNth), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Nth;
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Nth_element_common(_It _First, _It _Nth, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            if (_Nth == _Last) {
+                return; // nothing to do
+            }
+
+            while (_ISORT_MAX < _Last - _First) { // divide and conquer, ordering partition containing Nth
+                subrange<_It> _Mid = _RANGES _Partition_by_median_guess_unchecked(_First, _Last, _Pred, _Proj);
+
+                if (_Mid.end() <= _Nth) {
+                    _First = _Mid.end();
+                } else if (_Mid.begin() <= _Nth) {
+                    return; // Nth inside fat pivot, done
+                } else {
+                    _Last = _Mid.begin();
+                }
+            }
+
+            // sort any remainder
+            _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _STD move(_Pred), _STD move(_Proj));
+        }
+    };
+
+    inline constexpr _Nth_element_fn nth_element{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE includes
