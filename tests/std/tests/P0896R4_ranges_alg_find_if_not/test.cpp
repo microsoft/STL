@@ -12,33 +12,34 @@
 using namespace std;
 using P = std::pair<int, int>;
 
-auto matches = [](const int x) { return x == 42; };
+constexpr auto matches = [](const int val) { return val == 42; };
 
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::find_if_not(borrowed<false>{}, matches)), ranges::dangling>);
 STATIC_ASSERT(same_as<decltype(ranges::find_if_not(borrowed<true>{}, matches)), int*>);
 
 struct instantiator {
-    static constexpr P haystack[3] = {{1, 13}, {2, 13}, {3, 13}};
-
     template <ranges::input_range Read>
     static constexpr void call() {
         using ranges::find_if_not, ranges::iterator_t;
-        auto equals = [](auto x) { return [x](auto&& y) { return y == x; }; };
+        auto equals   = [](auto x) { return [x](auto&& y) { return y == x; }; };
+        P haystack[3] = {{0, 13}, {0, 13}, {0, 13}};
 
         for (auto& [value, _] : haystack) {
+            value = 42;
             { // Validate range overload [found case]
                 Read wrapped_input{haystack};
-                auto result = find_if_not(wrapped_input, equals(4), get_first);
+                auto result = find_if_not(wrapped_input, equals(0), get_first);
                 STATIC_ASSERT(same_as<decltype(result), iterator_t<Read>>);
-                assert(result.peek()->first == 1);
+                assert(result.peek()->first == 42);
             }
             { // Validate iterator + sentinel overload [found case]
                 Read wrapped_input{haystack};
                 auto result = find_if_not(wrapped_input.begin(), wrapped_input.end(), equals(0), get_first);
                 STATIC_ASSERT(same_as<decltype(result), iterator_t<Read>>);
-                assert(result.peek()->first == 1);
+                assert(result.peek()->first == 42);
             }
+            value = 0;
         }
         { // Validate range overload [not found case]
             Read wrapped_input{haystack};

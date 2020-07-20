@@ -11,7 +11,7 @@
 using namespace std;
 using P = std::pair<int, int>;
 
-auto matches = [](const int x) { return x == 42; };
+constexpr auto matches = [](const int val) { return val == 42; };
 
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::find_if(borrowed<false>{}, matches)), ranges::dangling>);
