@@ -2105,13 +2105,13 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const reverse_iterator<_BidIt1>& _Left, 
 #endif // __cpp_lib_concepts
 { return _Left._Get_current() <= _Right._Get_current(); }
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
 template <class _BidIt1, three_way_comparable_with<_BidIt1> _BidIt2>
 _NODISCARD constexpr compare_three_way_result_t<_BidIt1, _BidIt2> operator<=>(
     const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) {
     return _Right._Get_current() <=> _Left._Get_current();
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 auto operator-(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
@@ -4103,12 +4103,12 @@ _NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left, cons
 #endif // __cpp_lib_concepts
 { return _Left.base() == _Right.base(); }
 
-#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+#if !_HAS_CXX20
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
+#endif // !_HAS_CXX20
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
@@ -4148,13 +4148,13 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left, cons
 #endif // __cpp_lib_concepts
 { return !(_Left < _Right); }
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
 template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
 _NODISCARD constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(
     const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) {
     return _Left.base() <=> _Right.base();
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 auto operator-(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right)
@@ -4195,21 +4195,6 @@ namespace _Unreachable_sentinel_detail {
         _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
-#if !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
-        template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(const _Winc&, const unreachable_sentinel_t&) noexcept {
-            return false;
-        }
-
-        template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator!=(const unreachable_sentinel_t&, const _Winc&) noexcept {
-            return true;
-        }
-        template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator!=(const _Winc&, const unreachable_sentinel_t&) noexcept {
-            return true;
-        }
-#endif // !defined(__cpp_impl_three_way_comparison) || __cpp_impl_three_way_comparison < 201902L
     };
 } // namespace _Unreachable_sentinel_detail
 struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANSITION, /permissive-
@@ -5236,7 +5221,7 @@ _NODISCARD bool lexicographical_compare(
 }
 #endif // _HAS_CXX17
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
 // FUNCTION TEMPLATE lexicographical_compare_three_way
 template <class _InIt1, class _InIt2, class _Cmp>
 _NODISCARD constexpr auto lexicographical_compare_three_way(
@@ -5294,7 +5279,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     return _STD lexicographical_compare_three_way(_First1, _Last1, _First2, _Last2, compare_three_way{});
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE find
 template <class _Ty>
