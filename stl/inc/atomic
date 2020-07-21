@@ -116,7 +116,53 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 #define ATOMIC_LLONG_LOCK_FREE    2
 #define ATOMIC_POINTER_LOCK_FREE  2
 
+// Padding bits should not participate in cmpxchg comparison starting in C++20.
+// Clang does not have __builtin_zero_non_value_bits to exclude these bits to implement this C++20 feature.
+// The EDG front-end substitutes everything and runs into incomplete types passed to atomic<T>.
+#if _HAS_CXX20 && !defined(__clang__) /* TRANSITION, LLVM-46685 */ && !defined(__EDG__)
+#define _CMPXCHG_MASK_OUT_PADDING_BITS 1
+#else
+#define _CMPXCHG_MASK_OUT_PADDING_BITS 0
+#endif
+
 _STD_BEGIN
+// STRUCT TEMPLATE _Storage_for
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+struct _Form_mask_t {};
+_INLINE_VAR constexpr _Form_mask_t _Form_mask{};
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+
+template <class _Ty>
+struct _Storage_for {
+    // uninitialized space to store a _Ty
+    alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
+
+    _Storage_for()                    = default;
+    _Storage_for(const _Storage_for&) = delete;
+    _Storage_for& operator=(const _Storage_for&) = delete;
+
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+    explicit _Storage_for(_Form_mask_t) noexcept {
+        _CSTD memset(_Storage, 0xff, sizeof(_Ty));
+        __builtin_zero_non_value_bits(_Ptr());
+    }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+
+    _NODISCARD _Ty& _Ref() noexcept {
+        return reinterpret_cast<_Ty&>(_Storage);
+    }
+
+    _NODISCARD _Ty* _Ptr() noexcept {
+        return reinterpret_cast<_Ty*>(&_Storage);
+    }
+};
+
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+template <class _Ty>
+inline constexpr bool _Might_have_non_value_bits =
+    !has_unique_object_representations_v<_Ty> && !is_floating_point_v<_Ty>;
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+
 // FENCES
 extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
     if (_Order == memory_order_relaxed) {
@@ -376,13 +422,27 @@ struct _Atomic_storage {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         bool _Result;
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        __builtin_zero_non_value_bits(_Expected_ptr);
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _Lock();
-        if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
+            _Storage_for<_Ty> _Local;
+            const auto _Local_ptr = _Local._Ptr();
+            _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_Ty));
+            __builtin_zero_non_value_bits(_Local_ptr);
+            _Result = _CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
+        } else {
+            _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
+        }
+#else // _CMPXCHG_MASK_OUT_PADDING_BITS
+        _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+        if (_Result) {
             _CSTD memcpy(_Storage_ptr, _STD addressof(_Desired), sizeof(_Ty));
-            _Result = true;
         } else {
             _CSTD memcpy(_Expected_ptr, _Storage_ptr, sizeof(_Ty));
-            _Result = false;
         }
 
         _Unlock();
@@ -517,8 +577,29 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected); // read before atomic operation
+        char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected); // read before atomic operation
         char _Prev_bytes;
+
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
+            _Storage_for<_Ty> _Mask{_Form_mask};
+            const char _Mask_val = _Atomic_reinterpret_as<char>(_Mask._Ref());
+
+            for (;;) {
+                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8,
+                    _Atomic_address_as<char>(_Storage), _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
+                if (_Prev_bytes == _Expected_bytes) {
+                    return true;
+                }
+
+                if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
+                    reinterpret_cast<char&>(_Expected) = _Prev_bytes;
+                    return false;
+                }
+                _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
+            }
+        }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8, _Atomic_address_as<char>(_Storage),
             _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
@@ -619,8 +700,28 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected); // read before atomic operation
+        short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected); // read before atomic operation
         short _Prev_bytes;
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
+            _Storage_for<_Ty> _Mask{_Form_mask};
+            const short _Mask_val = _Atomic_reinterpret_as<short>(_Mask._Ref());
+
+            for (;;) {
+                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16,
+                    _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
+                if (_Prev_bytes == _Expected_bytes) {
+                    return true;
+                }
+
+                if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
+                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
+                    return false;
+                }
+                _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
+            }
+        }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16,
             _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
@@ -719,8 +820,28 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
+        long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
+            _Storage_for<_Ty> _Mask{_Form_mask};
+            const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
+
+            for (;;) {
+                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange,
+                    _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
+                if (_Prev_bytes == _Expected_bytes) {
+                    return true;
+                }
+
+                if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
+                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
+                    return false;
+                }
+                _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
+            }
+        }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange, _Atomic_address_as<long>(_Storage),
             _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
@@ -846,8 +967,30 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
+        long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
         long long _Prev_bytes;
+
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
+            _Storage_for<_Ty> _Mask{_Form_mask};
+            const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
+
+            for (;;) {
+                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64,
+                    _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired),
+                    _Expected_bytes);
+                if (_Prev_bytes == _Expected_bytes) {
+                    return true;
+                }
+
+                if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
+                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
+                    return false;
+                }
+                _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
+            }
+        }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64,
             _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
@@ -2368,6 +2511,8 @@ inline void atomic_flag_notify_all(atomic_flag* const _Flag) noexcept {
 #endif // _HAS_CXX20
 
 _STD_END
+
+#undef _CMPXCHG_MASK_OUT_PADDING_BITS
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
 #undef _ATOMIC_HAS_DCAS
