@@ -277,6 +277,10 @@ _NODISCARD __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow(_In
     _In_reads_(_Input_len) const wchar_t* _Input_str, _In_ int _Input_len,
     _Out_writes_opt_(_Output_len) char* _Output_str, _In_ int _Output_len) noexcept;
 
+_NODISCARD __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow_replace_chars(
+    _In_ __std_code_page _Code_page, _In_reads_(_Input_len) const wchar_t* _Input_str, _In_ int _Input_len,
+    _Out_writes_opt_(_Output_len) char* _Output_str, _In_ int _Output_len) noexcept;
+
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* _Id, _In_z_ const wchar_t* _Path) noexcept;
 

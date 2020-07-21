@@ -425,6 +425,28 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
     return _Result;
 }
 
+[[nodiscard]] __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow_replace_chars(
+    _In_ const __std_code_page _Code_page, _In_reads_(_Input_len) const wchar_t* const _Input_str,
+    _In_ const int _Input_len, _Out_writes_opt_(_Output_len) char* const _Output_str,
+    _In_ const int _Output_len) noexcept {
+    __std_fs_convert_result _Result;
+
+    _Result._Len = WideCharToMultiByte(static_cast<unsigned int>(_Code_page), WC_NO_BEST_FIT_CHARS, _Input_str,
+        _Input_len, _Output_str, _Output_len, nullptr, nullptr);
+
+    _Result._Err = _Result._Len == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success;
+
+    // Some codepages don't support WC_NO_BEST_FIT_CHARS, fall back to default conversion.
+    if (_Result._Err == __std_win_error{ERROR_INVALID_FLAGS}) {
+        _Result._Len = WideCharToMultiByte(static_cast<unsigned int>(_Code_page), 0, _Input_str, _Input_len,
+            _Output_str, _Output_len, nullptr, nullptr);
+
+        _Result._Err = _Result._Len == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success;
+    }
+
+    return _Result;
+}
+
 [[nodiscard]] __std_fs_copy_file_result __stdcall __std_fs_copy_file(_In_z_ const wchar_t* const _Source,
     _In_z_ const wchar_t* const _Target, _In_ __std_fs_copy_options _Options) noexcept { // copy _Source to _Target
     _Options &= __std_fs_copy_options::_Existing_mask;
