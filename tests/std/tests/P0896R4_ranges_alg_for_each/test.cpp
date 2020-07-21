@@ -35,7 +35,8 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = for_each(wrapped_input.begin(), wrapped_input.end(), incr, get_first);
-            STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<ReadWrite>, decltype(incr)>>);
+            STATIC_ASSERT(
+                same_as<decltype(result), for_each_result<iterator_t<ReadWrite>, remove_const_t<decltype(incr)>>>);
             assert(result.in == wrapped_input.end());
             assert(ranges::equal(expected, input));
 
@@ -48,7 +49,8 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = for_each(wrapped_input, incr, get_first);
-            STATIC_ASSERT(same_as<decltype(result), for_each_result<iterator_t<ReadWrite>, decltype(incr)>>);
+            STATIC_ASSERT(
+                same_as<decltype(result), for_each_result<iterator_t<ReadWrite>, remove_const_t<decltype(incr)>>>);
             assert(result.in == wrapped_input.end());
             assert(ranges::equal(expected, input));
 

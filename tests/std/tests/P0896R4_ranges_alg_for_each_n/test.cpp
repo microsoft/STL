@@ -26,7 +26,7 @@ struct instantiator {
             P input[3] = {{0, 42}, {2, 42}, {4, 42}};
 
             auto result = for_each_n(ReadWrite{input}, distance(input), incr, get_first);
-            STATIC_ASSERT(same_as<decltype(result), for_each_n_result<ReadWrite, decltype(incr)>>);
+            STATIC_ASSERT(same_as<decltype(result), for_each_n_result<ReadWrite, remove_const_t<decltype(incr)>>>);
             assert(result.in.peek() == end(input));
             assert(ranges::equal(expected, input));
 
