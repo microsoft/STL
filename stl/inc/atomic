@@ -440,7 +440,6 @@ public:
     void _Lock() const noexcept { // lock the spinlock
         _Smtx_lock_exclusive(&_Spinlock);
     }
-    }
 
     void _Unlock() const noexcept { // unlock the spinlock
         _Smtx_unlock_exclusive(&_Spinlock);
