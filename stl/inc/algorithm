@@ -6531,6 +6531,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
     for (;;) { // partition
         for (; _Gfirst < _Last; ++_Gfirst) {
             if (_DEBUG_LT_PRED(_Pred, *_Pfirst, *_Gfirst)) {
+                continue;
             } else if (_Pred(*_Gfirst, *_Pfirst)) {
                 break;
             } else if (_Plast != _Gfirst) {
@@ -6543,6 +6544,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 
         for (; _First < _Glast; --_Glast) {
             if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+                continue;
             } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
                 break;
             } else if (--_Pfirst != _Prev_iter(_Glast)) {
@@ -6631,11 +6633,11 @@ void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* te
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    template <class _It, class _Pr, class _Pj>
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     constexpr void _Insertion_sort_common(const _It _First, const _It _Last, _Pr _Pred, _Pj _Proj) {
         // insertion sort [_First, _Last)
-        _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
         if (_First == _Last) { // empty range is sorted
             return;
@@ -6660,32 +6662,30 @@ namespace ranges {
         }
     }
 
-    template <class _It, class _Pr, class _Pj>
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     constexpr void _Med3_unchecked(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
         // sort median of three elements to middle
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
         if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
             _RANGES iter_swap(_Mid, _First);
         }
 
-        if (_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Mid))) {
-            // swap middle and last, then test first again
-            _RANGES iter_swap(_Last, _Mid);
+        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Mid))) {
+            return;
+        }
 
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
-                _RANGES iter_swap(_Mid, _First);
-            }
+        // swap middle and last, then test first again
+        _RANGES iter_swap(_Last, _Mid);
+
+        if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+            _RANGES iter_swap(_Mid, _First);
         }
     }
 
-    template <class _It, class _Pr, class _Pj>
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     constexpr void _Guess_median_unchecked(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
         // sort median element to middle
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
         using _Diff        = iter_difference_t<_It>;
         const _Diff _Count = _Last - _First;
         if (_Count > 40) { // Tukey's ninther
@@ -6700,13 +6700,12 @@ namespace ranges {
         }
     }
 
-    template <class _It, class _Pr, class _Pj>
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_unchecked(
         _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
         // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
         // elements greater than pivot; return the equal partition as a subrange.
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
         _It _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
         _RANGES _Guess_median_unchecked(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
@@ -6719,7 +6718,8 @@ namespace ranges {
             --_Pfirst;
         }
 
-        while (_Plast < _Last && !_STD invoke(_Pred, _STD invoke(_Proj, *_Plast), _STD invoke(_Proj, *_Pfirst))
+        while (_Plast < _Last
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_Plast), _STD invoke(_Proj, *_Pfirst))
                && !_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_Plast))) {
             ++_Plast;
         }
@@ -6730,6 +6730,7 @@ namespace ranges {
         for (;;) { // partition
             for (; _Gfirst < _Last; ++_Gfirst) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_Gfirst))) {
+                    continue;
                 } else if (_STD invoke(_Pred, _STD invoke(_Proj, *_Gfirst), _STD invoke(_Proj, *_Pfirst))) {
                     break;
                 } else if (_Plast != _Gfirst) {
@@ -6742,6 +6743,7 @@ namespace ranges {
 
             for (; _First < _Glast; --_Glast) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_RANGES prev(_Glast)), _STD invoke(_Proj, *_Pfirst))) {
+                    continue;
                 } else if (_STD invoke(
                                _Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_RANGES prev(_Glast)))) {
                     break;
@@ -6775,6 +6777,7 @@ namespace ranges {
             }
         }
     }
+    // clang-format on
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
