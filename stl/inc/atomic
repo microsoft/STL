@@ -300,10 +300,10 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 // Provides common implementation of atomic wait for 1, 2, 4, and 8
 // Not CRTP base to avoid change that might break ABI
 template <class _Ty, class _Value_type, class _Atomic_storage>
-bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, _Value_type _Expected_bytes,
-    const memory_order _Order, const unsigned long long _Timeout) noexcept {
-    const auto _Storage_ptr = _STD addressof(_Storage._Storage);
-    unsigned long long _Deadline     = _Atomic_wait_get_deadline(_Timeout);
+bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, _Value_type _Expected_bytes, const memory_order _Order,
+    const unsigned long long _Timeout) noexcept {
+    const auto _Storage_ptr      = _STD addressof(_Storage._Storage);
+    unsigned long long _Deadline = _Atomic_wait_get_deadline(_Timeout);
     for (;;) {
         _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_Storage.load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
@@ -462,11 +462,11 @@ struct _Atomic_storage {
 
 #if _HAS_CXX20
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const auto _Storage_ptr  = _STD addressof(_Storage);
-        auto _Expected_ptr = _STD addressof(_Expected);
+        const auto _Storage_ptr = _STD addressof(_Storage);
+        auto _Expected_ptr      = _STD addressof(_Expected);
 
         for (;;) {
-            _Ty _Observed = load(_Order);
+            _Ty _Observed      = load(_Order);
             auto _Observed_ptr = _STD addressof(_Observed);
             if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
