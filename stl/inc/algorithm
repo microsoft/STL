@@ -4626,9 +4626,9 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(_Can_reread_or_store<_It, _Out>);
-            _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
 
             if (_First == _Last) {
                 return {_STD move(_First), _STD move(_Result)};

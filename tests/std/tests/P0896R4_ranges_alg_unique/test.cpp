@@ -19,40 +19,49 @@ STATIC_ASSERT(same_as<decltype(ranges::unique(borrowed<true>{})), ranges::subran
 struct instantiator {
     static constexpr P expected[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
 
-    template <ranges::forward_range ReadWrite>
-    static constexpr void call() {
-        using ranges::unique, ranges::subrange, ranges::equal, ranges::size, ranges::iterator_t;
-
-        size_t comparisonCounter = 0;
-        auto countedEq           = [&comparisonCounter](const int a, const int b) {
-            ++comparisonCounter;
+    static constexpr auto make_counter(size_t& count) {
+        return [&count](const int a, const int b) {
+            ++count;
             return a == b;
         };
+    }
 
-        { // Validate iterator + sentinel overload
-            P input[6] = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
-            ReadWrite wrapped_input{input};
+    template <ranges::forward_range ReadWrite>
+    static constexpr void call() {
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+        if constexpr (!ranges::contiguous_range<ReadWrite>)
+#endif // TRANSITION, VSO-938163
+        {
+            using ranges::unique, ranges::subrange, ranges::equal, ranges::size, ranges::iterator_t;
 
-            auto result = unique(wrapped_input.begin(), wrapped_input.end(), countedEq, get_second);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
-            assert(result.begin() == next(wrapped_input.begin(), 4));
-            assert(result.end() == wrapped_input.end());
-            assert(equal(expected, span{input}.first<4>()));
-            assert(comparisonCounter == size(input) - 1);
-        }
+            size_t comparisonCounter = 0;
+            const auto countedEq     = make_counter(comparisonCounter);
 
-        comparisonCounter = 0;
+            { // Validate iterator + sentinel overload
+                P input[6] = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
+                ReadWrite wrapped_input{input};
 
-        { // Validate range overload
-            P input[6] = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
-            ReadWrite wrapped_input{input};
+                auto result = unique(wrapped_input.begin(), wrapped_input.end(), countedEq, get_second);
+                STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+                assert(result.begin() == next(wrapped_input.begin(), 4));
+                assert(result.end() == wrapped_input.end());
+                assert(equal(expected, span{input}.first<4>()));
+                assert(comparisonCounter == size(input) - 1);
+            }
 
-            auto result = unique(wrapped_input, countedEq, get_second);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
-            assert(result.begin() == next(wrapped_input.begin(), 4));
-            assert(result.end() == wrapped_input.end());
-            assert(equal(expected, span{input}.first<4>()));
-            assert(comparisonCounter == size(input) - 1);
+            comparisonCounter = 0;
+
+            { // Validate range overload
+                P input[6] = {{0, 99}, {1, 47}, {2, 47}, {3, 99}, {4, 47}, {5, 47}};
+                ReadWrite wrapped_input{input};
+
+                auto result = unique(wrapped_input, countedEq, get_second);
+                STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+                assert(result.begin() == next(wrapped_input.begin(), 4));
+                assert(result.end() == wrapped_input.end());
+                assert(equal(expected, span{input}.first<4>()));
+                assert(comparisonCounter == size(input) - 1);
+            }
         }
     }
 };
