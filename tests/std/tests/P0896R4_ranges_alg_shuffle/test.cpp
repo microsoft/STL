@@ -9,10 +9,10 @@
 #include <utility>
 
 #include <range_algorithm_support.hpp>
-
 using namespace std;
 
-mt19937 gen{random_device{}()};
+const unsigned int seed = random_device{}();
+mt19937 gen{seed};
 
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::shuffle(borrowed<false>{}, gen)), ranges::dangling>);
@@ -31,7 +31,7 @@ struct instantiator {
 
             auto result = shuffle(wrapped_input.begin(), wrapped_input.end(), gen);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<ReadWrite>>);
-            assert(result.peek() == end(input));
+            assert(result == wrapped_input.end());
 
             sort(begin(input), end(input));
             assert(equal(input, expected));
@@ -42,7 +42,7 @@ struct instantiator {
 
             auto result = shuffle(wrapped_input, gen);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<ReadWrite>>);
-            assert(result.peek() == end(input));
+            assert(result == wrapped_input.end());
 
             sort(begin(input), end(input));
             assert(equal(input, expected));
@@ -51,5 +51,7 @@ struct instantiator {
 };
 
 int main() {
+    printf("Using seed: %u\n", seed);
+
     test_random<instantiator, int>();
 }

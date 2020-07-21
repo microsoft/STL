@@ -9,8 +9,10 @@
 #include <utility>
 
 #include <range_algorithm_support.hpp>
-
 using namespace std;
+
+const unsigned int seed = random_device{}();
+mt19937 gen{seed};
 
 struct instantiator {
     static constexpr int reservoir[5] = {13, 42, 71, 112, 1729};
@@ -20,7 +22,6 @@ struct instantiator {
         using ranges::sample, ranges::equal, ranges::is_sorted, ranges::iterator_t;
 
         if constexpr (forward_iterator<iterator_t<Read>> || random_access_iterator<Write>) {
-            mt19937 gen{random_device{}()};
             auto copy_gen = gen;
 
             { // Validate iterator + sentinel overload
@@ -34,8 +35,10 @@ struct instantiator {
 
                 // check repeatability
                 Read wrapped_input2{reservoir};
-                sample(wrapped_input2.begin(), wrapped_input2.end(), Write{output2}, 3, copy_gen);
+                auto result2 = sample(wrapped_input2.begin(), wrapped_input2.end(), Write{output2}, 3, copy_gen);
                 assert(equal(output1, output2));
+                assert(result2.peek() == end(output2));
+                assert(result1.peek() == result2.peek());
 
                 if (ranges::forward_range<Read>) {
                     // verify stability
@@ -57,8 +60,10 @@ struct instantiator {
 
                 // check repeatability
                 Read wrapped_input2{reservoir};
-                sample(wrapped_input2, Write{output2}, 3, copy_gen);
+                auto result2 = sample(wrapped_input2, Write{output2}, 3, copy_gen);
                 assert(equal(output1, output2));
+                assert(result2.peek() == end(output2));
+                assert(result1.peek() == result2.peek());
 
                 if (ranges::forward_range<Read>) {
                     // verify stability
@@ -74,5 +79,7 @@ struct instantiator {
 };
 
 int main() {
+    printf("Using seed: %u\n", seed);
+
     test_in_write<instantiator, int const, int>();
 }
