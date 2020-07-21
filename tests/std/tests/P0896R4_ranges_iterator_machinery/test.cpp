@@ -1267,11 +1267,26 @@ namespace iterator_cust_swap_test {
         // clang-format on
 
         constexpr bool test() {
-            int i0 = 42, i1 = 13;
-            S s0{i0}, s1{i1};
-            ranges::iter_swap(s0, s1);
-            assert(i0 == 13);
-            assert(i1 == 42);
+            {
+                int i0 = 42, i1 = 13;
+                S s0{i0}, s1{i1};
+                ranges::iter_swap(s0, s1);
+                assert(i0 == 13);
+                assert(i1 == 42);
+            }
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+            if (!std::is_constant_evaluated())
+#endif // TRANSITION, VSO-938163
+            {
+                // Validate iter_swap bullet 3 to defend against regression of GH-1067 "ranges::iter_swap is broken"
+                int i  = 42;
+                long l = 13;
+                ranges::iter_swap(&i, &l);
+                assert(i == 13);
+                assert(l == 42);
+            }
+
             return true;
         }
         STATIC_ASSERT(test());

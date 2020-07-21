@@ -1028,10 +1028,10 @@ namespace ranges {
         // clang-format on
 
         template <class _Xty, class _Yty>
-        _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(
-            _Xty&& _XVal, _Yty&& _YVal) noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(iter_move(_XVal)))) {
-            iter_value_t<remove_reference_t<_Xty>> _Tmp(iter_move(_XVal));
-            *_XVal = iter_move(_YVal);
+        _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(_Xty&& _XVal,
+            _Yty&& _YVal) noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(_RANGES iter_move(_XVal)))) {
+            iter_value_t<remove_reference_t<_Xty>> _Tmp(_RANGES iter_move(_XVal));
+            *_XVal = _RANGES iter_move(_YVal);
             return _Tmp;
         }
 
@@ -1047,7 +1047,7 @@ namespace ranges {
                     return {_St::_Swap, noexcept(_RANGES swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
                 } else if constexpr (_Symmetric_indirectly_movable_storable<_Ty1, _Ty2>) {
                     constexpr auto _Nothrow = noexcept(
-                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty1>(), _STD declval<_Ty2>()));
+                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty2>(), _STD declval<_Ty1>()));
                     return {_St::_Exchange, _Nothrow};
                 } else {
                     return {_St::_None};
@@ -1068,7 +1068,7 @@ namespace ranges {
                     _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
                     *static_cast<_Ty1&&>(_Val1) =
-                        _Iter_exchange_move(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                        _Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
                 }
