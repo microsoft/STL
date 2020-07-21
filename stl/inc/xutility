@@ -3225,8 +3225,7 @@ namespace ranges {
                 return _Last - _First;
             } else {
                 _Adl_verify_range(_First, _Last);
-                return static_cast<iter_difference_t<_It>>(
-                    _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last))));
+                return _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
             }
         }
 
@@ -3235,7 +3234,7 @@ namespace ranges {
             if constexpr (sized_range<_Rng>) {
                 return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
-                return static_cast<range_difference_t<_Rng>>(_Distance_unchecked(_Ubegin(_Range), _Uend(_Range)));
+                return _Distance_unchecked(_Ubegin(_Range), _Uend(_Range));
             }
         }
 
