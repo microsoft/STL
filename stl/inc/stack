@@ -146,9 +146,9 @@ public:
     friend bool operator>  <>(const stack&, const stack&);
     friend bool operator<= <>(const stack&, const stack&);
     friend bool operator>= <>(const stack&, const stack&);
-    #if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+    #ifdef __cpp_lib_concepts
     friend compare_three_way_result_t<_Container> operator<=> <>(const stack&, const stack&);
-    #endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+    #endif // __cpp_lib_concepts
     // clang-format on
 
 protected:

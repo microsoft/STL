@@ -156,9 +156,9 @@ public:
     friend bool operator>  <>(const queue&, const queue&);
     friend bool operator<= <>(const queue&, const queue&);
     friend bool operator>= <>(const queue&, const queue&);
-    #if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+    #ifdef __cpp_lib_concepts
     friend compare_three_way_result_t<_Container> operator<=> <>(const queue&, const queue&);
-    #endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+    #endif // __cpp_lib_concepts
     // clang-format on
 
 protected:

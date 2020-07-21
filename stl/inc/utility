@@ -695,36 +695,14 @@ _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right)
     return !_STD cmp_less(_Left, _Right);
 }
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
-// STRUCT TEMPLATE _Synth_three_way
-template <class _Ty = void>
+#ifdef __cpp_lib_concepts
+// STRUCT SYNTH_THREE_WAY
 struct _Synth_three_way {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-
-    constexpr auto operator()(const _Ty& _Left, const _Ty& _Right) const {
-        if constexpr (three_way_comparable_with<_Ty, _Ty>) {
-            return _Left <=> _Right;
-        } else {
-            if (_Left < _Right) {
-                return weak_ordering::less;
-            } else if (_Right < _Left) {
-                return weak_ordering::greater;
-            } else {
-                return weak_ordering::equivalent;
-            }
-        }
-    }
-};
-
-// STRUCT TEMPLATE SPECIALIZATION _Synth_three_way
-template <>
-struct _Synth_three_way<void> {
     // clang-format off
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1& _Left, _Ty2& _Right) const requires requires {
-        { _Left < _Right } ->_Boolean_testable;
-        { _Right < _Left } ->_Boolean_testable;
+    _NODISCARD constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const requires requires {
+        { _Left < _Right } -> _Boolean_testable;
+        { _Right < _Left } -> _Boolean_testable;
     }
     // clang-format on
     {
@@ -745,7 +723,7 @@ struct _Synth_three_way<void> {
 // ALIAS TEMPLATE _Synth_three_way_result
 template <class _Ty1, class _Ty2 = _Ty1>
 using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()));
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif //  __cpp_lib_concepts
 
 // FUNCTION TEMPLATE in_range
 template <class _Ty>
