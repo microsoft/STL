@@ -35,8 +35,7 @@ enum class _Compare_ord : _Compare_t { less = -1, greater = 1 };
 enum class _Compare_ncmp : _Compare_t { unordered = -128 };
 
 // CLASS partial_ordering
-class partial_ordering {
-public:
+struct partial_ordering {
     static const partial_ordering less;
     static const partial_ordering equivalent;
     static const partial_ordering greater;
@@ -91,7 +90,7 @@ public:
         // The stored value is either less (0xff), equivalent (0x00), greater (0x01), or unordered (0x80).
         // Subtracting from 0 produces either 0x01, 0x00, 0xff, or 0x80. Note that the effect is to
         // exchange less for greater (and vice versa), while leaving equivalent and unordered unchanged.
-        return partial_ordering{static_cast<_Compare_t>(0 - static_cast<unsigned int>(_Val._Value))};
+        return {static_cast<_Compare_t>(0 - static_cast<unsigned int>(_Val._Value))};
     }
 
     _Compare_t _Value;
@@ -103,14 +102,13 @@ inline constexpr partial_ordering partial_ordering::greater{static_cast<_Compare
 inline constexpr partial_ordering partial_ordering::unordered{static_cast<_Compare_t>(_Compare_ncmp::unordered)};
 
 // CLASS weak_ordering
-class weak_ordering {
-public:
+struct weak_ordering {
     static const weak_ordering less;
     static const weak_ordering equivalent;
     static const weak_ordering greater;
 
     constexpr operator partial_ordering() const noexcept {
-        return partial_ordering{static_cast<_Compare_t>(_Value)};
+        return {static_cast<_Compare_t>(_Value)};
     }
 
     _NODISCARD friend constexpr bool operator==(const weak_ordering _Val, _Literal_zero) noexcept {
@@ -156,7 +154,7 @@ public:
     }
 
     _NODISCARD friend constexpr weak_ordering operator<=>(_Literal_zero, const weak_ordering _Val) noexcept {
-        return weak_ordering{static_cast<_Compare_t>(-_Val._Value)};
+        return {static_cast<_Compare_t>(-_Val._Value)};
     }
 
     _Compare_t _Value;
@@ -167,19 +165,18 @@ inline constexpr weak_ordering weak_ordering::equivalent{static_cast<_Compare_t>
 inline constexpr weak_ordering weak_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
 
 // CLASS strong_ordering
-class strong_ordering {
-public:
+struct strong_ordering {
     static const strong_ordering less;
     static const strong_ordering equal;
     static const strong_ordering equivalent;
     static const strong_ordering greater;
 
     constexpr operator partial_ordering() const noexcept {
-        return partial_ordering{static_cast<_Compare_t>(_Value)};
+        return {static_cast<_Compare_t>(_Value)};
     }
 
     constexpr operator weak_ordering() const noexcept {
-        return weak_ordering{static_cast<_Compare_t>(_Value)};
+        return {static_cast<_Compare_t>(_Value)};
     }
 
     _NODISCARD friend constexpr bool operator==(const strong_ordering _Val, _Literal_zero) noexcept {
@@ -225,7 +222,7 @@ public:
     }
 
     _NODISCARD friend constexpr strong_ordering operator<=>(_Literal_zero, const strong_ordering _Val) noexcept {
-        return strong_ordering{static_cast<_Compare_t>(-_Val._Value)};
+        return {static_cast<_Compare_t>(-_Val._Value)};
     }
 
     _Compare_t _Value;
