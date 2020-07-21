@@ -620,12 +620,9 @@ namespace ranges {
             indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
                 ranges::equal_to>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-
             auto _UResult = _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
-            return _First;
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
         }
 
     private:
