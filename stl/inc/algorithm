@@ -7101,7 +7101,7 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
         if (_UMid.second <= _UNth) {
             _UFirst = _UMid.second;
         } else if (_UMid.first <= _UNth) {
-            return; // Nth inside fat pivot, done
+            return; // _Nth is in the subrange of elements equal to the pivot; done
         } else {
             _ULast = _UMid.first;
         }
@@ -7191,7 +7191,7 @@ namespace ranges {
                 if (_Mid.end() <= _Nth) {
                     _First = _Mid.end();
                 } else if (_Mid.begin() <= _Nth) {
-                    return; // Nth inside fat pivot, done
+                    return; // _Nth is in the subrange of elements equal to the pivot; done
                 } else {
                     _Last = _Mid.begin();
                 }

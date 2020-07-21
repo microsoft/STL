@@ -33,7 +33,7 @@ struct instantiator {
             P input[size(keys)];
             const auto init = [&] {
                 for (size_t j = 0; j < size(keys); ++j) {
-                    input[j] = P(keys[j], static_cast<int>(10 + j));
+                    input[j] = P{keys[j], static_cast<int>(10 + j)};
                 }
             };
 
