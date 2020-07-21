@@ -11,16 +11,15 @@
 using namespace std;
 using P = pair<int, int>;
 
+constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };
+constexpr auto is_odd  = [](auto const& x) { return x % 2 != 0; };
+
 struct instantiator {
     static constexpr P input[3] = {{0, 13}, {7, 13}, {4, 13}};
 
     template <ranges::input_range Read>
     static constexpr void call() {
         using ranges::none_of;
-
-        constexpr auto is_even = [](auto const& x) { return x % 2 == 0; };
-        constexpr auto is_odd  = [](auto const& x) { return x % 2 != 0; };
-
         { // Validate iterator + sentinel overload
             Read wrapped_input1{input};
             Read wrapped_input2{input};
