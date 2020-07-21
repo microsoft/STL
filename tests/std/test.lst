@@ -160,6 +160,7 @@ tests\GH_000545_include_compare
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
+tests\GH_001010_filesystem_error_encoding
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0024R2_parallel_algorithms_adjacent_difference
@@ -240,6 +241,7 @@ tests\P0896R4_ranges_alg_all_of
 tests\P0896R4_ranges_alg_any_of
 tests\P0896R4_ranges_alg_binary_search
 tests\P0896R4_ranges_alg_copy
+tests\P0896R4_ranges_alg_copy_backward
 tests\P0896R4_ranges_alg_copy_if
 tests\P0896R4_ranges_alg_copy_n
 tests\P0896R4_ranges_alg_count
@@ -266,13 +268,20 @@ tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
 tests\P0896R4_ranges_alg_partition_point
+tests\P0896R4_ranges_alg_remove
+tests\P0896R4_ranges_alg_remove_copy
+tests\P0896R4_ranges_alg_remove_copy_if
+tests\P0896R4_ranges_alg_remove_if
 tests\P0896R4_ranges_alg_replace
 tests\P0896R4_ranges_alg_replace_copy
 tests\P0896R4_ranges_alg_replace_copy_if
 tests\P0896R4_ranges_alg_replace_if
+tests\P0896R4_ranges_alg_reverse
 tests\P0896R4_ranges_alg_search
 tests\P0896R4_ranges_alg_search_n
 tests\P0896R4_ranges_alg_swap_ranges
+tests\P0896R4_ranges_alg_transform_binary
+tests\P0896R4_ranges_alg_transform_unary
 tests\P0896R4_ranges_iterator_machinery
 tests\P0896R4_ranges_range_machinery
 tests\P0896R4_ranges_subrange
