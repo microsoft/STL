@@ -3586,20 +3586,6 @@ _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 }
 
 // PARALLEL FUNCTION TEMPLATE set_intersection
-template <class _Ty>
-struct _Storage_for {
-    // uninitialized space to store a _Ty
-    alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
-
-    _Storage_for()                    = default;
-    _Storage_for(const _Storage_for&) = delete;
-    _Storage_for& operator=(const _Storage_for&) = delete;
-
-    _Ty& _Ref() {
-        return reinterpret_cast<_Ty&>(_Storage);
-    }
-};
-
 inline constexpr unsigned char _Local_available = 1;
 inline constexpr unsigned char _Sum_available   = 2;
 

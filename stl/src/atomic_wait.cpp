@@ -19,11 +19,19 @@ namespace {
     constexpr size_t _Wait_table_size       = 1 << _Wait_table_size_power;
     constexpr size_t _Wait_table_index_mask = _Wait_table_size - 1;
 
+    struct _Wait_context {
+        const void* _Storage; // Initialize to pointer to wait on
+        _Wait_context* _Next;
+        _Wait_context* _Prev;
+        CONDITION_VARIABLE _Condition;
+    };
+
+
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
         SRWLOCK _Lock                 = SRWLOCK_INIT;
-        _Wait_context _Wait_list_head = {false, nullptr, &_Wait_list_head, &_Wait_list_head, nullptr};
+        _Wait_context _Wait_list_head = {nullptr, &_Wait_list_head, &_Wait_list_head, CONDITION_VARIABLE_INIT};
 
         constexpr _Wait_table_entry() noexcept = default;
     };
@@ -35,24 +43,6 @@ namespace {
         index ^= index >> (_Wait_table_size_power * 2);
         index ^= index >> _Wait_table_size_power;
         return wait_table[index & _Wait_table_index_mask];
-    }
-
-    [[nodiscard]] unsigned long _Get_remaining_wait_milliseconds(unsigned long long _Deadline) {
-        if (_Deadline == _Atomic_wait_no_deadline) {
-            return INFINITE;
-        }
-
-        const unsigned long long current_time = GetTickCount64();
-        if (current_time >= _Deadline) {
-            return 0;
-        }
-
-        unsigned long long remaining      = _Deadline - current_time;
-        constexpr unsigned long _Ten_days = 864'000'000;
-        if (remaining > _Ten_days) {
-            return _Ten_days;
-        }
-        return static_cast<unsigned long>(remaining);
     }
 
     void _Assume_timeout() noexcept {
@@ -147,15 +137,16 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-bool __stdcall __std_atomic_wait_direct(const void* _Comparand, const size_t _Size, _Wait_context& _Context) noexcept {
+bool __stdcall __std_atomic_wait_direct(
+    const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
-        return __std_atomic_wait_indirect(_Context);
+        return __std_atomic_wait_indirect(_Storage, _Comparand, _Size, _Remaining_timeout);
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
-    if (!__crtWaitOnAddress(const_cast<volatile void*>(_Context._Storage), const_cast<void*>(_Comparand), _Size,
-            _Get_remaining_wait_milliseconds(_Context._Deadline))) {
+    if (!__crtWaitOnAddress(
+            const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout)) {
         _Assume_timeout();
         return false;
     }
@@ -185,18 +176,13 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
     __crtWakeByAddressAll(const_cast<void*>(_Storage));
 }
 
-
-void __stdcall __std_atomic_unwait_direct(_Wait_context& _Context) noexcept {
-    return __std_atomic_unwait_indirect(_Context);
-}
-
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     AcquireSRWLockExclusive(&_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
-            WakeConditionVariable(&reinterpret_cast<CONDITION_VARIABLE&>(_Context->_Condition));
+            WakeConditionVariable(&_Context->_Condition);
             break;
         }
     }
@@ -209,7 +195,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
-            WakeAllConditionVariable(&reinterpret_cast<CONDITION_VARIABLE&>(_Context->_Condition));
+            WakeAllConditionVariable(&_Context->_Condition);
             break;
         }
     }
@@ -217,43 +203,45 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
 }
 
 
-bool __stdcall __std_atomic_wait_indirect(_Wait_context& _Context) noexcept {
-    auto& _Entry = _Atomic_wait_table_entry(_Context._Storage);
-    if (_Context._Locked) {
-        if (!SleepConditionVariableSRW(&reinterpret_cast<CONDITION_VARIABLE&>(_Context._Condition), &_Entry._Lock,
-                _Get_remaining_wait_milliseconds(_Context._Deadline), 0)) {
-            _Assume_timeout();
-            return false;
+bool __stdcall __std_atomic_wait_indirect(
+    const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+
+    AcquireSRWLockExclusive(&_Entry._Lock);
+
+    _Wait_context _Context;
+    _Wait_context* _Next = &_Entry._Wait_list_head;
+    _Wait_context* _Prev = _Next->_Prev;
+    _Context._Prev       = _Prev;
+    _Context._Next       = _Next;
+    _Prev->_Next         = &_Context;
+    _Next->_Prev         = &_Context;
+    _Context._Condition  = CONDITION_VARIABLE_INIT;
+    _Context._Storage    = _Storage;
+
+    bool _Result;
+    for (;;) {
+        if (_CSTD memcmp(_Storage, _Comparand, _Size) != 0) {
+            _Result = true;
+            break;
         }
-    } else {
-        reinterpret_cast<CONDITION_VARIABLE&>(_Context._Condition) = CONDITION_VARIABLE_INIT;
-        AcquireSRWLockExclusive(&_Entry._Lock);
 
-        _Wait_context* const _Next = &_Entry._Wait_list_head;
-        _Wait_context* const _Prev = _Next->_Prev;
-        _Context._Prev             = _Prev;
-        _Context._Next             = _Next;
-        _Prev->_Next               = &_Context;
-        _Next->_Prev               = &_Context;
-
-        _Context._Locked = true;
+        if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
+            _Assume_timeout();
+            _Result = false;
+            break;
+        }
     }
-    return true;
+
+    _Prev                 = _Context._Prev;
+    _Next                 = _Context._Next;
+    _Context._Next->_Prev = _Prev;
+    _Context._Prev->_Next = _Next;
+
+    ReleaseSRWLockExclusive(&_Entry._Lock);
+
+    return _Result;
 }
-
-void __stdcall __std_atomic_unwait_indirect(_Wait_context& _Context) noexcept {
-    if (_Context._Locked) {
-
-        _Wait_context* const _Prev = _Context._Prev;
-        _Wait_context* const _Next = _Context._Next;
-        _Context._Next->_Prev      = _Prev;
-        _Context._Prev->_Next      = _Next;
-
-        auto& _Entry = _Atomic_wait_table_entry(_Context._Storage);
-        ReleaseSRWLockExclusive(&_Entry._Lock);
-    }
-}
-
 
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
     if (_Timeout == _Atomic_wait_no_deadline) {
@@ -261,6 +249,27 @@ unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long 
     } else {
         return GetTickCount64() + _Timeout;
     }
+}
+
+unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept {
+    static_assert(_Atomic_wait_no_timeout == INFINITE,
+        "_Atomic_wait_no_timeout is passed directly to underlying API, so should match it");
+
+    if (_Deadline == _Atomic_wait_no_deadline) {
+        return INFINITE;
+    }
+
+    const unsigned long long _Current_time = GetTickCount64();
+    if (_Current_time >= _Deadline) {
+        return 0;
+    }
+
+    unsigned long long _Remaining     = _Deadline - _Current_time;
+    constexpr unsigned long _Ten_days = 864'000'000;
+    if (_Remaining > _Ten_days) {
+        return _Ten_days;
+    }
+    return static_cast<unsigned long>(_Remaining);
 }
 
 __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept {
