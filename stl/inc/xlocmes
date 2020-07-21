@@ -78,8 +78,7 @@ protected:
 
     virtual __CLR_OR_THIS_CALL ~messages() noexcept {}
 
-    void _Init(const _Locinfo&) { // initialize from _Locinfo object (do nothing)
-    }
+    void _Init(const _Locinfo&) {} // initialize from _Locinfo object (do nothing)
 
     virtual catalog __CLR_OR_THIS_CALL do_open(const string&, const locale&) const { // open catalog (do nothing)
         return -1;
@@ -90,8 +89,7 @@ protected:
         return _Dflt;
     }
 
-    virtual void __CLR_OR_THIS_CALL do_close(catalog) const { // close catalog (do nothing)
-    }
+    virtual void __CLR_OR_THIS_CALL do_close(catalog) const {} // close catalog (do nothing)
 };
 
 // STATIC messages::id OBJECT
@@ -114,12 +112,10 @@ public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     explicit messages_byname(const char* _Locname, size_t _Refs = 0)
-        : messages<_Elem>(_Locname, _Refs) { // construct for named locale
-    }
+        : messages<_Elem>(_Locname, _Refs) {} // construct for named locale
 
     explicit messages_byname(const string& _Str, size_t _Refs = 0)
-        : messages<_Elem>(_Str.c_str(), _Refs) { // construct for named locale
-    }
+        : messages<_Elem>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
     virtual __CLR_OR_THIS_CALL ~messages_byname() noexcept {}

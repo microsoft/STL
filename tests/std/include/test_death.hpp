@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <test_windows.h>
 #include <vector>
+
+#include <test_windows.hpp>
 
 namespace std_testing {
 

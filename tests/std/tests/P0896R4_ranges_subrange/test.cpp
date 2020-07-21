@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-//
+
 #include "range_algorithm_support.hpp"
 
 #define ASSERT(...) assert((__VA_ARGS__))
@@ -91,20 +91,25 @@ namespace test_view_interface {
         t[42];
     };
 
-    template <class Cat, bool Common, bool SizedSentinel, bool ConstRange>
-    struct fake_view : ranges::view_interface<fake_view<Cat, Common, SizedSentinel, ConstRange>> {
-        using iterator = test_iterator<Cat, int, SizedSentinel>;
-        using sentinel = std::conditional_t<Common, iterator, std::default_sentinel_t>;
+    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::to_bool;
+    enum class ConstRange : bool { no, yes };
 
-        iterator begin();
-        iterator begin() const requires ConstRange;
+    // clang-format off
+    template <class Cat, Common IsCommon, CanDifference Diff, ConstRange HasConstRange>
+    struct fake_view : ranges::view_interface<fake_view<Cat, IsCommon, Diff, HasConstRange>> {
+        using I = test::iterator<Cat, int, Diff, CanCompare::yes, ProxyRef::no>;
+        using S = std::conditional_t<to_bool(IsCommon), I, test::sentinel<int>>;
 
-        sentinel end();
-        sentinel end() const requires ConstRange;
+        I begin();
+        I begin() const requires (to_bool(HasConstRange));
+
+        S end();
+        S end() const requires (to_bool(HasConstRange));
     };
+    // clang-format on
 
     namespace output_unsized_onlymutable {
-        using V = fake_view<output_iterator_tag, false, false, false>;
+        using V = fake_view<output_iterator_tag, Common::no, CanDifference::no, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -125,7 +130,7 @@ namespace test_view_interface {
     } // namespace output_unsized_onlymutable
 
     namespace output_unsized_allowconst {
-        using V = fake_view<output_iterator_tag, false, false, true>;
+        using V = fake_view<output_iterator_tag, Common::no, CanDifference::no, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -146,7 +151,7 @@ namespace test_view_interface {
     } // namespace output_unsized_allowconst
 
     namespace output_sized_onlymutable {
-        using V = fake_view<output_iterator_tag, false, true, false>;
+        using V = fake_view<output_iterator_tag, Common::no, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -167,7 +172,7 @@ namespace test_view_interface {
     } // namespace output_sized_onlymutable
 
     namespace output_sized_allowconst {
-        using V = fake_view<output_iterator_tag, false, true, true>;
+        using V = fake_view<output_iterator_tag, Common::no, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -188,7 +193,7 @@ namespace test_view_interface {
     } // namespace output_sized_allowconst
 
     namespace input_unsized_onlymutable {
-        using V = fake_view<input_iterator_tag, false, false, false>;
+        using V = fake_view<input_iterator_tag, Common::no, CanDifference::no, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -209,7 +214,7 @@ namespace test_view_interface {
     } // namespace input_unsized_onlymutable
 
     namespace input_unsized_allowconst {
-        using V = fake_view<input_iterator_tag, false, false, true>;
+        using V = fake_view<input_iterator_tag, Common::no, CanDifference::no, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -230,7 +235,7 @@ namespace test_view_interface {
     } // namespace input_unsized_allowconst
 
     namespace input_sized_onlymutable {
-        using V = fake_view<input_iterator_tag, false, true, false>;
+        using V = fake_view<input_iterator_tag, Common::no, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -251,7 +256,7 @@ namespace test_view_interface {
     } // namespace input_sized_onlymutable
 
     namespace input_sized_allowconst {
-        using V = fake_view<input_iterator_tag, false, true, true>;
+        using V = fake_view<input_iterator_tag, Common::no, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -272,7 +277,7 @@ namespace test_view_interface {
     } // namespace input_sized_allowconst
 
     namespace forward_uncommon_unsized_onlymutable {
-        using V = fake_view<forward_iterator_tag, false, false, false>;
+        using V = fake_view<forward_iterator_tag, Common::no, CanDifference::no, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -293,7 +298,7 @@ namespace test_view_interface {
     } // namespace forward_uncommon_unsized_onlymutable
 
     namespace forward_uncommon_unsized_allowconst {
-        using V = fake_view<forward_iterator_tag, false, false, true>;
+        using V = fake_view<forward_iterator_tag, Common::no, CanDifference::no, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -314,7 +319,7 @@ namespace test_view_interface {
     } // namespace forward_uncommon_unsized_allowconst
 
     namespace forward_uncommon_sized_onlymutable {
-        using V = fake_view<forward_iterator_tag, false, true, false>;
+        using V = fake_view<forward_iterator_tag, Common::no, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -335,7 +340,7 @@ namespace test_view_interface {
     } // namespace forward_uncommon_sized_onlymutable
 
     namespace forward_uncommon_sized_allowconst {
-        using V = fake_view<forward_iterator_tag, false, true, true>;
+        using V = fake_view<forward_iterator_tag, Common::no, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -356,7 +361,7 @@ namespace test_view_interface {
     } // namespace forward_uncommon_sized_allowconst
 
     namespace forward_common_unsized_onlymutable {
-        using V = fake_view<forward_iterator_tag, true, false, false>;
+        using V = fake_view<forward_iterator_tag, Common::yes, CanDifference::no, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -377,7 +382,7 @@ namespace test_view_interface {
     } // namespace forward_common_unsized_onlymutable
 
     namespace forward_common_unsized_allowconst {
-        using V = fake_view<forward_iterator_tag, true, false, true>;
+        using V = fake_view<forward_iterator_tag, Common::yes, CanDifference::no, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -398,7 +403,7 @@ namespace test_view_interface {
     } // namespace forward_common_unsized_allowconst
 
     namespace forward_common_sized_onlymutable {
-        using V = fake_view<forward_iterator_tag, true, true, false>;
+        using V = fake_view<forward_iterator_tag, Common::yes, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -419,7 +424,7 @@ namespace test_view_interface {
     } // namespace forward_common_sized_onlymutable
 
     namespace forward_common_sized_allowconst {
-        using V = fake_view<forward_iterator_tag, true, true, true>;
+        using V = fake_view<forward_iterator_tag, Common::yes, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -440,7 +445,7 @@ namespace test_view_interface {
     } // namespace forward_common_sized_allowconst
 
     namespace bidi_uncommon_unsized_onlymutable {
-        using V = fake_view<bidirectional_iterator_tag, false, false, false>;
+        using V = fake_view<bidirectional_iterator_tag, Common::no, CanDifference::no, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -461,7 +466,7 @@ namespace test_view_interface {
     } // namespace bidi_uncommon_unsized_onlymutable
 
     namespace bidi_uncommon_unsized_allowconst {
-        using V = fake_view<bidirectional_iterator_tag, false, false, true>;
+        using V = fake_view<bidirectional_iterator_tag, Common::no, CanDifference::no, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -482,7 +487,7 @@ namespace test_view_interface {
     } // namespace bidi_uncommon_unsized_allowconst
 
     namespace bidi_uncommon_sized_onlymutable {
-        using V = fake_view<bidirectional_iterator_tag, false, true, false>;
+        using V = fake_view<bidirectional_iterator_tag, Common::no, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -503,7 +508,7 @@ namespace test_view_interface {
     } // namespace bidi_uncommon_sized_onlymutable
 
     namespace bidi_uncommon_sized_allowconst {
-        using V = fake_view<bidirectional_iterator_tag, false, true, true>;
+        using V = fake_view<bidirectional_iterator_tag, Common::no, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -524,7 +529,7 @@ namespace test_view_interface {
     } // namespace bidi_uncommon_sized_allowconst
 
     namespace bidi_common_unsized_onlymutable {
-        using V = fake_view<bidirectional_iterator_tag, true, false, false>;
+        using V = fake_view<bidirectional_iterator_tag, Common::yes, CanDifference::no, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -545,7 +550,7 @@ namespace test_view_interface {
     } // namespace bidi_common_unsized_onlymutable
 
     namespace bidi_common_unsized_allowconst {
-        using V = fake_view<bidirectional_iterator_tag, true, false, true>;
+        using V = fake_view<bidirectional_iterator_tag, Common::yes, CanDifference::no, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -566,7 +571,7 @@ namespace test_view_interface {
     } // namespace bidi_common_unsized_allowconst
 
     namespace bidi_common_sized_onlymutable {
-        using V = fake_view<bidirectional_iterator_tag, true, true, false>;
+        using V = fake_view<bidirectional_iterator_tag, Common::yes, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -587,7 +592,7 @@ namespace test_view_interface {
     } // namespace bidi_common_sized_onlymutable
 
     namespace bidi_common_sized_allowconst {
-        using V = fake_view<bidirectional_iterator_tag, true, true, true>;
+        using V = fake_view<bidirectional_iterator_tag, Common::yes, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -607,50 +612,8 @@ namespace test_view_interface {
         STATIC_ASSERT(!CanIndex<V const>);
     } // namespace bidi_common_sized_allowconst
 
-    namespace random_uncommon_unsized_onlymutable {
-        using V = fake_view<random_access_iterator_tag, false, false, false>;
-        STATIC_ASSERT(ranges::range<V>);
-        STATIC_ASSERT(!ranges::range<V const>);
-        STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
-    } // namespace random_uncommon_unsized_onlymutable
-
-    namespace random_uncommon_unsized_allowconst {
-        using V = fake_view<random_access_iterator_tag, false, false, true>;
-        STATIC_ASSERT(ranges::range<V>);
-        STATIC_ASSERT(ranges::range<V const>);
-        STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(CanIndex<V const>);
-    } // namespace random_uncommon_unsized_allowconst
-
     namespace random_uncommon_sized_onlymutable {
-        using V = fake_view<random_access_iterator_tag, false, true, false>;
+        using V = fake_view<random_access_iterator_tag, Common::no, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -671,7 +634,7 @@ namespace test_view_interface {
     } // namespace random_uncommon_sized_onlymutable
 
     namespace random_uncommon_sized_allowconst {
-        using V = fake_view<random_access_iterator_tag, false, true, true>;
+        using V = fake_view<random_access_iterator_tag, Common::no, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -692,7 +655,7 @@ namespace test_view_interface {
     } // namespace random_uncommon_sized_allowconst
 
     namespace random_common_sized_onlymutable {
-        using V = fake_view<random_access_iterator_tag, true, true, false>;
+        using V = fake_view<random_access_iterator_tag, Common::yes, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -713,7 +676,7 @@ namespace test_view_interface {
     } // namespace random_common_sized_onlymutable
 
     namespace random_common_sized_allowconst {
-        using V = fake_view<random_access_iterator_tag, true, true, true>;
+        using V = fake_view<random_access_iterator_tag, Common::yes, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -733,50 +696,8 @@ namespace test_view_interface {
         STATIC_ASSERT(CanIndex<V const>);
     } // namespace random_common_sized_allowconst
 
-    namespace contiguous_uncommon_unsized_onlymutable {
-        using V = fake_view<contiguous_iterator_tag, false, false, false>;
-        STATIC_ASSERT(ranges::range<V>);
-        STATIC_ASSERT(!ranges::range<V const>);
-        STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
-    } // namespace contiguous_uncommon_unsized_onlymutable
-
-    namespace contiguous_uncommon_unsized_allowconst {
-        using V = fake_view<contiguous_iterator_tag, false, false, true>;
-        STATIC_ASSERT(ranges::range<V>);
-        STATIC_ASSERT(ranges::range<V const>);
-        STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(CanData<V>);
-        STATIC_ASSERT(CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(CanIndex<V const>);
-    } // namespace contiguous_uncommon_unsized_allowconst
-
     namespace contiguous_uncommon_sized_onlymutable {
-        using V = fake_view<contiguous_iterator_tag, false, true, false>;
+        using V = fake_view<contiguous_iterator_tag, Common::no, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -797,7 +718,7 @@ namespace test_view_interface {
     } // namespace contiguous_uncommon_sized_onlymutable
 
     namespace contiguous_uncommon_sized_allowconst {
-        using V = fake_view<contiguous_iterator_tag, false, true, true>;
+        using V = fake_view<contiguous_iterator_tag, Common::no, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -818,7 +739,7 @@ namespace test_view_interface {
     } // namespace contiguous_uncommon_sized_allowconst
 
     namespace contiguous_common_sized_onlymutable {
-        using V = fake_view<contiguous_iterator_tag, true, true, false>;
+        using V = fake_view<contiguous_iterator_tag, Common::yes, CanDifference::yes, ConstRange::no>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -839,7 +760,7 @@ namespace test_view_interface {
     } // namespace contiguous_common_sized_onlymutable
 
     namespace contiguous_common_sized_allowconst {
-        using V = fake_view<contiguous_iterator_tag, true, true, true>;
+        using V = fake_view<contiguous_iterator_tag, Common::yes, CanDifference::yes, ConstRange::yes>;
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
@@ -896,9 +817,8 @@ namespace test_subrange {
     STATIC_ASSERT(same_as<subrange<int*>, subrange<int*, int*, subrange_kind::sized>>);
     STATIC_ASSERT(same_as<subrange<int*, std::unreachable_sentinel_t>,
         subrange<int*, std::unreachable_sentinel_t, subrange_kind::unsized>>);
-    STATIC_ASSERT(same_as<subrange<test_iterator<forward_iterator_tag, int>>,
-        subrange<test_iterator<forward_iterator_tag, int>, test_iterator<forward_iterator_tag, int>,
-            subrange_kind::unsized>>);
+    STATIC_ASSERT(same_as<subrange<std::forward_list<int>::iterator>,
+        subrange<std::forward_list<int>::iterator, std::forward_list<int>::iterator, subrange_kind::unsized>>);
 
     // Validate many properties of a specialization of subrange
     template <class>
@@ -965,22 +885,198 @@ namespace test_subrange {
 
         return true;
     }
-    STATIC_ASSERT(test_construction<test_range<output_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_construction<test_range<output_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_construction<test_range<input_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_construction<test_range<input_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_construction<test_range<forward_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_construction<test_range<forward_iterator_tag, int, false, true>>());
-    STATIC_ASSERT(test_construction<test_range<forward_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_construction<test_range<forward_iterator_tag, int, true, true>>());
-    STATIC_ASSERT(test_construction<test_range<bidirectional_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_construction<test_range<bidirectional_iterator_tag, int, false, true>>());
-    STATIC_ASSERT(test_construction<test_range<bidirectional_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_construction<test_range<bidirectional_iterator_tag, int, true, true>>());
-    STATIC_ASSERT(test_construction<test_range<random_access_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_construction<test_range<random_access_iterator_tag, int, true, true>>());
-    STATIC_ASSERT(test_construction<test_range<contiguous_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_construction<test_range<contiguous_iterator_tag, int, true, true>>());
+
+    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::Sized;
+
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no,
+            Common::no, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no,
+            Common::yes, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no,
+            Common::no, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no,
+            Common::yes, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_construction<test::range<contiguous_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<contiguous_iterator_tag, int, Sized::no, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::no, CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_construction<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes,
+            Common::yes, CanCompare::yes, ProxyRef::no>>());
 
     STATIC_ASSERT(test_construction<std::forward_list<int>>());
     STATIC_ASSERT(test_construction<std::list<int>>());
@@ -1113,22 +1209,213 @@ namespace test_subrange {
 
         return true;
     }
-    STATIC_ASSERT(test_ctad<test_range<output_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_ctad<test_range<output_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_ctad<test_range<input_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_ctad<test_range<input_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_ctad<test_range<forward_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_ctad<test_range<forward_iterator_tag, int, false, true>>());
-    STATIC_ASSERT(test_ctad<test_range<forward_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_ctad<test_range<forward_iterator_tag, int, true, true>>());
-    STATIC_ASSERT(test_ctad<test_range<bidirectional_iterator_tag, int, false, false>>());
-    STATIC_ASSERT(test_ctad<test_range<bidirectional_iterator_tag, int, false, true>>());
-    STATIC_ASSERT(test_ctad<test_range<bidirectional_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_ctad<test_range<bidirectional_iterator_tag, int, true, true>>());
-    STATIC_ASSERT(test_ctad<test_range<random_access_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_ctad<test_range<random_access_iterator_tag, int, true, true>>());
-    STATIC_ASSERT(test_ctad<test_range<contiguous_iterator_tag, int, true, false>>());
-    STATIC_ASSERT(test_ctad<test_range<contiguous_iterator_tag, int, true, true>>());
+
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::no, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::yes>>());
+
+    STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::no, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::no, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes, Common::no,
+            CanCompare::yes, ProxyRef::no>>());
+    STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes, Common::yes,
+            CanCompare::yes, ProxyRef::no>>());
+
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::no, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<output_iterator_tag, int, Sized::yes, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::no, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<input_iterator_tag, int, Sized::yes, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::no, CanDifference::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<forward_iterator_tag, int, Sized::yes, CanDifference::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::no, CanDifference::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<bidirectional_iterator_tag, int, Sized::yes, CanDifference::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<random_access_iterator_tag, int, Sized::yes, CanDifference::yes>>());
+    STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::no>>());
+    STATIC_ASSERT(test_ctad<test::range<contiguous_iterator_tag, int, Sized::yes, CanDifference::yes>>());
 
     STATIC_ASSERT(test_ctad<std::forward_list<int>>());
     STATIC_ASSERT(test_ctad<std::list<int>>());

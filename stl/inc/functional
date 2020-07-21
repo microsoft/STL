@@ -643,18 +643,18 @@ private:
     _Memptr _Pm;
 
 public:
-    explicit _Mem_fn(_Memptr _Val) noexcept : _Pm(_Val) {}
+    constexpr explicit _Mem_fn(_Memptr _Val) noexcept : _Pm(_Val) {}
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...))) // strengthened
-        -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) const
+        noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)))
+            -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
         return _STD invoke(_Pm, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class _Ty>
-_NODISCARD _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
+_NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
     return _Mem_fn<_Rx _Ty::*>(_Pm);
 }
 
@@ -671,44 +671,44 @@ private:
 
 public:
     template <class _Callable, class _Tag, enable_if_t<is_same_v<_Tag, _Not_fn_tag>, int> = 0>
-    explicit _Not_fn(_Callable&& _Obj, _Tag) noexcept(is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
-        : _Mybase(_STD forward<_Callable>(_Obj)) { // store a callable object
-    }
+    constexpr explicit _Not_fn(_Callable&& _Obj, _Tag) noexcept(
+        is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
+        : _Mybase(_STD forward<_Callable>(_Obj)) {} // store a callable object
 
-    _Not_fn(const _Not_fn&) = default;
-    _Not_fn(_Not_fn&&)      = default;
+    constexpr _Not_fn(const _Not_fn&) = default;
+    constexpr _Not_fn(_Not_fn&&)      = default;
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) & noexcept(
-        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...))) // strengthened
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) & noexcept(
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<_Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) const& noexcept(noexcept(!_STD invoke(this->_Get_val(),
-        _STD forward<_Types>(_Args)...))) // strengthened
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) const& noexcept(
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<const _Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) && noexcept(noexcept(!_STD invoke(_STD move(this->_Get_val()),
-        _STD forward<_Types>(_Args)...))) // strengthened
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) && noexcept(
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<_Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
-    auto operator()(_Types&&... _Args) const&& noexcept(noexcept(!_STD invoke(_STD move(this->_Get_val()),
-        _STD forward<_Types>(_Args)...))) // strengthened
+    _CONSTEXPR20 auto operator()(_Types&&... _Args) const&& noexcept(
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<const _Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Callable>
-_NODISCARD _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj) noexcept(
+_NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj) noexcept(
     is_nothrow_constructible_v<decay_t<_Callable>, _Callable>) /* strengthened */ {
     // wrap a callable object to be negated
     return _Not_fn<decay_t<_Callable>>(_STD forward<_Callable>(_Obj), _Not_fn_tag{});
@@ -729,6 +729,49 @@ public:
 };
 
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_function_call();
+
+struct _Unforced { // tag to distinguish bind() from bind<R>()
+    explicit _Unforced() = default;
+};
+
+// STRUCT TEMPLATE _Invoker_ret
+// helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
+template <class _Rx, bool = is_void_v<_Rx>>
+struct _Invoker_ret { // selected for _Rx being cv void
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 void _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
+        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
+        _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+    }
+};
+
+template <class _Rx>
+struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
+#ifdef __EDG__ // TRANSITION, VSO-1132186
+    template <class _Fx, class... _Valtys,
+        template <class> class _Is_nothrow = _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r>
+    static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Is_nothrow<_Rx>::value) {
+        // INVOKE, implicitly converted to _Rx
+        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+    }
+#else // ^^^ workaround / no workaround vvv
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
+        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted to _Rx
+        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+    }
+#endif // TRANSITION, VSO-1132186
+};
+
+template <>
+struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
+    template <class _Fx, class... _Valtys>
+    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
+        _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
+        -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+    }
+};
 
 // FUNCTION TEMPLATE _Test_callable
 template <class _Fty>
@@ -1283,28 +1326,23 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 // PLACEHOLDERS
 template <int _Nx>
 struct _Ph { // placeholder
+    static_assert(_Nx > 0, "invalid placeholder index");
 };
 
 template <class _Tx>
-struct is_placeholder : integral_constant<int, 0> { // template to indicate that _Tx is not a placeholder
-};
+struct is_placeholder : integral_constant<int, 0> {}; // _Tx is not a placeholder
 
 template <int _Nx>
-struct is_placeholder<_Ph<_Nx>>
-    : integral_constant<int, _Nx> { // template specialization to indicate that _Ph<_Nx> is a placeholder
-};
+struct is_placeholder<_Ph<_Nx>> : integral_constant<int, _Nx> {}; // _Ph is a placeholder
 
 template <class _Tx>
-struct is_placeholder<const _Tx> : is_placeholder<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_placeholder<const _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_placeholder<volatile _Tx> : is_placeholder<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_placeholder<volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Ty>
 _INLINE_VAR constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
@@ -1315,25 +1353,19 @@ class _Binder;
 
 // STRUCT TEMPLATE is_bind_expression
 template <class _Tx>
-struct is_bind_expression : false_type { // template to indicate that _Tx is not a bind expression
-};
+struct is_bind_expression : false_type {}; // _Tx is not a bind expression
 
 template <class _Ret, class _Fx, class... _Types>
-struct is_bind_expression<_Binder<_Ret, _Fx, _Types...>> : true_type {
-    // template specialization to indicate a bind expression
-};
+struct is_bind_expression<_Binder<_Ret, _Fx, _Types...>> : true_type {}; // _Binder is a bind expression
 
 template <class _Tx>
-struct is_bind_expression<const _Tx> : is_bind_expression<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_bind_expression<const _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_bind_expression<volatile _Tx> : is_bind_expression<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_bind_expression<volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Tx>
-struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type { // ignore cv-qualifiers
-};
+struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
@@ -1346,7 +1378,8 @@ struct _Select_fixer;
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
     template <class _Untuple>
-    static auto _Fix(_Cv_TiD& _Tid, _Untuple &&) -> typename _Cv_TiD::type& { // unwrap a reference_wrapper
+    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&&) noexcept -> typename _Cv_TiD::type& {
+        // unwrap a reference_wrapper
         return _Tid.get();
     }
 };
@@ -1354,14 +1387,17 @@ struct _Select_fixer<_Cv_TiD, true, false, 0> { // reference_wrapper fixer
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
     template <class _Untuple, size_t... _Jx>
-    static auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut,
-        index_sequence<_Jx...>) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) { // call a nested bind expression
+    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut, index_sequence<_Jx...>) noexcept(
+        noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...))) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) {
+        // call a nested bind expression
         return _Tid(_STD get<_Jx>(_STD move(_Ut))...);
     }
 
     template <class _Untuple>
-    static auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) -> decltype(
-        _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) { // call a nested bind expression
+    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
+        noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})))
+        -> decltype(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) {
+        // call a nested bind expression
         return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
 };
@@ -1369,7 +1405,8 @@ struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
 template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, false, 0> { // identity fixer
     template <class _Untuple>
-    static _Cv_TiD& _Fix(_Cv_TiD& _Tid, _Untuple&&) { // pass a bound argument as an lvalue (important!)
+    static constexpr _Cv_TiD& _Fix(_Cv_TiD& _Tid, _Untuple&&) noexcept {
+        // pass a bound argument as an lvalue (important!)
         return _Tid;
     }
 };
@@ -1379,23 +1416,26 @@ struct _Select_fixer<_Cv_TiD, false, false, _Jx> { // placeholder fixer
     static_assert(_Jx > 0, "invalid is_placeholder value");
 
     template <class _Untuple>
-    static auto _Fix(_Cv_TiD&, _Untuple&& _Ut)
+    static constexpr auto _Fix(_Cv_TiD&, _Untuple&& _Ut) noexcept
         -> decltype(_STD get<_Jx - 1>(_STD move(_Ut))) { // choose the Jth unbound argument (1-based indexing)
         return _STD get<_Jx - 1>(_STD move(_Ut));
     }
 };
 
 template <class _Cv_TiD, class _Untuple>
-auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut)
+constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
+    noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))))
     -> decltype(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))) { // translate an argument for bind
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
 // FUNCTION TEMPLATE _Call_binder
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
-auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl, _Untuple&& _Ut)
-    -> decltype(_Invoker_ret<_Ret>::_Call(
-        _Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) { // bind() and bind<R>() invocation
+_CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
+    _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
+    _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)))
+    -> decltype(_Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) {
+    // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
 
@@ -1425,30 +1465,55 @@ private:
     _Compressed_pair<_First, _Second> _Mypair;
 
 public:
-    explicit _Binder(_Fx&& _Func, _Types&&... _Args)
+    constexpr explicit _Binder(_Fx&& _Func, _Types&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
 
-#define _BINDER_OPERATOR(CONST_OPT)                                                                           \
-    template <class... _Unbound>                                                                              \
-    auto operator()(_Unbound&&... _Unbargs) CONST_OPT->decltype(_Call_binder(_Invoker_ret<_Ret>(), _Seq{},    \
-        _Mypair._Get_first(), _Mypair._Myval2, _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) { \
-        return _Call_binder(_Invoker_ret<_Ret>(), _Seq{}, _Mypair._Get_first(), _Mypair._Myval2,              \
-            _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...));                                      \
+#define _CALL_BINDER                                                                  \
+    _Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, \
+        _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))
+
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+    template <class... _Unbound>
+    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{},
+        _STD declval<_First&>(), _STD declval<_Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))))
+        -> decltype(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _STD declval<_First&>(), _STD declval<_Second&>(),
+            _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) {
+        return _CALL_BINDER;
     }
 
-    _CLASS_DEFINE_CONST(_BINDER_OPERATOR)
-#undef _BINDER_OPERATOR
+    template <class... _Unbound>
+    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) const
+        noexcept(noexcept(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _STD declval<const _First&>(),
+            _STD declval<const _Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))))
+            -> decltype(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _STD declval<const _First&>(),
+                _STD declval<const _Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) {
+        return _CALL_BINDER;
+    }
+#else // ^^^ workaround / no workaround vvv
+    template <class... _Unbound>
+    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) -> decltype(_CALL_BINDER) {
+        return _CALL_BINDER;
+    }
+
+    template <class... _Unbound>
+    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) const noexcept(noexcept(_CALL_BINDER))
+        -> decltype(_CALL_BINDER) {
+        return _CALL_BINDER;
+    }
+#endif // TRANSITION, VSO-1132105
+
+#undef _CALL_BINDER
 };
 
 // FUNCTION TEMPLATE bind (implicit return type)
 template <class _Fx, class... _Types>
-_NODISCARD _Binder<_Unforced, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
+_NODISCARD _CONSTEXPR20 _Binder<_Unforced, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
     return _Binder<_Unforced, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 
 // FUNCTION TEMPLATE bind (explicit return type)
 template <class _Ret, class _Fx, class... _Types>
-_NODISCARD _Binder<_Ret, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
+_NODISCARD _CONSTEXPR20 _Binder<_Ret, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
     return _Binder<_Ret, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 
@@ -1556,8 +1621,7 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // STRUCT TEMPLATE uses_allocator
 template <class _Fty, class _Alloc>
-struct uses_allocator<function<_Fty>, _Alloc> : true_type { // true_type if container allocator enabled
-};
+struct uses_allocator<function<_Fty>, _Alloc> : true_type {}; // true_type if container allocator enabled
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
 #if _HAS_CXX17
@@ -1612,7 +1676,7 @@ struct _Global_delete {
 
 // CLASS TEMPLATE default_searcher
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
+_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
     _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, forward_iterator_tag, forward_iterator_tag) {
     // find first [_First2, _Last2) satisfying _Eq, arbitrary iterators
     for (;; ++_First1) { // loop until match or end of a sequence
@@ -1634,7 +1698,7 @@ pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _Firs
 }
 
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
+_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
     _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, random_access_iterator_tag, random_access_iterator_tag) {
     // find first [_First2, _Last2) satisfying _Eq, random-access iterators
     _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
@@ -1659,14 +1723,15 @@ pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _Firs
 template <class _FwdItPat, class _Pred_eq = equal_to<>>
 class default_searcher { // functor to search haystacks for needles
 public:
-    default_searcher(_FwdItPat _First, _FwdItPat _Last, _Pred_eq _Eq = _Pred_eq())
+    _CONSTEXPR20 default_searcher(_FwdItPat _First, _FwdItPat _Last, _Pred_eq _Eq = _Pred_eq())
         : _Data{_One_then_variadic_args_t{}, _STD move(_Eq), pair<_FwdItPat, _FwdItPat>{_First, _Last}} {
         const auto& _Pat = _Data._Myval2;
         _Adl_verify_range(_Pat.first, _Pat.second);
     }
 
     template <class _FwdItHaystack>
-    _NODISCARD pair<_FwdItHaystack, _FwdItHaystack> operator()(_FwdItHaystack _First, _FwdItHaystack _Last) const {
+    _NODISCARD _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> operator()(
+        _FwdItHaystack _First, _FwdItHaystack _Last) const {
         // search [_First, _Last) for the searcher's pattern
         _Adl_verify_range(_First, _Last);
         const auto& _Eq  = _Data._Get_first();

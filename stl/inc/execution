@@ -334,8 +334,8 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
 
 // VARIABLE TEMPLATE _Use_atomic_iterator
 template <class _Ty>
-struct _Atomic_is_usually_lock_free
-    : bool_constant<atomic<_Ty>::is_always_lock_free> { // deferred evaluation of atomic::is_always_lock_free
+struct _Atomic_is_usually_lock_free : bool_constant<atomic<_Ty>::is_always_lock_free> {
+    // deferred evaluation of atomic::is_always_lock_free
 };
 
 template <class _FwdIt>
@@ -719,8 +719,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
 
     _Work_stealing_team(size_t _Threads, _Diff _Total_work)
         : _Queues(_Threads), _Queues_used(0), _Remaining_work(_Total_work), _Available_mutex(),
-          _Available_queues(greater<>{}, _Get_queues(_Threads)) { // register work with the thread pool
-    }
+          _Available_queues(greater{}, _Get_queues(_Threads)) {} // register work with the thread pool
 
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
@@ -1043,7 +1042,6 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1
     return _Result;
 }
 
-
 // PARALLEL FUNCTION TEMPLATE all_of
 template <bool _Invert, class _FwdIt, class _Pr>
 struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task scheduled on the system thread pool
@@ -1067,6 +1065,8 @@ struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task schedu
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // GH-818: https://github.com/microsoft/STL/issues/818
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _First = _Range._First; _First != _Range._Last; ++_First) {
@@ -1296,6 +1296,7 @@ struct _Static_partitioned_find2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range     = _Basis._Get_chunk(_Key);
         const auto _This_find = _Fx(_Range._First, _Range._Last);
@@ -1312,7 +1313,6 @@ struct _Static_partitioned_find2 {
         _Run_available_chunked_work(*static_cast<_Static_partitioned_find2*>(_Context));
     }
 };
-
 
 template <class _ExPo, class _FwdIt, class _Find_fx>
 _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, const _Find_fx _Fx) {
@@ -1501,6 +1501,7 @@ struct _Static_partitioned_find_end_backward2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range        = _Basis._Get_chunk(_Key);
@@ -1613,10 +1614,15 @@ struct _Static_partitioned_adjacent_find2 {
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis{}, _Results{_Last}, _Pred{_Pred_} {}
 
     _Cancellation_status _Process_chunk() {
-        const auto _Key = _Team._Get_next_key();
-        if (!_Key || _Results._Complete()) {
+        if (_Results._Complete()) {
             return _Cancellation_status::_Canceled;
         }
+
+        const auto _Key = _Team._Get_next_key();
+        if (!_Key) {
+            return _Cancellation_status::_Canceled;
+        }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range        = _Basis._Get_chunk(_Key);
@@ -1832,6 +1838,7 @@ struct _Static_partitioned_mismatch2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range1       = _Basis1._Get_chunk(_Key);
@@ -1864,7 +1871,7 @@ struct _Static_partitioned_mismatch2 {
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, ...) mismatch using _Pred
+    // return [_First1, _Last1)/[_First2, ...) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -1906,7 +1913,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
-    // return [_First1, _Last1)/[_First2, _Last2) mismatch using _Pred
+    // return [_First1, _Last1)/[_First2, _Last2) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -1963,6 +1970,7 @@ struct _Static_partitioned_equal2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range1       = _Basis1._Get_chunk(_Key);
         const auto _Range2_first = _Basis2._Get_chunk(_Key)._First;
@@ -1983,7 +1991,7 @@ struct _Static_partitioned_equal2 {
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _Pr _Pred) noexcept
 /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, ...) using _Pred
+    // compare [_First1, _Last1) to [_First2, ...)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -2016,7 +2024,7 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
     _Pr _Pred) noexcept /* terminates */ {
-    // compare [_First1, _Last1) to [_First2, _Last2) using _Pred
+    // compare [_First1, _Last1) to [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First1, _Last1);
@@ -2081,6 +2089,7 @@ struct _Static_partitioned_search2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _Candidate = _Range._First; _Candidate != _Range._Last; ++_Candidate) {
@@ -2199,6 +2208,7 @@ struct _Static_partitioned_search_n2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Range = _Basis._Get_chunk(_Key);
 
@@ -2730,7 +2740,7 @@ struct _Sort_operation { // context for background threads
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // order [_First, _Last), using _Pred
+    // order [_First, _Last)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst                = _Get_unwrapped(_First);
     const auto _ULast                 = _Get_unwrapped(_Last);
@@ -2988,7 +2998,7 @@ struct _Static_partitioned_stable_sort3 {
 
 template <class _ExPo, class _BidIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // sort preserving order of equivalents, using _Pred
+    // sort preserving order of equivalents
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
@@ -3051,6 +3061,7 @@ struct _Static_partitioned_is_sorted_until {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         auto _Range = _Basis._Get_chunk(_Key);
         auto _Next  = _Range._First;
@@ -3097,7 +3108,6 @@ _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pre
             }
         }
     }
-
 
     _Seek_wrapped(_First, _STD is_sorted_until(_UFirst, _ULast, _Pass_fn(_Pred)));
     return _First;
@@ -3166,6 +3176,7 @@ struct _Static_partitioned_is_partitioned {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         // looking at chunks from either end, moving in towards the middle
         auto _Target_chunk_number = _Key._Chunk_number >> 1;
@@ -3278,6 +3289,7 @@ struct _Static_partitioned_is_heap_until {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
+        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
 
         const auto _Chunk_range_size = _Key._Size;
         const auto _Chunk_offset     = _Key._Start_at;
@@ -3302,7 +3314,7 @@ struct _Static_partitioned_is_heap_until {
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
-    // find extent of range that is a heap ordered by _Pred
+    // find extent of range that is a heap
     _REQUIRE_PARALLEL_ITERATOR(_RanIt);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -3578,20 +3590,6 @@ _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 }
 
 // PARALLEL FUNCTION TEMPLATE set_intersection
-template <class _Ty>
-struct _Storage_for {
-    // uninitialized space to store a _Ty
-    alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
-
-    _Storage_for()                    = default;
-    _Storage_for(const _Storage_for&) = delete;
-    _Storage_for& operator=(const _Storage_for&) = delete;
-
-    _Ty& _Ref() {
-        return reinterpret_cast<_Ty&>(_Storage);
-    }
-};
-
 inline constexpr unsigned char _Local_available = 1;
 inline constexpr unsigned char _Sum_available   = 2;
 
@@ -3898,7 +3896,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
-    // AND sets [_First1, _Last1) and [_First2, _Last2), using _Pred
+    // AND sets [_First1, _Last1) and [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
@@ -3989,7 +3987,7 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _FwdIt3 _Dest,
     _Pr _Pred) noexcept /* terminates */ {
-    // take set [_First2, _Last2) from [_First1, _Last1), using _Pred
+    // take set [_First2, _Last2) from [_First1, _Last1)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);

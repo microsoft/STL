@@ -9,11 +9,12 @@
 #include <memory>
 #include <stdexcept>
 #include <stdlib.h>
-#include <test_death.hpp>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include <test_death.hpp>
 
 using namespace std;
 

@@ -7,7 +7,7 @@
 #include <concepts>
 #include <ranges>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -40,9 +40,9 @@ constexpr void smoke_test() {
     }
     {
         // Validate non-sized ranges
-        auto result = mismatch(move_only_range{x}, move_only_range{y}, equal_to{}, get_first, get_second);
-        using I1    = iterator_t<move_only_range<P const>>;
-        using I2    = iterator_t<move_only_range<std::pair<long, long> const>>;
+        auto result = mismatch(basic_borrowed_range{x}, basic_borrowed_range{y}, equal_to{}, get_first, get_second);
+        using I1    = iterator_t<basic_borrowed_range<P const>>;
+        using I2    = iterator_t<basic_borrowed_range<std::pair<long, long> const>>;
         STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
@@ -58,8 +58,8 @@ constexpr void smoke_test() {
     }
     {
         // Validate non-sized iterator + sentinel pairs
-        move_only_range wrapped_x{x};
-        move_only_range wrapped_y{y};
+        basic_borrowed_range wrapped_x{x};
+        basic_borrowed_range wrapped_y{y};
         auto result = mismatch(
             wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), equal_to{}, get_first, get_second);
         using I1 = iterator_t<decltype(wrapped_x)>;
@@ -71,7 +71,9 @@ constexpr void smoke_test() {
 }
 
 int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((smoke_test(), true));
+#endif // TRANSITION, GH-1030
     smoke_test();
 }
 
@@ -102,4 +104,4 @@ struct instantiator {
     }
 };
 
-template void test_in_in<instantiator>();
+template void test_in_in<instantiator, const int, const int>();

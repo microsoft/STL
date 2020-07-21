@@ -418,8 +418,8 @@ namespace pmr {
             static_assert(_Default_next_capacity > 1);
 
             explicit _Pool(const size_t _Log_of_size_) noexcept
-                : _Block_size{size_t{1} << _Log_of_size_},
-                  _Log_of_size{_Log_of_size_} { // initialize a pool that manages blocks of the indicated size
+                : _Block_size{size_t{1} << _Log_of_size_}, _Log_of_size{_Log_of_size_} {
+                // initialize a pool that manages blocks of the indicated size
             }
 
             _Pool(_Pool&& _That) noexcept
@@ -601,31 +601,29 @@ namespace pmr {
     class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened
-            : _Resource{_Upstream} { // initialize this resource with upstream
-        }
+            : _Resource{_Upstream} {} // initialize this resource with upstream
 
         monotonic_buffer_resource(const size_t _Initial_size, memory_resource* const _Upstream) noexcept // strengthened
-            : _Next_buffer_size(_Round(_Initial_size)),
-              _Resource{_Upstream} { // initialize this resource with upstream and initial allocation size
+            : _Next_buffer_size(_Round(_Initial_size)), _Resource{_Upstream} {
+            // initialize this resource with upstream and initial allocation size
         }
 
         monotonic_buffer_resource(void* const _Buffer, const size_t _Buffer_size,
             memory_resource* const _Upstream) noexcept // strengthened
             : _Current_buffer(_Buffer), _Space_available(_Buffer_size),
-              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size) : _Min_allocation),
-              _Resource{_Upstream} { // initialize this resource with upstream and initial buffer
+              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size) : _Min_allocation), _Resource{_Upstream} {
+            // initialize this resource with upstream and initial buffer
         }
 
         monotonic_buffer_resource() = default;
 
         explicit monotonic_buffer_resource(const size_t _Initial_size) noexcept // strengthened
-            : _Next_buffer_size(_Round(_Initial_size)) { // initialize this resource with initial allocation size
-        }
+            : _Next_buffer_size(_Round(_Initial_size)) {} // initialize this resource with initial allocation size
 
         monotonic_buffer_resource(void* const _Buffer, const size_t _Buffer_size) noexcept // strengthened
             : _Current_buffer(_Buffer), _Space_available(_Buffer_size),
-              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size)
-                                             : _Min_allocation) { // initialize this resource with initial buffer
+              _Next_buffer_size(_Buffer_size ? _Scale(_Buffer_size) : _Min_allocation) {
+            // initialize this resource with initial buffer
         }
 
         virtual ~monotonic_buffer_resource() noexcept override {
@@ -675,8 +673,7 @@ namespace pmr {
             return _Result;
         }
 
-        virtual void do_deallocate(void*, size_t, size_t) override { // nothing to do
-        }
+        virtual void do_deallocate(void*, size_t, size_t) override {} // nothing to do
 
     private:
         struct _Header : _Single_link<> { // track the size and alignment of an allocation from upstream
