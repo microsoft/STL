@@ -145,7 +145,7 @@ struct _Storage_for {
         _CSTD memset(_Storage, 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_Ptr());
     }
-#endif
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
     _NODISCARD _Ty& _Ref() noexcept {
         return reinterpret_cast<_Ty&>(_Storage);
