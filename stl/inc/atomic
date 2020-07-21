@@ -456,7 +456,7 @@ public:
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
         _InterlockedExchange8(&_Spinlock, 0);
 #endif // hardware
-        __std_atomic_notify_all_direct(&_Spinlock);
+        __std_atomic_notify_one_direct(&_Spinlock);
     }
 
     _Ty _Storage;
