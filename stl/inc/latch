@@ -19,10 +19,11 @@
 
 #include <atomic>
 #include <system_error>
+#include <xerrc.h>
 
-[[noreturn]] inline void __std_barrier_deadlock() {
+[[noreturn]] inline void __std_sync_error(_STD errc code) {
     // TRANSITION, atomic wait satellite merge: move to satellite
-    _STD _Throw_system_error(_STD errc::resource_deadlock_would_occur);
+    _STD _Throw_system_error(code);
 }
 
 _STD_BEGIN
@@ -43,7 +44,7 @@ public:
             _Counter.notify_all();
         } else if (_Current < 0) {
             _Counter.notify_all();
-            __std_barrier_deadlock();
+            __std_sync_error(errc::state_not_recoverable);
         }
     }
 
@@ -61,7 +62,7 @@ public:
             if (_Current == 0) {
                 break;
             } else if (_Current < 0) {
-                __std_barrier_deadlock();
+                __std_sync_error(errc::state_not_recoverable);
             }
             _Counter.wait(_Current, memory_order_relaxed);
         }
@@ -73,7 +74,7 @@ public:
             _Counter.notify_all();
         } else if (_Current < 0) {
             _Counter.notify_all();
-            __std_barrier_deadlock();
+            __std_sync_error(errc::state_not_recoverable);
         } else {
             _Counter.wait(_Current, memory_order_relaxed);
             wait();
