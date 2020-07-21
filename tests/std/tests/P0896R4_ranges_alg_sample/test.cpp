@@ -38,7 +38,6 @@ struct instantiator {
                 auto result2 = sample(wrapped_input2.begin(), wrapped_input2.end(), Write{output2}, 3, copy_gen);
                 assert(equal(output1, output2));
                 assert(result2.peek() == end(output2));
-                assert(result1.peek() == result2.peek());
 
                 if (ranges::forward_range<Read>) {
                     // verify stability
@@ -63,7 +62,6 @@ struct instantiator {
                 auto result2 = sample(wrapped_input2, Write{output2}, 3, copy_gen);
                 assert(equal(output1, output2));
                 assert(result2.peek() == end(output2));
-                assert(result1.peek() == result2.peek());
 
                 if (ranges::forward_range<Read>) {
                     // verify stability
