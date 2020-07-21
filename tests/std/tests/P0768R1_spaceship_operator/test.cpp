@@ -7,64 +7,89 @@
 #include <compare>
 #include <type_traits>
 
-enum class comp { equal, nonequal, less, greater, unordered };
+enum class comp { equal, less, greater, unordered };
 
 template <comp Z, class T>
-constexpr bool test_ord(T val) {
+constexpr bool test_order(const T val) {
+    // Validate that val is ordered relative to literal zero according to Z
     assert((val == 0) == (Z == comp::equal));
     assert((0 == val) == (Z == comp::equal));
+
     assert((val != 0) == (Z != comp::equal));
     assert((0 != val) == (Z != comp::equal));
-#ifdef __cpp_impl_three_way_comparison
-    assert(((val <=> 0) == 0) == (Z == comp::equal));
-    assert(((0 <=> val) == 0) == (Z == comp::equal));
-
-#if __cpp_impl_three_way_comparison >= 201907L
-    assert(val == val);
-    assert(!(val != val));
-#endif // __cpp_impl_three_way_comparison >= 201907L
-#endif // __cpp_impl_three_way_comparison
-    assert(std::is_eq(val) == (Z == comp::equal));
-    assert(std::is_neq(val) == (Z != comp::equal));
 
     assert((val < 0) == (Z == comp::less));
     assert((0 > val) == (Z == comp::less));
+
     assert((val > 0) == (Z == comp::greater));
     assert((0 < val) == (Z == comp::greater));
+
     assert((val <= 0) == (Z != comp::greater && Z != comp::unordered));
     assert((0 >= val) == (Z != comp::greater && Z != comp::unordered));
+
     assert((val >= 0) == (Z != comp::less && Z != comp::unordered));
     assert((0 <= val) == (Z != comp::less && Z != comp::unordered));
-#ifdef __cpp_impl_three_way_comparison
-    assert(((val <=> 0) < 0) == (Z == comp::less));
-    assert(((0 <=> val) < 0) == (Z == comp::greater));
 
-#if __cpp_impl_three_way_comparison >= 201907L
-    assert(val == val);
-    assert(!(val != val));
-#endif // __cpp_impl_three_way_comparison >= 201907L
-#endif // __cpp_impl_three_way_comparison
+    assert(std::is_eq(val) == (Z == comp::equal));
+    assert(std::is_neq(val) == (Z != comp::equal));
     assert(std::is_lt(val) == (Z == comp::less));
     assert(std::is_lteq(val) == (Z != comp::greater && Z != comp::unordered));
     assert(std::is_gt(val) == (Z == comp::greater));
     assert(std::is_gteq(val) == (Z != comp::less && Z != comp::unordered));
 
+    // Validate that equality is reflexive for comparison category types
+    assert(val == val);
+    assert(!(val != val));
+
     return true;
 }
 
-static_assert(test_ord<comp::equal>(std::partial_ordering::equivalent));
-static_assert(test_ord<comp::less>(std::partial_ordering::less));
-static_assert(test_ord<comp::greater>(std::partial_ordering::greater));
-static_assert(test_ord<comp::unordered>(std::partial_ordering::unordered));
+constexpr bool test_orderings() {
+    assert(test_order<comp::equal>(std::partial_ordering::equivalent));
+    assert(test_order<comp::less>(std::partial_ordering::less));
+    assert(test_order<comp::greater>(std::partial_ordering::greater));
+    assert(test_order<comp::unordered>(std::partial_ordering::unordered));
 
-static_assert(test_ord<comp::equal>(std::weak_ordering::equivalent));
-static_assert(test_ord<comp::less>(std::weak_ordering::less));
-static_assert(test_ord<comp::greater>(std::weak_ordering::greater));
+    assert(test_order<comp::equal>(std::weak_ordering::equivalent));
+    assert(test_order<comp::less>(std::weak_ordering::less));
+    assert(test_order<comp::greater>(std::weak_ordering::greater));
 
-static_assert(test_ord<comp::equal>(std::strong_ordering::equal));
-static_assert(test_ord<comp::equal>(std::strong_ordering::equivalent));
-static_assert(test_ord<comp::less>(std::strong_ordering::less));
-static_assert(test_ord<comp::greater>(std::strong_ordering::greater));
+    assert(test_order<comp::equal>(std::strong_ordering::equal));
+    assert(test_order<comp::equal>(std::strong_ordering::equivalent));
+    assert(test_order<comp::less>(std::strong_ordering::less));
+    assert(test_order<comp::greater>(std::strong_ordering::greater));
+
+    return true;
+}
+
+constexpr bool test_spaceships() {
+    // Exhaustively validate x <=> 0 and 0 <=> x for all values of each comparison category type.
+    // Guards against regression of GH-1050: "0 <=> partial_ordering::unordered returns invalid value".
+    assert(std::partial_ordering::less <=> 0 == std::partial_ordering::less);
+    assert(0 <=> std::partial_ordering::less == std::partial_ordering::greater);
+    assert(std::partial_ordering::equivalent <=> 0 == std::partial_ordering::equivalent);
+    assert(0 <=> std::partial_ordering::equivalent == std::partial_ordering::equivalent);
+    assert(std::partial_ordering::greater <=> 0 == std::partial_ordering::greater);
+    assert(0 <=> std::partial_ordering::greater == std::partial_ordering::less);
+    assert(std::partial_ordering::unordered <=> 0 == std::partial_ordering::unordered);
+    assert(0 <=> std::partial_ordering::unordered == std::partial_ordering::unordered);
+
+    assert(std::weak_ordering::less <=> 0 == std::weak_ordering::less);
+    assert(0 <=> std::weak_ordering::less == std::weak_ordering::greater);
+    assert(std::weak_ordering::equivalent <=> 0 == std::weak_ordering::equivalent);
+    assert(0 <=> std::weak_ordering::equivalent == std::weak_ordering::equivalent);
+    assert(std::weak_ordering::greater <=> 0 == std::weak_ordering::greater);
+    assert(0 <=> std::weak_ordering::greater == std::weak_ordering::less);
+
+    assert(std::strong_ordering::less <=> 0 == std::strong_ordering::less);
+    assert(0 <=> std::strong_ordering::less == std::strong_ordering::greater);
+    assert(std::strong_ordering::equal <=> 0 == std::strong_ordering::equal);
+    assert(0 <=> std::strong_ordering::equal == std::strong_ordering::equal);
+    assert(std::strong_ordering::greater <=> 0 == std::strong_ordering::greater);
+    assert(0 <=> std::strong_ordering::greater == std::strong_ordering::less);
+
+    return true;
+}
 
 template <class Expected, class... Categories>
 constexpr bool test_common_cc = std::is_same_v<std::common_comparison_category_t<Categories...>, Expected>;
@@ -121,7 +146,7 @@ static_assert(test_common_type<std::strong_ordering, std::partial_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::weak_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::strong_ordering>());
 
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
 constexpr auto my_cmp_three_way = [](const auto& left, const auto& right) { return left <=> right; };
 
 template <class Left, class Right>
@@ -187,29 +212,21 @@ void test_algorithm() {
     assert((test_algorithm2<Ty1, Ty2>()));
     assert((test_algorithm2<Ty2, Ty1>()));
 }
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 int main() {
-    test_ord<comp::equal>(std::partial_ordering::equivalent);
-    test_ord<comp::less>(std::partial_ordering::less);
-    test_ord<comp::greater>(std::partial_ordering::greater);
-    test_ord<comp::unordered>(std::partial_ordering::unordered);
+    static_assert(test_orderings());
+    test_orderings();
 
-    test_ord<comp::equal>(std::weak_ordering::equivalent);
-    test_ord<comp::less>(std::weak_ordering::less);
-    test_ord<comp::greater>(std::weak_ordering::greater);
+    static_assert(test_spaceships());
+    test_spaceships();
 
-    test_ord<comp::equal>(std::strong_ordering::equal);
-    test_ord<comp::equal>(std::strong_ordering::equivalent);
-    test_ord<comp::less>(std::strong_ordering::less);
-    test_ord<comp::greater>(std::strong_ordering::greater);
-
-#if defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
     test_algorithm<int>();
     test_algorithm<char>();
     test_algorithm<unsigned char>();
     test_algorithm<int, char>();
     test_algorithm<int, unsigned char>();
     test_algorithm<char, unsigned char>();
-#endif // defined(__cpp_impl_three_way_comparison) && defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 }
