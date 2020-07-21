@@ -174,7 +174,7 @@ template <class X, std::size_t S>
 void test() {
     static_assert(sizeof(X) == S, "Unexpected size");
     static_assert(
-        !std::has_unique_object_representations_v<X>, "Type has no padding which makes testing for P0528 ineffective");
+        !std::has_unique_object_representations_v<X>, "Type without padding is not useful for testing P0528.");
     X x1;
     X x2;
     X x3;
