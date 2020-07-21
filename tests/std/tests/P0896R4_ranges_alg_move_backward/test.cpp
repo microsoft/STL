@@ -128,7 +128,7 @@ constexpr void test_memmove() {
         const same_as<move_backward_result<S*, S*>> auto result = move_backward(io + 0, io + 3, io + 4);
         assert(result.in == io + 3);
         assert(result.out == io + 1);
-        const int expected[] = {0, 0, 1, 2};
+        constexpr int expected[] = {0, 0, 1, 2};
         assert(equal(io, expected, ranges::equal_to{}, &S::val));
     }
 }

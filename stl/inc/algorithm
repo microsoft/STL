@@ -1799,7 +1799,7 @@ namespace ranges {
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It1, bidirectional_iterator _It2>
         requires indirectly_movable<_It1, _It2>
-    _NODISCARD static constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
+    _NODISCARD constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
         if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
             if (!_STD is_constant_evaluated()) {
                 return _Copy_backward_memmove(_First, _Last, _Result);
