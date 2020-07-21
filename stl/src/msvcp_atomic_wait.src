@@ -7,13 +7,12 @@ LIBRARY LIBRARYNAME
 
 EXPORTS
     __std_atomic_wait_get_deadline
+    __std_atomic_wait_get_remaining_timeout
     __std_atomic_notify_all_direct
     __std_atomic_notify_all_indirect
     __std_atomic_notify_one_direct
     __std_atomic_notify_one_indirect
     __std_atomic_set_api_level
-    __std_atomic_unwait_direct
-    __std_atomic_unwait_indirect
     __std_atomic_wait_direct
     __std_atomic_wait_indirect
     __std_bulk_submit_threadpool_work
