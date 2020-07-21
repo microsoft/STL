@@ -11,6 +11,8 @@
 using namespace std;
 using P = pair<int, int>;
 
+constexpr auto incr = [](auto& y) { ++y; };
+
 // Validate that for_each_n_result aliases in_fun_result
 STATIC_ASSERT(same_as<ranges::for_each_n_result<int, double>, ranges::in_fun_result<int, double>>);
 
@@ -20,8 +22,6 @@ struct instantiator {
     template <indirectly_writable<P> ReadWrite>
     static constexpr void call() {
         using ranges::for_each_n, ranges::for_each_n_result, ranges::iterator_t, ranges::distance;
-        auto incr = [](auto& y) { ++y; };
-
         { // Validate iterator + sentinel overload
             P input[3] = {{0, 42}, {2, 42}, {4, 42}};
 
