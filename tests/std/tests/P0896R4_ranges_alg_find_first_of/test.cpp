@@ -11,9 +11,11 @@
 using namespace std;
 using P = std::pair<int, int>;
 
+constexpr auto pred = [](const int x, const int y) { return x == y + 1; };
+
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::find_first_of(borrowed<false>{}, borrowed<true>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::find_first_of(borrowed<true>{}, borrowed<true>{})), int*>);
+STATIC_ASSERT(same_as<decltype(ranges::find_first_of(borrowed<false>{}, borrowed<true>{}, pred)), ranges::dangling>);
+STATIC_ASSERT(same_as<decltype(ranges::find_first_of(borrowed<true>{}, borrowed<true>{}, pred)), int*>);
 
 struct instantiator {
     static constexpr P haystack[7]      = {{0, 42}, {1, 42}, {2, 42}, {3, 42}, {4, 42}, {5, 42}, {6, 42}};
@@ -23,7 +25,6 @@ struct instantiator {
     template <ranges::input_range Read1, ranges::forward_range Read2>
     static constexpr void call() {
         using ranges::find_first_of, ranges::iterator_t;
-        const auto pred = [](const int x, const int y) { return x == y + 1; };
 
         { // Validate range overload [found case]
             Read1 wrapped_haystack{haystack};
@@ -49,7 +50,7 @@ struct instantiator {
 
             auto result = find_first_of(wrapped_haystack, wrapped_needle, pred, get_first);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<Read1>>);
-            assert(result.peek() == end(haystack));
+            assert(result == wrapped_haystack.end());
         }
         {
             // Validate iterator + sentinel overload [not found case]
@@ -59,7 +60,7 @@ struct instantiator {
             auto result = find_first_of(wrapped_haystack.begin(), wrapped_haystack.end(), wrapped_needle.begin(),
                 wrapped_needle.end(), pred, get_first);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<Read1>>);
-            assert(result.peek() == end(haystack));
+            assert(result == wrapped_haystack.end());
         }
     }
 };
@@ -70,12 +71,13 @@ int main() {
     test_in_fwd<instantiator, const P, const int>();
 }
 #else // ^^^ test all range combinations // test only interesting range combos vvv
-using in_test_range  = test::range<input_iterator_tag, const P, test::Sized::no, test::CanDifference::no,
-    test::Common::no, test::CanCompare::no, test::ProxyRef::yes>;
-using fwd_test_range = test::range<forward_iterator_tag, const int, test::Sized::no, test::CanDifference::no,
-    test::Common::no, test::CanCompare::yes, test::ProxyRef::yes>;
-
 constexpr bool run_tests() {
+    // The algorithm is oblivious to anything except maybe proxies so take the bare minimum input/forward range
+    using in_test_range  = test::range<input_iterator_tag, const P, test::Sized::no, test::CanDifference::no,
+        test::Common::no, test::CanCompare::no, test::ProxyRef::yes>;
+    using fwd_test_range = test::range<forward_iterator_tag, const int, test::Sized::no, test::CanDifference::no,
+        test::Common::no, test::CanCompare::yes, test::ProxyRef::yes>;
+
     instantiator::call<in_test_range, fwd_test_range>();
     return true;
 }

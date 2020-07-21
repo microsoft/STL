@@ -12,6 +12,7 @@ using namespace std;
 using P = std::pair<int, int>;
 
 constexpr auto matches = [](const int val) { return val == 42; };
+constexpr auto equals  = [](auto x) { return [x](auto&& y) { return y == x; }; };
 
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::find_if(borrowed<false>{}, matches)), ranges::dangling>);
@@ -23,7 +24,6 @@ struct instantiator {
     template <ranges::input_range Read>
     static constexpr void call() {
         using ranges::find_if, ranges::iterator_t;
-        auto equals = [](auto x) { return [x](auto&& y) { return y == x; }; };
 
         for (auto [value, _] : haystack) {
             { // Validate range overload [found case]

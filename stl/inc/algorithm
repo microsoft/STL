@@ -640,7 +640,7 @@ namespace ranges {
                 return _First;
             }
 
-            for (auto _Next = _First;; _First = _Next) {
+            for (auto _Next = _First;; ++_First) {
                 if (++_Next == _Last) {
                     return _Next;
                 }
