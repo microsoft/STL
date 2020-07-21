@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <type_traits>
 
 struct X0 {
     void operator&() const = delete;
@@ -67,7 +68,7 @@ struct alignas(4) X4 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
     }
 
@@ -77,7 +78,6 @@ struct alignas(4) X4 {
 };
 #pragma warning(pop)
 
-#pragma pack(push)
 #pragma warning(push)
 #pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
 struct X6 {
@@ -87,7 +87,7 @@ struct X6 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
         std::memset(&y, 0, sizeof(y));
         z = ~v;
@@ -98,7 +98,6 @@ struct X6 {
     }
 };
 #pragma warning(pop)
-#pragma pack(pop)
 
 struct X8 {
     char x;
@@ -106,7 +105,7 @@ struct X8 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
         y = 0;
     }
@@ -123,7 +122,7 @@ struct X9 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x.set(v);
         z = ~v;
     }
@@ -141,7 +140,7 @@ struct X16 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
         y = 0;
         z = ~v;
@@ -159,7 +158,7 @@ struct X20 {
 
     void operator&() const = delete;
 
-    void set(char v) {
+    void set(const char v) {
         x = v;
         std::memset(&y, 0, sizeof(y));
         z = ~v;
@@ -174,7 +173,8 @@ struct X20 {
 template <class X, std::size_t S>
 void test() {
     static_assert(sizeof(X) == S, "Unexpected size");
-    static_assert(!std::has_unique_object_representations_v<X>, "No padding type");
+    static_assert(
+        !std::has_unique_object_representations_v<X>, "Type has no padding which makes testing for P0528 ineffective");
     X x1;
     X x2;
     X x3;

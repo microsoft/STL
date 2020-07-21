@@ -126,8 +126,10 @@ _NODISCARD extern "C" bool __cdecl __std_atomic_has_cmpxchg16b() noexcept;
 
 _STD_BEGIN
 // STRUCT TEMPLATE _Storage_for
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
 struct _Form_mask_t {};
-_INLINE_VAR constexpr _Form_mask_t _Form_mask;
+_INLINE_VAR constexpr _Form_mask_t _Form_mask{};
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
 template <class _Ty>
 struct _Storage_for {
@@ -138,25 +140,27 @@ struct _Storage_for {
     _Storage_for(const _Storage_for&) = delete;
     _Storage_for& operator=(const _Storage_for&) = delete;
 
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
     explicit _Storage_for(_Form_mask_t) noexcept {
         _CSTD memset(_Storage, 0xff, sizeof(_Ty));
         __builtin_zero_non_value_bits(_Ptr());
     }
+#endif
 
-    _Ty& _Ref() noexcept {
+    _NODISCARD _Ty& _Ref() noexcept {
         return reinterpret_cast<_Ty&>(_Storage);
     }
 
-    _Ty* _Ptr() noexcept {
-        return reinterpret_cast<_Ty*>(_STD addressof(_Storage));
+    _NODISCARD _Ty* _Ptr() noexcept {
+        return reinterpret_cast<_Ty*>(&_Storage);
     }
 };
 
-#if _HAS_CXX20
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
 template <class _Ty>
-inline constexpr bool _Cmpxchg_has_padding_bits_v =
+inline constexpr bool _Might_have_non_value_bits =
     !has_unique_object_representations_v<_Ty> && !is_floating_point_v<_Ty>;
-#endif
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
 // FENCES
 extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
@@ -401,7 +405,7 @@ struct _Atomic_storage {
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _Lock();
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
             _Storage_for<_Ty> _Local;
             const auto _Local_ptr = _Local._Ptr();
             _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_Ty));
@@ -410,7 +414,7 @@ struct _Atomic_storage {
         } else {
             _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
         }
-#else
+#else // _CMPXCHG_MASK_OUT_PADDING_BITS
         _Result = _CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) == 0;
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         if (_Result) {
@@ -539,9 +543,9 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         char _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
             _Storage_for<_Ty> _Mask{_Form_mask};
-            const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask._Ref());
+            const char _Mask_val = _Atomic_reinterpret_as<char>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8,
@@ -641,7 +645,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected); // read before atomic operation
         short _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
             _Storage_for<_Ty> _Mask{_Form_mask};
             const short _Mask_val = _Atomic_reinterpret_as<short>(_Mask._Ref());
 
@@ -741,7 +745,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
             _Storage_for<_Ty> _Mask{_Form_mask};
             const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
 
@@ -869,7 +873,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         long long _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Cmpxchg_has_padding_bits_v<_Ty>) {
+        if constexpr (_Might_have_non_value_bits<_Ty>) {
             _Storage_for<_Ty> _Mask{_Form_mask};
             const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
 
