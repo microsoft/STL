@@ -755,6 +755,10 @@ concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && req
 template <class _Ty>
 using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
+// ALIAS TEMPLATE _Make_signed_like_t
+template <class _Ty>
+using _Make_signed_like_t = make_signed_t<_Ty>; // Per the proposed resolution of LWG-3403
+
 // CONCEPT incrementable
 template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
@@ -3121,7 +3125,7 @@ namespace ranges {
         ~_Not_quite_object() = default;
     };
 
-    // CLASS ranges::_Advance_fn
+    // VARIABLE ranges::advance
     class _Advance_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3211,10 +3215,9 @@ namespace ranges {
         }
     };
 
-    // VARIABLE ranges::advance
     inline constexpr _Advance_fn advance{_Not_quite_object::_Construct_tag{}};
 
-    // CLASS ranges::_Distance_fn
+    // VARIABLE ranges::distance
     class _Distance_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3246,10 +3249,38 @@ namespace ranges {
         }
     };
 
-    // VARIABLE ranges::distance
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
 
-    // CLASS ranges::_Next_fn
+    // VARIABLE ranges::ssize
+    class _Ssize_fn { // Per the proposed resolution of LWG-3403
+    public:
+        // clang-format off
+        template <class _Rng>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range) const requires requires { _RANGES size(_Range); } {
+            using _SSSsssigned = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
+            using _Ty          = typename _Parsel_type<is_integral_v<_SSSsssigned>>::template _Apply<_SSSsssigned>;
+            return static_cast<_Ty>(_RANGES size(_Range));
+        }
+        // clang-format on
+    private:
+        template <bool _IsIntegral>
+        struct _Parsel_type {
+            template <class _Ty>
+            using _Apply = common_type_t<ptrdiff_t, _Ty>;
+        };
+
+        template <>
+        struct _Parsel_type<false> {
+            template <class _Ty>
+            using _Apply = _Ty;
+        };
+    };
+
+    inline namespace _Cpos {
+        inline constexpr _Ssize_fn ssize;
+    }
+
+    // VARIABLE ranges::next
     class _Next_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3279,10 +3310,9 @@ namespace ranges {
         }
     };
 
-    // VARIABLE ranges::next
     inline constexpr _Next_fn next{_Not_quite_object::_Construct_tag{}};
 
-    // CLASS ranges::_Prev_fn
+    // VARIABLE ranges::prev
     class _Prev_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3308,7 +3338,6 @@ namespace ranges {
         }
     };
 
-    // VARIABLE ranges::prev
     inline constexpr _Prev_fn prev{_Not_quite_object::_Construct_tag{}};
 
     // FUNCTION TEMPLATE _Find_last_iterator
