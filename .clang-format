@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/9.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -33,7 +33,7 @@ AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
 # AllowAllConstructorInitializersOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
-# AllowShortBlocksOnASingleLine: false
+# AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
 
 # AllowShortFunctionsOnASingleLine: All
@@ -90,6 +90,10 @@ ColumnLimit:     120
 # ConstructorInitializerIndentWidth: 4
 # ContinuationIndentWidth: 4
 # Cpp11BracedListStyle: true
+
+# DeriveLineEnding: true
+DeriveLineEnding: false
+
 # DerivePointerAlignment: false
 # DisableFormat:   false
 # ExperimentalAutoDetectBinPacking: false
@@ -105,17 +109,22 @@ IncludeBlocks:   Regroup
 # IncludeCategories:
 #   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
 #     Priority:        2
+#     SortPriority:    0
 #   - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
 #     Priority:        3
+#     SortPriority:    0
 #   - Regex:           '.*'
 #     Priority:        1
+#     SortPriority:    0
 IncludeCategories:
   - Regex:           '^<yvals(_core)?\.h>$'
     Priority:        1
   - Regex:           '^<(Windows|userenv)\.h>$'
     Priority:        3
+    SortPriority:    3
   - Regex:           '^<WinIoCtl\.h>$'
-    Priority:        4
+    Priority:        3
+    SortPriority:    4
   - Regex:           '^<__.*\.hpp>$'
     Priority:        2
   - Regex:           '\.hpp[>"]$'
@@ -124,7 +133,9 @@ IncludeCategories:
     Priority:        2
 
 # IncludeIsMainRegex: '(Test)?$'
+# IncludeIsMainSourceRegex: ''
 # IndentCaseLabels: false
+# IndentGotoLabels: true
 # IndentPPDirectives: None
 
 # IndentWidth:     2
@@ -178,14 +189,17 @@ SpaceAfterCStyleCast: true
 # SpaceBeforeInheritanceColon: true
 # SpaceBeforeParens: ControlStatements
 # SpaceBeforeRangeBasedForLoopColon: true
+# SpaceInEmptyBlock: false
 # SpaceInEmptyParentheses: false
 # SpacesBeforeTrailingComments: 1
 # SpacesInAngles:  false
+# SpacesInConditionalStatement: false
 # SpacesInContainerLiterals: true
 # SpacesInCStyleCastParentheses: false
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
-# Standard:        Cpp11
+# SpaceBeforeSquareBrackets: false
+# Standard:        Latest
 
 # NOTE: _STD_BEGIN, _STD_END, etc. aren't macros for complete statements, but telling clang-format that they are
 # produces the behavior that we want (with no block indentation).
@@ -203,5 +217,9 @@ StatementMacros:
   - _END_EXTERN_C_UNLESS_PURE
 
 # TabWidth:        8
+
+# UseCRLF:         false
+UseCRLF:         true
+
 # UseTab:          Never
 ...
