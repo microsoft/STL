@@ -2902,15 +2902,15 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     const _Vbase* const _VbLast = _Last._Myptr;
 
     const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
-    const auto _LastSourceMask  = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
     const auto _FirstDestMask   = static_cast<_Vbase>(~_FirstSourceMask);
-    const auto _LastDestMask    = static_cast<_Vbase>(~_LastSourceMask);
     const auto _FillVal         = static_cast<_Vbase>(_Val ? -1 : 0);
 
     if (_VbFirst == _VbLast) {
-        const auto _SourceMask = _FirstSourceMask & _LastSourceMask;
-        const auto _DestMask   = _FirstDestMask | _LastDestMask;
-        *_VbFirst              = (*_VbFirst & _DestMask) | (_FillVal & _SourceMask);
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastDestMask   = static_cast<_Vbase>(~_LastSourceMask);
+        const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
+        const auto _DestMask       = _FirstDestMask | _LastDestMask;
+        *_VbFirst                  = (*_VbFirst & _DestMask) | (_FillVal & _SourceMask);
         return;
     }
 
@@ -2934,7 +2934,9 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     }
 
     if (_Last._Myoff != 0) {
-        *_VbFirst = (*_VbFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastDestMask   = static_cast<_Vbase>(~_LastSourceMask);
+        *_VbFirst                  = (*_VbFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
     }
 }
 #endif // _HAS_IF_CONSTEXPR
