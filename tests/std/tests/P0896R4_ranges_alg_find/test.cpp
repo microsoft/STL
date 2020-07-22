@@ -9,7 +9,7 @@
 
 #include <range_algorithm_support.hpp>
 using namespace std;
-using P = std::pair<int, int>;
+using P = pair<int, int>;
 
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::find(borrowed<false>{}, 42)), ranges::dangling>);
@@ -22,7 +22,7 @@ struct instantiator {
     static constexpr void call() {
         using ranges::find, ranges::iterator_t;
 
-        for (auto [value, _] : haystack) {
+        for (const auto& [value, _] : haystack) {
             { // Validate range overload [found case]
                 Read wrapped_input{haystack};
                 auto result = find(wrapped_input, value, get_first);

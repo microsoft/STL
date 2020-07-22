@@ -9,7 +9,7 @@
 
 #include <range_algorithm_support.hpp>
 using namespace std;
-using P = std::pair<int, int>;
+using P = pair<int, int>;
 
 constexpr auto matches = [](const int val) { return val == 42; };
 constexpr auto equals  = [](auto x) { return [x](auto&& y) { return y == x; }; };
@@ -25,7 +25,7 @@ struct instantiator {
     static constexpr void call() {
         using ranges::find_if, ranges::iterator_t;
 
-        for (auto [value, _] : haystack) {
+        for (const auto& [value, _] : haystack) {
             { // Validate range overload [found case]
                 Read wrapped_input{haystack};
                 auto result = find_if(wrapped_input, equals(value), get_first);

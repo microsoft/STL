@@ -9,7 +9,7 @@
 
 #include <range_algorithm_support.hpp>
 using namespace std;
-using P = std::pair<int, int>;
+using P = pair<int, int>;
 
 constexpr auto pred = [](const int x, const int y) { return x == y + 1; };
 

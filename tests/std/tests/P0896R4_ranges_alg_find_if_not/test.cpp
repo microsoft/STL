@@ -10,7 +10,7 @@
 
 #include <range_algorithm_support.hpp>
 using namespace std;
-using P = std::pair<int, int>;
+using P = pair<int, int>;
 
 constexpr auto matches = [](const int val) { return val == 42; };
 constexpr auto equals  = [](auto x) { return [x](auto&& y) { return y == x; }; };
