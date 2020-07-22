@@ -9,7 +9,7 @@
 
 #include <range_algorithm_support.hpp>
 using namespace std;
-using P = std::pair<int, int>;
+using P = pair<int, int>;
 
 // Validate that unique_copy_result aliases in_out_result
 STATIC_ASSERT(same_as<ranges::unique_copy_result<int, double>, ranges::in_out_result<int, double>>);

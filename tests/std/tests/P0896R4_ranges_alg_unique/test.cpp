@@ -19,9 +19,9 @@ STATIC_ASSERT(same_as<decltype(ranges::unique(borrowed<true>{})), ranges::subran
 struct instantiator {
     static constexpr P expected[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
 
-    static constexpr auto make_counter(size_t& count) {
-        return [&count](const int a, const int b) {
-            ++count;
+    static constexpr auto make_counter(size_t& counter) {
+        return [&counter](const int a, const int b) {
+            ++counter;
             return a == b;
         };
     }
