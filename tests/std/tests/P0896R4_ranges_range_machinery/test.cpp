@@ -331,8 +331,8 @@ constexpr bool test_size() {
         STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
         STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
 
-        using SS = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
-        STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SS>);
+        using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+        STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SignedSize>);
 
         STATIC_ASSERT(CanEmpty<Range>);
     }
@@ -1622,8 +1622,8 @@ namespace exhaustive_size_and_view_test {
         if constexpr (is_valid<Size>) {
             STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Rng>())), Size>);
 
-            using SS = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
-            STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SS>);
+            using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+            STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SignedSize>);
         }
 
         STATIC_ASSERT(ranges::view<Rng> == IsView);

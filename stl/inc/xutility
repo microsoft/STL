@@ -3257,23 +3257,11 @@ namespace ranges {
         // clang-format off
         template <class _Rng>
         _NODISCARD constexpr auto operator()(_Rng&& _Range) const requires requires { _RANGES size(_Range); } {
-            using _SSSsssigned = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
-            using _Ty          = typename _Parsel_type<is_integral_v<_SSSsssigned>>::template _Apply<_SSSsssigned>;
+            using _Sty = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
+            using _Ty  = common_type_t<conditional_t<is_integral_v<_Sty>, ptrdiff_t, _Sty>, _Sty>;
             return static_cast<_Ty>(_RANGES size(_Range));
         }
         // clang-format on
-    private:
-        template <bool _IsIntegral>
-        struct _Parsel_type {
-            template <class _Ty>
-            using _Apply = common_type_t<ptrdiff_t, _Ty>;
-        };
-
-        template <>
-        struct _Parsel_type<false> {
-            template <class _Ty>
-            using _Apply = _Ty;
-        };
     };
 
     inline namespace _Cpos {
