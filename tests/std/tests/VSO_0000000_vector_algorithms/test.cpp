@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <deque>
 #include <isa_availability.h>
+#include <list>
 #include <random>
 #include <vector>
 
@@ -138,8 +140,47 @@ void test_vector_algorithms() {
     test_swap_ranges<unsigned long long>(gen);
 }
 
+template <typename Container1, typename Container2>
+void test_two_containers() {
+    Container1 one                  = {10, 20, 30, 40, 50};
+    Container2 two                  = {-1, -1, -1, -1, -1};
+    static constexpr int reversed[] = {50, 40, 30, 20, 10};
+
+    assert(reverse_copy(one.begin(), one.end(), two.begin()) == two.end());
+    assert(equal(two.begin(), two.end(), begin(reversed), end(reversed)));
+
+    static constexpr int squares[] = {1, 4, 9, 16, 25};
+    static constexpr int cubes[]   = {1, 8, 27, 64, 125};
+    one.assign(begin(squares), end(squares));
+    two.assign(begin(cubes), end(cubes));
+
+    assert(swap_ranges(one.begin(), one.end(), two.begin()) == two.end());
+    assert(equal(one.begin(), one.end(), begin(cubes), end(cubes)));
+    assert(equal(two.begin(), two.end(), begin(squares), end(squares)));
+}
+
+template <typename Container>
+void test_one_container() {
+    Container x                     = {10, 20, 30, 40, 50};
+    static constexpr int reversed[] = {50, 40, 30, 20, 10};
+
+    reverse(x.begin(), x.end());
+    assert(equal(x.begin(), x.end(), begin(reversed), end(reversed)));
+
+    test_two_containers<Container, vector<int>>();
+    test_two_containers<Container, deque<int>>();
+    test_two_containers<Container, list<int>>();
+}
+
+void test_various_containers() {
+    test_one_container<vector<int>>(); // contiguous, vectorizable
+    test_one_container<deque<int>>(); // random-access, not vectorizable
+    test_one_container<list<int>>(); // bidi, not vectorizable
+}
+
 int main() {
     test_vector_algorithms();
+    test_various_containers();
 #ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);

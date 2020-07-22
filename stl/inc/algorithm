@@ -4597,7 +4597,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE reverse_copy
-#if _HAS_IF_CONSTEXPR
 template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
@@ -4606,50 +4605,35 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
     using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
-        is_pointer<decltype(_UFirst)>, bool_constant<is_trivially_copyable_v<_Elem>>, negation<is_volatile<_Elem>>>;
+        is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+    constexpr size_t _Nx                = sizeof(_Elem);
 
-    if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
+    if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest));
-            _Seek_wrapped(_Dest, _UDest);
-            return _Dest;
-        }
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest));
-            _Seek_wrapped(_Dest, _UDest);
-            return _Dest;
-        }
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest));
-            _Seek_wrapped(_Dest, _UDest);
-            return _Dest;
-        }
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _UDest = static_cast<decltype(_UDest)>(__std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest));
-            _Seek_wrapped(_Dest, _UDest);
+            void* _Ret;
+
+            if constexpr (_Nx == 1) {
+                _Ret = __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+            } else if constexpr (_Nx == 2) {
+                _Ret = __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+            } else if constexpr (_Nx == 4) {
+                _Ret = __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+            } else {
+                _Ret = __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+            }
+
+            _Seek_wrapped(_Dest, static_cast<decltype(_UDest)>(_Ret));
             return _Dest;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast; ++_UDest) {
         *_UDest = *--_ULast;
@@ -4657,72 +4641,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
-};
-#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _BidIt, class _OutIt>
-_OutIt _Reverse_copy_unchecked1(_BidIt _First, _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 0>) {
-    for (; _First != _Last; ++_Dest) {
-        *_Dest = *--_Last;
-    }
-    return _Dest;
 }
-
-#if _USE_STD_VECTOR_ALGORITHMS
-template <class _BidIt, class _OutIt>
-_OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 1>) {
-    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest));
-}
-
-template <class _BidIt, class _OutIt>
-_OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 2>) {
-    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_2(_First, _Last, _Dest));
-}
-
-template <class _BidIt, class _OutIt>
-_OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 4>) {
-    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_4(_First, _Last, _Dest));
-}
-
-template <class _BidIt, class _OutIt>
-_OutIt _Reverse_copy_unchecked1(const _BidIt _First, const _BidIt _Last, _OutIt _Dest, integral_constant<size_t, 8>) {
-    return static_cast<_OutIt>(__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest));
-}
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-template <class _BidIt, class _OutIt>
-_OutIt _Reverse_copy_unchecked(const _BidIt _First, const _BidIt _Last, _OutIt _Dest) {
-    // copy reversing elements in [_First, _Last), choose optimization
-#if _USE_STD_VECTOR_ALGORITHMS
-    using _Elem     = remove_pointer_t<_BidIt>;
-    using _DestElem = remove_pointer_t<_OutIt>;
-    constexpr size_t _Opt =
-        is_same_v<remove_const_t<_Elem>, remove_const_t<_DestElem>> //
-                && is_pointer_v<_BidIt> //
-                && is_trivially_copyable_v<_Elem> //
-                && !is_volatile_v<_Elem> //
-                && (sizeof(_Elem) == 1 || sizeof(_Elem) == 2 || sizeof(_Elem) == 4 || sizeof(_Elem) == 8)
-            ? sizeof(_Elem)
-            : 0;
-#else // ^^^ vectorize / no vectorize vvv
-    constexpr size_t _Opt = 0;
-#endif // _USE_STD_VECTOR_ALGORITHMS
-    return _Reverse_copy_unchecked1(_First, _Last, _Dest, integral_constant<size_t, _Opt>{});
-}
-
-template <class _BidIt, class _OutIt>
-_OutIt reverse_copy(const _BidIt _First, const _BidIt _Last, _OutIt _Dest) {
-    // copy reversing elements in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst = _Get_unwrapped(_First);
-    auto _ULast  = _Get_unwrapped(_Last);
-    auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
-
-    _UDest = _Reverse_copy_unchecked(_UFirst, _ULast, _UDest);
-
-    _Seek_wrapped(_Dest, _UDest);
-    return _Dest;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
