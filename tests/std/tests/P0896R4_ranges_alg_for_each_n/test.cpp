@@ -22,18 +22,16 @@ struct instantiator {
     template <indirectly_writable<P> ReadWrite>
     static constexpr void call() {
         using ranges::for_each_n, ranges::for_each_n_result, ranges::iterator_t, ranges::distance;
-        { // Validate iterator + sentinel overload
-            P input[3] = {{0, 42}, {2, 42}, {4, 42}};
+        P input[3] = {{0, 42}, {2, 42}, {4, 42}};
 
-            auto result = for_each_n(ReadWrite{input}, distance(input), incr, get_first);
-            STATIC_ASSERT(same_as<decltype(result), for_each_n_result<ReadWrite, remove_const_t<decltype(incr)>>>);
-            assert(result.in.peek() == end(input));
-            assert(ranges::equal(expected, input));
+        auto result = for_each_n(ReadWrite{input}, distance(input), incr, get_first);
+        STATIC_ASSERT(same_as<decltype(result), for_each_n_result<ReadWrite, remove_const_t<decltype(incr)>>>);
+        assert(result.in.peek() == end(input));
+        assert(ranges::equal(expected, input));
 
-            int some_value = 1729;
-            result.fun(some_value);
-            assert(some_value == 1730);
-        }
+        int some_value = 1729;
+        result.fun(some_value);
+        assert(some_value == 1730);
     }
 };
 
