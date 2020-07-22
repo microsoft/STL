@@ -4656,12 +4656,12 @@ _SampleIt _Sample_reservoir_unchecked(
 }
 
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
-_SampleIt _Sample_selection_unchecked(_PopIt _First, const _PopIt _Last, _Iter_diff_t<_PopIt> _Pop_size,
-    _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc) {
+_SampleIt _Sample_selection_unchecked(
+    _PopIt _First, _Iter_diff_t<_PopIt> _Pop_size, _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc) {
     // source is forward *and* we know the source range size: use selection sampling (stable)
     // pre: _PopIt is forward && _Count <= _Pop_size
     using _CT = common_type_t<_Iter_diff_t<_PopIt>, _Diff>;
-    for (; _Count > 0 && _First != _Last; ++_First, (void) --_Pop_size) {
+    for (; _Pop_size; ++_First, (void) --_Pop_size) {
         if (static_cast<_CT>(_RngFunc(_Pop_size)) < static_cast<_CT>(_Count)) {
             --_Count;
             *_Dest = *_First;
@@ -4691,8 +4691,8 @@ _SampleIt _Sample1(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _
         _Count = static_cast<_Diff>(_Pop_size); // narrowing OK because _Count is getting smaller
     }
 
-    _Seek_wrapped(_Dest,
-        _Sample_selection_unchecked(_First, _Last, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
+    _Seek_wrapped(
+        _Dest, _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
     return _Dest;
 }
 
@@ -4746,12 +4746,9 @@ namespace ranges {
 
             _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_iterator<_It>) {
-                auto _Pop_size = _RANGES distance(_First, _Last);
-                if (_Count > _Pop_size) {
-                    _Count = _Pop_size;
-                }
-                return _Sample_selection_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
-                    _STD move(_Result), _Count, _Pop_size, _RngFunc);
+                auto _UFirst   = _Get_unwrapped(_STD move(_First));
+                auto _Pop_size = _RANGES distance(_UFirst, _Get_unwrapped(_STD move(_Last)));
+                return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Result), _Count, _RngFunc);
             } else {
                 return _Sample_reservoir_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
                     _STD move(_Result), _Count, _RngFunc);
@@ -4767,15 +4764,11 @@ namespace ranges {
                 return _Result;
             }
 
-
             _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_range<_Rng>) {
-                auto _Pop_size = _RANGES distance(_Range);
-                if (_Count > _Pop_size) {
-                    _Count = _Pop_size;
-                }
-                return _Sample_selection_unchecked(
-                    _Ubegin(_Range), _Uend(_Range), _STD move(_Result), _Count, _Pop_size, _RngFunc);
+                auto _UFirst   = _Ubegin(_Range);
+                auto _Pop_size = _RANGES distance(_UFirst, _Uend(_Range));
+                return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Result), _Count, _RngFunc);
             } else {
                 return _Sample_reservoir_unchecked(
                     _Ubegin(_Range), _Uend(_Range), _STD move(_Result), _Count, _RngFunc);
@@ -4784,15 +4777,18 @@ namespace ranges {
         // clang-format on
     private:
         template <class _It, class _Se, class _Out, class _Rng>
-        _NODISCARD static _Out _Sample_selection_unchecked(_It _First, const _Se _Last, _Out _Result,
-            iter_difference_t<_It> _Count, iter_difference_t<_It> _Pop_size, _Rng& _RngFunc) {
+        _NODISCARD static _Out _Sample_selection_unchecked(
+            _It _First, iter_difference_t<_It> _Pop_size, _Out _Result, iter_difference_t<_It> _Count, _Rng& _RngFunc) {
             // randomly select _Count elements from [_First, _Last) into _Result
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
 
-            for (; _First != _Last; ++_First, (void) --_Pop_size) {
+            if (_Count > _Pop_size) {
+                _Count = _Pop_size;
+            }
+
+            for (; _Pop_size > 0; ++_First, (void) --_Pop_size) {
                 if (_RngFunc(_Pop_size) < _Count) {
                     *_Result = *_First;
                     ++_Result;
@@ -4812,6 +4808,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
 
             iter_difference_t<_It> _Pop_size{};
             for (; _Pop_size < _Count; ++_Pop_size, (void) ++_First) {
