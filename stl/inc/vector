@@ -2898,8 +2898,8 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
         return;
     }
 
-    _Vbase* _UFirst            = const_cast<_Vbase*>(_First._Myptr);
-    const _Vbase* const _ULast = _Last._Myptr;
+    _Vbase* _VbFirst            = const_cast<_Vbase*>(_First._Myptr);
+    const _Vbase* const _VbLast = _Last._Myptr;
 
     const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
     const auto _LastSourceMask  = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
@@ -2907,34 +2907,34 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     const auto _LastDestMask    = static_cast<_Vbase>(~_LastSourceMask);
     const auto _FillVal         = static_cast<_Vbase>(_Val ? -1 : 0);
 
-    if (_UFirst == _ULast) {
+    if (_VbFirst == _VbLast) {
         const auto _SourceMask = _FirstSourceMask & _LastSourceMask;
         const auto _DestMask   = _FirstDestMask | _LastDestMask;
-        *_UFirst               = (*_UFirst & _DestMask) | (_FillVal & _SourceMask);
+        *_VbFirst              = (*_VbFirst & _DestMask) | (_FillVal & _SourceMask);
         return;
     }
 
-    *_UFirst = (*_UFirst & _FirstDestMask) | (_FillVal & _FirstSourceMask);
-    ++_UFirst;
+    *_VbFirst = (*_VbFirst & _FirstDestMask) | (_FillVal & _FirstSourceMask);
+    ++_VbFirst;
 
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
-        for (; _UFirst != _ULast; ++_UFirst) {
-            *_UFirst = _FillVal;
+        for (; _VbFirst != _VbLast; ++_VbFirst) {
+            *_VbFirst = _FillVal;
         }
     } else
 #endif // __cpp_lib_is_constant_evaluated
     {
-        const auto _UFirst_ch = reinterpret_cast<const char*>(_UFirst);
-        const auto _ULast_ch  = reinterpret_cast<const char*>(_ULast);
-        const auto _Count_ch  = static_cast<size_t>(_ULast_ch - _UFirst_ch);
-        const auto _ValChar   = static_cast<unsigned char>(_Val ? -1 : 0);
-        _CSTD memset(_UFirst, _ValChar, _Count_ch);
-        _UFirst += _ULast - _UFirst;
+        const auto _VbFirst_ch = reinterpret_cast<const char*>(_VbFirst);
+        const auto _VbLast_ch  = reinterpret_cast<const char*>(_VbLast);
+        const auto _Count_ch   = static_cast<size_t>(_VbLast_ch - _VbFirst_ch);
+        const auto _ValChar    = static_cast<unsigned char>(_Val ? -1 : 0);
+        _CSTD memset(_VbFirst, _ValChar, _Count_ch);
+        _VbFirst += _VbLast - _VbFirst;
     }
 
     if (_Last._Myoff != 0) {
-        *_UFirst = (*_UFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
+        *_VbFirst = (*_VbFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
     }
 }
 #endif // _HAS_IF_CONSTEXPR
