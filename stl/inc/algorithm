@@ -4661,7 +4661,7 @@ _SampleIt _Sample_selection_unchecked(
     // source is forward *and* we know the source range size: use selection sampling (stable)
     // pre: _PopIt is forward && _Count <= _Pop_size
     using _CT = common_type_t<_Iter_diff_t<_PopIt>, _Diff>;
-    for (; _Pop_size; ++_First, (void) --_Pop_size) {
+    for (; _Pop_size > 0; ++_First, (void) --_Pop_size) {
         if (static_cast<_CT>(_RngFunc(_Pop_size)) < static_cast<_CT>(_Count)) {
             --_Count;
             *_Dest = *_First;
