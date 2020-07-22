@@ -5,50 +5,36 @@
 
 ---
 # Language:        Cpp
-
 BasedOnStyle:  LLVM
-
 # AccessModifierOffset: -2
 AccessModifierOffset: -4
-
 # AlignAfterOpenBracket: Align
 AlignAfterOpenBracket: DontAlign
-
 # AlignConsecutiveMacros: false
 AlignConsecutiveMacros: true
-
 # AlignConsecutiveAssignments: false
 AlignConsecutiveAssignments: true
-
 # AlignConsecutiveDeclarations: false
-
 # AlignEscapedNewlines: Right
 AlignEscapedNewlines: Left
-
 # AlignOperands:   true
-
 # AlignTrailingComments: true
 AlignTrailingComments: false
-
 # AllowAllArgumentsOnNextLine: true
 # AllowAllConstructorInitializersOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
 # AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
-
 # AllowShortFunctionsOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
-
 # AllowShortLambdasOnASingleLine: All
 # AllowShortIfStatementsOnASingleLine: Never
 # AllowShortLoopsOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
-
 # AlwaysBreakTemplateDeclarations: MultiLine
 AlwaysBreakTemplateDeclarations: Yes
-
 # BinPackArguments: true
 # BinPackParameters: true
 # BraceWrapping:
@@ -68,10 +54,8 @@ AlwaysBreakTemplateDeclarations: Yes
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
 #   SplitEmptyNamespace: true
-
 # BreakBeforeBinaryOperators: None
 BreakBeforeBinaryOperators: NonAssignment
-
 # BreakBeforeBraces: Attach
 # BreakBeforeInheritanceComma: false
 # BreakInheritanceList: BeforeColon
@@ -80,20 +64,16 @@ BreakBeforeBinaryOperators: NonAssignment
 # BreakConstructorInitializers: BeforeColon
 # BreakAfterJavaFieldAnnotations: false
 # BreakStringLiterals: true
-
 # ColumnLimit:     80
 ColumnLimit:     120
-
 # CommentPragmas:  '^ IWYU pragma:'
 # CompactNamespaces: false
 # ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # ConstructorInitializerIndentWidth: 4
 # ContinuationIndentWidth: 4
 # Cpp11BracedListStyle: true
-
 # DeriveLineEnding: true
 DeriveLineEnding: false
-
 # DerivePointerAlignment: false
 # DisableFormat:   false
 # ExperimentalAutoDetectBinPacking: false
@@ -102,10 +82,8 @@ DeriveLineEnding: false
 #   - foreach
 #   - Q_FOREACH
 #   - BOOST_FOREACH
-
 # IncludeBlocks:   Preserve
 IncludeBlocks:   Regroup
-
 # IncludeCategories:
 #   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
 #     Priority:        2
@@ -131,33 +109,25 @@ IncludeCategories:
     Priority:        5
   - Regex:           '.*'
     Priority:        2
-
 # IncludeIsMainRegex: '(Test)?$'
 # IncludeIsMainSourceRegex: ''
 # IndentCaseLabels: false
 # IndentGotoLabels: true
 # IndentPPDirectives: None
-
 # IndentWidth:     2
 IndentWidth:     4
-
 # IndentWrappedFunctionNames: false
 IndentWrappedFunctionNames: true
-
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 # KeepEmptyLinesAtTheStartOfBlocks: true
-
 # NOTE: MacroBlockBegin/MacroBlockEnd don't work with _CATCH_ALL.
 # MacroBlockBegin: ''
 # MacroBlockEnd:   ''
-
 # MaxEmptyLinesToKeep: 1
 MaxEmptyLinesToKeep: 2
-
 # NamespaceIndentation: None
 NamespaceIndentation: All
-
 # ObjCBinPackProtocolList: Auto
 # ObjCBlockIndentWidth: 2
 # ObjCSpaceAfterProperty: false
@@ -170,17 +140,13 @@ NamespaceIndentation: All
 # PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
 # PenaltyReturnTypeOnItsOwnLine: 60
-
 # PointerAlignment: Right
 PointerAlignment: Left
-
 # ReflowComments:  true
 # SortIncludes:    true
 # SortUsingDeclarations: true
-
 # SpaceAfterCStyleCast: false
 SpaceAfterCStyleCast: true
-
 # SpaceAfterLogicalNot: false
 # SpaceAfterTemplateKeyword: true
 # SpaceBeforeAssignmentOperators: true
@@ -200,12 +166,11 @@ SpaceAfterCStyleCast: true
 # SpacesInSquareBrackets: false
 # SpaceBeforeSquareBrackets: false
 # Standard:        Latest
-
-# NOTE: _STD_BEGIN, _STD_END, etc. aren't macros for complete statements, but telling clang-format that they are
-# produces the behavior that we want (with no block indentation).
 # StatementMacros:
 #   - Q_UNUSED
 #   - QT_REQUIRE_VERSION
+# NOTE: _STD_BEGIN, _STD_END, etc. aren't macros for complete statements, but telling
+# clang-format that they are produces the behavior that we want (with no block indentation).
 StatementMacros:
   - _STD_BEGIN
   - _STD_END
@@ -215,11 +180,8 @@ StatementMacros:
   - _END_EXTERN_C
   - _EXTERN_C_UNLESS_PURE
   - _END_EXTERN_C_UNLESS_PURE
-
 # TabWidth:        8
-
 # UseCRLF:         false
 UseCRLF:         true
-
 # UseTab:          Never
 ...
