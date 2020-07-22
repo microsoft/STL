@@ -37,9 +37,12 @@ static size_t _Byte_length(_Ptr _First, _Ptr _Last) noexcept {
     return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
 }
 
-template <class _Ptr>
-static void _Advance_bytes(_Ptr& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = const_cast<unsigned char*>(static_cast<const unsigned char*>(_Target) + _Offset);
+static void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
+    _Target = static_cast<unsigned char*>(_Target) + _Offset;
+}
+
+static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
+    _Target = static_cast<const unsigned char*>(_Target) + _Offset;
 }
 
 extern "C" {
