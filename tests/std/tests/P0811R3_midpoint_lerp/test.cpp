@@ -839,23 +839,19 @@ bool test_lerp() {
     STATIC_ASSERT(is_signed_v<Ty>);
     STATIC_ASSERT(noexcept(lerp(Ty(), Ty(), Ty())));
 
-    const auto test_lerp_constexpr = [] {
+    constexpr auto test_lerp_constexpr = [] {
         using bit_type = conditional_t<sizeof(Ty) == 4, unsigned int, unsigned long long>;
 
         for (const auto& testCase : LerpCases<Ty>::lerpTestCases) {
             const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-            if (bit_cast<bit_type>(answer) != bit_cast<bit_type>(testCase.expected)) {
-                return false;
-            }
+            assert(bit_cast<bit_type>(answer) == bit_cast<bit_type>(testCase.expected));
         }
 
         for (auto&& testCase : LerpCases<Ty>::lerpNaNTestCases) {
             const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-            if (none_of(begin(testCase.expected_list), end(testCase.expected_list), [&](const auto& expected) {
-                    return expected.has_value() && bit_cast<bit_type>(answer) == bit_cast<bit_type>(expected.value());
-                })) {
-                return false;
-            }
+            assert(any_of(begin(testCase.expected_list), end(testCase.expected_list), [&](const auto& expected) {
+                return expected.has_value() && bit_cast<bit_type>(answer) == bit_cast<bit_type>(expected.value());
+            }));
         }
 
         return true;
