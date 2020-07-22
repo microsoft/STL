@@ -26,6 +26,40 @@ namespace {
         CONDITION_VARIABLE _Condition;
     };
 
+    struct _Guarded_wait_context : _Wait_context {
+        _Guarded_wait_context(const void* _Storage_, _Wait_context* const _Head) noexcept
+            : _Wait_context{_Storage_, _Head, _Head->_Prev, CONDITION_VARIABLE_INIT} {
+            _Prev->_Next = this;
+            _Next->_Prev = this;
+        }
+
+        ~_Guarded_wait_context() {
+            _Wait_context* const _Next_local = _Next;
+            _Wait_context* const _Prev_local = _Prev;
+            _Next->_Prev                     = _Prev_local;
+            _Prev->_Next                     = _Next_local;
+        }
+
+        _Guarded_wait_context(const _Guarded_wait_context&) = delete;
+        _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
+    };
+
+    class _SrwLock_guard {
+        SRWLOCK* _Locked;
+
+    public:
+        explicit _SrwLock_guard(SRWLOCK& _Locked_) noexcept : _Locked(&_Locked_) {
+            AcquireSRWLockExclusive(_Locked);
+        }
+
+        ~_SrwLock_guard() {
+            ReleaseSRWLockExclusive(_Locked);
+        }
+
+        _SrwLock_guard(const _SrwLock_guard&) = delete;
+        _SrwLock_guard& operator=(const _SrwLock_guard&) = delete;
+    };
+
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
@@ -178,7 +212,7 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    AcquireSRWLockExclusive(&_Entry._Lock);
+    _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
@@ -186,37 +220,25 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
             break;
         }
     }
-    ReleaseSRWLockExclusive(&_Entry._Lock);
 }
 
 void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    AcquireSRWLockExclusive(&_Entry._Lock);
+    _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             WakeAllConditionVariable(&_Context->_Condition);
         }
     }
-    ReleaseSRWLockExclusive(&_Entry._Lock);
 }
-
 
 bool __stdcall __std_atomic_wait_indirect(
     const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
-    AcquireSRWLockExclusive(&_Entry._Lock);
-
-    _Wait_context _Context;
-    _Wait_context* _Next = &_Entry._Wait_list_head;
-    _Wait_context* _Prev = _Next->_Prev;
-    _Context._Prev       = _Prev;
-    _Context._Next       = _Next;
-    _Prev->_Next         = &_Context;
-    _Next->_Prev         = &_Context;
-    _Context._Condition  = CONDITION_VARIABLE_INIT;
-    _Context._Storage    = _Storage;
+    _SrwLock_guard _Guard(_Entry._Lock);
+    _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
 
     bool _Result;
     for (;;) {
@@ -231,13 +253,6 @@ bool __stdcall __std_atomic_wait_indirect(
             break;
         }
     }
-
-    _Prev                 = _Context._Prev;
-    _Next                 = _Context._Next;
-    _Context._Next->_Prev = _Prev;
-    _Context._Prev->_Next = _Next;
-
-    ReleaseSRWLockExclusive(&_Entry._Lock);
 
     return _Result;
 }
