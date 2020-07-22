@@ -47,6 +47,26 @@ void test_reverse(mt19937_64& gen) {
     }
 }
 
+template <class T>
+void test_case_reverse_copy(vector<T>& input) {
+    auto expected = input;
+    last_known_good_reverse(expected.begin(), expected.end());
+    vector<T> output(input.size(), T{});
+    assert(std::reverse_copy(input.begin(), input.end(), output.begin()) == output.end());
+    assert(expected == output);
+}
+
+template <class T>
+void test_reverse_copy(mt19937_64& gen) {
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_reverse_copy(input);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(gen())); // intentionally narrows
+        test_case_reverse_copy(input);
+    }
+}
+
 template <class FwdIt1, class FwdIt2>
 inline FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
     for (; first1 != last1; ++first1, ++dest) {
@@ -97,6 +117,19 @@ void test_vector_algorithms() {
     test_reverse<float>(gen);
     test_reverse<double>(gen);
     test_reverse<long double>(gen);
+
+    test_reverse_copy<char>(gen);
+    test_reverse_copy<signed char>(gen);
+    test_reverse_copy<unsigned char>(gen);
+    test_reverse_copy<short>(gen);
+    test_reverse_copy<unsigned short>(gen);
+    test_reverse_copy<int>(gen);
+    test_reverse_copy<unsigned int>(gen);
+    test_reverse_copy<long long>(gen);
+    test_reverse_copy<unsigned long long>(gen);
+    test_reverse_copy<float>(gen);
+    test_reverse_copy<double>(gen);
+    test_reverse_copy<long double>(gen);
 
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);
