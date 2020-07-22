@@ -1268,8 +1268,10 @@ namespace iterator_cust_swap_test {
 
         constexpr bool test() {
             {
-                int i0 = 42, i1 = 13;
-                S s0{i0}, s1{i1};
+                int i0 = 42;
+                int i1 = 13;
+                S s0{i0};
+                S s1{i1};
                 ranges::iter_swap(s0, s1);
                 assert(i0 == 13);
                 assert(i1 == 42);
