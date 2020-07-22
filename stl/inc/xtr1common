@@ -175,6 +175,13 @@ template <class _Ty, class... _Types>
 _INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
     disjunction_v<is_same<_Ty, _Types>...>;
 
+#if _HAS_CXX20
+// FUNCTION is_constant_evaluated
+_NODISCARD constexpr bool is_constant_evaluated() noexcept {
+    return __builtin_is_constant_evaluated();
+}
+#endif // _HAS_CXX20
+
 // STRUCT TEMPLATE is_integral
 template <class _Ty>
 _INLINE_VAR constexpr bool is_integral_v = _Is_any_of_v<remove_cv_t<_Ty>, bool, char, signed char, unsigned char,

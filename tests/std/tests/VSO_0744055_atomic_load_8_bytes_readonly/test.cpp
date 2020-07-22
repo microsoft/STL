@@ -4,7 +4,8 @@
 #include <assert.h>
 #include <atomic>
 #include <stdio.h>
-#include <test_windows.h>
+
+#include <test_windows.hpp>
 
 int main() {
     // A customer wanted to read a std::atomic from a read-only memory-mapped file.

@@ -3,6 +3,29 @@
 
 #include "test.hpp"
 
+#include <algorithm>
+#include <array>
+#include <assert.h>
+#include <charconv>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <functional>
+#include <limits>
+#include <optional>
+#include <random>
+#include <set>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "double_fixed_precision_to_chars_test_cases_1.hpp"
 #include "double_fixed_precision_to_chars_test_cases_2.hpp"
 #include "double_fixed_precision_to_chars_test_cases_3.hpp"
@@ -21,29 +44,7 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
-#include <algorithm>
-#include <array>
-#include <assert.h>
-#include <charconv>
-#include <chrono>
-#include <cmath>
 #include <floating_point_test_cases.hpp>
-#include <fstream>
-#include <functional>
-#include <limits>
-#include <optional>
-#include <random>
-#include <set>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <string_view>
-#include <system_error>
-#include <type_traits>
-#include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -564,20 +565,20 @@ void all_integer_tests() {
 
 void assert_message_bits(const bool b, const char* const msg, const uint32_t bits) {
     if (!b) {
-        printf("%s failed for 0x%08X\n", msg, bits);
-        puts("This is a randomized test.");
-        puts("DO NOT IGNORE/RERUN THIS FAILURE.");
-        puts("You must report it to the STL maintainers.");
+        fprintf(stderr, "%s failed for 0x%08X\n", msg, bits);
+        fprintf(stderr, "This is a randomized test.\n");
+        fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
+        fprintf(stderr, "You must report it to the STL maintainers.\n");
         abort();
     }
 }
 
 void assert_message_bits(const bool b, const char* const msg, const uint64_t bits) {
     if (!b) {
-        printf("%s failed for 0x%016llX\n", msg, bits);
-        puts("This is a randomized test.");
-        puts("DO NOT IGNORE/RERUN THIS FAILURE.");
-        puts("You must report it to the STL maintainers.");
+        fprintf(stderr, "%s failed for 0x%016llX\n", msg, bits);
+        fprintf(stderr, "This is a randomized test.\n");
+        fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
+        fprintf(stderr, "You must report it to the STL maintainers.\n");
         abort();
     }
 }

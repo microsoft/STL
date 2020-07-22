@@ -4,9 +4,10 @@
 #include <algorithm>
 #include <assert.h>
 #include <execution>
-#include <parallel_algorithms_utilities.hpp>
 #include <random>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

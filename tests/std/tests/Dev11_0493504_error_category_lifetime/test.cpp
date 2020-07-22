@@ -3,14 +3,14 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <test_windows.h>
+#include <ios>
+#include <system_error>
 
 #ifndef _M_CEE
 #include <future>
 #endif // _M_CEE
 
-#include <ios>
-#include <system_error>
+#include <test_windows.hpp>
 
 using namespace std;
 

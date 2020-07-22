@@ -180,7 +180,9 @@ template <class First, class Second = IncompleteClass>
 struct ConvertsFrom {
     ConvertsFrom() = default;
     constexpr ConvertsFrom(First) noexcept {}
-    constexpr ConvertsFrom(Second) noexcept requires(!std::is_same_v<IncompleteClass, Second>) {}
+    // clang-format off
+    constexpr ConvertsFrom(Second) noexcept requires (!std::is_same_v<IncompleteClass, Second>) {}
+    // clang-format on
 };
 
 template <int>
@@ -1433,9 +1435,7 @@ namespace test_constructible_from {
     };
     STATIC_ASSERT(!test<Multiparameter>());
     STATIC_ASSERT(test<Multiparameter, int>());
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1927 // TRANSITION, VS 2019 16.7 Preview 1
     STATIC_ASSERT(!test<Multiparameter, long>() || is_permissive);
-#endif // TRANSITION, VS 2019 16.7 Preview 1
     STATIC_ASSERT(!test<Multiparameter, double>());
     STATIC_ASSERT(!test<Multiparameter, char>());
     STATIC_ASSERT(!test<Multiparameter, void>());
@@ -2110,12 +2110,12 @@ namespace test_swappable_with {
         // clang-format off
         namespace ranges = std::ranges;
 
-        template<class T, std::swappable_with<T> U>
+        template <class T, std::swappable_with<T> U>
         void value_swap(T&& t, U&& u) {
           ranges::swap(std::forward<T>(t), std::forward<U>(u));
         }
 
-        template<std::swappable T>
+        template <std::swappable T>
         void lv_swap(T& t1, T& t2) {
           ranges::swap(t1, t2);
         }
@@ -2407,7 +2407,8 @@ namespace test_boolean_testable {
     struct Archetype {
         // clang-format off
         operator bool() const requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
-        explicit operator bool() const requires (Select < 2); // Archetype<1> is not explicitly convertible to bool (ambiguity)
+        explicit operator bool() const requires (Select < 2); // Archetype<1> is not explicitly convertible
+                                                              // to bool (ambiguity)
         void operator!() const requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
         // clang-format on
     };

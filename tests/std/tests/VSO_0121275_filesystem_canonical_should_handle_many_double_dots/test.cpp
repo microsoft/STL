@@ -10,8 +10,9 @@
 #include <stdlib.h>
 #include <string>
 #include <system_error>
-#include <test_windows.h>
 #include <wctype.h>
+
+#include <test_windows.hpp>
 
 using namespace std;
 namespace fs = std::experimental::filesystem;

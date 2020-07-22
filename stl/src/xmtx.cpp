@@ -3,9 +3,9 @@
 
 // mutex support
 
-#include "xmtx.h"
+#include "xmtx.hpp"
 
-#include "awint.h"
+#include "awint.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

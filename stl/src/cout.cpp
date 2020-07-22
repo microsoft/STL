@@ -26,15 +26,15 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cout(&fout);
 struct _Init_cout { // ensures that cout is initialized
     __CLR_OR_THIS_CALL _Init_cout() { // initialize cout
         _Ptr_cout = &cout;
-        if (_Ptr_cin != 0) {
+        if (_Ptr_cin != nullptr) {
             _Ptr_cin->tie(_Ptr_cout);
         }
 
-        if (_Ptr_cerr != 0) {
+        if (_Ptr_cerr != nullptr) {
             _Ptr_cerr->tie(_Ptr_cout);
         }
 
-        if (_Ptr_clog != 0) {
+        if (_Ptr_clog != nullptr) {
             _Ptr_clog->tie(_Ptr_cout);
         }
     }

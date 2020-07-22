@@ -88,7 +88,7 @@ $Workloads = @(
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
-$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_buildtools.exe'
+$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
 $CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-win64-x64.msi'
 $LlvmUrl = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe'
 $NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
@@ -353,6 +353,30 @@ Function InstallCuda {
   }
 }
 
+<#
+.SYNOPSIS
+Install or upgrade a pip package.
+
+.DESCRIPTION
+Installs or upgrades a pip package specified in $Package.
+
+.PARAMETER Package
+The name of the package to be installed or upgraded.
+#>
+Function PipInstall {
+  Param(
+    [String]$Package
+  )
+
+  try {
+    Write-Host 'Installing or upgrading $Package...'
+    python.exe -m pip install --upgrade $Package
+    Write-Host 'Done installing or upgrading $Package'
+  }
+  catch {
+    Write-Error "Failed to install or upgrade $Package"
+  }
+}
 
 Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
 
@@ -371,8 +395,13 @@ InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
+
 Write-Host 'Updating PATH...'
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+$Env:PATH="$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `
-  -Value "$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
+  -Value "$Env:PATH"
+
+PipInstall pip
+PipInstall psutil

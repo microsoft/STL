@@ -5,7 +5,6 @@
 #include <deque>
 #include <forward_list>
 #include <functional>
-#include <instantiate_containers_iterators_common.hpp>
 #include <iterator>
 #include <list>
 #include <map>
@@ -18,6 +17,8 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include <instantiate_containers_iterators_common.hpp>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
