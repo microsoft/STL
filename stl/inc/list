@@ -1807,7 +1807,8 @@ void swap(list<_Ty, _Alloc>& _Left, list<_Ty, _Alloc>& _Right) noexcept /* stren
 
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
-    return _Left.size() == _Right.size() && _STD equal(_Left.begin(), _Left.end(), _Right.begin());
+    return _Left.size() == _Right.size()
+           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
 #if !_HAS_CXX20
@@ -1820,13 +1821,14 @@ _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 #ifdef __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(
-        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
 }
 #else // __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
 }
 
 template <class _Ty, class _Alloc>
