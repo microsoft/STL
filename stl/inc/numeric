@@ -624,6 +624,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
             }
         } else {
             if (_STD _Is_nan(_Val1) || _STD _Is_nan(_Val2)) {
+                // raise FE_INVALID if at least one of _Val1 and _Val2 is signaling NaN
                 return _Val1 + _Val2;
             }
         }
@@ -651,7 +652,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
         // one ULP of the result, so we can add it directly without the potentially inexact division by 2.
 
         // In the default rounding mode this less than one ULP difference will always be rounded away, so under
-        // /fp:precise or /fp:fast we could avoid these tests if we had some means of detecting it in the caller.
+        // /fp:fast we could avoid these tests if we had some means of detecting it in the caller.
         constexpr _Ty _Low_limit = (numeric_limits<_Ty>::min)() * 2;
         if (_Val1_a < _Low_limit) {
             return _Val1 + _Val2 / 2;
