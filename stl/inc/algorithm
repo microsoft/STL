@@ -26,13 +26,13 @@ _EXTERN_C
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_1(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_2(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_4(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept;
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_8(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 _END_EXTERN_C
 #endif // _USE_STD_VECTOR_ALGORITHMS
@@ -4617,19 +4617,18 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            void* _Ret;
-
             if constexpr (_Nx == 1) {
-                _Ret = __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
             } else if constexpr (_Nx == 2) {
-                _Ret = __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
             } else if constexpr (_Nx == 4) {
-                _Ret = __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
             } else {
-                _Ret = __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
             }
 
-            _Seek_wrapped(_Dest, static_cast<decltype(_UDest)>(_Ret));
+            _UDest += _ULast - _UFirst;
+            _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
     }

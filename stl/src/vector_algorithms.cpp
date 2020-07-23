@@ -25,11 +25,10 @@ static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
 }
 
 template <class _BidIt, class _OutIt>
-static _OutIt _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
     for (; _First != _Last;) {
         *_Dest++ = *--_Last;
     }
-    return _Dest;
 }
 
 template <class _Ptr>
@@ -282,7 +281,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
     _Reverse_tail(static_cast<unsigned long long*>(_First), static_cast<unsigned long long*>(_Last));
 }
 
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_1(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
@@ -312,11 +311,11 @@ __declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_1(
         } while (_Dest != _Stop_at);
     }
 
-    return _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
+    _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
         static_cast<unsigned char*>(_Dest));
 }
 
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_2(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
@@ -346,11 +345,11 @@ __declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_2(
         } while (_Dest != _Stop_at);
     }
 
-    return _Reverse_copy_tail(static_cast<const unsigned short*>(_First), static_cast<const unsigned short*>(_Last),
+    _Reverse_copy_tail(static_cast<const unsigned short*>(_First), static_cast<const unsigned short*>(_Last),
         static_cast<unsigned short*>(_Dest));
 }
 
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_4(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _Dest;
@@ -380,11 +379,11 @@ __declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_4(
         } while (_Dest != _Stop_at);
     }
 
-    return _Reverse_copy_tail(static_cast<const unsigned long*>(_First), static_cast<const unsigned long*>(_Last),
+    _Reverse_copy_tail(static_cast<const unsigned long*>(_First), static_cast<const unsigned long*>(_Last),
         static_cast<unsigned long*>(_Dest));
 }
 
-__declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_8(
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         void* _Stop_at = _Dest;
@@ -414,8 +413,8 @@ __declspec(noalias) void* __cdecl __std_reverse_copy_trivially_copyable_8(
         } while (_Dest != _Stop_at);
     }
 
-    return _Reverse_copy_tail(static_cast<const unsigned long long*>(_First),
-        static_cast<const unsigned long long*>(_Last), static_cast<unsigned long long*>(_Dest));
+    _Reverse_copy_tail(static_cast<const unsigned long long*>(_First), static_cast<const unsigned long long*>(_Last),
+        static_cast<unsigned long long*>(_Dest));
 }
 
 

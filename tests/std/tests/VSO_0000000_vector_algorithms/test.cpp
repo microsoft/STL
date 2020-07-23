@@ -54,7 +54,7 @@ void test_case_reverse_copy(vector<T>& input) {
     auto expected = input;
     last_known_good_reverse(expected.begin(), expected.end());
     vector<T> output(input.size(), T{});
-    assert(std::reverse_copy(input.begin(), input.end(), output.begin()) == output.end());
+    assert(reverse_copy(input.begin(), input.end(), output.begin()) == output.end());
     assert(expected == output);
 }
 
