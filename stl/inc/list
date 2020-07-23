@@ -1819,6 +1819,12 @@ _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 
 #ifdef __cpp_lib_concepts
 template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(
+        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
+template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
@@ -1836,12 +1842,6 @@ _NODISCARD bool operator<=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(
-        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
 }
 #endif // __cpp_lib_concepts
 

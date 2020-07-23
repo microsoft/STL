@@ -787,6 +787,13 @@ _NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const ar
 
 #ifdef __cpp_lib_concepts
 template <class _Ty, size_t _Size>
+_NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
+    const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+    return _STD lexicographical_compare_three_way(
+        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
+template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
@@ -804,13 +811,6 @@ _NODISCARD _CONSTEXPR20 bool operator<=(const array<_Ty, _Size>& _Left, const ar
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
-}
-
-template <class _Ty, size_t _Size>
-_NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
-    const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-    return _STD lexicographical_compare_three_way(
-        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
 }
 #endif // __cpp_lib_concepts
 

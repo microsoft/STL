@@ -189,6 +189,13 @@ _NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, 
 
 #ifdef __cpp_lib_concepts
 template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Kty> operator<=>(
+    const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
+template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
         _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
@@ -207,13 +214,6 @@ _NODISCARD bool operator<=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, 
 template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator>=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return !(_Left < _Right);
-}
-
-template <class _Kty, class _Pr, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Kty> operator<=>(
-    const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
 #endif // __cpp_lib_concepts
 
@@ -372,6 +372,13 @@ _NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
 
 #ifdef __cpp_lib_concepts
 template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Kty> operator<=>(
+    const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
+template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
         _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
@@ -390,13 +397,6 @@ _NODISCARD bool operator<=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
 template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator>=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return !(_Left < _Right);
-}
-
-template <class _Kty, class _Pr, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Kty> operator<=>(
-    const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
 #endif // __cpp_lib_concepts
 
