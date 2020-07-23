@@ -240,21 +240,16 @@ bool __stdcall __std_atomic_wait_indirect(
     _SrwLock_guard _Guard(_Entry._Lock);
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
 
-    bool _Result;
     for (;;) {
         if (_CSTD memcmp(_Storage, _Comparand, _Size) != 0) {
-            _Result = true;
-            break;
+            return true;
         }
 
         if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
             _Assume_timeout();
-            _Result = false;
-            break;
+            return false;
         }
     }
-
-    return _Result;
 }
 
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
