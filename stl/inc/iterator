@@ -458,13 +458,11 @@ _NODISCARD bool operator==(
     return _Left.equal(_Right);
 }
 
-#if !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 template <class _Elem, class _Traits>
 _NODISCARD bool operator!=(
     const istreambuf_iterator<_Elem, _Traits>& _Left, const istreambuf_iterator<_Elem, _Traits>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20 || __cpp_impl_three_way_comparison < 201902L
 
 // CLASS TEMPLATE ostreambuf_iterator
 template <class _Elem, class _Traits>
