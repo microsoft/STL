@@ -156,9 +156,11 @@ public:
     friend bool operator>  <>(const queue&, const queue&);
     friend bool operator<= <>(const queue&, const queue&);
     friend bool operator>= <>(const queue&, const queue&);
-    #ifdef __cpp_lib_concepts
-    friend compare_three_way_result_t<_Container> operator<=> <>(const queue&, const queue&);
-    #endif // __cpp_lib_concepts
+#ifdef __cpp_lib_concepts
+    template <class _Ty2, three_way_comparable _Container2>
+    friend compare_three_way_result_t<_Container2> operator<=>(
+        const queue<_Ty2, _Container2>&, const queue<_Ty2, _Container2>&);
+#endif // __cpp_lib_concepts
     // clang-format on
 
 protected:
