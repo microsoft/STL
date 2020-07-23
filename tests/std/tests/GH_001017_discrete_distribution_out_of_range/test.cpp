@@ -4,7 +4,7 @@
 #include <cassert>
 #include <random>
 
-#include <bad_random_engine.hpp>
+#include "bad_random_engine.hpp"
 
 int main() {
     std::discrete_distribution<int> dist{1, 1, 1, 1, 1, 1};
