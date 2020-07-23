@@ -26,13 +26,12 @@ static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
 
 template <class _BidIt, class _OutIt>
 static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
-    for (; _First != _Last;) {
+    while (_First != _Last) {
         *_Dest++ = *--_Last;
     }
 }
 
-template <class _Ptr>
-static size_t _Byte_length(_Ptr _First, _Ptr _Last) noexcept {
+static size_t _Byte_length(const void* _First, const void* _Last) noexcept {
     return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
 }
 
