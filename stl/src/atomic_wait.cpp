@@ -216,6 +216,7 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
+            // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
             WakeAllConditionVariable(&_Context->_Condition);
             break;
         }
@@ -228,6 +229,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
+            // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
             WakeAllConditionVariable(&_Context->_Condition);
         }
     }
