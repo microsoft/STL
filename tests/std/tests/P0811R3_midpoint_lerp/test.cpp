@@ -23,13 +23,16 @@ using namespace std;
 template <typename Ty>
 using limits = numeric_limits<Ty>;
 
+// "major" floating point exceptions, excluding underflow and inexact
+constexpr int fe_major_except = FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW;
+
 #ifdef _M_FP_STRICT
 // According to:
 // https://docs.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
 // Under the default /fp:precise mode:
 //  The compiler generates code intended to run in the default floating-point environment and assumes that the
 //  floating-point environment is not accessed or modified at runtime.
-// ... so we only do testing of rounding modes when strict is enabled.
+// ... so we only do testing of rounding modes and floating-point exceptions when strict is enabled.
 
 // TRANSITION, VSO-923474 -- should be #pragma STDC FENV_ACCESS ON
 #pragma fenv_access(on)
@@ -55,7 +58,54 @@ public:
 private:
     int oldRound;
 };
-#endif // _M_FP_STRICT
+
+void checked_feholdexcept(fenv_t* const env) {
+    [[maybe_unused]] const int holdExcept = feholdexcept(env);
+    assert(holdExcept == 0);
+}
+
+void checked_fesetenv(const fenv_t* const env) {
+    [[maybe_unused]] const int setEnv = fesetenv(env);
+    assert(setEnv == 0);
+}
+
+class ExceptGuard {
+public:
+    ExceptGuard() {
+        checked_feholdexcept(&env);
+    }
+
+    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard& operator=(const ExceptGuard&) = delete;
+
+    ~ExceptGuard() {
+        checked_fesetenv(&env);
+    }
+
+private:
+    fenv_t env;
+};
+
+bool check_feexcept(const int expected_excepts, const int except_mask = fe_major_except) {
+    return fetestexcept(except_mask) == (expected_excepts & except_mask);
+}
+
+#else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
+class ExceptGuard {
+public:
+    ExceptGuard() {}
+
+    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard& operator=(const ExceptGuard&) = delete;
+
+    ~ExceptGuard() {}
+};
+
+bool check_feexcept(
+    [[maybe_unused]] const int expected_excepts, [[maybe_unused]] const int except_mask = fe_major_except) {
+    return true;
+}
+#endif // ^^^ !defined(_M_FP_STRICT) ^^^
 
 template <class Ty>
 constexpr Ty mint_nan(const bool sign, const unsigned long long payload);
@@ -98,6 +148,24 @@ constexpr long double mint_nan<long double>(const bool sign, const unsigned long
 template <typename Ty>
 void assert_bitwise_equal(const Ty& a, const Ty& b) {
     assert(memcmp(&a, &b, sizeof(Ty)) == 0);
+}
+
+// TRANSITION
+// numeric_limits<T>::signaling_NaN() doesn't work on x86 hosted MSVC
+// numeric_limits<float>::signaling_NaN() doesn't work on x64 hosted MSVC
+void make_snan(float& x) {
+    constexpr unsigned int bits = 0x7f80'0001U;
+    memcpy(&x, &bits, sizeof(x));
+}
+
+void make_snan(double& x) {
+    constexpr unsigned long long bits = 0x7ff0'0000'0000'0001ULL;
+    memcpy(&x, &bits, sizeof(x));
+}
+
+void make_snan(long double& x) {
+    constexpr unsigned long long bits = 0x7ff0'0000'0000'0001ULL;
+    memcpy(&x, &bits, sizeof(x));
 }
 
 template <typename Ty>
@@ -328,6 +396,7 @@ void test_midpoint_floating() {
 #ifdef _M_FP_STRICT
     {
         // test results exactly between 1 ULP:
+        ExceptGuard except;
         RoundGuard round{FE_UPWARD};
         assert(midpoint(Ty(1.0), constants<Ty>::OnePlusUlp) == constants<Ty>::OnePlusUlp);
         assert(midpoint(Ty(1.0), constants<Ty>::OneMinusUlp) == Ty(1.0));
@@ -358,10 +427,13 @@ void test_midpoint_floating() {
         assert(midpoint(-limits<Ty>::min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
         assert(midpoint(-limits<Ty>::denorm_min(), limits<Ty>::max()) == limits<Ty>::max() / 2);
         assert(midpoint(-limits<Ty>::denorm_min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
+
+        assert(check_feexcept(0));
     }
 
     // ditto for the other rounding modes:
     {
+        ExceptGuard except;
         RoundGuard round{FE_DOWNWARD};
         assert(midpoint(Ty(1.0), constants<Ty>::OnePlusUlp) == Ty(1.0));
         assert(midpoint(Ty(1.0), constants<Ty>::OneMinusUlp) == constants<Ty>::OneMinusUlp);
@@ -396,9 +468,12 @@ void test_midpoint_floating() {
                == nextafter(limits<Ty>::max() / 2, limits<Ty>::lowest()));
         assert(midpoint(-limits<Ty>::denorm_min(), -limits<Ty>::max())
                == nextafter(-limits<Ty>::max() / 2, limits<Ty>::lowest()));
+
+        assert(check_feexcept(0));
     }
 
     {
+        ExceptGuard except;
         RoundGuard round{FE_TOWARDZERO};
         assert(midpoint(Ty(1.0), constants<Ty>::OnePlusUlp) == Ty(1.0));
         assert(midpoint(Ty(1.0), constants<Ty>::OneMinusUlp) == constants<Ty>::OneMinusUlp);
@@ -424,27 +499,49 @@ void test_midpoint_floating() {
         assert(midpoint(-limits<Ty>::min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
         assert(midpoint(-limits<Ty>::denorm_min(), limits<Ty>::max()) == nextafter(limits<Ty>::max() / 2, Ty(0)));
         assert(midpoint(-limits<Ty>::denorm_min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
+
+        assert(check_feexcept(0));
     }
 #endif // _M_FP_STRICT
 
-    assert(midpoint(limits<Ty>::denorm_min(), Ty(1.0)) == (limits<Ty>::denorm_min() + Ty(1.0)) / Ty(2.0));
-    assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::max())
-           == (limits<Ty>::denorm_min() + limits<Ty>::max()) / Ty(2.0));
-    assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::lowest())
-           == (limits<Ty>::denorm_min() + limits<Ty>::lowest()) / Ty(2.0));
-    assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::infinity()) == limits<Ty>::infinity());
-    assert(midpoint(limits<Ty>::denorm_min(), -limits<Ty>::infinity()) == -limits<Ty>::infinity());
+    {
+        ExceptGuard except;
 
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), Ty(0)));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(Ty(0), mint_nan<Ty>(0, 1)));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), limits<Ty>::max()));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(limits<Ty>::max(), mint_nan<Ty>(0, 1)));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), mint_nan<Ty>(0, 2)));
+        assert(midpoint(limits<Ty>::denorm_min(), Ty(1.0)) == (limits<Ty>::denorm_min() + Ty(1.0)) / Ty(2.0));
+        assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::max())
+               == (limits<Ty>::denorm_min() + limits<Ty>::max()) / Ty(2.0));
+        assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::lowest())
+               == (limits<Ty>::denorm_min() + limits<Ty>::lowest()) / Ty(2.0));
+        assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::infinity()) == limits<Ty>::infinity());
+        assert(midpoint(limits<Ty>::denorm_min(), -limits<Ty>::infinity()) == -limits<Ty>::infinity());
 
-    assert(isnan(midpoint(-limits<Ty>::infinity(), limits<Ty>::infinity())));
-    assert(isnan(midpoint(limits<Ty>::quiet_NaN(), Ty(2.0))));
-    assert(isnan(midpoint(Ty(2.0), limits<Ty>::quiet_NaN())));
-    assert(isnan(midpoint(limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN())));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), Ty(0)));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(Ty(0), mint_nan<Ty>(0, 1)));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), limits<Ty>::max()));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(limits<Ty>::max(), mint_nan<Ty>(0, 1)));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), mint_nan<Ty>(0, 1)));
+
+        assert(isnan(midpoint(limits<Ty>::quiet_NaN(), Ty(2.0))));
+        assert(isnan(midpoint(Ty(2.0), limits<Ty>::quiet_NaN())));
+        assert(isnan(midpoint(limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN())));
+
+        assert(check_feexcept(0));
+    }
+
+    // cases where midpoint() should raise FE_INVALID and return NaN
+    constexpr auto test_midpoint_fe_invalid = [](const Ty& a, const Ty& b) {
+        ExceptGuard except;
+        const auto answer = midpoint(a, b);
+        return check_feexcept(FE_INVALID) && isnan(answer);
+    };
+
+    Ty snan;
+    make_snan(snan);
+
+    assert(test_midpoint_fe_invalid(-limits<Ty>::infinity(), limits<Ty>::infinity()));
+    assert(test_midpoint_fe_invalid(snan, limits<Ty>::quiet_NaN()));
+    assert(test_midpoint_fe_invalid(limits<Ty>::quiet_NaN(), snan));
+    assert(test_midpoint_fe_invalid(snan, snan));
 }
 
 template <typename Ty>
@@ -860,38 +957,67 @@ bool test_lerp() {
     STATIC_ASSERT(test_lerp_constexpr());
 
     for (auto&& testCase : LerpCases<Ty>::lerpTestCases) {
+        ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
+        if (!check_feexcept(0) || memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
             print_lerp_result(testCase, answer);
             abort();
         }
     }
 
     for (auto&& testCase : LerpCases<Ty>::lerpOverflowTestCases) {
+        ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
+        if (!check_feexcept(FE_OVERFLOW, fe_major_except) || memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
             print_lerp_result(testCase, answer);
             abort();
         }
     }
 
     for (auto&& testCase : LerpCases<Ty>::lerpInvalidTestCases) {
+        ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (!isnan(answer)) {
+        if (!check_feexcept(FE_INVALID) || !isnan(answer)) {
             print_lerp_result(testCase, answer);
             abort();
         }
     }
 
     for (auto&& testCase : LerpCases<Ty>::lerpNaNTestCases) {
+        ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (none_of(begin(testCase.expected_list), end(testCase.expected_list), [&answer](const auto& expected) {
-                return expected.has_value() && memcmp(&answer, &expected.value(), sizeof(Ty)) == 0;
-            })) {
+        if (!check_feexcept(0)
+            || none_of(begin(testCase.expected_list), end(testCase.expected_list), [&answer](const auto& expected) {
+                   return expected.has_value() && memcmp(&answer, &expected.value(), sizeof(Ty)) == 0;
+               })) {
             print_lerp_result(testCase, answer);
             abort();
         }
     }
+
+    constexpr auto test_lerp_snan = [](const Ty& a, const Ty& b, const Ty& t) {
+        ExceptGuard except;
+        const auto answer = lerp(a, b, t);
+        return check_feexcept(FE_INVALID) && isnan(answer);
+    };
+
+    Ty snan;
+    make_snan(snan);
+
+    assert(test_lerp_snan(snan, limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN()));
+    assert(test_lerp_snan(limits<Ty>::quiet_NaN(), snan, limits<Ty>::quiet_NaN()));
+    assert(test_lerp_snan(snan, snan, limits<Ty>::quiet_NaN()));
+    assert(test_lerp_snan(limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN(), snan));
+    assert(test_lerp_snan(snan, limits<Ty>::quiet_NaN(), snan));
+    assert(test_lerp_snan(limits<Ty>::quiet_NaN(), snan, snan));
+    assert(test_lerp_snan(snan, snan, snan));
+
+    assert(test_lerp_snan(Ty{0}, Ty{0}, snan));
+    assert(test_lerp_snan(Ty{1}, Ty{1}, snan));
+    assert(test_lerp_snan(Ty{0}, snan, Ty{0}));
+    assert(test_lerp_snan(Ty{0}, snan, Ty{1}));
+    assert(test_lerp_snan(snan, Ty{0}, Ty{0}));
+    assert(test_lerp_snan(snan, Ty{0}, Ty{1}));
 
     STATIC_ASSERT(cmp(lerp(Ty(1.0), Ty(2.0), Ty(4.0)), lerp(Ty(1.0), Ty(2.0), Ty(3.0))) * cmp(Ty(4.0), Ty(3.0))
                       * cmp(Ty(2.0), Ty(1.0))
@@ -951,9 +1077,13 @@ int main() {
     STATIC_ASSERT(test_midpoint_floating_constexpr<double>());
     STATIC_ASSERT(test_midpoint_floating_constexpr<long double>());
 
-    test_midpoint_floating_constexpr<float>();
-    test_midpoint_floating_constexpr<double>();
-    test_midpoint_floating_constexpr<long double>();
+    {
+        ExceptGuard except;
+        test_midpoint_floating_constexpr<float>();
+        test_midpoint_floating_constexpr<double>();
+        test_midpoint_floating_constexpr<long double>();
+        assert(check_feexcept(0));
+    }
 
     test_midpoint_floating<float>();
     test_midpoint_floating<double>();
