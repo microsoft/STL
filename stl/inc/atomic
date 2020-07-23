@@ -468,10 +468,13 @@ struct _Atomic_storage {
             if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
                 if constexpr (_Might_have_non_value_bits<_Ty>) {
-                    __builtin_zero_non_value_bits(_Observed_ptr);
+                    _Storage_for<_Ty> _Local;
+                    const auto _Local_ptr = _Local._Ptr();
+                    _CSTD memcpy(_Local_ptr, _Observed_ptr, sizeof(_Ty));
+                    __builtin_zero_non_value_bits(_Local_ptr);
                     __builtin_zero_non_value_bits(_Expected_ptr);
 
-                    if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
+                    if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
                         _CSTD memcpy(_Expected_ptr, _Observed_ptr, sizeof(_Ty));
                         continue;
                     }
