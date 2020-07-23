@@ -708,6 +708,13 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const sub_match<_BidI
     return _Left._Match_equal(_Right);
 }
 
+#if _HAS_CXX20
+template <class _BidIt>
+_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+    return static_cast<compare_three_way_result_t<basic_string<_Iter_value_t<_BidIt>>>>(
+        _Left.compare(_Right) <=> 0);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
 _NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
@@ -732,6 +739,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
 
 // COMPARE sub_match AND NTBS
 template <class _BidIt>
@@ -739,6 +747,13 @@ _NODISCARD bool operator==(const _Iter_value_t<_BidIt>* _Left, const sub_match<_
     return _Right._Match_equal(_Left);
 }
 
+#if _HAS_CXX20
+template <class _BidIt>
+_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left ,const _Iter_value_t<_BidIt>* _Right) {
+    return static_cast<compare_three_way_result_t<basic_string<_Iter_value_t<_BidIt>>>>(
+        _Left.compare(_Right) <=> 0);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
 _NODISCARD bool operator!=(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
@@ -793,6 +808,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
 
 // COMPARE sub_match AND ELEMENT
 template <class _BidIt>
@@ -800,6 +816,13 @@ _NODISCARD bool operator==(const _Iter_value_t<_BidIt>& _Left, const sub_match<_
     return _Right._Match_equal(_STD addressof(_Left), 1);
 }
 
+#if _HAS_CXX20
+template <class _BidIt>
+_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
+    return static_cast<compare_three_way_result_t<basic_string<_Iter_value_t<_BidIt>>>>(
+        _Left._Compare(_STD addressof(_Right), 1) <=> 0);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
 _NODISCARD bool operator!=(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
@@ -854,6 +877,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
 
 // COMPARE sub_match AND string
 template <class _BidIt, class _Traits, class _Alloc>
@@ -862,6 +886,14 @@ _NODISCARD bool operator==(
     return _Left._Match_equal(_Right.data(), _Right.size());
 }
 
+#if _HAS_CXX20
+template <class _BidIt, class _Traits, class _Alloc>
+_NODISCARD bool operator<=>(
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    return static_cast<compare_three_way_result_t<basic_string<_Iter_value_t<_BidIt>>>>(
+        _Left.compare(_Right) <=> 0);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator!=(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
@@ -927,6 +959,7 @@ _NODISCARD bool operator>=(
     const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
 
 // INSERT sub_match IN STREAM
 template <class _Elem, class _Traits, class _BidIt>
@@ -1134,10 +1167,12 @@ _NODISCARD bool operator==(const match_results<_BidIt, _Alloc>& _Left, const mat
     }
 }
 
+#if !_HAS_CXX20
 template <class _BidIt, class _Alloc>
 _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const match_results<_BidIt, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 // NFA PROPERTIES
 const unsigned int _BRE_MAX_GRP = 9U;
@@ -2428,9 +2463,11 @@ public:
                && _MyVal._At(0) == _Right._MyVal._At(0);
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const regex_iterator& _Right) const {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2611,9 +2648,11 @@ public:
         return *_Res == *_Right._Res && _Pos == _Right._Pos && _Subs == _Right._Subs;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const regex_token_iterator& _Right) const {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
