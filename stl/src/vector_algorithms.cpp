@@ -49,7 +49,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept {
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
     if (_Byte_length(_First1, _Last1) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
-        void* _Stop_at = _First1;
+        const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_32);
         do {
             const __m256i _Left  = _mm256_loadu_si256(static_cast<__m256i*>(_First1));
@@ -67,7 +67,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
 #endif // _M_IX86
     ) {
-        void* _Stop_at = _First1;
+        const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
         do {
             const __m128i _Left  = _mm_loadu_si128(static_cast<__m128i*>(_First1));
@@ -82,7 +82,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #if defined(_M_X64) // NOTE: UNALIGNED MEMORY ACCESSES
     constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
     if (_Byte_length(_First1, _Last1) >= 8) {
-        void* _Stop_at = _First1;
+        const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
         do {
             const unsigned long long _Left             = *static_cast<unsigned long long*>(_First1);
@@ -96,7 +96,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #elif defined(_M_IX86) // NOTE: UNALIGNED MEMORY ACCESSES
     constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
     if (_Byte_length(_First1, _Last1) >= 4) {
-        void* _Stop_at = _First1;
+        const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
         do {
             const unsigned long _Left             = *static_cast<unsigned long*>(_First1);
@@ -132,7 +132,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        void* _Stop_at                        = _First;
+        const void* _Stop_at                  = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -150,7 +150,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        void* _Stop_at                  = _First;
+        const void* _Stop_at            = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
         do {
             _Advance_bytes(_Last, -16);
@@ -172,7 +172,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        void* _Stop_at                         = _First;
+        const void* _Stop_at                   = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -188,7 +188,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        void* _Stop_at                   = _First;
+        const void* _Stop_at             = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
         do {
             _Advance_bytes(_Last, -16);
@@ -207,7 +207,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
-        void* _Stop_at = _First;
+        const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -226,7 +226,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
         && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
 #endif // _M_IX86
     ) {
-        void* _Stop_at = _First;
+        const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
         do {
             _Advance_bytes(_Last, -16);
@@ -245,7 +245,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
-        void* _Stop_at = _First;
+        const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -264,7 +264,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
         && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
 #endif // _M_IX86
     ) {
-        void* _Stop_at = _First;
+        const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
         do {
             _Advance_bytes(_Last, -16);
@@ -287,7 +287,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        void* _Stop_at                        = _Dest;
+        const void* _Stop_at                  = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -300,7 +300,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
 
     if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        void* _Stop_at                  = _Dest;
+        const void* _Stop_at            = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
         do {
             _Advance_bytes(_Last, -16);
@@ -321,7 +321,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        void* _Stop_at                         = _Dest;
+        const void* _Stop_at                   = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -334,7 +334,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
 
     if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        void* _Stop_at                   = _Dest;
+        const void* _Stop_at             = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
         do {
             _Advance_bytes(_Last, -16);
@@ -386,7 +386,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
-        void* _Stop_at = _Dest;
+        const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
@@ -402,7 +402,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
         && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
 #endif // _M_IX86
     ) {
-        void* _Stop_at = _Dest;
+        const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
         do {
             _Advance_bytes(_Last, -16);
