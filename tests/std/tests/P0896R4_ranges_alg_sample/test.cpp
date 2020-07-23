@@ -80,5 +80,5 @@ struct instantiator {
 int main() {
     printf("Using seed: %u\n", seed);
 
-    test_in_write<instantiator, int const, int>();
+    test_in_write<instantiator, const int, int>();
 }
