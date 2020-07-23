@@ -171,7 +171,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-bool __stdcall __std_atomic_wait_direct(
+int __stdcall __std_atomic_wait_direct(
     const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
@@ -179,13 +179,13 @@ bool __stdcall __std_atomic_wait_direct(
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
-    if (!__crtWaitOnAddress(
-            const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout)) {
-        _Assume_timeout();
-        return false;
-    }
+    BOOL result = __crtWaitOnAddress(
+        const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
 
-    return true;
+    if (!result) {
+        _Assume_timeout();
+    }
+    return result;
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
@@ -235,7 +235,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 }
 
-bool __stdcall __std_atomic_wait_indirect(
+int __stdcall __std_atomic_wait_indirect(
     const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
@@ -244,12 +244,12 @@ bool __stdcall __std_atomic_wait_indirect(
 
     for (;;) {
         if (_CSTD memcmp(_Storage, _Comparand, _Size) != 0) {
-            return true;
+            return TRUE;
         }
 
         if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
             _Assume_timeout();
-            return false;
+            return FALSE;
         }
     }
 }
