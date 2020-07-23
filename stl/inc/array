@@ -812,7 +812,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     return _STD lexicographical_compare_three_way(
         _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
 }
-#endif //  __cpp_lib_concepts
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 // FUNCTION TEMPLATE to_array

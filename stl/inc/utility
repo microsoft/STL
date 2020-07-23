@@ -723,7 +723,7 @@ struct _Synth_three_way {
 // ALIAS TEMPLATE _Synth_three_way_result
 template <class _Ty1, class _Ty2 = _Ty1>
 using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()));
-#endif //  __cpp_lib_concepts
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE in_range
 template <class _Ty>
