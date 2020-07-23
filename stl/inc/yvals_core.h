@@ -164,7 +164,6 @@
 //     (partially implemented)
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
-//     (partially implemented, lerp() not yet constexpr)
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
@@ -1169,6 +1168,7 @@
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
 #define __cpp_lib_list_remove_return_type      201806L
