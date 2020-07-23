@@ -123,6 +123,36 @@ _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
 template <class...>
 class tuple;
 
+#ifdef __cpp_lib_concepts
+// STRUCT SYNTH_THREE_WAY
+struct _Synth_three_way {
+    // clang-format off
+    template <class _Ty1, class _Ty2>
+    _NODISCARD constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const requires requires {
+        { _Left < _Right } -> _Boolean_testable;
+        { _Right < _Left } -> _Boolean_testable;
+    }
+    // clang-format on
+    {
+        if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
+            return _Left <=> _Right;
+        } else {
+            if (_Left < _Right) {
+                return weak_ordering::less;
+            } else if (_Right < _Left) {
+                return weak_ordering::greater;
+            } else {
+                return weak_ordering::equivalent;
+            }
+        }
+    }
+};
+
+// ALIAS TEMPLATE _Synth_three_way_result
+template <class _Ty1, class _Ty2 = _Ty1>
+using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()));
+#endif //  __cpp_lib_concepts
+
 template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
     using first_type  = _Ty1;
@@ -325,6 +355,21 @@ struct pair { // store a pair of values
 
     _Ty1 first; // the first stored value
     _Ty2 second; // the second stored value
+
+#ifdef __cpp_lib_concepts
+    friend constexpr bool operator==(const pair&, const pair&) = default;
+    friend constexpr bool operator==(const pair& _Left, const pair& _Right) requires(
+        is_reference_v<_Ty1> || is_reference_v<_Ty2>) {
+        return _Left.first == _Right.first && _Left.second == _Right.second;
+    }
+    friend constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1>, _Synth_three_way_result<_Ty2>>
+        operator<=>(const pair& _Left, const pair& _Right) {
+        if (auto _Result = _Synth_three_way()(_Left.first, _Right.first); _Result != 0) {
+            return _Result;
+        }
+        return _Synth_three_way()(_Left.second, _Right.second);
+    }
+#endif // __cpp_lib_concepts
 };
 
 #if _HAS_CXX17
@@ -337,6 +382,7 @@ _CONSTEXPR20 void swap(pair<_Ty1, _Ty2>& _Left, pair<_Ty1, _Ty2>& _Right) noexce
     _Left.swap(_Right);
 }
 
+#if !_HAS_CXX20
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator==(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
     return _Left.first == _Right.first && _Left.second == _Right.second;
@@ -366,6 +412,7 @@ template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
 
 // ALIAS TEMPLATE _Unrefwrap_t
 template <class _Ty>
