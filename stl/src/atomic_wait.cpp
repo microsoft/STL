@@ -294,6 +294,7 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
     switch (_Requested_api_level) {
     case __std_atomic_api_level::__not_set:
     case __std_atomic_api_level::__detecting:
+        _CSTD abort();
     case __std_atomic_api_level::__has_srwlock:
         _Force_wait_functions_srwlock_only();
         break;
