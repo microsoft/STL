@@ -89,7 +89,6 @@ private:
 bool check_feexcept(const int expected_excepts, const int except_mask = fe_major_except) {
     return fetestexcept(except_mask) == (expected_excepts & except_mask);
 }
-
 #else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
 class ExceptGuard {
 public:
@@ -968,7 +967,7 @@ bool test_lerp() {
     for (auto&& testCase : LerpCases<Ty>::lerpOverflowTestCases) {
         ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (!check_feexcept(FE_OVERFLOW, fe_major_except) || memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
+        if (!check_feexcept(FE_OVERFLOW) || memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
             print_lerp_result(testCase, answer);
             abort();
         }
