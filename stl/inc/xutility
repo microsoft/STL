@@ -741,15 +741,15 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
     const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
 };
 
-// CONCEPT weakly_incrementable
+// CONCEPT _Integer_like
 // clang-format off
 template <class _Ty>
-concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && requires(_Ty __i) {
-    typename iter_difference_t<_Ty>;
-    requires signed_integral<iter_difference_t<_Ty>>;
-    { ++__i } -> same_as<_Ty&>;
-    __i++;
-};
+concept _Integer_like = _Is_nonbool_integral<_Ty>; // Per LWG issue submitted but unnumbered as of 20200723.
+
+// CONCEPT _Signed_integer_like
+template <class _Ty>
+concept _Signed_integer_like = _Integer_like<_Ty> && _Ty(-1) < _Ty(0);
+// clang-format on
 
 // ALIAS TEMPLATE _Make_unsigned_like_t
 template <class _Ty>
@@ -758,6 +758,16 @@ using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
 using _Make_signed_like_t = make_signed_t<_Ty>; // Per the proposed resolution of LWG-3403
+
+// CONCEPT weakly_incrementable
+// clang-format off
+template <class _Ty>
+concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && requires(_Ty __i) {
+    typename iter_difference_t<_Ty>;
+    requires _Signed_integer_like<iter_difference_t<_Ty>>;
+    { ++__i } -> same_as<_Ty&>;
+    __i++;
+};
 
 // CONCEPT incrementable
 template <class _Ty>
@@ -2835,12 +2845,12 @@ namespace ranges {
         // clang-format off
         template <class _Ty, class _UnCV>
         concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty __t) {
-            { _Fake_decay_copy(__t.size()) } -> integral;
+            { _Fake_decay_copy(__t.size()) } -> _Integer_like;
         };
 
         template <class _Ty, class _UnCV>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && !disable_sized_range<_UnCV> && requires(_Ty __t) {
-            { _Fake_decay_copy(size(__t)) } -> integral;
+            { _Fake_decay_copy(size(__t)) } -> _Integer_like;
         };
 
         template <class _Ty>
