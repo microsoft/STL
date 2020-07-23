@@ -19,7 +19,7 @@ namespace detail {
         using value_type        = UInt;
         using pointer           = const UInt*;
         using reference         = const UInt&;
-        using iterator_category = std::forward_iterator_tag;
+        using iterator_category = std::input_iterator_tag;
         using my_iter           = bad_rng_pattern_generator;
         using my_sentinel       = bad_rng_pattern_sentinel;
 
@@ -39,22 +39,22 @@ namespace detail {
         constexpr my_iter& operator++() noexcept { // generates the next pattern
             current_value_ = (current_value_ & lower_bits) << 1 | (current_value_ & top_bit) >> (Width - 1);
 
-            if (current_shift < Width - 1 && current_bit_count != 0 && current_bit_count != Width) {
-                ++current_shift;
+            if (current_shift_ < Width - 1 && current_bit_count_ != 0 && current_bit_count_ != Width) {
+                ++current_shift_;
                 return *this;
             }
 
-            current_shift = 0;
+            current_shift_ = 0;
 
-            if (current_bit_count < final_bit_count) { // n 1's -> n 0's
-                current_bit_count = Width - current_bit_count;
+            if (current_bit_count_ < final_bit_count) { // n 1's -> n 0's
+                current_bit_count_ = Width - current_bit_count_;
                 current_value_ ^= mask_bits;
-            } else if (current_bit_count > final_bit_count) { // n 0's -> (n+1) 1's
-                current_bit_count = Width - current_bit_count + 1;
-                current_value_    = (current_value_ ^ mask_bits) << 1 | value_type{1};
+            } else if (current_bit_count_ > final_bit_count) { // n 0's -> (n+1) 1's
+                current_bit_count_ = Width - current_bit_count_ + 1;
+                current_value_     = (current_value_ ^ mask_bits) << 1 | value_type{1};
             } else { // all bit patterns have been generated, back to all 0's
-                current_bit_count = 0;
-                current_value_    = value_type{0};
+                current_bit_count_ = 0;
+                current_value_     = value_type{0};
             }
 
             return *this;
@@ -93,8 +93,8 @@ namespace detail {
 
     private:
         value_type current_value_ = 0;
-        int current_bit_count     = 0;
-        int current_shift         = 0;
+        int current_bit_count_    = 0;
+        int current_shift_        = 0;
     };
 } // namespace detail
 
@@ -123,12 +123,12 @@ public:
     }
 
     constexpr result_type operator()() noexcept {
-        const result_type result = *generators[current_dimension];
+        const result_type result = *generators_[current_dimension_];
 
-        if (current_dimension < Dimension - 1) {
-            ++current_dimension;
+        if (current_dimension_ < Dimension - 1) {
+            ++current_dimension_;
         } else {
-            current_dimension = 0;
+            current_dimension_ = 0;
 
             if (!generate_next()) {
                 has_cycled_through_ = true;
@@ -147,44 +147,44 @@ private:
     using sentinel  = detail::bad_rng_pattern_sentinel;
 
     constexpr bool generate_next() noexcept { // generates the next subsequence, returns false if back to all 0's
-        if (limit_value != sentinel{}) {
-            for (int i = 0; i < limit_dimension; ++i) {
-                if (generators[i] != limit_value) {
-                    ++generators[i];
+        if (limit_value_ != sentinel{}) {
+            for (int i = 0; i < limit_dimension_; ++i) {
+                if (generators_[i] != limit_value_) {
+                    ++generators_[i];
                     return true;
                 } else {
-                    generators[i] = generator{};
+                    generators_[i] = generator{};
                 }
             }
 
-            for (int i = limit_dimension + 1; i < Dimension; ++i) {
-                ++generators[i];
-                if (generators[i] != limit_value) {
+            for (int i = limit_dimension_ + 1; i < Dimension; ++i) {
+                ++generators_[i];
+                if (generators_[i] != limit_value_) {
                     return true;
                 } else {
-                    generators[i] = generator{};
+                    generators_[i] = generator{};
                 }
             }
 
-            __analysis_assume(limit_dimension < Dimension);
-            generators[limit_dimension] = generator{};
+            __analysis_assume(limit_dimension_ < Dimension);
+            generators_[limit_dimension_] = generator{};
 
-            if (limit_dimension < Dimension - 1) {
-                ++limit_dimension;
-                generators[limit_dimension] = limit_value;
+            if (limit_dimension_ < Dimension - 1) {
+                ++limit_dimension_;
+                generators_[limit_dimension_] = limit_value_;
                 return true;
             }
         }
 
-        limit_dimension = 0;
-        generators[0]   = ++limit_value;
-        return limit_value != sentinel{};
+        limit_dimension_ = 0;
+        generators_[0]   = ++limit_value_;
+        return limit_value_ != sentinel{};
     }
 
-    generator generators[Dimension] = {};
-    generator limit_value{};
-    int limit_dimension      = 0;
-    int current_dimension    = 0;
+    generator generators_[Dimension] = {};
+    generator limit_value_{};
+    int limit_dimension_     = 0;
+    int current_dimension_   = 0;
     bool has_cycled_through_ = false;
 };
 
