@@ -20,7 +20,7 @@ namespace {
     constexpr size_t _Wait_table_index_mask = _Wait_table_size - 1;
 
     struct _Wait_context {
-        const void* _Storage; // Initialize to pointer to wait on
+        const void* _Storage; // Pointer to wait on
         _Wait_context* _Next;
         _Wait_context* _Prev;
         CONDITION_VARIABLE _Condition;
@@ -82,7 +82,7 @@ namespace {
     void _Assume_timeout() noexcept {
 #ifdef _DEBUG
         if (GetLastError() != ERROR_TIMEOUT) {
-            abort(); // we are in noexcept, don't throw
+            _CSTD abort();
         }
 #endif // _DEBUG
     }
@@ -123,23 +123,28 @@ namespace {
             }
         }
 
-        HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
-        const auto _Wait_on_address =
-            reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
-        const auto _Wake_by_address_single =
-            reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
-        const auto _Wake_by_address_all =
-            reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
-        if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
-            _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
-            _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
-            _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
-            _Wait_functions._Api_level.store(__std_atomic_api_level::__has_wait_on_address, _STD memory_order_release);
-            return __std_atomic_api_level::__has_wait_on_address;
-        } else {
-            _Wait_functions._Api_level.store(__std_atomic_api_level::__has_srwlock, _STD memory_order_release);
-            return __std_atomic_api_level::__has_srwlock;
+        _Level = __std_atomic_api_level::__has_srwlock;
+
+        const HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
+        if (_Sync_module != nullptr) {
+            const auto _Wait_on_address =
+                reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
+            const auto _Wake_by_address_single =
+                reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
+            const auto _Wake_by_address_all =
+                reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
+            
+            if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
+                _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
+                _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
+                _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
+                _Level = __std_atomic_api_level::__has_wait_on_address;
+            }
         }
+
+        // for __has_srwlock, relaxed would have been enough, not distinguishing for consistency
+        _Wait_functions._Api_level.store(_Level, _STD memory_order_release); 
+        return _Level;
     }
 
     [[nodiscard]] __std_atomic_api_level _Acquire_wait_functions() noexcept {
