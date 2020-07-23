@@ -4779,7 +4779,7 @@ namespace ranges {
         template <class _It, class _Out, class _Rng>
         _NODISCARD static _Out _Sample_selection_unchecked(
             _It _First, iter_difference_t<_It> _Pop_size, _Out _Result, iter_difference_t<_It> _Count, _Rng& _RngFunc) {
-            // randomly select _Count elements from [_First, _Last) into _Result
+            // randomly select _Count elements from [_First, _First + _Pop_size) into _Result
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);

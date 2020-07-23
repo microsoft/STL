@@ -1,9 +1,10 @@
-// sampleright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstdio>
 #include <random>
 #include <ranges>
 #include <utility>
@@ -43,7 +44,7 @@ struct instantiator {
                     // verify stability
                     assert(is_sorted(output1));
                 } else {
-                    // ensure ordering for set_difference
+                    // ensure ordering for equality test
                     sort(begin(output1), end(output1));
                 }
                 assert(includes(cbegin(reservoir), cend(reservoir), cbegin(output1), cend(output1)));
@@ -67,7 +68,7 @@ struct instantiator {
                     // verify stability
                     assert(is_sorted(output1));
                 } else {
-                    // ensure ordering for set_difference
+                    // ensure ordering for equality test
                     sort(begin(output1), end(output1));
                 }
                 assert(includes(cbegin(reservoir), cend(reservoir), cbegin(output1), cend(output1)));
