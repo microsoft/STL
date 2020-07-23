@@ -86,8 +86,11 @@ void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
 
     std::atomic<UnderlyingType> c(old_value);
 
-    bool trigger = false;
-    const auto waitFn = [&c, same_old_value, &trigger] { c.wait(same_old_value); trigger = true; };
+    bool trigger      = false;
+    const auto waitFn = [&c, same_old_value, &trigger] {
+        c.wait(same_old_value);
+        trigger = true;
+    };
 
     std::thread w1{waitFn};
 
@@ -142,7 +145,7 @@ struct big_char_like {
     friend bool operator!=(big_char_like, big_char_like) = delete;
 };
 
-template<std::size_t size>
+template <std::size_t size>
 struct with_padding_bits {
     alignas(size) char value;
 
@@ -150,8 +153,8 @@ struct with_padding_bits {
         value = value_;
     }
 
-    friend bool operator==(three_chars, three_chars) = delete;
-    friend bool operator!=(three_chars, three_chars) = delete;
+    friend bool operator==(with_padding_bits, with_padding_bits) = delete;
+    friend bool operator!=(with_padding_bits, with_padding_bits) = delete;
 };
 
 inline void test_atomic_wait() {
