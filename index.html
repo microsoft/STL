@@ -44,14 +44,14 @@
                     yAxisID: 'smallAxis',
                 },
                 {
-                    data: get_values(weekly_table, 'cxx20'),
+                    data: get_values(weekly_table, 'cxx20').concat(get_values(daily_table, 'cxx20')),
                     label: 'C++20 Features',
                     borderColor: '#7030A0',
                     backgroundColor: '#7030A0',
                     yAxisID: 'smallAxis',
                 },
                 {
-                    data: get_values(weekly_table, 'lwg'),
+                    data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
                     label: 'LWG Resolutions',
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
@@ -303,7 +303,7 @@
                 <li><a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20">
                         Open GitHub issues.</a> That is, all GitHub issues including <b>bug</b>,
                     <b>documentation</b>, <b>enhancement</b>, <b>performance</b>, <b>throughput</b>, etc.
-                    and excluding only <b>cxx20</b> to avoid double-counting.</li>
+                    and excluding only <b>cxx20</b> and <b>LWG</b> to avoid double-counting.</li>
                 <li><a href="https://github.com/microsoft/STL/blob/master/tests/libcxx/skipped_tests.txt">
                         Skipped tests in the libcxx test suite.</a> There are many reasons for skipped tests:
                     STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.

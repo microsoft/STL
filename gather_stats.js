@@ -61,7 +61,7 @@ octokit.paginate(
     progress_bar.update(progress_value); // which would prevent the progress bar from reaching 100%.
     progress_bar.stop();
 
-    const begin = DateTime.fromISO('2019-09-03' + 'T23:00:00-07');
+    const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00-07');
     const now = DateTime.local();
 
     let str = '// Copyright (c) Microsoft Corporation.\n';
@@ -75,6 +75,8 @@ octokit.paginate(
 
     for (let when = begin; when < now; when = when.plus({ days: 1 })) {
         let num_pr = 0;
+        let num_cxx20 = 0;
+        let num_lwg = 0;
         let num_issue = 0;
         let num_bug = 0;
         let combined_pr_age = Duration.fromObject({ seconds: 0 });
@@ -87,6 +89,12 @@ octokit.paginate(
                 combined_pr_age = combined_pr_age.plus(when.diff(elem.opened, 'seconds'));
             } else if (elem.label_names.includes('cxx20')) {
                 // Avoid double-counting C++20 Features and GitHub Issues.
+                ++num_cxx20;
+            } else if (elem.label_names.includes('LWG')
+                && !elem.label_names.includes('vNext')
+                && !elem.label_names.includes('blocked')) {
+                // Avoid double-counting LWG Resolutions and GitHub Issues.
+                ++num_lwg;
             } else {
                 ++num_issue;
 
@@ -100,6 +108,8 @@ octokit.paginate(
         str += [
             `date: '${when.toISODate()}'`,
             `pr: ${num_pr}`,
+            `cxx20: ${num_cxx20}`,
+            `lwg: ${num_lwg}`,
             `issue: ${num_issue}`,
             `bug: ${num_bug}`,
             `months: ${Number.parseFloat(combined_pr_age.as('months')).toFixed(2)}`,
