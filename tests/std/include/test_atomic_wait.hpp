@@ -74,6 +74,44 @@ void test_notify_all_notifies_all(const UnderlyingType old_value, const Underlyi
     w3.join();
 }
 
+template <class UnderlyingType>
+void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
+    UnderlyingType old_value;
+    std::memset(&old_value, 0x66, sizeof(UnderlyingType));
+    old_value.set(1);
+
+    UnderlyingType same_old_value;
+    std::memset(&same_old_value, 0x99, sizeof(UnderlyingType));
+    same_old_value.set(1);
+
+    std::atomic<UnderlyingType> c(old_value);
+
+    bool trigger = false;
+    const auto waitFn = [&c, same_old_value, &trigger] { c.wait(same_old_value); trigger = true; };
+
+    std::thread w1{waitFn};
+
+    std::this_thread::sleep_for(waiting_duration);
+    assert(!trigger);
+
+    c.store(old_value);
+    c.notify_one();
+
+    std::this_thread::sleep_for(waiting_duration);
+    assert(!trigger);
+
+    UnderlyingType new_value;
+    std::memset(&new_value, 0x99, sizeof(UnderlyingType));
+    new_value.set(2);
+    c.store(new_value);
+    c.notify_one();
+
+    std::this_thread::sleep_for(waiting_duration);
+    assert(trigger);
+
+    w1.join();
+}
+
 struct two_shorts {
     short a;
     short b;
@@ -102,6 +140,18 @@ struct big_char_like {
 
     friend bool operator==(big_char_like, big_char_like) = delete;
     friend bool operator!=(big_char_like, big_char_like) = delete;
+};
+
+template<std::size_t size>
+struct with_padding_bits {
+    alignas(size) char value;
+
+    void set(const char value_) {
+        value = value_;
+    }
+
+    friend bool operator==(three_chars, three_chars) = delete;
+    friend bool operator!=(three_chars, three_chars) = delete;
 };
 
 inline void test_atomic_wait() {
@@ -146,4 +196,12 @@ inline void test_atomic_wait() {
     test_notify_all_notifies_all(two_shorts{1, 1}, two_shorts{1, 2}, waiting_duration);
     test_notify_all_notifies_all(three_chars{1, 1, 3}, three_chars{1, 2, 3}, waiting_duration);
     test_notify_all_notifies_all(big_char_like{'a'}, big_char_like{'b'}, waiting_duration);
+
+#ifndef __clang__ // TRANSITION, LLVM-46685
+    test_pad_bits<with_padding_bits<2>>(waiting_duration);
+    test_pad_bits<with_padding_bits<4>>(waiting_duration);
+    test_pad_bits<with_padding_bits<8>>(waiting_duration);
+    test_pad_bits<with_padding_bits<16>>(waiting_duration);
+    test_pad_bits<with_padding_bits<32>>(waiting_duration);
+#endif // __clang__, TRANSITION, LLVM-46685
 }
