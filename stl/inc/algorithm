@@ -4602,30 +4602,6 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE rotate_copy
-template <class _FwdIt, class _OutIt>
-_CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
-    // copy rotating [_First, _Last)
-    _Adl_verify_range(_First, _Mid);
-    _Adl_verify_range(_Mid, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _UMid   = _Get_unwrapped(_Mid);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt>(_UFirst, _ULast));
-    _UDest             = _Copy_unchecked(_UMid, _ULast, _UDest);
-    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst, _UMid, _UDest));
-    return _Dest;
-}
-
-#if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
-    // copy rotating [_First, _Last)
-    // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD rotate_copy(_First, _Mid, _Last, _Dest);
-}
-
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::rotate
@@ -4733,7 +4709,35 @@ namespace ranges {
     };
 
     inline constexpr _Rotate_fn rotate{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
+// FUNCTION TEMPLATE rotate_copy
+template <class _FwdIt, class _OutIt>
+_CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
+    // copy rotating [_First, _Last)
+    _Adl_verify_range(_First, _Mid);
+    _Adl_verify_range(_Mid, _Last);
+    const auto _UFirst = _Get_unwrapped(_First);
+    const auto _UMid   = _Get_unwrapped(_Mid);
+    const auto _ULast  = _Get_unwrapped(_Last);
+    auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt>(_UFirst, _ULast));
+    _UDest             = _Copy_unchecked(_UMid, _ULast, _UDest);
+    _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst, _UMid, _UDest));
+    return _Dest;
+}
+
+#if _HAS_CXX17
+template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
+    // copy rotating [_First, _Last)
+    // not parallelized as benchmarks show it isn't worth it
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    return _STD rotate_copy(_First, _Mid, _Last, _Dest);
+}
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
     // ALIAS TEMPLATE rotate_copy_result
     template <class _In, class _Out>
     using rotate_copy_result = in_out_result<_In, _Out>;
