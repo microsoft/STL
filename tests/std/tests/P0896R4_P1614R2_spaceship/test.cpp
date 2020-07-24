@@ -25,6 +25,35 @@
 #include <utility>
 #include <vector>
 
+using PartiallyOrdered = double;
+
+struct WeaklyOrdered {
+    [[nodiscard]] bool operator==(const WeaklyOrdered&) const {
+        return true;
+    }
+
+    [[nodiscard]] std::weak_ordering operator<=>(const WeaklyOrdered&) const {
+        return std::weak_ordering::equivalent;
+    }
+};
+
+using StronglyOrdered = int;
+
+// Activates synth-three-way in N4861 16.4.2.1 [expos.only.func]/2.
+struct SynthOrdered {
+    int val;
+
+    SynthOrdered(const int x) : val{x} {}
+
+    [[nodiscard]] bool operator==(const SynthOrdered& other) const {
+        return val == other.val;
+    }
+
+    [[nodiscard]] bool operator<(const SynthOrdered& other) const {
+        return val < other.val;
+    }
+};
+
 template <class T>
 inline constexpr bool is_pair = false;
 template <class A, class B>
@@ -199,6 +228,37 @@ void ordering_test_cases() {
     }
 }
 
+template <class T>
+using SpaceshipType = decltype(std::declval<T>() <=> std::declval<T>());
+
+template <class Element, class Ordering>
+void test_element_ordering() {
+    if constexpr (!std::is_same_v<Element, SynthOrdered>) { // SynthOrdered inherently doesn't support <=> directly
+        static_assert(std::is_same_v<SpaceshipType<Element>, Ordering>);
+    }
+
+    static_assert(std::is_same_v<SpaceshipType<std::array<Element, 3>>, Ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::deque<Element>>, Ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::list<Element>>, Ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::vector<Element>>, Ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::forward_list<Element>>, Ordering>);
+
+    // TRANSITION, std::pair spaceship not yet implemented
+    static_assert(std::is_same_v<SpaceshipType<std::map<Element, Element>>, std::weak_ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::multimap<Element, Element>>, std::weak_ordering>);
+
+    static_assert(std::is_same_v<SpaceshipType<std::set<Element>>, Ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::multiset<Element>>, Ordering>);
+
+    static_assert(std::is_same_v<SpaceshipType<std::queue<Element>>, Ordering>);
+    static_assert(std::is_same_v<SpaceshipType<std::stack<Element>>, Ordering>);
+}
+
 int main() {
     ordering_test_cases();
+
+    test_element_ordering<PartiallyOrdered, std::partial_ordering>();
+    test_element_ordering<WeaklyOrdered, std::weak_ordering>();
+    test_element_ordering<StronglyOrdered, std::strong_ordering>();
+    test_element_ordering<SynthOrdered, std::weak_ordering>();
 }
