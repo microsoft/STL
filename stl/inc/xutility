@@ -4377,8 +4377,8 @@ public:
     template <common_with<_Iter> _Other>
     friend constexpr iter_difference_t<_Other> operator-(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        _Verify_Range(_Left, _Right);
-        return _Right._Length - _Left._Length;
+        //_Verify_range(_Left, _Right);
+        return _Right.count() - _Left._Length;
     }
     friend constexpr iter_difference_t<_Iter> operator-(const counted_iterator& _Left, default_sentinel_t) {
         return -_Left._Length;
@@ -4406,8 +4406,8 @@ public:
     // [counted.iter.cmp]
     template <common_with<_Iter> _Other>
     friend constexpr bool operator==(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        _Verify_Range(_Left, _Right);
-        return _Left._Length == _Right._Length;
+        //_Verify_range(_Left, _Right);
+        return _Left._Length == _Right.count();
     }
 
     friend constexpr bool operator==(const counted_iterator& _Left, default_sentinel_t) noexcept // strengthened
@@ -4418,7 +4418,7 @@ public:
     template <common_with<_Iter> _Other>
     friend constexpr strong_ordering operator<=>(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        _Verify_Range(_Left, _Right);
+        //_Verify_range(_Left, _Right);
         return _Right._Length <=> _Left._Length;
     }
 
@@ -4426,7 +4426,7 @@ public:
     // clang-format off
     friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _It) noexcept(
         noexcept(_RANGES iter_move(_It.current)))
-       requires input_iterator<_Iter>
+    //   requires input_iterator<_Iter>
     {
         return _RANGES iter_move(_It.current);
     }
@@ -4440,14 +4440,9 @@ public:
 
     template <class _Other, enable_if_t<_Range_verifiable_v<_Iter, _Other>, int> = 0>
     friend constexpr void _Verify_range(const counted_iterator& _First, const counted_iterator<_Other>& _Last) {
-        _STD next(_STD addressof(_First._Current), _First._Length)
-            == _STD next(_STD addressof(_Last.base()), _Last.count());
-    }
-
-    constexpr void _Verify_range(const counted_iterator& _Right) {
-        if constexpr (forward_iterator<_Iter>) {
-            _STD next(_Current, _Length) == _STD next(_Right._Current, _Right._Length);
-        }
+        _STL_VERIFY(_STD next(_STD addressof(*_First._Current), _First._Length)
+                        == _STD next(_STD addressof(*_Last.base()), _Last.count()),
+            "counted_iterators from different ranges");
     }
 
     using _Prevent_inheriting_unwrap = counted_iterator;

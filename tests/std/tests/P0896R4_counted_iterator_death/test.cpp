@@ -27,7 +27,7 @@ struct simple_input_iter {
         ++_ptr;
         return *this;
     };
-    simple_input_iter& operator++(int) {
+    simple_input_iter operator++(int) {
         simple_input_iter _tmp = *this;
         ++_ptr;
         return _tmp;
