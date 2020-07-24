@@ -28,11 +28,11 @@
 using PartiallyOrdered = double;
 
 struct WeaklyOrdered {
-    [[nodiscard]] bool operator==(const WeaklyOrdered&) const {
+    [[nodiscard]] constexpr bool operator==(const WeaklyOrdered&) const {
         return true;
     }
 
-    [[nodiscard]] std::weak_ordering operator<=>(const WeaklyOrdered&) const {
+    [[nodiscard]] constexpr std::weak_ordering operator<=>(const WeaklyOrdered&) const {
         return std::weak_ordering::equivalent;
     }
 };
@@ -43,13 +43,13 @@ using StronglyOrdered = int;
 struct SynthOrdered {
     int val;
 
-    SynthOrdered(const int x) : val{x} {}
+    constexpr SynthOrdered(const int x) : val{x} {}
 
-    [[nodiscard]] bool operator==(const SynthOrdered& other) const {
+    [[nodiscard]] constexpr bool operator==(const SynthOrdered& other) const {
         return val == other.val;
     }
 
-    [[nodiscard]] bool operator<(const SynthOrdered& other) const {
+    [[nodiscard]] constexpr bool operator<(const SynthOrdered& other) const {
         return val < other.val;
     }
 };
@@ -71,7 +71,9 @@ void ordered_containers_test(const Container& smaller, const Container& smaller_
     assert((larger <=> smaller) > 0);
     assert((smaller <=> smaller_equal) == 0);
 
-    if constexpr (is_pair<typename Container::value_type>) { // TRANSITION, std::pair spaceship not yet implemented
+    using Elem = typename Container::value_type;
+    if constexpr (is_pair<Elem> // TRANSITION, std::pair spaceship not yet implemented
+                  || std::is_same_v<Elem, SynthOrdered>) {
         static_assert(std::is_same_v<decltype(smaller <=> larger), std::weak_ordering>);
     } else {
         static_assert(std::is_same_v<decltype(smaller <=> larger), std::strong_ordering>);
@@ -96,11 +98,24 @@ void ordering_test_cases() {
         static_assert((a2 <=> a0) < 0);
         static_assert((a0 <=> a2) > 0);
     }
+    { // constexpr array SynthOrdered
+        constexpr std::array<SynthOrdered, 3> a = {10, 20, 30};
+        constexpr std::array<SynthOrdered, 3> b = {10, 20, 40};
+
+        static_assert((a <=> a) == 0);
+        static_assert((a <=> b) < 0);
+        static_assert((b <=> a) > 0);
+    }
     { // array
         std::array<int, 3> a1 = {100, 100, 100};
         std::array<int, 3> a2 = {100, 100, 100};
         std::array<int, 3> b1 = {200, 200};
         ordered_containers_test(a1, a2, b1);
+    }
+    { // array SynthOrdered
+        std::array<SynthOrdered, 3> a = {10, 20, 30};
+        std::array<SynthOrdered, 3> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
     }
     { // deque
         std::deque<int> a1(3, 100);
@@ -108,11 +123,21 @@ void ordering_test_cases() {
         std::deque<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
     }
+    { // deque SynthOrdered
+        std::deque<SynthOrdered> a = {10, 20, 30};
+        std::deque<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
+    }
     { // list
         std::list<int> a1(3, 100);
         std::list<int> a2(3, 100);
         std::list<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+    }
+    { // list SynthOrdered
+        std::list<SynthOrdered> a = {10, 20, 30};
+        std::list<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
     }
     { // vector
         std::vector<int> a1(3, 100);
@@ -125,11 +150,21 @@ void ordering_test_cases() {
         std::vector<bool> d1(2, 1);
         ordered_containers_test(c1, c2, d1);
     }
+    { // vector SynthOrdered
+        std::vector<SynthOrdered> a = {10, 20, 30};
+        std::vector<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
+    }
     { // forward_list
         std::forward_list<int> a1(3, 100);
         std::forward_list<int> a2(3, 100);
         std::forward_list<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+    }
+    { // forward_list SynthOrdered
+        std::forward_list<SynthOrdered> a = {10, 20, 30};
+        std::forward_list<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
     }
     { // map
         std::map<std::string, int> a1;
@@ -143,11 +178,21 @@ void ordering_test_cases() {
         b1["koala"] = 4;
         ordered_containers_test(a1, a2, b1);
     }
+    { // map SynthOrdered
+        std::map<SynthOrdered, char> a = {{10, 'z'}, {20, 'z'}, {30, 'z'}};
+        std::map<SynthOrdered, char> b = {{10, 'z'}, {20, 'z'}, {40, 'z'}};
+        ordered_containers_test(a, a, b);
+    }
     { // multimap
         std::multimap<char, int> a1 = {{'a', 1}, {'b', 2}, {'a', 3}};
         std::multimap<char, int> a2 = {{'a', 1}, {'a', 3}, {'b', 2}};
         std::multimap<char, int> b1 = {{'z', 4}, {'y', 90}, {'z', 12}};
         ordered_containers_test(a1, a2, b1);
+    }
+    { // multimap SynthOrdered
+        std::multimap<SynthOrdered, char> a = {{10, 'z'}, {20, 'z'}, {30, 'z'}};
+        std::multimap<SynthOrdered, char> b = {{10, 'z'}, {20, 'z'}, {40, 'z'}};
+        ordered_containers_test(a, a, b);
     }
     { // set
         std::set<int> a1;
@@ -162,6 +207,11 @@ void ordering_test_cases() {
         b1.insert(30);
         b1.insert(40);
         ordered_containers_test(a1, a2, b1);
+    }
+    { // set SynthOrdered
+        std::set<SynthOrdered> a = {10, 20, 30};
+        std::set<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
     }
     { // multiset
         std::multiset<int> a1;
@@ -179,6 +229,11 @@ void ordering_test_cases() {
         b1.insert(40);
         b1.insert(40);
         ordered_containers_test(a1, a2, b1);
+    }
+    { // multiset SynthOrdered
+        std::multiset<SynthOrdered> a = {10, 20, 30};
+        std::multiset<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
     }
     { // unordered_map
         using stringmap = std::unordered_map<std::string, std::string>;
@@ -214,6 +269,11 @@ void ordering_test_cases() {
         std::queue<int> c(deq2);
         ordered_containers_test(a, b, c);
     }
+    { // queue SynthOrdered
+        std::queue<SynthOrdered> a{std::deque<SynthOrdered>{10, 20, 30}};
+        std::queue<SynthOrdered> b{std::deque<SynthOrdered>{10, 20, 40}};
+        ordered_containers_test(a, a, b);
+    }
     { // stack
         std::stack<int> a;
         a.push(2);
@@ -225,6 +285,11 @@ void ordering_test_cases() {
         c.push(3);
         c.push(3);
         ordered_containers_test(a, b, c);
+    }
+    { // stack SynthOrdered
+        std::stack<SynthOrdered> a{std::deque<SynthOrdered>{10, 20, 30}};
+        std::stack<SynthOrdered> b{std::deque<SynthOrdered>{10, 20, 40}};
+        ordered_containers_test(a, a, b);
     }
 }
 
