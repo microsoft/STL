@@ -744,11 +744,11 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 // CONCEPT _Integer_like
 // clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>; // Per LWG issue submitted but unnumbered as of 20200723.
+concept _Integer_like = _Is_nonbool_integral<_Ty>; // Per LWG issue submitted but unnumbered as of 2020-07-23.
 
 // CONCEPT _Signed_integer_like
 template <class _Ty>
-concept _Signed_integer_like = _Integer_like<_Ty> && _Ty(-1) < _Ty(0);
+concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 // clang-format on
 
 // ALIAS TEMPLATE _Make_unsigned_like_t
