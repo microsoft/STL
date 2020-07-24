@@ -1755,54 +1755,6 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-template <class _Ty, class _Alloc>
-void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
-    _Left.swap(_Right);
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _Left.size() == _Right.size()
-           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
-}
-
-#if !_HAS_CXX20
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
-#ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
-    const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
-}
-#else // __cpp_lib_concepts
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(
-        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator>(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _Right < _Left;
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator<=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return !(_Right < _Left);
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return !(_Left < _Right);
-}
-#endif // __cpp_lib_concepts
-
 // CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
 using _Vbase         = unsigned int; // word type for vector<bool> representation
 constexpr int _VBITS = 8 * sizeof(_Vbase); // at least CHAR_BITS bits per word
@@ -2853,6 +2805,54 @@ public:
         _Xout_of_range("invalid vector<bool> subscript");
     }
 };
+
+template <class _Ty, class _Alloc>
+void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
+    _Left.swap(_Right);
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return _Left.size() == _Right.size()
+           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+}
+
+#if !_HAS_CXX20
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+#endif // !_HAS_CXX20
+
+#ifdef __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
+    const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator>(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return _Right < _Left;
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator<=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return !(_Right < _Left);
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return !(_Left < _Right);
+}
+#endif // __cpp_lib_concepts
 
 template <class _Alloc>
 _NODISCARD bool operator==(const vector<bool, _Alloc>& _Left, const vector<bool, _Alloc>& _Right) {
