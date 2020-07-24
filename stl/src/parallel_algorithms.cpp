@@ -52,12 +52,7 @@ void __stdcall __std_wait_for_threadpool_work_callbacks(PTP_WORK _Work, BOOL _Ca
 }
 
 void __stdcall __std_execution_wait_on_uchar(const volatile unsigned char* _Address, unsigned char _Compare) noexcept {
-    for (;;) {
-        if (_Atomic_load_uchar(_Address) != _Compare) {
-            break;
-        }
-        __std_atomic_wait_direct(const_cast<const unsigned char*>(_Address), &_Compare, 1, _Atomic_wait_no_timeout);
-    }
+    __std_atomic_wait_direct(const_cast<const unsigned char*>(_Address), &_Compare, 1, _Atomic_wait_no_timeout);
 }
 
 void __stdcall __std_execution_wake_by_address_all(const volatile void* _Address) noexcept {
