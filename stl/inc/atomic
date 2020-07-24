@@ -362,10 +362,10 @@ struct _Atomic_storage;
 
 template <class _Ty, class _Value_type>
 void _Atomic_wait_direct(
-    const _Atomic_storage<_Ty>* _This, _Value_type _Expected_bytes, const memory_order _Order) noexcept {
+    const _Atomic_storage<_Ty>* const _This, _Value_type _Expected_bytes, const memory_order _Order) noexcept {
     const auto _Storage_ptr = _STD addressof(_This->_Storage);
     for (;;) {
-        _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
+        const _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
             if constexpr (_Might_have_non_value_bits<_Ty>) {
@@ -459,12 +459,12 @@ struct _Atomic_storage {
 
 #if _HAS_CXX20
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const auto _Storage_ptr = _STD addressof(_Storage);
-        auto _Expected_ptr      = _STD addressof(_Expected);
+        const auto _Storage_ptr  = _STD addressof(_Storage);
+        const auto _Expected_ptr = _STD addressof(_Expected);
 
         for (;;) {
-            _Ty _Observed      = load(_Order);
-            auto _Observed_ptr = _STD addressof(_Observed);
+            const _Ty _Observed      = load(_Order);
+            const auto _Observed_ptr = _STD addressof(_Observed);
             if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
                 if constexpr (_Might_have_non_value_bits<_Ty>) {
@@ -1121,14 +1121,15 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);
 
         for (;;) {
-            _Int128 Observed_bytes = _Atomic_reinterpret_as<_Int128>(load(_Order));
+            _Int128 _Observed_bytes = _Atomic_reinterpret_as<_Int128>(load(_Order));
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
                 if constexpr (_Might_have_non_value_bits<decltype(_Storage._Storage)>) {
                     _Storage_for<_Ty> _Mask{_Form_mask};
                     const _Value_type _Mask_val = _Atomic_reinterpret_as<_Int128>(_Mask._Ref());
 
-                    if (((_Expected_bytes._Low ^ _Observed_bytes._Low) & _Mask_val._Low) == 0 && ((_Expected_bytes._High ^ _Observed_bytes._High) & _Mask_val._High) == 0) {
+                    if (((_Expected_bytes._Low ^ _Observed_bytes._Low) & _Mask_val._Low) == 0
+                        && ((_Expected_bytes._High ^ _Observed_bytes._High) & _Mask_val._High) == 0) {
                         _Expected_bytes = _Observed_bytes;
                         continue;
                     }

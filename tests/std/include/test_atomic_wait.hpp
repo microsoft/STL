@@ -77,11 +77,11 @@ void test_notify_all_notifies_all(const UnderlyingType old_value, const Underlyi
 template <class UnderlyingType>
 void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
     UnderlyingType old_value;
-    std::memset(&old_value, 0x66, sizeof(UnderlyingType));
+    memset(&old_value, 0x66, sizeof(UnderlyingType));
     old_value.set(1);
 
     UnderlyingType same_old_value;
-    std::memset(&same_old_value, 0x99, sizeof(UnderlyingType));
+    memset(&same_old_value, 0x99, sizeof(UnderlyingType));
     same_old_value.set(1);
 
     std::atomic<UnderlyingType> c(old_value);
@@ -104,7 +104,7 @@ void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
     assert(!trigger);
 
     UnderlyingType new_value;
-    std::memset(&new_value, 0x99, sizeof(UnderlyingType));
+    memset(&new_value, 0x99, sizeof(UnderlyingType));
     new_value.set(2);
     c.store(new_value);
     c.notify_one();
@@ -120,7 +120,6 @@ struct two_shorts {
     short b;
 
     friend bool operator==(two_shorts, two_shorts) = delete;
-    friend bool operator!=(two_shorts, two_shorts) = delete;
 };
 
 struct three_chars {
@@ -129,7 +128,6 @@ struct three_chars {
     char c;
 
     friend bool operator==(three_chars, three_chars) = delete;
-    friend bool operator!=(three_chars, three_chars) = delete;
 };
 
 struct big_char_like {
@@ -138,14 +136,10 @@ struct big_char_like {
 
     explicit big_char_like(char value_) : value(value_), unused{} {}
 
-    big_char_like(const big_char_like&) = default;
-    big_char_like& operator=(const big_char_like&) = default;
-
     friend bool operator==(big_char_like, big_char_like) = delete;
-    friend bool operator!=(big_char_like, big_char_like) = delete;
 };
 
-template <std::size_t size>
+template <size_t size>
 struct with_padding_bits {
     alignas(size) char value;
 
@@ -154,7 +148,6 @@ struct with_padding_bits {
     }
 
     friend bool operator==(with_padding_bits, with_padding_bits) = delete;
-    friend bool operator!=(with_padding_bits, with_padding_bits) = delete;
 };
 
 inline void test_atomic_wait() {

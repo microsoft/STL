@@ -34,10 +34,10 @@ namespace {
         }
 
         ~_Guarded_wait_context() {
-            _Wait_context* const _Next_local = _Next;
-            _Wait_context* const _Prev_local = _Prev;
-            _Next->_Prev                     = _Prev_local;
-            _Prev->_Next                     = _Next_local;
+            const auto _Next_local = _Next;
+            const auto _Prev_local = _Prev;
+            _Next->_Prev           = _Prev_local;
+            _Prev->_Next           = _Next_local;
         }
 
         _Guarded_wait_context(const _Guarded_wait_context&) = delete;
@@ -45,8 +45,6 @@ namespace {
     };
 
     class _SrwLock_guard {
-        SRWLOCK* _Locked;
-
     public:
         explicit _SrwLock_guard(SRWLOCK& _Locked_) noexcept : _Locked(&_Locked_) {
             AcquireSRWLockExclusive(_Locked);
@@ -58,6 +56,9 @@ namespace {
 
         _SrwLock_guard(const _SrwLock_guard&) = delete;
         _SrwLock_guard& operator=(const _SrwLock_guard&) = delete;
+
+    private:
+        SRWLOCK* _Locked;
     };
 
 
@@ -184,13 +185,13 @@ int __stdcall __std_atomic_wait_direct(
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
-    BOOL result = __crtWaitOnAddress(
+    const auto _Result = __crtWaitOnAddress(
         const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
 
-    if (!result) {
+    if (!_Result) {
         _Assume_timeout();
     }
-    return result;
+    return _Result;
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {

@@ -38,18 +38,18 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
 
 // Support for atomic waits.
 // The "direct" functions are used when the underlying infrastructure can use WaitOnAddress directly; that is, _Size is
-// 1, 2, 4 or 8. The contract is the same as the WaitOnAddress function from the Windows SDK. If WaitOnAddress is not
+// 1, 2, 4, or 8. The contract is the same as the WaitOnAddress function from the Windows SDK. If WaitOnAddress is not
 // available on the current platform, falls back to a similar solution based on SRWLOCK and CONDITION_VARIABLE.
 int __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept;
+    const void* _Storage, const void* _Comparand, size_t _Size, unsigned long _Remaining_timeout) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_direct(const void* _Storage) noexcept;
 
 // The "indirect" functions are used when the size is not 1, 2, 4, or 8; these notionally wait on another value which is
-// of one of those sizes whose value changes upon notify, hence "indirect". (At time of writing this always uses the
-// fallback SRWLOCK and CONDITION_VARIABLE implementation but that is not contractual)
+// of one of those sizes whose value changes upon notify, hence "indirect". (As of 2020-07-24, this always uses the
+// fallback SRWLOCK and CONDITION_VARIABLE implementation but that is not contractual.)
 int __stdcall __std_atomic_wait_indirect(
-    const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept;
+    const void* _Storage, const void* _Comparand, size_t _Size, unsigned long _Remaining_timeout) noexcept;
 void __stdcall __std_atomic_notify_one_indirect(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
 
