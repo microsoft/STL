@@ -25,6 +25,11 @@
 #include <utility>
 #include <vector>
 
+template <class T>
+inline constexpr bool is_pair = false;
+template <class A, class B>
+inline constexpr bool is_pair<std::pair<A, B>> = true; // TRANSITION, std::pair spaceship not yet implemented
+
 template <class Container>
 void ordered_containers_test(const Container& smaller, const Container& smaller_equal, const Container& larger) {
     assert(smaller < larger);
@@ -35,7 +40,13 @@ void ordered_containers_test(const Container& smaller, const Container& smaller_
     assert(smaller != larger);
     assert((smaller <=> larger) < 0);
     assert((larger <=> smaller) > 0);
-    assert((smaller_equal <=> smaller) == 0);
+    assert((smaller <=> smaller_equal) == 0);
+
+    if constexpr (is_pair<typename Container::value_type>) { // TRANSITION, std::pair spaceship not yet implemented
+        static_assert(std::is_same_v<decltype(smaller <=> larger), std::weak_ordering>);
+    } else {
+        static_assert(std::is_same_v<decltype(smaller <=> larger), std::strong_ordering>);
+    }
 }
 
 template <class Container>
