@@ -2839,14 +2839,51 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+    if constexpr (is_same_v<_Ty, bool>) {
+        // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
+        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Left_words    = _Left._Myvec._Unchecked_begin();
+        const auto _Right_words   = _Right._Myvec._Unchecked_begin();
+
+        const strong_ordering _Word_comparison = _STD lexicographical_compare_three_way( // don't need _Synth_three_way
+            _Left_words, _Left_words + _Min_word_size, _Right_words, _Right_words + _Min_word_size);
+
+        if (_Word_comparison != 0) {
+            return _Word_comparison;
+        }
+
+        return _Left.size() <=> _Right.size();
+    } else {
+        return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+            _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+    }
 }
 #else // __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(
-        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_same_v<_Ty, bool>) {
+        // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
+        auto _First = _Left._Myvec._Unchecked_begin();
+        auto _Other = _Right._Myvec._Unchecked_begin();
+
+        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
+
+        for (; _First != _Last; ++_First, (void) ++_Other) {
+            if (*_First < *_Other) {
+                return true;
+            } else if (*_First > *_Other) {
+                return false;
+            }
+        }
+
+        return _Left.size() < _Right.size();
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return _STD lexicographical_compare(
+            _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+    }
 }
 
 template <class _Ty, class _Alloc>
