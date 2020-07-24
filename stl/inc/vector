@@ -2813,8 +2813,19 @@ void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* s
 
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _Left.size() == _Right.size()
-           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+    if (_Left.size() != _Right.size()) {
+        return false;
+    }
+
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_same_v<_Ty, bool>) {
+        return _STD equal(
+            _Left._Myvec._Unchecked_begin(), _Left._Myvec._Unchecked_end(), _Right._Myvec._Unchecked_begin());
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+    }
 }
 
 #if !_HAS_CXX20
@@ -2853,16 +2864,6 @@ _NODISCARD bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
     return !(_Left < _Right);
 }
 #endif // __cpp_lib_concepts
-
-template <class _Alloc>
-_NODISCARD bool operator==(const vector<bool, _Alloc>& _Left, const vector<bool, _Alloc>& _Right) {
-    return _Left.size() == _Right.size() && _Left._Myvec == _Right._Myvec;
-}
-
-template <class _Alloc>
-_NODISCARD bool operator!=(const vector<bool, _Alloc>& _Left, const vector<bool, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
 
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Alloc>
