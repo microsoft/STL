@@ -4223,14 +4223,14 @@ public:
     }
 
     // [counted.iter.access]
-    constexpr _Iter base() const& noexcept(is_nothrow_copy_assignable<_Iter>) // strengthened
+    constexpr _Iter base() const& noexcept(is_nothrow_copy_assignable_v<_Iter>) // strengthened
         requires copy_constructible<_Iter>
     {
         return _Current;
     }
     // clang-format on
 
-    constexpr _Iter base() && noexcept(is_nothrow_move_assignable<_Iter>) // strengthened
+    constexpr _Iter base() && noexcept(is_nothrow_move_assignable_v<_Iter>) // strengthened
     {
         return _STD move(_Current);
     }
@@ -4406,7 +4406,7 @@ public:
     // [counted.iter.cmp]
     template <common_with<_Iter> _Other>
     friend constexpr bool operator==(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        _Verify_range(_Right);
+        _Verify_Range(_Left, _Right);
         return _Left._Length == _Right._Length;
     }
 
@@ -4418,7 +4418,7 @@ public:
     template <common_with<_Iter> _Other>
     friend constexpr strong_ordering operator<=>(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        _Verify_range(_Right);
+        _Verify_Range(_Left, _Right);
         return _Right._Length <=> _Left._Length;
     }
 
