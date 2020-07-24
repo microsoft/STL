@@ -133,7 +133,7 @@ namespace {
                 reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
             const auto _Wake_by_address_all =
                 reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
-            
+
             if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
                 _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
                 _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
@@ -143,7 +143,7 @@ namespace {
         }
 
         // for __has_srwlock, relaxed would have been enough, not distinguishing for consistency
-        _Wait_functions._Api_level.store(_Level, _STD memory_order_release); 
+        _Wait_functions._Api_level.store(_Level, _STD memory_order_release);
         return _Level;
     }
 
