@@ -74,8 +74,7 @@ namespace detail {
             return !(a == b);
         }
 
-        friend constexpr bool operator==(const my_iter& iter, const my_sentinel sentinel) noexcept {
-            (void) sentinel;
+        friend constexpr bool operator==(const my_iter& iter, my_sentinel) noexcept {
             return *iter == 0;
         }
 
@@ -106,8 +105,8 @@ class bad_random_engine {
     // containing only such bit patterns. Bit patterns with few 1's or few 0's are generated first, starting from all
     // 0's and all 1's.
 
-    static_assert(std::is_integral<UInt>::value, "bad_random_engine: UInt should be unsigned integeral type");
-    static_assert(std::is_unsigned<UInt>::value, "bad_random_engine: UInt should be unsigned integeral type");
+    static_assert(std::is_integral_v<UInt>, "bad_random_engine: UInt should be unsigned integral type");
+    static_assert(std::is_unsigned_v<UInt>, "bad_random_engine: UInt should be unsigned integral type");
     static_assert(Width > 0, "bad_random_engine: invalid value for Width");
     static_assert(Width <= std::numeric_limits<UInt>::digits, "bad_random_engine: invalid value for Width");
     static_assert(Dimension > 0, "bad_random_engine: invalid value for Dimension");
