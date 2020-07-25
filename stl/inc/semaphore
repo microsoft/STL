@@ -75,7 +75,8 @@ public:
             if (_Current < 0 || _Current > _Least_max_value) {
                 __std_sync_error(errc::state_not_recoverable);
             }
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
+            if (_Counter.compare_exchange_weak(
+                    _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 break;
             }
         }
@@ -108,7 +109,8 @@ public:
             if (_Current < 0 || _Current > _Least_max_value) {
                 __std_sync_error(errc::state_not_recoverable);
             }
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
+            if (_Counter.compare_exchange_weak(
+                    _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 return true;
             }
         }
@@ -140,7 +142,8 @@ public:
             if (_Current < 0 || _Current > _Least_max_value) {
                 __std_sync_error(errc::state_not_recoverable);
             }
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
+            if (_Counter.compare_exchange_weak(
+                    _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 return true;
             }
         }

@@ -90,11 +90,11 @@ void test_binary_semaphore_count(const std::chrono::milliseconds delay_duration)
     t2.join();
 }
 
-template<class Semaphore>
+template <class Semaphore>
 void test_semaphore_wait_for(const std::chrono::milliseconds delay_duration) {
     Semaphore semaphore{0};
 
-    std::thread t([&] { 
+    std::thread t([&] {
         assert(semaphore.try_acquire_for(delay_duration / 4));
         assert(!semaphore.try_acquire_for(delay_duration * 4));
     });
