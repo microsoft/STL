@@ -106,8 +106,11 @@ public:
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
-                if (!__std_atomic_wait_direct(
-                        &_Counter, &_Current, sizeof(_Current), __std_atomic_wait_get_remaining_timeout(_Deadline))) {
+                const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
+                if (_Remaining_timeout == 0) {
+                    return false;
+                }
+                if (!__std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout)) {
                     return false;
                 }
                 _Current = _Counter.load(memory_order_relaxed);
@@ -128,7 +131,7 @@ public:
         for (;;) {
             while (_Current == 0) {
                 auto _Now = _Clock::now();
-                if (_Now > _Abs_time) {
+                if (_Now >= _Abs_time) {
                     return false;
                 }
 
@@ -140,9 +143,7 @@ public:
                 } else {
                     _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
                 }
-                if (!__std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Rel_time_ms.count())) {
-                    return false;
-                }
+                __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Rel_time_ms.count());
                 _Current = _Counter.load(memory_order_relaxed);
             }
             if (_Current < 0 || _Current > _Least_max_value) {
@@ -222,10 +223,11 @@ public:
             if (_Prev != 0) {
                 __std_sync_error(errc::state_not_recoverable);
             }
-            if (!__std_atomic_wait_direct(
-                    &_Counter, &_Prev, sizeof(_Prev), __std_atomic_wait_get_remaining_timeout(_Deadline))) {
+            const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
+            if (_Remaining_timeout == 0) {
                 return false;
             }
+            __std_atomic_wait_direct(&_Counter, &_Prev, sizeof(_Prev), _Remaining_timeout);
         }
     }
 
@@ -241,7 +243,7 @@ public:
             }
 
             auto _Now = _Clock::now();
-            if (_Now > _Abs_time) {
+            if (_Now >= _Abs_time) {
                 return false;
             }
 
@@ -253,9 +255,7 @@ public:
             } else {
                 _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
             }
-            if (!__std_atomic_wait_direct(&_Counter, &_Prev, sizeof(_Prev), _Rel_time_ms.count())) {
-                return false;
-            }
+            __std_atomic_wait_direct(&_Counter, &_Prev, sizeof(_Prev), _Rel_time_ms.count());
         }
     }
 
