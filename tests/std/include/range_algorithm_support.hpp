@@ -1104,6 +1104,11 @@ constexpr void test_in_fwd() {
 }
 
 template <class Instantiator, class Element1, class Element2>
+constexpr void test_in_random() {
+    with_input_ranges<with_random_ranges<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
 constexpr void test_fwd_fwd() {
     with_forward_ranges<with_forward_ranges<Instantiator, Element2>, Element1>::call();
 }
