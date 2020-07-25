@@ -111,9 +111,11 @@ template <class Semaphore>
 void test_semaphore_wait_until(const std::chrono::milliseconds delay_duration) {
     Semaphore semaphore{0};
 
+    ;
+
     std::thread t([&] {
-        assert(semaphore.try_acquire_for(delay_duration / 4));
-        assert(!semaphore.try_acquire_for(delay_duration * 4));
+        assert(semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration / 4));
+        assert(!semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration * 4));
     });
 
     semaphore.release();
