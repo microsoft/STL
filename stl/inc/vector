@@ -2835,6 +2835,81 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 }
 #endif // !_HAS_CXX20
 
+#if _HAS_IF_CONSTEXPR
+// Optimize vector<bool> lexicographical comparisons.
+
+// There are several endianness/ordering issues to consider here.
+// * Machine endianness is currently irrelevant. (That affects how an unsigned int is stored
+//   as a sequence of bytes. While all of our supported architectures are little-endian,
+//   that's irrelevant as long as we avoid reinterpreting unsigned int as a sequence of bytes.)
+// * Appending bits to vector<bool> eventually appends words to its underlying storage.
+//   For example, vb[10] is stored within vb._Myvec[0], while vb[100] is stored within vb._Myvec[3].
+//   This allows us to translate lexicographical comparisons from theoretical bits to physical words.
+// * Unsigned integers are written and compared as big-endian (most significant bit first).
+//   For example, 0x10u > 0x07u.
+// * However, vector<bool> packs bits into words as little-endian (least significant bit first).
+//   For example, vector<bool>{false, true, true, true} stores 0b0000'0000'0000'0000'0000'0000'0000'1110u.
+// Therefore, we need to bit-reverse the physical words.
+// Performance note: There may be faster techniques, such as SIMD intrinsics.
+
+struct _Reversed_byte_table {
+    unsigned char _Table[256]{};
+
+    constexpr _Reversed_byte_table() noexcept {
+        for (unsigned int _Byte = 0; _Byte < 256; ++_Byte) {
+            for (int _Bit = 0; _Bit < 8; ++_Bit) {
+                if (_Byte & (1u << _Bit)) {
+                    _Table[_Byte] |= (1u << (7 - _Bit));
+                }
+            }
+        }
+    }
+
+    _Reversed_byte_table(const _Reversed_byte_table&) = delete;
+    _Reversed_byte_table& operator=(const _Reversed_byte_table&) = delete;
+};
+
+template <class _Ret>
+struct _Vbase_compare_three_way {
+    _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Vbase, unsigned int>); // 32-bit words
+
+    _NODISCARD static constexpr _Vbase _Bit_reverse(const _Vbase _Word) noexcept {
+        const auto _High   = static_cast<unsigned char>(_Word >> 24);
+        const auto _Mid_hi = static_cast<unsigned char>(_Word >> 16);
+        const auto _Mid_lo = static_cast<unsigned char>(_Word >> 8);
+        const auto _Low    = static_cast<unsigned char>(_Word);
+
+        constexpr _Reversed_byte_table _Reversed_bytes;
+
+        const _Vbase _New_low    = _Reversed_bytes._Table[_High];
+        const _Vbase _New_mid_lo = _Reversed_bytes._Table[_Mid_hi];
+        const _Vbase _New_mid_hi = _Reversed_bytes._Table[_Mid_lo];
+        const _Vbase _New_high   = _Reversed_bytes._Table[_Low];
+
+        return (_New_high << 24) | (_New_mid_hi << 16) | (_New_mid_lo << 8) | _New_low;
+    }
+
+    _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
+        if (_Left == _Right) { // don't need to bit-reverse
+#ifdef __cpp_lib_concepts
+            return strong_ordering::equal;
+#else // __cpp_lib_concepts
+            return 0;
+#endif // __cpp_lib_concepts
+        }
+
+        const _Vbase _Left_reversed  = _Bit_reverse(_Left);
+        const _Vbase _Right_reversed = _Bit_reverse(_Right);
+
+#ifdef __cpp_lib_concepts
+        return _Left_reversed < _Right_reversed ? strong_ordering::less : strong_ordering::greater;
+#else // __cpp_lib_concepts
+        return _Left_reversed < _Right_reversed ? -1 : 1;
+#endif // __cpp_lib_concepts
+    }
+};
+#endif // _HAS_IF_CONSTEXPR
+
 #ifdef __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(
@@ -2845,8 +2920,9 @@ _NODISCARD _Synth_three_way_result<_Ty> operator<=>(
         const auto _Left_words    = _Left._Myvec._Unchecked_begin();
         const auto _Right_words   = _Right._Myvec._Unchecked_begin();
 
-        const strong_ordering _Word_comparison = _STD lexicographical_compare_three_way( // don't need _Synth_three_way
-            _Left_words, _Left_words + _Min_word_size, _Right_words, _Right_words + _Min_word_size);
+        using _Comp                            = _Vbase_compare_three_way<strong_ordering>;
+        const strong_ordering _Word_comparison = _STD lexicographical_compare_three_way(
+            _Left_words, _Left_words + _Min_word_size, _Right_words, _Right_words + _Min_word_size, _Comp{});
 
         if (_Word_comparison != 0) {
             return _Word_comparison;
@@ -2870,9 +2946,12 @@ _NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _A
         const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
 
         for (; _First != _Last; ++_First, (void) ++_Other) {
-            if (*_First < *_Other) {
+            using _Comp = _Vbase_compare_three_way<int>;
+            const auto _Result = _Comp{}(*_First, *_Other);
+
+            if (_Result < 0) {
                 return true;
-            } else if (*_First > *_Other) {
+            } else if (_Result > 0) {
                 return false;
             }
         }
