@@ -21,6 +21,13 @@
 #include <system_error>
 #include <xerrc.h>
 
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("max")
+#undef max
+
 [[noreturn]] inline void __std_sync_error(_STD errc code) {
     // TRANSITION, atomic wait satellite merge: move to satellite
     _STD _Throw_system_error(code);
@@ -30,9 +37,7 @@ _STD_BEGIN
 
 class latch {
 public:
-    constexpr explicit latch(const ptrdiff_t expected) noexcept /* strengthened */
-        : _Counter{expected} {}
-
+    constexpr explicit latch(const ptrdiff_t expected) noexcept /* strengthened */ : _Counter{expected} {}
     ~latch() = default;
 
     latch(const latch&) = delete;
@@ -87,6 +92,10 @@ private:
 
 _STD_END
 
+#pragma pop_macro("max")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
 #endif // ^^^ _HAS_CXX20 ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
