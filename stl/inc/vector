@@ -2854,15 +2854,15 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 template <class _Ret>
 struct _Vbase_compare_three_way {
     _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
-        if (_Left == _Right) {
+        const _Vbase _Differing_bits = _Left ^ _Right;
+
+        if (_Differing_bits == 0) { // improves _Countr_zero codegen below
 #ifdef __cpp_lib_concepts
             return strong_ordering::equal;
 #else // __cpp_lib_concepts
             return 0;
 #endif // __cpp_lib_concepts
         }
-
-        const _Vbase _Differing_bits = _Left ^ _Right;
 
         // N4861 [bit.count]/6: "Returns: The number of consecutive 0 bits in the value of x,
         // starting from the least significant bit."
@@ -2871,10 +2871,11 @@ struct _Vbase_compare_three_way {
 
         const _Vbase _Mask = _Vbase{1} << _Bit_index;
 
+        // Instead of comparing (_Left & _Mask) < (_Right & _Mask), we know that exactly one side will be zero.
 #ifdef __cpp_lib_concepts
-        return (_Left & _Mask) < (_Right & _Mask) ? strong_ordering::less : strong_ordering::greater;
+        return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
 #else // __cpp_lib_concepts
-        return (_Left & _Mask) < (_Right & _Mask) ? -1 : 1;
+        return (_Left & _Mask) == 0 ? -1 : 1;
 #endif // __cpp_lib_concepts
     }
 };
