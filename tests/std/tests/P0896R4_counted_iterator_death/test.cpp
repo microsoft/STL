@@ -96,11 +96,6 @@ void test_case_operator_increment_after_end_input_iterator() {
     cit++; // cannot increment value-initialized counted_iterator
 }
 
-void test_case_operator_predecrement_value_initialized_iterator() {
-    counted_iterator<int*> cit{};
-    --cit; // OK
-}
-
 void test_case_operator_predecrement_before_begin() {
     counted_iterator<vit> cit{begin(checkedArray), 5};
     --cit; // cannot decrement counted_iterator before begin
@@ -121,11 +116,6 @@ void test_case_operator_advance_value_initialized_iterator() {
     cit += 1; // cannot seek value-initialized counted_iterator
 }
 
-void test_case_operator_advance_value_initialized_iterator_zero() {
-    counted_iterator<int*> cit{};
-    cit += 0; // OK
-}
-
 void test_case_operator_advance_after_end() {
     counted_iterator<int*> cit{globalArray, 2};
     cit += 3; // cannot seek counted_iterator after end
@@ -134,11 +124,6 @@ void test_case_operator_advance_after_end() {
 void test_case_operator_advance_copy_value_initialized_iterator() {
     counted_iterator<int*> cit{};
     auto cit2 = cit + 1; // cannot seek value-initialized counted_iterator
-}
-
-void test_case_operator_advance_copy_value_initialized_iterator_zero() {
-    counted_iterator<int*> cit{};
-    auto cit2 = cit + 0; // OK
 }
 
 void test_case_operator_advance_copy_after_end() {
@@ -151,24 +136,9 @@ void test_case_operator_advance_copy_2_value_initialized_iterator() {
     auto cit2 = 1 + cit; // cannot seek value-initialized counted_iterator
 }
 
-void test_case_operator_advance_copy_2_value_initialized_iterator_zero() {
-    counted_iterator<int*> cit{};
-    auto cit2 = 0 + cit; // OK
-}
-
 void test_case_operator_advance_copy_2_after_end() {
     counted_iterator<int*> cit{globalArray, 2};
     auto cit2 = 3 + cit; // cannot seek counted_iterator after end
-}
-
-void test_case_operator_retreat_value_initialized_iterator() {
-    counted_iterator<int*> cit{};
-    cit -= 1; // OK
-}
-
-void test_case_operator_retreat_value_initialized_iterator_zero() {
-    counted_iterator<int*> cit{};
-    cit -= 0; // OK
 }
 
 void test_case_operator_retreat_before_begin() {
@@ -184,11 +154,6 @@ void test_case_operator_retreat_after_end() {
 void test_case_operator_retreat_copy_value_initialized_iterator() {
     counted_iterator<int*> cit{};
     auto cit2 = cit - 1; // OK
-}
-
-void test_case_operator_retreat_copy_value_initialized_iterator_zero() {
-    counted_iterator<int*> cit{};
-    auto cit2 = cit - 0; // OK
 }
 
 void test_case_operator_retreat_copy_before_begin() {
@@ -268,25 +233,18 @@ int main(int argc, char* argv[]) {
         test_case_operator_increment_value_initialized_input_iterator,
         test_case_operator_increment_after_end,
         test_case_operator_increment_after_end_input_iterator,
-        test_case_operator_predecrement_value_initialized_iterator,
         test_case_operator_predecrement_before_begin,
         test_case_operator_decrement_value_initialized_iterator,
         test_case_operator_decrement_before_begin,
         test_case_operator_advance_value_initialized_iterator,
-        test_case_operator_advance_value_initialized_iterator_zero,
         test_case_operator_advance_after_end,
         test_case_operator_advance_copy_value_initialized_iterator,
-        test_case_operator_advance_copy_value_initialized_iterator_zero,
         test_case_operator_advance_copy_after_end,
         test_case_operator_advance_copy_2_value_initialized_iterator,
-        test_case_operator_advance_copy_2_value_initialized_iterator_zero,
         test_case_operator_advance_copy_2_after_end,
-        test_case_operator_retreat_value_initialized_iterator,
-        test_case_operator_retreat_value_initialized_iterator_zero,
         test_case_operator_retreat_before_begin,
         test_case_operator_retreat_after_end,
         test_case_operator_retreat_copy_value_initialized_iterator,
-        test_case_operator_retreat_copy_value_initialized_iterator_zero,
         test_case_operator_retreat_copy_before_begin,
         test_case_operator_retreat_copy_after_end,
         test_case_operator_subtract_incompatible_different_data,
