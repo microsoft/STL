@@ -609,8 +609,8 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         char _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Might_have_non_value_bits<_Ty>) {
-            _Storage_for<_Ty> _Mask{_Form_mask};
+        if constexpr (_Might_have_non_value_bits<_TVal>) {
+            _Storage_for<_TVal> _Mask{_Form_mask};
             const char _Mask_val = _Atomic_reinterpret_as<char>(_Mask._Ref());
 
             for (;;) {
@@ -716,7 +716,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         short _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_Ty>) {
-            _Storage_for<_Ty> _Mask{_Form_mask};
+            _Storage_for<_TVal> _Mask{_Form_mask};
             const short _Mask_val = _Atomic_reinterpret_as<short>(_Mask._Ref());
 
             for (;;) {
@@ -727,7 +727,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
                 }
 
                 if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
-                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
+                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_TVal));
                     return false;
                 }
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
@@ -819,8 +819,8 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Might_have_non_value_bits<_Ty>) {
-            _Storage_for<_Ty> _Mask{_Form_mask};
+        if constexpr (_Might_have_non_value_bits<_TVal>) {
+            _Storage_for<_TVal> _Mask{_Form_mask};
             const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
 
             for (;;) {
@@ -831,7 +831,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
                 }
 
                 if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
-                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
+                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_TVal));
                     return false;
                 }
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
@@ -951,8 +951,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         long long _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-        if constexpr (_Might_have_non_value_bits<_Ty>) {
-            _Storage_for<_Ty> _Mask{_Form_mask};
+        if constexpr (_Might_have_non_value_bits<_TVal>) {
+            _Storage_for<_TVal> _Mask{_Form_mask};
             const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
 
             for (;;) {
@@ -964,7 +964,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
                 }
 
                 if ((_Prev_bytes ^ _Expected_bytes) & _Mask_val) {
-                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
+                    _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_TVal));
                     return false;
                 }
                 _Expected_bytes = (_Expected_bytes & _Mask_val) | (_Prev_bytes & ~_Mask_val);
