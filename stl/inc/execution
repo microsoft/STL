@@ -719,7 +719,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
 
     _Work_stealing_team(size_t _Threads, _Diff _Total_work)
         : _Queues(_Threads), _Queues_used(0), _Remaining_work(_Total_work), _Available_mutex(),
-          _Available_queues(greater<>{}, _Get_queues(_Threads)) {} // register work with the thread pool
+          _Available_queues(greater{}, _Get_queues(_Threads)) {} // register work with the thread pool
 
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
@@ -3590,20 +3590,6 @@ _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 }
 
 // PARALLEL FUNCTION TEMPLATE set_intersection
-template <class _Ty>
-struct _Storage_for {
-    // uninitialized space to store a _Ty
-    alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
-
-    _Storage_for()                    = default;
-    _Storage_for(const _Storage_for&) = delete;
-    _Storage_for& operator=(const _Storage_for&) = delete;
-
-    _Ty& _Ref() {
-        return reinterpret_cast<_Ty&>(_Storage);
-    }
-};
-
 inline constexpr unsigned char _Local_available = 1;
 inline constexpr unsigned char _Sum_available   = 2;
 
