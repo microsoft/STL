@@ -144,16 +144,17 @@ void ordering_test_cases() {
         std::vector<int> a2(3, 100);
         std::vector<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
-
-        std::vector<bool> c1(3, 0);
-        std::vector<bool> c2(3, 0);
-        std::vector<bool> d1(2, 1);
-        ordered_containers_test(c1, c2, d1);
     }
     { // vector SynthOrdered
         std::vector<SynthOrdered> a = {10, 20, 30};
         std::vector<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+    }
+    { // vector<bool>
+        std::vector<bool> c1 = {false, true, false};
+        std::vector<bool> c2 = {false, true, false};
+        std::vector<bool> d1 = {true, false};
+        ordered_containers_test(c1, c2, d1);
     }
     { // forward_list
         std::forward_list<int> a1(3, 100);
