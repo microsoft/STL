@@ -49,6 +49,9 @@ public:
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(const ptrdiff_t _Update = 1) {
+        if (_Update == 0) {
+            return;
+        }
         if (_Update < 0) {
             __std_sync_error(errc::invalid_argument);
         }
@@ -151,6 +154,110 @@ public:
 
 private:
     atomic<ptrdiff_t> _Counter;
+};
+
+template <>
+class counting_semaphore<1> {
+public:
+    static constexpr ptrdiff_t max() noexcept {
+        return 1;
+    }
+
+    constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
+        : _Counter(static_cast<int8_t>(_Desired != 0)) {}
+    ~counting_semaphore() = default;
+
+    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore& operator=(const counting_semaphore&) = delete;
+
+    void release(const ptrdiff_t _Update = 1) {
+        if (_Update == 0) {
+            return;
+        }
+        if (_Update != 1) {
+            __std_sync_error(errc::invalid_argument);
+        }
+
+        _Counter.store(1, memory_order_release);
+        _Counter.notify_one();
+    }
+
+    void acquire() {
+        for (;;) {
+            int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+            if (_Prev == 1) {
+                break;
+            }
+            if (_Prev != 0) {
+                __std_sync_error(errc::state_not_recoverable);
+            }
+            _Counter.wait(0, std::memory_order_relaxed);
+        }
+    }
+
+    bool try_acquire() noexcept {
+        int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+        switch (_Prev) {
+        case 0:
+            return false;
+        case 1:
+            return true;
+        default:
+            __std_sync_error(errc::state_not_recoverable);
+        }
+    }
+
+    template <class _Rep, class _Period>
+    bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+        auto _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
+        auto _Deadline    = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
+        for (;;) {
+            int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+            if (_Prev == 1) {
+                return true;
+            }
+            if (_Prev != 0) {
+                __std_sync_error(errc::state_not_recoverable);
+            }
+            if (!__std_atomic_wait_direct(
+                    &_Counter, &_Prev, sizeof(_Prev), __std_atomic_wait_get_remaining_timeout(_Deadline))) {
+                return false;
+            }
+        }
+    }
+
+    template <class _Clock, class _Duration>
+    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        for (;;) {
+            int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+            if (_Prev == 1) {
+                return true;
+            }
+            if (_Prev != 0) {
+                __std_sync_error(errc::state_not_recoverable);
+            }
+
+            auto _Now = _Clock::now();
+            if (_Now > _Abs_time) {
+                return false;
+            }
+
+            auto _Rel_time = _Abs_time - _Now;
+            chrono::duration<unsigned long, milli> _Rel_time_ms;
+            static constexpr auto _Ten_days = chrono::hours(24 * 10);
+            if (_Rel_time >= _Ten_days) {
+                _Rel_time_ms = _Ten_days;
+            } else {
+                _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
+            }
+            if (!__std_atomic_wait_direct(&_Counter, &_Prev, sizeof(_Prev), _Rel_time_ms.count())) {
+                return false;
+            }
+        }
+    }
+
+private:
+    atomic<int8_t> _Counter;
 };
 
 using binary_semaphore = counting_semaphore<1>;
