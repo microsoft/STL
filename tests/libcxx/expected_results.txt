@@ -482,13 +482,6 @@ std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
 std/thread/thread.barrier/completion.pass.cpp FAIL
 std/thread/thread.barrier/max.pass.cpp FAIL
 std/thread/thread.barrier/version.pass.cpp FAIL
-std/thread/thread.semaphore/acquire.pass.cpp FAIL
-std/thread/thread.semaphore/binary.pass.cpp FAIL
-std/thread/thread.semaphore/max.pass.cpp FAIL
-std/thread/thread.semaphore/release.pass.cpp FAIL
-std/thread/thread.semaphore/timed.pass.cpp FAIL
-std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
-std/thread/thread.semaphore/version.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -650,6 +643,11 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp
 # *** LIKELY BOGUS TESTS ***
 # "error: _LIBCPP_VERSION not defined"
 std/thread/thread.latch/version.pass.cpp FAIL
+std/thread/thread.semaphore/version.pass.cpp FAIL
+
+# "error C3861: 'assert': identifier not found"
+std/thread/thread.semaphore/timed.pass.cpp FAIL
+std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
 
 # Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
