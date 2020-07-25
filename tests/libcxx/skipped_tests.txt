@@ -779,6 +779,15 @@ iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: std::abs(skew - x_skew) < 0.01
+# Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
+
+# Assertion failed: std::abs(f(u[i], a, m, bk, c) - double(i)/N) < .001
+# Random number generation test with too strict pass criteria (test6 failure probability > 0.2)
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -816,9 +825,6 @@ numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.weibull\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.uni\rand.dist.uni.real\param_ctor.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Various assertions.
