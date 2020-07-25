@@ -4180,7 +4180,316 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // 
     return move_iterator<_Iter>(_STD move(_It));
 }
 
+// FUNCTION TEMPLATE _Construct_in_place
+template <class _Ty, class... _Types>
+void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
+    ::new (const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Obj))))
+        _Ty(_STD forward<_Types>(_Args)...);
+}
+
+// STRUCT _Nontrivial_dummy_type
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+
 #ifdef __cpp_lib_concepts
+// CLASS common_iterator
+// clang-format off
+template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
+    requires (!same_as<_Iter, _Se> && copyable<_Iter>)
+class common_iterator {
+    // clang-format on
+    class _Proxy {
+        iter_value_t<_Iter> _Keep;
+
+    public:
+        _Proxy(iter_reference_t<_Iter>&& _Right) : _Keep(_STD move(_Right)) {}
+
+        const iter_value_t<_Iter>* operator->() const {
+            return _STD addressof(_Keep);
+        }
+    };
+
+public:
+    constexpr common_iterator() noexcept(is_nothrow_constructible_v<_Iter>) // strengthened
+        : _Myiter{}, _Mystate{_State::_Holds_iter} {};
+
+    constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
+        : _Myiter{_STD move(_Right)}, _Mystate{_State::_Holds_iter} {}
+
+    constexpr common_iterator(_Se _Right) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
+        : _Mysentinel{_STD move(_Right)}, _Mystate{_State::_Holds_sentinel} {}
+
+    constexpr common_iterator(const common_iterator& _Right) noexcept(
+        is_nothrow_copy_constructible_v<const _Iter&>&& is_nothrow_copy_constructible_v<const _Se&>) // strengthened
+        : _Mydummy{}, _Mystate{_Right._Mystate} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mystate != _State::_Nonthing, "common_iterator can only be assigned if it holds a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Mystate == _State::_Holds_iter) {
+            _Construct_in_place(_Myiter, _Right._Myiter);
+        } else if (_Mystate == _State::_Holds_sentinel) {
+            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+        }
+    }
+
+    // clang-format off
+    template <class _Iter2, class _Se2>
+        requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
+    constexpr common_iterator(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
+        is_nothrow_constructible_v<_Iter, const _Iter2&>&& is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+        : _Mydummy{}, _Mystate{_Right._Mystate} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mystate != _State::_Nonthing, "common_iterator can only be assigned if it holds a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Mystate == _State::_Holds_iter) {
+            _Construct_in_place(_Myiter, _Right._Myiter);
+        } else if (_Mystate == _State::_Holds_sentinel) {
+            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+        }
+    }
+    // clang-format on
+
+    common_iterator& operator=(const common_iterator& _Right) noexcept(
+        is_nothrow_copy_assignable_v<const _Iter&>&& is_nothrow_copy_assignable_v<const _Se&>&&
+            is_nothrow_copy_constructible_v<const _Iter&>&& is_nothrow_copy_constructible_v<const _Se&>) // strengthened
+    {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right._Mystate != _State::_Nonthing, "common_iterator can only be assigned if it holds a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
+            _Construct_in_place(_Myiter, _Right._Myiter);
+        } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
+            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+        } else if (_Right._Mystate == _State::_Holds_iter) {
+            if (_Mystate == _State::_Holds_sentinel) {
+                _Mysentinel.~_Iter();
+                _Mystate = _State::_Nothing;
+            }
+            _Construct_in_place(_Myiter, _Right._Myiter);
+            _Mystate = _State::_Holds_iter;
+        } else if (_Right._Mystate == _State::_Holds_sentinel) {
+            if (_Mystate == _State::_Holds_iter) {
+                _Myiter.~_Se();
+                _Mystate = _State::_Nothing;
+            }
+            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+            _Mystate = _State::_Holds_sentinel;
+        }
+        return *this;
+    }
+
+    // clang-format off
+    template <class _Iter2, class _Se2>
+        requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
+              && assignable_from<_Iter&, const _Iter2&> && assignable_from<_Se&, const _Se2&>
+    common_iterator& operator=(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
+        is_nothrow_constructible_v<_Iter, const _Iter2&>&& is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+        {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right._Mystate != _State::_Nonthing, "common_iterator can only be assigned if it holds a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
+            _Construct_in_place(_Myiter, _Right._Myiter);
+        } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
+            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+        } else if (_Right._Mystate == _State::_Holds_iter) {
+            if (_Mystate == _State::_Holds_sentinel) {
+                _Mysentinel.~_Iter();
+                _Mystate = _State::_Nothing;
+            }
+            _Construct_in_place(_Myiter, _Right._Myiter);
+            _Mystate = _State::_Holds_iter;
+        } else if (_Right._Mystate == _State::_Holds_sentinel) {
+            if (_Mystate == _State::_Holds_iter) {
+                _Myiter.~_Se();
+                _Mystate = _State::_Nothing;
+            }
+            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+            _Mystate = _State::_Holds_sentinel;
+        }
+        return *this;
+    }
+    // clang-format on
+
+    ~common_iterator() noexcept(is_nothrow_destructible_v<_Iter>&& is_nothrow_destructible_v<_Se>) // strengthened
+    {
+        if (_Mystate == _State::_Holds_iter) {
+            _Myiter.~_Iter();
+        } else if (_Mystate == _State::_Holds_sentinel) {
+            _Mysentinel.~_Se();
+        }
+    }
+
+    _NODISCARD decltype(auto) operator*() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Mystate == _State::_Holds_iter, "common_iterator can only be dereferenced if it holds an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return *_Myiter;
+    }
+
+    // clang-format off
+    _NODISCARD decltype(auto) operator*() const
+        requires _Dereferenceable<const _Iter>
+    {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Mystate == _State::_Holds_iter, "common_iterator can only be dereferenced if it holds an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return *_Myiter;
+    }
+
+    _NODISCARD decltype(auto) operator->() const
+        requires indirectly_readable<const _Iter> && (_Has_op_arrow<_Iter> || is_reference_v<iter_reference_t<_Iter>>
+              || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>)
+    {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Mystate == _State::_Holds_iter, "common_iterator can only be dereferenced if it holds an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (is_pointer_v<_Iter> || _Has_op_arrow<_Iter>) {
+            return _Myiter;
+        } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
+            auto&& _Tmp = *_Myiter;
+            return _STD addressof(_Tmp);
+        } else {
+            return _Proxy{*_Myiter};
+        }
+    }
+    // clang-format on
+
+    common_iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Mystate == _State::_Holds_iter, "common_iterator can only be incremented if it holds an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        ++_Myiter;
+        return *this;
+    }
+
+    decltype(auto) operator++(int) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Mystate == _State::_Holds_iter, "common_iterator can only be incremented if it holds an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (forward_iterator<_Iter>) {
+            common_iterator _Tmp = *this;
+            ++_Myiter;
+            return _Tmp;
+        } else {
+            return _Myiter++;
+        }
+    }
+
+    // clang-format off
+    template <class _Iter2, sentinel_for<_Iter> _Se2>
+        requires sentinel_for<_Se, _Iter2>
+    _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Left._Mystate != _State::_Nonthing && _Right._Mystate != _State::_Nonthing,
+            "common_iterators can only becompared if both hold a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
+            return true;
+        } else if (_Left._Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
+            return true;
+        } else if (_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_sentinel) {
+            return _Left._Myiter == _Right._Mysentinel;
+        } else {
+            return _Left._Mysentinel == _Right._Myiter;
+        }
+    }
+
+    template <class _Iter2, sentinel_for<_Iter> _Se2>
+        requires sentinel_for<_Se, _Iter2> && equality_comparable_with<_Iter, _Iter2>
+    _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Left._Mystate != _State::_Nonthing && _Right._Mystate != _State::_Nonthing,
+            "common_iterators can only becompared if both hold a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
+            return _Left._Myiter == _Right._Myiter;
+        } else if (_Left._Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
+            return true;
+        } else if (_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_sentinel) {
+            return _Left._Myiter == _Right._Mysentinel;
+        } else {
+            return _Left._Mysentinel == _Right._Myiter;
+        }
+    }
+
+    template <sized_sentinel_for<_Iter> _Iter2, sized_sentinel_for<_Iter> _Se2>
+        requires sized_sentinel_for<_Se, _Iter2>
+    _NODISCARD friend iter_difference_t<_Iter2> operator-(
+        const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Left._Mystate != _State::_Nonthing && _Right._Mystate != _State::_Nonthing,
+            "Cannot take difference of valueless common_iterators");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
+            return _Left._Myiter - _Right._Myiter;
+        } else if (_Left._Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
+            return 0;
+        } else if (_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_sentinel) {
+            return _Left._Myiter - _Right._Mysentinel;
+        } else {
+            return _Left._Mysentinel - _Right._Myiter;
+        }
+    }
+
+    _NODISCARD friend iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
+        noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
+        requires input_iterator<_Iter>
+    {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Right._Mystate == _State::_Holds_iter, "Can only iter_move from common_iterator if it holds an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _RANGES iter_move(_Right._Myiter);
+    }
+    // clang-format on
+
+    template <indirectly_swappable<_Iter> _Iter2, class _Se2>
+    friend void iter_swap(const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) noexcept(
+        noexcept(_RANGES iter_swap(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>()))) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Left._Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter,
+            "Can only iter_swap from common_iterators if both hold an interator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _RANGES iter_swap(_Left._Myiter, _Right._Myiter);
+    }
+
+private:
+    enum class _State : unsigned char { _Nonthing, _Holds_iter, _Holds_sentinel };
+
+    union {
+        _Iter _Myiter;
+        _Se _Mysentinel;
+        _Nontrivial_dummy_type _Mydummy;
+    };
+    _State _Mystate;
+};
+
+template <class _Iter, class _Se>
+struct incrementable_traits<common_iterator<_Iter, _Se>> {
+    using difference_type = iter_difference_t<_Iter>;
+};
+
+template <input_iterator _Iter, class _Se>
+struct iterator_traits<common_iterator<_Iter, _Se>> {
+    using iterator_concept = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
+    using iterator_category =
+        conditional_t<derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>;
+    using value_type      = iter_value_t<_Iter>;
+    using difference_type = iter_difference_t<_Iter>;
+    using pointer         = conditional_t<_Has_op_arrow<_Iter>, decltype(_STD declval<_Iter&>().operator->()), void>;
+    using reference       = iter_reference_t<_Iter>;
+};
+
 // STRUCT default_sentinel_t
 struct default_sentinel_t {};
 
