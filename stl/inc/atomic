@@ -1065,6 +1065,41 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
         _Int128 _Expected_temp{};
         _CSTD memcpy(&_Expected_temp, _STD addressof(_Expected), sizeof(_TVal));
         unsigned char _Result;
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+        if constexpr (_Might_have_non_value_bits<_TVal>) {
+            _Int128 _Expected_originally{};
+            _CSTD memcpy(&_Expected_originally, _STD addressof(_Expected), sizeof(_TVal));
+
+            _Storage_for<_TVal> _Mask{_Form_mask};
+            _Int128 _Mask_val{};
+            _CSTD memcpy(&_Mask_val, _Mask._Ptr(), sizeof(_TVal));
+            for (;;) {
+#ifdef _M_ARM64
+                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
+                    _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low,
+                    &_Expected_temp._Low);
+#else // ^^^ _M_ARM64 / _M_X64 vvv
+                (void) _Order;
+                _Result = _STD_COMPARE_EXCHANGE_128(&reinterpret_cast<long long&>(_Storage), _Desired_bytes._High,
+                    _Desired_bytes._Low, &_Expected_temp._Low);
+#endif // _M_ARM64
+                if (_Result) {
+                    return true;
+                }
+
+                if (((_Expected_temp._Low ^ _Expected_originally._Low) & _Mask_val._Low) != 0
+                    || ((_Expected_temp._High ^ _Expected_originally._High) & _Mask_val._High) != 0) {
+                    _CSTD memcpy(_STD addressof(_Expected), &_Expected_temp, sizeof(_TVal));
+                    return false;
+                }
+
+                _Expected_temp._Low =
+                    (_Expected_originally._Low & _Mask_val._Low) | (_Expected_temp._Low & ~_Mask_val._Low);
+                _Expected_temp._High =
+                    (_Expected_originally._High & _Mask_val._High) | (_Expected_temp._High & ~_Mask_val._High);
+            }
+        }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 #ifdef _M_ARM64
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
             _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
