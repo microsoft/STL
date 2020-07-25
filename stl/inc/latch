@@ -18,6 +18,7 @@
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <atomic>
+#include <limits.h>
 #include <xerrc.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -52,7 +53,7 @@ public:
     }
 
     static constexpr ptrdiff_t max() noexcept {
-        return (numeric_limits<ptrdiff_t>::max)();
+        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 
     bool try_wait() const noexcept {

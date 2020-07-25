@@ -19,6 +19,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <limits.h>
 #include <xerrc.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -35,7 +36,9 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-template <ptrdiff_t _Least_max_value = numeric_limits<ptrdiff_t>::max()>
+inline constexpr ptrdiff_t _Max_semaphore_value = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+
+template <ptrdiff_t _Least_max_value = _Max_semaphore_value>
 class counting_semaphore {
 public:
     static constexpr ptrdiff_t max() noexcept {
