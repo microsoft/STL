@@ -20,10 +20,45 @@ namespace {
     constexpr size_t _Wait_table_index_mask = _Wait_table_size - 1;
 
     struct _Wait_context {
-        const void* _Storage; // Initialize to pointer to wait on
+        const void* _Storage; // Pointer to wait on
         _Wait_context* _Next;
         _Wait_context* _Prev;
         CONDITION_VARIABLE _Condition;
+    };
+
+    struct _Guarded_wait_context : _Wait_context {
+        _Guarded_wait_context(const void* _Storage_, _Wait_context* const _Head) noexcept
+            : _Wait_context{_Storage_, _Head, _Head->_Prev, CONDITION_VARIABLE_INIT} {
+            _Prev->_Next = this;
+            _Next->_Prev = this;
+        }
+
+        ~_Guarded_wait_context() {
+            const auto _Next_local = _Next;
+            const auto _Prev_local = _Prev;
+            _Next->_Prev           = _Prev_local;
+            _Prev->_Next           = _Next_local;
+        }
+
+        _Guarded_wait_context(const _Guarded_wait_context&) = delete;
+        _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
+    };
+
+    class _SrwLock_guard {
+    public:
+        explicit _SrwLock_guard(SRWLOCK& _Locked_) noexcept : _Locked(&_Locked_) {
+            AcquireSRWLockExclusive(_Locked);
+        }
+
+        ~_SrwLock_guard() {
+            ReleaseSRWLockExclusive(_Locked);
+        }
+
+        _SrwLock_guard(const _SrwLock_guard&) = delete;
+        _SrwLock_guard& operator=(const _SrwLock_guard&) = delete;
+
+    private:
+        SRWLOCK* _Locked;
     };
 
 
@@ -48,7 +83,7 @@ namespace {
     void _Assume_timeout() noexcept {
 #ifdef _DEBUG
         if (GetLastError() != ERROR_TIMEOUT) {
-            abort(); // we are in noexcept, don't throw
+            _CSTD abort();
         }
 #endif // _DEBUG
     }
@@ -89,23 +124,28 @@ namespace {
             }
         }
 
-        HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
-        const auto _Wait_on_address =
-            reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
-        const auto _Wake_by_address_single =
-            reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
-        const auto _Wake_by_address_all =
-            reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
-        if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
-            _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
-            _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
-            _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
-            _Wait_functions._Api_level.store(__std_atomic_api_level::__has_wait_on_address, _STD memory_order_release);
-            return __std_atomic_api_level::__has_wait_on_address;
-        } else {
-            _Wait_functions._Api_level.store(__std_atomic_api_level::__has_srwlock, _STD memory_order_release);
-            return __std_atomic_api_level::__has_srwlock;
+        _Level = __std_atomic_api_level::__has_srwlock;
+
+        const HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
+        if (_Sync_module != nullptr) {
+            const auto _Wait_on_address =
+                reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
+            const auto _Wake_by_address_single =
+                reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
+            const auto _Wake_by_address_all =
+                reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
+
+            if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
+                _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
+                _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
+                _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
+                _Level = __std_atomic_api_level::__has_wait_on_address;
+            }
         }
+
+        // for __has_srwlock, relaxed would have been enough, not distinguishing for consistency
+        _Wait_functions._Api_level.store(_Level, _STD memory_order_release);
+        return _Level;
     }
 
     [[nodiscard]] __std_atomic_api_level _Acquire_wait_functions() noexcept {
@@ -137,7 +177,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-bool __stdcall __std_atomic_wait_direct(
+int __stdcall __std_atomic_wait_direct(
     const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
@@ -145,13 +185,13 @@ bool __stdcall __std_atomic_wait_direct(
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
-    if (!__crtWaitOnAddress(
-            const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout)) {
-        _Assume_timeout();
-        return false;
-    }
+    const auto _Result = __crtWaitOnAddress(
+        const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
 
-    return true;
+    if (!_Result) {
+        _Assume_timeout();
+    }
+    return _Result;
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
@@ -178,69 +218,46 @@ void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexce
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    AcquireSRWLockExclusive(&_Entry._Lock);
+    _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
-            WakeConditionVariable(&_Context->_Condition);
-            break;
-        }
-    }
-    ReleaseSRWLockExclusive(&_Entry._Lock);
-}
-
-void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
-    auto& _Entry = _Atomic_wait_table_entry(_Storage);
-    AcquireSRWLockExclusive(&_Entry._Lock);
-    _Wait_context* _Context = _Entry._Wait_list_head._Next;
-    for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
-        if (_Context->_Storage == _Storage) {
+            // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
             WakeAllConditionVariable(&_Context->_Condition);
             break;
         }
     }
-    ReleaseSRWLockExclusive(&_Entry._Lock);
 }
 
+void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noexcept {
+    auto& _Entry = _Atomic_wait_table_entry(_Storage);
+    _SrwLock_guard _Guard(_Entry._Lock);
+    _Wait_context* _Context = _Entry._Wait_list_head._Next;
+    for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
+        if (_Context->_Storage == _Storage) {
+            // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
+            WakeAllConditionVariable(&_Context->_Condition);
+        }
+    }
+}
 
-bool __stdcall __std_atomic_wait_indirect(
+int __stdcall __std_atomic_wait_indirect(
     const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
-    AcquireSRWLockExclusive(&_Entry._Lock);
+    _SrwLock_guard _Guard(_Entry._Lock);
+    _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
 
-    _Wait_context _Context;
-    _Wait_context* _Next = &_Entry._Wait_list_head;
-    _Wait_context* _Prev = _Next->_Prev;
-    _Context._Prev       = _Prev;
-    _Context._Next       = _Next;
-    _Prev->_Next         = &_Context;
-    _Next->_Prev         = &_Context;
-    _Context._Condition  = CONDITION_VARIABLE_INIT;
-    _Context._Storage    = _Storage;
-
-    bool _Result;
     for (;;) {
         if (_CSTD memcmp(_Storage, _Comparand, _Size) != 0) {
-            _Result = true;
-            break;
+            return TRUE;
         }
 
         if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
             _Assume_timeout();
-            _Result = false;
-            break;
+            return FALSE;
         }
     }
-
-    _Prev                 = _Context._Prev;
-    _Next                 = _Context._Next;
-    _Context._Next->_Prev = _Prev;
-    _Context._Prev->_Next = _Next;
-
-    ReleaseSRWLockExclusive(&_Entry._Lock);
-
-    return _Result;
 }
 
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
@@ -280,6 +297,7 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
     switch (_Requested_api_level) {
     case __std_atomic_api_level::__not_set:
     case __std_atomic_api_level::__detecting:
+        _CSTD abort();
     case __std_atomic_api_level::__has_srwlock:
         _Force_wait_functions_srwlock_only();
         break;

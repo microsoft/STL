@@ -296,38 +296,6 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     }
 }
 
-// FUNCTION TEMPLATE _Atomic_wait_direct_timed
-// Provides common implementation of atomic wait for 1, 2, 4, and 8
-// Not CRTP base to avoid change that might break ABI
-template <class _Ty, class _Value_type, class _Atomic_storage>
-bool _Atomic_wait_direct_timed(const _Atomic_storage& _Storage, _Value_type _Expected_bytes, const memory_order _Order,
-    const unsigned long long _Timeout) noexcept {
-    const auto _Storage_ptr      = _STD addressof(_Storage._Storage);
-    unsigned long long _Deadline = _Atomic_wait_get_deadline(_Timeout);
-    for (;;) {
-        _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_Storage.load(_Order));
-        if (_Expected_bytes != _Observed_bytes) {
-#if _CMPXCHG_MASK_OUT_PADDING_BITS
-            if constexpr (_Might_have_non_value_bits<_Ty>) {
-                _Storage_for<_Ty> _Mask{_Form_mask};
-                const _Value_type _Mask_val = _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
-
-                if (((_Expected_bytes ^ _Observed_bytes) & _Mask_val) == 0) {
-                    _Expected_bytes = _Observed_bytes;
-                    continue;
-                }
-            }
-#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-            return true;
-        }
-
-        if (!__std_atomic_wait_direct(
-                _Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Atomic_wait_get_remaining_timeout(_Deadline))) {
-            return false;
-        }
-    }
-}
-
 // FUNCTION _Load_barrier
 inline void _Load_barrier(const memory_order _Order) noexcept { // implement memory barrier for atomic load functions
     switch (_Order) {
@@ -390,6 +358,35 @@ template <class _Ty, size_t = sizeof(_Ty)>
 #else // ^^^ don't break ABI / break ABI vvv
 template <class _Ty, size_t = _Atomic_storage_traits<_Ty>::_Storage_size>
 #endif // TRANSITION, ABI
+struct _Atomic_storage;
+
+template <class _Ty, class _Value_type>
+void _Atomic_wait_direct(
+    const _Atomic_storage<_Ty>* const _This, _Value_type _Expected_bytes, const memory_order _Order) noexcept {
+    const auto _Storage_ptr = _STD addressof(_This->_Storage);
+    for (;;) {
+        const _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
+        if (_Expected_bytes != _Observed_bytes) {
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+            if constexpr (_Might_have_non_value_bits<_Ty>) {
+                _Storage_for<_Ty> _Mask{_Form_mask};
+                const _Value_type _Mask_val = _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
+
+                if (((_Expected_bytes ^ _Observed_bytes) & _Mask_val) == 0) {
+                    _Expected_bytes = _Observed_bytes;
+                    continue;
+                }
+            }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+
+            return;
+        }
+
+        __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Atomic_wait_no_timeout);
+    }
+}
+
+template <class _Ty, size_t /* = ... */>
 struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
     // Locking version used when hardware has no atomic operations for sizeof(_Ty).
@@ -462,19 +459,22 @@ struct _Atomic_storage {
 
 #if _HAS_CXX20
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const auto _Storage_ptr = _STD addressof(_Storage);
-        auto _Expected_ptr      = _STD addressof(_Expected);
+        const auto _Storage_ptr  = _STD addressof(_Storage);
+        const auto _Expected_ptr = _STD addressof(_Expected);
 
         for (;;) {
-            _Ty _Observed      = load(_Order);
-            auto _Observed_ptr = _STD addressof(_Observed);
+            const _Ty _Observed      = load(_Order);
+            const auto _Observed_ptr = _STD addressof(_Observed);
             if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
                 if constexpr (_Might_have_non_value_bits<_Ty>) {
-                    __builtin_zero_non_value_bits(_Observed_ptr);
+                    _Storage_for<_Ty> _Local;
+                    const auto _Local_ptr = _Local._Ptr();
+                    _CSTD memcpy(_Local_ptr, _Observed_ptr, sizeof(_Ty));
+                    __builtin_zero_non_value_bits(_Local_ptr);
                     __builtin_zero_non_value_bits(_Expected_ptr);
 
-                    if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
+                    if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
                         _CSTD memcpy(_Expected_ptr, _Observed_ptr, sizeof(_Ty));
                         continue;
                     }
@@ -635,13 +635,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
-        _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Atomic_wait_no_deadline);
-    }
-
-    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
-        const char _Expected_bytes = _Atomic_reinterpret_as<char>(_Expected);
-        return _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Timeout);
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<char>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -757,13 +751,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
-        _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Atomic_wait_no_deadline);
-    }
-
-    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
-        const short _Expected_bytes = _Atomic_reinterpret_as<short>(_Expected);
-        return _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Timeout);
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<short>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -877,13 +865,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
-        _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Atomic_wait_no_deadline);
-    }
-
-    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
-        const long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected);
-        return _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Timeout);
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<long>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -1026,13 +1008,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
-        _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Atomic_wait_no_deadline);
-    }
-
-    bool _Timed_wait(const _Ty _Expected, unsigned long long _Timeout, const memory_order _Order) const noexcept {
-        const long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected);
-        return _Atomic_wait_direct_timed<_Ty>(*this, _Expected_bytes, _Order, _Timeout);
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<long long>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -1145,14 +1121,15 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
         _Int128 _Expected_bytes = _Atomic_reinterpret_as<_Int128>(_Expected);
 
         for (;;) {
-            _Int128 Observed_bytes = _Atomic_reinterpret_as<_Int128>(load(_Order));
+            _Int128 _Observed_bytes = _Atomic_reinterpret_as<_Int128>(load(_Order));
             if (_Expected_bytes._Low != _Observed_bytes._Low || _Expected_bytes._High != _Observed_bytes._High) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
                 if constexpr (_Might_have_non_value_bits<decltype(_Storage._Storage)>) {
                     _Storage_for<_Ty> _Mask{_Form_mask};
                     const _Value_type _Mask_val = _Atomic_reinterpret_as<_Int128>(_Mask._Ref());
 
-                    if (((_Expected_bytes._Low ^ _Observed_bytes._Low) & _Mask_val._Low) == 0 && ((_Expected_bytes._High ^ _Observed_bytes._High) & _Mask_val._High) == 0) {
+                    if (((_Expected_bytes._Low ^ _Observed_bytes._Low) & _Mask_val._Low) == 0
+                        && ((_Expected_bytes._High ^ _Observed_bytes._High) & _Mask_val._High) == 0) {
                         _Expected_bytes = _Observed_bytes;
                         continue;
                     }
