@@ -443,7 +443,7 @@ struct _Atomic_storage {
         _Lock();
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
-            _Storage_for<TVal> _Local;
+            _Storage_for<_TVal> _Local;
             const auto _Local_ptr = _Local._Ptr();
             _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_TVal));
             __builtin_zero_non_value_bits(_Local_ptr);
