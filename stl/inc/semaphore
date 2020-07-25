@@ -68,8 +68,8 @@ public:
     void acquire() {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
-            while (_Current == 0) {
-                _Counter.wait(_Current);
+            if (_Current == 0) {
+                _Counter.wait(0, std::memory_order_relaxed);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             if (_Current < 0 || _Current > _Least_max_value) {
