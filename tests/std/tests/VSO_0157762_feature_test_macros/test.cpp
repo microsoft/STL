@@ -1075,6 +1075,20 @@ STATIC_ASSERT(__cpp_lib_scoped_lock == 201703L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_semaphore
+#error __cpp_lib_semaphore  is not defined
+#elif __cpp_lib_semaphore != 201907L
+#error __cpp_lib_semaphore  is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_semaphore == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_semaphore
+#error __cpp_lib_semaphore  is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_shared_mutex
 #error __cpp_lib_shared_mutex is not defined
 #elif __cpp_lib_shared_mutex != 201505L

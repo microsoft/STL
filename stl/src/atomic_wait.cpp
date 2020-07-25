@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <new>
 #include <thread>
+#include <system_error>
 #include <Windows.h>
 
 // clang-format on
@@ -309,4 +310,9 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
     return _Acquire_wait_functions();
 #endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
+
+[[noreturn]] void __stdcall __std_sync_error(_STD errc code) {
+    _STD _Throw_system_error(code);
+}
+
 _END_EXTERN_C

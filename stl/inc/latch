@@ -18,7 +18,6 @@
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <atomic>
-#include <system_error>
 #include <xerrc.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -28,10 +27,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("max")
 #undef max
 
-[[noreturn]] inline void __std_sync_error(_STD errc code) {
-    // TRANSITION, atomic wait satellite merge: move to satellite
-    _STD _Throw_system_error(code);
-}
+_EXTERN_C
+[[noreturn]] void __stdcall __std_sync_error(_STD errc code);
+_END_EXTERN_C
 
 _STD_BEGIN
 
