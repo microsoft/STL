@@ -34,7 +34,152 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
+template <class _Completion_function = nullptr_t>
+class barrier;
 
+inline constexpr size_t _Barrier_arrival_token_mask = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1));
+inline constexpr size_t _Barrier_canary_mask        = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2));
+inline constexpr size_t _Barrier_invalid_token_mask = _Barrier_canary_mask;
+inline constexpr size_t _Barrier_value_mask         = _Barrier_canary_mask - 1;
+inline constexpr size_t _Barrier_max                = _Barrier_value_mask;
+
+template <class _Completion_function>
+class _Arrival_token {
+public:
+    _Arrival_token(_Arrival_token&& _Other) noexcept {
+        _Value        = _Other._Value;
+        _Other._Value = _Barrier_invalid_token_mask;
+    }
+
+    _Arrival_token& operator=(_Arrival_token&& _Other) noexcept {
+        _Value        = _Other._Value;
+        _Other._Value = _Barrier_invalid_token_mask;
+    }
+
+    size_t _Value;
+
+private:
+    explicit _Arrival_token(ptrdiff_t _Value) noexcept : _Value(_Value) {}
+    friend class barrier<_Completion_function>;
+};
+
+
+template <class _Completion_function>
+class _Barrier_completion_function_holder {
+public:
+    _Barrier_completion_function_holder(_Completion_function _Fn) : _Fn(move(_Fn)) {}
+
+    void _Call_completion() {
+        _Fn();
+    }
+
+    _Completion_function _Fn;
+};
+
+template <>
+class _Barrier_completion_function_holder<nullptr_t> {
+public:
+    _Barrier_completion_function_holder(nullptr_t)  {}
+
+    void _Call_completion() {}
+};
+
+template <class _Completion_function>
+class barrier : private _Barrier_completion_function_holder<_Completion_function> {
+public:
+    using arrival_token = _Arrival_token<_Completion_function>;
+
+    constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
+        : _Barrier_completion_function_holder(std::move(_Fn)), _Phase_count(_Phase_count) {}
+
+    ~barrier() = default;
+
+    barrier(const barrier&) = delete;
+    barrier& operator=(const barrier&) = delete;
+
+    static constexpr ptrdiff_t max() noexcept {
+        return _Barrier_max;
+    }
+
+    [[nodiscard]] arrival_token arrive(const ptrdiff_t _Update = 1) {
+        if (_Update <= 0) {
+            __std_sync_error(errc::invalid_argument);
+        }
+        size_t _Current = _Current_phase.fetch_sub(_Update, memory_order_release) - _Update;
+        if ((_Current & _Barrier_canary_mask) == 0) {
+            __std_sync_error(errc::state_not_recoverable);
+        }
+        if ((_Current & _Barrier_value_mask) = 0) {
+            _Completion(_Current);
+        }
+        return _Arrival_token<_Completion_function>(_Current & _Barrier_arrival_token_mask);
+    }
+
+    void wait(arrival_token&& _Arrival) const {
+        if (_Arrival._Value & _Barrier_invalid_token_mask) {
+            __std_sync_error(errc::invalid_argument);
+        }
+
+        for (;;) {
+            const size_t _Current = _Current_phase.load(memory_order_acquire);
+            if ((_Current & _Barrier_canary_mask) == 0) {
+                __std_sync_error(errc::state_not_recoverable);
+            }
+            if ((_Current & _Barrier_arrival_token_mask) != _Arrival._Value) {
+                break;
+            }
+            _Current_phase.wait(_Current, memory_order_relaxed);
+        }
+    }
+
+    void arrive_and_wait() {
+        size_t _Current       = _Current_phase.fetch_sub(1, memory_order_acq_rel) - 1;
+        const size_t _Arrival = _Current & _Barrier_arrival_token_mask;
+        if ((_Current & _Barrier_canary_mask) == 0) {
+            __std_sync_error(errc::state_not_recoverable);
+        }
+        if ((_Current & _Barrier_value_mask) == 0) {
+            _Completion(_Current);
+            return;
+        }
+
+        for (;;) {
+            _Current_phase.wait(_Current, memory_order_relaxed);
+            _Current = _Current_phase.load(memory_order_acquire);
+            if ((_Current & _Barrier_canary_mask) == 0) {
+                __std_sync_error(errc::state_not_recoverable);
+            }
+            if ((_Current & _Barrier_arrival_token_mask) != _Arrival) {
+                break;
+            }
+        }
+    }
+
+    void arrive_and_drop() {
+        ptrdiff_t _Remaining_phase_count = _Phase_count.fetch_sub(1, memory_order_relaxed) - 1;
+        if (_Remaining_phase_count < 0) {
+            __std_sync_error(errc::state_not_recoverable);
+        }
+
+        (void) arrive(1);
+    }
+
+private:
+    void _Completion(const size_t _Current) {
+        ptrdiff_t _Remaining_phase_count = _Phase_count.load(memory_order_relaxed);
+        if (_Remaining_phase_count < 0) {
+            __std_sync_error(errc::state_not_recoverable);
+        }
+        this->_Call_completion();
+        const size_t _New_phase_count =
+            _Current & _Barrier_arrival_token_mask | _Barrier_canary_mask | _Remaining_phase_count;
+        _Phase_count.store(_New_phase_count, memory_order_release);
+        _Phase_count.notify_all();
+    }
+
+    atomic<size_t> _Current_phase{_Barrier_canary_mask};
+    atomic<ptrdiff_t> _Phase_count;
+};
 
 _STD_END
 
