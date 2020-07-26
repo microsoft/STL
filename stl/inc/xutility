@@ -197,9 +197,8 @@ struct _Ref_fn { // pass function object by value as a reference
 };
 
 template <class _Fn>
-_INLINE_VAR constexpr bool
-    _Pass_functor_by_value_v = sizeof(_Fn) <= sizeof(void*)
-                               && conjunction_v<is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
+_INLINE_VAR constexpr bool _Pass_functor_by_value_v = conjunction_v<bool_constant<sizeof(_Fn) <= 4 * sizeof(void*)>,
+    is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
 
 template <class _Fn, enable_if_t<_Pass_functor_by_value_v<_Fn>, int> = 0> // TRANSITION, if constexpr
 constexpr _Fn _Pass_fn(_Fn _Val) { // pass functor by value

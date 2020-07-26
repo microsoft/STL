@@ -800,3 +800,38 @@ namespace sortable_test {
         }
     }
 } // namespace sortable_test
+
+namespace gh_1089 {
+    // Defend against regression of GH-1089: "_Pass_fn/_Ref_fn interferes with the Ranges invoke protocol"
+    // The _Pass_fn protocol would previously assume that anything larger than a pointer was a function object that it
+    // could call with `()` and not a pointer-to-member that requires the `invoke` protocol.
+
+    void test() {
+        struct Base {
+            virtual int purr() = 0;
+        };
+
+        struct Derived1 : virtual Base {
+            int purr() override {
+                return 1729;
+            }
+        };
+
+        struct Derived2 : virtual Base {};
+
+        struct MostDerived : Derived1, Derived2 {
+            int purr() override {
+                return 2020;
+            }
+        };
+
+        STATIC_ASSERT(sizeof(&Derived1::purr) == 3 * sizeof(void*)); // NB: relies on non-portable platform properties
+
+        Derived1 a[2];
+        MostDerived b[3];
+        Derived1* pointers[] = {&b[0], &a[0], &b[1], &a[1], &b[2]};
+
+        (void) ranges::count(pointers, 1729, &Derived1::purr);
+        (void) ranges::count(pointers, 2020, &Derived1::purr);
+    }
+} // namespace gh_1089
