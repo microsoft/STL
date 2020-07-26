@@ -49,12 +49,17 @@ octokit.paginate(
         progress_bar.setTotal(progress_value + remaining);
         progress_bar.update(progress_value);
 
-        return response.data.map(item => ({
-            opened: DateTime.fromISO(item['created_at']),
-            closed: DateTime.fromISO(item['closed_at'] ?? '2100-01-01'),
-            is_pr: item['pull_request'] !== undefined,
-            label_names: item['labels'].map(label => label['name']),
-        }));
+        return response.data.map(item => {
+            const labels = item['labels'].map(label => label['name']);
+            return {
+                opened: DateTime.fromISO(item['created_at']),
+                closed: DateTime.fromISO(item['closed_at'] ?? '2100-01-01'),
+                is_pr: item['pull_request'] !== undefined,
+                labeled_cxx20: labels.includes('cxx20'),
+                labeled_lwg: labels.includes('LWG') && !labels.includes('vNext') && !labels.includes('blocked'),
+                labeled_bug: labels.includes('bug'),
+            };
+        });
     }
 ).then(transformed_output => {
     progress_bar.setTotal(progress_value); // Just in case PR/issue number 1 was deleted,
@@ -87,18 +92,16 @@ octokit.paginate(
             } else if (elem.is_pr) {
                 ++num_pr;
                 combined_pr_age = combined_pr_age.plus(when.diff(elem.opened, 'seconds'));
-            } else if (elem.label_names.includes('cxx20')) {
+            } else if (elem.labeled_cxx20) {
                 // Avoid double-counting C++20 Features and GitHub Issues.
                 ++num_cxx20;
-            } else if (elem.label_names.includes('LWG')
-                && !elem.label_names.includes('vNext')
-                && !elem.label_names.includes('blocked')) {
+            } else if (elem.labeled_lwg) {
                 // Avoid double-counting LWG Resolutions and GitHub Issues.
                 ++num_lwg;
             } else {
                 ++num_issue;
 
-                if (elem.label_names.includes('bug')) {
+                if (elem.labeled_bug) {
                     ++num_bug;
                 }
             }
