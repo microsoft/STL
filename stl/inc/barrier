@@ -79,7 +79,7 @@ public:
 template <>
 class _Barrier_completion_function_holder<nullptr_t> {
 public:
-    _Barrier_completion_function_holder(nullptr_t)  {}
+    _Barrier_completion_function_holder(nullptr_t) {}
 
     void _Call_completion() {}
 };
