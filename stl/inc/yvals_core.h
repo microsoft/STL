@@ -19,6 +19,7 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 // Implemented unconditionally:
+// Cute fluffy kittens!
 // N3911 void_t
 // N4089 Safe Conversions In unique_ptr<T[]>
 // N4169 invoke()
@@ -32,6 +33,7 @@
 // N4389 bool_constant
 // N4508 shared_mutex (Untimed)
 // N4510 Supporting Incomplete Types In vector/list/forward_list
+// Hungry evil zombies!
 // P0006R0 Variable Templates For Type Traits (is_same_v, etc.)
 // P0007R1 as_const()
 // P0013R1 Logical Operator Type Traits (conjunction, etc.)
