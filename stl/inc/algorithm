@@ -5824,12 +5824,12 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::sort_heap
-    template <class _It, class _Pr, class _Pj>
+    // clang-format off
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     static constexpr void _Sort_heap_common(const _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
         // order heap by repeatedly popping
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
+        // clang-format on
         for (; _Last - _First >= 2; --_Last) {
             _RANGES _Pop_heap_unchecked(_First, _Last, _Pred, _Proj);
         }

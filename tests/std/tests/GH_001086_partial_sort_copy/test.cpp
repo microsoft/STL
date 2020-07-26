@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 
 using namespace std;
 
@@ -46,10 +47,10 @@ struct target : wrapper {
 };
 
 int main() {
-    source src[4];
-    constexpr auto src_size = static_cast<int>(std::size(src));
+    constexpr int src_size = 4;
+    source src[src_size];
+    constexpr int dst_size = 2;
     target dst[2];
-    constexpr auto dst_size = static_cast<int>(std::size(dst));
 
     for (int i = 0; i < src_size; ++i) {
         src[i].x = src_size - 1 - i;
