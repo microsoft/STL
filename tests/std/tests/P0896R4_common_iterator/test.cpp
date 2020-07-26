@@ -18,7 +18,23 @@ struct instantiator {
             using Cit = common_iterator<Iter, Sen>;
 
             // [common.iter.types]
-            STATIC_ASSERT(true);
+            if constexpr (forward_iterator<Iter>) {
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_concept, forward_iterator_tag>);
+            } else {
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
+            }
+
+            if constexpr (derived_from<iterator_traits<Iter>::iterator_category, forward_iterator_tag>) {
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_category, forward_iterator_tag>);
+            } else {
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_category, input_iterator_tag>);
+            }
+
+            if constexpr (_Has_op_arrow<Iter>) {
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, decltype(declval<Cit&>().operator->())>);
+            } else {
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, void>);
+            }
 
             { // [counted.iter.const]
                 [[maybe_unused]] Cit defaultConstructed{};
