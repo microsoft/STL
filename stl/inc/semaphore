@@ -110,9 +110,7 @@ public:
                 if (_Remaining_timeout == 0) {
                     return false;
                 }
-                if (!__std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout)) {
-                    return false;
-                }
+                __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             if (_Current < 0 || _Current > _Least_max_value) {
