@@ -744,7 +744,7 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 // CONCEPT _Integer_like
 // clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>; // Per LWG issue submitted but unnumbered as of 2020-07-23.
+concept _Integer_like = _Is_nonbool_integral<_Ty>; // per the proposed resolution of LWG-3467
 
 // CONCEPT _Signed_integer_like
 template <class _Ty>
@@ -757,7 +757,7 @@ using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
-using _Make_signed_like_t = make_signed_t<_Ty>; // Per the proposed resolution of LWG-3403
+using _Make_signed_like_t = make_signed_t<_Ty>; // per the proposed resolution of LWG-3403
 
 // CONCEPT weakly_incrementable
 // clang-format off
