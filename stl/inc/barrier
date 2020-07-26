@@ -41,7 +41,7 @@ inline constexpr ptrdiff_t _Barrier_arrival_token_mask = 1;
 inline constexpr ptrdiff_t _Barrier_value_mask         = ~_Barrier_arrival_token_mask;
 inline constexpr ptrdiff_t _Barrier_value_shift        = 1;
 inline constexpr ptrdiff_t _Barrier_invalid_token      = -1;
-inline constexpr ptrdiff_t _Barrier_value_step         = 2;
+inline constexpr ptrdiff_t _Barrier_value_step         = 1 << _Barrier_value_shift;
 inline constexpr ptrdiff_t _Barrier_max                = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2)) - 1;
 
 template <class _Completion_function>
