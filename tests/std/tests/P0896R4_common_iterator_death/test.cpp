@@ -36,7 +36,7 @@ struct throwingIter {
 
     template <class U = int>
     friend void iter_swap(throwingIter const& x, throwingIter<U> const& y) {
-        swap(x._val, y._val);
+        x._val = exchange(x._val, y._val);
     }
 
     throwingIter() = default;
