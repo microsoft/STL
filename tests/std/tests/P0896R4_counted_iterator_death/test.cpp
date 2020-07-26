@@ -123,22 +123,22 @@ void test_case_operator_advance_after_end() {
 
 void test_case_operator_advance_copy_value_initialized_iterator() {
     counted_iterator<int*> cit{};
-    auto cit2 = cit + 1; // cannot seek value-initialized counted_iterator
+    (void) auto cit2 = cit + 1; // cannot seek value-initialized counted_iterator
 }
 
 void test_case_operator_advance_copy_after_end() {
     counted_iterator<int*> cit{globalArray, 2};
-    auto cit2 = cit + 3; // cannot seek counted_iterator after end
+    (void) auto cit2 = cit + 3; // cannot seek counted_iterator after end
 }
 
 void test_case_operator_advance_copy_2_value_initialized_iterator() {
     counted_iterator<int*> cit{};
-    auto cit2 = 1 + cit; // cannot seek value-initialized counted_iterator
+    (void) auto cit2 = 1 + cit; // cannot seek value-initialized counted_iterator
 }
 
 void test_case_operator_advance_copy_2_after_end() {
     counted_iterator<int*> cit{globalArray, 2};
-    auto cit2 = 3 + cit; // cannot seek counted_iterator after end
+    (void) auto cit2 = 3 + cit; // cannot seek counted_iterator after end
 }
 
 void test_case_operator_retreat_before_begin() {
@@ -153,17 +153,17 @@ void test_case_operator_retreat_after_end() {
 
 void test_case_operator_retreat_copy_value_initialized_iterator() {
     counted_iterator<int*> cit{};
-    auto cit2 = cit - 1; // OK
+    (void) auto cit2 = cit - 1; // OK
 }
 
 void test_case_operator_retreat_copy_before_begin() {
     counted_iterator<vit> cit{begin(checkedArray), 5};
-    auto cit2 = cit - 1; // cannot seek counted_iterator before begin
+    (void) auto cit2 = cit - 1; // cannot seek counted_iterator before begin
 }
 
 void test_case_operator_retreat_copy_after_end() {
     counted_iterator<int*> cit{globalArray, 0};
-    auto cit2 = cit - 1; // cannot seek counted_iterator after end
+    (void) auto cit2 = cit - 1; // cannot seek counted_iterator after end
 }
 
 void test_case_operator_subtract_incompatible_different_data() {
