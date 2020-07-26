@@ -91,6 +91,8 @@ void test_with_functor() {
 }
 
 int main() {
+    static_assert(std::barrier<>::max() >= 5, "latch should support some number of arrivals");
+
     test();
     test_with_functor();
 }
