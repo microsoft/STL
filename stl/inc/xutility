@@ -4356,7 +4356,7 @@ public:
     template <common_with<_Iter> _Other>
     _NODISCARD friend constexpr iter_difference_t<_Other> operator-(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
-        //_Verify_range(_Left, _Right);
+        _Verify_range(_Left, _Right);
         return _Right.count() - _Left._Length;
     }
 
@@ -4386,7 +4386,7 @@ public:
     // [counted.iter.cmp]
     template <common_with<_Iter> _Other>
     _NODISCARD friend constexpr bool operator==(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        //_Verify_range(_Left, _Right);
+        _Verify_range(_Left, _Right);
         return _Left._Length == _Right.count();
     }
 
@@ -4398,17 +4398,17 @@ public:
     template <common_with<_Iter> _Other>
     _NODISCARD friend constexpr strong_ordering operator<=>(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
-        //_Verify_range(_Left, _Right);
+        _Verify_range(_Left, _Right);
         return _Right._Length <=> _Left._Length;
     }
 
     // [counted.iter.cust]
     // clang-format off
-    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _It) noexcept(
-        noexcept(_RANGES iter_move(_It.current)))
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
+        noexcept(_RANGES iter_move(_Right.current)))
         requires input_iterator<_Iter>
     {
-        return _RANGES iter_move(_It.current);
+        return _RANGES iter_move(_Right.current);
     }
     // clang-format on
 
@@ -4418,33 +4418,34 @@ public:
         _RANGES iter_swap(_Left._Current, _Right._Current);
     }
 
-    // clang-format off
-    template <input_or_output_iterator _Other>
-        requires _Range_verifiable_v<_Iter, _Other>
+    template <common_with<_Iter> _Other>
     friend constexpr void _Verify_range(const counted_iterator& _First, const counted_iterator<_Other>& _Last) {
-        _STL_VERIFY(_STD next(_First._Current, _First._Length) == _STD next(_Last._Current, _Last._Length),
-            "counted_iterators from different ranges");
+        if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
+            _STL_VERIFY(_RANGES next(_First._Current, _First._Length) == _RANGES next(_Last._Current, _Last._Length),
+                "counted_iterators from different ranges");
+        }
     }
 
     using _Prevent_inheriting_unwrap = counted_iterator;
 
-    template <input_or_output_iterator _Other = _Iter>
-        requires _Offset_verifiable_v<_Other>
-    constexpr void _Verify_offset(const iter_difference_t<_Iter> _Off) const {
+    // clang-format off
+    constexpr void _Verify_offset(const iter_difference_t<_Iter> _Off) const
+        requires _Offset_verifiable_v<_Iter>
+    {
         _STL_VERIFY(_Off < _Length, "Offset larger than counted_iterator length");
         _Current._Verify_offset(_Off);
     }
 
-    template <input_or_output_iterator _Other = _Iter>
-        requires _Unwrappable_v<const _Other&>
-    _NODISCARD constexpr counted_iterator<_Unwrapped_t<const _Other&>> _Unwrapped() const& {
-        return static_cast<counted_iterator<_Unwrapped_t<const _Other&>>>(_Current._Unwrapped());
+    _NODISCARD constexpr counted_iterator<_Unwrapped_t<const _Iter&>> _Unwrapped() const&
+        requires _Unwrappable_v<const _Iter&>
+    {
+        return static_cast<counted_iterator<_Unwrapped_t<const _Iter&>>>(_Current._Unwrapped());
     }
 
-    template <input_or_output_iterator _Other = _Iter>
-        requires _Unwrappable_v<const _Other&>
-    _NODISCARD constexpr counted_iterator<_Unwrapped_t<_Other>> _Unwrapped() && {
-        return static_cast<counted_iterator<_Unwrapped_t<_Other>>>(_STD move(_Current)._Unwrapped());
+    _NODISCARD constexpr counted_iterator<_Unwrapped_t<_Iter>> _Unwrapped() &&
+        requires _Unwrappable_v<const _Iter&>
+    {
+        return static_cast<counted_iterator<_Unwrapped_t<_Iter>>>(_STD move(_Current)._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_Iter>;
