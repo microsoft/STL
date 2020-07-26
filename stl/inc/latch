@@ -52,11 +52,11 @@ public:
         }
     }
 
-    static constexpr ptrdiff_t max() noexcept {
+    [[nodiscard]] static constexpr ptrdiff_t max() noexcept {
         return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 
-    bool try_wait() const noexcept {
+    [[nodiscard]] bbool try_wait() const noexcept {
         return _Counter.load(memory_order_acquire) == 0;
     }
 

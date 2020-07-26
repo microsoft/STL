@@ -41,7 +41,7 @@ inline constexpr ptrdiff_t _Max_semaphore_value = (1ULL << (sizeof(ptrdiff_t) * 
 template <ptrdiff_t _Least_max_value = _Max_semaphore_value>
 class counting_semaphore {
 public:
-    static constexpr ptrdiff_t max() noexcept {
+    [[nodiscard]] static constexpr ptrdiff_t max() noexcept {
         return _Least_max_value; // use least_max value as actual max value
     }
 
@@ -58,11 +58,11 @@ public:
         if (_Update < 0) {
             __std_sync_error(errc::invalid_argument);
         }
-        ptrdiff_t _Result = _Counter.fetch_add(_Update, memory_order_release);
-        if (_Result < 0 || static_cast<size_t>(_Result) + static_cast<size_t>(_Update) > _Least_max_value) {
+        const ptrdiff_t _Prev = _Counter.fetch_add(_Update, memory_order_release);
+        if (_Prev < 0 || static_cast<size_t>(_Prev) + static_cast<size_t>(_Update) > _Least_max_value) {
             __std_sync_error(errc::state_not_recoverable);
         }
-        if (_Result == 0) {
+        if (_Prev == 0) {
             if (_Update == 1) {
                 _Counter.notify_one();
             } else {
@@ -88,7 +88,7 @@ public:
         }
     }
 
-    bool try_acquire() noexcept {
+    [[nodiscard]] bool try_acquire() noexcept {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         if (_Current == 0) {
             return false;
@@ -100,7 +100,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    [[nodiscard]] bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Rel_time_ms  = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
         auto _Deadline     = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
@@ -126,7 +126,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    [[nodiscard]] bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
@@ -163,7 +163,7 @@ private:
 template <>
 class counting_semaphore<1> {
 public:
-    static constexpr ptrdiff_t max() noexcept {
+    [[nodiscard]] static constexpr ptrdiff_t max() noexcept {
         return 1;
     }
 
@@ -199,7 +199,7 @@ public:
         }
     }
 
-    bool try_acquire() noexcept {
+    [[nodiscard]] bool try_acquire() noexcept {
         int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
         switch (_Prev) {
         case 0:
@@ -212,7 +212,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    [[nodiscard]] bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
         auto _Deadline    = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
         for (;;) {
@@ -232,7 +232,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    [[nodiscard]] bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         for (;;) {
             int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
             if (_Prev == 1) {

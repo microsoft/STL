@@ -59,7 +59,7 @@ public:
     size_t _Value;
 
 private:
-    explicit _Arrival_token(ptrdiff_t _Value) noexcept : _Value(_Value) {}
+    explicit _Arrival_token(size_t _Value) noexcept : _Value(_Value) {}
     friend class barrier<_Completion_function>;
 };
 
@@ -98,7 +98,7 @@ public:
     barrier(const barrier&) = delete;
     barrier& operator=(const barrier&) = delete;
 
-    static constexpr ptrdiff_t max() noexcept {
+    [[nodiscard]] static constexpr ptrdiff_t max() noexcept {
         return _Barrier_max;
     }
 
@@ -106,7 +106,7 @@ public:
         if (_Update <= 0) {
             __std_sync_error(errc::invalid_argument);
         }
-        size_t _Current = _Current_phase.fetch_sub(_Update, memory_order_release) - _Update;
+        size_t _Current = _Current_phase.fetch_sub(static_cast<size_t>(_Update), memory_order_release) - static_cast<size_t>(_Update);
         if ((_Current & _Barrier_canary_mask) == 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
