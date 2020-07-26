@@ -106,7 +106,8 @@ public:
         if (_Update <= 0) {
             __std_sync_error(errc::invalid_argument);
         }
-        size_t _Current = _Current_phase.fetch_sub(static_cast<size_t>(_Update), memory_order_release) - static_cast<size_t>(_Update);
+        size_t _Current =
+            _Current_phase.fetch_sub(static_cast<size_t>(_Update), memory_order_release) - static_cast<size_t>(_Update);
         if ((_Current & _Barrier_canary_mask) == 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
