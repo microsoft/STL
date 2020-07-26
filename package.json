@@ -20,9 +20,15 @@
   },
   "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
   "dependencies": {
-    "@octokit/rest": "^18.0.1",
+    "@octokit/graphql": "^4.5.2",
     "cli-progress": "^3.8.2",
     "dotenv": "^8.2.0",
     "luxon": "^1.24.1"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "printWidth": 120,
+    "singleQuote": true,
+    "tabWidth": 4
   }
 }
