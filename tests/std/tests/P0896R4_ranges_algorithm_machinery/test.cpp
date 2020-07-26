@@ -807,31 +807,50 @@ namespace gh_1089 {
     // could call with `()` and not a pointer-to-member that requires the `invoke` protocol.
 
     void test() {
-        struct Base {
-            virtual int purr() = 0;
-        };
+        {
+            struct Base {
+                virtual int purr() = 0;
+            };
 
-        struct Derived1 : virtual Base {
-            int purr() override {
-                return 1729;
-            }
-        };
+            struct Derived1 : virtual Base {
+                int purr() override {
+                    return 1729;
+                }
+            };
 
-        struct Derived2 : virtual Base {};
+            struct Derived2 : virtual Base {};
 
-        struct MostDerived : Derived1, Derived2 {
-            int purr() override {
-                return 2020;
-            }
-        };
+            struct MostDerived : Derived1, Derived2 {
+                int purr() override {
+                    return 2020;
+                }
+            };
 
-        STATIC_ASSERT(sizeof(&Derived1::purr) == 3 * sizeof(void*)); // NB: relies on non-portable platform properties
 
-        Derived1 a[2];
-        MostDerived b[3];
-        Derived1* pointers[] = {&b[0], &a[0], &b[1], &a[1], &b[2]};
+            STATIC_ASSERT(sizeof(&Derived1::purr) > sizeof(void*)); // NB: relies on non-portable platform properties
 
-        (void) ranges::count(pointers, 1729, &Derived1::purr);
-        (void) ranges::count(pointers, 2020, &Derived1::purr);
+            Derived1 a[2];
+            MostDerived b[3];
+            Derived1* pointers[] = {&b[0], &a[0], &b[1], &a[1], &b[2]};
+
+            (void) ranges::count(pointers, 2020, &Derived1::purr);
+        }
+        {
+            struct Cat;
+
+            using PMD_Cat = int Cat::*;
+            // Quantum effects: we must observe the size before defining Cat or it will become smaller.
+            STATIC_ASSERT(sizeof(PMD_Cat) > sizeof(void*));
+
+            struct Cat {
+                int x = 42;
+            };
+
+            STATIC_ASSERT(sizeof(&Cat::x) > sizeof(void*)); // NB: relies on non-portable platform properties
+
+            Cat cats[42];
+
+            (void) ranges::count(cats, 42, &Cat::x);
+        }
     }
 } // namespace gh_1089
