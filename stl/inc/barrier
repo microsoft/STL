@@ -37,37 +37,38 @@ _STD_BEGIN
 template <class _Completion_function = nullptr_t>
 class barrier;
 
-inline constexpr size_t _Barrier_arrival_token_mask = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1));
-inline constexpr size_t _Barrier_canary_mask        = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2));
-inline constexpr size_t _Barrier_invalid_token_mask = _Barrier_canary_mask;
-inline constexpr size_t _Barrier_value_mask         = _Barrier_canary_mask - 1;
-inline constexpr size_t _Barrier_max                = _Barrier_value_mask;
+inline constexpr ptrdiff_t _Barrier_arrival_token_mask = 1;
+inline constexpr ptrdiff_t _Barrier_value_mask         = ~_Barrier_arrival_token_mask;
+inline constexpr ptrdiff_t _Barrier_value_shift        = 1;
+inline constexpr ptrdiff_t _Barrier_invalid_token      = -1;
+inline constexpr ptrdiff_t _Barrier_value_step         = 2;
+inline constexpr ptrdiff_t _Barrier_max                = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2)) - 1;
 
 template <class _Completion_function>
 class _Arrival_token {
 public:
     _Arrival_token(_Arrival_token&& _Other) noexcept {
         _Value        = _Other._Value;
-        _Other._Value = _Barrier_invalid_token_mask;
+        _Other._Value = _Barrier_invalid_token;
     }
 
     _Arrival_token& operator=(_Arrival_token&& _Other) noexcept {
         _Value        = _Other._Value;
-        _Other._Value = _Barrier_invalid_token_mask;
+        _Other._Value = _Barrier_invalid_token;
     }
 
-    size_t _Value;
+    ptrdiff_t _Value;
 
 private:
-    explicit _Arrival_token(size_t _Value) noexcept : _Value(_Value) {}
+    explicit _Arrival_token(ptrdiff_t _Value) noexcept : _Value(_Value) {}
     friend class barrier<_Completion_function>;
 };
 
 
 template <class _Completion_function>
-class _Barrier_completion_function_holder {
+class _Barrier_completion {
 public:
-    _Barrier_completion_function_holder(_Completion_function _Fn) : _Fn(move(_Fn)) {}
+    _Barrier_completion(_Completion_function _Fn) : _Fn(move(_Fn)) {}
 
     void _Call_completion() {
         _Fn();
@@ -77,21 +78,21 @@ public:
 };
 
 template <>
-class _Barrier_completion_function_holder<nullptr_t> {
+class _Barrier_completion<nullptr_t> {
 public:
-    _Barrier_completion_function_holder(nullptr_t) {}
+    _Barrier_completion(nullptr_t) {}
 
     void _Call_completion() {}
 };
 
 template <class _Completion_function>
-class barrier : private _Barrier_completion_function_holder<_Completion_function> {
+class barrier : private _Barrier_completion<_Completion_function> {
 public:
     using arrival_token = _Arrival_token<_Completion_function>;
 
     constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
-        : _Barrier_completion_function_holder<_Completion_function>(std::move(_Fn)),
-          _Current_phase(_Phase_count | _Barrier_canary_mask), _Phase_count(_Phase_count) {}
+        : _Barrier_completion<_Completion_function>(std::move(_Fn)),
+          _Current_phase(_Phase_count << _Barrier_value_shift), _Phase_count(_Phase_count << _Barrier_value_shift) {}
 
     ~barrier() = default;
 
@@ -102,13 +103,13 @@ public:
         return _Barrier_max;
     }
 
-    [[nodiscard]] arrival_token arrive(const ptrdiff_t _Update = 1) {
+    [[nodiscard]] arrival_token arrive(ptrdiff_t _Update = 1) {
         if (_Update <= 0) {
             __std_sync_error(errc::invalid_argument);
         }
-        size_t _Current =
-            _Current_phase.fetch_sub(static_cast<size_t>(_Update), memory_order_release) - static_cast<size_t>(_Update);
-        if ((_Current & _Barrier_canary_mask) == 0) {
+        _Update <<= _Barrier_value_shift;
+        ptrdiff_t _Current = _Current_phase.fetch_sub(_Update, memory_order_release) - _Update;
+        if (_Current < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
         if ((_Current & _Barrier_value_mask) == 0) {
@@ -118,13 +119,13 @@ public:
     }
 
     void wait(arrival_token&& _Arrival) const {
-        if (_Arrival._Value & _Barrier_invalid_token_mask) {
+        if (_Arrival._Value & _Barrier_value_mask) {
             __std_sync_error(errc::invalid_argument);
         }
 
         for (;;) {
-            const size_t _Current = _Current_phase.load(memory_order_acquire);
-            if ((_Current & _Barrier_canary_mask) == 0) {
+            const ptrdiff_t _Current = _Current_phase.load(memory_order_acquire);
+            if (_Current < 0) {
                 __std_sync_error(errc::state_not_recoverable);
             }
             if ((_Current & _Barrier_arrival_token_mask) != _Arrival._Value) {
@@ -135,9 +136,9 @@ public:
     }
 
     void arrive_and_wait() {
-        size_t _Current       = _Current_phase.fetch_sub(1, memory_order_acq_rel) - 1;
-        const size_t _Arrival = _Current & _Barrier_arrival_token_mask;
-        if ((_Current & _Barrier_canary_mask) == 0) {
+        ptrdiff_t _Current = _Current_phase.fetch_sub(_Barrier_value_step, memory_order_acq_rel) - _Barrier_value_step;
+        const ptrdiff_t _Arrival = _Current & _Barrier_arrival_token_mask;
+        if (_Current < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
         if ((_Current & _Barrier_value_mask) == 0) {
@@ -148,7 +149,7 @@ public:
         for (;;) {
             _Current_phase.wait(_Current, memory_order_relaxed);
             _Current = _Current_phase.load(memory_order_acquire);
-            if ((_Current & _Barrier_canary_mask) == 0) {
+            if (_Current < 0) {
                 __std_sync_error(errc::state_not_recoverable);
             }
             if ((_Current & _Barrier_arrival_token_mask) != _Arrival) {
@@ -158,8 +159,8 @@ public:
     }
 
     void arrive_and_drop() {
-        ptrdiff_t _Remaining_phase_count = _Phase_count.fetch_sub(1, memory_order_relaxed) - 1;
-        if (_Remaining_phase_count < 0) {
+        ptrdiff_t _Rem_count = _Phase_count.fetch_sub(_Barrier_value_step, memory_order_relaxed) - _Barrier_value_step;
+        if (_Rem_count < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
 
@@ -167,19 +168,18 @@ public:
     }
 
 private:
-    void _Completion(const size_t _Current) {
-        ptrdiff_t _Remaining_phase_count = _Phase_count.load(memory_order_relaxed);
-        if (_Remaining_phase_count < 0) {
+    void _Completion(const ptrdiff_t _Current) {
+        ptrdiff_t _Rem_count = _Phase_count.load(memory_order_relaxed);
+        if (_Rem_count < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
         this->_Call_completion();
-        const size_t _New_phase_count = ((_Current & _Barrier_arrival_token_mask) ^ _Barrier_arrival_token_mask)
-                                        | _Barrier_canary_mask | _Remaining_phase_count;
+        const ptrdiff_t _New_phase_count = _Rem_count | (~_Current & _Barrier_arrival_token_mask);
         _Current_phase.store(_New_phase_count, memory_order_release);
         _Current_phase.notify_all();
     }
 
-    atomic<size_t> _Current_phase;
+    atomic<ptrdiff_t> _Current_phase;
     atomic<ptrdiff_t> _Phase_count;
 };
 
