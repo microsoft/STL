@@ -103,7 +103,6 @@ void test_semaphore_wait_for(const std::chrono::milliseconds delay_duration) {
 
     std::this_thread::sleep_for(delay_duration * 4);
 
-
     t.join();
 }
 
