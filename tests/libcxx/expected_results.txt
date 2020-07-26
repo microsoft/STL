@@ -475,14 +475,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1135R6 "The C++20 Synchronization Library"
-std/thread/thread.barrier/arrive.pass.cpp FAIL
-std/thread/thread.barrier/arrive_and_drop.pass.cpp FAIL
-std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
-std/thread/thread.barrier/completion.pass.cpp FAIL
-std/thread/thread.barrier/max.pass.cpp FAIL
-std/thread/thread.barrier/version.pass.cpp FAIL
-
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
@@ -640,8 +632,10 @@ std/language.support/support.runtime/cstdlib.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIPPED
 
+
 # *** LIKELY BOGUS TESTS ***
 # "error: _LIBCPP_VERSION not defined"
+std/thread/thread.barrier/version.pass.cpp FAIL
 std/thread/thread.latch/version.pass.cpp FAIL
 std/thread/thread.semaphore/version.pass.cpp FAIL
 

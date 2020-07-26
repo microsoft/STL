@@ -90,7 +90,8 @@ public:
     using arrival_token = _Arrival_token<_Completion_function>;
 
     constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
-        : _Barrier_completion_function_holder<_Completion_function>(std::move(_Fn)), _Phase_count(_Phase_count) {}
+        : _Barrier_completion_function_holder<_Completion_function>(std::move(_Fn)),
+          _Current_phase(_Phase_count | _Barrier_canary_mask), _Phase_count(_Phase_count) {}
 
     ~barrier() = default;
 
@@ -109,7 +110,7 @@ public:
         if ((_Current & _Barrier_canary_mask) == 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
-        if ((_Current & _Barrier_value_mask) = 0) {
+        if ((_Current & _Barrier_value_mask) == 0) {
             _Completion(_Current);
         }
         return _Arrival_token<_Completion_function>(_Current & _Barrier_arrival_token_mask);
@@ -171,13 +172,13 @@ private:
             __std_sync_error(errc::state_not_recoverable);
         }
         this->_Call_completion();
-        const size_t _New_phase_count =
-            _Current & _Barrier_arrival_token_mask | _Barrier_canary_mask | _Remaining_phase_count;
-        _Phase_count.store(_New_phase_count, memory_order_release);
-        _Phase_count.notify_all();
+        const size_t _New_phase_count = ((_Current & _Barrier_arrival_token_mask) ^ _Barrier_arrival_token_mask)
+                                        | _Barrier_canary_mask | _Remaining_phase_count;
+        _Current_phase.store(_New_phase_count, memory_order_release);
+        _Current_phase.notify_all();
     }
 
-    atomic<size_t> _Current_phase{_Barrier_canary_mask};
+    atomic<size_t> _Current_phase;
     atomic<ptrdiff_t> _Phase_count;
 };
 
