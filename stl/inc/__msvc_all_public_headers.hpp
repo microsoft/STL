@@ -105,6 +105,7 @@
 
 #ifndef _M_CEE_PURE
 #include <atomic>
+#include <barrier>
 #include <latch>
 #include <semaphore>
 #endif // _M_CEE_PURE

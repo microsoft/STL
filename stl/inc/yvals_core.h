@@ -1137,6 +1137,7 @@
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
+#define __cpp_lib_barrier                       201907L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
