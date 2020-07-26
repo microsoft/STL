@@ -56,7 +56,7 @@ public:
         return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 
-    [[nodiscard]] bbool try_wait() const noexcept {
+    [[nodiscard]] bool try_wait() const noexcept {
         return _Counter.load(memory_order_acquire) == 0;
     }
 
