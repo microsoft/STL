@@ -90,7 +90,7 @@ public:
     using arrival_token = _Arrival_token<_Completion_function>;
 
     constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
-        : _Barrier_completion_function_holder(std::move(_Fn)), _Phase_count(_Phase_count) {}
+        : _Barrier_completion_function_holder<_Completion_function>(std::move(_Fn)), _Phase_count(_Phase_count) {}
 
     ~barrier() = default;
 
