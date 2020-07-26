@@ -95,13 +95,13 @@ void test_semaphore_wait_for(const std::chrono::milliseconds delay_duration) {
     Semaphore semaphore{0};
 
     std::thread t([&] {
-        assert(semaphore.try_acquire_for(delay_duration / 4));
-        assert(!semaphore.try_acquire_for(delay_duration * 4));
+        assert(semaphore.try_acquire_for(delay_duration));
+        assert(!semaphore.try_acquire_for(delay_duration * 16));
     });
 
     semaphore.release();
 
-    std::this_thread::sleep_for(delay_duration);
+    std::this_thread::sleep_for(delay_duration * 4);
 
 
     t.join();
@@ -111,16 +111,14 @@ template <class Semaphore>
 void test_semaphore_wait_until(const std::chrono::milliseconds delay_duration) {
     Semaphore semaphore{0};
 
-    ;
-
     std::thread t([&] {
-        assert(semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration / 4));
-        assert(!semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration * 4));
+        assert(semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration));
+        assert(!semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration * 16));
     });
 
     semaphore.release();
 
-    std::this_thread::sleep_for(delay_duration);
+    std::this_thread::sleep_for(delay_duration * 4);
 
     t.join();
 }
@@ -129,7 +127,7 @@ int main() {
     static_assert(std::counting_semaphore<5>::max() >= 5, "semahpore should support some number of count downs");
     static_assert(std::binary_semaphore::max() >= 1, "semahpore should support some number of count downs");
 
-    constexpr auto delay_duration = std::chrono::milliseconds(200);
+    constexpr auto delay_duration = std::chrono::milliseconds(400);
 
     test_counting_semaphore_count(delay_duration);
     test_binary_semaphore_count(delay_duration);
