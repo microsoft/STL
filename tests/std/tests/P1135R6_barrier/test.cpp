@@ -90,9 +90,31 @@ void test_with_functor() {
     assert(called_times == 5);
 }
 
+void barrier_callaback_function() noexcept {}
+
+void test_functor_types() {
+    struct f1 {
+        void operator()() noexcept {}
+
+        f1(int, int, int) {}
+
+        f1(f1&&) noexcept = default;
+        f1& operator=(f1&&) = delete;
+    };
+    std::barrier b1{1, f1{0,0,0}};
+    b1.arrive_and_wait();
+
+    std::barrier b2{1, barrier_callaback_function};
+    b2.arrive_and_wait();
+
+    std::barrier b3{1, []() noexcept {}};
+    b3.arrive_and_wait();
+}
+
 int main() {
     static_assert(std::barrier<>::max() >= 5, "latch should support some number of arrivals");
 
     test();
     test_with_functor();
+    test_functor_types();
 }

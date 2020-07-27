@@ -68,11 +68,14 @@ private:
 };
 
 // TRANSITION, ABI: simplify this when [[no_unique_address]] is working
-template <class _Completion_function, bool _Is_final = is_final_v<_Completion_function>>
+template <class _Completion_function>
+inline constexpr bool _Is_barrier_empty_base = is_class_v<_Completion_function> && !is_final_v<_Completion_function>;
+
+template <class _Completion_function, bool _Is_base = _Is_barrier_empty_base<_Completion_function>>
 class _Barrier_completion;
 
 template <class _Completion_function>
-class _Barrier_completion<_Completion_function, true> {
+class _Barrier_completion<_Completion_function, false> {
 public:
     _Barrier_completion(_Completion_function _Fn) : _Fn(move(_Fn)) {}
 
@@ -84,17 +87,18 @@ public:
 };
 
 template <class _Completion_function>
-class _Barrier_completion<_Completion_function, false> : private _Completion_function {
+class _Barrier_completion<_Completion_function, true> : private _Completion_function {
 public:
-    _Barrier_completion(_Completion_function _Fn) : _Completion_function(move(_Fn)) {}
+    _Barrier_completion(_Completion_function _Fn) : _Completion_function(_STD move(_Fn)) {}
 
     void _Call_completion() noexcept {
-        (*this)();
+        auto& _Fn = static_cast<_Completion_function&> (*this);
+        _Fn();
     }
 };
 
 template <>
-class _Barrier_completion<_No_completion_function, true> {
+class _Barrier_completion<_No_completion_function, false> {
 public:
     _Barrier_completion(_No_completion_function) {}
 
