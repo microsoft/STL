@@ -4405,10 +4405,10 @@ public:
     // [counted.iter.cust]
     // clang-format off
     _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
-        noexcept(_RANGES iter_move(_Right.current)))
+        noexcept(_RANGES iter_move(_Right._Current)))
         requires input_iterator<_Iter>
     {
-        return _RANGES iter_move(_Right.current);
+        return _RANGES iter_move(_Right._Current);
     }
     // clang-format on
 
