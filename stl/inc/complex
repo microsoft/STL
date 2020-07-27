@@ -66,8 +66,12 @@ public:
         return (numeric_limits<_Ty>::max)();
     }
 
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<_Ty>::min)() > 0 ? (numeric_limits<_Ty>::min)() : 0;
+    }
+
     static _Ty _Abs(_Ty _Left) {
-        return static_cast<_Ty>(_Left < 0 ? -_Left : _Left);
+        return static_cast<_Ty>(_Signbit(_Left) ? -_Left : _Left);
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
@@ -75,7 +79,7 @@ public:
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
-        return static_cast<_Ty>(_Sign < 0 ? -_Abs(_Magnitude) : _Abs(_Magnitude));
+        return static_cast<_Ty>(_Signbit(_Sign) ? -_Abs(_Magnitude) : _Abs(_Magnitude));
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -106,7 +110,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return _Left < 0;
+        return _CSTD signbit(static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -198,6 +202,10 @@ public:
 
     static constexpr _Ty _Flt_max() {
         return (numeric_limits<long double>::max)();
+    }
+
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<long double>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -330,6 +338,10 @@ public:
 
     static constexpr _Ty _Flt_max() {
         return (numeric_limits<double>::max)();
+    }
+
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<double>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -465,6 +477,10 @@ public:
 
     static constexpr _Ty _Flt_max() {
         return (numeric_limits<float>::max)();
+    }
+
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<float>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -1537,10 +1553,13 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE _Fabs
 template <class _Ty>
-_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale factor
+_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // used by sqrt(), return magnitude and scale factor.
+                                                   // returns a non-zero even integer in *_Pexp when _Left is finite
+                                                   // and non-zero.
+                                                   // returns 0 in *_Pexp when _Left is zero, infinity or NaN.
     *_Pexp  = 0;
-    _Ty _Av = real(_Left);
-    _Ty _Bv = imag(_Left);
+    _Ty _Av = _Ctraits<_Ty>::_Abs(_STD real(_Left));
+    _Ty _Bv = _Ctraits<_Ty>::_Abs(_STD imag(_Left));
 
     if (_Ctraits<_Ty>::_Isinf(_Av) || _Ctraits<_Ty>::_Isinf(_Bv)) {
         return _Ctraits<_Ty>::_Infv(); // at least one component is INF
@@ -1549,13 +1568,8 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
     } else if (_Ctraits<_Ty>::_Isnan(_Bv)) {
         return _Bv; // imaginary component is NaN
     } else { // neither component is NaN or INF
-        _Av = _Ctraits<_Ty>::_Abs(_Av);
-        _Bv = _Ctraits<_Ty>::_Abs(_Bv);
-
         if (_Av < _Bv) { // ensure that |_Bv| <= |_Av|
-            _Ty _Tmp = _Av;
-            _Av      = _Bv;
-            _Bv      = _Tmp;
+            _STD swap(_Av, _Bv);
         }
 
         if (_Av == 0) {
@@ -1563,16 +1577,27 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
         }
 
         if (1 <= _Av) {
-            *_Pexp = 2;
-            _Av    = _Av * static_cast<_Ty>(0.25);
-            _Bv    = _Bv * static_cast<_Ty>(0.25);
+            *_Pexp = 4;
+            _Av    = _Av * static_cast<_Ty>(0.0625);
+            _Bv    = _Bv * static_cast<_Ty>(0.0625);
         } else {
-            *_Pexp = -2;
-            _Av    = _Av * 4;
-            _Bv    = _Bv * 4;
+            constexpr _Ty _Flt_eps = _Ctraits<_Ty>::_Flt_eps();
+
+            // TRANSITION, workaround for non floating point _Ty
+            if (_Flt_eps != 0 && _Av < 2 * _Ctraits<_Ty>::_Flt_norm_min() / _Flt_eps) {
+                constexpr int _Exponent = -2 * numeric_limits<_Ty>::digits;
+
+                *_Pexp = _Exponent;
+                _Av    = _Ctraits<_Ty>::ldexp(_Av, -_Exponent);
+                _Bv    = _Ctraits<_Ty>::ldexp(_Bv, -_Exponent);
+            } else {
+                *_Pexp = -2;
+                _Av    = _Av * 4;
+                _Bv    = _Bv * 4;
+            }
         }
 
-        _Ty _Tmp = _Av - _Bv;
+        const _Ty _Tmp = _Av - _Bv;
         if (_Tmp == _Av) {
             return _Av; // _Bv unimportant
         } else if (_Bv < _Tmp) { // use simple approximation
@@ -1691,7 +1716,7 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
                 return complex<_Ty>(_Ctraits<_Ty>::_Infv(), _Im); // (any, +/-Inf)
             } else if (_Ctraits<_Ty>::_Isnan(_Im)) {
                 if (_Re < 0) {
-                    return complex<_Ty>(_Im, _Re); // (-Inf, NaN)
+                    return complex<_Ty>(_Ctraits<_Ty>::_Abs(_Im), _Ctraits<_Ty>::_Copysign(_Re, _Im)); // (-Inf, NaN)
                 } else {
                     return _Left; // (+Inf, NaN)
                 }
