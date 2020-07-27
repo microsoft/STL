@@ -101,7 +101,7 @@ void test_functor_types() {
         f1(f1&&) noexcept = default;
         f1& operator=(f1&&) = delete;
     };
-    std::barrier b1{1, f1{0,0,0}};
+    std::barrier b1{1, f1{0, 0, 0}};
     b1.arrive_and_wait();
 
     std::barrier b2{1, barrier_callaback_function};

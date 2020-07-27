@@ -22,5 +22,4 @@ EXPORTS
     __std_execution_wake_by_address_all
     __std_parallel_algorithms_hw_threads
     __std_submit_threadpool_work
-    __std_sync_error
     __std_wait_for_threadpool_work_callbacks

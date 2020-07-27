@@ -19,8 +19,8 @@
 
 #include <atomic>
 #include <limits.h>
+#include <stdlib.h>
 #include <type_traits>
-#include <xerrc.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -28,10 +28,6 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("max")
 #undef max
-
-_EXTERN_C
-[[noreturn]] void __stdcall __std_sync_error(_STD errc code);
-_END_EXTERN_C
 
 _STD_BEGIN
 
@@ -92,7 +88,7 @@ public:
     _Barrier_completion(_Completion_function _Fn) : _Completion_function(_STD move(_Fn)) {}
 
     void _Call_completion() noexcept {
-        auto& _Fn = static_cast<_Completion_function&> (*this);
+        auto& _Fn = static_cast<_Completion_function&>(*this);
         _Fn();
     }
 };
@@ -110,7 +106,8 @@ class barrier : private _Barrier_completion<_Completion_function> {
 public:
     using arrival_token = _Arrival_token<_Completion_function>;
 
-    constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
+    constexpr explicit barrier(
+        const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
         : _Barrier_completion<_Completion_function>(std::move(_Fn)),
           _Current_phase(_Phase_count << _Barrier_value_shift), _Phase_count(_Phase_count << _Barrier_value_shift) {}
 
@@ -123,14 +120,14 @@ public:
         return _Barrier_max;
     }
 
-    [[nodiscard]] arrival_token arrive(ptrdiff_t _Update = 1) {
+    [[nodiscard]] arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         if (_Update <= 0) {
-            __std_sync_error(errc::invalid_argument);
+            _CSTD abort();
         }
         _Update <<= _Barrier_value_shift;
         ptrdiff_t _Current = _Current_phase.fetch_sub(_Update, memory_order_release) - _Update;
         if (_Current < 0) {
-            __std_sync_error(errc::state_not_recoverable);
+            _CSTD abort();
         }
         if ((_Current & _Barrier_value_mask) == 0) {
             atomic_thread_fence(memory_order_acquire);
@@ -140,15 +137,15 @@ public:
             (_Current & _Barrier_arrival_token_mask) | reinterpret_cast<intptr_t>(this));
     }
 
-    void wait(arrival_token&& _Arrival) const {
+    void wait(arrival_token&& _Arrival) const noexcept /* strengthened */ {
         if ((_Arrival._Value & _Barrier_value_mask) != reinterpret_cast<intptr_t>(this)) {
-            __std_sync_error(errc::invalid_argument);
+            _CSTD abort();
         }
 
         for (;;) {
             const ptrdiff_t _Current = _Current_phase.load(memory_order_acquire);
             if (_Current < 0) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             if ((_Current & _Barrier_arrival_token_mask) != (_Arrival._Value & _Barrier_arrival_token_mask)) {
                 break;
@@ -157,11 +154,11 @@ public:
         }
     }
 
-    void arrive_and_wait() {
+    void arrive_and_wait() noexcept /* strengthened */ {
         ptrdiff_t _Current = _Current_phase.fetch_sub(_Barrier_value_step, memory_order_acq_rel) - _Barrier_value_step;
         const ptrdiff_t _Arrival = _Current & _Barrier_arrival_token_mask;
         if (_Current < 0) {
-            __std_sync_error(errc::state_not_recoverable);
+            _CSTD abort();
         }
         if ((_Current & _Barrier_value_mask) == 0) {
             _Completion(_Current);
@@ -172,7 +169,7 @@ public:
             _Current_phase.wait(_Current, memory_order_relaxed);
             _Current = _Current_phase.load(memory_order_acquire);
             if (_Current < 0) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             if ((_Current & _Barrier_arrival_token_mask) != _Arrival) {
                 break;
@@ -180,20 +177,20 @@ public:
         }
     }
 
-    void arrive_and_drop() {
+    void arrive_and_drop() noexcept /* strengthened */ {
         ptrdiff_t _Rem_count = _Phase_count.fetch_sub(_Barrier_value_step, memory_order_relaxed) - _Barrier_value_step;
         if (_Rem_count < 0) {
-            __std_sync_error(errc::state_not_recoverable);
+            _CSTD abort();
         }
 
         (void) arrive(1);
     }
 
 private:
-    void _Completion(const ptrdiff_t _Current) {
+    void _Completion(const ptrdiff_t _Current) noexcept {
         ptrdiff_t _Rem_count = _Phase_count.load(memory_order_relaxed);
         if (_Rem_count < 0) {
-            __std_sync_error(errc::state_not_recoverable);
+            _CSTD abort();
         }
         this->_Call_completion();
         const ptrdiff_t _New_phase_count = _Rem_count | ((_Current + 1) & _Barrier_arrival_token_mask);

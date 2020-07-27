@@ -20,7 +20,7 @@
 #include <atomic>
 #include <chrono>
 #include <limits.h>
-#include <xerrc.h>
+#include <stdlib.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -28,11 +28,6 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("max")
 #undef max
-
-_EXTERN_C
-[[noreturn]] void __stdcall __std_sync_error(_STD errc code);
-_END_EXTERN_C
-
 
 _STD_BEGIN
 
@@ -51,16 +46,16 @@ public:
     counting_semaphore(const counting_semaphore&) = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
-    void release(const ptrdiff_t _Update = 1) {
+    void release(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         if (_Update == 0) {
             return;
         }
         if (_Update < 0) {
-            __std_sync_error(errc::invalid_argument);
+            _CSTD abort();
         }
         const ptrdiff_t _Prev = _Counter.fetch_add(_Update, memory_order_release);
         if (_Prev < 0 || static_cast<size_t>(_Prev) + static_cast<size_t>(_Update) > _Least_max_value) {
-            __std_sync_error(errc::state_not_recoverable);
+            _CSTD abort();
         }
         if (_Prev == 0) {
             if (_Update == 1) {
@@ -71,7 +66,7 @@ public:
         }
     }
 
-    void acquire() {
+    void acquire() noexcept /* strengthened */ {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             if (_Current == 0) {
@@ -79,7 +74,7 @@ public:
                 _Current = _Counter.load(memory_order_relaxed);
             }
             if (_Current < 0 || _Current > _Least_max_value) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
@@ -88,7 +83,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool try_acquire() noexcept {
+    [[nodiscard]] bool try_acquire() noexcept /* strengthened */ {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         if (_Current == 0) {
             return false;
@@ -115,7 +110,7 @@ public:
                 _Current = _Counter.load(memory_order_relaxed);
             }
             if (_Current < 0 || _Current > _Least_max_value) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
@@ -146,7 +141,7 @@ public:
                 _Current = _Counter.load(memory_order_relaxed);
             }
             if (_Current < 0 || _Current > _Least_max_value) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
@@ -178,7 +173,7 @@ public:
             return;
         }
         if (_Update != 1) {
-            __std_sync_error(errc::invalid_argument);
+            _CSTD abort();
         }
 
         _Counter.store(1, memory_order_release);
@@ -192,7 +187,7 @@ public:
                 break;
             }
             if (_Prev != 0) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             _Counter.wait(0, std::memory_order_relaxed);
         }
@@ -206,7 +201,7 @@ public:
         case 1:
             return true;
         default:
-            __std_sync_error(errc::state_not_recoverable);
+            _CSTD abort();
         }
     }
 
@@ -220,7 +215,7 @@ public:
                 return true;
             }
             if (_Prev != 0) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
             const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
             if (_Remaining_timeout == 0) {
@@ -238,7 +233,7 @@ public:
                 return true;
             }
             if (_Prev != 0) {
-                __std_sync_error(errc::state_not_recoverable);
+                _CSTD abort();
             }
 
             auto _Now = _Clock::now();
