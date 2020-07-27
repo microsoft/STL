@@ -17,6 +17,26 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if _USE_STD_VECTOR_ALGORITHMS
+_EXTERN_C
+// The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
+// won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
+// those pointers. The optimizer also assumes in that case that a pointer parameter is not returned to the caller via
+// the return value, so functions using "noalias" must usually return void. This attribute is valuable because these
+// functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
+// compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
+// unanalyzable routines may modify those arrays.
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+_END_EXTERN_C
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 _STD_BEGIN
 // COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
@@ -336,21 +356,40 @@ namespace ranges {
             indirectly_unary_invocable<projected<_It, _Pj>> _Fn>
         constexpr for_each_result<_It, _Fn> operator()(_It _First, _Se _Last, _Fn _Func, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                _STD invoke(_Func, _STD invoke(_Proj, *_UFirst));
-            }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return {_STD move(_First), _STD move(_Func)};
+            auto _UResult = _For_each_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Func), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.fun)};
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirectly_unary_invocable<projected<iterator_t<_Rng>, _Pj>> _Fn>
         constexpr for_each_result<borrowed_iterator_t<_Rng>, _Fn> operator()(
             _Rng&& _Range, _Fn _Func, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Func), _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+
+            auto _UResult = _For_each_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Func), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.fun)};
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Fn>
+        _NODISCARD static constexpr for_each_result<_It, _Fn> _For_each_unchecked(
+            _It _First, const _Se _Last, _Fn _Func, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_unary_invocable<_Fn, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                _STD invoke(_Func, _STD invoke(_Proj, *_First));
+            }
+
+            return {_STD move(_First), _STD move(_Func)};
         }
     };
 
@@ -520,22 +559,40 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    break;
-                }
-            }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            auto _UResult = _Find_if_not_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+
+            auto _UResult = _Find_if_not_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Find_if_not_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+            }
+
+            return _First;
         }
     };
 
@@ -589,33 +646,45 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
         _NODISCARD constexpr _It operator()(_It _First, const _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            // find first satisfying _Pred with successor
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_First);
-            const auto _ULast = _Get_unwrapped(_Last);
 
-            if (_UFirst == _ULast) {
-                return _First;
-            }
+            auto _UResult = _Adjacent_find_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
 
-            for (auto _UNext = _UFirst;; _UFirst = _UNext) {
-                if (++_UNext == _ULast) {
-                    _Seek_wrapped(_First, _UNext);
-                    return _First;
-                }
-
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, *_UNext))) {
-                    _Seek_wrapped(_First, _UFirst);
-                    return _First;
-                }
-            }
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
                 ranges::equal_to>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _UResult = _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Adjacent_find_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // find first satisfying _Pred with successor
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<_Pr, projected<_It, _Pj>, projected<_It, _Pj>>);
+
+            if (_First == _Last) {
+                return _First;
+            }
+
+            for (auto _Next = _First;; ++_First) {
+                if (++_Next == _Last) {
+                    return _Next;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Next))) {
+                    return _First;
+                }
+            }
         }
     };
 
@@ -1417,21 +1486,31 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    return false;
-                }
-            }
 
-            return true;
+            return _All_of_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _All_of_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr bool _All_of_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     };
 
@@ -1471,21 +1550,31 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    return true;
-                }
-            }
 
-            return false;
+            return _Any_of_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Any_of_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr bool _Any_of_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     };
 
@@ -1525,21 +1614,31 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst))) {
-                    return false;
-                }
-            }
 
-            return true;
+            return _None_of_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _None_of_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr bool _None_of_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     };
 
@@ -3184,24 +3283,16 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr _It1 operator()(_It1 _First1, const _Se1 _Last1, const _It2 _First2, const _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr _It1 operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UFirst1       = _Get_unwrapped(_STD move(_First1));
-            const auto _ULast1  = _Get_unwrapped(_Last1);
-            const auto _UFirst2 = _Get_unwrapped(_First2);
-            const auto _ULast2  = _Get_unwrapped(_Last2);
-            for (; _UFirst1 != _ULast1; ++_UFirst1) {
-                for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UMid2))) {
-                        _Seek_wrapped(_First1, _STD move(_UFirst1));
-                        return _First1;
-                    }
-                }
-            }
 
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
+            auto _UResult = _Find_first_of_unchecked(_Get_unwrapped(_STD move(_First1)),
+                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
+                _Get_unwrapped(_STD move(_Last2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult));
             return _First1;
         }
 
@@ -3210,10 +3301,35 @@ namespace ranges {
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
         _NODISCARD constexpr borrowed_iterator_t<_Rng1> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2),
-                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            auto _First1 = _RANGES begin(_Range1);
+
+            auto _UResult = _Find_first_of_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult));
+            return _First1;
         }
         // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr _It1 _Find_first_of_unchecked(_It1 _First1, const _Se1 _Last1, const _It2 _First2,
+            const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            for (; _First1 != _Last1; ++_First1) {
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2) {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_Mid2))) {
+                        return _First1;
+                    }
+                }
+            }
+
+            return _First1;
+        }
     };
 
     inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
@@ -4355,6 +4471,72 @@ _NODISCARD _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* termi
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::unique
+    class _Unique_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_equivalence_relation<projected<_It, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Unique_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        // clang-format off
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
+            requires permutable<iterator_t<_Rng>>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UResult = _Unique_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // Remove adjacent elements from [_First, _Last) whose projections satisfy _Pred
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
+
+            auto _Current = _First;
+            if (_First == _Last) {
+                return {_STD move(_Current), _STD move(_First)};
+            }
+
+            for (;; ++_Current) {
+                if (++_First == _Last) {
+                    return {_STD move(_Current), _STD move(_First)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+            }
+
+            while (++_First != _Last) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
+                    ++_Current;
+                    *_Current = _RANGES iter_move(_First);
+                }
+            }
+            ++_Current;
+
+            return {_STD move(_Current), _STD move(_First)};
+        }
+    };
+
+    inline constexpr _Unique_fn unique{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE unique_copy
 #if _HAS_IF_CONSTEXPR
 // clang-format off
@@ -4526,6 +4708,182 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE unique_copy_result
+    template <class _In, class _Out>
+    using unique_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::unique_copy
+    // clang-format off
+    template <class _It, class _Out>
+    concept _Can_reread_or_store = forward_iterator<_It>
+                                || (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>)
+                                || indirectly_copyable_storable<_It, _Out>;
+    // clang-format on
+    class _Unique_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Pj = identity,
+            indirect_equivalence_relation<projected<_It, _Pj>> _Pr = ranges::equal_to>
+            requires indirectly_copyable<_It, _Out> && _Can_reread_or_store<_It, _Out>
+        constexpr unique_copy_result<_It, _Out> operator()(
+            _It _First, _Se _Last, _Out _Result, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Unique_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
+                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out, class _Pj = identity,
+            indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out> && _Can_reread_or_store<iterator_t<_Rng>, _Out>
+        constexpr unique_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, _Out _Result, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Unique_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Out, class _Pj, class _Pr>
+        _NODISCARD static constexpr unique_copy_result<_It, _Out> _Unique_copy_unchecked(
+            _It _First, const _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj) {
+            // Copy elements from [_First, _Last) to _Result, compressing adjacent elements whose projections satisfy
+            // _Pred
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(_Can_reread_or_store<_It, _Out>);
+
+            if (_First == _Last) {
+                return {_STD move(_First), _STD move(_Result)};
+            }
+
+            if constexpr (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>) {
+                // Can reread _Result
+                *_Result = *_First;
+
+                while (++_First != _Last) {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Result), _STD invoke(_Proj, *_First))) {
+                        ++_Result;
+                        *_Result = *_First;
+                    }
+                }
+            } else if constexpr (forward_iterator<_It>) {
+                // Can reread _First
+                auto _Current = _First;
+                *_Result      = *_First;
+
+                while (++_First != _Last) {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
+                        _Current = _First;
+                        ++_Result;
+                        *_Result = *_First;
+                    }
+                }
+            } else {
+                // Neither _First nor _Result can be reread, construct temporary
+                iter_value_t<_It> _Val = *_First;
+
+                while (++_First != _Last) {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First))) {
+                        *_Result = _STD move(_Val);
+                        ++_Result;
+                        _Val = *_First;
+                    }
+                }
+                *_Result = _STD move(_Val);
+            }
+            ++_Result;
+
+            return {_STD move(_First), _STD move(_Result)};
+        }
+    };
+
+    inline constexpr _Unique_copy_fn unique_copy{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::reverse
+    // clang-format off
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <bidirectional_iterator _It>
+        requires permutable<_It>
+    constexpr void _Reverse_common(_It _First, _It _Last) {
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (contiguous_iterator<_It>) {
+            using _Elem          = remove_reference_t<iter_reference_t<_It>>;
+            constexpr size_t _Nx = sizeof(_Elem);
+            constexpr bool _Allow_vectorization =
+                conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+            if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+                if (!_STD is_constant_evaluated()) {
+                    _Elem* const _First_addr = _STD to_address(_First);
+                    _Elem* const _Last_addr  = _STD to_address(_Last);
+                    if constexpr (_Nx == 1) {
+                        __std_reverse_trivially_swappable_1(_First_addr, _Last_addr);
+                    } else if constexpr (_Nx == 2) {
+                        __std_reverse_trivially_swappable_2(_First_addr, _Last_addr);
+                    } else if constexpr (_Nx == 4) {
+                        __std_reverse_trivially_swappable_4(_First_addr, _Last_addr);
+                    } else {
+                        __std_reverse_trivially_swappable_8(_First_addr, _Last_addr);
+                    }
+
+                    return;
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+        for (; _First != _Last && _First != --_Last; ++_First) {
+            _RANGES iter_swap(_First, _Last);
+        }
+    }
+    // clang-format on
+
+    class _Reverse_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se>
+            requires permutable<_It>
+        constexpr _It operator()(_It _First, _Se _Last) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _RANGES _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
+            return _First;
+        }
+
+        template <bidirectional_range _Rng>
+            requires permutable<iterator_t<_Rng>>
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            _RANGES _Reverse_common(_Ubegin(_Range), _ULast);
+            return _Rewrap_iterator(_Range, _STD move(_ULast));
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Reverse_fn reverse{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE reverse_copy
 template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
@@ -4534,6 +4892,37 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     const auto _UFirst = _Get_unwrapped(_First);
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
+
+#if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
+    using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
+    using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
+    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
+        is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+    constexpr size_t _Nx                = sizeof(_Elem);
+
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+    if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            if constexpr (_Nx == 1) {
+                __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+            } else if constexpr (_Nx == 2) {
+                __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+            } else if constexpr (_Nx == 4) {
+                __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+            } else {
+                __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+            }
+
+            _UDest += _ULast - _UFirst;
+            _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+#endif // _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
+
     for (; _UFirst != _ULast; ++_UDest) {
         *_UDest = *--_ULast;
     }
@@ -4584,12 +4973,12 @@ _SampleIt _Sample_reservoir_unchecked(
     // pre: _SampleIt is random-access && 0 < _Count && the range [_Dest, _Dest + _Count) is valid
     using _Diff_sample = _Iter_diff_t<_SampleIt>;
     const auto _SCount = static_cast<_Diff_sample>(_Count);
-    _Iter_diff_t<_PopIt> _PopSize{};
-    for (; _PopSize < _SCount; ++_PopSize, (void) ++_First) {
-        // _PopSize is less than _SCount, and [_Dest, _Dest + _SCount) is valid,
-        // so [_Dest, _Dest + _PopSize) must be valid, so narrowing to _Diff_sample
+    _Iter_diff_t<_PopIt> _Pop_size{};
+    for (; _Pop_size < _SCount; ++_Pop_size, (void) ++_First) {
+        // _Pop_size is less than _SCount, and [_Dest, _Dest + _SCount) is valid,
+        // so [_Dest, _Dest + _Pop_size) must be valid, so narrowing to _Diff_sample
         // can't overflow
-        const auto _Sample_pop = static_cast<_Diff_sample>(_PopSize);
+        const auto _Sample_pop = static_cast<_Diff_sample>(_Pop_size);
         if (_First == _Last) {
             return _Dest + _Sample_pop;
         }
@@ -4597,7 +4986,7 @@ _SampleIt _Sample_reservoir_unchecked(
         *(_Dest + _Sample_pop) = *_First;
     }
     for (; _First != _Last; ++_First) {
-        const auto _Idx = _RngFunc(++_PopSize);
+        const auto _Idx = _RngFunc(++_Pop_size);
         if (_Idx < _SCount) {
             *(_Dest + static_cast<_Diff_sample>(_Idx)) = *_First; // again, valid narrowing because _Idx < _SCount
         }
@@ -4607,12 +4996,12 @@ _SampleIt _Sample_reservoir_unchecked(
 
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_selection_unchecked(
-    _PopIt _First, const _PopIt _Last, _Iter_diff_t<_PopIt> _PopSize, _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc) {
+    _PopIt _First, _Iter_diff_t<_PopIt> _Pop_size, _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc) {
     // source is forward *and* we know the source range size: use selection sampling (stable)
-    // pre: _PopIt is forward && _Count <= _PopSize
+    // pre: _PopIt is forward && _Count <= _Pop_size
     using _CT = common_type_t<_Iter_diff_t<_PopIt>, _Diff>;
-    for (; _Count > 0 && _First != _Last; ++_First, (void) --_PopSize) {
-        if (static_cast<_CT>(_RngFunc(_PopSize)) < static_cast<_CT>(_Count)) {
+    for (; _Pop_size > 0; ++_First, (void) --_Pop_size) {
+        if (static_cast<_CT>(_RngFunc(_Pop_size)) < static_cast<_CT>(_Count)) {
             --_Count;
             *_Dest = *_First;
             ++_Dest;
@@ -4634,15 +5023,15 @@ template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample1(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc, forward_iterator_tag) {
     // source is forward: use selection sampling (stable)
     // pre: _Count > 0
-    using _PopDiff      = _Iter_diff_t<_PopIt>;
-    using _CT           = common_type_t<_Diff, _PopDiff>;
-    const auto _PopSize = _STD distance(_First, _Last);
-    if (static_cast<_CT>(_Count) > static_cast<_CT>(_PopSize)) {
-        _Count = static_cast<_Diff>(_PopSize); // narrowing OK because _Count is getting smaller
+    using _PopDiff       = _Iter_diff_t<_PopIt>;
+    using _CT            = common_type_t<_Diff, _PopDiff>;
+    const auto _Pop_size = _STD distance(_First, _Last);
+    if (static_cast<_CT>(_Count) > static_cast<_CT>(_Pop_size)) {
+        _Count = static_cast<_Diff>(_Pop_size); // narrowing OK because _Count is getting smaller
     }
 
     _Seek_wrapped(
-        _Dest, _Sample_selection_unchecked(_First, _Last, _PopSize, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
+        _Dest, _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
     return _Dest;
 }
 
@@ -4660,6 +5049,128 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
 
     return _Dest;
 }
+
+#ifdef __cpp_lib_concepts
+// STRUCT TEMPLATE _Require_constant
+template <auto>
+struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression
+
+// CONCEPT uniform_random_bit_generator
+// clang-format off
+template <class _Ty>
+concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
+    { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
+    { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
+    typename _Require_constant<(_Ty::min)()>;
+    typename _Require_constant<(_Ty::max)()>;
+    requires (_Ty::min)() < (_Ty::max)();
+};
+// clang-format on
+
+namespace ranges {
+    // VARIABLE ranges::sample
+    class _Sample_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Urng>
+            requires (forward_iterator<_It> || random_access_iterator<_Out>)
+                  && indirectly_copyable<_It, _Out> && uniform_random_bit_generator<remove_reference_t<_Urng>>
+        _Out operator()(_It _First, _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Urng&& _Func) const {
+            _Adl_verify_range(_First, _Last);
+            if (_Count <= 0) {
+                return _Result;
+            }
+
+            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            if constexpr (forward_iterator<_It>) {
+                auto _UFirst   = _Get_unwrapped(_STD move(_First));
+                auto _Pop_size = _RANGES distance(_UFirst, _Get_unwrapped(_STD move(_Last)));
+                return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Result), _Count, _RngFunc);
+            } else {
+                return _Sample_reservoir_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
+                    _STD move(_Result), _Count, _RngFunc);
+            }
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out, class _Urng>
+           requires (forward_range<_Rng> || random_access_iterator<_Out>)
+                  && indirectly_copyable<iterator_t<_Rng>, _Out>
+                  && uniform_random_bit_generator<remove_reference_t<_Urng>>
+        _Out operator()(_Rng&& _Range, _Out _Result, range_difference_t<_Rng> _Count, _Urng&& _Func) const {
+            if (_Count <= 0) {
+                return _Result;
+            }
+
+            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            if constexpr (forward_range<_Rng>) {
+                auto _UFirst   = _Ubegin(_Range);
+                auto _Pop_size = _RANGES distance(_UFirst, _Uend(_Range));
+                return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Result), _Count, _RngFunc);
+            } else {
+                return _Sample_reservoir_unchecked(
+                    _Ubegin(_Range), _Uend(_Range), _STD move(_Result), _Count, _RngFunc);
+            }
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Out, class _Rng>
+        _NODISCARD static _Out _Sample_selection_unchecked(
+            _It _First, iter_difference_t<_It> _Pop_size, _Out _Result, iter_difference_t<_It> _Count, _Rng& _RngFunc) {
+            // randomly select _Count elements from [_First, _First + _Pop_size) into _Result
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+            if (_Count > _Pop_size) {
+                _Count = _Pop_size;
+            }
+
+            for (; _Pop_size > 0; ++_First, (void) --_Pop_size) {
+                if (_RngFunc(_Pop_size) < _Count) {
+                    *_Result = *_First;
+                    ++_Result;
+                    if (--_Count == 0) {
+                        break;
+                    }
+                }
+            }
+
+            return _Result;
+        }
+
+        template <class _It, class _Se, class _Out, class _Rng>
+        _NODISCARD static _Out _Sample_reservoir_unchecked(
+            _It _First, const _Se _Last, _Out _Result, const iter_difference_t<_It> _Count, _Rng& _RngFunc) {
+            // randomly select _Count elements from [_First, _Last) into _Result
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+            iter_difference_t<_It> _Pop_size{};
+            for (; _Pop_size < _Count; ++_Pop_size, (void) ++_First) {
+                if (_First == _Last) {
+                    return _Result + _Pop_size;
+                }
+
+                *(_Result + _Pop_size) = *_First;
+            }
+            for (; _First != _Last; ++_First) {
+                const auto _Idx = _RngFunc(++_Pop_size);
+                if (_Idx < _Count) {
+                    *(_Result + _Idx) = *_First;
+                }
+            }
+
+            return _Result + _Count;
+        }
+    };
+
+    inline constexpr _Sample_fn sample{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE shuffle WITH URNG
@@ -4691,6 +5202,66 @@ void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _
     _Rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
     _Random_shuffle1(_First, _Last, _RngFunc);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::shuffle
+    class _Shuffle_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Urng>
+            requires permutable<_It> && uniform_random_bit_generator<remove_reference_t<_Urng>>
+        _It operator()(_It _First, _Se _Last, _Urng&& _Func) const {
+            _Adl_verify_range(_First, _Last);
+
+            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            auto _UResult =
+                _Shuffle_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _RngFunc);
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <random_access_range _Rng, class _Urng>
+            requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
+        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) const {
+            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+
+            return _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Rng>
+        _NODISCARD static _It _Shuffle_unchecked(_It _First, const _Se _Last, _Rng& _Func) {
+            // shuffle [_First, _Last) using random function _Func
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+
+            if (_First == _Last) {
+                return _First;
+            }
+            using _Diff = iter_difference_t<_It>;
+
+            auto _Target        = _First;
+            _Diff _Target_index = 1;
+            for (; ++_Target != _Last; ++_Target_index) {
+                // randomly place an element from [_First, _Target] at _Target
+                const _Diff _Off = _Func(_Target_index + 1);
+                _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
+                if (_Off != _Target_index) { // avoid self-move-assignment
+                    _RANGES iter_swap(_Target, _First + _Off);
+                }
+            }
+            return _Target;
+        }
+    };
+
+    inline constexpr _Shuffle_fn shuffle{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 #if _HAS_AUTO_PTR_ETC
 // FUNCTION TEMPLATE random_shuffle WITH RANDOM FN
