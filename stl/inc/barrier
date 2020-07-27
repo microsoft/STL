@@ -80,7 +80,7 @@ public:
         _Fn();
     }
 
-    [[no_unique_address]] _Completion_function _Fn;
+    _Completion_function _Fn;
 };
 
 template <class _Completion_function>
