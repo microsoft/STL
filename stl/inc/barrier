@@ -34,7 +34,9 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-class _No_completion_function {};
+struct _No_completion_function {
+    void operator()() noexcept {}
+};
 
 template <class _Completion_function = _No_completion_function>
 class barrier;
@@ -66,35 +68,14 @@ private:
     friend class barrier<_Completion_function>;
 };
 
-
 template <class _Completion_function>
-class _Barrier_completion {
-public:
-    _Barrier_completion(_Completion_function _Fn) : _Fn(move(_Fn)) {}
-
-    void _Call_completion() {
-        _Fn();
-    }
-
-    _Completion_function _Fn;
-};
-
-template <>
-class _Barrier_completion<_No_completion_function> {
-public:
-    _Barrier_completion(_No_completion_function) {}
-
-    void _Call_completion() {}
-};
-
-template <class _Completion_function>
-class barrier : private _Barrier_completion<_Completion_function> {
+class barrier : private _Completion_function {
 public:
     using arrival_token = _Arrival_token<_Completion_function>;
 
     constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
-        : _Barrier_completion<_Completion_function>(std::move(_Fn)),
-          _Current_phase(_Phase_count << _Barrier_value_shift), _Phase_count(_Phase_count << _Barrier_value_shift) {}
+        : _Completion_function(_STD move(_Fn)), _Current_phase(_Phase_count << _Barrier_value_shift),
+          _Phase_count(_Phase_count << _Barrier_value_shift) {}
 
     ~barrier() = default;
 
@@ -177,7 +158,7 @@ private:
         if (_Rem_count < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
-        this->_Call_completion();
+        static_cast<_Completion_function&> (*this)();
         const ptrdiff_t _New_phase_count = _Rem_count | ((_Current + 1) & _Barrier_arrival_token_mask);
         _Current_phase.store(_New_phase_count, memory_order_release);
         _Current_phase.notify_all();
