@@ -31,7 +31,7 @@ struct instantiator {
             }
 
             if constexpr (_Has_op_arrow<Iter>) {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, decltype(declval<Cit&>().operator->())>);
+                STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, decltype(declval<const Iter&>().operator->())>);
             } else {
                 STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, void>);
             }
@@ -70,13 +70,13 @@ struct instantiator {
             }
 
             { //[common.iter.cust]
-                { // iter_move
+                if constexpr (input_iterator<Iter>) { // iter_move
                     Cit iter1{Iter{input}};
 
-                    auto iter2 = ranges::iter_move(iter1);
-                    assert(*iter1 == 2);
+                    const auto iter2 = ranges::iter_move(iter1);
+                    assert(iter2 == 2);
                 }
-                { // iter_swap
+                if constexpr (indirectly_swappable<Iter>) { // iter_swap
                     Cit iter1{Iter{input}};
                     Cit iter2{Iter{input + 1}};
 
