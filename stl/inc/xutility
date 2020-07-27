@@ -4479,6 +4479,16 @@ struct incrementable_traits<common_iterator<_Iter, _Se>> {
     using difference_type = iter_difference_t<_Iter>;
 };
 
+template <class>
+struct _Common_iterator_pointer_type {
+    using pointer = void;
+};
+
+template <_Has_op_arrow _Iter>
+struct _Common_iterator_pointer_type<_Iter> {
+    using pointer = decltype(_STD declval<_Iter&>().operator->());
+};
+
 template <input_iterator _Iter, class _Se>
 struct iterator_traits<common_iterator<_Iter, _Se>> {
     using iterator_concept = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
@@ -4486,7 +4496,7 @@ struct iterator_traits<common_iterator<_Iter, _Se>> {
         conditional_t<derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>;
     using value_type      = iter_value_t<_Iter>;
     using difference_type = iter_difference_t<_Iter>;
-    using pointer         = conditional_t<_Has_op_arrow<_Iter>, decltype(_STD declval<_Iter&>().operator->()), void>;
+    using pointer         = typename _Common_iterator_pointer_type<_Iter>::pointer;
     using reference       = iter_reference_t<_Iter>;
 };
 
