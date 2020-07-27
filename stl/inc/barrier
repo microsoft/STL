@@ -117,7 +117,7 @@ public:
             _Completion(_Current);
         }
         return _Arrival_token<_Completion_function>(
-            (_Current & _Barrier_arrival_token_mask) | (reinterpret_cast<intptr_t>(this)));
+            (_Current & _Barrier_arrival_token_mask) | reinterpret_cast<intptr_t>(this));
     }
 
     void wait(arrival_token&& _Arrival) const {
