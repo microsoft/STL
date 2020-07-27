@@ -4354,6 +4354,72 @@ _NODISCARD _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* termi
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::unique
+    class _Unique_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_equivalence_relation<projected<_It, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Unique_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        // clang-format off
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
+            requires permutable<iterator_t<_Rng>>
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UResult = _Unique_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr subrange<_It> _Unique_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // Remove adjacent elements from [_First, _Last) whose projections satisfy _Pred
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
+
+            auto _Current = _First;
+            if (_First == _Last) {
+                return {_STD move(_Current), _STD move(_First)};
+            }
+
+            for (;; ++_Current) {
+                if (++_First == _Last) {
+                    return {_STD move(_Current), _STD move(_First)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+            }
+
+            while (++_First != _Last) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
+                    ++_Current;
+                    *_Current = _RANGES iter_move(_First);
+                }
+            }
+            ++_Current;
+
+            return {_STD move(_Current), _STD move(_First)};
+        }
+    };
+
+    inline constexpr _Unique_fn unique{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE unique_copy
 #if _HAS_IF_CONSTEXPR
 // clang-format off
@@ -4527,6 +4593,110 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // ALIAS TEMPLATE unique_copy_result
+    template <class _In, class _Out>
+    using unique_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::unique_copy
+    // clang-format off
+    template <class _It, class _Out>
+    concept _Can_reread_or_store = forward_iterator<_It>
+                                || (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>)
+                                || indirectly_copyable_storable<_It, _Out>;
+    // clang-format on
+    class _Unique_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out, class _Pj = identity,
+            indirect_equivalence_relation<projected<_It, _Pj>> _Pr = ranges::equal_to>
+            requires indirectly_copyable<_It, _Out> && _Can_reread_or_store<_It, _Out>
+        constexpr unique_copy_result<_It, _Out> operator()(
+            _It _First, _Se _Last, _Out _Result, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Unique_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)),
+                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <input_range _Rng, weakly_incrementable _Out, class _Pj = identity,
+            indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out> && _Can_reread_or_store<iterator_t<_Rng>, _Out>
+        constexpr unique_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, _Out _Result, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _Unique_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range),
+                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Se, class _Out, class _Pj, class _Pr>
+        _NODISCARD static constexpr unique_copy_result<_It, _Out> _Unique_copy_unchecked(
+            _It _First, const _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj) {
+            // Copy elements from [_First, _Last) to _Result, compressing adjacent elements whose projections satisfy
+            // _Pred
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(_Can_reread_or_store<_It, _Out>);
+
+            if (_First == _Last) {
+                return {_STD move(_First), _STD move(_Result)};
+            }
+
+            if constexpr (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>) {
+                // Can reread _Result
+                *_Result = *_First;
+
+                while (++_First != _Last) {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Result), _STD invoke(_Proj, *_First))) {
+                        ++_Result;
+                        *_Result = *_First;
+                    }
+                }
+            } else if constexpr (forward_iterator<_It>) {
+                // Can reread _First
+                auto _Current = _First;
+                *_Result      = *_First;
+
+                while (++_First != _Last) {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
+                        _Current = _First;
+                        ++_Result;
+                        *_Result = *_First;
+                    }
+                }
+            } else {
+                // Neither _First nor _Result can be reread, construct temporary
+                iter_value_t<_It> _Val = *_First;
+
+                while (++_First != _Last) {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First))) {
+                        *_Result = _STD move(_Val);
+                        ++_Result;
+                        _Val = *_First;
+                    }
+                }
+                *_Result = _STD move(_Val);
+            }
+            ++_Result;
+
+            return {_STD move(_First), _STD move(_Result)};
+        }
+    };
+
+    inline constexpr _Unique_copy_fn unique_copy{_Not_quite_object::_Construct_tag{}};
+
     // VARIABLE ranges::reverse
     // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
