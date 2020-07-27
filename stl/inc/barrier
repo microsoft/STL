@@ -40,7 +40,7 @@ class barrier;
 inline constexpr ptrdiff_t _Barrier_arrival_token_mask = 1;
 inline constexpr ptrdiff_t _Barrier_value_mask         = ~_Barrier_arrival_token_mask;
 inline constexpr ptrdiff_t _Barrier_value_shift        = 1;
-inline constexpr ptrdiff_t _Barrier_invalid_token      = -1;
+inline constexpr ptrdiff_t _Barrier_invalid_token      = 0;
 inline constexpr ptrdiff_t _Barrier_value_step         = 1 << _Barrier_value_shift;
 inline constexpr ptrdiff_t _Barrier_max                = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 2)) - 1;
 
@@ -116,11 +116,12 @@ public:
             atomic_thread_fence(memory_order_acquire);
             _Completion(_Current);
         }
-        return _Arrival_token<_Completion_function>(_Current & _Barrier_arrival_token_mask);
+        return _Arrival_token<_Completion_function>(
+            (_Current & _Barrier_arrival_token_mask) | (static_assert<intptr_t>(this)));
     }
 
     void wait(arrival_token&& _Arrival) const {
-        if (_Arrival._Value & _Barrier_value_mask) {
+        if (_Arrival._Value & _Barrier_value_mask != static_assert<intptr_t>(this)) {
             __std_sync_error(errc::invalid_argument);
         }
 
@@ -175,7 +176,7 @@ private:
             __std_sync_error(errc::state_not_recoverable);
         }
         this->_Call_completion();
-        const ptrdiff_t _New_phase_count = _Rem_count | (~_Current & _Barrier_arrival_token_mask);
+        const ptrdiff_t _New_phase_count = _Rem_count | ((_Current + 1) & _Barrier_arrival_token_mask);
         _Current_phase.store(_New_phase_count, memory_order_release);
         _Current_phase.notify_all();
     }
