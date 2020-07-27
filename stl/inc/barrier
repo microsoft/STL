@@ -19,6 +19,7 @@
 
 #include <atomic>
 #include <limits.h>
+#include <type_traits>
 #include <xerrc.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -34,9 +35,7 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-struct _No_completion_function {
-    void operator()() noexcept {}
-};
+class _No_completion_function final {};
 
 template <class _Completion_function = _No_completion_function>
 class barrier;
@@ -68,14 +67,48 @@ private:
     friend class barrier<_Completion_function>;
 };
 
+// TRANSITION, ABI: simplify this when [[no_unique_address]] is working
+template <class _Completion_function, bool _Is_final = is_final_v<_Completion_function>>
+class _Barrier_completion;
+
 template <class _Completion_function>
-class barrier : private _Completion_function {
+class _Barrier_completion<_Completion_function, true> {
+public:
+    _Barrier_completion(_Completion_function _Fn) : _Fn(move(_Fn)) {}
+
+    void _Call_completion() noexcept {
+        _Fn();
+    }
+
+    [[no_unique_address]] _Completion_function _Fn;
+};
+
+template <class _Completion_function>
+class _Barrier_completion<_Completion_function, false> : private _Completion_function {
+public:
+    _Barrier_completion(_Completion_function _Fn) : _Completion_function(move(_Fn)) {}
+
+    void _Call_completion() noexcept {
+        (*this)();
+    }
+};
+
+template <>
+class _Barrier_completion<_No_completion_function, true> {
+public:
+    _Barrier_completion(_No_completion_function) {}
+
+    void _Call_completion() {}
+};
+
+template <class _Completion_function>
+class barrier : private _Barrier_completion<_Completion_function> {
 public:
     using arrival_token = _Arrival_token<_Completion_function>;
 
     constexpr explicit barrier(const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function())
-        : _Completion_function(_STD move(_Fn)), _Current_phase(_Phase_count << _Barrier_value_shift),
-          _Phase_count(_Phase_count << _Barrier_value_shift) {}
+        : _Barrier_completion<_Completion_function>(std::move(_Fn)),
+          _Current_phase(_Phase_count << _Barrier_value_shift), _Phase_count(_Phase_count << _Barrier_value_shift) {}
 
     ~barrier() = default;
 
@@ -158,8 +191,7 @@ private:
         if (_Rem_count < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
-        static_assert(noexcept(static_cast<_Completion_function&>(*this)()), "Completion function shall not throw");
-        static_cast<_Completion_function&> (*this)();
+        this->_Call_completion();
         const ptrdiff_t _New_phase_count = _Rem_count | ((_Current + 1) & _Barrier_arrival_token_mask);
         _Current_phase.store(_New_phase_count, memory_order_release);
         _Current_phase.notify_all();

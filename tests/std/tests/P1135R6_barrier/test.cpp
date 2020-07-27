@@ -38,7 +38,7 @@ void test_with_functor() {
     int called_times = 0;
 
     struct Functor {
-        void operator()() {
+        void operator()() noexcept {
             switch (++(*called_times)) {
             case 1:
                 assert(c->load(std::memory_order_relaxed) == 0);
