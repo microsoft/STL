@@ -1,0 +1,38 @@
+query prs_and_issues($want_prs: Boolean!, $pr_cursor: String, $want_issues: Boolean!, $issue_cursor: String) {
+    rateLimit {
+        cost
+        remaining
+    }
+    repository(owner: "microsoft", name: "STL") {
+        pullRequests(first: 100, orderBy: { field: CREATED_AT, direction: DESC }, after: $pr_cursor)
+            @include(if: $want_prs) {
+            nodes {
+                number
+                createdAt
+                closedAt
+            }
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+        }
+        issues(first: 100, orderBy: { field: CREATED_AT, direction: DESC }, after: $issue_cursor)
+            @include(if: $want_issues) {
+            nodes {
+                number
+                createdAt
+                closedAt
+                labels(first: 5) {
+                    totalCount
+                    nodes {
+                        name
+                    }
+                }
+            }
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+        }
+    }
+}

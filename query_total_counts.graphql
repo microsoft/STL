@@ -1,0 +1,14 @@
+query total_counts {
+    rateLimit {
+        cost
+        limit
+    }
+    repository(owner: "microsoft", name: "STL") {
+        pullRequests(first: 0) {
+            totalCount
+        }
+        issues(first: 0) {
+            totalCount
+        }
+    }
+}
