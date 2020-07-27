@@ -279,6 +279,7 @@ tests\P0896R4_ranges_alg_replace_copy
 tests\P0896R4_ranges_alg_replace_copy_if
 tests\P0896R4_ranges_alg_replace_if
 tests\P0896R4_ranges_alg_reverse
+tests\P0896R4_ranges_alg_reverse_copy
 tests\P0896R4_ranges_alg_sample
 tests\P0896R4_ranges_alg_search
 tests\P0896R4_ranges_alg_search_n
