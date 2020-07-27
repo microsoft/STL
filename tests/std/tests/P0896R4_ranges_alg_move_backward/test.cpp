@@ -106,7 +106,6 @@ constexpr void test_memmove() {
         auto operator<=>(const S&) const = default;
     };
 
-
     { // Validate range overload
         S input[]                                               = {13, 42, 1729};
         S output[]                                              = {-2, -2, -2};
