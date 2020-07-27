@@ -3902,7 +3902,7 @@ public:
     _CONSTEXPR17 move_iterator() = default;
 
     _CONSTEXPR17 explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
-        : current(_STD move(_Right)) {}
+        : _Current(_STD move(_Right)) {}
 
     // clang-format off
     template <class _Other>
@@ -3912,7 +3912,7 @@ public:
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _Other&>) // strengthened
-        : current(_Right.base()) {}
+        : _Current(_Right.base()) {}
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
@@ -3922,38 +3922,38 @@ public:
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator& operator=(const move_iterator<_Other>& _Right) noexcept(
         is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
-        current = _Right.base();
+        _Current = _Right.base();
         return *this;
     }
     // clang-format on
 
 #ifdef __cpp_lib_concepts
     _NODISCARD constexpr const iterator_type& base() const& { // Per LWG-3391
-        return current;
+        return _Current;
     }
     _NODISCARD constexpr iterator_type base() && {
-        return _STD move(current);
+        return _STD move(_Current);
     }
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     _NODISCARD _CONSTEXPR17 iterator_type base() const {
-        return current;
+        return _Current;
     }
 #endif // __cpp_lib_concepts
 
     _NODISCARD _CONSTEXPR17 reference operator*() const {
 #ifdef __cpp_lib_concepts
-        return _RANGES iter_move(current);
+        return _RANGES iter_move(_Current);
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-        return static_cast<reference>(*current);
+        return static_cast<reference>(*_Current);
 #endif // __cpp_lib_concepts
     }
 
     _NODISCARD _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _CONSTEXPR17 pointer operator->() const {
-        return current;
+        return _Current;
     }
 
     _CONSTEXPR17 move_iterator& operator++() {
-        ++current;
+        ++_Current;
         return *this;
     }
 
@@ -3962,102 +3962,102 @@ public:
         if constexpr (forward_iterator<_Iter>) {
 #endif // __cpp_lib_concepts
             move_iterator _Tmp = *this;
-            ++current;
+            ++_Current;
             return _Tmp;
 #ifdef __cpp_lib_concepts
         } else {
-            ++current;
+            ++_Current;
         }
 #endif // __cpp_lib_concepts
     }
 
     _CONSTEXPR17 move_iterator& operator--() {
-        --current;
+        --_Current;
         return *this;
     }
 
     _CONSTEXPR17 move_iterator operator--(int) {
         move_iterator _Tmp = *this;
-        --current;
+        --_Current;
         return _Tmp;
     }
 
     template <class _Iter2 = _Iter>
     _NODISCARD auto operator==(_Default_sentinel _Sentinel) const noexcept
         -> decltype(_STD declval<const _Iter2&>() == _Sentinel) {
-        return current == _Sentinel;
+        return _Current == _Sentinel;
     }
 
     template <class _Iter2 = _Iter>
     _NODISCARD auto operator!=(_Default_sentinel _Sentinel) const noexcept
         -> decltype(_STD declval<const _Iter2&>() != _Sentinel) {
-        return current != _Sentinel;
+        return _Current != _Sentinel;
     }
 
     _NODISCARD _CONSTEXPR17 move_iterator operator+(const difference_type _Off) const {
-        return move_iterator(current + _Off);
+        return move_iterator(_Current + _Off);
     }
 
     _CONSTEXPR17 move_iterator& operator+=(const difference_type _Off) {
-        current += _Off;
+        _Current += _Off;
         return *this;
     }
 
     _NODISCARD _CONSTEXPR17 move_iterator operator-(const difference_type _Off) const {
-        return move_iterator(current - _Off);
+        return move_iterator(_Current - _Off);
     }
 
     _CONSTEXPR17 move_iterator& operator-=(const difference_type _Off) {
-        current -= _Off;
+        _Current -= _Off;
         return *this;
     }
 
     _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const {
 #ifdef __cpp_lib_concepts
-        return _RANGES iter_move(current + _Off);
+        return _RANGES iter_move(_Current + _Off);
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-        return _STD move(current[_Off]);
+        return _STD move(_Current[_Off]);
 #endif // __cpp_lib_concepts
     }
 
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent>
     _NODISCARD friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
-        return _Left.current == _Right._Get_last();
+        return _Left._Current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
     _NODISCARD friend constexpr difference_type operator-(
         const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
-        return _Left._Get_last() - _Right.current;
+        return _Left._Get_last() - _Right._Current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
     _NODISCARD friend constexpr difference_type operator-(
         const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
-        return _Left.current - _Right._Get_last();
+        return _Left._Current - _Right._Get_last();
     }
 
     _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
-        noexcept(_RANGES iter_move(_It.current))) {
-        return _RANGES iter_move(_It.current);
+        noexcept(_RANGES iter_move(_It._Current))) {
+        return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
     friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left.current, _Right.base()))) {
-        _RANGES iter_swap(_Left.current, _Right.base());
+        noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
+        _RANGES iter_swap(_Left._Current, _Right.base());
     }
 #endif // __cpp_lib_concepts
 
     template <class _Iter2, enable_if_t<_Range_verifiable_v<_Iter, _Iter2>, int> = 0>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_iterator<_Iter2>& _Last) {
-        _Verify_range(_First.current, _Last.base());
+        _Verify_range(_First._Current, _Last.base());
     }
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent, enable_if_t<_Range_verifiable_v<_Iter, _Sent>, int> = 0>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) {
-        _Verify_range(_First.current, _Last._Get_last());
+        _Verify_range(_First._Current, _Last._Get_last());
     }
 #endif // __cpp_lib_concepts
 
@@ -4065,31 +4065,31 @@ public:
 
     template <class _Iter2 = iterator_type, enable_if_t<_Offset_verifiable_v<_Iter2>, int> = 0>
     constexpr void _Verify_offset(const difference_type _Off) const {
-        current._Verify_offset(_Off);
+        _Current._Verify_offset(_Off);
     }
 
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
     _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& {
-        return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(current._Unwrapped());
+        return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(_Current._Unwrapped());
     }
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
     _NODISCARD constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && {
-        return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(current)._Unwrapped());
+        return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(_Current)._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_type>;
 
     template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, const _Src&>, int> = 0>
     constexpr void _Seek_to(const move_iterator<_Src>& _It) {
-        current._Seek_to(_It.base());
+        _Current._Seek_to(_It.base());
     }
     template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, _Src>, int> = 0>
     constexpr void _Seek_to(move_iterator<_Src>&& _It) {
-        current._Seek_to(_STD move(_It).base());
+        _Current._Seek_to(_STD move(_It).base());
     }
 
-protected:
-    iterator_type current{};
+private:
+    iterator_type _Current{};
 };
 
 template <class _Iter1, class _Iter2>
