@@ -24,20 +24,20 @@ struct throwingIter {
     }
     throwingIter& operator++() {
         ++_val;
+        return *this;
     }
     throwingIter operator++(int) {
         ++_val;
+        return *this;
     }
 
-    bool operator==(throwingIter const&) const = default;
-    bool operator==(default_sentinel_t const&) const {
+    bool operator==(const throwingIter&) const = default;
+    bool operator==(const default_sentinel_t&) const {
         return true;
     }
 
     template <class U = int>
-    friend void iter_swap(throwingIter const& x, throwingIter<U> const& y) {
-        x._val = exchange(x._val, y._val);
-    }
+    friend void iter_swap(const throwingIter&, const throwingIter<U>&) {}
 
     throwingIter() = default;
     throwingIter(int val) : _val(val) {}
@@ -102,8 +102,14 @@ void test_case_iter_move() {
     (void) ranges::iter_move(cit); // cannot iter_move common_iterator that holds a sentinel
 }
 
-void test_case_iter_swap() {
+void test_case_iter_swap_sentinel_left() {
     CIT cit1{default_sentinel};
+    CIT cit2{};
+    (void) ranges::iter_swap(cit1, cit2); // cannot iter_swap common_iterators that hold a sentinel
+}
+
+void test_case_iter_swap_sentinel_right() {
+    CIT cit1{};
     CIT cit2{default_sentinel};
     (void) ranges::iter_swap(cit1, cit2); // cannot iter_swap common_iterators that hold a sentinel
 }
@@ -119,7 +125,8 @@ int main(int argc, char* argv[]) {
         test_case_operator_preincrement,
         test_case_operator_increment,
         test_case_iter_move,
-        test_case_iter_swap,
+        test_case_iter_swap_sentinel_left,
+        test_case_iter_swap_sentinel_right,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
