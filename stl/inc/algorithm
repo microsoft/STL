@@ -17,6 +17,26 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if _USE_STD_VECTOR_ALGORITHMS
+_EXTERN_C
+// The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
+// won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
+// those pointers. The optimizer also assumes in that case that a pointer parameter is not returned to the caller via
+// the return value, so functions using "noalias" must usually return void. This attribute is valuable because these
+// functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
+// compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
+// unanalyzable routines may modify those arrays.
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+__declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
+    const void* _First, const void* _Last, void* _Dest) noexcept;
+_END_EXTERN_C
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 _STD_BEGIN
 // COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
@@ -4520,6 +4540,7 @@ namespace ranges {
             constexpr bool _Allow_vectorization =
                 conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
 
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
             if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                 if (!_STD is_constant_evaluated()) {
                     _Elem* const _First_addr = _STD to_address(_First);
@@ -4584,6 +4605,37 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     const auto _UFirst = _Get_unwrapped(_First);
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
+
+#if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
+    using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
+    using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
+    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
+        is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+    constexpr size_t _Nx                = sizeof(_Elem);
+
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+    if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            if constexpr (_Nx == 1) {
+                __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+            } else if constexpr (_Nx == 2) {
+                __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+            } else if constexpr (_Nx == 4) {
+                __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+            } else {
+                __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+            }
+
+            _UDest += _ULast - _UFirst;
+            _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+#endif // _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
+
     for (; _UFirst != _ULast; ++_UDest) {
         *_UDest = *--_ULast;
     }
