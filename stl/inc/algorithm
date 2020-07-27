@@ -356,21 +356,40 @@ namespace ranges {
             indirectly_unary_invocable<projected<_It, _Pj>> _Fn>
         constexpr for_each_result<_It, _Fn> operator()(_It _First, _Se _Last, _Fn _Func, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Get_unwrapped(_STD move(_First));
-            const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            for (; _UFirst != _ULast; ++_UFirst) {
-                _STD invoke(_Func, _STD invoke(_Proj, *_UFirst));
-            }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
-            return {_STD move(_First), _STD move(_Func)};
+            auto _UResult = _For_each_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Func), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.fun)};
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirectly_unary_invocable<projected<iterator_t<_Rng>, _Pj>> _Fn>
         constexpr for_each_result<borrowed_iterator_t<_Rng>, _Fn> operator()(
             _Rng&& _Range, _Fn _Func, _Pj _Proj = {}) const {
-            return (*this)(_RANGES begin(_Range), _RANGES end(_Range), _STD move(_Func), _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+
+            auto _UResult = _For_each_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Func), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.fun)};
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Fn>
+        _NODISCARD static constexpr for_each_result<_It, _Fn> _For_each_unchecked(
+            _It _First, const _Se _Last, _Fn _Func, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_unary_invocable<_Fn, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                _STD invoke(_Func, _STD invoke(_Proj, *_First));
+            }
+
+            return {_STD move(_First), _STD move(_Func)};
         }
     };
 
