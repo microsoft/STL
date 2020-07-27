@@ -4266,14 +4266,14 @@ public:
             _Construct_in_place(_Mysentinel, _Right._Mysentinel);
         } else if (_Right._Mystate == _State::_Holds_iter) {
             if (_Mystate == _State::_Holds_sentinel) {
-                _Mysentinel.~_Iter();
+                _Mysentinel.~_Se();
                 _Mystate = _State::_Nothing;
             }
             _Construct_in_place(_Myiter, _Right._Myiter);
             _Mystate = _State::_Holds_iter;
         } else if (_Right._Mystate == _State::_Holds_sentinel) {
             if (_Mystate == _State::_Holds_iter) {
-                _Myiter.~_Se();
+                _Myiter.~_Iter();
                 _Mystate = _State::_Nothing;
             }
             _Construct_in_place(_Mysentinel, _Right._Mysentinel);
@@ -4298,14 +4298,14 @@ public:
             _Construct_in_place(_Mysentinel, _Right._Mysentinel);
         } else if (_Right._Mystate == _State::_Holds_iter) {
             if (_Mystate == _State::_Holds_sentinel) {
-                _Mysentinel.~_Iter();
+                _Mysentinel.~_Se();
                 _Mystate = _State::_Nothing;
             }
             _Construct_in_place(_Myiter, _Right._Myiter);
             _Mystate = _State::_Holds_iter;
         } else if (_Right._Mystate == _State::_Holds_sentinel) {
             if (_Mystate == _State::_Holds_iter) {
-                _Myiter.~_Se();
+                _Myiter.~_Iter();
                 _Mystate = _State::_Nothing;
             }
             _Construct_in_place(_Mysentinel, _Right._Mysentinel);
