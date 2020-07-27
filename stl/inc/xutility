@@ -3902,7 +3902,7 @@ public:
     _CONSTEXPR17 move_iterator() = default;
 
     _CONSTEXPR17 explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
-        : current(_STD move(_Right)) {}
+        : _Current(_STD move(_Right)) {}
 
     // clang-format off
     template <class _Other>
@@ -3912,7 +3912,7 @@ public:
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _Other&>) // strengthened
-        : current(_Right.base()) {}
+        : _Current(_Right.base()) {}
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
@@ -3922,38 +3922,38 @@ public:
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator& operator=(const move_iterator<_Other>& _Right) noexcept(
         is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
-        current = _Right.base();
+        _Current = _Right.base();
         return *this;
     }
     // clang-format on
 
 #ifdef __cpp_lib_concepts
     _NODISCARD constexpr const iterator_type& base() const& { // Per LWG-3391
-        return current;
+        return _Current;
     }
     _NODISCARD constexpr iterator_type base() && {
-        return _STD move(current);
+        return _STD move(_Current);
     }
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     _NODISCARD _CONSTEXPR17 iterator_type base() const {
-        return current;
+        return _Current;
     }
 #endif // __cpp_lib_concepts
 
     _NODISCARD _CONSTEXPR17 reference operator*() const {
 #ifdef __cpp_lib_concepts
-        return _RANGES iter_move(current);
+        return _RANGES iter_move(_Current);
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-        return static_cast<reference>(*current);
+        return static_cast<reference>(*_Current);
 #endif // __cpp_lib_concepts
     }
 
     _NODISCARD _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _CONSTEXPR17 pointer operator->() const {
-        return current;
+        return _Current;
     }
 
     _CONSTEXPR17 move_iterator& operator++() {
-        ++current;
+        ++_Current;
         return *this;
     }
 
@@ -3962,102 +3962,102 @@ public:
         if constexpr (forward_iterator<_Iter>) {
 #endif // __cpp_lib_concepts
             move_iterator _Tmp = *this;
-            ++current;
+            ++_Current;
             return _Tmp;
 #ifdef __cpp_lib_concepts
         } else {
-            ++current;
+            ++_Current;
         }
 #endif // __cpp_lib_concepts
     }
 
     _CONSTEXPR17 move_iterator& operator--() {
-        --current;
+        --_Current;
         return *this;
     }
 
     _CONSTEXPR17 move_iterator operator--(int) {
         move_iterator _Tmp = *this;
-        --current;
+        --_Current;
         return _Tmp;
     }
 
     template <class _Iter2 = _Iter>
     _NODISCARD auto operator==(_Default_sentinel _Sentinel) const noexcept
         -> decltype(_STD declval<const _Iter2&>() == _Sentinel) {
-        return current == _Sentinel;
+        return _Current == _Sentinel;
     }
 
     template <class _Iter2 = _Iter>
     _NODISCARD auto operator!=(_Default_sentinel _Sentinel) const noexcept
         -> decltype(_STD declval<const _Iter2&>() != _Sentinel) {
-        return current != _Sentinel;
+        return _Current != _Sentinel;
     }
 
     _NODISCARD _CONSTEXPR17 move_iterator operator+(const difference_type _Off) const {
-        return move_iterator(current + _Off);
+        return move_iterator(_Current + _Off);
     }
 
     _CONSTEXPR17 move_iterator& operator+=(const difference_type _Off) {
-        current += _Off;
+        _Current += _Off;
         return *this;
     }
 
     _NODISCARD _CONSTEXPR17 move_iterator operator-(const difference_type _Off) const {
-        return move_iterator(current - _Off);
+        return move_iterator(_Current - _Off);
     }
 
     _CONSTEXPR17 move_iterator& operator-=(const difference_type _Off) {
-        current -= _Off;
+        _Current -= _Off;
         return *this;
     }
 
     _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const {
 #ifdef __cpp_lib_concepts
-        return _RANGES iter_move(current + _Off);
+        return _RANGES iter_move(_Current + _Off);
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-        return _STD move(current[_Off]);
+        return _STD move(_Current[_Off]);
 #endif // __cpp_lib_concepts
     }
 
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent>
     _NODISCARD friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
-        return _Left.current == _Right._Get_last();
+        return _Left._Current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
     _NODISCARD friend constexpr difference_type operator-(
         const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
-        return _Left._Get_last() - _Right.current;
+        return _Left._Get_last() - _Right._Current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
     _NODISCARD friend constexpr difference_type operator-(
         const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
-        return _Left.current - _Right._Get_last();
+        return _Left._Current - _Right._Get_last();
     }
 
     _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
-        noexcept(_RANGES iter_move(_It.current))) {
-        return _RANGES iter_move(_It.current);
+        noexcept(_RANGES iter_move(_It._Current))) {
+        return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
     friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left.current, _Right.base()))) {
-        _RANGES iter_swap(_Left.current, _Right.base());
+        noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
+        _RANGES iter_swap(_Left._Current, _Right.base());
     }
 #endif // __cpp_lib_concepts
 
     template <class _Iter2, enable_if_t<_Range_verifiable_v<_Iter, _Iter2>, int> = 0>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_iterator<_Iter2>& _Last) {
-        _Verify_range(_First.current, _Last.base());
+        _Verify_range(_First._Current, _Last.base());
     }
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent, enable_if_t<_Range_verifiable_v<_Iter, _Sent>, int> = 0>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) {
-        _Verify_range(_First.current, _Last._Get_last());
+        _Verify_range(_First._Current, _Last._Get_last());
     }
 #endif // __cpp_lib_concepts
 
@@ -4065,31 +4065,31 @@ public:
 
     template <class _Iter2 = iterator_type, enable_if_t<_Offset_verifiable_v<_Iter2>, int> = 0>
     constexpr void _Verify_offset(const difference_type _Off) const {
-        current._Verify_offset(_Off);
+        _Current._Verify_offset(_Off);
     }
 
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
     _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& {
-        return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(current._Unwrapped());
+        return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(_Current._Unwrapped());
     }
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
     _NODISCARD constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && {
-        return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(current)._Unwrapped());
+        return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(_Current)._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_type>;
 
     template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, const _Src&>, int> = 0>
     constexpr void _Seek_to(const move_iterator<_Src>& _It) {
-        current._Seek_to(_It.base());
+        _Current._Seek_to(_It.base());
     }
     template <class _Src, enable_if_t<_Wrapped_seekable_v<iterator_type, _Src>, int> = 0>
     constexpr void _Seek_to(move_iterator<_Src>&& _It) {
-        current._Seek_to(_STD move(_It).base());
+        _Current._Seek_to(_STD move(_It).base());
     }
 
-protected:
-    iterator_type current{};
+private:
+    iterator_type _Current{};
 };
 
 template <class _Iter1, class _Iter2>
@@ -5777,116 +5777,42 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
 }
 
 // FUNCTION TEMPLATE reverse
-#if _HAS_IF_CONSTEXPR
 template <class _BidIt>
 _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
     using _Elem = remove_pointer_t<decltype(_UFirst)>;
     constexpr bool _Allow_vectorization =
         conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+    constexpr size_t _Nx = sizeof(_Elem);
 
-    if constexpr (_Allow_vectorization && sizeof(_Elem) == 1) {
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+    if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            __std_reverse_trivially_swappable_1(_UFirst, _ULast);
-            return;
-        }
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 2) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            __std_reverse_trivially_swappable_2(_UFirst, _ULast);
-            return;
-        }
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 4) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            __std_reverse_trivially_swappable_4(_UFirst, _ULast);
-            return;
-        }
-    } else if constexpr (_Allow_vectorization && sizeof(_Elem) == 8) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            __std_reverse_trivially_swappable_8(_UFirst, _ULast);
+            if constexpr (_Nx == 1) {
+                __std_reverse_trivially_swappable_1(_UFirst, _ULast);
+            } else if constexpr (_Nx == 2) {
+                __std_reverse_trivially_swappable_2(_UFirst, _ULast);
+            } else if constexpr (_Nx == 4) {
+                __std_reverse_trivially_swappable_4(_UFirst, _ULast);
+            } else {
+                __std_reverse_trivially_swappable_8(_UFirst, _ULast);
+            }
+
             return;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
         _STD iter_swap(_UFirst, _ULast);
     }
 }
-#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _BidIt>
-void _Reverse_unchecked1(_BidIt _First, _BidIt _Last, integral_constant<size_t, 0>) {
-    // reverse elements in [_First, _Last), general bidirectional iterators
-    for (; _First != _Last && _First != --_Last; ++_First) {
-        _STD iter_swap(_First, _Last);
-    }
-}
-
-#if _USE_STD_VECTOR_ALGORITHMS
-template <class _BidIt>
-void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 1>) {
-    // reverse elements in [_First, _Last), pointers to trivially swappable of size 1
-    __std_reverse_trivially_swappable_1(_First, _Last);
-}
-
-template <class _BidIt>
-void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 2>) {
-    // reverse elements in [_First, _Last), pointers to trivially swappable of size 2
-    __std_reverse_trivially_swappable_2(_First, _Last);
-}
-
-template <class _BidIt>
-void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 4>) {
-    // reverse elements in [_First, _Last), pointers to trivially swappable of size 4
-    __std_reverse_trivially_swappable_4(_First, _Last);
-}
-
-template <class _BidIt>
-void _Reverse_unchecked1(const _BidIt _First, const _BidIt _Last, integral_constant<size_t, 8>) {
-    // reverse elements in [_First, _Last), pointers to trivially swappable of size 8
-    __std_reverse_trivially_swappable_8(_First, _Last);
-}
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-template <class _BidIt>
-void _Reverse_unchecked(const _BidIt _First, const _BidIt _Last) {
-    // reverse elements in [_First, _Last), choose optimization
-#if _USE_STD_VECTOR_ALGORITHMS
-    using _Elem = remove_pointer_t<_BidIt>;
-    constexpr size_t _Opt =
-        is_pointer_v<_BidIt> //
-                && _Is_trivially_swappable_v<_Elem> //
-                && !is_volatile_v<_Elem> //
-                && (sizeof(_Elem) == 1 || sizeof(_Elem) == 2 || sizeof(_Elem) == 4 || sizeof(_Elem) == 8)
-            ? sizeof(_Elem)
-            : 0;
-#else // ^^^ vectorize / no vectorize vvv
-    constexpr size_t _Opt = 0;
-#endif // _USE_STD_VECTOR_ALGORITHMS
-    _Reverse_unchecked1(_First, _Last, integral_constant<size_t, _Opt>{});
-}
-
-template <class _BidIt>
-void reverse(const _BidIt _First, const _BidIt _Last) {
-    // reverse elements in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    _Reverse_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -5990,19 +5916,19 @@ _FwdIt _Rotate_unchecked1(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, forward_iter
 template <class _BidIt>
 _BidIt _Rotate_unchecked1(_BidIt _First, _BidIt _Mid, _BidIt _Last, bidirectional_iterator_tag) {
     // rotate [_First, _Last) left by distance(_First, _Mid) positions, bidirectional iterators
-    _Reverse_unchecked(_First, _Mid);
-    _Reverse_unchecked(_Mid, _Last);
+    _STD reverse(_First, _Mid);
+    _STD reverse(_Mid, _Last);
     auto _Tmp = _Reverse_until_sentinel_unchecked(_First, _Mid, _Last);
-    _Reverse_unchecked(_Tmp.first, _Tmp.second);
+    _STD reverse(_Tmp.first, _Tmp.second);
     return _Mid != _Tmp.first ? _Tmp.first : _Tmp.second;
 }
 
 template <class _RanIt>
 _RanIt _Rotate_unchecked1(_RanIt _First, _RanIt _Mid, _RanIt _Last, random_access_iterator_tag) {
     // rotate [_First, _Last) left by distance(_First, _Mid) positions, random-access iterators
-    _Reverse_unchecked(_First, _Mid);
-    _Reverse_unchecked(_Mid, _Last);
-    _Reverse_unchecked(_First, _Last);
+    _STD reverse(_First, _Mid);
+    _STD reverse(_Mid, _Last);
+    _STD reverse(_First, _Last);
     return _First + (_Last - _Mid);
 }
 
