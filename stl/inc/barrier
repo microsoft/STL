@@ -117,11 +117,11 @@ public:
             _Completion(_Current);
         }
         return _Arrival_token<_Completion_function>(
-            (_Current & _Barrier_arrival_token_mask) | (static_assert<intptr_t>(this)));
+            (_Current & _Barrier_arrival_token_mask) | (reinterpret_cast<intptr_t>(this)));
     }
 
     void wait(arrival_token&& _Arrival) const {
-        if (_Arrival._Value & _Barrier_value_mask != static_assert<intptr_t>(this)) {
+        if ((_Arrival._Value & _Barrier_value_mask) != reinterpret_cast<intptr_t>(this)) {
             __std_sync_error(errc::invalid_argument);
         }
 
@@ -130,7 +130,7 @@ public:
             if (_Current < 0) {
                 __std_sync_error(errc::state_not_recoverable);
             }
-            if ((_Current & _Barrier_arrival_token_mask) != _Arrival._Value) {
+            if ((_Current & _Barrier_arrival_token_mask) != (_Arrival._Value & _Barrier_arrival_token_mask)) {
                 break;
             }
             _Current_phase.wait(_Current, memory_order_relaxed);
