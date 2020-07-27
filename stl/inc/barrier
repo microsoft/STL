@@ -34,7 +34,9 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-template <class _Completion_function = nullptr_t>
+class _No_completion_function {};
+
+template <class _Completion_function = _No_completion_function>
 class barrier;
 
 inline constexpr ptrdiff_t _Barrier_arrival_token_mask = 1;
@@ -78,9 +80,9 @@ public:
 };
 
 template <>
-class _Barrier_completion<nullptr_t> {
+class _Barrier_completion<_No_completion_function> {
 public:
-    _Barrier_completion(nullptr_t) {}
+    _Barrier_completion(_No_completion_function) {}
 
     void _Call_completion() {}
 };
