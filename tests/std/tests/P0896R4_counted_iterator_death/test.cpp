@@ -39,11 +39,7 @@ struct simple_input_iter {
 };
 
 void test_case_construction_negative_length() {
-    counted_iterator<int*> cit{globalArray, -1}; // counted_iterator requires positive length n
-}
-
-void test_case_construction_beyond_end() {
-    counted_iterator<vit> cit{begin(checkedArray), 10}; // counted_iterator requires positive length n
+    (void) counted_iterator<int*> cit{globalArray, -1}; // counted_iterator requires positive length n
 }
 
 void test_case_operator_dereference_value_initialized_iterator() {
