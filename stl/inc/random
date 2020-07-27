@@ -4507,7 +4507,7 @@ private:
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         double _Px           = _NRAND(_Eng, double);
         const auto _First    = _Par0._Pcdf.begin();
-        const auto _Position = _STD lower_bound(_First, _Par0._Pcdf.end(), _Px);
+        const auto _Position = _STD lower_bound(_First, _Prev_iter(_Par0._Pcdf.end()), _Px);
         return static_cast<result_type>(_Position - _First);
     }
 
