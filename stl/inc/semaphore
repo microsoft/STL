@@ -212,7 +212,7 @@ public:
 
     template <class _Rep, class _Period>
     [[nodiscard]] bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        auto _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
+        auto _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long long, milli>>(_Rel_time);
         auto _Deadline    = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
         for (;;) {
             int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
