@@ -113,6 +113,7 @@ public:
             __std_sync_error(errc::state_not_recoverable);
         }
         if ((_Current & _Barrier_value_mask) == 0) {
+            atomic_thread_fence(memory_order_acquire);
             _Completion(_Current);
         }
         return _Arrival_token<_Completion_function>(_Current & _Barrier_arrival_token_mask);
@@ -136,12 +137,13 @@ public:
     }
 
     void arrive_and_wait() {
-        ptrdiff_t _Current = _Current_phase.fetch_sub(_Barrier_value_step, memory_order_acq_rel) - _Barrier_value_step;
+        ptrdiff_t _Current = _Current_phase.fetch_sub(_Barrier_value_step, memory_order_release) - _Barrier_value_step;
         const ptrdiff_t _Arrival = _Current & _Barrier_arrival_token_mask;
         if (_Current < 0) {
             __std_sync_error(errc::state_not_recoverable);
         }
         if ((_Current & _Barrier_value_mask) == 0) {
+            atomic_thread_fence(memory_order_acquire);
             _Completion(_Current);
             return;
         }
