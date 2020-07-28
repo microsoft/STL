@@ -4975,13 +4975,13 @@ namespace ranges {
             } else if constexpr (bidirectional_iterator<_It>) {
                 _RANGES _Reverse_common(_First, _Mid);
                 _RANGES _Reverse_common(_Mid, _End);
-                auto _Result = _RANGES _Reverse_until_sentinel_unchecked(_First, _Mid, _Last);
-                _RANGES _Reverse_unchecked(_Result.in1, _Result.in2);
+                auto _Result = _Reverse_until_sentinel_unchecked(_First, _Mid, _End);
+                _RANGES _Reverse_common(_Result.in1, _Result.in2);
 
                 if (_Result.in1 == _Mid) {
-                    return {_STD move(_Result.in2), _STD move(_Last)};
+                    return {_STD move(_Result.in2), _STD move(_End)};
                 } else {
-                    return {_STD move(_Result.in1), _STD move(_Last)};
+                    return {_STD move(_Result.in1), _STD move(_End)};
                 }
             } else {
                 auto _Next = _Mid;
