@@ -103,7 +103,6 @@ void test_indirect() {
     assert(v[4] == 2);
 }
 
-
 int main() {
     test_slice();
     test_gslice();
