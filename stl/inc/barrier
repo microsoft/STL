@@ -109,7 +109,8 @@ public:
         const ptrdiff_t _Phase_count, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
         : _Barrier_completion<_Completion_function>(std::move(_Fn)),
           _Current_phase(_Phase_count << _Barrier_value_shift), _Phase_count(_Phase_count << _Barrier_value_shift) {
-        _STL_VERIFY(_Phase_count >= 0 && _Phase_count <= _Barrier_max, "Phase count shall be non-negative and shall not exceed max()");
+        _STL_VERIFY(_Phase_count >= 0 && _Phase_count <= _Barrier_max,
+            "Phase count shall be non-negative and shall not exceed max()");
     }
 
     ~barrier() = default;

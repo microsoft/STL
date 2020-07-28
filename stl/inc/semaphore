@@ -107,7 +107,7 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current >= 0 &&_Current <= _Least_max_value,
+            _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
                 "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
