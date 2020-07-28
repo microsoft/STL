@@ -98,11 +98,6 @@ void test_case_operator_predecrement_before_begin() {
     --cit; // cannot decrement counted_iterator before begin
 }
 
-void test_case_operator_decrement_value_initialized_iterator() {
-    counted_iterator<int*> cit{};
-    cit--; // OK
-}
-
 void test_case_operator_decrement_before_begin() {
     counted_iterator<vit> cit{begin(checkedArray), 5};
     cit--; // cannot decrement counted_iterator before begin
@@ -137,24 +132,15 @@ void test_case_operator_advance_copy_2_after_end() {
     counted_iterator<int*> cit{globalArray, 2};
     (void) (3 + cit); // cannot seek counted_iterator after end
 }
-void test_case_operator_retreat_value_initialized_iterator() {
-    counted_iterator<vit> cit{};
-    cit -= 1; // cannot seek value-initialized counted_iterator before begin
-}
 
 void test_case_operator_retreat_before_begin() {
     counted_iterator<vit> cit{begin(checkedArray), 5};
     cit -= 1; // cannot seek counted_iterator before begin
 }
 
-void test_case_operator_retreat_after_end() {
+void test_case_operator_retreat_negative_after_end() {
     counted_iterator<int*> cit{globalArray, 0};
     cit -= -1; // cannot seek counted_iterator after end
-}
-
-void test_case_operator_retreat_copy_value_initialized_iterator() {
-    counted_iterator<int*> cit{};
-    (void) (cit - 1); // OK
 }
 
 void test_case_operator_retreat_copy_before_begin() {
@@ -235,7 +221,6 @@ int main(int argc, char* argv[]) {
         test_case_operator_increment_after_end,
         test_case_operator_increment_after_end_input_iterator,
         test_case_operator_predecrement_before_begin,
-        test_case_operator_decrement_value_initialized_iterator,
         test_case_operator_decrement_before_begin,
         test_case_operator_advance_value_initialized_iterator,
         test_case_operator_advance_after_end,
@@ -243,10 +228,8 @@ int main(int argc, char* argv[]) {
         test_case_operator_advance_copy_after_end,
         test_case_operator_advance_copy_2_value_initialized_iterator,
         test_case_operator_advance_copy_2_after_end,
-        test_case_operator_retreat_value_initialized_iterator,
         test_case_operator_retreat_before_begin,
-        test_case_operator_retreat_after_end,
-        test_case_operator_retreat_copy_value_initialized_iterator,
+        test_case_operator_retreat_negative_after_end,
         test_case_operator_retreat_copy_before_begin,
         test_case_operator_retreat_copy_after_end,
         test_case_operator_subtract_incompatible_different_data,
