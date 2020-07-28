@@ -64,12 +64,17 @@ struct instantiator {
             }
 
             { // [counted.iter.cmp]
-                Cit iter1{Iter{input}};
-                Cit iter2{Iter{input}};
-                assert(iter1 == iter2);
+                // Compare iterator / iterator
+                assert(Cit{Iter{input}} == Cit{Iter{input}});
+                assert(Cit{Iter{input}} != Cit{Iter{input + 1}});
 
-                Sen sen{};
-                assert(iter1 == sen);
+                // Compare iterator / sentinel
+                assert(Cit{Iter{input}} == Cit{Sen{input}});
+                assert(Cit{Sen{input}} != Cit{Iter{input + 1}});
+
+                // Compare sentinel / sentinel
+                assert(Cit{Sen{input}} == Cit{Sen{input}});
+                assert(Cit{Sen{input}} == Cit{Sen{input + 1}});
             }
 
             { //[common.iter.cust]
@@ -77,7 +82,7 @@ struct instantiator {
                     Cit iter1{Iter{input}};
 
                     const auto iter2 = ranges::iter_move(iter1);
-                    assert(iter2 == 2);
+                    assert(iter2 == 1);
                 }
                 if constexpr (indirectly_swappable<Iter>) { // iter_swap
                     Cit iter1{Iter{input}};
