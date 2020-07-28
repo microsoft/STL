@@ -19,10 +19,10 @@ void test_slice() {
 
     assert(eq(v, {0, 1, 2, 3, 4}));
 
-    std::slice_array<int> other_slice_array = v[std::slice(1, 2, 1)];
+    std::slice_array<int> other_slice_array = v[std::slice(0, 2, 1)];
     other_slice_array                       = slice_array;
 
-    assert(eq(v, {0, 2, 4, 3, 4}));
+    assert(eq(v, {2, 4, 2, 3, 4}));
 }
 
 void test_gslice() {
@@ -35,11 +35,11 @@ void test_gslice() {
 
     assert(eq(v, {0, 1, 2, 3, 4}));
 
-    std::gslice other_gslice(1, std::valarray<std::size_t>{2}, std::valarray<std::size_t>{1});
+    std::gslice other_gslice(0, std::valarray<std::size_t>{2}, std::valarray<std::size_t>{1});
     std::gslice_array<int> other_gslice_array = v[other_gslice];
     other_gslice_array                        = gslice_array;
 
-    assert(eq(v, {0, 2, 4, 3, 4}));
+    assert(eq(v, {2, 4, 2, 3, 4}));
 }
 
 void test_mask() {
