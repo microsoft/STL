@@ -4288,7 +4288,7 @@ public:
     //    requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
     //          && assignable_from<_Iter&, const _Iter2&> && assignable_from<_Se&, const _Se2&>
     common_iterator& operator=(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
-        is_nothrow_assignable_v<_Iter const _Iter2&>&& is_nothrow_assignable_v<_Se, const _Se2&>&&
+        is_nothrow_assignable_v<_Iter, const _Iter2&>&& is_nothrow_assignable_v<_Se, const _Se2&>&&
             is_nothrow_constructible_v<_Iter, const _Iter2&>&& is_nothrow_constructible_v<_Se, const _Se2&>&&
                 is_nothrow_destructible_v<_Iter>&& is_nothrow_destructible_v<_Se>) // strengthened
     {
