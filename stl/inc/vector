@@ -1819,7 +1819,7 @@ struct _Vbase_compare_three_way {
 
         const _Vbase _Mask = _Vbase{1} << _Bit_index; // selects the least significant bit that differs
 
-        // Instead of comparing (_Left & _Mask) < (_Right & _Mask), we know that exactly one side will be zero.
+        // Instead of comparing (_Left & _Mask) to (_Right & _Mask), we know that exactly one side will be zero.
 #ifdef __cpp_lib_concepts
         return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
 #else // __cpp_lib_concepts
