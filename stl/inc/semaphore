@@ -41,7 +41,7 @@ public:
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */ : _Counter(_Desired) {
         _STL_VERIFY(
-            _Desired >= 0 || _Desired <= max(), "Initial count shall be non-negative and shall not exceed max()");
+            _Desired >= 0 && _Desired <= max(), "Initial count shall be non-negative and shall not exceed max()");
     }
 
     ~counting_semaphore() = default;
@@ -155,8 +155,7 @@ public:
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(static_cast<int8_t>(_Desired)) {
-        _STL_VERIFY(
-            _Desired == 0 || _Desired == 1, "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY((_Desired & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
     }
 
     ~counting_semaphore() = default;
@@ -187,7 +186,7 @@ public:
 
     [[nodiscard]] bool try_acquire() noexcept {
         int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
-        _STL_VERIFY(_Prev == 1 || _Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY((_Prev & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
         return reinterpret_cast<const bool&>(_Prev);
     }
 
