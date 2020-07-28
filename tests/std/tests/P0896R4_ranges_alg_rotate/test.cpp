@@ -20,37 +20,33 @@ struct instantiator {
 
     template <ranges::forward_range ReadWrite>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) // conditional expression is constant
-        if (!ranges::contiguous_range<ReadWrite> || !is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-        {
-            using ranges::rotate, ranges::subrange, ranges::equal, ranges::iterator_t;
-            { // Validate iterator + sentinel overload
-                P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
-                ReadWrite wrapped_input{input};
+        using ranges::rotate, ranges::subrange, ranges::equal, ranges::iterator_t;
+        { // Validate iterator overload
+            P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
+            ReadWrite wrapped_input{input};
 
-                auto result = rotate(wrapped_input.begin(), next(wrapped_input.begin(), 3), wrapped_input.end());
-                STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
-                assert(result.begin() == next(wrapped_input.begin(), 2));
-                assert(result.end() == wrapped_input.end());
-                assert(equal(expected, input));
-            }
-            { // Validate range overload
-                P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
-                ReadWrite wrapped_input{input};
+            auto result = rotate(wrapped_input.begin(), next(wrapped_input.begin(), 3), wrapped_input.end());
+            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            assert(result.begin() == next(wrapped_input.begin(), 2));
+            assert(result.end() == wrapped_input.end());
+            assert(equal(expected, input));
+        }
+        { // Validate range overload
+            P input[5] = {{0, 99}, {1, 47}, {2, 99}, {3, 47}, {4, 99}};
+            ReadWrite wrapped_input{input};
 
-                auto result = rotate(wrapped_input, next(wrapped_input.begin(), 3));
-                STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
-                assert(result.begin() == next(wrapped_input.begin(), 2));
-                assert(result.end() == wrapped_input.end());
-                assert(equal(expected, input));
-            }
+            auto result = rotate(wrapped_input, next(wrapped_input.begin(), 3));
+            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            assert(result.begin() == next(wrapped_input.begin(), 2));
+            assert(result.end() == wrapped_input.end());
+            assert(equal(expected, input));
         }
     }
 };
 
 int main() {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_fwd<instantiator, P>(), true));
+#endif // TRANSITION, VSO-938163
     test_fwd<instantiator, P>();
 }

@@ -4845,7 +4845,7 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _RANGES _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
+            _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
             return _First;
         }
 
@@ -4853,7 +4853,7 @@ namespace ranges {
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
             auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _RANGES _Reverse_common(_Ubegin(_Range), _ULast);
+            _Reverse_common(_Ubegin(_Range), _ULast);
             return _Rewrap_iterator(_Range, _STD move(_ULast));
         }
         // clang-format on
@@ -4941,13 +4941,14 @@ namespace ranges {
         template <forward_range _Rng>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, iterator_t<_Rng> _Mid) const {
+            // clang-format on
             _Adl_verify_range(_RANGES begin(_Range), _Mid);
             _Adl_verify_range(_Mid, _RANGES end(_Range));
             auto _UResult = _Rotate_unchecked(_Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range));
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Mid, _STD move(_UResult));
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se>
         _NODISCARD static constexpr subrange<_It> _Rotate_unchecked(_It _First, _It _Mid, _Se _Last) {
@@ -4956,32 +4957,34 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
 
-            auto _End = _Get_final_iterator_unwrapped<_It>(_First, _STD move(_Last));
             if (_First == _Mid) {
-                return {_End, _End};
+                auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+                return {_Final, _Final};
             }
 
-            if (_Mid == _End) {
-                return {_STD move(_First), _STD move(_End)};
+            if (_Mid == _Last) {
+                return {_STD move(_First), _STD move(_Mid)};
             }
 
-            if constexpr (random_access_iterator<_It>) {
-                _RANGES _Reverse_common(_First, _Mid);
-                _RANGES _Reverse_common(_Mid, _End);
-                _RANGES _Reverse_common(_First, _End);
-                _First += _End - _Mid;
+            if constexpr (bidirectional_iterator<_It>) {
+                _Reverse_common(_First, _Mid);
+                auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+                _Reverse_common(_STD move(_First), _Final);
 
-                return {_STD move(_First), _STD move(_End)};
-            } else if constexpr (bidirectional_iterator<_It>) {
-                _RANGES _Reverse_common(_First, _Mid);
-                _RANGES _Reverse_common(_Mid, _End);
-                auto _Result = _Reverse_until_sentinel_unchecked(_First, _Mid, _End);
-                _RANGES _Reverse_common(_Result.in1, _Result.in2);
+                if constexpr (random_access_iterator<_It>) {
+                    _Reverse_common(_First, _Final);
+                    _First += _Final - _Mid;
 
-                if (_Result.in1 == _Mid) {
-                    return {_STD move(_Result.in2), _STD move(_End)};
+                    return {_STD move(_First), _STD move(_Final)};
                 } else {
-                    return {_STD move(_Result.in1), _STD move(_End)};
+                    auto [_Mid_first, _Mid_last] = _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
+                    _Reverse_common(_Mid_first, _Mid_last);
+
+                    if (_Mid_first == _Mid) {
+                        return {_STD move(_Mid_last), _STD move(_Final)};
+                    } else {
+                        return {_STD move(_Mid_first), _STD move(_Final)};
+                    }
                 }
             } else {
                 auto _Next = _Mid;
@@ -5007,20 +5010,20 @@ namespace ranges {
                         }
                     } while (_Next != _Last);
                 }
-                return {_STD move(_Begin), _STD move(_End)};
+                return {_STD move(_Begin), _STD move(_Mid)};
             }
         }
 
         template <class _It>
-        _NODISCARD static constexpr in_in_result<_It, _It> _Reverse_until_sentinel_unchecked(
-            _It _First, const _It _Sentinel, _It _Last) {
-            // reverse until either _First or _Last hits _Sentinel
+        _NODISCARD static constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
+            // reverse until either _First or _Last hits _Mid
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_CHECK(_First != _Mid);
+            _STL_INTERNAL_CHECK(_Mid != _Last);
 
-            while (_First != _Sentinel && _Last != _Sentinel) {
+            do {
                 _RANGES iter_swap(_First, --_Last);
-                ++_First;
-            }
+            } while (++_First != _Mid && _Last != _Mid);
 
             return {_STD move(_First), _STD move(_Last)};
         }
@@ -5068,8 +5071,8 @@ namespace ranges {
         // clang-format off
         template <forward_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
-        constexpr rotate_copy_result<_It, _Out> operator()(
-            _It _First, _It _Mid, _Se _Last, _Out _Result) const {
+        constexpr rotate_copy_result<_It, _Out> operator()(_It _First, _It _Mid, _Se _Last, _Out _Result) const {
+            // clang-format on
             _Adl_verify_range(_First, _Mid);
             _Adl_verify_range(_Mid, _Last);
             auto _UResult = _Rotate_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Mid)),
@@ -5079,18 +5082,20 @@ namespace ranges {
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
+        // clang-format off
         template <forward_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr rotate_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, iterator_t<_Rng> _Mid, _Out _Result) const {
+            // clang-format on
             _Adl_verify_range(_RANGES begin(_Range), _Mid);
             _Adl_verify_range(_Mid, _RANGES end(_Range));
             auto _UResult = _Rotate_copy_unchecked(
                 _Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range), _STD move(_Result));
 
-            return {_Rewrap_iterator(_Mid, _STD move(_UResult.in)), _STD move(_UResult.out)};
+            return {_Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_UResult.out)};
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Out>
         _NODISCARD static constexpr rotate_copy_result<_It, _Out> _Rotate_copy_unchecked(
