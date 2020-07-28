@@ -5884,6 +5884,7 @@ namespace ranges {
 
             --_Last;
             iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+            // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Push_heap_by_index
             _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj, _Proj);
         }
     };
@@ -6025,6 +6026,7 @@ namespace ranges {
 
         --_Last;
         iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+        // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_unchecked
         _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj, _Proj);
     }
 
@@ -6094,7 +6096,7 @@ namespace ranges {
     // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
-    static constexpr void _Make_heap_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+    constexpr void _Make_heap_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
         // make nontrivial [_First, _Last) into a heap with respect to _Pred and _Proj
         // clang-format on
         using _Diff         = iter_difference_t<_It>;
@@ -6103,6 +6105,7 @@ namespace ranges {
             // reheap top half, bottom to top
             --_Hole;
             iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
+            // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_by_index
             _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj, _Proj);
         }
     }
@@ -6327,7 +6330,7 @@ namespace ranges {
     // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
-    static constexpr void _Sort_heap_common(const _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+    constexpr void _Sort_heap_common(const _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
         // order heap by repeatedly popping
         // clang-format on
         for (; _Last - _First >= 2; --_Last) {
