@@ -72,7 +72,7 @@ public:
 
     void arrive_and_wait(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         _STL_VERIFY(_Update >= 0, "update shall be non-negative");
-        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_acq_rel) - _Update;
         if (_Current == 0) {
             _Counter.notify_all();
         } else {
