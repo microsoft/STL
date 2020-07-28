@@ -814,6 +814,10 @@ public:
         return {};
     }
 
+    _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {
+        return _Unchecked_const_iterator(nullptr, nullptr);
+    }
+
     iterator _Make_iter(_Nodeptr _Where) const noexcept {
         return iterator(_Where, _STD addressof(_Mypair._Myval2));
     }
@@ -1518,17 +1522,29 @@ void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) n
 
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD equal(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+    return _STD equal(
+        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
+    const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
 }
 
 template <class _Ty, class _Alloc>
@@ -1545,6 +1561,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

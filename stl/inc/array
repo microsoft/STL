@@ -775,17 +775,41 @@ _CONSTEXPR20 void swap(array<_Ty, _Size>& _Left, array<_Ty, _Size>& _Right) noex
 
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+#ifdef __EDG__ // TRANSITION, VSO-1161663
     return _STD equal(_Left.begin(), _Left.end(), _Right.begin());
+#else // ^^^ workaround / no workaround vvv
+    return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+#endif // ^^^ no workaround ^^^
 }
 
+#if !_HAS_CXX20
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Ty, size_t _Size>
+_NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
+    const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+#ifdef __EDG__ // TRANSITION, VSO-1161663
+    return _STD lexicographical_compare_three_way(
+        _Left.begin(), _Left.end(), _Right.begin(), _Right.end(), _Synth_three_way{});
+#else // ^^^ workaround / no workaround vvv
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+#endif // ^^^ no workaround ^^^
+}
+#else // __cpp_lib_concepts
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+#ifdef __EDG__ // TRANSITION, VSO-1161663
     return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+#else // ^^^ workaround / no workaround vvv
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+#endif // ^^^ no workaround ^^^
 }
 
 template <class _Ty, size_t _Size>
@@ -802,6 +826,7 @@ template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 // FUNCTION TEMPLATE to_array

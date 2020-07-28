@@ -99,7 +99,7 @@ tests\Dev11_0000000_user_defined_literals
 tests\Dev11_0019127_singular_iterators
 tests\Dev11_0091392_string_erase_resize_perf
 tests\Dev11_0133625_locale0_implib_cpp
-tests\Dev11_0135139_vector_bool_equality_perf
+tests\Dev11_0135139_vector_bool_comparisons
 tests\Dev11_0235721_async_and_packaged_task
 tests\Dev11_0253803_debug_pointer
 tests\Dev11_0272959_make_signed
@@ -296,6 +296,7 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1135R6_atomic_flag_test
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
+tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions

@@ -369,11 +369,21 @@ _NODISCARD bool operator==(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_
            && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
 }
 
+#if !_HAS_CXX20
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator!=(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_NODISCARD _Synth_three_way_result<pair<const _Kty, _Ty>> operator<=>(
+    const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_Kty, _Ty, _Pr, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -394,6 +404,7 @@ template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator>=(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // __cpp_lib_concepts
 
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
@@ -557,12 +568,22 @@ _NODISCARD bool operator==(
            && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
 }
 
+#if !_HAS_CXX20
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator!=(
     const multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, const multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Kty, class _Ty, class _Pr, class _Alloc>
+_NODISCARD _Synth_three_way_result<pair<const _Kty, _Ty>> operator<=>(
+    const multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, const multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(
     const multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, const multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) {
@@ -587,6 +608,7 @@ _NODISCARD bool operator>=(
     const multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, const multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // __cpp_lib_concepts
 
 template <class _Kty, class _Ty, class _Pr, class _Alloc>
 void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(

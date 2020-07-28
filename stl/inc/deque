@@ -1581,11 +1581,20 @@ _NODISCARD bool operator==(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
            && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+}
+#else // __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -1606,6 +1615,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>
