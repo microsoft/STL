@@ -187,6 +187,9 @@ function write_daily_table(script_start, all_prs, all_issues) {
                 }
             }
 
+            const age_avg_days = num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr;
+            const age_sum_months = combined_pr_age.as('months');
+
             str += '    { ';
             str += [
                 `date: '${when.toISODate()}'`,
@@ -195,7 +198,8 @@ function write_daily_table(script_start, all_prs, all_issues) {
                 `lwg: ${num_lwg}`,
                 `issue: ${num_issue}`,
                 `bug: ${num_bug}`,
-                `months: ${Number.parseFloat(combined_pr_age.as('months')).toFixed(2)}`,
+                `age_avg_days: ${Number.parseFloat(age_avg_days).toFixed(2)}`,
+                `age_sum_months: ${Number.parseFloat(age_sum_months).toFixed(2)}`,
                 '},\n',
             ].join(', ');
 
