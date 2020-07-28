@@ -88,7 +88,11 @@ template <size_t N>
 struct bytes {
     unsigned char storage[N];
 
-    constexpr bytes(unsigned char base = 0) {
+    constexpr bytes() {
+        ranges::fill(storage, static_cast<unsigned char>(-1));
+    }
+
+    constexpr bytes(unsigned char base) {
         iota(storage, storage + N, base);
     }
 
