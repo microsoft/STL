@@ -76,7 +76,6 @@ void test_indirect() {
     assert(eq(v, {3, 1, 2, 3, 2}));
 }
 
-
 int main() {
     test_slice();
     test_gslice();
