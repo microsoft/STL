@@ -58,11 +58,7 @@ public:
         _STL_VERIFY(_Prev >= 0 && static_cast<size_t>(_Prev) + static_cast<size_t>(_Update) <= _Least_max_value,
             "Semaphore counter shall be non-negative and shall not overflow max()");
         if (_Prev == 0) {
-            if (_Update == 1) {
-                _Counter.notify_one();
-            } else {
-                _Counter.notify_all();
-            }
+            _Counter.notify_all();
         }
     }
 
