@@ -4220,14 +4220,16 @@ public:
     }
 
     // [counted.iter.access]
-    _NODISCARD constexpr _Iter base() const& noexcept(is_nothrow_copy_assignable_v<_Iter>) // strengthened
+    _NODISCARD constexpr _Iter base() const& noexcept(is_nothrow_copy_constructible_v<_Iter>) // strengthened
+
         requires copy_constructible<_Iter>
     {
         return _Current;
     }
     // clang-format on
 
-    _NODISCARD constexpr _Iter base() && noexcept(is_nothrow_move_assignable_v<_Iter>) // strengthened
+    _NODISCARD constexpr _Iter base() && noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
+
     {
         return _STD move(_Current);
     }
