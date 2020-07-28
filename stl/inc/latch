@@ -31,8 +31,8 @@ _STD_BEGIN
 
 class latch {
 public:
-    constexpr explicit latch(const ptrdiff_t expected) noexcept /* strengthened */ : _Counter{expected} {
-        _STL_VERIFY(expected >= 0, "expected shall be non-negative");
+    constexpr explicit latch(const ptrdiff_t _Expected) noexcept /* strengthened */ : _Counter{_Expected} {
+        _STL_VERIFY(_Expected >= 0, "expected shall be non-negative");
     }
     ~latch() = default;
 
