@@ -18,22 +18,25 @@ struct instantiator {
             int input[3] = {1, 2, 3};
 
             // [common.iter.types]
+            using iconcept = typename iterator_traits<Cit>::iterator_concept;
             if constexpr (forward_iterator<Iter>) {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_concept, forward_iterator_tag>);
+                STATIC_ASSERT(same_as<iconcept, forward_iterator_tag>);
             } else {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
+                STATIC_ASSERT(same_as<typename iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
             }
 
-            if constexpr (derived_from<iterator_traits<Iter>::iterator_category, forward_iterator_tag>) {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_category, forward_iterator_tag>);
+            using icat = typename iterator_traits<Cit>::iterator_category;
+            if constexpr (derived_from<icat, forward_iterator_tag>) {
+                STATIC_ASSERT(same_as<icat, forward_iterator_tag>);
             } else {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::iterator_category, input_iterator_tag>);
+                STATIC_ASSERT(same_as<icat, input_iterator_tag>);
             }
 
+            using ipointer = typename iterator_traits<Cit>::pointer;
             if constexpr (_Has_op_arrow<Iter>) {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, decltype(declval<const Iter&>().operator->())>);
+                STATIC_ASSERT(same_as<ipointer, decltype(declval<const Iter&>().operator->())>);
             } else {
-                STATIC_ASSERT(same_as<iterator_traits<Cit>::pointer, void>);
+                STATIC_ASSERT(same_as<ipointer, void>);
             }
 
             { // [counted.iter.const]
