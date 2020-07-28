@@ -4969,7 +4969,7 @@ namespace ranges {
             if constexpr (bidirectional_iterator<_It>) {
                 _Reverse_common(_First, _Mid);
                 auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
-                _Reverse_common(_STD move(_First), _Final);
+                _Reverse_common(_Mid, _Final);
 
                 if constexpr (random_access_iterator<_It>) {
                     _Reverse_common(_First, _Final);
