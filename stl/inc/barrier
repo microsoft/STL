@@ -30,7 +30,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-class _No_completion_function final {};
+struct _No_completion_function final {
+    void operator()() noexcept {}
+};
 
 template <class _Completion_function = _No_completion_function>
 class barrier;
@@ -90,14 +92,6 @@ public:
         auto& _Fn = static_cast<_Completion_function&>(*this);
         _Fn();
     }
-};
-
-template <>
-class _Barrier_completion<_No_completion_function, false> {
-public:
-    _Barrier_completion(_No_completion_function) {}
-
-    void _Call_completion() {}
 };
 
 template <class _Completion_function>
