@@ -30,7 +30,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-struct _No_completion_function final {
+struct _No_completion_function {
     void operator()() noexcept {}
 };
 
