@@ -999,7 +999,7 @@ public:
         return _Ans;
     }
 
-    size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const {
         if (_Len.size() == 0) {
             return 0;
         }
@@ -1080,7 +1080,7 @@ public:
         _GSLOP(>>= _Right[_Idx]);
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const {
         return _Myptr[_Idx];
     }
 
@@ -1091,7 +1091,7 @@ public:
     const gslice_array& operator=(const gslice_array& _Right) const {
         _Sizarray _Dst_indexarray(size_t{0}, _Nslice());
         _Sizarray _Src_indexarray(size_t{0}, _Right._Nslice());
-        size_t _Size = _Totlen();
+        const size_t _Size = _Totlen();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Off(_Dst_indexarray)] = _Right._Myptr[_Right._Off(_Src_indexarray)];
         }
@@ -1170,32 +1170,32 @@ public:
         _MOP(>>= _Right[_Idx]);
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const {
         return _Myptr[_Idx];
     }
 
-    bool _Mask(size_t _Idx) const {
+    _NODISCARD bool _Mask(size_t _Idx) const {
         return _Mybool[_Idx];
     }
 
-    size_t _Start_off() const {
-        size_t _Off  = 0;
-        size_t _Size = _Mybool.size();
+    _NODISCARD size_t _Start_off() const {
+        size_t _Off        = 0;
+        const size_t _Size = _Mybool.size();
         while (_Off < _Size && !_Mybool[_Off]) {
             ++_Off;
         }
         return _Off;
     }
 
-    size_t _Next_off(size_t _Off) const {
-        size_t _Size = _Mybool.size();
+    _NODISCARD size_t _Next_off(size_t _Off) const {
+        const size_t _Size = _Mybool.size();
         do {
             ++_Off;
         } while (_Off < _Size && !_Mybool[_Off]);
         return _Off;
     }
 
-    size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const {
         size_t _Count = 0;
         for (size_t _Idx = 0; _Idx < _Mybool.size(); ++_Idx) {
             if (_Mybool[_Idx]) {
@@ -1211,9 +1211,9 @@ public:
     mask_array(const mask_array&) = default;
 
     const mask_array& operator=(const mask_array& _Right) const {
-        size_t _Size    = _Mybool.size();
-        size_t _Dst_off = _Start_off();
-        size_t _Src_off = _Right._Start_off();
+        const size_t _Size = _Mybool.size();
+        size_t _Dst_off    = _Start_off();
+        size_t _Src_off    = _Right._Start_off();
         for (; _Dst_off < _Size; _Src_off = _Right._Next_off(_Src_off), _Dst_off = _Next_off(_Dst_off)) {
             _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
         }
@@ -1290,15 +1290,15 @@ public:
         _IOP(>>= _Right[_Idx]);
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const {
         return _Myptr[_Idx];
     }
 
-    size_t _Indir(size_t _Idx) const {
+    _NODISCARD size_t _Indir(size_t _Idx) const {
         return _Myindarr[_Idx];
     }
 
-    size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const {
         return _Myindarr.size();
     }
 
@@ -1307,7 +1307,7 @@ public:
     indirect_array(const indirect_array&) = default;
 
     const indirect_array& operator=(const indirect_array& _Right) const {
-        size_t _Size = _Totlen();
+        const size_t _Size = _Totlen();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Indir(_Idx)] = _Right._Myptr[_Right._Indir(_Idx)];
         }
