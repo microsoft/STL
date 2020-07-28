@@ -4255,15 +4255,16 @@ public:
 
     common_iterator& operator=(const common_iterator& _Right) noexcept(
         is_nothrow_copy_assignable_v<const _Iter&>&& is_nothrow_copy_assignable_v<const _Se&>&&
-            is_nothrow_copy_constructible_v<const _Iter&>&& is_nothrow_copy_constructible_v<const _Se&>) // strengthened
+            is_nothrow_copy_constructible_v<const _Iter&>&& is_nothrow_copy_constructible_v<const _Se&>&&
+                is_nothrow_destructible_v<_Iter>&& is_nothrow_destructible_v<_Se>) // strengthened
     {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Mystate != _State::_Nonthing, "common_iterator can only be assigned if it holds a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
-            _Construct_in_place(_Myiter, _Right._Myiter);
+            _Myiter = _Right._Myiter;
         } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
-            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+            _Mysentinel = _Right._Mysentinel;
         } else if (_Right._Mystate == _State::_Holds_iter) {
             if (_Mystate == _State::_Holds_sentinel) {
                 _Mysentinel.~_Se();
@@ -4284,18 +4285,20 @@ public:
 
     // clang-format off
     template <class _Iter2, class _Se2>
-        requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
-              && assignable_from<_Iter&, const _Iter2&> && assignable_from<_Se&, const _Se2&>
+    //    requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
+    //          && assignable_from<_Iter&, const _Iter2&> && assignable_from<_Se&, const _Se2&>
     common_iterator& operator=(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
-        is_nothrow_constructible_v<_Iter, const _Iter2&>&& is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
-        {
+        is_nothrow_assignable_v<_Iter const _Iter2&>&& is_nothrow_assignable_v<_Se, const _Se2&>&&
+            is_nothrow_constructible_v<_Iter, const _Iter2&>&& is_nothrow_constructible_v<_Se, const _Se2&>&&
+                is_nothrow_destructible_v<_Iter>&& is_nothrow_destructible_v<_Se>) // strengthened
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Mystate != _State::_Nonthing, "common_iterator can only be assigned if it holds a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
-            _Construct_in_place(_Myiter, _Right._Myiter);
+            _Myiter = _Right._Myiter;
         } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
-            _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+            _Mysentinel = _Right._Mysentinel;
         } else if (_Right._Mystate == _State::_Holds_iter) {
             if (_Mystate == _State::_Holds_sentinel) {
                 _Mysentinel.~_Se();
