@@ -20,7 +20,6 @@
 #include <atomic>
 #include <chrono>
 #include <limits.h>
-#include <stdlib.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -40,7 +39,11 @@ public:
         return _Least_max_value; // use least_max value as actual max value
     }
 
-    constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */ : _Counter(_Desired) {}
+    constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */ : _Counter(_Desired) {
+        _STL_VERIFY(
+            _Desired >= 0 || _Desired <= max(), "Initial count shall be non-negative and shall not exceed max()");
+    }
+
     ~counting_semaphore() = default;
 
     counting_semaphore(const counting_semaphore&) = delete;
@@ -50,13 +53,10 @@ public:
         if (_Update == 0) {
             return;
         }
-        if (_Update < 0) {
-            _CSTD abort();
-        }
+        _STL_VERIFY(_Update >= 0, "Update count shall be non-negative");
         const ptrdiff_t _Prev = _Counter.fetch_add(_Update, memory_order_release);
-        if (_Prev < 0 || static_cast<size_t>(_Prev) + static_cast<size_t>(_Update) > _Least_max_value) {
-            _CSTD abort();
-        }
+        _STL_VERIFY(_Prev >= 0 && static_cast<size_t>(_Prev) + static_cast<size_t>(_Update) <= _Least_max_value,
+            "Semaphore counter shall be non-negative and shall not overflow max()");
         if (_Prev == 0) {
             if (_Update == 1) {
                 _Counter.notify_one();
@@ -73,9 +73,8 @@ public:
                 _Counter.wait(0, std::memory_order_relaxed);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            if (_Current < 0 || _Current > _Least_max_value) {
-                _CSTD abort();
-            }
+            _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
+                "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 break;
@@ -88,9 +87,8 @@ public:
         if (_Current == 0) {
             return false;
         }
-        if (_Current < 0 || _Current > _Least_max_value) {
-            _CSTD abort();
-        }
+        _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
+            "Semaphore counter shall be non-negative and shall not overflow max()");
         return _Counter.compare_exchange_weak(
             _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed);
     }
@@ -109,9 +107,8 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            if (_Current < 0 || _Current > _Least_max_value) {
-                _CSTD abort();
-            }
+            _STL_VERIFY(_Current >= 0 &&_Current <= _Least_max_value,
+                "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 return true;
@@ -140,9 +137,8 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Rel_time_ms.count());
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            if (_Current < 0 || _Current > _Least_max_value) {
-                _CSTD abort();
-            }
+            _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
+                "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 return true;
@@ -162,7 +158,11 @@ public:
     }
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
-        : _Counter(static_cast<int8_t>(_Desired != 0)) {}
+        : _Counter(static_cast<int8_t>(_Desired)) {
+        _STL_VERIFY(
+            _Desired == 0 || _Desired == 1, "Semaphore counter shall be non-negative and shall not overflow max()");
+    }
+
     ~counting_semaphore() = default;
 
     counting_semaphore(const counting_semaphore&) = delete;
@@ -172,9 +172,7 @@ public:
         if (_Update == 0) {
             return;
         }
-        if (_Update != 1) {
-            _CSTD abort();
-        }
+        _STL_VERIFY(_Update == 1, "Update count shall be non-negative and shall not oveflow max()");
 
         _Counter.store(1, memory_order_release);
         _Counter.notify_one();
@@ -186,23 +184,15 @@ public:
             if (_Prev == 1) {
                 break;
             }
-            if (_Prev != 0) {
-                _CSTD abort();
-            }
+            _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
             _Counter.wait(0, std::memory_order_relaxed);
         }
     }
 
     [[nodiscard]] bool try_acquire() noexcept {
         int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
-        switch (_Prev) {
-        case 0:
-            return false;
-        case 1:
-            return true;
-        default:
-            _CSTD abort();
-        }
+        _STL_VERIFY(_Prev == 1 || _Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+        reinterpret_cast<const bool&>(_Prev);
     }
 
     template <class _Rep, class _Period>
@@ -214,9 +204,7 @@ public:
             if (_Prev == 1) {
                 return true;
             }
-            if (_Prev != 0) {
-                _CSTD abort();
-            }
+            _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
             const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
             if (_Remaining_timeout == 0) {
                 return false;
@@ -232,9 +220,7 @@ public:
             if (_Prev == 1) {
                 return true;
             }
-            if (_Prev != 0) {
-                _CSTD abort();
-            }
+            _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
 
             auto _Now = _Clock::now();
             if (_Now >= _Abs_time) {
