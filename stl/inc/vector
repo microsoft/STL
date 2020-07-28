@@ -1755,10 +1755,172 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-// CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
+template <class _Alloc>
+class vector<bool, _Alloc>;
+
 using _Vbase         = unsigned int; // word type for vector<bool> representation
 constexpr int _VBITS = 8 * sizeof(_Vbase); // at least CHAR_BITS bits per word
 
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    if (_Left.size() != _Right.size()) {
+        return false;
+    }
+
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_same_v<_Ty, bool>) {
+        return _STD equal(
+            _Left._Myvec._Unchecked_begin(), _Left._Myvec._Unchecked_end(), _Right._Myvec._Unchecked_begin());
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+    }
+}
+
+#if !_HAS_CXX20
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+#endif // !_HAS_CXX20
+
+#if _HAS_IF_CONSTEXPR
+// Optimize vector<bool> lexicographical comparisons.
+
+// There are several endianness/ordering issues to consider here.
+// * Machine endianness is irrelevant. (That affects how an unsigned int is stored
+//   as a sequence of bytes. While all of our supported architectures are little-endian,
+//   that's irrelevant as long as we avoid reinterpreting unsigned int as a sequence of bytes.)
+// * Appending bits to vector<bool> eventually appends words to its underlying storage.
+//   For example, vb[10] is stored within vb._Myvec[0], while vb[100] is stored within vb._Myvec[3].
+//   This allows us to translate lexicographical comparisons from theoretical bits to physical words.
+// * Unsigned integers are written and compared as big-endian (most significant bit first).
+//   For example, 0x10u > 0x07u.
+// * However, vector<bool> packs bits into words as little-endian (least significant bit first).
+//   For example, vector<bool>{false, true, true, true} stores 0b0000'0000'0000'0000'0000'0000'0000'1110u.
+// We could bit-reverse words before comparing, but we just need to find the least significant bit that differs.
+
+template <class _Ret>
+struct _Vbase_compare_three_way {
+    _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
+        const _Vbase _Differing_bits = _Left ^ _Right;
+
+        if (_Differing_bits == 0) { // improves _Countr_zero codegen below
+#ifdef __cpp_lib_concepts
+            return strong_ordering::equal;
+#else // __cpp_lib_concepts
+            return 0;
+#endif // __cpp_lib_concepts
+        }
+
+        // N4861 [bit.count]/6: "Returns: The number of consecutive 0 bits in the value of x,
+        // starting from the least significant bit."
+        const int _Bit_index = _Countr_zero(_Differing_bits);
+        _STL_INTERNAL_CHECK(_Bit_index < _VBITS); // because we return early for equality
+
+        const _Vbase _Mask = _Vbase{1} << _Bit_index;
+
+        // Instead of comparing (_Left & _Mask) < (_Right & _Mask), we know that exactly one side will be zero.
+#ifdef __cpp_lib_concepts
+        return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
+#else // __cpp_lib_concepts
+        return (_Left & _Mask) == 0 ? -1 : 1;
+#endif // __cpp_lib_concepts
+    }
+};
+#endif // _HAS_IF_CONSTEXPR
+
+#ifdef __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
+    const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    if constexpr (is_same_v<_Ty, bool>) {
+        // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
+        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Left_words    = _Left._Myvec._Unchecked_begin();
+        const auto _Right_words   = _Right._Myvec._Unchecked_begin();
+
+        using _Comp = _Vbase_compare_three_way<strong_ordering>;
+
+        const strong_ordering _Word_comparison = _STD lexicographical_compare_three_way(
+            _Left_words, _Left_words + _Min_word_size, _Right_words, _Right_words + _Min_word_size, _Comp{});
+
+        if (_Word_comparison != 0) {
+            return _Word_comparison;
+        }
+
+        return _Left.size() <=> _Right.size();
+    } else {
+        return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+            _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+    }
+}
+#else // __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_same_v<_Ty, bool>) {
+        // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
+        auto _First = _Left._Myvec._Unchecked_begin();
+        auto _Other = _Right._Myvec._Unchecked_begin();
+
+        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
+
+        for (; _First != _Last; ++_First, (void) ++_Other) {
+            using _Comp = _Vbase_compare_three_way<signed char>;
+            const auto _Result = _Comp{}(*_First, *_Other);
+
+            if (_Result < 0) {
+                return true;
+            } else if (_Result > 0) {
+                return false;
+            }
+        }
+
+        return _Left.size() < _Right.size();
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return _STD lexicographical_compare(
+            _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
+    }
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator>(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return _Right < _Left;
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator<=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return !(_Right < _Left);
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+    return !(_Left < _Right);
+}
+#endif // __cpp_lib_concepts
+
+template <class _Ty, class _Alloc>
+void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
+    _Left.swap(_Right);
+}
+
+#if _HAS_CXX20
+template <class _Ty, class _Alloc, class _Uty>
+typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    return _Erase_remove(_Cont, _Val);
+}
+
+template <class _Ty, class _Alloc, class _Pr>
+typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+}
+#endif // _HAS_CXX20
+
+// CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
 template <class _Alloc0>
 struct _Wrap_alloc { // TRANSITION, ABI compat, preserves symbol names of vector<bool>::iterator
     using _Alloc = _Alloc0;
@@ -2806,153 +2968,6 @@ public:
     }
 };
 
-template <class _Ty, class _Alloc>
-void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
-    _Left.swap(_Right);
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    if (_Left.size() != _Right.size()) {
-        return false;
-    }
-
-#if _HAS_IF_CONSTEXPR
-    if constexpr (is_same_v<_Ty, bool>) {
-        return _STD equal(
-            _Left._Myvec._Unchecked_begin(), _Left._Myvec._Unchecked_end(), _Right._Myvec._Unchecked_begin());
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
-        return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
-    }
-}
-
-#if !_HAS_CXX20
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
-#if _HAS_IF_CONSTEXPR
-// Optimize vector<bool> lexicographical comparisons.
-
-// There are several endianness/ordering issues to consider here.
-// * Machine endianness is irrelevant. (That affects how an unsigned int is stored
-//   as a sequence of bytes. While all of our supported architectures are little-endian,
-//   that's irrelevant as long as we avoid reinterpreting unsigned int as a sequence of bytes.)
-// * Appending bits to vector<bool> eventually appends words to its underlying storage.
-//   For example, vb[10] is stored within vb._Myvec[0], while vb[100] is stored within vb._Myvec[3].
-//   This allows us to translate lexicographical comparisons from theoretical bits to physical words.
-// * Unsigned integers are written and compared as big-endian (most significant bit first).
-//   For example, 0x10u > 0x07u.
-// * However, vector<bool> packs bits into words as little-endian (least significant bit first).
-//   For example, vector<bool>{false, true, true, true} stores 0b0000'0000'0000'0000'0000'0000'0000'1110u.
-// We could bit-reverse words before comparing, but we just need to find the least significant bit that differs.
-
-template <class _Ret>
-struct _Vbase_compare_three_way {
-    _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
-        const _Vbase _Differing_bits = _Left ^ _Right;
-
-        if (_Differing_bits == 0) { // improves _Countr_zero codegen below
-#ifdef __cpp_lib_concepts
-            return strong_ordering::equal;
-#else // __cpp_lib_concepts
-            return 0;
-#endif // __cpp_lib_concepts
-        }
-
-        // N4861 [bit.count]/6: "Returns: The number of consecutive 0 bits in the value of x,
-        // starting from the least significant bit."
-        const int _Bit_index = _Countr_zero(_Differing_bits);
-        _STL_INTERNAL_CHECK(_Bit_index < _VBITS); // because we return early for equality
-
-        const _Vbase _Mask = _Vbase{1} << _Bit_index;
-
-        // Instead of comparing (_Left & _Mask) < (_Right & _Mask), we know that exactly one side will be zero.
-#ifdef __cpp_lib_concepts
-        return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
-#else // __cpp_lib_concepts
-        return (_Left & _Mask) == 0 ? -1 : 1;
-#endif // __cpp_lib_concepts
-    }
-};
-#endif // _HAS_IF_CONSTEXPR
-
-#ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
-    const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    if constexpr (is_same_v<_Ty, bool>) {
-        // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
-        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
-        const auto _Left_words    = _Left._Myvec._Unchecked_begin();
-        const auto _Right_words   = _Right._Myvec._Unchecked_begin();
-
-        using _Comp = _Vbase_compare_three_way<strong_ordering>;
-
-        const strong_ordering _Word_comparison = _STD lexicographical_compare_three_way(
-            _Left_words, _Left_words + _Min_word_size, _Right_words, _Right_words + _Min_word_size, _Comp{});
-
-        if (_Word_comparison != 0) {
-            return _Word_comparison;
-        }
-
-        return _Left.size() <=> _Right.size();
-    } else {
-        return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
-            _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
-    }
-}
-#else // __cpp_lib_concepts
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-#if _HAS_IF_CONSTEXPR
-    if constexpr (is_same_v<_Ty, bool>) {
-        // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
-        auto _First = _Left._Myvec._Unchecked_begin();
-        auto _Other = _Right._Myvec._Unchecked_begin();
-
-        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
-
-        for (; _First != _Last; ++_First, (void) ++_Other) {
-            using _Comp = _Vbase_compare_three_way<signed char>;
-            const auto _Result = _Comp{}(*_First, *_Other);
-
-            if (_Result < 0) {
-                return true;
-            } else if (_Result > 0) {
-                return false;
-            }
-        }
-
-        return _Left.size() < _Right.size();
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
-        return _STD lexicographical_compare(
-            _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator>(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return _Right < _Left;
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator<=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return !(_Right < _Left);
-}
-
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-    return !(_Left < _Right);
-}
-#endif // __cpp_lib_concepts
-
 // STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Alloc>
 struct hash<vector<bool, _Alloc>> {
@@ -2963,18 +2978,6 @@ struct hash<vector<bool, _Alloc>> {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
     }
 };
-
-#if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Uty>
-typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Erase_remove(_Cont, _Val);
-}
-
-template <class _Ty, class _Alloc, class _Pr>
-typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
-}
-#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {
