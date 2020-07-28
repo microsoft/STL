@@ -4387,7 +4387,8 @@ public:
 
     // [counted.iter.cmp]
     template <common_with<_Iter> _Other>
-    _NODISCARD friend constexpr bool operator==(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
+    _NODISCARD friend constexpr bool operator==(
+        const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
         _Verify_range(_Left, _Right);
         return _Left._Length == _Right.count();
     }
