@@ -9,13 +9,13 @@
 using namespace std;
 
 struct instantiator {
-    static constexpr int input[3] = {1, 2, 3};
 
     template <input_or_output_iterator Iter>
     static constexpr void call() {
         if constexpr (copyable<Iter>) {
-            using Sen = test::sentinel<const iter_value_t<Iter>>;
-            using Cit = common_iterator<Iter, Sen>;
+            using Sen    = test::sentinel<iter_value_t<Iter>>;
+            using Cit    = common_iterator<Iter, Sen>;
+            int input[3] = {1, 2, 3};
 
             // [common.iter.types]
             if constexpr (forward_iterator<Iter>) {
@@ -90,5 +90,5 @@ struct instantiator {
 };
 
 int main() {
-    with_writable_iterators<instantiator, const int>::call();
+    with_writable_iterators<instantiator, int>::call();
 }
