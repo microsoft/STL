@@ -188,7 +188,7 @@ public:
     [[nodiscard]] bool try_acquire() noexcept {
         int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
         _STL_VERIFY(_Prev == 1 || _Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
-        reinterpret_cast<const bool&>(_Prev);
+        return reinterpret_cast<const bool&>(_Prev);
     }
 
     template <class _Rep, class _Period>
