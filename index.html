@@ -98,8 +98,15 @@
         const age_data = {
             datasets: [
                 {
-                    data: get_values(daily_table, 'months'),
-                    label: 'Combined PR Age',
+                    data: get_values(daily_table, 'age_avg_days'),
+                    label: 'Average Age',
+                    borderColor: '#909090',
+                    backgroundColor: '#909090',
+                    yAxisID: 'leftAxis',
+                },
+                {
+                    data: get_values(daily_table, 'age_sum_months'),
+                    label: 'Combined Age',
                     borderColor: '#000000',
                     backgroundColor: '#000000',
                     yAxisID: 'rightAxis',
@@ -211,10 +218,7 @@
             title: {
                 display: true,
                 fontSize: 24,
-                text: 'Combined PR Age',
-            },
-            legend: {
-                display: false,
+                text: 'Pull Request Age',
             },
             scales: {
                 xAxes: make_xAxes(timeframe_github),
@@ -222,11 +226,26 @@
                     {
                         type: 'linear',
                         display: 'auto',
+                        id: 'leftAxis',
+                        position: 'left',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Average Age (days)',
+                        },
+                        ticks: {
+                            min: 0,
+                            max: 80,
+                            stepSize: 10,
+                        },
+                    },
+                    {
+                        type: 'linear',
+                        display: 'auto',
                         id: 'rightAxis',
                         position: 'right',
                         scaleLabel: {
                             display: true,
-                            labelString: 'PR-months',
+                            labelString: 'Combined Age (PR-months)',
                         },
                         ticks: {
                             min: 0,
@@ -323,8 +342,19 @@
     <canvas id="ageChart"></canvas>
 
     <h1>Explanation</h1>
-    <p>This chart tracks the combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
-        for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</p>
+    <ul>
+        <li>Left axis:
+            <ul>
+                <li>The average age of open pull requests, in days.</li>
+            </ul>
+        </li>
+        <li>Right axis:
+            <ul>
+                <li>The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
+                    for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
+            </ul>
+        </li>
+    </ul>
 
     <hr />
 
