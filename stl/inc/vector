@@ -1814,12 +1814,10 @@ struct _Vbase_compare_three_way {
 #endif // __cpp_lib_concepts
         }
 
-        // N4861 [bit.count]/6: "Returns: The number of consecutive 0 bits in the value of x,
-        // starting from the least significant bit."
-        const int _Bit_index = _Countr_zero(_Differing_bits);
+        const int _Bit_index = _Countr_zero(_Differing_bits); // number of least significant bits that match
         _STL_INTERNAL_CHECK(_Bit_index < _VBITS); // because we return early for equality
 
-        const _Vbase _Mask = _Vbase{1} << _Bit_index;
+        const _Vbase _Mask = _Vbase{1} << _Bit_index; // selects the least significant bit that differs
 
         // Instead of comparing (_Left & _Mask) < (_Right & _Mask), we know that exactly one side will be zero.
 #ifdef __cpp_lib_concepts
