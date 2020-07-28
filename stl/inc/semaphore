@@ -65,8 +65,10 @@ public:
     void acquire() noexcept /* strengthened */ {
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
-            if (_Current == 0) {
-                _Counter.wait(0, std::memory_order_relaxed);
+            while (_Current == 0) {
+                // Even though atomic wait does not return spuriously, need while loop since load may still load zero
+                // And since have to use loop anyway, use more direct API that wakes spuriosly
+                __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
