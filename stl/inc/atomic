@@ -386,6 +386,19 @@ void _Atomic_wait_direct(
     }
 }
 
+template <class _Predicate>
+bool __stdcall _Atomic_wait_indirect_callback(const void* _Param, const void* _Comparand) {
+    auto* _Fn = static_cast<const _Predicate*>(_Param);
+    return (*_Fn)(_Comparand);
+};
+
+template <class _Predicate>
+void _Atomic_wait_indirect(
+    const void* _Storage, const _Predicate& _Are_equal, const void* _Comparand, unsigned long _Remaining_timeout) {
+    __std_atomic_wait_indirect(
+        _Storage, _Atomic_wait_indirect_callback<_Predicate>, &_Are_equal, _Comparand, _Remaining_timeout);
+}
+
 template <class _Ty, size_t /* = ... */>
 struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
@@ -462,29 +475,30 @@ struct _Atomic_storage {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
 
-        for (;;) {
+        auto _Are_equal = [this, _Order](const void* _Comparand) -> bool {
             const _Ty _Observed      = load(_Order);
             const auto _Observed_ptr = _STD addressof(_Observed);
-            if (_CSTD memcmp(_Observed_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
-#if _CMPXCHG_MASK_OUT_PADDING_BITS
-                if constexpr (_Might_have_non_value_bits<_Ty>) {
-                    _Storage_for<_Ty> _Local;
-                    const auto _Local_ptr = _Local._Ptr();
-                    _CSTD memcpy(_Local_ptr, _Observed_ptr, sizeof(_Ty));
-                    __builtin_zero_non_value_bits(_Local_ptr);
-                    __builtin_zero_non_value_bits(_Expected_ptr);
-
-                    if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
-                        _CSTD memcpy(_Expected_ptr, _Observed_ptr, sizeof(_Ty));
-                        continue;
-                    }
-                }
-#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-                break;
+            if (_CSTD memcmp(_Observed_ptr, _Comparand, sizeof(_Ty)) == 0) {
+                return true;
             }
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+            if constexpr (_Might_have_non_value_bits<_Ty>) {
+                _Storage_for<_Ty> _Local;
+                const auto _Local_ptr = _Local._Ptr();
+                _CSTD memcpy(_Local_ptr, _Observed_ptr, sizeof(_Ty));
+                __builtin_zero_non_value_bits(_Local_ptr);
+                __builtin_zero_non_value_bits(reinterpret_cast<_Ty*>(const_cast<void*>(_Comparand)));
 
-            __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_Ty), _Atomic_wait_no_timeout);
-        }
+                if (_CSTD memcmp(_Local_ptr, _Comparand, sizeof(_Ty)) == 0) {
+                    _CSTD memcpy(const_cast<void*>(_Comparand), _Observed_ptr, sizeof(_Ty));
+                    return true;
+                }
+            }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+            return false;
+        };
+
+        _Atomic_wait_indirect(_Storage_ptr, _Are_equal, _Expected_ptr, _Atomic_wait_no_timeout);
     }
 
     void notify_one() noexcept {
