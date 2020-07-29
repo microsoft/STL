@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <latch>
 #include <semaphore>
 #include <thread>
 
@@ -11,10 +12,13 @@ using namespace std::chrono_literals;
 
 
 void test_counting_semaphore_count(const std::chrono::milliseconds delay_duration) {
+    std::latch start{4};
+
     std::counting_semaphore<4> semaphore{2};
     std::atomic<int> v{0};
 
     auto thread_function = [&] {
+        start.arrive_and_wait();
         for (int i = 0; i < 3; ++i) {
             semaphore.acquire();
             v.fetch_add(1);
@@ -24,6 +28,8 @@ void test_counting_semaphore_count(const std::chrono::milliseconds delay_duratio
     std::thread t1{thread_function};
     std::thread t2{thread_function};
     std::thread t3{thread_function};
+
+    start.arrive_and_wait();
 
     std::this_thread::sleep_for(delay_duration);
 
@@ -53,11 +59,14 @@ void test_counting_semaphore_count(const std::chrono::milliseconds delay_duratio
 }
 
 void test_binary_semaphore_count(const std::chrono::milliseconds delay_duration) {
+    std::latch start{3};
+
     std::binary_semaphore semaphore{1};
 
     std::atomic<int> v{0};
 
     auto thread_function = [&] {
+        start.arrive_and_wait();
         for (int i = 0; i < 2; ++i) {
             semaphore.acquire();
             v.fetch_add(1);
@@ -66,6 +75,8 @@ void test_binary_semaphore_count(const std::chrono::milliseconds delay_duration)
 
     std::thread t1{thread_function};
     std::thread t2{thread_function};
+
+    start.arrive_and_wait();
 
     std::this_thread::sleep_for(delay_duration);
     assert(v.load() == 1);
@@ -92,12 +103,18 @@ void test_binary_semaphore_count(const std::chrono::milliseconds delay_duration)
 
 template <class Semaphore>
 void test_semaphore_wait_for(const std::chrono::milliseconds delay_duration) {
+    std::latch start{2};
+
     Semaphore semaphore{0};
 
     std::thread t([&] {
+        start.arrive_and_wait();
+
         assert(semaphore.try_acquire_for(delay_duration));
         assert(!semaphore.try_acquire_for(delay_duration * 16));
     });
+
+    start.arrive_and_wait();
 
     semaphore.release();
 
@@ -108,12 +125,18 @@ void test_semaphore_wait_for(const std::chrono::milliseconds delay_duration) {
 
 template <class Semaphore>
 void test_semaphore_wait_until(const std::chrono::milliseconds delay_duration) {
+    std::latch start{2};
+
     Semaphore semaphore{0};
 
     std::thread t([&] {
+        start.arrive_and_wait();
+
         assert(semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration));
         assert(!semaphore.try_acquire_until(std::chrono::steady_clock::now() + delay_duration * 8));
     });
+
+    start.arrive_and_wait();
 
     semaphore.release();
 
