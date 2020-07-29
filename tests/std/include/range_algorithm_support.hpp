@@ -1029,11 +1029,6 @@ constexpr void test_contiguous() {
 }
 
 template <class Instantiator, class Element1, class Element2>
-constexpr void input_range_output_iterator_permutations() {
-    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
-}
-
-template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_in() {
     with_input_ranges<with_input_ranges<Instantiator, Element2>, Element1>::call();
 }
@@ -1051,6 +1046,11 @@ constexpr void test_fwd_fwd() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_bidi_bidi() {
     with_bidirectional_ranges<with_bidirectional_ranges<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void input_range_output_iterator_permutations() {
+    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element1, class Element2>
