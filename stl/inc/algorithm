@@ -6855,8 +6855,8 @@ namespace ranges {
         // clang-format on
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
-        static constexpr merge_result<_It1, _It2, _Out> _Merge_unchecked(_It1 _First1, const _Se1 _Last1, _It2 _First2,
-            const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        _NODISCARD static constexpr merge_result<_It1, _It2, _Out> _Merge_unchecked(_It1 _First1, const _Se1 _Last1,
+            _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
