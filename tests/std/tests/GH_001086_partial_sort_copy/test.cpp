@@ -50,7 +50,7 @@ int main() {
     constexpr int src_size = 4;
     source src[src_size];
     constexpr int dst_size = 2;
-    target dst[2];
+    target dst[dst_size];
 
     for (int i = 0; i < src_size; ++i) {
         src[i].x = src_size - 1 - i;
