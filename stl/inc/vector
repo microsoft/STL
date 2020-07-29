@@ -2886,26 +2886,24 @@ namespace pmr {
 #if _HAS_IF_CONSTEXPR
 // VARIABLE TEMPLATE _Is_vb_iterator
 template <class _Alloc>
-_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>> = true;
-
-template <class _Alloc>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>> = true;
 
-template <class _FwdIt, class _Ty>
-_CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+template <class _Alloc, class _Ty>
+_CONSTEXPR20 void _Fill_vbool(_Vb_iterator<_Alloc> _First, _Vb_iterator<_Alloc> _Last, const _Ty& _Val) {
     // Set [_First, _Last) to _Val
     if (_First == _Last) {
         return;
     }
 
-    _Vbase* _VbFirst            = const_cast<_Vbase*>(_First._Myptr);
-    const _Vbase* const _VbLast = _Last._Myptr;
+    _Vbase* _VbFirst      = const_cast<_Vbase*>(_First._Myptr);
+    _Vbase* const _VbLast = const_cast<_Vbase*>(_Last._Myptr);
 
     const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
     const auto _FirstDestMask   = static_cast<_Vbase>(~_FirstSourceMask);
     const auto _FillVal         = static_cast<_Vbase>(_Val ? -1 : 0);
 
     if (_VbFirst == _VbLast) {
+        // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
         const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
         const auto _LastDestMask   = static_cast<_Vbase>(~_LastSourceMask);
         const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
@@ -2930,7 +2928,7 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
         const auto _Count_ch   = static_cast<size_t>(_VbLast_ch - _VbFirst_ch);
         const auto _ValChar    = static_cast<unsigned char>(_Val ? -1 : 0);
         _CSTD memset(_VbFirst, _ValChar, _Count_ch);
-        _VbFirst += _VbLast - _VbFirst;
+        _VbFirst = _VbLast;
     }
 
     if (_Last._Myoff != 0) {

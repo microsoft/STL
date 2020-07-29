@@ -16,26 +16,26 @@ void test_fill_helper(const size_t length) {
         vector<bool> result_true(length, true);
         result_true.resize(length + 3, false);
         vector<bool> dest_true(length + 3, false);
-        fill(dest_true.cbegin(), prev(dest_true.cend(), 3), true);
+        fill(dest_true.begin(), prev(dest_true.end(), 3), true);
         assert(dest_true == result_true);
 
         vector<bool> result_false(length, false);
         result_false.resize(length + 3, true);
         vector<bool> dest_false(length + 3, true);
-        fill(dest_false.cbegin(), prev(dest_false.cend(), 3), false);
+        fill(dest_false.begin(), prev(dest_false.end(), 3), false);
         assert(dest_false == result_false);
 
         vector<bool> result_true_n(length, true);
         result_true_n.resize(length + 3, false);
         vector<bool> dest_true_n(length + 3, false);
-        const auto res_fill_n = fill_n(dest_true_n.cbegin(), length, true);
+        const auto res_fill_n = fill_n(dest_true_n.begin(), length, true);
         assert(dest_true_n == result_true_n);
-        assert(res_fill_n == prev(dest_true_n.cend(), 3));
+        assert(res_fill_n == prev(dest_true_n.end(), 3));
 
         vector<bool> result_false_n(length, false);
         result_false_n.resize(length + 3, true);
         vector<bool> dest_false_n(length + 3, true);
-        fill_n(dest_false_n.cbegin(), length, false);
+        fill_n(dest_false_n.begin(), length, false);
         assert(dest_false_n == result_false_n);
     }
 
@@ -43,31 +43,31 @@ void test_fill_helper(const size_t length) {
     {
         vector<bool> result_true(length, true);
         result_true.resize(length + 3, false);
-        result_true.insert(result_true.cbegin(), false);
+        result_true.insert(result_true.begin(), false);
         vector<bool> dest_true(length + 4, false);
-        fill(next(dest_true.cbegin()), prev(dest_true.cend(), 3), true);
+        fill(next(dest_true.begin()), prev(dest_true.end(), 3), true);
         assert(dest_true == result_true);
 
         vector<bool> result_false(length, false);
         result_false.resize(length + 3, true);
-        result_false.insert(result_false.cbegin(), true);
+        result_false.insert(result_false.begin(), true);
         vector<bool> dest_false(length + 4, true);
-        fill(next(dest_false.cbegin()), prev(dest_false.cend(), 3), false);
+        fill(next(dest_false.begin()), prev(dest_false.end(), 3), false);
         assert(dest_false == result_false);
 
         vector<bool> result_true_n(length, true);
         result_true_n.resize(length + 3, false);
-        result_true_n.insert(result_true_n.cbegin(), false);
+        result_true_n.insert(result_true_n.begin(), false);
         vector<bool> dest_true_n(length + 4, false);
-        const auto res_fill_n = fill_n(next(dest_true_n.cbegin()), length, true);
+        const auto res_fill_n = fill_n(next(dest_true_n.begin()), length, true);
         assert(dest_true_n == result_true_n);
-        assert(res_fill_n == prev(dest_true_n.cend(), 3));
+        assert(res_fill_n == prev(dest_true_n.end(), 3));
 
         vector<bool> result_false_n(length, false);
         result_false_n.resize(length + 3, true);
-        result_false_n.insert(result_false_n.cbegin(), true);
+        result_false_n.insert(result_false_n.begin(), true);
         vector<bool> dest_false_n(length + 4, true);
-        fill_n(next(dest_false_n.cbegin()), length, false);
+        fill_n(next(dest_false_n.begin()), length, false);
         assert(dest_false_n == result_false_n);
     }
 }
