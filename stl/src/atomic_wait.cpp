@@ -172,16 +172,52 @@ namespace {
         const auto _Wake_by_address_all = _Wait_functions._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
         _Wake_by_address_all(Address);
     }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
+    bool __stdcall _Atomic_wait_are_equal_8_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
+        return __iso_volatile_load8(const_cast<const volatile char*>(reinterpret_cast<const char*>(_Storage)))
+               == *reinterpret_cast<const char*>(_Comparand);
+    }
+
+    bool __stdcall _Atomic_wait_are_equal_16_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
+        return __iso_volatile_load16(const_cast<const volatile short*>(reinterpret_cast<const short*>(_Storage)))
+               == *reinterpret_cast<const short*>(_Comparand);
+    }
+
+    bool __stdcall _Atomic_wait_are_equal_32_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
+        return __iso_volatile_load32(const_cast<const volatile int*>(reinterpret_cast<const int*>(_Storage)))
+               == *reinterpret_cast<const int*>(_Comparand);
+    }
+
+    bool __stdcall _Atomic_wait_are_equal_64_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
+        return __iso_volatile_load64(
+                   const_cast<const volatile long long*>(reinterpret_cast<const long long*>(_Storage)))
+               == *reinterpret_cast<const long long*>(_Comparand);
+    }
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 } // unnamed namespace
 
+
 _EXTERN_C
-int __stdcall __std_atomic_wait_direct(
-    const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
+int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,
+    const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
-        return __std_atomic_wait_indirect(_Storage, _Comparand, _Size, _Remaining_timeout);
+        switch (_Size) {
+        case 1:
+            return __std_atomic_wait_indirect(
+                _Storage, &_Atomic_wait_are_equal_8_relaxed, _Storage, _Comparand, _Remaining_timeout);
+        case 2:
+            return __std_atomic_wait_indirect(
+                _Storage, &_Atomic_wait_are_equal_16_relaxed, _Storage, _Comparand, _Remaining_timeout);
+        case 4:
+            return __std_atomic_wait_indirect(
+                _Storage, &_Atomic_wait_are_equal_32_relaxed, _Storage, _Comparand, _Remaining_timeout);
+        case 8:
+            return __std_atomic_wait_indirect(
+                _Storage, &_Atomic_wait_are_equal_64_relaxed, _Storage, _Comparand, _Remaining_timeout);
+        default:
+            _CSTD abort();
+        }
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
@@ -241,15 +277,15 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 }
 
-int __stdcall __std_atomic_wait_indirect(
-    const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
+int __stdcall __std_atomic_wait_indirect(const void* _Storage, _Atomic_wait_indirect_callback_t _Are_equal,
+    const void* _Parameter, void* _Comparand, unsigned long _Remaining_timeout) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
     _SrwLock_guard _Guard(_Entry._Lock);
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
 
     for (;;) {
-        if (_CSTD memcmp(_Storage, _Comparand, _Size) != 0) {
+        if (!_Are_equal(_Parameter, _Comparand)) {
             return TRUE;
         }
 
