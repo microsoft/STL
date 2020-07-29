@@ -172,8 +172,6 @@ namespace {
         const auto _Wake_by_address_all = _Wait_functions._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
         _Wake_by_address_all(Address);
     }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-
 
     bool __stdcall _Atomic_wait_are_equal_8_relaxed(const void* _Storage, const void* _Comparand) {
         return __iso_volatile_load8(const_cast<const volatile char*>(reinterpret_cast<const char*>(_Storage)))
@@ -195,6 +193,7 @@ namespace {
                    const_cast<const volatile long long*>(reinterpret_cast<const long long*>(_Storage)))
                == *reinterpret_cast<const long long*>(_Comparand);
     }
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 } // unnamed namespace
 
 
