@@ -127,17 +127,8 @@ extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Unchecked_x86_x64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits  = numeric_limits<_Ty>::digits;
-
-#ifndef __AVX2__
-    const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
-    // bsr has undefined output for zero
-    if (!_Have_lzcnt && _Val == 0) {
-        return _Digits;
-    }
-#endif // __AVX2__
 
     // We use lzcnt (actually bsr if lzcnt is not supported) now that we know
     // we're not zero. We can do this because lzcnt and bsr share the same instruction
@@ -148,6 +139,18 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
         return static_cast<int>(__lzcnt(_Val));
     } else {
 #ifdef _M_IX86
+        static_assert(_Digits <= 32, "Should have handled this in _Checked_x86_x64_countl_zero");
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        return static_cast<int>(__lzcnt64(_Val));
+#endif // _M_IX86
+    }
+    // note: we don't need to call a fallback here because
+    // all supported x86 processors at least have bsr/bsf
+}
+
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
+    if constexpr (sizeof(_Ty) > sizeof(void*)) {
         const unsigned int _High = _Val >> 32;
         const auto _Low          = static_cast<unsigned int>(_Val);
         if (_High == 0) {
@@ -155,12 +158,41 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
         } else {
             return _Checked_x86_x64_countl_zero(_High);
         }
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
-        return static_cast<int>(__lzcnt64(_Val));
-#endif // _M_IX86
+    } else {
+        int _Result            = _Unchecked_x86_x64_countl_zero(_Val);
+#ifndef __AVX2__
+        static constexpr char _Have_lzcnt = 0;
+        static constexpr char _Dont_Have_lzcnt = 1;
+        static constexpr char _Deteting_lzcnt = 2;
+
+        static char _Lzcnt_presence = _Deteting_lzcnt;
+        // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
+        // bsr has undefined output for zero
+        auto _Lzcnt_presence_local = __iso_volatile_load8(&_Lzcnt_presence);
+        for (;;) {
+            if (_Lzcnt_presence_local == _Have_lzcnt) {
+                return _Result;
+            } else if (_Lzcnt_presence_local == _Dont_Have_lzcnt) {
+                if (_Val == 0) {
+                    return 0;
+                } else {
+                    if constexpr (_Digits < 16) {
+                        _Result += (16 - _Digits)
+                    }
+                    // bsr counts from least significant bit, lzcnt counts from most significant bit, apply correction
+                    constexpr int _Digits = numeric_limits<_Ty>::digits;
+                    return _Digits - 1 - _Result;
+                }
+            }
+            
+            volatile unsigned _Test = 0x8000'0000;
+            _Lzcnt_presence_local   = ((__lzcnt(_Test) == 0) ? _Have_lzcnt : _Dont_Have_lzcnt);
+            __iso_volatile_store8(&_Lzcnt_presence, _Lzcnt_presence_local);
+        }
+#else // ^^^ !__AVX2__ / __AVX2__ vvv
+        return _Result;
+#endif // ^^^ __AVX2__ ^^^
     }
-    // note: we don't need to call a fallback here because
-    // all supported x86 processors at least have bsr/bsf
 }
 
 template <class _Ty>
