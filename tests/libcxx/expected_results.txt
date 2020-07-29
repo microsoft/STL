@@ -524,6 +524,7 @@ std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14
 # Not yet analyzed. Clang apparently defines platform macros differently from C1XX.
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
 
+
 # *** STL BUGS ***
 # STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
 std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
@@ -642,6 +643,10 @@ std/thread/thread.semaphore/version.pass.cpp FAIL
 # "error C3861: 'assert': identifier not found"
 std/thread/thread.semaphore/timed.pass.cpp FAIL
 std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
+
+# pass labmda without noexcept to barrier
+std/thread/thread.barrier/completion.pass.cpp FAIL
+std/thread/thread.barrier/max.pass.cpp FAIL
 
 # Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
