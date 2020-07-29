@@ -81,29 +81,29 @@ struct int_wrapper {
     constexpr int_wrapper(const int_wrapper&) = default;
     constexpr int_wrapper(int_wrapper&& that) : val{exchange(that.val, -1)} {}
     constexpr int_wrapper& operator=(const int_wrapper&) = default;
-    constexpr int_wrapper& operator                      =(int_wrapper&& that) {
+
+    constexpr int_wrapper& operator=(int_wrapper&& that) {
         val = exchange(that.val, -1);
         return *this;
     }
     auto operator<=>(const int_wrapper&) const = default;
 };
 
-constexpr auto get_val = [](auto&& x) { return static_cast<int_wrapper const&>(x).val; };
+constexpr auto get_val = [](auto&& x) { return static_cast<const int_wrapper&>(x).val; };
 
 template <auto& Expected>
 struct next_perm_instantiator {
     template <ranges::bidirectional_range R>
     static constexpr void call() {
-        using ranges::next_permutation, ranges::next_permutation_result, ranges::equal, ranges::is_sorted,
-            ranges::iterator_t;
+        using ranges::next_permutation, ranges::next_permutation_result, ranges::equal, ranges::iterator_t;
 
-        constexpr auto count = static_cast<int>(ranges::size(Expected));
+        constexpr auto number_of_permutations = static_cast<int>(ranges::size(Expected));
 
         { // Validate range overload
             int_wrapper input[ranges::size(Expected[0])];
             ranges::copy(Expected[0], input);
 
-            for (int i = 1; i < count; ++i) {
+            for (int i = 1; i < number_of_permutations; ++i) {
                 R range{input};
                 const same_as<next_permutation_result<iterator_t<R>>> auto result =
                     next_permutation(range, ranges::less{}, get_val);
@@ -124,7 +124,7 @@ struct next_perm_instantiator {
             int_wrapper input[ranges::size(Expected[0])];
             ranges::copy(Expected[0], input);
 
-            for (int i = 1; i < count; ++i) {
+            for (int i = 1; i < number_of_permutations; ++i) {
                 R range{input};
                 const same_as<next_permutation_result<iterator_t<R>>> auto result =
                     next_permutation(range.begin(), range.end(), ranges::less{}, get_val);
@@ -147,16 +147,15 @@ template <auto& Expected>
 struct prev_perm_instantiator {
     template <ranges::bidirectional_range R>
     static constexpr void call() {
-        using ranges::prev_permutation, ranges::prev_permutation_result, ranges::equal, ranges::is_sorted,
-            ranges::iterator_t;
+        using ranges::prev_permutation, ranges::prev_permutation_result, ranges::equal, ranges::iterator_t;
 
-        constexpr auto count = static_cast<int>(ranges::size(Expected));
+        constexpr auto number_of_permutations = static_cast<int>(ranges::size(Expected));
 
         { // Validate range overload
             int_wrapper input[ranges::size(Expected[0])];
-            ranges::copy(Expected[count - 1], input);
+            ranges::copy(Expected[number_of_permutations - 1], input);
 
-            for (int i = count - 1; i-- > 0;) {
+            for (int i = number_of_permutations - 1; i-- > 0;) {
                 R range{input};
                 const same_as<prev_permutation_result<iterator_t<R>>> auto result =
                     prev_permutation(range, ranges::less{}, get_val);
@@ -170,14 +169,14 @@ struct prev_perm_instantiator {
                 prev_permutation(range, ranges::less{}, get_val);
             assert(result.in == range.end());
             assert(!result.found);
-            assert(equal(input, Expected[count - 1]));
+            assert(equal(input, Expected[number_of_permutations - 1]));
         }
 
         { // Validate iterator overload
             int_wrapper input[ranges::size(Expected[0])];
-            ranges::copy(Expected[count - 1], input);
+            ranges::copy(Expected[number_of_permutations - 1], input);
 
-            for (int i = count - 1; i-- > 0;) {
+            for (int i = number_of_permutations - 1; i-- > 0;) {
                 R range{input};
                 const same_as<prev_permutation_result<iterator_t<R>>> auto result =
                     prev_permutation(range.begin(), range.end(), ranges::less{}, get_val);
@@ -191,7 +190,7 @@ struct prev_perm_instantiator {
                 prev_permutation(range.begin(), range.end(), ranges::less{}, get_val);
             assert(result.in == range.end());
             assert(!result.found);
-            assert(equal(input, Expected[count - 1]));
+            assert(equal(input, Expected[number_of_permutations - 1]));
         }
     }
 };
