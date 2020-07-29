@@ -261,11 +261,13 @@ tests\P0896R4_ranges_alg_for_each_n
 tests\P0896R4_ranges_alg_generate
 tests\P0896R4_ranges_alg_generate_n
 tests\P0896R4_ranges_alg_heap
+tests\P0896R4_ranges_alg_includes
 tests\P0896R4_ranges_alg_is_permutation
 tests\P0896R4_ranges_alg_is_sorted
 tests\P0896R4_ranges_alg_minmax
 tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_move
+tests\P0896R4_ranges_alg_move_backward
 tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
@@ -282,6 +284,10 @@ tests\P0896R4_ranges_alg_reverse
 tests\P0896R4_ranges_alg_sample
 tests\P0896R4_ranges_alg_search
 tests\P0896R4_ranges_alg_search_n
+tests\P0896R4_ranges_alg_set_difference
+tests\P0896R4_ranges_alg_set_intersection
+tests\P0896R4_ranges_alg_set_symmetric_difference
+tests\P0896R4_ranges_alg_set_union
 tests\P0896R4_ranges_alg_shuffle
 tests\P0896R4_ranges_alg_swap_ranges
 tests\P0896R4_ranges_alg_transform_binary

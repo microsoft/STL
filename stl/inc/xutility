@@ -190,16 +190,22 @@ template <class _Fx>
 struct _Ref_fn { // pass function object by value as a reference
     template <class... _Args>
     constexpr decltype(auto) operator()(_Args&&... _Vals) { // forward function call operator
-        return _Fn(_STD forward<_Args>(_Vals)...);
+#if _HAS_IF_CONSTEXPR
+        if constexpr (is_member_pointer_v<_Fx>) {
+            return _STD invoke(_Fn, _STD forward<_Args>(_Vals)...);
+        } else
+#endif // _HAS_IF_CONSTEXPR
+        {
+            return _Fn(_STD forward<_Args>(_Vals)...);
+        }
     }
 
     _Fx& _Fn;
 };
 
 template <class _Fn>
-_INLINE_VAR constexpr bool
-    _Pass_functor_by_value_v = sizeof(_Fn) <= sizeof(void*)
-                               && conjunction_v<is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
+_INLINE_VAR constexpr bool _Pass_functor_by_value_v = conjunction_v<bool_constant<sizeof(_Fn) <= sizeof(void*)>,
+    is_trivially_copy_constructible<_Fn>, is_trivially_destructible<_Fn>>;
 
 template <class _Fn, enable_if_t<_Pass_functor_by_value_v<_Fn>, int> = 0> // TRANSITION, if constexpr
 constexpr _Fn _Pass_fn(_Fn _Val) { // pass functor by value
@@ -1106,8 +1112,16 @@ concept permutable = forward_iterator<_It>
     && indirectly_movable_storable<_It, _It>
     && indirectly_swappable<_It, _It>;
 
-// CONCEPT sortable
+// CONCEPT mergeable
 namespace ranges { struct less; }
+template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+concept mergeable = input_iterator<_It1> && input_iterator<_It2>
+    && weakly_incrementable<_Out>
+    && indirectly_copyable<_It1, _Out>
+    && indirectly_copyable<_It2, _Out>
+    && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
+
+// CONCEPT sortable
 template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
 // clang-format on

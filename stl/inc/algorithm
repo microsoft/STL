@@ -1888,6 +1888,58 @@ namespace ranges {
     };
 
     inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE move_backward_result
+    template <class _In, class _Out>
+    using move_backward_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::move_backward
+    // clang-format off
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <bidirectional_iterator _It1, bidirectional_iterator _It2>
+        requires indirectly_movable<_It1, _It2>
+    _NODISCARD constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
+        if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
+            if (!_STD is_constant_evaluated()) {
+                return _Copy_backward_memmove(_First, _Last, _Result);
+            }
+        }
+
+        while (_First != _Last) {
+            *--_Result = _RANGES iter_move(--_Last);
+        }
+
+        return _Result;
+    }
+    // clang-format on
+
+    class _Move_backward_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
+            requires indirectly_movable<_It1, _It2>
+        constexpr move_backward_result<_It1, _It2> operator()(_It1 _First, _Se1 _Last, _It2 _Result) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Result = _RANGES _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <bidirectional_range _Rng, bidirectional_iterator _It>
+            requires indirectly_movable<iterator_t<_Rng>, _It>
+        constexpr move_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
+            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            _Result     = _RANGES _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Move_backward_fn move_backward{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -7623,6 +7675,79 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD includes(_First1, _Last1, _First2, _Last2);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::includes
+    class _Includes_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pj1 = identity, class _Pj2 = identity,
+            indirect_strict_weak_order<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            return _Includes_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _Pass_fn(_Pred),
+                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+        template <input_range _Rng1, input_range _Rng2, class _Pj1 = identity, class _Pj2 = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng1>, _Pj1>, projected<iterator_t<_Rng2>, _Pj2>> _Pr =
+                ranges::less>
+        _NODISCARD constexpr bool operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            return _Includes_unchecked(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Includes_unchecked(
+            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
+            if (_First2 == _Last2) {
+                return true;
+            } else if (_First1 == _Last1) {
+                return false;
+            }
+
+            for (;;) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    ++_First1;
+                    if (_First1 == _Last1) {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    return false;
+                }
+
+                ++_First1;
+                ++_First2;
+                if (_First2 == _Last2) {
+                    return true;
+                } else if (_First1 == _Last1) {
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Includes_fn includes{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_union
@@ -7685,6 +7810,84 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_union_result
+    template <class _In1, class _In2, class _Out>
+    using set_union_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::set_union
+    class _Set_union_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_union_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Set_union_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)),
+                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_union_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _First2  = _RANGES begin(_Range2);
+            auto _UResult = _Set_union_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_union_result<_It1, _It2, _Out> _Set_union_unchecked(_It1 _First1,
+            const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (; _First1 != _Last1 && _First2 != _Last2; ++_Result) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                        ++_First2;
+                    }
+                    ++_First1;
+                }
+            }
+
+            auto _UResult1 = _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+            auto _UResult2 = _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_UResult1.out));
+            return {_STD move(_UResult1.in), _STD move(_UResult2.in), _STD move(_UResult2.out)};
+        }
+    };
+
+    inline constexpr _Set_union_fn set_union{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_intersection
@@ -7735,6 +7938,91 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
     // AND sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_intersection_result
+    template <class _In1, class _In2, class _Out>
+    using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::set_intersection
+    class _Set_intersection_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_intersection_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Set_intersection_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)),
+                    _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_intersection_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _First2  = _RANGES begin(_Range2);
+            auto _UResult = _Set_intersection_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_intersection_result<_It1, _It2, _Out> _Set_intersection_unchecked(_It1 _First1,
+            const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First1 == _Last1) {
+                    _RANGES advance(_First2, _Last2);
+                    break;
+                } else if (_First2 == _Last2) {
+                    _RANGES advance(_First1, _Last1);
+                    break;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    ++_First1;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    ++_Result;
+                    ++_First1;
+                    ++_First2;
+                }
+            }
+
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+    };
+
+    inline constexpr _Set_intersection_fn set_intersection{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_difference
@@ -7786,6 +8074,87 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
     // take set [_First2, _Last2) from [_First1, _Last1)
     return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_difference_result
+    template <class _In, class _Out>
+    using set_difference_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::set_difference
+    class _Set_difference_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_difference_result<_It1, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Set_difference_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)),
+                    _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_difference_result<borrowed_iterator_t<_Rng1>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _UResult = _Set_difference_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Ubegin(_Range2), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred),
+                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_difference_result<_It1, _Out> _Set_difference_unchecked(_It1 _First1,
+            const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First1 == _Last1) {
+                    return {_STD move(_First1), _STD move(_Result)};
+                }
+
+                if (_First2 == _Last2) {
+                    return _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    *_Result = *_First1;
+                    ++_Result;
+                    ++_First1;
+                } else {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                        ++_First1;
+                    }
+
+                    ++_First2;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Set_difference_fn set_difference{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_symmetric_difference
@@ -7851,6 +8220,95 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_symmetric_difference_result
+    template <class _In1, class _In2, class _Out>
+    using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::set_symmetric_difference
+    class _Set_symmetric_difference_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_symmetric_difference_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Set_symmetric_difference_unchecked(_Get_unwrapped(_STD move(_First1)),
+                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
+                _Get_unwrapped(_STD move(_Last2)), _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred),
+                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_symmetric_difference_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {},
+                _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _First2  = _RANGES begin(_Range2);
+            auto _UResult = _Set_symmetric_difference_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_symmetric_difference_result<_It1, _It2, _Out>
+            _Set_symmetric_difference_unchecked(_It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2,
+                _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First1 == _Last1) {
+                    auto _UResult = _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_Result));
+                    return {_STD move(_First1), _STD move(_UResult.in), _STD move(_UResult.out)};
+                }
+
+                if (_First2 == _Last2) {
+                    auto _UResult = _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                    return {_STD move(_UResult.in), _STD move(_First2), _STD move(_UResult.out)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    *_Result = *_First1;
+                    ++_Result;
+                    ++_First1;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_Result;
+                    ++_First2;
+                } else {
+                    ++_First1;
+                    ++_First2;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Set_symmetric_difference_fn set_symmetric_difference{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE max_element
