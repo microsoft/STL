@@ -198,7 +198,6 @@ namespace {
 } // unnamed namespace
 
 
-
 _EXTERN_C
 int __stdcall __std_atomic_wait_direct(
     const void* _Storage, const void* _Comparand, const size_t _Size, const unsigned long _Remaining_timeout) noexcept {
@@ -211,11 +210,9 @@ int __stdcall __std_atomic_wait_direct(
         case 2:
             return __std_atomic_wait_indirect(
                 _Storage, &_Atomic_wait_are_equal_16_relaxed, _Storage, _Comparand, _Remaining_timeout);
-
         case 4:
             return __std_atomic_wait_indirect(
                 _Storage, &_Atomic_wait_are_equal_32_relaxed, _Storage, _Comparand, _Remaining_timeout);
-
         case 8:
             return __std_atomic_wait_indirect(
                 _Storage, &_Atomic_wait_are_equal_64_relaxed, _Storage, _Comparand, _Remaining_timeout);
