@@ -387,14 +387,14 @@ void _Atomic_wait_direct(
 }
 
 template <class _Predicate>
-bool __stdcall _Atomic_wait_indirect_callback(const void* _Param, const void* _Comparand) {
-    auto* _Fn = static_cast<const _Predicate*>(_Param);
+bool __stdcall _Atomic_wait_indirect_callback(const void* const _Param, void* const _Comparand) noexcept {
+    const auto _Fn = static_cast<const _Predicate*>(_Param);
     return (*_Fn)(_Comparand);
-};
+}
 
 template <class _Predicate>
-void _Atomic_wait_indirect(
-    const void* _Storage, const _Predicate& _Are_equal, const void* _Comparand, unsigned long _Remaining_timeout) {
+void _Atomic_wait_indirect(const void* const _Storage, const _Predicate& _Are_equal, void* const _Comparand,
+    unsigned long _Remaining_timeout) noexcept {
     __std_atomic_wait_indirect(
         _Storage, _Atomic_wait_indirect_callback<_Predicate>, &_Are_equal, _Comparand, _Remaining_timeout);
 }
@@ -475,7 +475,7 @@ struct _Atomic_storage {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
 
-        auto _Are_equal = [this, _Order](const void* _Comparand) -> bool {
+        auto _Are_equal = [this, _Order](void* const _Comparand) {
             const _Ty _Observed      = load(_Order);
             const auto _Observed_ptr = _STD addressof(_Observed);
             if (_CSTD memcmp(_Observed_ptr, _Comparand, sizeof(_Ty)) == 0) {
@@ -487,16 +487,17 @@ struct _Atomic_storage {
                 const auto _Local_ptr = _Local._Ptr();
                 _CSTD memcpy(_Local_ptr, _Observed_ptr, sizeof(_Ty));
                 __builtin_zero_non_value_bits(_Local_ptr);
-                __builtin_zero_non_value_bits(reinterpret_cast<_Ty*>(const_cast<void*>(_Comparand)));
+                __builtin_zero_non_value_bits(reinterpret_cast<_Ty*>(_Comparand));
 
                 if (_CSTD memcmp(_Local_ptr, _Comparand, sizeof(_Ty)) == 0) {
-                    _CSTD memcpy(const_cast<void*>(_Comparand), _Observed_ptr, sizeof(_Ty));
+                    _CSTD memcpy(_Comparand, _Observed_ptr, sizeof(_Ty));
                     return true;
                 }
             }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
             return false;
         };
+
         if (_Are_equal(_Expected_ptr)) {
             _Atomic_wait_indirect(_Storage_ptr, _Are_equal, _Expected_ptr, _Atomic_wait_no_timeout);
         }
