@@ -176,17 +176,16 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
                 if (_Val == 0) {
                     return 0;
                 } else {
-                    if constexpr (_Digits < 16) {
-                        _Result += (16 - _Digits)
-                    }
-                    // bsr counts from least significant bit, lzcnt counts from most significant bit, apply correction
                     constexpr int _Digits = numeric_limits<_Ty>::digits;
-                    return _Digits - 1 - _Result;
+                    constexpr int _Digits_of_bsr = (_Digits < 16) ? 16 : _Digits;
+                    // bsr counts from least significant bit, lzcnt counts from most significant bit, apply correction
+                    return _Digits_of_bsr - 1 - _Result;
                 }
             }
-            
-            volatile unsigned _Test = 0x8000'0000;
-            _Lzcnt_presence_local   = ((__lzcnt(_Test) == 0) ? _Have_lzcnt : _Dont_Have_lzcnt);
+
+            volatile unsigned _Test        = 0x8000'0000;
+            volatile unsigned _Test_result = __lzcnt(_Test);
+            _Lzcnt_presence_local          = ((_Test_result == 0) ? _Have_lzcnt : _Dont_Have_lzcnt);
             __iso_volatile_store8(&_Lzcnt_presence, _Lzcnt_presence_local);
         }
 #else // ^^^ !__AVX2__ / __AVX2__ vvv
