@@ -8560,12 +8560,12 @@ namespace ranges {
                     } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_Mid)));
 
                     _RANGES iter_swap(_Next, _Mid);
-                    _Reverse_common(_Next1, _Last);
+                    _Reverse_common(_STD move(_Next1), _STD move(_Last));
                     return true;
                 }
 
                 if (_Next == _First) { // pure descending, flip all
-                    _Reverse_common(_First, _Last);
+                    _Reverse_common(_STD move(_First), _STD move(_Last));
                     return false;
                 }
             }
@@ -8671,12 +8671,12 @@ namespace ranges {
                     } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_Next)));
 
                     _RANGES iter_swap(_Next, _Mid);
-                    _Reverse_common(_Next1, _Last);
+                    _Reverse_common(_STD move(_Next1), _STD move(_Last));
                     return true;
                 }
 
                 if (_Next == _First) { // pure ascending, flip all
-                    _Reverse_common(_First, _Last);
+                    _Reverse_common(_STD move(_First), _STD move(_Last));
                     return false;
                 }
             }

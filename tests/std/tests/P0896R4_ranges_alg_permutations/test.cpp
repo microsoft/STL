@@ -12,6 +12,8 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
+#pragma warning(disable : 6294) // Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
+
 // Validate that (next|prev)_permutation_result alias in_found_result
 STATIC_ASSERT(same_as<ranges::next_permutation_result<int>, ranges::in_found_result<int>>);
 STATIC_ASSERT(same_as<ranges::prev_permutation_result<int>, ranges::in_found_result<int>>);
@@ -24,11 +26,12 @@ STATIC_ASSERT(
     same_as<decltype(ranges::prev_permutation(borrowed<false>{})), ranges::prev_permutation_result<ranges::dangling>>);
 STATIC_ASSERT(same_as<decltype(ranges::prev_permutation(borrowed<true>{})), ranges::prev_permutation_result<int*>>);
 
-constexpr int perm4[24][4]  = {{0, 1, 2, 3}, {0, 1, 3, 2}, {0, 2, 1, 3}, {0, 2, 3, 1}, {0, 3, 1, 2}, {0, 3, 2, 1},
+constexpr int perm1[][1] = {{0}};
+constexpr int perm4[][4] = {{0, 1, 2, 3}, {0, 1, 3, 2}, {0, 2, 1, 3}, {0, 2, 3, 1}, {0, 3, 1, 2}, {0, 3, 2, 1},
     {1, 0, 2, 3}, {1, 0, 3, 2}, {1, 2, 0, 3}, {1, 2, 3, 0}, {1, 3, 0, 2}, {1, 3, 2, 0}, {2, 0, 1, 3}, {2, 0, 3, 1},
     {2, 1, 0, 3}, {2, 1, 3, 0}, {2, 3, 0, 1}, {2, 3, 1, 0}, {3, 0, 1, 2}, {3, 0, 2, 1}, {3, 1, 0, 2}, {3, 1, 2, 0},
     {3, 2, 0, 1}, {3, 2, 1, 0}};
-constexpr int perm5[120][5] = {{0, 1, 2, 3, 4}, {0, 1, 2, 4, 3}, {0, 1, 3, 2, 4}, {0, 1, 3, 4, 2}, {0, 1, 4, 2, 3},
+constexpr int perm5[][5] = {{0, 1, 2, 3, 4}, {0, 1, 2, 4, 3}, {0, 1, 3, 2, 4}, {0, 1, 3, 4, 2}, {0, 1, 4, 2, 3},
     {0, 1, 4, 3, 2}, {0, 2, 1, 3, 4}, {0, 2, 1, 4, 3}, {0, 2, 3, 1, 4}, {0, 2, 3, 4, 1}, {0, 2, 4, 1, 3},
     {0, 2, 4, 3, 1}, {0, 3, 1, 2, 4}, {0, 3, 1, 4, 2}, {0, 3, 2, 1, 4}, {0, 3, 2, 4, 1}, {0, 3, 4, 1, 2},
     {0, 3, 4, 2, 1}, {0, 4, 1, 2, 3}, {0, 4, 1, 3, 2}, {0, 4, 2, 1, 3}, {0, 4, 2, 3, 1}, {0, 4, 3, 1, 2},
@@ -49,6 +52,26 @@ constexpr int perm5[120][5] = {{0, 1, 2, 3, 4}, {0, 1, 2, 4, 3}, {0, 1, 3, 2, 4}
     {4, 1, 3, 2, 0}, {4, 2, 0, 1, 3}, {4, 2, 0, 3, 1}, {4, 2, 1, 0, 3}, {4, 2, 1, 3, 0}, {4, 2, 3, 0, 1},
     {4, 2, 3, 1, 0}, {4, 3, 0, 1, 2}, {4, 3, 0, 2, 1}, {4, 3, 1, 0, 2}, {4, 3, 1, 2, 0}, {4, 3, 2, 0, 1},
     {4, 3, 2, 1, 0}};
+constexpr int perm6[][6] = {{0, 0, 1, 1, 2, 2}, {0, 0, 1, 2, 1, 2}, {0, 0, 1, 2, 2, 1}, {0, 0, 2, 1, 1, 2},
+    {0, 0, 2, 1, 2, 1}, {0, 0, 2, 2, 1, 1}, {0, 1, 0, 1, 2, 2}, {0, 1, 0, 2, 1, 2}, {0, 1, 0, 2, 2, 1},
+    {0, 1, 1, 0, 2, 2}, {0, 1, 1, 2, 0, 2}, {0, 1, 1, 2, 2, 0}, {0, 1, 2, 0, 1, 2}, {0, 1, 2, 0, 2, 1},
+    {0, 1, 2, 1, 0, 2}, {0, 1, 2, 1, 2, 0}, {0, 1, 2, 2, 0, 1}, {0, 1, 2, 2, 1, 0}, {0, 2, 0, 1, 1, 2},
+    {0, 2, 0, 1, 2, 1}, {0, 2, 0, 2, 1, 1}, {0, 2, 1, 0, 1, 2}, {0, 2, 1, 0, 2, 1}, {0, 2, 1, 1, 0, 2},
+    {0, 2, 1, 1, 2, 0}, {0, 2, 1, 2, 0, 1}, {0, 2, 1, 2, 1, 0}, {0, 2, 2, 0, 1, 1}, {0, 2, 2, 1, 0, 1},
+    {0, 2, 2, 1, 1, 0}, {1, 0, 0, 1, 2, 2}, {1, 0, 0, 2, 1, 2}, {1, 0, 0, 2, 2, 1}, {1, 0, 1, 0, 2, 2},
+    {1, 0, 1, 2, 0, 2}, {1, 0, 1, 2, 2, 0}, {1, 0, 2, 0, 1, 2}, {1, 0, 2, 0, 2, 1}, {1, 0, 2, 1, 0, 2},
+    {1, 0, 2, 1, 2, 0}, {1, 0, 2, 2, 0, 1}, {1, 0, 2, 2, 1, 0}, {1, 1, 0, 0, 2, 2}, {1, 1, 0, 2, 0, 2},
+    {1, 1, 0, 2, 2, 0}, {1, 1, 2, 0, 0, 2}, {1, 1, 2, 0, 2, 0}, {1, 1, 2, 2, 0, 0}, {1, 2, 0, 0, 1, 2},
+    {1, 2, 0, 0, 2, 1}, {1, 2, 0, 1, 0, 2}, {1, 2, 0, 1, 2, 0}, {1, 2, 0, 2, 0, 1}, {1, 2, 0, 2, 1, 0},
+    {1, 2, 1, 0, 0, 2}, {1, 2, 1, 0, 2, 0}, {1, 2, 1, 2, 0, 0}, {1, 2, 2, 0, 0, 1}, {1, 2, 2, 0, 1, 0},
+    {1, 2, 2, 1, 0, 0}, {2, 0, 0, 1, 1, 2}, {2, 0, 0, 1, 2, 1}, {2, 0, 0, 2, 1, 1}, {2, 0, 1, 0, 1, 2},
+    {2, 0, 1, 0, 2, 1}, {2, 0, 1, 1, 0, 2}, {2, 0, 1, 1, 2, 0}, {2, 0, 1, 2, 0, 1}, {2, 0, 1, 2, 1, 0},
+    {2, 0, 2, 0, 1, 1}, {2, 0, 2, 1, 0, 1}, {2, 0, 2, 1, 1, 0}, {2, 1, 0, 0, 1, 2}, {2, 1, 0, 0, 2, 1},
+    {2, 1, 0, 1, 0, 2}, {2, 1, 0, 1, 2, 0}, {2, 1, 0, 2, 0, 1}, {2, 1, 0, 2, 1, 0}, {2, 1, 1, 0, 0, 2},
+    {2, 1, 1, 0, 2, 0}, {2, 1, 1, 2, 0, 0}, {2, 1, 2, 0, 0, 1}, {2, 1, 2, 0, 1, 0}, {2, 1, 2, 1, 0, 0},
+    {2, 2, 0, 0, 1, 1}, {2, 2, 0, 1, 0, 1}, {2, 2, 0, 1, 1, 0}, {2, 2, 1, 0, 0, 1}, {2, 2, 1, 0, 1, 0},
+    {2, 2, 1, 1, 0, 0}};
+constexpr int perm8[][8] = {{}};
 
 struct int_wrapper {
     int val = 10;
@@ -173,16 +196,70 @@ struct prev_perm_instantiator {
     }
 };
 
+struct empty_range_test {
+    template <ranges::bidirectional_range R>
+    static constexpr void call() {
+        using ranges::next_permutation, ranges::next_permutation_result, ranges::prev_permutation,
+            ranges::prev_permutation_result, ranges::equal, ranges::is_sorted, ranges::iterator_t;
+
+        { // Validate range overload, next_permutation
+            R range{};
+            const same_as<next_permutation_result<iterator_t<R>>> auto result =
+                next_permutation(range, ranges::less{}, get_val);
+            assert(result.in == range.end());
+            assert(!result.found);
+        }
+
+        { // Validate iterator overload, next_permutation
+            R range{};
+            const same_as<next_permutation_result<iterator_t<R>>> auto result =
+                next_permutation(range.begin(), range.end(), ranges::less{}, get_val);
+            assert(result.in == range.end());
+            assert(!result.found);
+        }
+
+        { // Validate range overload, prev_permutation
+            R range{};
+            const same_as<prev_permutation_result<iterator_t<R>>> auto result =
+                prev_permutation(range, ranges::less{}, get_val);
+            assert(result.in == range.end());
+            assert(!result.found);
+        }
+
+        { // Validate iterator overload, prev_permutation
+            R range{};
+            const same_as<prev_permutation_result<iterator_t<R>>> auto result =
+                prev_permutation(range.begin(), range.end(), ranges::less{}, get_val);
+            assert(result.in == range.end());
+            assert(!result.found);
+        }
+    }
+};
+
 int main() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
+    STATIC_ASSERT((test_bidi<empty_range_test, int_wrapper>(), true));
+
+    STATIC_ASSERT((test_bidi<next_perm_instantiator<perm1>, int_wrapper>(), true));
     STATIC_ASSERT((test_bidi<next_perm_instantiator<perm4>, int_wrapper>(), true));
+    STATIC_ASSERT((test_bidi<next_perm_instantiator<perm8>, int_wrapper>(), true));
+
+    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm1>, int_wrapper>(), true));
+    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm4>, int_wrapper>(), true));
+    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm8>, int_wrapper>(), true));
 #endif // TRANSITION, VSO-938163
+
+    test_bidi<empty_range_test, int_wrapper>();
+
+    test_bidi<next_perm_instantiator<perm1>, int_wrapper>();
     test_bidi<next_perm_instantiator<perm4>, int_wrapper>();
     test_bidi<next_perm_instantiator<perm5>, int_wrapper>();
+    test_bidi<next_perm_instantiator<perm6>, int_wrapper>();
+    test_bidi<next_perm_instantiator<perm8>, int_wrapper>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
-    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm4>, int_wrapper>(), true));
-#endif // TRANSITION, VSO-938163
+    test_bidi<prev_perm_instantiator<perm1>, int_wrapper>();
     test_bidi<prev_perm_instantiator<perm4>, int_wrapper>();
     test_bidi<prev_perm_instantiator<perm5>, int_wrapper>();
+    test_bidi<prev_perm_instantiator<perm6>, int_wrapper>();
+    test_bidi<prev_perm_instantiator<perm8>, int_wrapper>();
 }
