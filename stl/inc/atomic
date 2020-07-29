@@ -497,8 +497,9 @@ struct _Atomic_storage {
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
             return false;
         };
-
-        _Atomic_wait_indirect(_Storage_ptr, _Are_equal, _Expected_ptr, _Atomic_wait_no_timeout);
+        if (_Are_equal(_Expected_ptr)) {
+            _Atomic_wait_indirect(_Storage_ptr, _Are_equal, _Expected_ptr, _Atomic_wait_no_timeout);
+        }
     }
 
     void notify_one() noexcept {
