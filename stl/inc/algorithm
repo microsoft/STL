@@ -4875,7 +4875,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
     using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
-    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
+    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
         is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
@@ -4966,12 +4966,11 @@ namespace ranges {
 
 #if _USE_STD_VECTOR_ALGORITHMS
             if constexpr (contiguous_iterator<_It> && contiguous_iterator<_Out>) {
-                using _Elem     = remove_reference_t<iter_reference_t<_It>>;
-                using _DestElem = remove_reference_t<iter_reference_t<_Out>>;
-                constexpr bool _Allow_vectorization =
-                    conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
-                        is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
-                constexpr size_t _Nx = sizeof(_Elem);
+                using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
+                using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
+                constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
+                    is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+                constexpr size_t _Nx                = sizeof(_Elem);
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
