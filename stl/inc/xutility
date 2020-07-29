@@ -4286,11 +4286,11 @@ public:
                 _Mystate = _State::_Holds_iter;
             }
         } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
-            if constexpr (!is_nothrow_copy_assignable_v<const Se&>) {
+            if constexpr (!is_nothrow_copy_assignable_v<const _Se&>) {
                 _Mystate = _State::_Nothing;
             }
             _Mysentinel = _Right._Mysentinel;
-            if constexpr (!is_nothrow_copy_assignable_v<const Se&>) {
+            if constexpr (!is_nothrow_copy_assignable_v<const _Se&>) {
                 _Mystate = _State::_Holds_sentinel;
             }
         } else if (_Right._Mystate == _State::_Holds_iter) {
