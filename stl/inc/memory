@@ -794,6 +794,24 @@ protected:
         }
     }
 
+    template <class _Ty2>
+    void _Weakly_construct_avoiding_expired_conversions_from(const _Ptr_base<_Ty2>& _Other) noexcept {
+        // implement weak_ptr's converting ctors
+        if (_Other._Rep) {
+            _Rep = _Other._Rep; // always share ownership
+            _Rep->_Incwref();
+
+            if (_Rep->_Incref_nz()) {
+                _Ptr = _Other._Ptr; // keep resource alive during conversion, handling virtual inheritance
+                _Rep->_Decref();
+            } else {
+                _STL_INTERNAL_CHECK(!_Ptr);
+            }
+        } else {
+            _STL_INTERNAL_CHECK(!_Ptr && !_Rep);
+        }
+    }
+
     void _Incwref() const noexcept {
         if (_Rep) {
             _Rep->_Incwref();
@@ -2258,17 +2276,17 @@ public:
     constexpr weak_ptr() noexcept {} // construct empty weak_ptr object
 
     weak_ptr(const weak_ptr& _Other) noexcept { // construct weak_ptr object for resource pointed to by _Other
-        this->_Weakly_construct_from(_Other);
+        this->_Weakly_construct_from(_Other); // same type, no conversion
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const shared_ptr<_Ty2>& _Other) noexcept { // construct weak_ptr object for resource owned by _Other
-        this->_Weakly_construct_from(_Other);
+        this->_Weakly_construct_from(_Other); // shared_ptr keeps resource alive during conversion
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept { // construct weak_ptr object for resource pointed to by _Other
-        this->_Weakly_construct_from(_Other.lock());
+        this->_Weakly_construct_avoiding_expired_conversions_from(_Other);
     }
 
     weak_ptr(weak_ptr&& _Other) noexcept { // move construct from _Other
@@ -2277,7 +2295,7 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept { // move construct from _Other
-        this->_Weakly_construct_from(_Other.lock());
+        this->_Weakly_construct_avoiding_expired_conversions_from(_Other);
         _Other.reset();
     }
 
