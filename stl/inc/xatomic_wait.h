@@ -48,7 +48,7 @@ void __stdcall __std_atomic_notify_all_direct(const void* _Storage) noexcept;
 // The "indirect" functions are used when the size is not 1, 2, 4, or 8; these notionally wait on another value which is
 // of one of those sizes whose value changes upon notify, hence "indirect". (As of 2020-07-24, this always uses the
 // fallback SRWLOCK and CONDITION_VARIABLE implementation but that is not contractual.)
-using _Atomic_wait_indirect_callback =  bool(__stdcall*)(const void* _Parameter, const void* _Comparand);
+using _Atomic_wait_indirect_callback = bool(__stdcall*)(const void* _Parameter, const void* _Comparand);
 
 int __stdcall __std_atomic_wait_indirect(const void* _Storage, _Atomic_wait_indirect_callback _Are_equal,
     const void* _Parameter, const void* _Comparand, unsigned long _Remaining_timeout) noexcept;
