@@ -194,7 +194,7 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
-    constexpr int _Digits   = numeric_limits<_Ty>::digits;
+    constexpr int _Digits              = numeric_limits<_Ty>::digits;
 #ifndef __AVX__
     const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
     if (!_Definitely_have_popcnt) {
