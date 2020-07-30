@@ -156,25 +156,26 @@ _NODISCARD int _x86_x64_countl_zero_bsr(const _Ty _Val) noexcept {
     unsigned long _Result;
     if constexpr (_Digits <= 32) {
         if (!_BitScanReverse(&_Result, _Val)) {
-            _Result = _Digits;
+            return _Digits;
         }
     } else {
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
-        if (!_BitScanReverse(&_Result, _High)) {
-            const auto _Low = static_cast<unsigned int>(_Val);
-            if (!_BitScanReverse(&_Result, _Low)) {
-                _Result = _Digits;
-            }
-            return static_cast<int>(_Digits - _Result + 32);
+        if (_BitScanReverse(&_Result, _High)) {
+            return static_cast<int>(31 - _Result);
+        }
+
+        const auto _Low = static_cast<unsigned int>(_Val);
+        if (!_BitScanReverse(&_Result, _Low)) {
+            return _Digits;
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         if (!_BitScanReverse64(&_Result, _Val)) {
-            _Result = _Digits;
+            return _Digits;
         }
 #endif // _M_IX86
     }
-    return static_cast<int>(_Digits - _Result);
+    return static_cast<int>(_Digits - 1 - _Result);
 }
 
 template <class _Ty>
