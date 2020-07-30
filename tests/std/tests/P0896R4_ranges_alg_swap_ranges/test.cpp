@@ -62,9 +62,47 @@ struct instantiator {
     }
 };
 
+#ifdef TEST_EVERYTHING
 int main() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_in_in<instantiator, int, int>(), true));
 #endif // TRANSITION, VSO-938163
     test_in_in<instantiator, int, int>();
 }
+#else // ^^^ test all permutations of range properties / test only interesting permutations vvv
+template <class Category, test::ProxyRef IsProxyRef>
+using test_range = test::range<Category, int, test::Sized::no, test::CanDifference::no, test::Common::no,
+    test::CanCompare{derived_from<Category, std::forward_iterator_tag>}, IsProxyRef>;
+
+constexpr void run_tests() {
+    using namespace test;
+    // The algorithm is completely oblivious to:
+    // * categories stronger than input
+    // * whether the end sentinel is an iterator
+    // * size information
+    // * iterator and/or sentinel differencing
+    // so let's vary proxyness for coverage and add a range of each category out of paranoia.
+
+    instantiator::call<test_range<input, ProxyRef::yes>, test_range<input, ProxyRef::yes>>();
+    instantiator::call<test_range<input, ProxyRef::yes>, test_range<input, ProxyRef::no>>();
+    instantiator::call<test_range<input, ProxyRef::no>, test_range<input, ProxyRef::yes>>();
+    instantiator::call<test_range<input, ProxyRef::no>, test_range<input, ProxyRef::no>>();
+
+    instantiator::call<test_range<input, ProxyRef::yes>, test_range<fwd, ProxyRef::yes>>();
+    instantiator::call<test_range<input, ProxyRef::yes>, test_range<bidi, ProxyRef::yes>>();
+    instantiator::call<test_range<input, ProxyRef::yes>, test_range<random, ProxyRef::yes>>();
+    instantiator::call<test_range<input, ProxyRef::yes>, test_range<contiguous, ProxyRef::no>>();
+
+    instantiator::call<test_range<fwd, ProxyRef::yes>, test_range<input, ProxyRef::yes>>();
+    instantiator::call<test_range<bidi, ProxyRef::yes>, test_range<input, ProxyRef::yes>>();
+    instantiator::call<test_range<random, ProxyRef::yes>, test_range<input, ProxyRef::yes>>();
+    instantiator::call<test_range<contiguous, ProxyRef::no>, test_range<input, ProxyRef::yes>>();
+}
+
+int main() {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
+    STATIC_ASSERT((run_tests(), true));
+#endif // TRANSITION, VSO-938163
+    run_tests();
+}
+#endif // TEST_EVERYTHING
