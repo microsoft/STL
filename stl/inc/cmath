@@ -1288,7 +1288,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             return _ArgT;
         }
     } else {
-        // raise FE_INVALID if at least one of _ArgA, _ArgB and _ArgT is signaling NaN
+        // raise FE_INVALID if at least one of _ArgA, _ArgB, and _ArgT is signaling NaN
         if (_STD _Is_nan(_ArgA) || _STD _Is_nan(_ArgB)) {
             return (_ArgA + _ArgB) + _ArgT;
         }

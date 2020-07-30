@@ -536,16 +536,16 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE _Abs_u
-template <class _Arithmetic>
-_NODISCARD constexpr auto _Abs_u(const _Arithmetic _Val) noexcept {
+template <class _Integral>
+_NODISCARD constexpr auto _Abs_u(const _Integral _Val) noexcept {
     // computes absolute value of _Val (converting to an unsigned integer type if necessary to avoid overflow
     // representing the negation of the minimum value)
-    static_assert(is_integral_v<_Arithmetic>);
+    static_assert(is_integral_v<_Integral>);
 
-    if constexpr (is_signed_v<_Arithmetic>) {
-        using _Unsigned = make_unsigned_t<_Arithmetic>;
+    if constexpr (is_signed_v<_Integral>) {
+        using _Unsigned = make_unsigned_t<_Integral>;
         if (_Val < 0) {
-            // note static_cast to _Unsigned such that _Arithmetic == short returns unsigned short rather than int
+            // note static_cast to _Unsigned such that _Integral == short returns unsigned short rather than int
             return static_cast<_Unsigned>(_Unsigned{0} - static_cast<_Unsigned>(_Val));
         }
 

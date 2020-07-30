@@ -5942,73 +5942,49 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-// STRUCT TEMPLATE _Float_bits
+// STRUCT TEMPLATE _Float_traits
 template <class _Ty>
-struct _Float_bits {
-    static_assert(_Always_false<_Ty>, "_Float_bits<NonFloatingPoint> is invalid");
-};
+struct _Float_traits {
+    static_assert(is_floating_point_v<_Ty>, "_Float_traits<NonFloatingPoint> is invalid");
 
-template <>
-struct _Float_bits<float> {
-    using type = unsigned int;
-};
-
-template <>
-struct _Float_bits<double> {
+    // traits for double and long double:
     using type = unsigned long long;
+
+    static constexpr type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
+    static constexpr type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
 };
 
 template <>
-struct _Float_bits<long double> {
-    using type = _Float_bits<double>::type;
+struct _Float_traits<float> {
+    using type = unsigned int;
+
+    static constexpr type _Magnitude_mask = 0x7fff'ffffU;
+    static constexpr type _Exponent_mask  = 0x7f80'0000U;
 };
-
-template <class _Ty>
-using _Float_bits_t = typename _Float_bits<_Ty>::type;
-
-template <class _Ty>
-_INLINE_VAR constexpr _Float_bits_t<_Ty> _Float_magnitude_mask{};
-template <class _Ty>
-_INLINE_VAR constexpr _Float_bits_t<_Ty> _Float_exponent_mask{};
-
-template <>
-_INLINE_VAR constexpr _Float_bits_t<float> _Float_magnitude_mask<float> = 0x7fff'ffffU;
-template <>
-_INLINE_VAR constexpr _Float_bits_t<float> _Float_exponent_mask<float> = 0x7f80'0000U;
-
-template <>
-_INLINE_VAR constexpr _Float_bits_t<double> _Float_magnitude_mask<double> = 0x7fff'ffff'ffff'ffffULL;
-template <>
-_INLINE_VAR constexpr _Float_bits_t<double> _Float_exponent_mask<double> = 0x7ff0'0000'0000'0000ULL;
-
-template <>
-_INLINE_VAR constexpr _Float_bits_t<long double> _Float_magnitude_mask<long double> = _Float_magnitude_mask<double>;
-template <>
-_INLINE_VAR constexpr _Float_bits_t<long double> _Float_exponent_mask<long double> = _Float_exponent_mask<double>;
 
 // FUNCTION TEMPLATE _Float_abs_bits
-template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
-    const auto _Bits = _Bit_cast<_Float_bits_t<_Ty>>(_Xx);
-    return static_cast<_Float_bits_t<_Ty>>(_Bits & _Float_magnitude_mask<_Ty>);
+    const auto _Bits = _Bit_cast<typename _Float_traits<_Ty>::type>(_Xx);
+    return _Bits & _Float_traits<_Ty>::_Magnitude_mask;
 }
 
 // FUNCTION TEMPLATE _Float_abs
-template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating point abs()
     return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
 }
 
 // FUNCTION TEMPLATE _Is_nan
-template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
-    return _Float_abs_bits(_Xx) > _Float_exponent_mask<_Ty>;
+    return _Float_abs_bits(_Xx) > _Float_traits<_Ty>::_Exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_finite
-template <class _Ty, enable_if_t<is_floating_point<_Ty>::value, int> = 0>
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
-    return _Float_abs_bits(_Xx) < _Float_exponent_mask<_Ty>;
+    return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
 }
 _STD_END
 #undef _CONSTEXPR_BIT_CAST
