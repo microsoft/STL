@@ -102,6 +102,32 @@ namespace filesystem {
         return _Output;
     }
 
+    // More lenient version of _Convert_wide_to_narrow: Instead of failing on non-representable characters,
+    // replace them with a replacement character.
+    template <class _Traits, class _Alloc>
+    _NODISCARD basic_string<typename _Traits::char_type, _Traits, _Alloc> _Convert_wide_to_narrow_replace_chars(
+        const __std_code_page _Code_page, const wstring_view _Input, const _Alloc& _Al) {
+        basic_string<typename _Traits::char_type, _Traits, _Alloc> _Output(_Al);
+
+        if (!_Input.empty()) {
+            if (_Input.size() > static_cast<size_t>(INT_MAX)) {
+                _Throw_system_error(errc::invalid_argument);
+            }
+
+            const int _Len = _Check_convert_result(__std_fs_convert_wide_to_narrow_replace_chars(
+                _Code_page, _Input.data(), static_cast<int>(_Input.size()), nullptr, 0));
+
+            _Output.resize(static_cast<size_t>(_Len));
+
+            const auto _Data_as_char = reinterpret_cast<char*>(_Output.data());
+
+            (void) _Check_convert_result(__std_fs_convert_wide_to_narrow_replace_chars(
+                _Code_page, _Input.data(), static_cast<int>(_Input.size()), _Data_as_char, _Len));
+        }
+
+        return _Output;
+    }
+
     _NODISCARD inline wstring _Convert_utf32_to_wide(const u32string_view _Input) {
         wstring _Output;
 
@@ -1786,8 +1812,12 @@ namespace filesystem {
         static string _Pretty_message(const string_view _Op, const path& _Path1, const path& _Path2 = {}) {
             using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             string _Result;
-            const string _Path1_str = _Path1.string();
-            const string _Path2_str = _Path2.string();
+            // Convert the paths to narrow encoding in a way that gracefully handles non-encodable characters
+            const auto _Code_page   = __std_fs_code_page();
+            const string _Path1_str = _Convert_wide_to_narrow_replace_chars<char_traits<char>>(
+                _Code_page, _Path1.native(), allocator<char>{});
+            const string _Path2_str = _Convert_wide_to_narrow_replace_chars<char_traits<char>>(
+                _Code_page, _Path2.native(), allocator<char>{});
             _Result.reserve(_Op.size() + (_Path2_str.empty() ? 4 : 8) + _Path1_str.size() + _Path2_str.size());
             _Result += _Op;
             _Result += R"(: ")"sv; // 3 chars

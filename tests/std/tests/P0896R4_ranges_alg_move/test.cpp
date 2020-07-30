@@ -9,75 +9,71 @@
 
 #include <range_algorithm_support.hpp>
 
+using namespace std;
+
 struct int_wrapper {
     int val                 = 10;
     constexpr int_wrapper() = default;
     constexpr int_wrapper(int x) : val{x} {}
-    constexpr int_wrapper(int_wrapper&& that) : val{std::exchange(that.val, -1)} {}
+    constexpr int_wrapper(int_wrapper&& that) : val{exchange(that.val, -1)} {}
     constexpr int_wrapper& operator=(int_wrapper&& that) {
-        val = std::exchange(that.val, -1);
+        val = exchange(that.val, -1);
         return *this;
     }
+    auto operator<=>(const int_wrapper&) const = default;
 };
 
-constexpr void smoke_test() {
-    using ranges::move, ranges::move_result, ranges::iterator_t;
-    using std::same_as;
+// Validate that move_result aliases in_out_result
+STATIC_ASSERT(same_as<ranges::move_result<int, double>, ranges::in_out_result<int, double>>);
 
-    // Validate that move_result aliases in_out_result
-    STATIC_ASSERT(same_as<move_result<int, double>, ranges::in_out_result<int, double>>);
-
-    // Validate dangling story
-    STATIC_ASSERT(
-        same_as<decltype(move(borrowed<false>{}, static_cast<int*>(nullptr))), move_result<ranges::dangling, int*>>);
-    STATIC_ASSERT(same_as<decltype(move(borrowed<true>{}, static_cast<int*>(nullptr))), move_result<int*, int*>>);
-
-    int const input[] = {13, 53, 12435};
-    {
-        int output[] = {-2, -2, -2};
-        auto result  = move(basic_borrowed_range{input}, basic_borrowed_range{output}.begin());
-        STATIC_ASSERT(same_as<decltype(result),
-            move_result<iterator_t<basic_borrowed_range<int const>>, iterator_t<basic_borrowed_range<int>>>>);
-        assert(result.in == basic_borrowed_range{input}.end());
-        assert(result.out == basic_borrowed_range{output}.end());
-        assert(ranges::equal(output, input));
-    }
-    {
-        int output[] = {-2, -2, -2};
-        basic_borrowed_range wrapped_input{input};
-        auto result = move(wrapped_input.begin(), wrapped_input.end(), basic_borrowed_range{output}.begin());
-        STATIC_ASSERT(same_as<decltype(result),
-            move_result<iterator_t<basic_borrowed_range<int const>>, iterator_t<basic_borrowed_range<int>>>>);
-        assert(result.in == wrapped_input.end());
-        assert(result.out == basic_borrowed_range{output}.end());
-        assert(ranges::equal(output, input));
-    }
-    {
-        int_wrapper input1[3]        = {13, 55, 1234};
-        int const expected_output[3] = {13, 55, 1234};
-        int_wrapper actual_output[3] = {-2, -2, -2};
-        basic_borrowed_range wrapped_input{input1};
-        auto result = move(wrapped_input.begin(), wrapped_input.end(), basic_borrowed_range{actual_output}.begin());
-        assert(result.in == wrapped_input.end());
-        assert(result.out == basic_borrowed_range{actual_output}.end());
-        for (int i = 0; i < 3; ++i) {
-            assert(input1[i].val == -1);
-            assert(actual_output[i].val == expected_output[i]);
-        }
-    }
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
+// Validate dangling story
+STATIC_ASSERT(
+    same_as<decltype(ranges::move(borrowed<false>{}, nullptr_to<int>)), ranges::move_result<ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::move(borrowed<true>{}, nullptr_to<int>)), ranges::move_result<int*, int*>>);
 
 struct instantiator {
-    template <class In, class Out>
-    static void call(In&& in = {}, Out out = {}) {
-        (void) ranges::move(in, std::move(out));
-        (void) ranges::move(ranges::begin(in), ranges::end(in), std::move(out));
+    static constexpr int_wrapper expected_output[3] = {13, 55, 12345};
+    static constexpr int_wrapper expected_input[3]  = {-1, -1, -1};
+
+    template <ranges::input_range Read, indirectly_writable<ranges::range_rvalue_reference_t<Read>> Write>
+    static constexpr void call() {
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+#pragma warning(suppress : 4127) // conditional expression is constant
+        if (!ranges::contiguous_range<Read> || !is_constant_evaluated())
+#endif // TRANSITION, VSO-938163
+        {
+            using ranges::move, ranges::move_result, ranges::equal, ranges::iterator_t;
+            {
+                int_wrapper input[3]  = {13, 55, 12345};
+                int_wrapper output[3] = {-2, -2, -2};
+                Read wrapped_input{input};
+
+                auto result = move(wrapped_input, Write{output});
+                STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
+                assert(result.in == wrapped_input.end());
+                assert(result.out.peek() == output + 3);
+                assert(equal(output, expected_output));
+                assert(equal(input, expected_input));
+            }
+            {
+                int_wrapper input[3]  = {13, 55, 12345};
+                int_wrapper output[3] = {-2, -2, -2};
+                Read wrapped_input{input};
+
+                auto result = move(wrapped_input.begin(), wrapped_input.end(), Write{output});
+                STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
+                assert(result.in == wrapped_input.end());
+                assert(result.out.peek() == output + 3);
+                assert(equal(output, expected_output));
+                assert(equal(input, expected_input));
+            }
+        }
     }
 };
 
-template void test_in_write<instantiator, const int, int>();
+int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
+    STATIC_ASSERT((test_in_write<instantiator, int_wrapper, int_wrapper>(), true));
+#endif // TRANSITION, GH-1030
+    test_in_write<instantiator, int_wrapper, int_wrapper>();
+}

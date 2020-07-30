@@ -513,8 +513,7 @@ public:
     }
 };
 
-//
-// TRANSITION, VSO-1043450
+// TRANSITION, Visual Studio 2019 version 16.8
 // _Immortalize_memcpy_image is used to provide a nonstandard guarantee.
 // Specifically, we want the error category objects returned from things like std::system_category() to always
 //   be available, even during DLL unload (otherwise, <system_error> would be a huge regression vs. legacy error codes).
@@ -556,6 +555,28 @@ template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static constexpr _Ty _Static;
     return _Static;
+}
+#elif defined(_MSC_VER) && _MSC_VER > 1927 && !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
+template <class _Ty>
+struct _Constexpr_immortalize_impl {
+    union {
+        _Ty _Storage;
+    };
+
+    constexpr _Constexpr_immortalize_impl() noexcept : _Storage{} {}
+
+    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&) = delete;
+    _Constexpr_immortalize_impl& operator=(const _Constexpr_immortalize_impl&) = delete;
+
+    [[msvc::noop_dtor]] ~_Constexpr_immortalize_impl() {
+        // do nothing, allowing _Ty to be used during shutdown
+    }
+};
+
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    static _Constexpr_immortalize_impl<_Ty> _Static;
+    return _Static._Storage;
 }
 #else // choose immortalize strategy
 template <class _Ty>
