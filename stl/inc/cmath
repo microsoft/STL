@@ -12,6 +12,10 @@
 #include <cstdlib>
 #include <xtr1common>
 
+#if _HAS_CXX20
+#include <xutility>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1238,13 +1242,12 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 
 #if _HAS_CXX20
 // FUNCTION lerp
-// TRANSITION, P0553: lerp is not yet constexpr
 template <class _Ty>
-_NODISCARD /* constexpr */ _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
+_NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
 
-    const int _Finite_mask = (int{isfinite(_ArgA)} << 2) | (int{isfinite(_ArgB)} << 1) | int{isfinite(_ArgT)};
-    if (_Finite_mask == 0b111) {
+    const bool _T_is_finite = _STD _Is_finite(_ArgT);
+    if (_T_is_finite && _STD _Is_finite(_ArgA) && _STD _Is_finite(_ArgB)) {
         // 99% case, put it first; this block comes from P0811R3
         if ((_ArgA <= 0 && _ArgB >= 0) || (_ArgA >= 0 && _ArgB <= 0)) {
             // exact, monotonic, bounded, determinate, and (for _ArgA == _ArgB == 0) consistent:
@@ -1272,96 +1275,61 @@ _NODISCARD /* constexpr */ _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, co
         return _Candidate;
     }
 
-    if (isnan(_ArgA)) {
-        return _ArgA;
-    }
-
-    if (isnan(_ArgB)) {
-        return _ArgB;
-    }
-
-    if (isnan(_ArgT)) {
-        return _ArgT;
-    }
-
-    switch (_Finite_mask) {
-    case 0b000:
-        // All values are infinities
-        if (_ArgT >= 1) {
-            return _ArgB;
-        }
-
-        return _ArgA;
-    case 0b010:
-    case 0b100:
-    case 0b110:
-        // _ArgT is an infinity; return infinity in the "direction" of _ArgA and _ArgB
-        return _ArgT * (_ArgB - _ArgA);
-    case 0b001:
-        // Here _ArgA and _ArgB are infinities
-        if (_ArgA == _ArgB) {
-            // same sign, so T doesn't matter
+    if (_STD is_constant_evaluated()) {
+        if (_STD _Is_nan(_ArgA)) {
             return _ArgA;
         }
 
-        // Opposite signs, choose the "infinity direction" according to T if it makes sense.
-        if (_ArgT <= 0) {
-            return _ArgA;
-        }
-
-        if (_ArgT >= 1) {
+        if (_STD _Is_nan(_ArgB)) {
             return _ArgB;
         }
 
-        // Interpolating between infinities of opposite signs doesn't make sense, NaN
-        if constexpr (sizeof(_Ty) == sizeof(float)) {
-            return __builtin_nanf("0");
+        if (_STD _Is_nan(_ArgT)) {
+            return _ArgT;
+        }
+    } else {
+        // raise FE_INVALID if at least one of _ArgA, _ArgB, and _ArgT is signaling NaN
+        if (_STD _Is_nan(_ArgA) || _STD _Is_nan(_ArgB)) {
+            return (_ArgA + _ArgB) + _ArgT;
+        }
+
+        if (_STD _Is_nan(_ArgT)) {
+            return _ArgT + _ArgT;
+        }
+    }
+
+    if (_T_is_finite) {
+        // _ArgT is finite, _ArgA and/or _ArgB is infinity
+        if (_ArgT < 0) {
+            // if _ArgT < 0:     return infinity in the "direction" of _ArgA if that exists, NaN otherwise
+            return _ArgA - _ArgB;
+        } else if (_ArgT <= 1) {
+            // if _ArgT == 0:    return _ArgA (infinity) if _ArgB is finite, NaN otherwise
+            // if 0 < _ArgT < 1: return infinity "between" _ArgA and _ArgB if that exists, NaN otherwise
+            // if _ArgT == 1:    return _ArgB (infinity) if _ArgA is finite, NaN otherwise
+            return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
         } else {
-            return __builtin_nan("0");
+            // if _ArgT > 1:     return infinity in the "direction" of _ArgB if that exists, NaN otherwise
+            return _ArgB - _ArgA;
         }
-    case 0b011:
-        // _ArgA is an infinity but _ArgB is not
-        if (_ArgT == 1) {
-            return _ArgB;
-        }
-
-        if (_ArgT < 1) {
-            // towards the infinity, return it
-            return _ArgA;
-        }
-
-        // away from the infinity
-        return -_ArgA;
-    case 0b101:
-        // _ArgA is finite and _ArgB is an infinity
-        if (_ArgT == 0) {
-            return _ArgA;
-        }
-
-        if (_ArgT > 0) {
-            // toward the infinity
-            return _ArgB;
-        }
-
-        return -_ArgB;
-    case 0b111: // impossible; handled in fast path
-    default:
-        _CSTD abort();
+    } else {
+        // _ArgT is an infinity; return infinity in the "direction" of _ArgA and _ArgB if that exists, NaN otherwise
+        return _ArgT * (_ArgB - _ArgA);
     }
 }
 
 // As of 2019-06-17 it is unclear whether the "sufficient additional overloads" clause is intended to target lerp;
 // LWG-3223 is pending.
 
-_NODISCARD /* constexpr */ inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
+_NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_NODISCARD /* constexpr */ inline double lerp(const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
+_NODISCARD constexpr inline double lerp(const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_NODISCARD /* constexpr */ inline long double lerp(
+_NODISCARD constexpr inline long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
