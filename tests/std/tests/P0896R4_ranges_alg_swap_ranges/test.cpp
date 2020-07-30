@@ -10,7 +10,7 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
-// Validate that swap_ranges_result aliases in_out_result
+// Validate that swap_ranges_result aliases in_in_result
 STATIC_ASSERT(same_as<ranges::swap_ranges_result<int, double>, ranges::in_in_result<int, double>>);
 
 // Validate dangling story
@@ -70,7 +70,7 @@ int main() {
 #else // ^^^ test all permutations of range properties / test only interesting permutations vvv
 template <class Category, test::ProxyRef IsProxyRef>
 using test_range = test::range<Category, int, test::Sized::no, test::CanDifference::no, test::Common::no,
-    test::CanCompare{derived_from<Category, std::forward_iterator_tag>}, IsProxyRef>;
+    test::CanCompare{derived_from<Category, forward_iterator_tag>}, IsProxyRef>;
 
 constexpr void run_tests() {
     using namespace test;
