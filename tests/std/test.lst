@@ -160,6 +160,7 @@ tests\GH_000545_include_compare
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
+tests\GH_000940_missing_valarray_copy
 tests\GH_001010_filesystem_error_encoding
 tests\GH_001017_discrete_distribution_out_of_range
 tests\LWG2597_complex_branch_cut
@@ -281,6 +282,8 @@ tests\P0896R4_ranges_alg_replace_copy
 tests\P0896R4_ranges_alg_replace_copy_if
 tests\P0896R4_ranges_alg_replace_if
 tests\P0896R4_ranges_alg_reverse
+tests\P0896R4_ranges_alg_rotate
+tests\P0896R4_ranges_alg_rotate_copy
 tests\P0896R4_ranges_alg_sample
 tests\P0896R4_ranges_alg_search
 tests\P0896R4_ranges_alg_search_n
