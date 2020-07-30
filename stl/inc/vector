@@ -2891,8 +2891,8 @@ _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutabl
 template <class _Alloc>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, false> = true;
 
-template <class _Alloc, class _Ty>
-_CONSTEXPR20 void _Fill_vbool(_Vb_iterator<_Alloc> _First, _Vb_iterator<_Alloc> _Last, const _Ty& _Val) {
+template <class _FwdIt, class _Ty>
+_CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // Set [_First, _Last) to _Val
     if (_First == _Last) {
         return;
