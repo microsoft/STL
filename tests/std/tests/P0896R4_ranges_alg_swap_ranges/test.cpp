@@ -64,9 +64,7 @@ struct instantiator {
 
 #ifdef TEST_EVERYTHING
 int main() {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
-    STATIC_ASSERT((test_in_in<instantiator, int, int>(), true));
-#endif // TRANSITION, VSO-938163
+    // no constexpr tests here; the below exceeds constexpr step limits
     test_in_in<instantiator, int, int>();
 }
 #else // ^^^ test all permutations of range properties / test only interesting permutations vvv
