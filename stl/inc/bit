@@ -128,7 +128,7 @@ extern int __isa_available;
 
 template <class _Ty>
 _NODISCARD int _x86_x64_countl_zero_lzcnt(const _Ty _Val) noexcept {
-    constexpr int _Digits  = numeric_limits<_Ty>::digits;
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
 
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__lzcnt16(_Val) - (16 - _Digits));
