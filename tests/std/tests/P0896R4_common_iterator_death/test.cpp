@@ -11,66 +11,32 @@
 #include <test_death.hpp>
 using namespace std;
 
-template <class T = int>
-struct throwingIter {
-    using value_type      = T;
-    using difference_type = T;
+struct simple_input_iter {
+    using value_type      = int;
+    using difference_type = int;
 
     value_type operator*() const {
-        return _val;
+        return 0;
     }
     value_type operator->() const {
-        return _val;
+        return 0;
     }
-    throwingIter& operator++() {
-        ++_val;
+    simple_input_iter& operator++() {
         return *this;
     }
-    throwingIter operator++(int) {
-        ++_val;
+    simple_input_iter operator++(int) {
         return *this;
     }
 
-    bool operator==(const throwingIter&) const = default;
+    bool operator==(simple_input_iter const&) const = default;
     bool operator==(const default_sentinel_t&) const {
         return true;
     }
 
-    template <class U = int>
-    friend void iter_swap(const throwingIter&, const throwingIter<U>&) {}
-
-    throwingIter() = default;
-    throwingIter(int val) : _val(val) {}
-    throwingIter(const throwingIter& other) {
-        if (other._val == -1) {
-            throw;
-        }
-        _val = other._val;
-    }
-    throwingIter(throwingIter&& other) {
-        if (other._val == -1) {
-            throw;
-        }
-        _val = other._val;
-    }
-    throwingIter& operator=(const throwingIter& other) {
-        if (_val == -1) {
-            throw;
-        }
-        _val = other._val;
-        return *this;
-    }
-    throwingIter& operator=(throwingIter&& other) {
-        if (_val == -1) {
-            throw;
-        }
-        _val = other._val;
-        return *this;
-    }
-    T _val = 0;
+    friend void iter_swap(const simple_input_iter&, const simple_input_iter&) {}
 };
 
-using CIT = common_iterator<throwingIter<int>, default_sentinel_t>;
+using CIT = common_iterator<simple_input_iter, default_sentinel_t>;
 
 void test_case_operator_dereference() {
     CIT cit{default_sentinel};
