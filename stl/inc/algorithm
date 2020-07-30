@@ -6455,19 +6455,19 @@ template <class _BidIt, class _Pr>
 _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last)
     if (_First != _Last) {
-        for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
-            _BidIt _Next1              = _Next;
-            _Iter_value_t<_BidIt> _Val = _STD move(*_Next);
+        for (_BidIt _Mid = _First; ++_Mid != _Last;) { // order next element
+            _BidIt _Hole               = _Mid;
+            _Iter_value_t<_BidIt> _Val = _STD move(*_Mid);
 
             if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
-                _Move_backward_unchecked(_First, _Next, ++_Next1);
+                _Move_backward_unchecked(_First, _Mid, ++_Hole);
                 *_First = _STD move(_Val);
             } else { // look for insertion point after first
-                for (_BidIt _First1 = _Next1; _DEBUG_LT_PRED(_Pred, _Val, *--_First1); _Next1 = _First1) {
-                    *_Next1 = _STD move(*_First1); // move hole down
+                for (_BidIt _Prev = _Hole; _DEBUG_LT_PRED(_Pred, _Val, *--_Prev); _Hole = _Prev) {
+                    *_Hole = _STD move(*_Prev); // move hole down
                 }
 
-                *_Next1 = _STD move(_Val); // insert element in hole
+                *_Hole = _STD move(_Val); // insert element in hole
             }
         }
     }
@@ -6643,22 +6643,22 @@ namespace ranges {
             return;
         }
 
-        for (auto _Next = _First; ++_Next != _Last;) { // order next element
-            iter_value_t<_It> _Val = _RANGES iter_move(_Next);
-            auto _Next1            = _Next;
+        for (auto _Mid = _First; ++_Mid != _Last;) { // order next element
+            iter_value_t<_It> _Val = _RANGES iter_move(_Mid);
+            auto _Hole            = _Mid;
 
-            for (auto _First1 = _Next1;;) {
-                --_First1;
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First1))) {
+            for (auto _Prev = _Hole;;) {
+                --_Prev;
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_Prev))) {
                     break;
                 }
-                *_Next1 = _RANGES iter_move(_First1); // move hole down
-                if (--_Next1 == _First) {
+                *_Hole = _RANGES iter_move(_Prev); // move hole down
+                if (--_Hole == _First) {
                     break;
                 }
             }
 
-            *_Next1 = _STD move(_Val); // insert element in hole
+            *_Hole = _STD move(_Val); // insert element in hole
         }
     }
 
