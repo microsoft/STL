@@ -796,7 +796,7 @@ protected:
 
     template <class _Ty2>
     void _Weakly_construct_avoiding_expired_conversions_from(const _Ptr_base<_Ty2>& _Other) noexcept {
-        // implement weak_ptr's converting ctors
+        // implement weak_ptr's converting copy ctor
         if (_Other._Rep) {
             _Rep = _Other._Rep; // always share ownership
             _Rep->_Incwref();
@@ -810,6 +810,22 @@ protected:
         } else {
             _STL_INTERNAL_CHECK(!_Ptr && !_Rep);
         }
+    }
+
+    template <class _Ty2>
+    void _Move_construct_avoiding_expired_conversions_from(_Ptr_base<_Ty2>&& _Other) noexcept {
+        // implement weak_ptr's converting move ctor
+        _Rep        = _Other._Rep; // always transfer ownership
+        _Other._Rep = nullptr;
+
+        if (_Rep && _Rep->_Incref_nz()) {
+            _Ptr = _Other._Ptr; // keep resource alive during conversion, handling virtual inheritance
+            _Rep->_Decref();
+        } else {
+            _STL_INTERNAL_CHECK(!_Ptr);
+        }
+
+        _Other._Ptr = nullptr;
     }
 
     void _Incwref() const noexcept {
@@ -2295,8 +2311,7 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept { // move construct from _Other
-        this->_Weakly_construct_avoiding_expired_conversions_from(_Other);
-        _Other.reset();
+        this->_Move_construct_avoiding_expired_conversions_from(_STD move(_Other));
     }
 
     ~weak_ptr() noexcept {
