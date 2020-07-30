@@ -174,6 +174,7 @@
 //     (partially implemented, missing noop coroutines)
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
@@ -224,6 +225,10 @@
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
+//
+// std::execution::unseq has no direct analogue for any optimizer we target as of 2020-07-29,
+// though we will map it to #pragma loop(ivdep) for the for_each algorithms only as these are the only algorithms where
+// the library does not need to introduce inter-loop-body dependencies to accomplish the algorithm's goals.
 //
 // The following algorithms are parallelized.
 // * adjacent_difference
@@ -1091,10 +1096,7 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_clamp 201603L
-#ifndef _M_CEE
-#define __cpp_lib_execution 201603L
-#endif // _M_CEE
+#define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
@@ -1183,6 +1185,14 @@
 #define __cpp_lib_type_identity                201806L
 #define __cpp_lib_unwrap_ref                   201811L
 #endif // _HAS_CXX20
+
+#ifndef _M_CEE
+#if _HAS_CXX17
+#define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
+#elif _HAS_CXX20
+#define __cpp_lib_execution 201902L // P1001R2 execution::unseq
+#endif
+#endif // _M_CEE
 
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
