@@ -795,8 +795,8 @@ protected:
     }
 
     template <class _Ty2>
-    void _Weakly_construct_avoiding_expired_conversions_from(const _Ptr_base<_Ty2>& _Other) noexcept {
-        // implement weak_ptr's converting copy ctor
+    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other) noexcept {
+        // implement weak_ptr's copy converting ctor
         if (_Other._Rep) {
             _Rep = _Other._Rep; // always share ownership
             _Rep->_Incwref();
@@ -813,8 +813,8 @@ protected:
     }
 
     template <class _Ty2>
-    void _Move_construct_avoiding_expired_conversions_from(_Ptr_base<_Ty2>&& _Other) noexcept {
-        // implement weak_ptr's converting move ctor
+    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other) noexcept {
+        // implement weak_ptr's move converting ctor
         _Rep        = _Other._Rep; // always transfer ownership
         _Other._Rep = nullptr;
 
@@ -2289,29 +2289,29 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
 public:
-    constexpr weak_ptr() noexcept {} // construct empty weak_ptr object
+    constexpr weak_ptr() noexcept {}
 
-    weak_ptr(const weak_ptr& _Other) noexcept { // construct weak_ptr object for resource pointed to by _Other
+    weak_ptr(const weak_ptr& _Other) noexcept {
         this->_Weakly_construct_from(_Other); // same type, no conversion
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-    weak_ptr(const shared_ptr<_Ty2>& _Other) noexcept { // construct weak_ptr object for resource owned by _Other
+    weak_ptr(const shared_ptr<_Ty2>& _Other) noexcept {
         this->_Weakly_construct_from(_Other); // shared_ptr keeps resource alive during conversion
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-    weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept { // construct weak_ptr object for resource pointed to by _Other
-        this->_Weakly_construct_avoiding_expired_conversions_from(_Other);
+    weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
+        this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
     }
 
-    weak_ptr(weak_ptr&& _Other) noexcept { // move construct from _Other
+    weak_ptr(weak_ptr&& _Other) noexcept {
         this->_Move_construct_from(_STD move(_Other));
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-    weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept { // move construct from _Other
-        this->_Move_construct_avoiding_expired_conversions_from(_STD move(_Other));
+    weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
+        this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
     }
 
     ~weak_ptr() noexcept {
