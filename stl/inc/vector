@@ -2885,8 +2885,11 @@ namespace pmr {
 
 #if _HAS_IF_CONSTEXPR
 // VARIABLE TEMPLATE _Is_vb_iterator
+template <class _Alloc, bool _RequiresMutable>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
+
 template <class _Alloc>
-_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>> = true;
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, false> = true;
 
 template <class _Alloc, class _Ty>
 _CONSTEXPR20 void _Fill_vbool(_Vb_iterator<_Alloc> _First, _Vb_iterator<_Alloc> _Last, const _Ty& _Val) {
