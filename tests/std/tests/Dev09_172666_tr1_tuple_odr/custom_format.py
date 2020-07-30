@@ -10,7 +10,7 @@ class CustomTestFormat(STLTestFormat):
     def getBuildSteps(self, test, lit_config, shared):
         shared.exec_dir = test.getExecDir()
         exe_source = Path(test.getSourcePath())
-        test2_source = exe_source.parent / 'two.cpp'
+        test2_source = exe_source.parent / 'test2.cpp'
         output_base = test.getOutputBaseName()
         output_dir = test.getOutputDir()
 
