@@ -27,6 +27,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _USE_STD_VECTOR_ALGORITHMS 0
 #endif
 
+#ifdef __CUDACC__
+#define _CONSTEXPR_BIT_CAST inline
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#define _CONSTEXPR_BIT_CAST constexpr
+#endif // ^^^ no workaround ^^^
+
 #if _USE_STD_VECTOR_ALGORITHMS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
@@ -52,17 +58,15 @@ template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
         int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST _To _Bit_cast(const _From& _Val) noexcept {
 #ifdef __CUDACC__
-_NODISCARD _To _Bit_cast(const _From& _Val) noexcept {
     _To _To_obj; // assumes default-init
     _CSTD memcpy(_STD addressof(_To_obj), _STD addressof(_Val), sizeof(_To));
     return _To_obj;
-}
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
-_NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
-}
 #endif // ^^^ no workaround ^^^
+}
 
 // STRUCT TEMPLATE _Get_first_parameter
 template <class _Ty>
@@ -1034,10 +1038,10 @@ namespace ranges {
         // clang-format on
 
         template <class _Xty, class _Yty>
-        _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(
-            _Xty&& _XVal, _Yty&& _YVal) noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(iter_move(_XVal)))) {
-            iter_value_t<remove_reference_t<_Xty>> _Tmp(iter_move(_XVal));
-            *_XVal = iter_move(_YVal);
+        _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(_Xty&& _XVal,
+            _Yty&& _YVal) noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(_RANGES iter_move(_XVal)))) {
+            iter_value_t<remove_reference_t<_Xty>> _Tmp(_RANGES iter_move(_XVal));
+            *_XVal = _RANGES iter_move(_YVal);
             return _Tmp;
         }
 
@@ -1053,7 +1057,7 @@ namespace ranges {
                     return {_St::_Swap, noexcept(_RANGES swap(*_STD declval<_Ty1>(), *_STD declval<_Ty2>()))};
                 } else if constexpr (_Symmetric_indirectly_movable_storable<_Ty1, _Ty2>) {
                     constexpr auto _Nothrow = noexcept(
-                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty1>(), _STD declval<_Ty2>()));
+                        *_STD declval<_Ty1>() = _Iter_exchange_move(_STD declval<_Ty2>(), _STD declval<_Ty1>()));
                     return {_St::_Exchange, _Nothrow};
                 } else {
                     return {_St::_None};
@@ -1074,7 +1078,7 @@ namespace ranges {
                     _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
                     *static_cast<_Ty1&&>(_Val1) =
-                        _Iter_exchange_move(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                        _Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
                     static_assert(_Always_false<_Ty1>, "should be unreachable");
                 }
@@ -1149,19 +1153,19 @@ struct _Iterator_traits_base<_Iter,
         typename _Iter::pointer, typename _Iter::reference>> {
     // defined if _Iter::* types exist
     using iterator_category = typename _Iter::iterator_category;
-    using value_type        = typename _Iter::value_type;
-    using difference_type   = typename _Iter::difference_type;
-    using pointer           = typename _Iter::pointer;
-    using reference         = typename _Iter::reference;
+    using value_type = typename _Iter::value_type;
+    using difference_type = typename _Iter::difference_type;
+    using pointer = typename _Iter::pointer;
+    using reference = typename _Iter::reference;
 };
 
 template <class _Ty, bool = is_object_v<_Ty>>
 struct _Iterator_traits_pointer_base { // iterator properties for pointers to object
     using iterator_category = random_access_iterator_tag;
-    using value_type        = remove_cv_t<_Ty>;
-    using difference_type   = ptrdiff_t;
-    using pointer           = _Ty*;
-    using reference         = _Ty&;
+    using value_type = remove_cv_t<_Ty>;
+    using difference_type = ptrdiff_t;
+    using pointer = _Ty*;
+    using reference = _Ty&;
 };
 
 template <class _Ty>
@@ -1421,8 +1425,8 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _O
 template <class _Iter, class _Diff, enable_if_t<_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>, int> = 0>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
     // ask an iterator to assert that the iterator moved _Off positions is valid, and unwrap
-    using _IDiff     = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
-    using _CDiff     = common_type_t<_Diff, _IDiff>;
+    using _IDiff = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
+    using _CDiff = common_type_t<_Diff, _IDiff>;
     const auto _COff = static_cast<_CDiff>(_Off);
 
     _STL_ASSERT(_COff <= static_cast<_CDiff>(_Max_possible_v<_IDiff>)
@@ -1731,7 +1735,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
     // increment iterator by offset, input iterators
     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
 
-    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -1746,7 +1750,7 @@ _CONSTEXPR17 void _Advance1(_InIt& _Where, _Diff _Off, input_iterator_tag) {
 template <class _BidIt, class _Diff>
 _CONSTEXPR17 void _Advance1(_BidIt& _Where, _Diff _Off, bidirectional_iterator_tag) {
     // increment iterator by offset, bidirectional iterators
-    decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
+    decltype(auto) _UWhere = _Get_unwrapped_n(_STD move(_Where), _Off);
     constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
     for (; 0 < _Off; --_Off) {
@@ -1799,8 +1803,8 @@ template <class _InIt>
 _CONSTEXPR17 _Iter_diff_t<_InIt> _Distance1(_InIt _First, _InIt _Last, input_iterator_tag) {
     // return distance between iterators; input
     _Adl_verify_range(_First, _Last);
-    auto _UFirst             = _Get_unwrapped(_First);
-    const auto _ULast        = _Get_unwrapped(_Last);
+    auto _UFirst = _Get_unwrapped(_First);
+    const auto _ULast = _Get_unwrapped(_Last);
     _Iter_diff_t<_InIt> _Off = 0;
     for (; _UFirst != _ULast; ++_UFirst) {
         ++_Off;
@@ -4807,7 +4811,7 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
     const _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+        auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         _Seek_wrapped(
             _Dest, _Copy_n_unchecked4(_UFirst, _Count, _UDest,
                        bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable>{}));
@@ -4894,9 +4898,9 @@ _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, t
 template <class _BidIt1, class _BidIt2>
 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) { // copy [_First, _Last) backwards to [..., _Dest)
     _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
+    auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
+    auto _UDest = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     _Seek_wrapped(_Dest, _Copy_backward_unchecked(_UFirst, _ULast, _UDest,
                              bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable>{}));
     return _Dest;
@@ -5345,7 +5349,7 @@ bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
     const auto _First1_ch = reinterpret_cast<const char*>(_First1);
     const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
+    const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
 }
 
@@ -5354,7 +5358,7 @@ _NODISCARD bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _F
     // compare [_First1, _Last1) to [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
     const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
+    const auto _ULast1 = _Get_unwrapped(_Last1);
     const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     return _Equal_unchecked(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
 }
@@ -6243,7 +6247,53 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using pointer           = _Pointer;
     using reference         = _Reference;
 };
+
+// STRUCT TEMPLATE _Float_traits
+template <class _Ty>
+struct _Float_traits {
+    static_assert(is_floating_point_v<_Ty>, "_Float_traits<NonFloatingPoint> is invalid");
+
+    // traits for double and long double:
+    using type = unsigned long long;
+
+    static constexpr type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
+    static constexpr type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
+};
+
+template <>
+struct _Float_traits<float> {
+    using type = unsigned int;
+
+    static constexpr type _Magnitude_mask = 0x7fff'ffffU;
+    static constexpr type _Exponent_mask  = 0x7f80'0000U;
+};
+
+// FUNCTION TEMPLATE _Float_abs_bits
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
+    const auto _Bits = _Bit_cast<typename _Float_traits<_Ty>::type>(_Xx);
+    return _Bits & _Float_traits<_Ty>::_Magnitude_mask;
+}
+
+// FUNCTION TEMPLATE _Float_abs
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating point abs()
+    return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
+}
+
+// FUNCTION TEMPLATE _Is_nan
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
+    return _Float_abs_bits(_Xx) > _Float_traits<_Ty>::_Exponent_mask;
+}
+
+// FUNCTION TEMPLATE _Is_finite
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
+    return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
+}
 _STD_END
+#undef _CONSTEXPR_BIT_CAST
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
