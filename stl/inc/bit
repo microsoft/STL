@@ -127,7 +127,7 @@ extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD int _x86_x64_countl_zero_lzcnt(const _Ty _Val) noexcept {
+_NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
 
     if constexpr (_Digits <= 16) {
@@ -139,9 +139,9 @@ _NODISCARD int _x86_x64_countl_zero_lzcnt(const _Ty _Val) noexcept {
         const unsigned int _High = _Val >> 32;
         const auto _Low          = static_cast<unsigned int>(_Val);
         if (_High == 0) {
-            return 32 + _x86_x64_countl_zero_lzcnt(_Low);
+            return 32 + _Countl_zero_lzcnt(_Low);
         } else {
-            return _x86_x64_countl_zero_lzcnt(_High);
+            return _Countl_zero_lzcnt(_High);
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(__lzcnt64(_Val));
@@ -150,7 +150,7 @@ _NODISCARD int _x86_x64_countl_zero_lzcnt(const _Ty _Val) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD int _x86_x64_countl_zero_bsr(const _Ty _Val) noexcept {
+_NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
 
     unsigned long _Result;
@@ -181,13 +181,13 @@ _NODISCARD int _x86_x64_countl_zero_bsr(const _Ty _Val) noexcept {
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #ifdef __AVX2__
-    return _x86_x64_countl_zero_lzcnt(_Val);
+    return _Countl_zero_lzcnt(_Val);
 #else
-    const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    if (_Have_lzcnt) {
-        return _x86_x64_countl_zero_lzcnt(_Val);
+    const bool _Definitely_have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    if (_Definitely_have_lzcnt) {
+        return _Countl_zero_lzcnt(_Val);
     } else {
-        return _x86_x64_countl_zero_bsr(_Val);
+        return _Countl_zero_bsr(_Val);
     }
 #endif // __AVX2__
 }
@@ -196,8 +196,8 @@ template <class _Ty>
 _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
     constexpr int _Digits   = numeric_limits<_Ty>::digits;
 #ifndef __AVX__
-    const bool _Have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
-    if (!_Have_popcnt) {
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
         return _Popcount_fallback(_Val);
     }
 #endif // !defined(__AVX__)
