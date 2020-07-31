@@ -21,8 +21,8 @@ using namespace std;
     STATIC_ASSERT(is_same_v<BASE::type, __VA_ARGS__::type>)
 
 // Regression test for:
-// DevDiv2 #387795:  is_pod<void> should be false
-// DevDiv2 #424157:  is_assignable/is_trivially_assignable/is_trivially_move_assignable for void
+// DevDiv-387795:  is_pod<void> should be false
+// DevDiv-424157:  is_assignable/is_trivially_assignable/is_trivially_move_assignable for void
 
 // N3376 20.9.4.1[meta.unary.cat]:  primary type categories:
 STATIC_ASSERT(is_void_v<void>);
