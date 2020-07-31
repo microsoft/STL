@@ -363,7 +363,7 @@ STATIC_ASSERT(!is_convertible_v<const void, int>);
 STATIC_ASSERT(!is_convertible_v<volatile void, int>);
 STATIC_ASSERT(!is_convertible_v<const volatile void, int>);
 
-// Verify simplifications after DevDiv#1195735 "C1XX should select IsConst<const T> for IsConst<const int[3]>" was
+// Verify simplifications after DevDiv-1195735 "C1XX should select IsConst<const T> for IsConst<const int[3]>" was
 // fixed.
 STATIC_ASSERT(!is_const_v<int>);
 STATIC_ASSERT(!is_const_v<int[3]>);

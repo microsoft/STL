@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 //  Dev10#722102 "STL: Get nullptr overloads"
-// DevDiv#520681 "Faulty implementation of shared_ptr(nullptr_t) constructor"
+// DevDiv-520681 "Faulty implementation of shared_ptr(nullptr_t) constructor"
 
 #include <assert.h>
 #include <functional>

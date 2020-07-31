@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// DevDiv#316853 "<algorithm>: find()'s memchr() optimization is incorrect"
-// DevDiv#468500 "<algorithm>: find()'s memchr() optimization is insufficiently aggressive"
+// DevDiv-316853 "<algorithm>: find()'s memchr() optimization is incorrect"
+// DevDiv-468500 "<algorithm>: find()'s memchr() optimization is insufficiently aggressive"
 
 #pragma warning(disable : 4389) // signed/unsigned mismatch
 #pragma warning(disable : 4805) // '==': unsafe mix of type '_Ty' and type 'const _Ty' in operation
@@ -30,7 +30,7 @@ bool operator==(int x, const Cat& c) {
 }
 
 int main() {
-    { // DevDiv#316853 "<algorithm>: find()'s memchr() optimization is incorrect"
+    { // DevDiv-316853 "<algorithm>: find()'s memchr() optimization is incorrect"
         vector<signed char> v;
         v.push_back(22);
         v.push_back(33);

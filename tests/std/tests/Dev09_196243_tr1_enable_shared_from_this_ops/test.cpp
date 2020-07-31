@@ -63,7 +63,7 @@ int main() {
         assert(!z);
     }
 
-    // Test DevDiv#1178296 "<memory>: shared_ptr<volatile X> doesn't work with enable_shared_from_this<X>".
+    // Test DevDiv-1178296 "<memory>: shared_ptr<volatile X> doesn't work with enable_shared_from_this<X>".
     {
         const auto sp1 = make_shared<const X>(100);
         const auto sp2 = make_shared<volatile X>(200);

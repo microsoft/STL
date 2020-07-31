@@ -152,7 +152,7 @@ int main() {
     results.emplace_back("END", 3);
 
 
-    // DevDiv#523246 "std::unique_ptr deletes owned object before resetting pointer rather than after."
+    // DevDiv-523246 "std::unique_ptr deletes owned object before resetting pointer rather than after."
     results.emplace_back("BEGIN", 4);
 
     Kitten* p4 = new Kitten(257);

@@ -28,7 +28,7 @@ void microtest() {
 using fp_t = void (*)();
 template <typename URNG>
 void add_tests(vector<fp_t>& tests) {
-    // Test DevDiv#83370 "uniform_int_distribution isn't uniform".
+    // Test DevDiv-83370 "uniform_int_distribution isn't uniform".
     tests.insert(
         tests.end(), {
                          microtest<URNG, int16_t, INT16_MIN, INT16_MAX>,
