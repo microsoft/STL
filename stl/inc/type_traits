@@ -460,7 +460,8 @@ struct is_function : bool_constant<is_function_v<_Ty>> {};
 
 // STRUCT TEMPLATE is_object
 template <class _Ty>
-_INLINE_VAR constexpr bool is_object_v = !is_function_v<_Ty> && !is_reference_v<_Ty> && !is_void_v<_Ty>;
+_INLINE_VAR constexpr bool is_object_v = // only function types and reference types can't be const qualified
+    is_const_v<const _Ty> && !is_void_v<_Ty>;
 
 template <class _Ty>
 struct is_object : bool_constant<is_object_v<_Ty>> {};
