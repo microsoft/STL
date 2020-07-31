@@ -48,7 +48,7 @@ int main() {
         assert(*sp3 == 8);
     }
 
-    // Test Dev10#654944 "shared_ptr: assignment is messed up".
+    // Test Dev10-654944 "shared_ptr: assignment is messed up".
     {
         shared_ptr<int> p(new int(1729));
         shared_ptr<int> z;

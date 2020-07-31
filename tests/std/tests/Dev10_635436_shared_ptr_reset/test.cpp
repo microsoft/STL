@@ -118,7 +118,7 @@ Kitten::~Kitten() {
 }
 
 int main() {
-    // Dev10#635436 "shared_ptr: reset() must behave as if it is implemented with swap()"
+    // Dev10-635436 "shared_ptr: reset() must behave as if it is implemented with swap()"
     results.emplace_back("BEGIN", 0);
 
     Cat* p0 = new Cat(1729);

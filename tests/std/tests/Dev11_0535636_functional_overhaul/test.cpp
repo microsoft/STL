@@ -927,7 +927,7 @@ struct Thing {
 
 class UnaryBinary {
 public:
-    // Originally for testing Dev10#539137
+    // Originally for testing Dev10-539137
     // "reference_wrapper: Doesn't handle classes that derive from both unary_function and binary_function".
     // The typedefs are tested elsewhere here (see SameResults and DifferentResults).
 

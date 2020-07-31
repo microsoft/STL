@@ -215,7 +215,7 @@ void test_DevDiv931383() {
     test("FFiioiiiGG", 2, 6, "00110111");
 }
 
-// Also test Dev10#479284 "C6326 when running static analysis with <bitset>".
+// Also test Dev10-479284 "C6326 when running static analysis with <bitset>".
 template class std::bitset<7>;
 template class std::bitset<32>;
 
