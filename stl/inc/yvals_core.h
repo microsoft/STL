@@ -1191,7 +1191,7 @@
 #define __cpp_lib_execution 201902L // P1001R2 execution::unseq
 #elif _HAS_CXX17
 #define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
-#endif
+#endif // language mode
 #endif // _M_CEE
 
 #if _HAS_CXX20

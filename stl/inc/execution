@@ -76,7 +76,7 @@ constexpr size_t _Still_active                = static_cast<size_t>(-1);
 // EXECUTION POLICIES
 namespace execution {
     class sequenced_policy {
-        // indicates support for only sequential execution, and request termination on exceptions
+        // indicates support for only sequential execution, and requests termination on exceptions
     public:
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = false;
@@ -86,8 +86,8 @@ namespace execution {
     inline constexpr sequenced_policy seq{/* unspecified */};
 
     class parallel_policy {
-        // indicates support by element access functions for execution with parallel forward progress guarantees and
-        // requests termination on exceptions
+        // indicates support by element access functions for parallel execution with parallel forward progress
+        // guarantees, and requests termination on exceptions
     public:
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = true;
@@ -112,7 +112,7 @@ namespace execution {
 #if _HAS_CXX20
     class unsequenced_policy {
         // indicates support by element access functions for weakly parallel forward progress guarantees, and for
-        // executing interleaved on the same thread, and  requests termination on exceptions
+        // executing interleaved on the same thread, and requests termination on exceptions
         //
         // (at this time, equivalent to sequenced_policy except for the for_each family)
     public:
@@ -1246,7 +1246,7 @@ void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
         }
 
         _For_each_ivdep(_UFirst, _ULast, _Pass_fn(_Func));
-    } else if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
+    } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
         _For_each_ivdep(_UFirst, _ULast, _Pass_fn(_Func));
     } else {
         for (; _UFirst != _ULast; ++_UFirst) {
