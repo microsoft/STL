@@ -16,6 +16,7 @@
 #include <map>
 #include <queue>
 #include <ranges>
+#include <regex>
 #include <set>
 #include <stack>
 #include <string>
@@ -24,6 +25,9 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+template <class T>
+using SpaceshipType = decltype(std::declval<T>() <=> std::declval<T>());
 
 using PartiallyOrdered = double;
 
@@ -54,6 +58,113 @@ struct SynthOrdered {
     }
 };
 
+struct OrderedChar {
+    OrderedChar() = default;
+    OrderedChar(const char c) : c(c) {};
+
+    OrderedChar& operator=(const char& other)
+    {
+        this->c = other;
+        return *this;
+    }
+
+    operator char() { return c; }
+
+    char c;
+};
+
+auto operator<=>(const OrderedChar& left, const OrderedChar& right)
+{
+    return left.c <=> right.c;
+}
+
+auto operator==(const OrderedChar& left, const OrderedChar& right)
+{
+    return left.c == right.c;
+}
+
+struct WeaklyOrderedChar : public OrderedChar {};
+struct WeaklyOrderdByOmissionChar : public OrderedChar {};
+struct PartiallyOrderedChar : public OrderedChar {};
+
+namespace std
+{
+    template <>
+    struct char_traits<WeaklyOrderedChar> : public std::char_traits<char> {
+        using char_type = WeaklyOrderedChar;
+        using comparison_category = std::weak_ordering;
+
+        static int compare(const char_type* first1, const char_type* first2, size_t count) {
+            for (; 0 < count; --count, ++first1, ++first2) {
+                if (*first1 != *first2) {
+                    return *first1 < *first2 ? -1 : +1;
+                }
+            }
+
+            return 0;
+        }
+
+        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
+    };
+
+    template <>
+    struct char_traits<WeaklyOrderdByOmissionChar> : public std::char_traits<char> {
+        using char_type = WeaklyOrderdByOmissionChar;
+
+        static int compare(const char_type* first1, const char_type* first2, size_t count) {
+            for (; 0 < count; --count, ++first1, ++first2) {
+                if (*first1 != *first2) {
+                    return *first1 < *first2 ? -1 : +1;
+                }
+            }
+
+            return 0;
+        }
+
+        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
+    };
+
+    template <>
+    struct char_traits<PartiallyOrderedChar> : public std::char_traits<char> {
+        using char_type = PartiallyOrderedChar;
+        using comparison_category = std::partial_ordering;
+
+        static int compare(const char_type* first1, const char_type* first2, size_t count) {
+            for (; 0 < count; --count, ++first1, ++first2) {
+                if (*first1 != *first2) {
+                    return *first1 < *first2 ? -1 : +1;
+                }
+            }
+
+            return 0;
+        }
+
+        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
+    };
+}
+
+template<class SmallType, class EqualType, class LargeType, class ReturnType>
+void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger)
+{
+    assert(smaller == smaller_equal);
+    assert(smaller != larger);
+    assert(smaller < larger);
+    assert(larger > smaller);
+    assert(smaller <= larger);
+    assert(larger >= smaller);
+    assert((smaller <=> larger) < 0);
+    assert((larger <=> smaller) > 0);
+    assert((smaller <=> smaller_equal) == 0);
+
+    static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
+}
+
+template<class TestType, class ReturnType>
+void spaceship_test(const TestType& smaller, const TestType& smaller_equal, const TestType& larger)
+{
+    return spaceship_test<TestType, TestType, TestType, ReturnType>(smaller, smaller_equal, larger);
+}
+
 template <class T>
 inline constexpr bool is_pair = false;
 template <class A, class B>
@@ -61,22 +172,12 @@ inline constexpr bool is_pair<std::pair<A, B>> = true; // TRANSITION, std::pair 
 
 template <class Container>
 void ordered_containers_test(const Container& smaller, const Container& smaller_equal, const Container& larger) {
-    assert(smaller < larger);
-    assert(smaller <= larger);
-    assert(larger > smaller);
-    assert(larger >= smaller);
-    assert(smaller == smaller_equal);
-    assert(smaller != larger);
-    assert((smaller <=> larger) < 0);
-    assert((larger <=> smaller) > 0);
-    assert((smaller <=> smaller_equal) == 0);
-
     using Elem = typename Container::value_type;
     if constexpr (is_pair<Elem> // TRANSITION, std::pair spaceship not yet implemented
                   || std::is_same_v<Elem, SynthOrdered>) {
-        static_assert(std::is_same_v<decltype(smaller <=> larger), std::weak_ordering>);
+        spaceship_test<Container, std::weak_ordering>(smaller, smaller_equal, larger);
     } else {
-        static_assert(std::is_same_v<decltype(smaller <=> larger), std::strong_ordering>);
+        spaceship_test<Container, std::strong_ordering>(smaller, smaller_equal, larger);
     }
 }
 
@@ -292,10 +393,34 @@ void ordering_test_cases() {
         std::stack<SynthOrdered> b{std::deque<SynthOrdered>{10, 20, 40}};
         ordered_containers_test(a, a, b);
     }
-}
+    { // sub_match
+        const std::string s1{"cats"};
+        const std::string s2{"meow"};
+        const std::regex all(".*");
+        std::smatch m1, m2;
 
-template <class T>
-using SpaceshipType = decltype(std::declval<T>() <=> std::declval<T>());
+        std::regex_match(s1, m1, all);
+        std::regex_match(s2, m2, all);
+
+        std::ssub_match sm1 = m1[0];
+        std::ssub_match sm1_equal = m1[0];
+        std::ssub_match sm2 = m2[0];
+
+        // TRANSITION: std::char_traits<char> doesn't define comparison_type
+        spaceship_test<std::ssub_match, std::weak_ordering>(sm1, sm1_equal, sm2);
+
+        using StronglyOrderedMatch = std::ssub_match;
+        using WeaklyOrderedMatch = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;
+        using WeaklyOrderdByOmissionMatch = std::sub_match<std::basic_string<WeaklyOrderdByOmissionChar>::const_iterator>;
+        using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
+
+        // TRANSITION: std::char_traits<char> doesn't define comparison_type
+        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
+    }
+}
 
 template <class Element, class Ordering>
 void test_element_ordering() {
