@@ -4369,7 +4369,7 @@ public:
         return *this;
     }
 
-    ~common_iterator() noexcept() // strengthened
+    ~common_iterator() noexcept // strengthened
     {
         if (_Mystate == _State::_Holds_iter) {
             _Myiter.~_Iter();
