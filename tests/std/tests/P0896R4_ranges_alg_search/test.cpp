@@ -8,7 +8,7 @@
 #include <ranges>
 #include <span>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 using namespace std;

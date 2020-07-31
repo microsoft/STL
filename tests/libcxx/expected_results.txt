@@ -465,10 +465,6 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 # C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
 std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
 
-# C++20 P0811R2 "midpoint(), lerp()"
-std/language.support/support.limits/support.limits.general/numeric.version.pass.cpp FAIL
-std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
-
 # C++20 P0896R4 "<ranges>"
 std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
@@ -563,10 +559,6 @@ std/re/re.traits/transform.pass.cpp FAIL
 
 # STL bug: Incorrect return types.
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
-
-# STL bug: Missing <valarray> assignment operators.
-std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
-std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp FAIL
 
 # STL bug: We allow fill() and swap() for array<const T, 0>.
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
@@ -777,6 +769,11 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp F
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
+
+# Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
+# Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
+# They shouldn't behave differently. Both of them should probably return NaN.
+std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
