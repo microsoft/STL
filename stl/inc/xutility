@@ -4234,7 +4234,7 @@ class common_iterator {
     };
 
 public:
-    constexpr common_iterator() noexcept(is_nothrow_constructible_v<_Iter>) // strengthened
+    constexpr common_iterator() noexcept(is_nothrow_constructible_v<_Iter>)
         : _Myiter{}, _Mystate{_State::_Holds_iter} {};
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
