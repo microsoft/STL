@@ -77,7 +77,7 @@ struct instantiator {
                 assert(Cit{Sen{input}} == Cit{Sen{input + 1}});
             }
 
-            { //[common.iter.cust]
+            { // [common.iter.cust]
                 if constexpr (input_iterator<Iter>) { // iter_move
                     Cit iter1{Iter{input}};
 
