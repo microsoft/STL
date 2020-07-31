@@ -730,7 +730,10 @@ template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#endif // _HAS_CXX20
+
+// TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes
 template <class _BidIt>
 _NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
@@ -755,7 +758,6 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
 
 // COMPARE sub_match AND NTBS
 template <class _BidIt>
@@ -768,7 +770,10 @@ template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left ,const _Iter_value_t<_BidIt>* _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#endif // _HAS_CXX20
+
+// TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes
 template <class _BidIt>
 _NODISCARD bool operator!=(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
@@ -823,7 +828,6 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
 
 // COMPARE sub_match AND ELEMENT
 template <class _BidIt>
@@ -836,7 +840,10 @@ template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#endif // _HAS_CXX20
+
+// TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes
 template <class _BidIt>
 _NODISCARD bool operator!=(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
@@ -891,7 +898,6 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
 
 // COMPARE sub_match AND string
 template <class _BidIt, class _Traits, class _Alloc>
@@ -906,7 +912,10 @@ _NODISCARD bool operator<=>(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#endif // _HAS_CXX20
+
+// TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator!=(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
@@ -972,7 +981,6 @@ _NODISCARD bool operator>=(
     const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
 
 // INSERT sub_match IN STREAM
 template <class _Elem, class _Traits, class _BidIt>
