@@ -4281,21 +4281,9 @@ public:
         _STL_VERIFY(_Right._Mystate != _State::_Nothing, "common_iterator can only be assigned if it holds a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
-            if constexpr (!is_nothrow_copy_assignable_v<const _Iter&>) {
-                _Mystate = _State::_Nothing;
-            }
             _Myiter = _Right._Myiter;
-            if constexpr (!is_nothrow_copy_assignable_v<const _Iter&>) {
-                _Mystate = _State::_Holds_iter;
-            }
         } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
-            if constexpr (!is_nothrow_copy_assignable_v<const _Se&>) {
-                _Mystate = _State::_Nothing;
-            }
             _Mysentinel = _Right._Mysentinel;
-            if constexpr (!is_nothrow_copy_assignable_v<const _Se&>) {
-                _Mystate = _State::_Holds_sentinel;
-            }
         } else if (_Right._Mystate == _State::_Holds_iter) {
             if (_Mystate == _State::_Holds_sentinel) {
                 _Mysentinel.~_Se();
@@ -4332,21 +4320,9 @@ public:
         _STL_VERIFY(_Right._Mystate != _State::_Nothing, "common_iterator can only be assigned if it holds a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
-            if constexpr (!is_nothrow_assignable_v<_Iter, const _Iter2&>) {
-                _Mystate = _State::_Nothing;
-            }
             _Myiter = _Right._Myiter;
-            if constexpr (!is_nothrow_assignable_v<_Iter, const _Iter2&>) {
-                _Mystate = _State::_Holds_iter;
-            }
         } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
-            if constexpr (!is_nothrow_assignable_v<_Se, const _Se2&>) {
-                _Mystate = _State::_Nothing;
-            }
             _Mysentinel = _Right._Mysentinel;
-            if constexpr (!is_nothrow_assignable_v<_Se, const _Se2&>) {
-                _Mystate = _State::_Holds_sentinel;
-            }
         } else if (_Right._Mystate == _State::_Holds_iter) {
             if (_Mystate == _State::_Holds_sentinel) {
                 _Mysentinel.~_Se();
