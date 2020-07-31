@@ -550,7 +550,7 @@ STATIC_ASSERT(is_base_of_v<bool_constant<false>, negation<final_fake_bool<true>>
 // </P0013R1>
 
 
-// DDB#198043 "[VS2008 / TR1] problems with is_pod and has_trivial_constructor"
+// DDB-198043 "[VS2008 / TR1] problems with is_pod and has_trivial_constructor"
 struct TrivialExceptConstruct {
     TrivialExceptConstruct();
     int i;

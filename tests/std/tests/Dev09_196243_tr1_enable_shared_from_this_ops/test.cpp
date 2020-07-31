@@ -12,7 +12,7 @@ struct X : enable_shared_from_this<X> {
 };
 
 int main() {
-    // Test DDB#196243 "TR1 VC9 SP1: enable_shared_from_this's copy ctor and copy assignment operator do too much work".
+    // Test DDB-196243 "TR1 VC9 SP1: enable_shared_from_this's copy ctor and copy assignment operator do too much work".
     {
         const shared_ptr<X> sp1(new X(11));
         const shared_ptr<X> sp2(new X(22));
@@ -37,7 +37,7 @@ int main() {
         assert(raw2->shared_from_this() != sp1);
     }
 
-    // Test DDB#197048 "[VS2008 / TR1] still got problems with shared_ptr<const T>".
+    // Test DDB-197048 "[VS2008 / TR1] still got problems with shared_ptr<const T>".
     {
         shared_ptr<const int> sp1(static_cast<const int*>(new int(6)));
         shared_ptr<volatile int> sp2(static_cast<volatile int*>(new int(7)));

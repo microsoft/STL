@@ -685,7 +685,7 @@ STATIC_ASSERT(is_same_v<result_of_t<const Purr()>, long>);
 STATIC_ASSERT(is_same_v<result_of_t<const Purr&()>, short>);
 STATIC_ASSERT(is_same_v<result_of_t<const Purr && ()>, long>);
 
-// Also test references to functions, DDB#198033.
+// Also test references to functions, DDB-198033.
 using FuncRef = int (&)(float, double);
 STATIC_ASSERT(is_same_v<result_of_t<FuncRef(float, double)>, int>);
 
@@ -1862,7 +1862,7 @@ void test_function() {
 
 // Test bind(), user-reported bugs.
 void test_bind() {
-    // Test DDB#176058 "TR1: result_of doesn't accept result_type typedefs for references" (title is now bogus).
+    // Test DDB-176058 "TR1: result_of doesn't accept result_type typedefs for references" (title is now bogus).
     {
         struct PassThru {
             int& operator()(int& obj) const {
