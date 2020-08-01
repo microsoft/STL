@@ -17,7 +17,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <xatomic.h>
+#if _HAS_CXX20
 #include <xatomic_wait.h>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -360,6 +362,7 @@ template <class _Ty, size_t = _Atomic_storage_traits<_Ty>::_Storage_size>
 #endif // TRANSITION, ABI
 struct _Atomic_storage;
 
+#if _HAS_CXX20
 template <class _Ty, class _Value_type>
 void _Atomic_wait_direct(
     const _Atomic_storage<_Ty>* const _This, _Value_type _Expected_bytes, const memory_order _Order) noexcept {
@@ -385,19 +388,49 @@ void _Atomic_wait_direct(
         __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Atomic_wait_no_timeout);
     }
 }
+#endif // _HAS_CXX20
 
-template <class _Predicate>
-bool __stdcall _Atomic_wait_indirect_callback(const void* const _Param, void* const _Comparand) noexcept {
-    const auto _Fn = static_cast<const _Predicate*>(_Param);
-    return (*_Fn)(_Comparand);
+#if 1 // TRANSITION, ABI
+inline void _Atomic_lock_spinlock(long& _Spinlock) noexcept {
+    while (_InterlockedExchange(&_Spinlock, 1)) {
+        _YIELD_PROCESSOR();
+    }
 }
 
-template <class _Predicate>
-void _Atomic_wait_indirect(const void* const _Storage, const _Predicate& _Are_equal, void* const _Comparand,
-    unsigned long _Remaining_timeout) noexcept {
-    __std_atomic_wait_indirect(
-        _Storage, _Atomic_wait_indirect_callback<_Predicate>, &_Are_equal, _Comparand, _Remaining_timeout);
+inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
+#if defined(_M_ARM) || defined(_M_ARM64)
+    _Memory_barrier();
+    __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
+    _Memory_barrier();
+#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+    _InterlockedExchange(&_Spinlock, 0);
+#endif // hardware
 }
+
+struct _Spinlock_guard {
+    long& _Spinlock;
+    _Spinlock_guard(long& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
+        _Atomic_lock_spinlock(_Spinlock);
+    };
+    ~_Spinlock_guard() {
+        _Atomic_unlock_spinlock(_Spinlock);
+    }
+
+    _Spinlock_guard(const _Spinlock_guard&) = delete;
+    _Spinlock_guard& operator=(const _Spinlock_guard&) = delete;
+};
+
+#if _HAS_CXX20
+inline bool __stdcall _Atomic_wait_compare_non_lock_free(
+    const void* _Storage, void* _Comparand, size_t _Size, void* _Spinlock_raw) noexcept {
+    long& _Spinlock = *static_cast<long*>(_Spinlock_raw);
+    _Atomic_lock_spinlock(_Spinlock);
+    const auto _Cmp_result = _CSTD memcmp(_Storage, _Comparand, _Size);
+    _Atomic_unlock_spinlock(_Spinlock);
+    return _Cmp_result == 0;
+}
+#endif // _HAS_CXX20
+#endif // TRANSITION, ABI
 
 template <class _Ty, size_t /* = ... */>
 struct _Atomic_storage {
@@ -472,34 +505,39 @@ struct _Atomic_storage {
 
 #if _HAS_CXX20
     void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        (void) _Order; // non-lock-free operations are always seq_cst
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
-
-        auto _Are_equal = [this, _Order](void* const _Comparand) {
-            const _Ty _Observed      = load(_Order);
-            const auto _Observed_ptr = _STD addressof(_Observed);
-            if (_CSTD memcmp(_Observed_ptr, _Comparand, sizeof(_Ty)) == 0) {
-                return true;
-            }
+        for (;;) {
+            {
+                _Spinlock_guard _Lock{_Spinlock};
+                if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
+                    // contents differed, we might be done, check for padding
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-            if constexpr (_Might_have_non_value_bits<_Ty>) {
-                _Storage_for<_Ty> _Local;
-                const auto _Local_ptr = _Local._Ptr();
-                _CSTD memcpy(_Local_ptr, _Observed_ptr, sizeof(_Ty));
-                __builtin_zero_non_value_bits(_Local_ptr);
-                __builtin_zero_non_value_bits(reinterpret_cast<_Ty*>(_Comparand));
-
-                if (_CSTD memcmp(_Local_ptr, _Comparand, sizeof(_Ty)) == 0) {
-                    _CSTD memcpy(_Comparand, _Observed_ptr, sizeof(_Ty));
-                    return true;
+                    if constexpr (_Might_have_non_value_bits<_Ty>) {
+                        _Storage_for<_Ty> _Local;
+                        const auto _Local_ptr = _Local._Ptr();
+                        _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_Ty));
+                        __builtin_zero_non_value_bits(_Local_ptr);
+                        __builtin_zero_non_value_bits(_Expected_ptr);
+                        if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
+                            // _Storage differs from _Expected only by padding; copy the padding from _Storage into
+                            // _Expected
+                            _CSTD memcpy(_Expected_ptr, _Storage_ptr, sizeof(_Ty));
+                        } else {
+                            // truly different, we're done
+                            return;
+                        }
+                    } else
+#endif // #if _CMPXCHG_MASK_OUT_PADDING_BITS
+                    {
+                        return;
+                    }
                 }
-            }
-#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-            return false;
-        };
+            } // unlock
 
-        if (_Are_equal(_Expected_ptr)) {
-            _Atomic_wait_indirect(_Storage_ptr, _Are_equal, _Expected_ptr, _Atomic_wait_no_timeout);
+            __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_Ty), &_Spinlock,
+                &_Atomic_wait_compare_non_lock_free, _Atomic_wait_no_timeout);
         }
     }
 
@@ -514,19 +552,11 @@ struct _Atomic_storage {
 
 #if 1 // TRANSITION, ABI
     void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange(&_Spinlock, 1)) {
-            _YIELD_PROCESSOR();
-        }
+        _Atomic_lock_spinlock(_Spinlock);
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
-#if defined(_M_ARM) || defined(_M_ARM64)
-        _Memory_barrier();
-        __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-        _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange(&_Spinlock, 0);
-#endif // hardware
+        _Atomic_unlock_spinlock(_Spinlock);
     }
 
 private:
