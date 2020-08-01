@@ -3402,16 +3402,13 @@ namespace ranges {
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
-            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
-            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
-            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
-            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
-                _RANGES iter_swap(_UFirst1, _UFirst2);
-            }
 
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
-            _Seek_wrapped(_First2, _STD move(_UFirst2));
+            auto _UResult =
+                _Swap_ranges_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -3419,9 +3416,33 @@ namespace ranges {
             requires indirectly_swappable<iterator_t<_Rng1>, iterator_t<_Rng2>>
         constexpr swap_ranges_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2) const {
-            return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2));
+            auto _First1 = _RANGES begin(_Range1);
+            auto _First2 = _RANGES begin(_Range2);
+
+            auto _UResult = _Swap_ranges_unchecked(
+                _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Get_unwrapped(_STD move(_First2)), _Uend(_Range2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2)};
         }
         // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2>
+        _NODISCARD static constexpr swap_ranges_result<_It1, _It2> _Swap_ranges_unchecked(
+            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
+
+            for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
+                _RANGES iter_swap(_First1, _First2);
+            }
+
+            return {_STD move(_First1), _STD move(_First2)};
+        }
     };
 
     inline constexpr _Swap_ranges_fn swap_ranges{_Not_quite_object::_Construct_tag{}};

@@ -3243,24 +3243,31 @@ namespace ranges {
                 return _Last - _First;
             } else {
                 _Adl_verify_range(_First, _Last);
-                auto _UFirst                  = _Get_unwrapped(static_cast<_It&&>(_First));
-                const auto _ULast             = _Get_unwrapped(static_cast<_Se&&>(_Last));
-                iter_difference_t<_It> _Count = 0;
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    ++_Count;
-                }
-
-                return _Count;
+                return _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
             }
         }
 
         template <range _Rng>
-        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Val) const {
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range) const {
             if constexpr (sized_range<_Rng>) {
-                return static_cast<range_difference_t<_Rng>>(_RANGES size(_Val));
+                return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
-                return (*this)(_RANGES begin(_Val), _RANGES end(_Val));
+                return _Distance_unchecked(_Ubegin(_Range), _Uend(_Range));
             }
+        }
+
+    private:
+        template <class _It, class _Se>
+        _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) {
+            _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+
+            iter_difference_t<_It> _Count = 0;
+            for (; _First != _Last; ++_First) {
+                ++_Count;
+            }
+
+            return _Count;
         }
     };
 
