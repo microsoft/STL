@@ -407,17 +407,21 @@ inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
 #endif // hardware
 }
 
-struct _Spinlock_guard {
-    long& _Spinlock;
-    _Spinlock_guard(long& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
+class _Spinlock_guard {
+public:
+    explicit _Spinlock_guard(long& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
         _Atomic_lock_spinlock(_Spinlock);
-    };
+    }
+
     ~_Spinlock_guard() {
         _Atomic_unlock_spinlock(_Spinlock);
     }
 
     _Spinlock_guard(const _Spinlock_guard&) = delete;
     _Spinlock_guard& operator=(const _Spinlock_guard&) = delete;
+
+private:
+    long& _Spinlock;
 };
 
 #if _HAS_CXX20
@@ -504,8 +508,7 @@ struct _Atomic_storage {
     }
 
 #if _HAS_CXX20
-    void wait(_Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        (void) _Order; // non-lock-free operations are always seq_cst
+    void wait(_Ty _Expected, const memory_order = memory_order_seq_cst) const noexcept {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         for (;;) {

@@ -174,21 +174,17 @@ namespace {
     }
 
     bool __stdcall _Atomic_wait_are_equal_direct_fallback(
-        const void* _Storage, void* _Comparand, size_t _Size, void* _Param) noexcept {
-        (void) _Param;
+        const void* _Storage, void* _Comparand, size_t _Size, void*) noexcept {
         switch (_Size) {
         case 1:
-            return __iso_volatile_load8(reinterpret_cast<const char*>(_Storage))
-                   == *reinterpret_cast<const char*>(_Comparand);
+            return __iso_volatile_load8(static_cast<const char*>(_Storage)) == *static_cast<const char*>(_Comparand);
         case 2:
-            return __iso_volatile_load16(reinterpret_cast<const short*>(_Storage))
-                   == *reinterpret_cast<const short*>(_Comparand);
+            return __iso_volatile_load16(static_cast<const short*>(_Storage)) == *static_cast<const short*>(_Comparand);
         case 4:
-            return __iso_volatile_load32(reinterpret_cast<const int*>(_Storage))
-                   == *reinterpret_cast<const int*>(_Comparand);
+            return __iso_volatile_load32(static_cast<const int*>(_Storage)) == *static_cast<const int*>(_Comparand);
         case 8:
-            return __iso_volatile_load64(reinterpret_cast<const long long*>(_Storage))
-                   == *reinterpret_cast<const long long*>(_Comparand);
+            return __iso_volatile_load64(static_cast<const long long*>(_Storage))
+                   == *static_cast<const long long*>(_Comparand);
         default:
             _CSTD abort();
         }
