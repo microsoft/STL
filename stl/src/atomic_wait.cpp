@@ -263,24 +263,27 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 }
 
-int __stdcall __std_atomic_wait_indirect(const void* const _Storage, void* const _Comparand, const size_t _Size,
-    void* const _Param, const _Atomic_wait_indirect_equal_callback_t _Are_equal,
-    const unsigned long _Remaining_timeout) noexcept {
+int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand, size_t _Size, void* _Param,
+    _Atomic_wait_indirect_equal_callback_t _Are_equal, unsigned long _Remaining_timeout) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
     _SrwLock_guard _Guard(_Entry._Lock);
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
+    for (;;) {
+        if (!_Are_equal(_Storage, _Comparand, _Size, _Param)) { // note: under lock to prevent lost wakes
+            return TRUE;
+        }
 
-    if (!_Are_equal(_Storage, _Comparand, _Size, _Param)) { // note: under lock
-        return TRUE;
+        if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
+            _Assume_timeout();
+            return FALSE;
+        }
+
+        if (_Remaining_timeout != _Atomic_wait_no_timeout) {
+            // spurious wake to recheck the clock
+            return TRUE;
+        }
     }
-
-    if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
-        _Assume_timeout();
-        return FALSE;
-    }
-
-    return TRUE;
 }
 
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
