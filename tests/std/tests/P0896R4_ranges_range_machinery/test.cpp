@@ -25,7 +25,7 @@
 #include <utility>
 #include <valarray>
 #include <vector>
-//
+
 #include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
