@@ -4302,6 +4302,10 @@ _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _O
 }
 
 #if _HAS_IF_CONSTEXPR
+// VARIABLE TEMPLATE _Is_vb_iterator
+template <class _It, bool _RequiresMutable = false>
+_INLINE_VAR constexpr bool _Is_vb_iterator = false;
+
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
@@ -4717,20 +4721,24 @@ template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // copy _Val through [_First, _Last)
     _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
+    if constexpr (_Is_vb_iterator<_FwdIt, true>) {
+        _Fill_vbool(_First, _Last, _Val);
+    } else {
+        auto _UFirst      = _Get_unwrapped(_First);
+        const auto _ULast = _Get_unwrapped(_Last);
+        if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
+            if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-        {
-            _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
-            return;
+            {
+                _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
+                return;
+            }
         }
-    }
 
-    for (; _UFirst != _ULast; ++_UFirst) {
-        *_UFirst = _Val;
+        for (; _UFirst != _ULast; ++_UFirst) {
+            *_UFirst = _Val;
+        }
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
@@ -4773,26 +4781,31 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
     // copy _Val _Count times through [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
-        auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
+        if constexpr (_Is_vb_iterator<_OutIt, true>) {
+            const auto _Last = _Dest + static_cast<typename _OutIt::difference_type>(_Count);
+            _Fill_vbool(_Dest, _Last, _Val);
+            return _Last;
+        } else {
+            auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+            if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-            if (!_STD is_constant_evaluated())
+                if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-            {
-                _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
-                _UDest += _Count;
-                _Seek_wrapped(_Dest, _UDest);
-                return _Dest;
+                {
+                    _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
+                    _UDest += _Count;
+                    _Seek_wrapped(_Dest, _UDest);
+                    return _Dest;
+                }
             }
-        }
 
-        for (; 0 < _Count; --_Count, (void) ++_UDest) {
-            *_UDest = _Val;
-        }
+            for (; 0 < _Count; --_Count, (void) ++_UDest) {
+                *_UDest = _Val;
+            }
 
-        _Seek_wrapped(_Dest, _UDest);
+            _Seek_wrapped(_Dest, _UDest);
+        }
     }
-
     return _Dest;
 }
 
