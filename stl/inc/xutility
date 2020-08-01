@@ -4703,11 +4703,11 @@ template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // copy _Val through [_First, _Last)
     _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (_Is_vb_iterator<_FwdIt, true>) {
         _Fill_vbool(_First, _Last, _Val);
     } else {
+        auto _UFirst      = _Get_unwrapped(_First);
+        const auto _ULast = _Get_unwrapped(_Last);
         if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
             if (!_STD is_constant_evaluated())
