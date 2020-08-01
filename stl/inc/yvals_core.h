@@ -203,6 +203,7 @@
 // P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
 // P1878R1 Constraining Readable Types
+// P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
 // P1964R2 Replacing boolean With boolean-testable

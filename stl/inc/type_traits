@@ -895,7 +895,7 @@ template <class _Ty, bool = is_integral_v<_Ty>>
 struct _Sign_base { // determine whether integral type _Ty is signed or unsigned
     using _Uty = remove_cv_t<_Ty>;
 
-    static constexpr bool _Signed   = _Uty(-1) < _Uty(0);
+    static constexpr bool _Signed   = static_cast<_Uty>(-1) < static_cast<_Uty>(0);
     static constexpr bool _Unsigned = !_Signed;
 };
 
