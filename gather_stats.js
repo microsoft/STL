@@ -21,7 +21,7 @@ const { graphql } = require('@octokit/graphql');
 }
 
 async function retrieve_nodes() {
-    let progress = {
+    const progress = {
         multi_bar: new cliProgress.MultiBar(
             {
                 format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} {name}',
@@ -39,7 +39,7 @@ async function retrieve_nodes() {
             headers: { authorization: `token ${process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN}` },
         });
 
-        let rate_limit = {
+        const rate_limit = {
             spent: null,
             remaining: null,
             limit: null,
@@ -66,7 +66,7 @@ async function retrieve_nodes() {
         let pr_nodes = [];
         let issue_nodes = [];
 
-        let variables = {
+        const variables = {
             query: fs.readFileSync('./query_prs_and_issues.graphql', 'utf8'),
             want_prs: true,
             pr_cursor: null,
