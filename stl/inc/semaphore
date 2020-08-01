@@ -34,7 +34,7 @@ template <ptrdiff_t _Least_max_value = INT_MAX>
 class counting_semaphore {
 public:
     [[nodiscard]] static constexpr ptrdiff_t max() noexcept {
-        return (1ULL << (sizeof(_Counter_type)*CHAR_BIT - 1)) - 1;
+        return (1ULL << (sizeof(_Counter_type) * CHAR_BIT - 1)) - 1;
     }
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
