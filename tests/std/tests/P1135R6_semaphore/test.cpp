@@ -145,7 +145,12 @@ void test_semaphore_wait_until(const std::chrono::milliseconds delay_duration) {
     t.join();
 }
 
+#include <iostream>
+
 int main() {
+    constexpr auto max = std::numeric_limits<std::ptrdiff_t>::max();
+
+    static_assert(std::counting_semaphore<max>::max() >= max, "semahpore should support some number of count downs");
     static_assert(std::counting_semaphore<5>::max() >= 5, "semahpore should support some number of count downs");
     static_assert(std::binary_semaphore::max() >= 1, "semahpore should support some number of count downs");
 
