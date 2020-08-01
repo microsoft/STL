@@ -767,6 +767,135 @@ namespace permutable_test {
     STATIC_ASSERT(permutable<archetype<2>>);
 } // namespace permutable_test
 
+namespace mergeable_test {
+    using ranges::less;
+    using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::mergeable;
+
+    enum class readable_status { not_input_iter, good };
+
+    template <class T, readable_status RS>
+    struct readable_archetype {
+        using value_type      = T;
+        using difference_type = int;
+
+        T const& operator*() const;
+        readable_archetype& operator++();
+
+        // clang-format off
+        // 0: not input_iterator
+        void operator++(int) requires (RS != readable_status::not_input_iter);
+        // clang-format on
+    };
+
+    enum class writable_status { not_weakly_incrementable, not_ind_copy_int, not_ind_copy_long, good };
+
+    template <writable_status WS>
+    struct writable_archetype {
+        using difference_type = int;
+
+        writable_archetype& operator*();
+        writable_archetype& operator++();
+
+        // clang-format off
+        writable_archetype operator++(int) requires (WS != writable_status::not_weakly_incrementable);
+
+        // 1: not indirectly_copyable<const int*, writable_archetype>
+        void operator=(int) requires (WS == writable_status::not_ind_copy_int) = delete;
+        writable_archetype& operator=(int) requires (WS != writable_status::not_ind_copy_int);
+
+        // 2: not indirectly_copyable<const long*, writable_archetype>
+        void operator=(long) requires (WS == writable_status::not_ind_copy_long) = delete;
+        writable_archetype& operator=(long) requires (WS != writable_status::not_ind_copy_long);
+        // clang-format on
+    };
+
+    void test() {
+        using std::indirect_strict_weak_order, std::indirectly_copyable, std::input_iterator, std::mergeable,
+            std::weakly_incrementable;
+
+        using I1  = readable_archetype<int, readable_status::good>;
+        using I2  = readable_archetype<long, readable_status::good>;
+        using O   = writable_archetype<writable_status::good>;
+        using Pr  = ranges::less;
+        using Pj1 = std::identity;
+        using Pj2 = std::identity;
+
+        {
+            using Bad_I1 = readable_archetype<int, readable_status::not_input_iter>;
+            STATIC_ASSERT(!input_iterator<Bad_I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<O>);
+            STATIC_ASSERT(indirectly_copyable<Bad_I1, O>);
+            STATIC_ASSERT(indirectly_copyable<I2, O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_I2 = readable_archetype<long, readable_status::not_input_iter>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(!input_iterator<Bad_I2>);
+            STATIC_ASSERT(weakly_incrementable<O>);
+            STATIC_ASSERT(indirectly_copyable<I1, O>);
+            STATIC_ASSERT(indirectly_copyable<Bad_I2, O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_O = writable_archetype<writable_status::not_weakly_incrementable>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(!weakly_incrementable<Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_O = writable_archetype<writable_status::not_ind_copy_int>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<Bad_O>);
+            STATIC_ASSERT(!indirectly_copyable<I1, Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_O = writable_archetype<writable_status::not_ind_copy_long>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
+            STATIC_ASSERT(!indirectly_copyable<I2, Bad_O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_Pr = int;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<O>);
+            STATIC_ASSERT(indirectly_copyable<I1, O>);
+            STATIC_ASSERT(indirectly_copyable<I2, O>);
+            STATIC_ASSERT(!indirect_strict_weak_order<Bad_Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, O, Bad_Pr, Pj1, Pj2>);
+        }
+
+        STATIC_ASSERT(input_iterator<I1>);
+        STATIC_ASSERT(input_iterator<I2>);
+        STATIC_ASSERT(weakly_incrementable<O>);
+        STATIC_ASSERT(indirectly_copyable<I1, O>);
+        STATIC_ASSERT(indirectly_copyable<I2, O>);
+        STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+        STATIC_ASSERT(mergeable<I1, I2, O, Pr, Pj1, Pj2>);
+    }
+} // namespace mergeable_test
+
 namespace sortable_test {
     using ranges::less;
     using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::sortable;
@@ -800,3 +929,57 @@ namespace sortable_test {
         }
     }
 } // namespace sortable_test
+
+namespace gh_1089 {
+    // Defend against regression of GH-1089: "_Pass_fn/_Ref_fn interferes with the Ranges invoke protocol"
+    // The _Pass_fn protocol would previously assume that anything larger than a pointer was a function object that it
+    // could call with `()` and not a pointer-to-member that requires the `invoke` protocol.
+
+    void test() {
+        {
+            struct Base {
+                virtual int purr() = 0;
+            };
+
+            struct Derived1 : virtual Base {
+                int purr() override {
+                    return 1729;
+                }
+            };
+
+            struct Derived2 : virtual Base {};
+
+            struct MostDerived : Derived1, Derived2 {
+                int purr() override {
+                    return 2020;
+                }
+            };
+
+
+            STATIC_ASSERT(sizeof(&Derived1::purr) > sizeof(void*)); // NB: relies on non-portable platform properties
+
+            Derived1 a[2];
+            MostDerived b[3];
+            Derived1* pointers[] = {&b[0], &a[0], &b[1], &a[1], &b[2]};
+
+            (void) ranges::count(pointers, 2020, &Derived1::purr);
+        }
+        {
+            struct Cat;
+
+            using PMD_Cat = int Cat::*;
+            // Quantum effects: we must observe the size before defining Cat or it will become smaller.
+            STATIC_ASSERT(sizeof(PMD_Cat) > sizeof(void*));
+
+            struct Cat {
+                int x = 42;
+            };
+
+            STATIC_ASSERT(sizeof(&Cat::x) > sizeof(void*)); // NB: relies on non-portable platform properties
+
+            Cat cats[42];
+
+            (void) ranges::count(cats, 42, &Cat::x);
+        }
+    }
+} // namespace gh_1089
