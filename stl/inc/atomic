@@ -508,7 +508,7 @@ struct _Atomic_storage {
     }
 
 #if _HAS_CXX20
-    void wait(_Ty _Expected, const memory_order = memory_order_seq_cst) const noexcept {
+    void wait(_Ty _Expected, memory_order = memory_order_seq_cst) const noexcept {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         for (;;) {
