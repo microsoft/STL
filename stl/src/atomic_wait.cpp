@@ -173,25 +173,21 @@ namespace {
         _Wake_by_address_all(Address);
     }
 
-    bool __stdcall _Atomic_wait_are_equal_8_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
-        return __iso_volatile_load8(const_cast<const volatile char*>(reinterpret_cast<const char*>(_Storage)))
-               == *reinterpret_cast<const char*>(_Comparand);
-    }
-
-    bool __stdcall _Atomic_wait_are_equal_16_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
-        return __iso_volatile_load16(const_cast<const volatile short*>(reinterpret_cast<const short*>(_Storage)))
-               == *reinterpret_cast<const short*>(_Comparand);
-    }
-
-    bool __stdcall _Atomic_wait_are_equal_32_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
-        return __iso_volatile_load32(const_cast<const volatile int*>(reinterpret_cast<const int*>(_Storage)))
-               == *reinterpret_cast<const int*>(_Comparand);
-    }
-
-    bool __stdcall _Atomic_wait_are_equal_64_relaxed(const void* const _Storage, void* const _Comparand) noexcept {
-        return __iso_volatile_load64(
-                   const_cast<const volatile long long*>(reinterpret_cast<const long long*>(_Storage)))
-               == *reinterpret_cast<const long long*>(_Comparand);
+    bool __stdcall _Atomic_wait_are_equal_direct_fallback(
+        const void* _Storage, void* _Comparand, size_t _Size, void*) noexcept {
+        switch (_Size) {
+        case 1:
+            return __iso_volatile_load8(static_cast<const char*>(_Storage)) == *static_cast<const char*>(_Comparand);
+        case 2:
+            return __iso_volatile_load16(static_cast<const short*>(_Storage)) == *static_cast<const short*>(_Comparand);
+        case 4:
+            return __iso_volatile_load32(static_cast<const int*>(_Storage)) == *static_cast<const int*>(_Comparand);
+        case 8:
+            return __iso_volatile_load64(static_cast<const long long*>(_Storage))
+                   == *static_cast<const long long*>(_Comparand);
+        default:
+            _CSTD abort();
+        }
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 } // unnamed namespace
@@ -202,22 +198,8 @@ int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _
     const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
     if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
-        switch (_Size) {
-        case 1:
-            return __std_atomic_wait_indirect(
-                _Storage, &_Atomic_wait_are_equal_8_relaxed, _Storage, _Comparand, _Remaining_timeout);
-        case 2:
-            return __std_atomic_wait_indirect(
-                _Storage, &_Atomic_wait_are_equal_16_relaxed, _Storage, _Comparand, _Remaining_timeout);
-        case 4:
-            return __std_atomic_wait_indirect(
-                _Storage, &_Atomic_wait_are_equal_32_relaxed, _Storage, _Comparand, _Remaining_timeout);
-        case 8:
-            return __std_atomic_wait_indirect(
-                _Storage, &_Atomic_wait_are_equal_64_relaxed, _Storage, _Comparand, _Remaining_timeout);
-        default:
-            _CSTD abort();
-        }
+        return __std_atomic_wait_indirect(
+            _Storage, _Comparand, _Size, nullptr, &_Atomic_wait_are_equal_direct_fallback, _Remaining_timeout);
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
 
@@ -277,21 +259,25 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     }
 }
 
-int __stdcall __std_atomic_wait_indirect(const void* _Storage, _Atomic_wait_indirect_callback_t _Are_equal,
-    const void* _Parameter, void* _Comparand, unsigned long _Remaining_timeout) noexcept {
+int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand, size_t _Size, void* _Param,
+    _Atomic_wait_indirect_equal_callback_t _Are_equal, unsigned long _Remaining_timeout) noexcept {
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
     _SrwLock_guard _Guard(_Entry._Lock);
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
-
     for (;;) {
-        if (!_Are_equal(_Parameter, _Comparand)) {
+        if (!_Are_equal(_Storage, _Comparand, _Size, _Param)) { // note: under lock to prevent lost wakes
             return TRUE;
         }
 
         if (!SleepConditionVariableSRW(&_Context._Condition, &_Entry._Lock, _Remaining_timeout, 0)) {
             _Assume_timeout();
             return FALSE;
+        }
+
+        if (_Remaining_timeout != _Atomic_wait_no_timeout) {
+            // spurious wake to recheck the clock
+            return TRUE;
         }
     }
 }
