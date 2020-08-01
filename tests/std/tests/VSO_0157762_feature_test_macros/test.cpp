@@ -713,6 +713,20 @@ STATIC_ASSERT(__cpp_lib_integer_sequence == 201304L);
 STATIC_ASSERT(__cpp_lib_integral_constant_callable == 201304L);
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_interpolate
+#error __cpp_lib_interpolate is not defined
+#elif __cpp_lib_interpolate != 201902L
+#error __cpp_lib_interpolate is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_interpolate == 201902L);
+#endif
+#else
+#ifdef __cpp_lib_interpolate
+#error __cpp_lib_interpolate is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_invoke
 #error __cpp_lib_invoke is not defined
 #elif __cpp_lib_invoke != 201411L
