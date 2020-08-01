@@ -30,16 +30,15 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-inline constexpr ptrdiff_t _Max_semaphore_value = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
-
-template <ptrdiff_t _Least_max_value = _Max_semaphore_value>
+template <ptrdiff_t _Least_max_value = INT_MAX>
 class counting_semaphore {
 public:
     [[nodiscard]] static constexpr ptrdiff_t max() noexcept {
-        return _Least_max_value; // use least_max value as actual max value
+        return (1ULL << (sizeof(_Counter_type)*CHAR_BIT - 1)) - 1;
     }
 
-    constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */ : _Counter(_Desired) {
+    constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
+        : _Counter(static_cast<_Counter_type>(_Desired)) {
         _STL_VERIFY(
             _Desired >= 0 && _Desired <= max(), "Initial count shall be non-negative and shall not exceed max()");
     }
@@ -53,17 +52,17 @@ public:
         if (_Update == 0) {
             return;
         }
-        _STL_VERIFY(_Update >= 0, "Update count shall be non-negative");
-        const ptrdiff_t _Prev = _Counter.fetch_add(_Update, memory_order_release);
-        _STL_VERIFY(_Prev >= 0 && static_cast<size_t>(_Prev) + static_cast<size_t>(_Update) <= _Least_max_value,
-            "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(_Update > 0 && _Update <= max(), "Update count shall be non-negative and shall not overflow max()");
+        const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_release);
+        _STL_VERIFY(_Prev + _Update > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+
         if (_Prev == 0) {
             _Counter.notify_all();
         }
     }
 
     void acquire() noexcept /* strengthened */ {
-        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
+        _Counter_type _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
                 // Even though atomic wait does not return spuriously, need while loop since load may still load zero
@@ -71,8 +70,7 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
-                "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 break;
@@ -81,21 +79,20 @@ public:
     }
 
     [[nodiscard]] bool try_acquire() noexcept {
-        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
+        _Counter_type _Current = _Counter.load(memory_order_relaxed);
         if (_Current == 0) {
             return false;
         }
-        _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
-            "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
         return _Counter.compare_exchange_weak(
             _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed);
     }
 
     template <class _Rep, class _Period>
     [[nodiscard]] bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        auto _Rel_time_ms  = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
-        auto _Deadline     = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
-        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
+        auto _Rel_time_ms      = chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time);
+        auto _Deadline         = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
+        _Counter_type _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
                 const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
@@ -105,8 +102,7 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
-                "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 return true;
@@ -116,7 +112,7 @@ public:
 
     template <class _Clock, class _Duration>
     [[nodiscard]] bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
+        _Counter_type _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
                 auto _Now = _Clock::now();
@@ -135,8 +131,7 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Rel_time_ms.count());
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current >= 0 && _Current <= _Least_max_value,
-                "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
             if (_Counter.compare_exchange_weak(
                     _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
                 return true;
@@ -145,7 +140,9 @@ public:
     }
 
 private:
-    atomic<ptrdiff_t> _Counter;
+    using _Counter_type = conditional_t<_Least_max_value <= SCHAR_MAX, signed char,
+        conditional_t<_Least_max_value <= INT_MAX, int, ptrdiff_t>>;
+    atomic<_Counter_type> _Counter;
 };
 
 template <>
