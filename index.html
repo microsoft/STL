@@ -98,17 +98,33 @@
         const age_data = {
             datasets: [
                 {
-                    data: get_values(daily_table, 'age_avg_days'),
+                    data: get_values(daily_table, 'avg_age'),
                     label: 'Average Age',
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'leftAxis',
+                    hidden: true,
                 },
                 {
-                    data: get_values(daily_table, 'age_sum_months'),
+                    data: get_values(daily_table, 'avg_wait'),
+                    label: 'Average Wait',
+                    borderColor: '#FF9090',
+                    backgroundColor: '#FF9090',
+                    yAxisID: 'leftAxis',
+                    hidden: true,
+                },
+                {
+                    data: get_values(daily_table, 'sum_age'),
                     label: 'Combined Age',
                     borderColor: '#000000',
                     backgroundColor: '#000000',
+                    yAxisID: 'rightAxis',
+                },
+                {
+                    data: get_values(daily_table, 'sum_wait'),
+                    label: 'Combined Wait',
+                    borderColor: '#FF0000',
+                    backgroundColor: '#FF0000',
                     yAxisID: 'rightAxis',
                 },
             ],
@@ -230,7 +246,7 @@
                         position: 'left',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Average Age (days)',
+                            labelString: 'Average Age, Average Wait (days)',
                         },
                         ticks: {
                             min: 0,
@@ -245,7 +261,7 @@
                         position: 'right',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Combined Age (PR-months)',
+                            labelString: 'Combined Age, Combined Wait (PR-months)',
                         },
                         ticks: {
                             min: 0,
@@ -346,12 +362,15 @@
         <li>Left axis:
             <ul>
                 <li>The average age of open pull requests, in days.</li>
+                <li>The average "waiting time" of open pull requests, in days. This measures how long it's been since a
+                    maintainer submitted a review requesting changes. Any other activity doesn't reset this clock.</li>
             </ul>
         </li>
         <li>Right axis:
             <ul>
                 <li>The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
                     for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
+                <li>The combined "waiting time" of open pull requests, in PR-months.</li>
             </ul>
         </li>
     </ul>

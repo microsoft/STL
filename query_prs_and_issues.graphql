@@ -10,6 +10,15 @@ query prs_and_issues($want_prs: Boolean!, $pr_cursor: String, $want_issues: Bool
                 number
                 createdAt
                 closedAt
+                reviews(first: 12, states: CHANGES_REQUESTED) {
+                    totalCount
+                    nodes {
+                        author {
+                            login
+                        }
+                        submittedAt
+                    }
+                }
             }
             pageInfo {
                 hasNextPage
