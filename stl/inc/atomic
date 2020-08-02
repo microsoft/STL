@@ -1299,7 +1299,7 @@ struct _Atomic_integral; // not defined
 template <class _Ty>
 struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral operations using 1-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _TVal = typename _Base::_TVal;
+    using _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1363,7 +1363,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral operations using 2-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _TVal = typename _Base::_TVal;
+    using _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1491,7 +1491,7 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral operations using 8-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _TVal = typename _Base::_TVal;
+    using _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1631,7 +1631,7 @@ template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
     using _Base           = _Atomic_integral<_Ty>;
-    using _TVal           = typename _Base::_TVal;
+    using _Base::_TVal;
     using difference_type = _TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1786,7 +1786,7 @@ template <class _Ty>
 struct _Atomic_floating : _Atomic_storage<_Ty> {
     // provides atomic floating-point operations
     using _Base           = _Atomic_storage<_Ty>;
-    using _TVal           = typename _Base::_TVal;
+    using _Base::_TVal;
     using difference_type = _TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1852,7 +1852,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 template <class _Ty>
 struct _Atomic_pointer : _Atomic_storage<_Ty> {
     using _Base           = _Atomic_storage<_Ty>;
-    using _TVal           = typename _Base::_TVal;
+    using _Base::_TVal;
     using difference_type = ptrdiff_t;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -2184,7 +2184,7 @@ public:
 
     explicit atomic_ref(_Ty& _Value) : _Base(_Value) {
         if constexpr (_Is_potentially_lock_free) {
-            _Check_aligment(_Value);
+            _Check_alignment(_Value);
         }
 
         if constexpr (!_Is_potentially_lock_free) {
@@ -2240,7 +2240,7 @@ public:
     }
 
 private:
-    void _Check_aligment([[maybe_unused]] const _Ty& _Value) {
+    void _Check_alignment([[maybe_unused]] const _Ty& _Value) {
         _ATOMIC_REF_CHECK_ALIGNMENT(
             (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
             "atomic_ref underlying object is not aligned as required_alignment");
