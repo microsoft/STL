@@ -7,9 +7,19 @@
 #include <semaphore>
 #include <thread>
 
-
 using namespace std::chrono_literals;
 
+void wait_and_expect(std::atomic<int>& v, const int val, const std::chrono::milliseconds delay_duration) {
+#ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
+    std::this_thread::sleep_for(delay_duration);
+    assert(v.load() == val);
+#else
+    while (v.load() < val) {
+        std::this_thread::sleep_for(delay_duration);
+    }
+    assert(v.load() == val);
+#endif
+}
 
 void test_counting_semaphore_count(const std::chrono::milliseconds delay_duration) {
     std::latch start{4};
@@ -31,27 +41,19 @@ void test_counting_semaphore_count(const std::chrono::milliseconds delay_duratio
 
     start.arrive_and_wait();
 
-    std::this_thread::sleep_for(delay_duration);
-
-    assert(v.load() == 2);
+    wait_and_expect(v, 2, delay_duration);
 
     semaphore.release();
 
-    std::this_thread::sleep_for(delay_duration);
-
-    assert(v.load() == 3);
+    wait_and_expect(v, 3, delay_duration);
 
     semaphore.release(4);
 
-    std::this_thread::sleep_for(delay_duration);
-
-    assert(v.load() == 7);
+    wait_and_expect(v, 7, delay_duration);
 
     semaphore.release(4);
 
-    std::this_thread::sleep_for(delay_duration);
-
-    assert(v.load() == 9);
+    wait_and_expect(v, 9, delay_duration);
 
     t1.join();
     t2.join();
@@ -78,24 +80,19 @@ void test_binary_semaphore_count(const std::chrono::milliseconds delay_duration)
 
     start.arrive_and_wait();
 
-    std::this_thread::sleep_for(delay_duration);
-    assert(v.load() == 1);
+    wait_and_expect(v, 1, delay_duration);
 
     semaphore.release();
-    std::this_thread::sleep_for(delay_duration);
-    assert(v.load() == 2);
+    wait_and_expect(v, 2, delay_duration);
 
     semaphore.release();
-    std::this_thread::sleep_for(delay_duration);
-    assert(v.load() == 3);
+    wait_and_expect(v, 3, delay_duration);
 
     semaphore.release();
-    std::this_thread::sleep_for(delay_duration);
-    assert(v.load() == 4);
+    wait_and_expect(v, 4, delay_duration);
 
     semaphore.release();
-    std::this_thread::sleep_for(delay_duration);
-    assert(v.load() == 4);
+    wait_and_expect(v, 4, delay_duration);
 
     t1.join();
     t2.join();
@@ -159,8 +156,10 @@ int main() {
     test_counting_semaphore_count(delay_duration);
     test_binary_semaphore_count(delay_duration);
 
+#ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
     test_semaphore_wait_for<std::counting_semaphore<>>(delay_duration);
     test_semaphore_wait_until<std::counting_semaphore<>>(delay_duration);
     test_semaphore_wait_for<std::binary_semaphore>(delay_duration);
     test_semaphore_wait_until<std::binary_semaphore>(delay_duration);
+#endif
 }
