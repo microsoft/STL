@@ -77,7 +77,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
 
     // testing with 2 partition points (T F T ... T F T ... T), where the F at index 1 is fixed and the second F is
     // tried at each index
-    first  = std::next(c.begin());
+    first  = next(c.begin());
     *first = false;
     while (++first != c.end()) {
         *first = false;
@@ -90,7 +90,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     // testing with 2 partition adjacent points (T...T F T F...F) where the adjacent partition points are tried at each
     // index
     first       = c.begin();
-    auto second = std::next(first, 2);
+    auto second = next(first, 2);
     for (; second != c.end(); ++first, ++second) {
         *first  = true;
         *second = true;
