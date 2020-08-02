@@ -6,6 +6,9 @@
 LIBRARY LIBRARYNAME
 
 EXPORTS
+    __std_atomic_compare_exchange_128
+    __std_atomic_has_cmpxchg16b
+    __std_atomic_get_mutex
     __std_atomic_wait_get_deadline
     __std_atomic_wait_get_remaining_timeout
     __std_atomic_notify_all_direct

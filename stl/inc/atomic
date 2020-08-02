@@ -441,9 +441,19 @@ inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
 #endif // hardware
 }
 
+
+inline void _Atomic_lock_spinlock(_Smtx_t* _Spinlock) noexcept {
+    _Smtx_lock_exclusive(_Spinlock);
+}
+
+inline void _Atomic_unlock_spinlock(_Smtx_t* _Spinlock) noexcept {
+    _Smtx_unlock_exclusive(_Spinlock);
+}
+
+template <class _Spinlock_t>
 class _Spinlock_guard {
 public:
-    explicit _Spinlock_guard(long& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
+    explicit _Spinlock_guard(_Spinlock_t& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
         _Atomic_lock_spinlock(_Spinlock);
     }
 
@@ -455,7 +465,7 @@ public:
     _Spinlock_guard& operator=(const _Spinlock_guard&) = delete;
 
 private:
-    long& _Spinlock;
+    _Spinlock_t& _Spinlock;
 };
 
 #if _HAS_CXX20
@@ -599,6 +609,11 @@ struct _Atomic_storage {
         _Atomic_unlock_spinlock(_Spinlock);
     }
 
+protected:
+    void _Init_spinlock_for_ref() noexcept {
+        _Spinlock = __std_atomic_get_mutex(_STD addressof(_Storage));
+    }
+
 private:
     // Spinlock integer for non-lock-free atomic. <xthreads.h> mutex pointer for non-lock-free atomic_ref
     mutable typename _Atomic_storage_types<_Ty>::_Spinlock _Spinlock = 0;
@@ -724,8 +739,6 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         return false;
     }
 
-    _Atomic_padded<_Ty> _Storage;
-    typename _Atomic_storage_types<_Ty>::_TStorage _Storage;
 #if _HAS_CXX20
     void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_direct(this, _Atomic_reinterpret_as<char>(_Expected), _Order);
