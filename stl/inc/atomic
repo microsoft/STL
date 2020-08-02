@@ -19,8 +19,8 @@
 #include <xatomic.h>
 #if _HAS_CXX20
 #include <xatomic_wait.h>
-#include <xthreads.h>
 #endif // _HAS_CXX20
+#include <xthreads.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -405,8 +405,9 @@ void _Atomic_wait_direct(
         const _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-            if constexpr (_Might_have_non_value_bits<_Ty>) {
-                _Storage_for<_Ty> _Mask{_Form_mask};
+            using _TVal = _Atomic_storage_types<_Ty>::_TVal;
+            if constexpr (_Might_have_non_value_bits<_TVal>) {
+                _Storage_for<_TVal> _Mask{_Form_mask};
                 const _Value_type _Mask_val = _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
 
                 if (((_Expected_bytes ^ _Observed_bytes) & _Mask_val) == 0) {
@@ -555,25 +556,25 @@ struct _Atomic_storage {
     }
 
 #if _HAS_CXX20
-    void wait(_Ty _Expected, memory_order = memory_order_seq_cst) const noexcept {
+    void wait(_TVal _Expected, memory_order = memory_order_seq_cst) const noexcept {
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         for (;;) {
             {
                 _Spinlock_guard _Lock{_Spinlock};
-                if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
+                if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_TVal)) != 0) {
                     // contents differed, we might be done, check for padding
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-                    if constexpr (_Might_have_non_value_bits<_Ty>) {
-                        _Storage_for<_Ty> _Local;
+                    if constexpr (_Might_have_non_value_bits<_TVal>) {
+                        _Storage_for<_TVal> _Local;
                         const auto _Local_ptr = _Local._Ptr();
-                        _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_Ty));
+                        _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_TVal));
                         __builtin_zero_non_value_bits(_Local_ptr);
                         __builtin_zero_non_value_bits(_Expected_ptr);
-                        if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
+                        if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_TVal)) == 0) {
                             // _Storage differs from _Expected only by padding; copy the padding from _Storage into
                             // _Expected
-                            _CSTD memcpy(_Expected_ptr, _Storage_ptr, sizeof(_Ty));
+                            _CSTD memcpy(_Expected_ptr, _Storage_ptr, sizeof(_TVal));
                         } else {
                             // truly different, we're done
                             return;
@@ -586,7 +587,7 @@ struct _Atomic_storage {
                 }
             } // unlock
 
-            __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_Ty), &_Spinlock,
+            __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_TVal), &_Spinlock,
                 &_Atomic_wait_compare_non_lock_free, _Atomic_wait_no_timeout);
         }
     }
@@ -740,7 +741,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     }
 
 #if _HAS_CXX20
-    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+    void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_direct(this, _Atomic_reinterpret_as<char>(_Expected), _Order);
     }
 
@@ -860,7 +861,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
 #if _HAS_CXX20
-    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+    void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_direct(this, _Atomic_reinterpret_as<short>(_Expected), _Order);
     }
 
@@ -978,7 +979,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
 #if _HAS_CXX20
-    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+    void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_direct(this, _Atomic_reinterpret_as<long>(_Expected), _Order);
     }
 
@@ -1125,7 +1126,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
 #if _HAS_CXX20
-    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+    void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Atomic_wait_direct(this, _Atomic_reinterpret_as<long long>(_Expected), _Order);
     }
 
