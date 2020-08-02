@@ -1246,8 +1246,8 @@ template <class _Ty>
 _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
 
-    const bool _T_is_finite = _STD _Is_finite(_ArgT);
-    if (_T_is_finite && _STD _Is_finite(_ArgA) && _STD _Is_finite(_ArgB)) {
+    const bool _T_is_finite = _Is_finite(_ArgT);
+    if (_T_is_finite && _Is_finite(_ArgA) && _Is_finite(_ArgB)) {
         // 99% case, put it first; this block comes from P0811R3
         if ((_ArgA <= 0 && _ArgB >= 0) || (_ArgA >= 0 && _ArgB <= 0)) {
             // exact, monotonic, bounded, determinate, and (for _ArgA == _ArgB == 0) consistent:
@@ -1276,24 +1276,24 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
     }
 
     if (_STD is_constant_evaluated()) {
-        if (_STD _Is_nan(_ArgA)) {
+        if (_Is_nan(_ArgA)) {
             return _ArgA;
         }
 
-        if (_STD _Is_nan(_ArgB)) {
+        if (_Is_nan(_ArgB)) {
             return _ArgB;
         }
 
-        if (_STD _Is_nan(_ArgT)) {
+        if (_Is_nan(_ArgT)) {
             return _ArgT;
         }
     } else {
         // raise FE_INVALID if at least one of _ArgA, _ArgB, and _ArgT is signaling NaN
-        if (_STD _Is_nan(_ArgA) || _STD _Is_nan(_ArgB)) {
+        if (_Is_nan(_ArgA) || _Is_nan(_ArgB)) {
             return (_ArgA + _ArgB) + _ArgT;
         }
 
-        if (_STD _Is_nan(_ArgT)) {
+        if (_Is_nan(_ArgT)) {
             return _ArgT + _ArgT;
         }
     }

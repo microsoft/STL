@@ -44,7 +44,7 @@ void test_devdiv_165070_regex_should_accept_wchar_t() {
 }
 
 void test_devdiv_822474_match_results_should_be_ready_after_regex_search() {
-    // DevDiv#822474 "<regex>: match_results::ready() returns false after regex_search called [libs-conformance]"
+    // DevDiv-822474 "<regex>: match_results::ready() returns false after regex_search called [libs-conformance]"
 
     // N3797 28.10.1 [re.results.const]/3:
     // match_results(const Allocator& a = Allocator());
