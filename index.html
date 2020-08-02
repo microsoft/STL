@@ -180,6 +180,11 @@
             },
         };
 
+        const common_title = {
+            display: true,
+            fontSize: 24,
+        };
+
         function make_xAxes(timeframe) {
             return [{
                 type: 'time',
@@ -200,8 +205,7 @@
         const status_options = {
             ...common_options,
             title: {
-                display: true,
-                fontSize: 24,
+                ...common_title,
                 text: 'STL Status Chart',
             },
             scales: {
@@ -244,8 +248,7 @@
         const age_options = {
             ...common_options,
             title: {
-                display: true,
-                fontSize: 24,
+                ...common_title,
                 text: 'Pull Request Age',
             },
             scales: {
@@ -288,8 +291,7 @@
         const merge_options = {
             ...common_options,
             title: {
-                display: true,
-                fontSize: 24,
+                ...common_title,
                 text: 'Monthly Merged PRs',
             },
             legend: {
