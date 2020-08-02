@@ -32,27 +32,27 @@ if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^[xX]86$")
     set(VCLIBS_X86_OR_X64 "x86")
     # Note that we set _WIN32_WINNT to a high level to make declarations available, but still engage downlevel
     # runtime dynamic linking by setting our own _STL_WIN32_WINNT back to Windows XP.
-    add_compile_definitions(_X86_ _VCRT_WIN32_WINNT=_WIN32_WINNT_WINXP _STL_WIN32_WINNT=_WIN32_WINNT_WINXP
+    add_compile_definitions(_X86_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501
         _WIN32_WINNT=0x0602 NTDDI_VERSION=NTDDI_WIN8)
     add_compile_options(/arch:IA32)
 elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^[xX]64$")
     set(VCLIBS_TARGET_ARCHITECTURE "x64")
     set(VCLIBS_I386_OR_AMD64 "amd64")
     set(VCLIBS_X86_OR_X64 "x64")
-    add_compile_definitions(_AMD64_ _VCRT_WIN32_WINNT=_WIN32_WINNT_WINXP _STL_WIN32_WINNT=_WIN32_WINNT_WINXP
+    add_compile_definitions(_AMD64_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501
         _WIN32_WINNT=0x0602 NTDDI_VERSION=NTDDI_WIN8)
 elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^[aA][rR][mM][vV]7$")
     set(VCLIBS_TARGET_ARCHITECTURE "arm")
     set(VCLIBS_I386_OR_AMD64 "arm")
     set(VCLIBS_X86_OR_X64 "arm")
-    add_compile_definitions(_ARM_ _VCRT_WIN32_WINNT=_WIN32_WINNT_WIN8 _STL_WIN32_WINNT=_WIN32_WINNT_WIN8
+    add_compile_definitions(_ARM_ _VCRT_WIN32_WINNT=0x0602 _STL_WIN32_WINNT=0x0602
         _WIN32_WINNT=0x0602 NTDDI_VERSION=NTDDI_WIN8)
     string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^[aA][rR][mM]64$")
     set(VCLIBS_TARGET_ARCHITECTURE "arm64")
     set(VCLIBS_I386_OR_AMD64 "arm64")
     set(VCLIBS_X86_OR_X64 "arm64")
-    add_compile_definitions(_ARM64_ _VCRT_WIN32_WINNT=_WIN32_WINNT_WIN10 _STL_WIN32_WINNT=_WIN32_WINNT_WIN10
+    add_compile_definitions(_ARM64_ _VCRT_WIN32_WINNT=0x0A00 _STL_WIN32_WINNT=0x0A00
         _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10)
     string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 else()

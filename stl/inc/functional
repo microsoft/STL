@@ -638,7 +638,7 @@ _NODISCARD const_mem_fun1_ref_t<_Result, _Ty, _Arg> mem_fun_ref(_Result (_Ty::*_
 
 // FUNCTION TEMPLATE mem_fn
 template <class _Memptr>
-class _Mem_fn : public _Weak_types<_Memptr>::type {
+class _Mem_fn : public _Weak_types<_Memptr> {
 private:
     _Memptr _Pm;
 
@@ -1449,7 +1449,7 @@ template <class _Ret, class _Fx>
 struct _Binder_result_type { // provide result_type (sometimes)
     using _Decayed = decay_t<_Fx>;
 
-    using _All_weak_types = typename _Weak_types<_Decayed>::type;
+    using _All_weak_types = _Weak_types<_Decayed>;
 
     using type =
         conditional_t<is_same_v<_Ret, _Unforced>, _Weak_result_type<_All_weak_types>, _Forced_result_type<_Ret>>;

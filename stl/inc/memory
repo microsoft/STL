@@ -794,6 +794,40 @@ protected:
         }
     }
 
+    template <class _Ty2>
+    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other) noexcept {
+        // implement weak_ptr's copy converting ctor
+        if (_Other._Rep) {
+            _Rep = _Other._Rep; // always share ownership
+            _Rep->_Incwref();
+
+            if (_Rep->_Incref_nz()) {
+                _Ptr = _Other._Ptr; // keep resource alive during conversion, handling virtual inheritance
+                _Rep->_Decref();
+            } else {
+                _STL_INTERNAL_CHECK(!_Ptr);
+            }
+        } else {
+            _STL_INTERNAL_CHECK(!_Ptr && !_Rep);
+        }
+    }
+
+    template <class _Ty2>
+    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other) noexcept {
+        // implement weak_ptr's move converting ctor
+        _Rep        = _Other._Rep; // always transfer ownership
+        _Other._Rep = nullptr;
+
+        if (_Rep && _Rep->_Incref_nz()) {
+            _Ptr = _Other._Ptr; // keep resource alive during conversion, handling virtual inheritance
+            _Rep->_Decref();
+        } else {
+            _STL_INTERNAL_CHECK(!_Ptr);
+        }
+
+        _Other._Ptr = nullptr;
+    }
+
     void _Incwref() const noexcept {
         if (_Rep) {
             _Rep->_Incwref();
@@ -2255,30 +2289,29 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
 public:
-    constexpr weak_ptr() noexcept {} // construct empty weak_ptr object
+    constexpr weak_ptr() noexcept {}
 
-    weak_ptr(const weak_ptr& _Other) noexcept { // construct weak_ptr object for resource pointed to by _Other
-        this->_Weakly_construct_from(_Other);
+    weak_ptr(const weak_ptr& _Other) noexcept {
+        this->_Weakly_construct_from(_Other); // same type, no conversion
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-    weak_ptr(const shared_ptr<_Ty2>& _Other) noexcept { // construct weak_ptr object for resource owned by _Other
-        this->_Weakly_construct_from(_Other);
+    weak_ptr(const shared_ptr<_Ty2>& _Other) noexcept {
+        this->_Weakly_construct_from(_Other); // shared_ptr keeps resource alive during conversion
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-    weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept { // construct weak_ptr object for resource pointed to by _Other
-        this->_Weakly_construct_from(_Other.lock());
+    weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
+        this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
     }
 
-    weak_ptr(weak_ptr&& _Other) noexcept { // move construct from _Other
+    weak_ptr(weak_ptr&& _Other) noexcept {
         this->_Move_construct_from(_STD move(_Other));
     }
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-    weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept { // move construct from _Other
-        this->_Weakly_construct_from(_Other.lock());
-        _Other.reset();
+    weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
+        this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
     }
 
     ~weak_ptr() noexcept {
@@ -3067,6 +3100,15 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_stro
 template <class _Ty>
 class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
     // overalignment is to allow potential future use of cmpxchg16b
+
+    static_assert(alignof(_Ref_count_base) >= (1 << 2), "Two bits don't fit as low bits");
+
+    static constexpr uintptr_t _Lock_mask                = 3;
+    static constexpr uintptr_t _Not_locked               = 0;
+    static constexpr uintptr_t _Locked_notify_not_needed = 1;
+    static constexpr uintptr_t _Locked_notify_needed     = 2;
+    static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
+
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
@@ -3074,20 +3116,42 @@ protected:
         : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
 
     _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
-        constexpr uintptr_t _Low_bit = 1;
-        uintptr_t _Rep               = _Repptr.load(memory_order::relaxed);
+        uintptr_t _Rep = _Repptr.load(memory_order::relaxed);
         for (;;) {
-            _Rep &= ~_Low_bit;
-            if (_Repptr.compare_exchange_weak(_Rep, _Rep | _Low_bit)) {
-                return reinterpret_cast<_Ref_count_base*>(_Rep);
-            }
+            switch (_Rep & _Lock_mask) {
+            case _Not_locked: // Can try to lock now
+                if (_Repptr.compare_exchange_weak(_Rep, _Rep | _Locked_notify_not_needed)) {
+                    return reinterpret_cast<_Ref_count_base*>(_Rep);
+                }
+                _YIELD_PROCESSOR();
+                break;
 
-            _YIELD_PROCESSOR();
+            case _Locked_notify_not_needed: // Try to set "notify needed" and wait
+                if (!_Repptr.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
+                    // Failed to put notify needed flag on, try again
+                    _YIELD_PROCESSOR();
+                    break;
+                }
+                _Rep = (_Rep & _Ptr_value_mask) | _Locked_notify_needed;
+                [[fallthrough]];
+
+            case _Locked_notify_needed: // "Notify needed" is already set, just wait
+                _Repptr.wait(_Rep, memory_order::relaxed);
+                _Rep = _Repptr.load(memory_order::relaxed);
+                break;
+
+            default: // Unrecognized bit pattern
+                _CSTD abort();
+            }
         }
     }
 
     void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
-        _Repptr.store(reinterpret_cast<uintptr_t>(_Value));
+        uintptr_t _Rep = _Repptr.exchange(reinterpret_cast<uintptr_t>(_Value));
+        if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
+            // As we don't count waiters, every waiter is notified, and then some may re-request notification
+            _Repptr.notify_all();
+        }
     }
 
     _Ty* _Ptr = nullptr;

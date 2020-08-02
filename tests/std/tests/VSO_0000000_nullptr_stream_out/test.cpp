@@ -19,8 +19,8 @@ int main() {
 #endif // _HAS_CXX17
 
     // LWG-1203 "More useful rvalue stream insertion"
-    assert((std::ostringstream{} << 42).str() == "42");
+    assert((ostringstream{} << 42).str() == "42");
     int x;
-    assert((std::istringstream("42 1729") >> x).str() == "42 1729");
+    assert((istringstream("42 1729") >> x).str() == "42 1729");
     assert(x == 42);
 }

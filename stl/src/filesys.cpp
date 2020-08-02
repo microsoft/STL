@@ -264,9 +264,9 @@ _FS_DLL unsigned long long __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fn
 // 1600 is excluded, 1700/1800 are not leap years
 // 1 partial century with 17 leap years:
 // 1900 is not a leap year
-// 1904 is leap year #1
-// 1908 is leap year #2
-// 1968 is leap year #17
+// 1904 is leap year number 1
+// 1908 is leap year number 2
+// 1968 is leap year number 17
 
 
 constexpr uint64_t _Win_ticks_per_second = 10000000ULL;
