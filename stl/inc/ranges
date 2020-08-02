@@ -29,6 +29,69 @@ namespace ranges {
     template <class _Rng>
     concept viewable_range = range<_Rng>
         && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
+
+
+    // CLASS ranges::ref_view
+    // clang-format off
+    template <range _Rng>
+        requires is_object_v<_Rng>
+    class ref_view : public view_interface<ref_view<_Rng>> {
+        // clang-format on
+        void _Rvalue_poison(_Rng&);
+        void _Rvalue_poison(_Rng&&) = delete;
+
+    public:
+        constexpr ref_view() noexcept = default;
+
+        // clang-format off
+        template <_Not_same_as<ref_view> _OtherRng>
+        //     requires convertible_to<_OtherRng, _Rng&> && requires { _Rvalue_poison(declval<_OtherRng>()); }
+        constexpr ref_view(_OtherRng&& _Range)
+            // clang-format on
+            : _Myrange(_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Range)))) {}
+
+        constexpr _Rng& base() const {
+            return *_Myrange;
+        }
+
+        constexpr iterator_t<_Rng> begin() const {
+            return _RANGES begin(*_Myrange);
+        }
+
+        constexpr sentinel_t<_Rng> end() const {
+            return _RANGES end(*_Myrange);
+        }
+
+        // clang-format off
+        constexpr bool empty() const
+            requires _Can_empty<_Rng>
+        {
+            // clang-format on
+            return _RANGES empty(*_Myrange);
+        }
+
+        // clang-format off
+        constexpr auto size() const
+            requires sized_range<_Rng>
+        // clang-format on
+        {
+            return _RANGES size(*_Myrange);
+        }
+
+        // clang-format off
+        constexpr auto data() const
+            requires contiguous_range<_Rng>
+        // clang-format on
+        {
+            return _RANGES data(*_Myrange);
+        }
+
+    private:
+        _Rng* _Myrange = nullptr;
+    };
+
+    template <class _Rng>
+    ref_view(_Rng&) -> ref_view<_Rng>;
 } // namespace ranges
 
 _STD_END
