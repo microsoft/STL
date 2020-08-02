@@ -405,7 +405,7 @@ void _Atomic_wait_direct(
         const _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-            using _TVal = _Atomic_storage_types<_Ty>::_TVal;
+            using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
             if constexpr (_Might_have_non_value_bits<_TVal>) {
                 _Storage_for<_TVal> _Mask{_Form_mask};
                 const _Value_type _Mask_val = _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
@@ -1299,7 +1299,7 @@ struct _Atomic_integral; // not defined
 template <class _Ty>
 struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral operations using 1-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _Base::_TVal;
+    using typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1363,7 +1363,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral operations using 2-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _Base::_TVal;
+    using typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1427,7 +1427,7 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral operations using 4-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _TVal = typename _Base::_TVal;
+    using typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1491,7 +1491,7 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 template <class _Ty>
 struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral operations using 8-byte intrinsics
     using _Base = _Atomic_storage<_Ty>;
-    using _Base::_TVal;
+    using typename _Base::_TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
@@ -1631,7 +1631,7 @@ template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
     using _Base = _Atomic_integral<_Ty>;
-    using _Base::_TVal;
+    using typename _Base::_TVal;
     using difference_type = _TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1786,7 +1786,7 @@ template <class _Ty>
 struct _Atomic_floating : _Atomic_storage<_Ty> {
     // provides atomic floating-point operations
     using _Base = _Atomic_storage<_Ty>;
-    using _Base::_TVal;
+    using typename _Base::_TVal;
     using difference_type = _TVal;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1852,7 +1852,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 template <class _Ty>
 struct _Atomic_pointer : _Atomic_storage<_Ty> {
     using _Base = _Atomic_storage<_Ty>;
-    using _Base::_TVal;
+    using typename _Base::_TVal;
     using difference_type = ptrdiff_t;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
