@@ -130,6 +130,18 @@
             ],
         };
 
+        const merge_data = {
+            datasets: [
+                {
+                    data: get_values(daily_table, 'merged'),
+                    label: 'Monthly Merged PRs',
+                    borderColor: '#00B050',
+                    backgroundColor: '#00B050',
+                    yAxisID: 'mergeAxis',
+                },
+            ],
+        };
+
         const timeframe_all = {
             ticks: { min: '2017-06-09' },
             time: { unit: 'quarter' },
@@ -273,6 +285,38 @@
             },
         };
 
+        const merge_options = {
+            ...common_options,
+            title: {
+                display: true,
+                fontSize: 24,
+                text: 'Monthly Merged PRs',
+            },
+            legend: {
+                display: false,
+            },
+            scales: {
+                xAxes: make_xAxes(timeframe_github),
+                yAxes: [
+                    {
+                        type: 'linear',
+                        display: 'auto',
+                        id: 'mergeAxis',
+                        position: 'right',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'PRs / month',
+                        },
+                        ticks: {
+                            min: 0,
+                            max: 80,
+                            stepSize: 10,
+                        },
+                    },
+                ],
+            },
+        };
+
         window.onload = function () {
             window.status_chart = new Chart('statusChart', {
                 type: 'line',
@@ -284,6 +328,12 @@
                 type: 'line',
                 data: age_data,
                 options: age_options,
+            });
+
+            window.merge_chart = new Chart('mergeChart', {
+                type: 'line',
+                data: merge_data,
+                options: merge_options,
             });
 
             document.getElementById('toggleTimeframe').addEventListener('click', function () {
@@ -374,6 +424,15 @@
             </ul>
         </li>
     </ul>
+
+    <hr />
+
+    <canvas id="mergeChart"></canvas>
+
+    <h1>Explanation</h1>
+    <p>For this line, more is better. It tracks how many PRs have been merged into any branch over the past month.
+        This uses a sliding window of 30 days, without any smoothing.
+        It excludes PRs that were closed without being merged, which are rare.</p>
 
     <hr />
 

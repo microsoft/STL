@@ -198,6 +198,7 @@ function transform_pr_nodes(pr_nodes) {
             number: pr_node.number,
             opened: DateTime.fromISO(pr_node.createdAt),
             closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
+            merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
             reviews: maintainer_reviews,
         };
     });
@@ -257,6 +258,8 @@ function write_daily_table(script_start, all_prs, all_issues) {
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
         for (let when = begin; when < script_start; when = when.plus({ days: 1 })) {
+            const one_month_ago = when.minus({ months: 1 });
+            let num_merged = 0;
             let num_pr = 0;
             let num_cxx20 = 0;
             let num_lwg = 0;
@@ -266,6 +269,10 @@ function write_daily_table(script_start, all_prs, all_issues) {
             let combined_pr_wait = Duration.fromObject({});
 
             for (const pr of all_prs) {
+                if (one_month_ago < pr.merged && pr.merged < when) {
+                    ++num_merged;
+                }
+
                 if (when < pr.opened || pr.closed < when) {
                     // This PR wasn't active; do nothing.
                 } else {
@@ -301,6 +308,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             str += '    { ';
             str += [
                 `date: '${when.toISODate()}'`,
+                `merged: ${num_merged}`,
                 `pr: ${num_pr}`,
                 `cxx20: ${num_cxx20}`,
                 `lwg: ${num_lwg}`,
