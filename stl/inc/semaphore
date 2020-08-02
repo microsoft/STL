@@ -141,7 +141,7 @@ public:
 
 private:
     using _Counter_type = conditional_t<_Least_max_value <= SCHAR_MAX, signed char,
-        conditional_t<_Least_max_value <= INT_MAX, int, ptrdiff_t>>;
+        conditional_t<_Least_max_value <= SHRT_MAX, short, conditional_t<_Least_max_value <= INT_MAX, int, ptrdiff_t>>>;
     atomic<_Counter_type> _Counter;
 };
 
