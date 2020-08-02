@@ -62,6 +62,9 @@ template <class R>
 concept CanSize = requires(R&& r) { ranges::size(std::forward<R>(r)); };
 
 template <class R>
+concept CanSSize = requires(R&& r) { ranges::ssize(std::forward<R>(r)); };
+
+template <class R>
 concept CanSizeType = requires { typename ranges::range_size_t<R>; };
 
 template <class R>
@@ -116,6 +119,7 @@ STATIC_ASSERT(test_cpo(ranges::rend));
 STATIC_ASSERT(test_cpo(ranges::crbegin));
 STATIC_ASSERT(test_cpo(ranges::crend));
 STATIC_ASSERT(test_cpo(ranges::size));
+STATIC_ASSERT(test_cpo(ranges::ssize));
 STATIC_ASSERT(test_cpo(ranges::empty));
 STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
@@ -136,6 +140,7 @@ void test_cpo_ambiguity() {
     (void) crbegin(vri);
     (void) crend(vri);
     (void) size(vri);
+    (void) ssize(vri);
     (void) empty(vri);
     (void) data(vri);
     (void) cdata(vri);
@@ -315,15 +320,19 @@ constexpr bool test_empty() {
 
 template <class Range, class Size = invalid_type>
 constexpr bool test_size() {
-    // Validate ranges::size and ranges::sized_range
+    // Validate ranges::size, ranges::sized_range, and ranges::ssize
     STATIC_ASSERT(!is_valid<Size> || std::integral<Size>);
 
     STATIC_ASSERT(CanSize<Range> == is_valid<Size>);
+    STATIC_ASSERT(CanSSize<Range> == is_valid<Size>);
     STATIC_ASSERT(CanSizeType<Range> == is_valid<Size>);
     STATIC_ASSERT(ranges::sized_range<Range> == is_valid<Size>);
     if constexpr (is_valid<Size>) {
         STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
         STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
+
+        using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+        STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SignedSize>);
 
         STATIC_ASSERT(CanEmpty<Range>);
     }
@@ -1612,6 +1621,9 @@ namespace exhaustive_size_and_view_test {
         STATIC_ASSERT(ranges::sized_range<Rng> == is_valid<Size>);
         if constexpr (is_valid<Size>) {
             STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Rng>())), Size>);
+
+            using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+            STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SignedSize>);
         }
 
         STATIC_ASSERT(ranges::view<Rng> == IsView);
