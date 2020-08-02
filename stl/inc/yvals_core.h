@@ -1138,6 +1138,7 @@
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
 #define __cpp_lib_atomic_shared_ptr             201711L
+#define __cpp_lib_atomic_wait                   201907L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
@@ -1260,6 +1261,21 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #if defined(MRTDLL) && !defined(_M_CEE_PURE)
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
+
+#define _STL_WIN32_WINNT_WINXP 0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+
+// Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
+#ifndef _STL_WIN32_WINNT
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_ONECORE) || defined(_CRT_APP)
+// The first ARM or OneCore or App Windows was Windows 8
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
+#else // ^^^ default to Win8 // default to Vista vvv
+// The earliest Windows supported by this implementation is Windows Vista
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
+#endif // _STL_WIN32_WINNT
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

@@ -162,6 +162,20 @@ STATIC_ASSERT(__cpp_lib_atomic_value_initialization == 201911L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is not defined
+#elif __cpp_lib_atomic_wait != 201907L
+#error __cpp_lib_atomic_wait is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_bind_front
 #error __cpp_lib_bind_front is not defined
 #elif __cpp_lib_bind_front != 201907L
