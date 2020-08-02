@@ -13,9 +13,9 @@
 
 using namespace std;
 
-// DevDiv#821672 "<locale>: visual studio.net 2013 time libraries buggy (%x %X) - time_get"
-// DevDiv#836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
-// DevDiv#872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
+// DevDiv-821672 "<locale>: visual studio.net 2013 time libraries buggy (%x %X) - time_get"
+// DevDiv-836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
+// DevDiv-872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
 
 tm helper(const char* const s, const char* const fmt) {
     tm t{};
@@ -117,7 +117,7 @@ int main() {
 
 typedef istreambuf_iterator<char> Iter;
 
-// DevDiv#640278 "<locale>: time_get::do_get_year() thinks the world will end in 2035"
+// DevDiv-640278 "<locale>: time_get::do_get_year() thinks the world will end in 2035"
 void test_year(const string& str, const ios_base::iostate expected_err, const int expected_tm_year) {
     istringstream iss(str);
     ios_base::iostate err = ios_base::goodbit;
@@ -152,7 +152,7 @@ void test_640278() {
     test_year("2013 frozen", ios_base::goodbit, 113);
 }
 
-// DevDiv#990695 "<locale>: time_get should ignore ios_base::iostate's initial value"
+// DevDiv-990695 "<locale>: time_get should ignore ios_base::iostate's initial value"
 void test_990695() {
     for (int k = 0; k < 2; ++k) {
         const auto Bit = k == 0 ? ios_base::goodbit : ios_base::failbit;

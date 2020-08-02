@@ -331,5 +331,8 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
     return _Acquire_wait_functions();
 #endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 _END_EXTERN_C

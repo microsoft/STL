@@ -1061,8 +1061,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
 
 #ifndef __AVX2__
-    const bool _Have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    if (!_Have_tzcnt && _Val == 0) {
+    const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    if (!_Definitely_have_tzcnt && _Val == 0) {
         return _Digits;
     }
 #endif // __AVX2__

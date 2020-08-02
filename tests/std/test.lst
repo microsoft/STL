@@ -157,6 +157,7 @@ tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
 tests\GH_000457_system_error_message
 tests\GH_000545_include_compare
+tests\GH_000625_vector_bool_optimization
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
@@ -270,6 +271,7 @@ tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_move_backward
 tests\P0896R4_ranges_alg_none_of
+tests\P0896R4_ranges_alg_nth_element
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
 tests\P0896R4_ranges_alg_partition_point

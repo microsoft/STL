@@ -539,7 +539,15 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #endif
 
-#if _HAS_CXX17 && !defined(_M_CEE)
+#if _HAS_CXX20 && !defined(_M_CEE)
+#ifndef __cpp_lib_execution
+#error __cpp_lib_execution is not defined
+#elif __cpp_lib_execution != 201902L
+#error __cpp_lib_execution is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_execution == 201902L);
+#endif
+#elif _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201603L

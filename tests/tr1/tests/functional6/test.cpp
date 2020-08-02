@@ -32,7 +32,7 @@ static void t_bad() { // test bad_function_call
 
     try { // test exception for empty function object
         Myfunc fd1;
-        std::cout << fd1(3) << std::endl;
+        STD cout << fd1(3) << STD endl;
     } catch (const STD bad_function_call&) { // handle bad call
         ok = true;
     }

@@ -140,7 +140,7 @@ int main() {
     test_Getword();
 }
 
-// Also test DevDiv#917456 "<bitset>: none() and any() return incorrect count after call set() function in a
+// Also test DevDiv-917456 "<bitset>: none() and any() return incorrect count after call set() function in a
 // std::bitset<0> object [libcxx]".
 void test_bitset0(const bitset<0>& b) {
     assert(b.to_ulong() == 0);
@@ -182,7 +182,7 @@ void test_DevDiv917456() {
     }
 }
 
-// Also test DevDiv#931383 "<bitset>: We need to validate all characters and use traits::eq()".
+// Also test DevDiv-931383 "<bitset>: We need to validate all characters and use traits::eq()".
 void test(const string& str, const size_t pos, const size_t n, const string& expected) noexcept {
     try {
         bitset<8> b(str, pos, n, 'o', 'i');
@@ -215,7 +215,7 @@ void test_DevDiv931383() {
     test("FFiioiiiGG", 2, 6, "00110111");
 }
 
-// Also test Dev10#479284 "C6326 when running static analysis with <bitset>".
+// Also test Dev10-479284 "C6326 when running static analysis with <bitset>".
 template class std::bitset<7>;
 template class std::bitset<32>;
 
