@@ -42,7 +42,7 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
         // timing assumption that the main thread evaluates the `wait(old_value)` before this timeout expires
         std::this_thread::sleep_for(waiting_duration);
         add_seq('6');
-#endif
+#endif // CAN_FAIL_ON_TIMING_ASSUMPTION
     });
 
     a.wait(old_value);
