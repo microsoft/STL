@@ -9,7 +9,6 @@
 using namespace std;
 
 struct instantiator {
-
     template <input_or_output_iterator Iter>
     static constexpr void call() {
         int input[5] = {1, 2, 3, 4, 5};
@@ -116,7 +115,7 @@ struct instantiator {
                 }
             }
             { // difference
-                auto iter1 = counted_iterator<Iter>{Iter{input}, 2};
+                auto iter1 = counted_iterator<Iter>{Iter{input + 1}, 2};
                 auto iter2 = counted_iterator<Iter>{Iter{input}, 3};
 
                 const same_as<iter_difference_t<Iter>> auto diff1 = iter1 - iter2;
@@ -165,7 +164,7 @@ struct instantiator {
             }
             { // spaceship
                 auto iter1                                 = counted_iterator<Iter>{Iter{input}, 2};
-                auto iter2                                 = counted_iterator<Iter>{Iter{input}, 0};
+                auto iter2                                 = counted_iterator<Iter>{Iter{input + 2}, 0};
                 const same_as<strong_ordering> auto result = iter1 <=> iter2;
                 assert(result == strong_ordering::less);
                 assert(iter2 <=> iter1 == strong_ordering::greater);
