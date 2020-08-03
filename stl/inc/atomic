@@ -1309,6 +1309,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
                     }
                 }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+
                 return;
             }
 
