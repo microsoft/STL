@@ -21,6 +21,10 @@
             border: none;
             height: 1px;
         }
+
+        span.currentValue {
+            font-weight: bold;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"
         integrity="sha256-R4pqcOYV8lt7snxMQO/HSbVCFRPMdrhAFMH+vr9giYI=" crossorigin="anonymous"></script>
@@ -349,6 +353,17 @@
 
                 window.status_chart.update();
             });
+
+            for (const field of ['cxx20', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age', 'sum_wait',
+                'merged']) {
+                const value = daily_table[daily_table.length - 1][field];
+                document.getElementById(`currentValue-${field}`).textContent = value;
+            }
+
+            for (const field of ['vso', 'libcxx']) {
+                const value = weekly_table[weekly_table.length - 1][field];
+                document.getElementById(`currentValue-${field}`).textContent = value;
+            }
         };
     </script>
 </head>
@@ -368,30 +383,37 @@
     <ul>
         <li>Right axis:
             <ul>
-                <li>C++17 STL features remaining to be implemented. This reached zero when we implemented
+                <li>(<span class="currentValue">0</span>)
+                    C++17 STL features remaining to be implemented. This reached zero when we implemented
                     <a href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
                         rel="nofollow"><code>&lt;charconv&gt;</code>, C++17's final boss</a>.</li>
-                <li><a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
+                <li>(<span class="currentValue" id="currentValue-cxx20"></span>)
+                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
                         C++20 STL features remaining to be implemented.</a>
                     This increased whenever more features were voted into the Working Paper at
                     <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.</li>
-                <li><a
+                <li>(<span class="currentValue" id="currentValue-lwg"></span>) <a
                         href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext+-label%3Ablocked">
                         LWG issue resolutions remaining to be implemented.</a> Also increases after WG21 meetings.</li>
-                <li><a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a></li>
+                <li>(<span class="currentValue" id="currentValue-pr"></span>)
+                    <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a></li>
             </ul>
         </li>
         <li>Left axis:
             <ul>
-                <li>Active "old bugs" in our Microsoft-internal database. We're keeping them active while
+                <li>(<span class="currentValue" id="currentValue-vso"></span>)
+                    Active "old bugs" in our Microsoft-internal database. We're keeping them active while
                     porting them to GitHub, unless they're discovered to be duplicates or already fixed.</li>
-                <li><a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
+                <li>(<span class="currentValue" id="currentValue-bug"></span>)
+                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
                         Open GitHub bugs.</a> That is, only GitHub issues that have <b>bug</b> labels.</li>
-                <li><a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20">
+                <li>(<span class="currentValue" id="currentValue-issue"></span>)
+                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20">
                         Open GitHub issues.</a> That is, all GitHub issues including <b>bug</b>,
                     <b>documentation</b>, <b>enhancement</b>, <b>performance</b>, <b>throughput</b>, etc.
                     and excluding only <b>cxx20</b> and <b>LWG</b> to avoid double-counting.</li>
-                <li><a href="https://github.com/microsoft/STL/blob/master/tests/libcxx/skipped_tests.txt">
+                <li>(<span class="currentValue" id="currentValue-libcxx"></span>)
+                    <a href="https://github.com/microsoft/STL/blob/master/tests/libcxx/skipped_tests.txt">
                         Skipped tests in the libcxx test suite.</a> There are many reasons for skipped tests:
                     STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.
                     To avoid double-counting, this chart excludes skipped tests due to missing STL features.</li>
@@ -413,16 +435,20 @@
     <ul>
         <li>Left axis:
             <ul>
-                <li>The average age of open pull requests, in days.</li>
-                <li>The average "waiting time" of open pull requests, in days. This measures how long it's been since a
+                <li>(<span class="currentValue" id="currentValue-avg_age"></span>)
+                    The average age of open pull requests, in days.</li>
+                <li>(<span class="currentValue" id="currentValue-avg_wait"></span>)
+                    The average "waiting time" of open pull requests, in days. This measures how long it's been since a
                     maintainer submitted a review requesting changes. Any other activity doesn't reset this clock.</li>
             </ul>
         </li>
         <li>Right axis:
             <ul>
-                <li>The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
+                <li>(<span class="currentValue" id="currentValue-sum_age"></span>)
+                    The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
                     for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
-                <li>The combined "waiting time" of open pull requests, in PR-months.</li>
+                <li>(<span class="currentValue" id="currentValue-sum_wait"></span>)
+                    The combined "waiting time" of open pull requests, in PR-months.</li>
             </ul>
         </li>
     </ul>
@@ -432,9 +458,18 @@
     <canvas id="mergeChart"></canvas>
 
     <h1>Explanation</h1>
-    <p>For this line, more is better. It tracks how many PRs have been merged into any branch over the past month.
-        This uses a sliding window of 30 days, without any smoothing.
-        It excludes PRs that were closed without being merged, which are rare.</p>
+    <p>For this line, more is better.</p>
+
+    <ul>
+        <li>Right axis:
+            <ul>
+                <li>(<span class="currentValue" id="currentValue-merged"></span>)
+                    How many PRs have been merged into any branch over the past month.
+                    This uses a sliding window of 30 days, without any smoothing.
+                    It excludes PRs that were closed without being merged, which are rare.</li>
+            </ul>
+        </li>
+    </ul>
 
     <hr />
 
