@@ -424,7 +424,7 @@ static void tdiscrete() {
     CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
     dist0.reset();
 
-    std::vector<double> vec(4, 1.0);
+    STD vector<double> vec(4, 1.0);
 
     dist_t dist1(STD initializer_list<double>(vec.data(), vec.data() + vec.size()));
 
@@ -468,8 +468,8 @@ static void tpiecewise_constant() {
     CHECK_DOUBLE(dist0.intervals()[1], 1.0);
     dist0.reset();
 
-    std::vector<double> ends_not_enough = {0.5};
-    std::vector<double> vec_not_enough  = {0.5};
+    STD vector<double> ends_not_enough = {0.5};
+    STD vector<double> vec_not_enough  = {0.5};
     dist_t dist0_2(ends_not_enough.begin(), ends_not_enough.end(), vec_not_enough.begin());
     CHECK_INT(dist0_2.densities().size(), 1);
     CHECK_DOUBLE(dist0_2.densities()[0], 1.0);
@@ -478,13 +478,13 @@ static void tpiecewise_constant() {
     CHECK_DOUBLE(dist0_2.intervals()[1], 1.0);
 
 
-    std::vector<double> ends;
+    STD vector<double> ends;
     ends.push_back(0.0);
     ends.push_back(1.0);
     ends.push_back(2.0);
     ends.push_back(3.0);
     ends.push_back(4.0);
-    std::vector<double> vec(4, 1.0);
+    STD vector<double> vec(4, 1.0);
     dist_t dist1(ends.begin(), ends.end(), vec.begin());
     CHECK_INT(dist1.densities().size(), 4);
     CHECK_DOUBLE(dist1.densities()[0], 0.25);
@@ -542,8 +542,8 @@ static void tpiecewise_linear() {
     CHECK_DOUBLE(dist0.intervals()[1], 1.0);
     dist0.reset();
 
-    std::vector<double> ends_not_enough = {0.5};
-    std::vector<double> vec_not_enough  = {0.5};
+    STD vector<double> ends_not_enough = {0.5};
+    STD vector<double> vec_not_enough  = {0.5};
     dist_t dist0_2(ends_not_enough.begin(), ends_not_enough.end(), vec_not_enough.begin());
     CHECK_INT(dist0_2.densities().size(), 2);
     CHECK_DOUBLE(dist0_2.densities()[0], 1.0);
@@ -552,13 +552,13 @@ static void tpiecewise_linear() {
     CHECK_DOUBLE(dist0_2.intervals()[0], 0.0);
     CHECK_DOUBLE(dist0_2.intervals()[1], 1.0);
 
-    std::vector<double> ends;
+    STD vector<double> ends;
     ends.push_back(0.0);
     ends.push_back(1.0);
     ends.push_back(2.0);
     ends.push_back(3.0);
     ends.push_back(4.0);
-    std::vector<double> vec(5, 1.0);
+    STD vector<double> vec(5, 1.0);
     dist_t dist1(ends.begin(), ends.end(), vec.begin());
     CHECK_INT(dist1.densities().size(), 5);
     CHECK_DOUBLE(dist1.densities()[0], 0.25);

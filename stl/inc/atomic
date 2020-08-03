@@ -17,6 +17,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <xatomic.h>
+#if _HAS_CXX20
+#include <xatomic_wait.h>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -357,6 +360,83 @@ template <class _Ty, size_t = sizeof(_Ty)>
 #else // ^^^ don't break ABI / break ABI vvv
 template <class _Ty, size_t = _Atomic_storage_traits<_Ty>::_Storage_size>
 #endif // TRANSITION, ABI
+struct _Atomic_storage;
+
+#if _HAS_CXX20
+template <class _Ty, class _Value_type>
+void _Atomic_wait_direct(
+    const _Atomic_storage<_Ty>* const _This, _Value_type _Expected_bytes, const memory_order _Order) noexcept {
+    const auto _Storage_ptr = _STD addressof(_This->_Storage);
+    for (;;) {
+        const _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
+        if (_Expected_bytes != _Observed_bytes) {
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+            if constexpr (_Might_have_non_value_bits<_Ty>) {
+                _Storage_for<_Ty> _Mask{_Form_mask};
+                const _Value_type _Mask_val = _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
+
+                if (((_Expected_bytes ^ _Observed_bytes) & _Mask_val) == 0) {
+                    _Expected_bytes = _Observed_bytes;
+                    continue;
+                }
+            }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+
+            return;
+        }
+
+        __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Atomic_wait_no_timeout);
+    }
+}
+#endif // _HAS_CXX20
+
+#if 1 // TRANSITION, ABI
+inline void _Atomic_lock_spinlock(long& _Spinlock) noexcept {
+    while (_InterlockedExchange(&_Spinlock, 1)) {
+        _YIELD_PROCESSOR();
+    }
+}
+
+inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
+#if defined(_M_ARM) || defined(_M_ARM64)
+    _Memory_barrier();
+    __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
+    _Memory_barrier();
+#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+    _InterlockedExchange(&_Spinlock, 0);
+#endif // hardware
+}
+
+class _Spinlock_guard {
+public:
+    explicit _Spinlock_guard(long& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
+        _Atomic_lock_spinlock(_Spinlock);
+    }
+
+    ~_Spinlock_guard() {
+        _Atomic_unlock_spinlock(_Spinlock);
+    }
+
+    _Spinlock_guard(const _Spinlock_guard&) = delete;
+    _Spinlock_guard& operator=(const _Spinlock_guard&) = delete;
+
+private:
+    long& _Spinlock;
+};
+
+#if _HAS_CXX20
+inline bool __stdcall _Atomic_wait_compare_non_lock_free(
+    const void* _Storage, void* _Comparand, size_t _Size, void* _Spinlock_raw) noexcept {
+    long& _Spinlock = *static_cast<long*>(_Spinlock_raw);
+    _Atomic_lock_spinlock(_Spinlock);
+    const auto _Cmp_result = _CSTD memcmp(_Storage, _Comparand, _Size);
+    _Atomic_unlock_spinlock(_Spinlock);
+    return _Cmp_result == 0;
+}
+#endif // _HAS_CXX20
+#endif // TRANSITION, ABI
+
+template <class _Ty, size_t /* = ... */>
 struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
     // Locking version used when hardware has no atomic operations for sizeof(_Ty).
@@ -427,21 +507,59 @@ struct _Atomic_storage {
         return _Result;
     }
 
-#if 1 // TRANSITION, ABI
-    void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange(&_Spinlock, 1)) {
-            _YIELD_PROCESSOR();
+#if _HAS_CXX20
+    void wait(_Ty _Expected, memory_order = memory_order_seq_cst) const noexcept {
+        const auto _Storage_ptr  = _STD addressof(_Storage);
+        const auto _Expected_ptr = _STD addressof(_Expected);
+        for (;;) {
+            {
+                _Spinlock_guard _Lock{_Spinlock};
+                if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_Ty)) != 0) {
+                    // contents differed, we might be done, check for padding
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+                    if constexpr (_Might_have_non_value_bits<_Ty>) {
+                        _Storage_for<_Ty> _Local;
+                        const auto _Local_ptr = _Local._Ptr();
+                        _CSTD memcpy(_Local_ptr, _Storage_ptr, sizeof(_Ty));
+                        __builtin_zero_non_value_bits(_Local_ptr);
+                        __builtin_zero_non_value_bits(_Expected_ptr);
+                        if (_CSTD memcmp(_Local_ptr, _Expected_ptr, sizeof(_Ty)) == 0) {
+                            // _Storage differs from _Expected only by padding; copy the padding from _Storage into
+                            // _Expected
+                            _CSTD memcpy(_Expected_ptr, _Storage_ptr, sizeof(_Ty));
+                        } else {
+                            // truly different, we're done
+                            return;
+                        }
+                    } else
+#endif // #if _CMPXCHG_MASK_OUT_PADDING_BITS
+                    {
+                        return;
+                    }
+                }
+            } // unlock
+
+            __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_Ty), &_Spinlock,
+                &_Atomic_wait_compare_non_lock_free, _Atomic_wait_no_timeout);
         }
     }
 
+    void notify_one() noexcept {
+        __std_atomic_notify_one_indirect(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __std_atomic_notify_all_indirect(_STD addressof(_Storage));
+    }
+#endif // _HAS_CXX20
+
+#if 1 // TRANSITION, ABI
+    void _Lock() const noexcept { // lock the spinlock
+        _Atomic_lock_spinlock(_Spinlock);
+    }
+
     void _Unlock() const noexcept { // unlock the spinlock
-#if defined(_M_ARM) || defined(_M_ARM64)
-        _Memory_barrier();
-        __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-        _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange(&_Spinlock, 0);
-#endif // hardware
+        _Atomic_unlock_spinlock(_Spinlock);
     }
 
 private:
@@ -452,23 +570,15 @@ public:
 
 #else // ^^^ don't break ABI / break ABI vvv
     void _Lock() const noexcept { // lock the spinlock
-        while (_InterlockedExchange8(&_Spinlock, 1)) {
-            _YIELD_PROCESSOR();
-        }
+        _Smtx_lock_exclusive(&_Spinlock);
     }
 
     void _Unlock() const noexcept { // unlock the spinlock
-#if defined(_M_ARM) || defined(_M_ARM64)
-        _Memory_barrier();
-        __iso_volatile_store8(&_Spinlock, 0);
-        _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-        _InterlockedExchange8(&_Spinlock, 0);
-#endif // hardware
+        _Smtx_unlock_exclusive(&_Spinlock);
     }
 
     _Ty _Storage;
-    mutable char _Spinlock = 0;
+    mutable _Smtx_t _Spinlock = 0;
 #endif // TRANSITION, ABI
 };
 
@@ -572,6 +682,20 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<char>(_Expected), _Order);
+    }
+
+    void notify_one() noexcept {
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
+    }
+#endif // _HAS_CXX20
+
     _Atomic_padded<_Ty> _Storage;
 };
 
@@ -674,6 +798,20 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<short>(_Expected), _Order);
+    }
+
+    void notify_one() noexcept {
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
+    }
+#endif // _HAS_CXX20
+
     _Atomic_padded<_Ty> _Storage;
 };
 
@@ -773,6 +911,20 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         _CSTD memcpy(_STD addressof(_Expected), &_Prev_bytes, sizeof(_Ty));
         return false;
     }
+
+#if _HAS_CXX20
+    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<long>(_Expected), _Order);
+    }
+
+    void notify_one() noexcept {
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
+    }
+#endif // _HAS_CXX20
 
     _Atomic_padded<_Ty> _Storage;
 };
@@ -903,6 +1055,20 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return false;
     }
 
+#if _HAS_CXX20
+    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Atomic_wait_direct(this, _Atomic_reinterpret_as<long long>(_Expected), _Order);
+    }
+
+    void notify_one() noexcept {
+        __std_atomic_notify_one_direct(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __std_atomic_notify_all_direct(_STD addressof(_Storage));
+    }
+#endif // _HAS_CXX20
+
     _Atomic_padded<_Ty> _Storage;
 };
 
@@ -997,6 +1163,16 @@ struct _Atomic_storage<_Ty, 16> { // lock-free using 16-byte intrinsics
 
         return _Result != 0;
     }
+
+#if _HAS_CXX20
+    void notify_one() noexcept {
+        __std_atomic_notify_one_indirect(_STD addressof(_Storage));
+    }
+
+    void notify_all() noexcept {
+        __std_atomic_notify_all_indirect(_STD addressof(_Storage));
+    }
+#endif // _HAS_CXX20
 
     struct _Int128 {
         alignas(16) long long _Low;
@@ -1802,6 +1978,23 @@ public:
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
+#if _HAS_CXX20
+    using _Base::wait;
+    void wait(const _Ty _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
+        const_cast<const atomic*>(this)->_Base::wait(_Expected, _Order);
+    }
+
+    using _Base::notify_one;
+    void notify_one() volatile noexcept {
+        const_cast<atomic*>(this)->_Base::notify_one();
+    }
+
+    using _Base::notify_all;
+    void notify_all() volatile noexcept {
+        const_cast<atomic*>(this)->_Base::notify_all();
+    }
+#endif // _HAS_CXX20
+
     operator _Ty() const volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->load();
@@ -2088,6 +2281,52 @@ _Ty atomic_fetch_xor_explicit(
     return _Mem->fetch_xor(_Value, _Order);
 }
 
+#if _HAS_CXX20
+template <class _Ty>
+void atomic_wait(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
+/* strengthened */ {
+    _Mem->wait(_Expected);
+}
+
+template <class _Ty>
+void atomic_wait(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected) noexcept
+/* strengthened */ {
+    _Mem->wait(_Expected);
+}
+
+template <class _Ty>
+void atomic_wait_explicit(const volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
+    const memory_order _Order) noexcept /* strengthened */ {
+    _Mem->wait(_Expected, _Order);
+}
+
+template <class _Ty>
+void atomic_wait_explicit(const atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Expected,
+    const memory_order _Order) noexcept /* strengthened */ {
+    _Mem->wait(_Expected, _Order);
+}
+
+template <class _Ty>
+void atomic_notify_one(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+    _Mem->notify_one();
+}
+
+template <class _Ty>
+void atomic_notify_one(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+    _Mem->notify_one();
+}
+
+template <class _Ty>
+void atomic_notify_all(volatile atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+    _Mem->notify_all();
+}
+
+template <class _Ty>
+void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
+    _Mem->notify_all();
+}
+#endif // _HAS_CXX20
+
 // ATOMIC TYPEDEFS
 using atomic_bool = atomic<bool>;
 
@@ -2183,6 +2422,32 @@ struct atomic_flag { // flag with test-and-set semantics
 
     constexpr atomic_flag() noexcept = default;
 
+#if _HAS_CXX20
+    void wait(const bool _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Storage.wait(static_cast<decltype(_Storage)::value_type>(_Expected), _Order);
+    }
+
+    void wait(const bool _Expected, const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
+        _Storage.wait(static_cast<decltype(_Storage)::value_type>(_Expected), _Order);
+    }
+
+    void notify_one() noexcept {
+        _Storage.notify_one();
+    }
+
+    void notify_one() volatile noexcept {
+        _Storage.notify_one();
+    }
+
+    void notify_all() noexcept {
+        _Storage.notify_all();
+    }
+
+    void notify_all() volatile noexcept {
+        _Storage.notify_all();
+    }
+#endif // _HAS_CXX20
+
 #if 1 // TRANSITION, ABI
     atomic<long> _Storage;
 #else // ^^^ don't break ABI / break ABI vvv
@@ -2211,37 +2476,73 @@ _NODISCARD inline bool atomic_flag_test_explicit(const atomic_flag* const _Flag,
 }
 #endif // _HAS_CXX20
 
-inline bool atomic_flag_test_and_set(atomic_flag* _Flag) noexcept {
+inline bool atomic_flag_test_and_set(atomic_flag* const _Flag) noexcept {
     return _Flag->test_and_set();
 }
 
-inline bool atomic_flag_test_and_set(volatile atomic_flag* _Flag) noexcept {
+inline bool atomic_flag_test_and_set(volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test_and_set();
 }
 
-inline bool atomic_flag_test_and_set_explicit(atomic_flag* _Flag, memory_order _Order) noexcept {
+inline bool atomic_flag_test_and_set_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test_and_set(_Order);
 }
 
-inline bool atomic_flag_test_and_set_explicit(volatile atomic_flag* _Flag, memory_order _Order) noexcept {
+inline bool atomic_flag_test_and_set_explicit(volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test_and_set(_Order);
 }
 
-inline void atomic_flag_clear(atomic_flag* _Flag) noexcept {
+inline void atomic_flag_clear(atomic_flag* const _Flag) noexcept {
     _Flag->clear();
 }
 
-inline void atomic_flag_clear(volatile atomic_flag* _Flag) noexcept {
+inline void atomic_flag_clear(volatile atomic_flag* const _Flag) noexcept {
     _Flag->clear();
 }
 
-inline void atomic_flag_clear_explicit(atomic_flag* _Flag, memory_order _Order) noexcept {
+inline void atomic_flag_clear_explicit(atomic_flag* const _Flag, const memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
 
-inline void atomic_flag_clear_explicit(volatile atomic_flag* _Flag, memory_order _Order) noexcept {
+inline void atomic_flag_clear_explicit(volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     _Flag->clear(_Order);
 }
+
+#if _HAS_CXX20
+inline void atomic_flag_wait(const volatile atomic_flag* const _Flag, const bool _Expected) noexcept {
+    return _Flag->wait(_Expected);
+}
+
+inline void atomic_flag_wait(const atomic_flag* const _Flag, const bool _Expected) noexcept {
+    return _Flag->wait(_Expected);
+}
+
+inline void atomic_flag_wait_explicit(
+    const volatile atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
+    return _Flag->wait(_Expected, _Order);
+}
+
+inline void atomic_flag_wait_explicit(
+    const atomic_flag* const _Flag, const bool _Expected, const memory_order _Order) noexcept {
+    return _Flag->wait(_Expected, _Order);
+}
+
+inline void atomic_flag_notify_one(volatile atomic_flag* const _Flag) noexcept {
+    return _Flag->notify_one();
+}
+
+inline void atomic_flag_notify_one(atomic_flag* const _Flag) noexcept {
+    return _Flag->notify_one();
+}
+
+inline void atomic_flag_notify_all(volatile atomic_flag* const _Flag) noexcept {
+    return _Flag->notify_all();
+}
+
+inline void atomic_flag_notify_all(atomic_flag* const _Flag) noexcept {
+    return _Flag->notify_all();
+}
+#endif // _HAS_CXX20
 
 _STD_END
 
